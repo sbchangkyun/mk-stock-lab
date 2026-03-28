@@ -260,3 +260,21 @@ if (typeof window !== 'undefined') {
         }, 500);
     }
 }
+
+/* src/scripts/main.js 맨 아래에 추가 */
+
+if (typeof window !== 'undefined') {
+    // HTML의 onclick 속성이 이 함수들을 찾을 수 있도록 window 객체에 연결합니다.
+    window.closePopup = closePopup;
+    window.closeBottomAd = closeBottomAd;
+    window.changeMenu = changeMenu;
+    window.toggleTheme = toggleTheme;
+    window.changeChart = changeChart;
+    window.showGotcha = showGotcha;
+    
+    // 페이지가 처음 로드될 때 실행되어야 하는 초기화 로직도 확실히 호출해줍니다.
+    // 기존에 window.onload = function() { ... } 로 되어있던 로직이 있다면
+    // 아래처럼 즉시 실행되도록 한 번 더 잡아주면 좋습니다.
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (typeof applyTheme === 'function') applyTheme(savedTheme);
+}
