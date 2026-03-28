@@ -9,17 +9,18 @@ import '../styles/style.css';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{title}</title>
-    
     <link rel="icon" type="image/svg+xml" href="/logo.svg">
-    
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <meta name="theme-color" content="#1A237E">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8654345483667820" crossorigin="anonymous"></script>
 </head>
 <body>
+    <div id="install-banner" style="display:none; background:#1A237E; color:#fff; padding:10px; text-align:center; position:fixed; top:0; left:0; width:100%; z-index:10002;">
+        MK Stock Lab 앱 설치
+        <button onclick="installPWA()" style="margin-left:10px; padding:4px 10px; cursor:pointer;">설치</button>
+        <span onclick="this.parentElement.style.display='none'" style="margin-left:15px; cursor:pointer;">×</span>
+    </div>
+
     <slot />
 
     <script src="../scripts/main.js"></script>

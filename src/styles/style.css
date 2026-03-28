@@ -1,13 +1,8 @@
-/* style.css */
+/* style.css - MK Stock Lab 전체 레이아웃 복구 및 최적화 */
 :root {
-    --bg-color: #f0f3fa;
-    --container-bg: #ffffff;
-    --text-main: #333333;
-    --text-sub: #777777;
-    --border-color: #e0e3eb;
-    --header-logo: #1A237E;
-    --accent-color: #1A237E;
-    --nav-hover: #f8f9fa;
+    --bg-color: #f0f3fa; --container-bg: #ffffff; --text-main: #333333;
+    --text-sub: #777777; --border-color: #e0e3eb; --header-logo: #1A237E;
+    --accent-color: #1A237E; --nav-hover: #f8f9fa;
 }
 
 body.dark-mode {
@@ -16,65 +11,60 @@ body.dark-mode {
     --accent-color: #3949ab; --nav-hover: #2c2c2c;
 }
 
+/* 기본 초기화 */
+* { box-sizing: border-box; }
 body { 
     font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; 
     background-color: var(--bg-color); color: var(--text-main);
-    overflow-x: hidden; padding-bottom: 140px; transition: background-color 0.3s ease;
+    overflow-x: hidden; padding-bottom: 120px; transition: background-color 0.3s ease;
 }
 
-/* 팝업 관련 */
-#slidePopup { position: fixed; top: -100%; left: 0; width: 100%; background-color: var(--container-bg); box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 9999; transition: top 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
-#slidePopup.active { top: 0; }
-.ad-content { max-width: 1200px; margin: 0 auto; padding: 15px; text-align: center; position: relative; }
-.popup-close-btn { position: absolute; bottom: 50px; right: 15px; background: rgba(0,0,0,0.5); color: #fff; width: 24px; height: 24px; border-radius: 50%; font-size: 16px; line-height: 22px; text-align: center; cursor: pointer; z-index: 10001; transition: bottom 0.4s ease-in-out; }
-.close-bar { width: 100%; padding: 10px 15px; background-color: var(--nav-hover); border-top: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: flex-start; gap: 5px; box-sizing: border-box; }
-.timer-info { font-size: 13px; font-weight: bold; color: var(--text-main); }
-.no-show-area { width: 100%; text-align: right; margin-top: -20px; }
-#timerText { color: #ff4d4d; }
+/* [중요] 테마 아이콘 크기 고정 - 스크린샷의 거대 아이콘 해결 */
+#themeToggle svg {
+    width: 20px !important;
+    height: 20px !important;
+    display: block;
+}
 
-/* 헤더 */
-.header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
-.logo-area svg { width: 140px; height: 40px; cursor: pointer; }
-.logo-area svg text { fill: var(--header-logo); }
-.header-actions { display: flex; align-items: center; gap: 12px; }
-#themeToggle { cursor: pointer; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border-radius: 50%; background: var(--container-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-#themeToggle svg { width: 18px; height: 18px; fill: var(--text-main); }
-#loginBtn { padding: 0 18px; height: 32px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+/* 헤더 구조 */
+.header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: var(--container-bg); }
+.logo-area svg { width: 140px; height: 40px; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
 
-/* 티커 벨트 */
-.independent-ticker { width: 100%; background: var(--container-bg); border-bottom: 1px solid var(--border-color); height: 54px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.independent-ticker > div { width: 100%; height: 54px; }
+#themeToggle { 
+    cursor: pointer; width: 36px; height: 36px; display: flex; justify-content: center; 
+    align-items: center; border-radius: 50%; background: var(--bg-color); border: 1px solid var(--border-color);
+}
 
-/* 메뉴 및 레이아웃 */
+#loginBtn { padding: 6px 16px; background: var(--accent-color); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+/* 네비게이션 */
 .nav-menu-wrapper { background: var(--container-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 800; }
 .nav-menu { max-width: 1200px; margin: 0 auto; display: flex; list-style: none; padding: 0; margin: 0; }
-.nav-item { padding: 12px 18px; font-size: 15px; font-weight: bold; color: var(--text-main); cursor: pointer; border-bottom: 3px solid transparent; }
+.nav-item { padding: 12px 18px; font-size: 15px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; }
 .nav-item.active { color: var(--accent-color); border-bottom: 3px solid var(--accent-color); }
+
+/* 차트 및 뉴스 컨테이너 */
 .main-wrapper { max-width: 1200px; margin: 0 auto; padding: 15px; }
-.search-area { display: flex; gap: 8px; margin-bottom: 15px; }
-input#stockInput { flex: 1; height: 42px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; background: var(--container-bg); color: var(--text-main); }
-button#searchBtn { height: 42px; padding: 0 25px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-#chart_container { width: 100%; height: 600px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background-color: var(--container-bg); }
+#chart_container { width: 100%; height: 600px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--container-bg); }
 
-.news-item { display: flex; gap: 15px; padding: 15px; border-bottom: 1px solid var(--border-color); text-decoration: none; color: inherit; }
-.news-thumbnail { width: 100px; height: 70px; border-radius: 6px; object-fit: cover; background-color: #eee; flex-shrink: 0; }
-.news-title { font-size: 15px; font-weight: bold; margin-bottom: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* 팝업 광고 (슬라이드) */
+#slidePopup { position: fixed; top: -100%; left: 0; width: 100%; background: var(--container-bg); z-index: 9999; transition: top 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+#slidePopup.active { top: 0; }
+.ad-content { padding: 20px; text-align: center; position: relative; }
+.close-bar { padding: 10px 15px; background: var(--nav-hover); display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
 
-/* 푸터 및 하단 광고 */
-.fixed-bottom-area { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 900; background-color: var(--container-bg); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-.bottom-ad-banner { width: 100%; text-align: center; padding: 2px 0; border-bottom: 1px solid var(--border-color); position: relative; }
-.close-ad-btn { position: absolute; top: 2px; right: 8px; background: rgba(0,0,0,0.5); color: #fff; width: 20px; height: 20px; border-radius: 50%; font-size: 14px; line-height: 18px; text-align: center; cursor: pointer; z-index: 1001; }
-.bottom-ad-banner img { max-width: 100%; height: auto; max-height: 80px; }
-.fixed-footer { padding: 4px 0; text-align: center; display: flex; justify-content: center; align-items: center; gap: 15px; }
-.footer-content { font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+/* 하단 배너 (쿠팡) 최적화 */
+.fixed-bottom-area { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 900; background: var(--container-bg); border-top: 1px solid var(--border-color); }
+.bottom-ad-banner { width: 100%; max-height: 80px; display: flex; justify-content: center; position: relative; }
+.bottom-ad-banner img { width: 100%; max-width: 1200px; height: auto; max-height: 80px; object-fit: contain; }
+.close-ad-btn { position: absolute; top: -15px; right: 10px; width: 30px; height: 30px; background: #333; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #fff; }
 
-/* 모바일 최적화 */
+/* 모바일 대응 */
 @media (max-width: 767px) {
-    .independent-ticker { height: 54px; }
-    .independent-ticker > div { transform: scale(0.70); transform-origin: center; min-width: 143%; }
     #chart_container { height: 450px; }
     .nav-item { padding: 12px 10px; font-size: 13px; }
-    .footer-content { flex-direction: row; gap: 8px; }
-    body { padding-bottom: 160px; }
+    .bottom-ad-banner { max-height: 55px; }
+    .bottom-ad-banner img { max-height: 55px; }
+    body { padding-bottom: 140px; }
 }
-#toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.8); color: #fff; padding: 12px 24px; border-radius: 30px; z-index: 10000; display: none; }
