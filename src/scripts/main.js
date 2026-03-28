@@ -35,11 +35,19 @@ async function getNewsData() {
     }
 
     try {
-        const url = `https://gnews.io/api/v4/top-headlines?category=business&lang=ko&country=kr&max=50&apikey=${API_KEY}`;
-        const response = await fetch(url);
+        const targetUrl = `https://gnews.io/api/v4/top-headlines?category=business&lang=ko&country=kr&max=50&apikey=${API_KEY}`;
+        // CORS 프록시를 경유하여 호출
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        
+        const response = await fetch(proxyUrl);
         if (!response.ok) throw new Error("API 호출 실패");
         
-        const data = await response.json();
+        const result = await response.json();
+        // allorigins는 원본 데이터를 contents 필드에 문자열로 담아 보냅니다.
+        const data = JSON.parse(result.contents); 
+        
+        if (!data.articles) throw new Error("데이터 형식이 올바르지 않습니다.");
+
         let oldNews = cachedNews ? JSON.parse(cachedNews) : [];
         const combined = [...data.articles, ...oldNews];
         const uniqueNews = Array.from(new Map(combined.map(item => [item.url, item])).values());
