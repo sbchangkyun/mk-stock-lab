@@ -1,0 +1,10 @@
+---
+/* src/components/ChartArea.astro */
+---
+<main class="main-wrapper">
+    <div class="search-area" id="search_wrapper">
+        <input type="text" id="stockInput" placeholder="미국 종목명 또는 티커(AAPL) 입력" onkeypress="if(event.keyCode==13) changeChart()">
+        <button id="searchBtn" onclick="changeChart()">조회</button>
+    </div>
+    <div id="chart_container"></div>
+</main>

@@ -1,0 +1,25 @@
+---
+/* src/layouts/Layout.astro */
+const { title } = Astro.props;
+import '../styles/style.css'; // 이따가 만들 스타일 파일입니다.
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{title}</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="theme-color" content="#1A237E">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8654345483667820" crossorigin="anonymous"></script>
+</head>
+<body>
+    <slot />
+
+    <script src="../scripts/main.js"></script>
+</body>
+</html>

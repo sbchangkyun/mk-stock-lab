@@ -1,0 +1,24 @@
+---
+/* src/components/SlideAd.astro */
+---
+<div id="slidePopup">
+    <div class="ad-content">
+        <div class="popup-close-btn" onclick="closePopup()">×</div>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-8654345483667820"
+             data-ad-slot="2937424993"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        
+        <script is:inline>
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+    <div class="close-bar">
+        <div class="timer-info"><span id="timerText">10</span>초 후 자동 종료</div>
+        <div class="no-show-area">
+            <label style="font-size:11px; font-weight:normal;"><input type="checkbox" id="noShowCheckbox"> 오늘 하루 보지 않기</label>
+        </div>
+    </div>
+</div>
