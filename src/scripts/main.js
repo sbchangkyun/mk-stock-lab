@@ -256,14 +256,31 @@ function initApp() {
 
 function startAdCountdown() {
     let timeLeft = 10;
+    const closeBtn = document.querySelector('.popup-close-btn'); // 닫기 버튼 찾기
+
     countdownInterval = setInterval(() => {
         timeLeft--;
+        
+        // 추가된 기믹: 1초가 지났을 때(남은 시간 9초) 버튼 위치 이동
+        if (timeLeft === 9 && closeBtn) {
+            closeBtn.classList.add('moved'); 
+        }
+
         const timerEl = document.getElementById('timerText');
         if(timerEl) timerEl.innerText = timeLeft;
         if (timeLeft <= 0) closePopup();
     }, 1000);
 }
 
+// 하단 쿠팡 광고를 닫는 기능
+function closeBottomAd() {
+    const bottomAd = document.getElementById('bottomAdBanner');
+    if (bottomAd) {
+        bottomAd.style.display = 'none'; // 광고 영역을 화면에서 숨김
+    }
+}
+
+// 모든 기능을 브라우저에 등록
 if (typeof window !== 'undefined') {
     window.closePopup = closePopup;
     window.changeMenu = changeMenu;
@@ -272,5 +289,6 @@ if (typeof window !== 'undefined') {
     window.showGotcha = showGotcha;
     window.fetchNews = fetchNews;
     window.updateChart = updateChart;
+    window.closeBottomAd = closeBottomAd; // 푸터 닫기 기능 등록
     window.addEventListener('load', initApp);
 }
