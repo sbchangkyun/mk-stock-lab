@@ -66,7 +66,7 @@ async function getTICryptoNews() {
 
         // ✅ Fix 1: codetabs → corsproxy.io 변경
         // ✅ Fix 2: API 키를 쿼리 파라미터가 아닌 헤더로 전달
-        const response = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`, {
+        const response = await fetch(`/api/crypto/news/list`, {
             headers: {
                 'TI_API_KEY': TI_API_KEY
             }
@@ -99,7 +99,7 @@ console.log("TI 응답 구조 확인:", JSON.stringify(json).slice(0, 300)); // 
 
         console.warn("TokenInsight API returned empty or invalid data:", json);
         return [];
-        
+
     } catch (e) {
         console.error("Crypto News Fetch Error:", e);
         return [];
