@@ -152,6 +152,47 @@ function renderNewsList(newsArray, page, menuType) {
     renderPagination(newsArray.length, menuType);
 }
 
+// [추가] 뉴스 페이지네이션 렌더러
+function renderPagination(totalItems, menuType) {
+    const container = document.getElementById('chart_container');
+    // 데이터가 1페이지 분량(10개) 이하이면 페이징을 표시하지 않음
+    if (!container || totalItems <= ITEMS_PER_PAGE) return;
+
+    const totalPages = Math.min(Math.ceil(totalItems / ITEMS_PER_PAGE), MAX_PAGES);
+    const nav = document.createElement('div');
+    nav.className = 'pagination';
+    // [수정] flex-wrap: wrap 추가하여 버튼이 잘리지 않고 다음 줄로 넘어가게 함
+    nav.style.cssText = `
+        display: flex; 
+        justify-content: center; 
+        flex-wrap: wrap; 
+        gap: 8px; 
+        margin: 20px 0; 
+        padding: 0 10px 40px 10px;
+    `;
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        btn.style.cssText = `
+            padding: 6px 12px; 
+            border: 1px solid #ddd; 
+            background: ${currentPage === i ? '#304FFE' : '#fff'}; 
+            color: ${currentPage === i ? '#fff' : '#333'}; 
+            cursor: pointer; 
+            border-radius: 4px;
+            font-size: 13px;
+        `;
+        btn.onclick = () => {
+            if (menuType === '경제 뉴스') fetchNews(i);
+            else if (menuType === '크립토 뉴스') renderCryptoPage(i);
+            container.scrollTo(0, 0); // 페이지 이동 시 상단으로 스크롤
+        };
+        nav.appendChild(btn);
+    }
+    container.appendChild(nav);
+}
+
 // [삭제되었던 코드 복구] 경제 뉴스 실행부
 async function fetchNews(page = 1) {
     currentPage = page;
