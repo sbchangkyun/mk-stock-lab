@@ -118,48 +118,8 @@ button#searchBtn { height: 42px; padding: 0 25px; background-color: var(--accent
     .pagination-nav { gap: 4px; padding: 15px 5px; }
     .pagination-nav button { min-width: 28px; height: 28px; font-size: 11px; }
 }
-#toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.8); color: #fff; padding: 12px 24px; border-radius: 30px; z-index: 10000; display: none; }
-
-/* 크립토 대시보드 레이아웃 */
-.crypto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-.crypto-card { background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; }
-.crypto-card h3 { font-size: 16px; margin-bottom: 12px; color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-.crypto-list-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-color); font-size: 13px; }
-.price-up { color: #ff4d4d; font-weight: bold; }
-.price-down { color: #4d79ff; font-weight: bold; }
-.global-status-bar { background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; text-align: center; }
-
-@media (max-width: 767px) { .crypto-grid { grid-template-columns: 1fr; } }
-
-/* 크립토 대시보드 시각화 스타일 */
-.crypto-hero-area { display: flex; gap: 15px; margin-bottom: 20px; }
-.stat-card { flex: 1; background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; text-align: center; }
-.stat-label { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; display: block; }
-.stat-value { font-size: 24px; font-weight: 800; color: var(--accent-color); }
-
-.dominance-container { margin-top: 10px; width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; }
-.dominance-bar { height: 100%; background: linear-gradient(90deg, #f7931a, #ffab40); transition: width 1s ease-out; }
-
-/* 크립토 대시보드 고도화 디자인 */
-.crypto-hero-area { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-.stat-card { flex: 1; min-width: 200px; background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; text-align: center; }
-
-/* 탐욕지수 게이지 스타일 */
-.fng-gauge-container { 
-    position: relative; height: 10px; background: #eee; 
-    border-radius: 5px; margin-top: 10px; overflow: hidden; 
+#toast {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8); color: #fff; padding: 12px 24px;
+    border-radius: 30px; z-index: 10000; display: none;
 }
-.fng-gauge-bar { 
-    height: 100%; transition: width 1s ease; /* 부드럽게 차오르는 애니메이션 */
-}
-.fng-label { 
-    font-size: 11px; font-weight: bold; margin-top: 5px; display: block; 
-}
-
-/* 크립토 뉴스 스타일 */
-.crypto-news-list { list-style: none; padding: 0; margin: 0; }
-.crypto-news-item { padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; }
-.crypto-news-item:last-child { border-bottom: none; }
-.crypto-news-link { color: var(--text-color); text-decoration: none; display: flex; gap: 10px; align-items: center; }
-.crypto-news-link:hover { opacity: 0.8; }
-.news-tag { background: var(--accent-color); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }

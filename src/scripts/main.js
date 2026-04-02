@@ -8,7 +8,6 @@ const stockMap = {
 
 const TI_API_KEY = 'd213dca6ac0c40d791286caa227484d5'; // 크립토 키
 const API_KEY = 'cf7769de37440b7ec7e6a4d9030f4e6a';    // 뉴스 키
-const CRYPTO_FETCH_INTERVAL = 60 * 60 * 1000;         // 1시간 캐싱
 const FETCH_INTERVAL = 30 * 60 * 1000;                // 뉴스 30분 캐싱
 const CRYPTO_NEWS_INTERVAL = 30 * 60 * 1000;    // 30분 캐싱
 
@@ -19,197 +18,164 @@ let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 const MAX_PAGES = 10;
 const MAX_ITEMS = 100;
+let isNewsThrottled = false; // [추가] 쓰로틀링 상태 변수
 
 const sunIconPath = `<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
 const moonIconPath = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>`;
 
-// 2. 뉴스 데이터 로직
+// [수정] 경제 뉴스 데이터 가져오기 (프록시 변경 및 날짜 형식 유지)
 async function getNewsData() {
     const now = Date.now();
     const lastFetch = parseInt(localStorage.getItem('mk_news_last_fetch') || '0');
     const cachedNews = localStorage.getItem('mk_news_cache');
+    
     if (Math.floor(now / FETCH_INTERVAL) === Math.floor(lastFetch / FETCH_INTERVAL) && cachedNews) {
         return JSON.parse(cachedNews);
     }
+    
     try {
         const targetUrl = `https://gnews.io/api/v4/top-headlines?category=business&lang=ko&country=kr&max=50&apikey=${API_KEY}`;
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-        const result = await response.json();
-        const data = JSON.parse(result.contents); 
-        let oldNews = cachedNews ? JSON.parse(cachedNews) : [];
-        const combined = [...(data.articles || []), ...oldNews];
-        const uniqueNews = Array.from(new Map(combined.map(item => [item.url, item])).values());
-        const finalNews = uniqueNews.slice(0, MAX_ITEMS);
+        // 프록시 서버를 codetabs로 교체하여 CORS 문제 해결
+        const response = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`);
+        const data = await response.json();
+        
+        const finalNews = (data.articles || []).slice(0, MAX_ITEMS);
         localStorage.setItem('mk_news_cache', JSON.stringify(finalNews));
         localStorage.setItem('mk_news_last_fetch', now.toString());
         return finalNews;
-    } catch (e) { return cachedNews ? JSON.parse(cachedNews) : []; }
-}
-
-async function getCryptoData() {
-    const now = Date.now();
-    const lastFetch = parseInt(localStorage.getItem('mk_crypto_last_fetch') || '0');
-    const cachedData = localStorage.getItem('mk_crypto_cache');
-
-    if (now - lastFetch < CRYPTO_FETCH_INTERVAL && cachedData) {
-        return JSON.parse(cachedData);
-    }
-
-    try {
-        // CoinGecko는 인증 없이 CORS 직접 지원 → 프록시 불필요
-        const response = await fetch('https://api.coingecko.com/api/v3/global');
-        
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const json = await response.json();
-        const raw = json.data;
-
-        // 기존 코드와 호환되도록 필드명 맞추기
-        const data = {
-            total_market_cap: raw.total_market_cap.usd,
-            btc_dominance: raw.market_cap_percentage.btc,
-        };
-
-        localStorage.setItem('mk_crypto_cache', JSON.stringify(data));
-        localStorage.setItem('mk_crypto_last_fetch', now.toString());
-        return data;
-
-    } catch (e) {
-        console.error("Crypto Fetch Error:", e);
-        return cachedData ? JSON.parse(cachedData) : null;
+    } catch (e) { 
+        console.error("News Fetch Error:", e);
+        return cachedNews ? JSON.parse(cachedNews) : []; 
     }
 }
 
-// 탐욕 지수 가져오기
-async function getFearAndGreed() {
-    const now = Date.now();
-    const lastFetch = parseInt(localStorage.getItem('fng_last_fetch') || '0');
-    const cached = localStorage.getItem('fng_cache');
-
-    if (now - lastFetch < CRYPTO_FETCH_INTERVAL && cached) return JSON.parse(cached);
-
-    try {
-        const res = await fetch('https://api.alternative.me/fng/');
-        const json = await res.json();
-        const data = json.data[0];
-        localStorage.setItem('fng_cache', JSON.stringify(data));
-        localStorage.setItem('fng_last_fetch', now.toString());
-        return data;
-    } catch (e) { return cached ? JSON.parse(cached) : { value: "50", value_classification: "Neutral" }; }
-}
-
-// [수정] TokenInsight 글로벌 뉴스 가져오기 (CryptoCompare 제거 및 TokenInsight 전용)
 async function getTICryptoNews() {
     const now = Date.now();
     const lastFetch = parseInt(localStorage.getItem('mk_crypto_news_last_fetch') || '0');
     const cachedData = localStorage.getItem('mk_crypto_news_cache');
-    if (now - lastFetch < CRYPTO_NEWS_INTERVAL && cachedData) return JSON.parse(cachedData);
+    
+    if (now - lastFetch < CRYPTO_NEWS_INTERVAL && cachedData) {
+        try {
+            const parsed = JSON.parse(cachedData);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch(e) { localStorage.removeItem('mk_crypto_news_cache'); }
+    }
+    
     try {
-        const targetUrl = `https://api.tokeninsight.com/api/v1/news/list?TI_API_KEY=${TI_API_KEY}`;
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-        const result = await response.json();
-        const json = JSON.parse(result.contents);
-        if (json && json.data && json.data.list) {
-            const articles = json.data.list.slice(0, 10).map(item => ({ 
+        const targetUrl = `https://api.tokeninsight.com/api/v1/news/list`;
+
+        // ✅ Fix 1: codetabs → corsproxy.io 변경
+        // ✅ Fix 2: API 키를 쿼리 파라미터가 아닌 헤더로 전달
+        const response = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`, {
+            headers: {
+                'TI_API_KEY': TI_API_KEY
+            }
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const json = await response.json();
+
+        // data가 배열인 경우 / data.list가 배열인 경우 둘 다 처리
+        const rawList = Array.isArray(json.data) 
+            ? json.data 
+            : (json.data?.list || json.data?.items || json.data?.data || []);
+
+console.log("TI 응답 구조 확인:", JSON.stringify(json).slice(0, 300)); // 디버그용
+
+        if (rawList.length > 0) {
+            const articles = rawList.map(item => ({ 
                 title: item.title, 
-                url: `https://tokeninsight.com/en/news/${item.id}` 
+                url: item.url || item.link || `https://tokeninsight.com/en/news/${item.id}`,
+                source: { name: item.source_url || item.source || "TokenInsight" },
+                publishedAt: new Date(item.timestamp || item.published_at || Date.now()).toISOString(),
+                image: item.image_url || item.image || null
             }));
+    
             localStorage.setItem('mk_crypto_news_cache', JSON.stringify(articles));
             localStorage.setItem('mk_crypto_news_last_fetch', now.toString());
             return articles;
         }
-        return cachedData ? JSON.parse(cachedData) : [];
-    } catch (e) { return cachedData ? JSON.parse(cachedData) : []; }
+
+        console.warn("TokenInsight API returned empty or invalid data:", json);
+        return [];
+        
+    } catch (e) {
+        console.error("Crypto News Fetch Error:", e);
+        return [];
+    }
 }
 
-// 4. 화면 그리기 기능들
+// [수정] 공통 뉴스 리스트 렌더러 - 빈 화면 방지 로직 추가
+function renderNewsList(newsArray, page, menuType) {
+    const container = document.getElementById('chart_container');
+    if (!container) return;
+    
+    // 1. 기존 내용을 비웁니다.
+    container.innerHTML = ""; 
+
+    // 2. 데이터가 없거나 비어있는 경우 처리 (중요!)
+    if (!newsArray || newsArray.length === 0) {
+        container.innerHTML = `
+            <div style="padding:100px 20px; text-align:center; color:#888;">
+                <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
+                <div style="font-size: 16px; font-weight: bold;">불러온 ${menuType}가 없습니다.</div>
+                <div style="font-size: 14px; margin-top: 5px;">잠시 후 다시 시도해 주세요.</div>
+                <button id="refresh-news-btn" onclick="handleRefresh()" style="margin-top:20px; padding:8px 16px; background:#304FFE; color:white; border:none; border-radius:4px; cursor:pointer;">새로고침</button>
+            </div>`;
+        return;
+    }
+
+    // 3. 데이터가 있을 경우 뉴스 리스트 생성
+    const pagedNews = newsArray.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    
+    pagedNews.forEach(article => {
+        const dateObj = new Date(article.publishedAt);
+        const dateStr = isNaN(dateObj.getTime()) ? "" : 
+            `${dateObj.getFullYear()}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${String(dateObj.getDate()).padStart(2,'0')}. ${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+
+        const item = document.createElement('a');
+        item.className = 'news-item';
+        item.href = article.url; 
+        item.target = "_blank";
+        item.innerHTML = `
+            <img src="${article.image || '/logo.svg'}" class="news-thumbnail" onerror="this.src='/logo.svg'">
+            <div class="news-info">
+                <div class="news-title">${article.title}</div>
+                <div class="news-meta" style="font-size:12px; color:#888; margin-top:5px;">
+                    <span>${article.source ? article.source.name : '뉴스'}</span> | <span>${dateStr}</span>
+                </div>
+            </div>`;
+        container.appendChild(item);
+    });
+    
+    renderPagination(newsArray.length, menuType);
+}
+
+// [삭제되었던 코드 복구] 경제 뉴스 실행부
 async function fetchNews(page = 1) {
     currentPage = page;
     const container = document.getElementById('chart_container');
-    if (!container) return;
-    container.innerHTML = '<div style="padding:20px; text-align:center;">뉴스를 불러오는 중...</div>';
+    if (!container || currentMenu !== '경제 뉴스') return;
+
+    // 로딩 메시지 표시
+    container.innerHTML = '<div style="padding:20px; text-align:center;">경제 뉴스를 불러오는 중...</div>';
+    
+    // 데이터 가져오기
     const allNews = await getNewsData();
-    if (currentMenu !== '뉴스') return;
-    container.innerHTML = ""; 
-    const pagedNews = allNews.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-    pagedNews.forEach(article => {
-        const item = document.createElement('a');
-        item.className = 'news-item';
-        item.href = article.url; item.target = "_blank";
-        item.innerHTML = `<img src="${article.image || '/logo.svg'}" class="news-thumbnail" onerror="this.src='/logo.svg'"><div class="news-info"><div class="news-title">${article.title}</div><div class="news-source">${article.source ? article.source.name : '뉴스'}</div></div>`;
-        container.appendChild(item);
-    });
-    renderPagination(allNews.length);
-}
-
-function renderPagination(totalItems) {
-    const container = document.getElementById('chart_container');
-    const nav = document.createElement('div');
-    nav.className = 'pagination-nav';
-    for (let i = 1; i <= Math.min(Math.ceil(totalItems / ITEMS_PER_PAGE), MAX_PAGES); i++) {
-        const btn = document.createElement('button');
-        btn.innerText = i;
-        if (i === currentPage) btn.classList.add('active');
-        btn.onclick = () => { container.scrollTop = 0; fetchNews(i); };
-        nav.appendChild(btn);
-    }
-    container.appendChild(nav);
-}
-
-// [수정] UI 그리기 함수 (ratings 매개변수 제거 및 레이아웃 조정)
-function drawCryptoUI(crypto, fng, news) {
-    const container = document.getElementById('chart_container');
-    if (!container || currentMenu !== '크립토') return;
-    const marketCap = crypto ? (crypto.total_market_cap / 1e12).toFixed(2) : '--';
-    const dominance = crypto ? crypto.btc_dominance.toFixed(1) : '--';
-    const fngValue = parseInt(fng?.value || 50);
-    const fngColor = fngValue > 70 ? '#4caf50' : fngValue < 30 ? '#f44336' : '#ff9800';
-    container.innerHTML = `
-        <div style="padding:20px; overflow-y:auto; height:100%;">
-            <div class="crypto-hero-area">
-                <div class="stat-card"><span class="stat-label">글로벌 시총</span><span class="stat-value">$${marketCap}T</span></div>
-                <div class="stat-card">
-                    <span class="stat-label">비트코인 점유율</span><span class="stat-value">${dominance}%</span>
-                    <div class="dominance-container"><div class="dominance-bar" style="width:${dominance}%"></div></div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">공포 & 탐욕 지수</span><span class="stat-value" style="color:${fngColor}">${fngValue}</span>
-                    <div class="fng-gauge-container"><div class="fng-gauge-bar" style="width:${fngValue}%; background:${fngColor}"></div></div>
-                    <span class="fng-label">${fng?.value_classification || 'Neutral'}</span>
-                </div>
-            </div>
-            <div class="crypto-grid" style="display: block;">
-                <div class="crypto-card">
-                    <h3>글로벌 크립토 뉴스 (30m)</h3>
-                    <div class="crypto-news-list">
-                        ${(news || []).slice(0, 10).map(n => `<div class="crypto-news-item"><a href="${n.url}" target="_blank" class="crypto-news-link"><span class="news-tag">LIVE</span><span>${n.title}</span></a></div>`).join('')}
-                    </div>
-                </div>
-            </div>
-        </div>`;
-}
-
-// [수정] 메인 실행 함수 (ratings 호출 제거)
-async function renderCryptoPage() {
-    const container = document.getElementById('chart_container');
-    if (!container) return;
-
-    const cachedCrypto = JSON.parse(localStorage.getItem('mk_crypto_cache'));
-    const cachedFng = JSON.parse(localStorage.getItem('fng_cache'));
-    const cachedNews = JSON.parse(localStorage.getItem('mk_crypto_news_cache'));
-
-    if (cachedCrypto || cachedFng || cachedNews) {
-        drawCryptoUI(cachedCrypto, cachedFng, cachedNews);
-    } else {
-        container.innerHTML = '<div style="padding:50px; text-align:center;">데이터를 분석 중입니다...</div>';
-    }
     
-    // ratings를 제외하고 3개만 호출
-    const [crypto, fng, news] = await Promise.all([
-        getCryptoData(), getFearAndGreed(), getTICryptoNews()
-    ]);
-    
-    drawCryptoUI(crypto, fng, news);
+    // 공통 리스트 렌더러로 화면 그리기
+    renderNewsList(allNews, page, '경제 뉴스');
+}
+
+// [수정] 크립토 뉴스 실행부 (기존 drawCryptoUI 사용 안 함)
+async function renderCryptoPage(page = 1) {
+    currentPage = page;
+    const container = document.getElementById('chart_container');
+    if (!container || currentMenu !== '크립토 뉴스') return;
+    container.innerHTML = '<div style="padding:20px; text-align:center;">크립토 뉴스를 불러오는 중...</div>';
+    const news = await getTICryptoNews();
+    renderNewsList(news, page, '크립토 뉴스');
 }
 
 // 5. 유틸리티
@@ -217,13 +183,32 @@ function changeMenu(element, menuName) {
     currentMenu = menuName;
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     element.classList.add('active');
+    
     const sw = document.getElementById('search_wrapper');
     const cc = document.getElementById('chart_container');
-    if(cc) { cc.innerHTML = ""; cc.style.overflowY = (menuName === '뉴스' || menuName === '크립토') ? 'auto' : 'hidden'; }
-    if(menuName === '차트') { if(sw) sw.style.display = 'flex'; updateChart(currentSymbol); }
-    else if(menuName === '뉴스') { if(sw) sw.style.display = 'none'; fetchNews(1); }
-    else if(menuName === '크립토') { if(sw) sw.style.display = 'none'; renderCryptoPage(); }
-    else { if(sw) sw.style.display = 'none'; cc.innerHTML = `<div style="padding:100px; text-align:center;">[${menuName}] 준비 중</div>`; }
+    
+    if(cc) { 
+        cc.innerHTML = ""; 
+        // '경제 뉴스' 또는 '크립토 뉴스'일 때 스크롤 허용
+        cc.style.overflowY = (menuName === '경제 뉴스' || menuName === '크립토 뉴스') ? 'auto' : 'hidden'; 
+    }
+    
+    if(menuName === '차트') { 
+        if(sw) sw.style.display = 'flex'; 
+        updateChart(currentSymbol); 
+    }
+    else if(menuName === '경제 뉴스') { // 명칭 변경
+        if(sw) sw.style.display = 'none'; 
+        fetchNews(1); 
+    }
+    else if(menuName === '크립토 뉴스') { // 명칭 변경
+        if(sw) sw.style.display = 'none'; 
+        renderCryptoPage(1);
+    }
+    else { 
+        if(sw) sw.style.display = 'none'; 
+        cc.innerHTML = `<div style="padding:100px; text-align:center;">[${menuName}] 준비 중</div>`; 
+    }
 }
 
 function updateChart(symbol, theme) {
@@ -332,6 +317,44 @@ function showGotcha() {
     }
 }
 
+// [추가] 제자리 새로고침 및 쓰로틀링 함수
+async function handleRefresh() {
+    const btn = document.getElementById('refresh-news-btn');
+
+    // 1. 쿨타임 체크 (5초)
+    if (isNewsThrottled) {
+        alert("5초에 한 번만 새로고침할 수 있습니다.");
+        return;
+    }
+
+    // 2. 쿨타임 시작 및 버튼 UI 제어
+    isNewsThrottled = true;
+    if(btn) {
+        btn.disabled = true;
+        btn.innerText = "불러오는 중...";
+        btn.style.backgroundColor = "#888"; // 비활성화 느낌 주기
+    }
+
+    // 3. 현재 메뉴에 맞춰 데이터만 다시 호출
+    if (currentMenu === '경제 뉴스') {
+        localStorage.removeItem('mk_news_cache'); // 캐시 삭제 후 호출
+        await fetchNews(1);
+    } else if (currentMenu === '크립토 뉴스') {
+        localStorage.removeItem('mk_crypto_news_cache'); // 캐시 삭제 후 호출
+        await renderCryptoPage(1);
+    }
+
+    // 4. 5초 뒤에 다시 버튼 활성화
+    setTimeout(() => {
+        isNewsThrottled = false;
+        if(btn) {
+            btn.disabled = false;
+            btn.innerText = "새로고침";
+            btn.style.backgroundColor = "#304FFE";
+        }
+    }, 5000);
+}
+
 // 앱 초기화 실행
 if (typeof window !== 'undefined') {
     // [중요] 모든 기능을 브라우저 전역 객체에 등록합니다. 
@@ -344,7 +367,8 @@ if (typeof window !== 'undefined') {
         updateChart, 
         closeBottomAd, 
         renderCryptoPage, 
-        showGotcha 
+        showGotcha,
+        handleRefresh // [추가] 이 줄을 넣어주세요
     });
     window.addEventListener('load', initApp);
 }
