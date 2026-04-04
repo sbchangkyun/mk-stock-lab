@@ -61,7 +61,7 @@ body {
     width: 100%; 
     background: var(--container-bg); 
     border-bottom: 1.5px solid var(--border-color); 
-    height: 60px; /* 54px -> 64px로 변경 (글자 잘림 해결) */
+    height: 46px; /* 54px -> 64px로 변경 (글자 잘림 해결) */
     overflow: hidden; 
     position: relative;
     /* 중요: flex를 제거하고 block으로 설정하여 내부 위젯의 자동 너비를 보장합니다. */
@@ -122,4 +122,144 @@ button#searchBtn { height: 42px; padding: 0 25px; background-color: var(--accent
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.8); color: #fff; padding: 12px 24px;
     border-radius: 30px; z-index: 10000; display: none;
+}
+
+/* ============================================================
+   실시간 검색어 (워드 클라우드) 대시보드 스타일
+   ============================================================ */
+
+/* 클라우드 상단 정보바 */
+.cloud-header {
+    padding: 15px;
+    background: var(--nav-hover);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* [추가] 클라우드 배경보다 위로 올라오도록 설정 */
+    position: relative; 
+    z-index: 10;
+}
+
+.cloud-info-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* 모바일 대응: 요소가 많으면 줄바꿈 */
+}
+
+.cloud-title { 
+    font-size: 16px; 
+    font-weight: 800; 
+    color: var(--accent-color); 
+}
+
+.cloud-meta { 
+    font-size: 12px; 
+    color: var(--text-sub); 
+}
+
+.cloud-source-link { 
+    color: var(--accent-color); 
+    text-decoration: none; 
+    font-weight: bold; 
+    transition: opacity 0.2s;
+}
+
+.cloud-source-link:hover { opacity: 0.7; }
+
+/* 종목/ETF 전환 탭 */
+.cloud-tabs { 
+    display: flex; 
+    gap: 8px; 
+}
+
+.cloud-tab-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--container-bg);
+    color: var(--text-main);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cloud-tab-btn.active { 
+    background: var(--accent-color); 
+    color: #fff; 
+    border-color: var(--accent-color); 
+}
+
+/* [최종 보정] 실시간 검색어 대시보드 스타일 */
+#cloud-canvas-wrapper {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: 95%;
+    min-height: 400px; /* 모바일 가독성을 위해 높이 상향 */
+    display: flex; 
+    align-items: flex-start; 
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--container-bg);
+    padding-top: 5px; /* 상단 헤더와의 미세 간격 */
+}
+
+#word-cloud-canvas {
+    max-width: 85% !important; /* PC 기본값 */
+    max-height: 98% !important;
+    cursor: pointer;
+}
+
+/* 모바일 웹 최적화: 구름 크기 확대 및 상단 이동 */
+@media (max-width: 767px) {
+    /* 1. 상단 정보바(제목/탭) 여백을 줄여 공간 확보 */
+    .cloud-header {
+        padding: 8px 15px !important; 
+    }
+
+    /* 2. 구름 영역 전체를 위로 강제로 끌어올림 */
+    #cloud-canvas-wrapper {
+        margin-top: -30px !important; /* 수치가 커질수록 더 위로 올라갑니다 */
+        padding-top: 0 !important;
+    }
+
+    /* 3. 구름 너비 확장 */
+    #word-cloud-canvas {
+        max-width: 95% !important; 
+    }
+}
+
+/* 액션 메뉴 디자인 및 중앙 정렬 */
+.cloud-action-menu {
+    position: absolute;
+    background: var(--container-bg);
+    border: 1.5px solid var(--accent-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    z-index: 5000;
+    min-width: 160px;
+    overflow: hidden;
+}
+
+.cloud-action-item {
+    padding: 15px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.cloud-action-item:last-child { border-bottom: none; }
+.cloud-action-item:hover { background: var(--nav-hover); color: var(--accent-color); }
+
+@keyframes cloudFadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }

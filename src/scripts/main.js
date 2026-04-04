@@ -34,12 +34,12 @@ async function getNewsData() {
     }
     
     try {
-        const targetUrl = `https://gnews.io/api/v4/top-headlines?category=business&lang=ko&country=kr&max=50&apikey=${API_KEY}`;
-        // 프록시 서버를 codetabs로 교체하여 CORS 문제 해결
-        const response = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`);
+        // ✅ max 파라미터를 100으로 변경하여 10페이지 분량 확보
+        const apiUrl = 'https://finance.naver.com/api/sise/etfItemList.nhn';
+        const json = await fetchJsonWithProxy(apiUrl);
         const data = await response.json();
         
-        const finalNews = (data.articles || []).slice(0, MAX_ITEMS);
+        const finalNews = (data.articles || []).slice(0, MAX_ITEMS); // MAX_ITEMS = 100
         localStorage.setItem('mk_news_cache', JSON.stringify(finalNews));
         localStorage.setItem('mk_news_last_fetch', now.toString());
         return finalNews;
@@ -199,14 +199,16 @@ async function fetchNews(page = 1) {
     const container = document.getElementById('chart_container');
     if (!container || currentMenu !== '경제 뉴스') return;
 
-    // 로딩 메시지 표시
+    // 로딩 처리
     container.innerHTML = '<div style="padding:20px; text-align:center;">경제 뉴스를 불러오는 중...</div>';
     
-    // 데이터 가져오기
     const allNews = await getNewsData();
     
-    // 공통 리스트 렌더러로 화면 그리기
+    // ✅ 공통 리스트 렌더러 호출 (페이지 번호와 메뉴타입 전달)
     renderNewsList(allNews, page, '경제 뉴스');
+    
+    // 페이지 최상단으로 스크롤
+    container.scrollTo(0, 0);
 }
 
 // [수정] 크립토 뉴스 실행부 (기존 drawCryptoUI 사용 안 함)
@@ -245,6 +247,10 @@ function changeMenu(element, menuName) {
     else if(menuName === '크립토 뉴스') { // 명칭 변경
         if(sw) sw.style.display = 'none'; 
         renderCryptoPage(1);
+    }
+    else if(menuName === '실시간검색어') {
+        if(sw) sw.style.display = 'none'; 
+        renderWordCloud(); 
     }
     else { 
         if(sw) sw.style.display = 'none'; 
@@ -396,6 +402,208 @@ async function handleRefresh() {
     }, 5000);
 }
 
+/* [신규] 1시간 주기(매시 10분) 갱신 체크 로직 */
+function shouldRefreshCloud(lastTime) {
+    if (!lastTime) return true;
+    const now = new Date();
+    const last = new Date(parseInt(lastTime));
+    
+    // 현재 시간 기준의 '최근 10분 분기점' 계산 (예: 20:10, 21:10 등)
+    let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 10, 0);
+    if (now.getMinutes() < 10) target.setHours(target.getHours() - 1);
+    
+    return last.getTime() < target.getTime();
+}
+
+// ETF JSON API 전용 헬퍼 (.json() 파싱)
+async function fetchJsonWithProxy(targetUrl) {
+    const proxies = [
+        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+    ];
+    for (const makeUrl of proxies) {
+        try {
+            const res = await fetch(makeUrl(targetUrl));
+            if (!res.ok) continue;
+            const text = await res.text();
+            return JSON.parse(text); // 문자열을 안전하게 JSON으로 변환
+        } catch (e) {
+            console.warn(`JSON 프록시 시도 실패...`);
+        }
+    }
+    throw new Error('모든 프록시 호출에 실패했습니다.');
+}
+
+// 인기종목 HTML 전용 헬퍼 (EUC-KR 디코딩)
+async function fetchHtmlWithProxy(targetUrl) {
+    const proxies = [
+        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    ];
+    for (const makeUrl of proxies) {
+        try {
+            const res = await fetch(makeUrl(targetUrl));
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const buffer = await res.arrayBuffer();
+            const html = new TextDecoder('euc-kr').decode(buffer);
+            if (html.length > 500) return html;
+        } catch (e) {
+            console.warn(`HTML 프록시 실패, 다음으로 시도:`, e.message);
+        }
+    }
+    throw new Error('모든 HTML 프록시 실패');
+}
+
+async function getCloudData(type = 'stock') {
+    const cacheKey = `mk_cloud_${type}_cache`;
+    const timeKey  = `mk_cloud_${type}_last`;
+    const cached   = localStorage.getItem(cacheKey);
+    const last     = localStorage.getItem(timeKey);
+
+    if (!shouldRefreshCloud(last) && cached) return JSON.parse(cached);
+
+    try {
+        let data = [];
+
+        if (type === 'etf') {
+            // 네이버 ETF API 호출
+            const response = await fetchJsonWithProxy('https://finance.naver.com/api/sise/etfItemList.nhn');
+            // 네이버 API 특유의 경로(result -> etfItemList)를 찾아 들어감
+            const list = response?.result?.etfItemList || response?.etfItemList || [];
+
+            if (list.length === 0) throw new Error('ETF 데이터를 찾을 수 없습니다.');
+
+            data = list
+                .filter(item => item.itemname) // 이름이 있는 것만 필터링
+                .sort((a, b) => (b.accTrvol || 0) - (a.accTrvol || 0))
+                .slice(0, 30)
+                .map((item, i) => {
+                    // ✅ 확실하게 [이름, 숫자, 코드] 형태를 유지하도록 명시
+                    return [
+                        String(item.itemname), 
+                        parseInt(40 - i), 
+                        String(item.itemcode || '')
+                    ];
+                });
+
+        } else {
+            // 인기종목은 JSON API 없음 → HTML 파싱 유지
+            const html = await fetchHtmlWithProxy('https://finance.naver.com/sise/lastsearch2.naver');
+            const doc  = new DOMParser().parseFromString(html, 'text/html');
+            const els  = doc.querySelectorAll('a.tltle');
+
+            data = Array.from(els).slice(0, 30).map((el, i) => {
+                const name      = el.textContent.trim();
+                const href      = el.getAttribute('href') || '';
+                const codeMatch = href.match(/code=(\d+)/);
+                const code      = codeMatch ? codeMatch[1] : '';
+                return [name, 40 - i, code];
+            }).filter(item => item[0] !== '');
+
+            if (data.length === 0) throw new Error('인기종목 데이터 없음');
+        }
+
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        localStorage.setItem(timeKey,  Date.now().toString());
+        console.log(`[${type}] 클라우드 데이터 로드 성공: ${data.length}개`);
+        return data;
+
+    } catch (e) {
+        console.error(`${type} 로드 실패:`, e);
+        return cached ? JSON.parse(cached) : [];
+    }
+}
+
+let currentCloudType = 'stock'; // [추가] 탭 전환 시 데이터 섞임 방지용
+
+/* [수정] 클라우드 렌더링 (PC/모바일 레이아웃 최적화) */
+async function renderWordCloud(type = 'stock') {
+    currentCloudType = type; // 현재 요청 타입 저장
+    const container = document.getElementById('chart_container');
+    if (!container) return;
+
+    const now = new Date();
+    container.innerHTML = `
+        <div class="cloud-header">
+            <div class="cloud-info-top">
+                <span class="cloud-title">📊 ${type === 'stock' ? '실시간 인기종목' : '국내 인기 ETF'} TOP 30</span>
+                <span class="cloud-meta">🕒 ${now.getHours()}시 10분 기준 업데이트</span>
+            </div>
+            <div class="cloud-info-top">
+                <div class="cloud-tabs">
+                    <button class="cloud-tab-btn ${type === 'stock' ? 'active' : ''}" onclick="renderWordCloud('stock')">인기 종목</button>
+                    <button class="cloud-tab-btn ${type === 'etf' ? 'active' : ''}" onclick="renderWordCloud('etf')">인기 ETF</button>
+                </div>
+                <span class="cloud-meta">출처: <a href="https://finance.naver.com/sise/" target="_blank" class="cloud-source-link">네이버 금융 ↗</a></span>
+            </div>
+        </div>
+        <div id="cloud-canvas-wrapper"><canvas id="word-cloud-canvas"></canvas></div>
+    `;
+
+    const data = await getCloudData(type);
+    
+    // 데이터 수신 후 탭이 바뀌었다면 무시 (인기종목-ETF 섞임 방지)
+    if (currentCloudType !== type) return;
+
+    const canvas = document.getElementById('word-cloud-canvas');
+    const wrapper = document.getElementById('cloud-canvas-wrapper');
+
+    if (data.length > 0 && typeof WordCloud !== 'undefined') {
+        // 캔버스 크기를 래퍼 크기에 강제로 맞춤 (지연 로딩 대비)
+        const isMobile = window.innerWidth < 768;
+        // 해상도 조절: wrapper 크기에 맞춤
+        canvas.width = wrapper.offsetWidth;
+        canvas.height = wrapper.offsetHeight;
+
+/* [최종 보정] 밀도 및 간격 최적화 */
+        WordCloud(canvas, {
+            list: data,
+            // [수정] gridSize를 낮춰 종목 간격을 촘촘하게 (레퍼런스 스타일)
+            gridSize: isMobile ? 8 : 16, 
+            // [수정] weightFactor를 높여 글씨를 더 큼직하게 배치
+            weightFactor: (size) => (size * (canvas.width / 1024)) * (isMobile ? 2.5 : 1.7),
+            fontFamily: 'Pretendard, sans-serif',
+            color: () => document.body.classList.contains('dark-mode') ? 
+                ['#8C9EFF', '#B2FF59', '#80D8FF'][Math.floor(Math.random()*3)] : 
+                ['#1A237E', '#2E7D32', '#C62828'][Math.floor(Math.random()*3)],
+            rotateRatio: 0,
+            backgroundColor: 'transparent',
+            drawOutOfBound: false,
+            // [추가] 배치 모양을 타원형으로 설정하여 더 균형 있게 배치
+            shape: 'elliptic',
+            click: (item, dim, event) => showActionMenu(item, event.pageX, event.pageY)
+        });
+    }
+}
+
+/* [수정] 팝업 메뉴 명칭 및 네이버 파이낸셜 랜딩 */
+function showActionMenu(item, x, y) {
+    const [name, weight, code] = item;
+    document.querySelector('.cloud-action-menu')?.remove();
+    
+    const menu = document.createElement('div');
+    menu.className = 'cloud-action-menu';
+    
+    // 화면 끝부분 클릭 시 팝업 위치 보정
+    const posX = x + 160 > window.innerWidth ? x - 160 : x;
+    const posY = y + 120 > window.innerHeight ? y - 120 : y;
+    
+    menu.style.left = `${posX}px`; 
+    menu.style.top = `${posY}px`;
+
+    menu.innerHTML = `
+        <div class="cloud-action-item" onclick="window.open('https://search.naver.com/search.naver?query=${encodeURIComponent(name)}', '_blank')">검색결과</div>
+        <div class="cloud-action-item" onclick="window.open('https://finance.naver.com/item/main.naver?code=${code}', '_blank')">차트 이동</div>
+    `;
+    
+    document.body.appendChild(menu);
+    // 다른 영역 클릭 시 닫기
+    setTimeout(() => {
+        window.onclick = () => { menu.remove(); window.onclick = null; };
+    }, 100);
+}
+
 // 앱 초기화 실행
 if (typeof window !== 'undefined') {
     // [중요] 모든 기능을 브라우저 전역 객체에 등록합니다. 
@@ -409,7 +617,8 @@ if (typeof window !== 'undefined') {
         closeBottomAd, 
         renderCryptoPage, 
         showGotcha,
-        handleRefresh // [추가] 이 줄을 넣어주세요
+        handleRefresh,
+        renderWordCloud,
     });
     window.addEventListener('load', initApp);
 }
