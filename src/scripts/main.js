@@ -29,17 +29,19 @@ async function getNewsData() {
     const lastFetch = parseInt(localStorage.getItem('mk_news_last_fetch') || '0');
     const cachedNews = localStorage.getItem('mk_news_cache');
     
+    // 캐싱 로직 (30분 이내면 캐시 반환)
     if (Math.floor(now / FETCH_INTERVAL) === Math.floor(lastFetch / FETCH_INTERVAL) && cachedNews) {
         return JSON.parse(cachedNews);
     }
     
     try {
-        // ✅ max 파라미터를 100으로 변경하여 10페이지 분량 확보
-        const apiUrl = 'https://finance.naver.com/api/sise/etfItemList.nhn';
-        const json = await fetchJsonWithProxy(apiUrl);
-        const data = await response.json();
+        // ✅ 뉴스 API 주소로 수정 (기존 ETF 주소에서 변경)
+        const apiUrl = `https://newsapi.org/v2/top-headlines?country=kr&category=business&pageSize=100&apiKey=${API_KEY}`;
         
-        const finalNews = (data.articles || []).slice(0, MAX_ITEMS); // MAX_ITEMS = 100
+        // ✅ fetchJsonWithProxy 결과인 json을 바로 사용 (response.json() 중복 호출 제거)
+        const json = await fetchJsonWithProxy(apiUrl);
+        
+        const finalNews = (json.articles || []).slice(0, MAX_ITEMS); 
         localStorage.setItem('mk_news_cache', JSON.stringify(finalNews));
         localStorage.setItem('mk_news_last_fetch', now.toString());
         return finalNews;
@@ -62,27 +64,18 @@ async function getTICryptoNews() {
     }
     
     try {
+        // 1. 외부 API 주소 설정
         const targetUrl = `https://api.tokeninsight.com/api/v1/news/list`;
 
-        // ✅ Fix 1: codetabs → corsproxy.io 변경
-        // ✅ Fix 2: API 키를 쿼리 파라미터가 아닌 헤더로 전달
-        const response = await fetch(`/api/crypto/news/list`, {
-            headers: {
-                'TI_API_KEY': TI_API_KEY
-            }
-        });
+        // 2. 프록시를 통해 데이터 가져오기
+        const jsonResult = await fetchJsonWithProxy(targetUrl);
+
+        // 3. 데이터 구조 파싱 (중복 선언 해결)
+        const rawList = Array.isArray(jsonResult.data)
+            ? jsonResult.data
+            : (jsonResult.data?.list || jsonResult.data?.items || jsonResult.data?.data || []);
+        console.log("TI 응답 구조 확인:", JSON.stringify(jsonResult).slice(0, 300));
         
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const json = await response.json();
-
-        // data가 배열인 경우 / data.list가 배열인 경우 둘 다 처리
-        const rawList = Array.isArray(json.data) 
-            ? json.data 
-            : (json.data?.list || json.data?.items || json.data?.data || []);
-
-console.log("TI 응답 구조 확인:", JSON.stringify(json).slice(0, 300)); // 디버그용
-
         if (rawList.length > 0) {
             const articles = rawList.map(item => ({ 
                 title: item.title, 
@@ -118,10 +111,10 @@ function renderNewsList(newsArray, page, menuType) {
     if (!newsArray || newsArray.length === 0) {
         container.innerHTML = `
             <div style="padding:100px 20px; text-align:center; color:#888;">
-                <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
-                <div style="font-size: 16px; font-weight: bold;">불러온 ${menuType}가 없습니다.</div>
-                <div style="font-size: 14px; margin-top: 5px;">잠시 후 다시 시도해 주세요.</div>
-                <button id="refresh-news-btn" onclick="handleRefresh()" style="margin-top:20px; padding:8px 16px; background:#304FFE; color:white; border:none; border-radius:4px; cursor:pointer;">새로고침</button>
+                <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                <div style="font-size: 16px; font-weight: bold; color: #333;">뉴스를 불러오지 못했습니다.</div>
+                <div style="font-size: 13px; margin-top: 5px;">프록시 서버 응답 지연 또는 API 할당량 초과일 수 있습니다.</div>
+                <button onclick="handleRefresh()" style="margin-top:20px; padding:10px 20px; background:#304FFE; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">뉴스 다시 불러오기</button>
             </div>`;
         return;
     }
@@ -155,10 +148,12 @@ function renderNewsList(newsArray, page, menuType) {
 // [추가] 뉴스 페이지네이션 렌더러
 function renderPagination(totalItems, menuType) {
     const container = document.getElementById('chart_container');
-    // 데이터가 1페이지 분량(10개) 이하이면 페이징을 표시하지 않음
-    if (!container || totalItems <= ITEMS_PER_PAGE) return;
+    if (!container || totalItems === 0) return;
 
     const totalPages = Math.min(Math.ceil(totalItems / ITEMS_PER_PAGE), MAX_PAGES);
+    // ✅ 데이터가 적어도 페이지 번호 1은 보이게 하려면 totalItems < 1 조건으로 변경 가능
+    if (totalPages <= 1) return;
+
     const nav = document.createElement('div');
     nav.className = 'pagination';
     // [수정] flex-wrap: wrap 추가하여 버튼이 잘리지 않고 다음 줄로 넘어가게 함
@@ -419,19 +414,34 @@ function shouldRefreshCloud(lastTime) {
 async function fetchJsonWithProxy(targetUrl) {
     const proxies = [
         url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
     ];
+
     for (const makeUrl of proxies) {
         try {
             const res = await fetch(makeUrl(targetUrl));
             if (!res.ok) continue;
-            const text = await res.text();
-            return JSON.parse(text); // 문자열을 안전하게 JSON으로 변환
+
+            // 핵심: 텍스트로 받지 않고 '바이너리(덩어리)'로 받습니다.
+            const buffer = await res.arrayBuffer();
+
+            // 2. 네이버 전용 해석기(EUC-KR)를 준비합니다.
+            const decoder = new TextDecoder('euc-kr');
+            let text = decoder.decode(buffer);
+
+            // 3. 만약 해석된 글자가 이상하면(프록시가 이미 UTF-8로 바꿨다면) 재해석합니다.
+            if (text.includes('')) {
+                text = new TextDecoder('utf-8').decode(buffer);
+            }
+
+            // 4. JSON 파싱 전, 불필요한 공백이나 제어문자 제거
+            return JSON.parse(text.trim());
+
         } catch (e) {
-            console.warn(`JSON 프록시 시도 실패...`);
+            console.warn(`프록시 재시도 중...`);
         }
     }
-    throw new Error('모든 프록시 호출에 실패했습니다.');
+    throw new Error('데이터 수신 실패');
 }
 
 // 인기종목 HTML 전용 헬퍼 (EUC-KR 디코딩)
@@ -479,12 +489,10 @@ async function getCloudData(type = 'stock') {
                 .sort((a, b) => (b.accTrvol || 0) - (a.accTrvol || 0))
                 .slice(0, 30)
                 .map((item, i) => {
-                    // ✅ 확실하게 [이름, 숫자, 코드] 형태를 유지하도록 명시
-                    return [
-                        String(item.itemname), 
-                        parseInt(40 - i), 
-                        String(item.itemcode || '')
-                    ];
+                    // 한글, 영문, 숫자, 괄호 외의 깨진 특수문자는 모두 제거합니다.
+                    let name = String(item.itemname).replace(/[^\w\s가-힣ㄱ-ㅎㅏ-ㅣ()\[\]]/gi, '').trim();
+                    if(!name) name = "종목명 오류"; 
+                    return [name, 40 - i, String(item.itemcode || '')];
                 });
 
         } else {
@@ -527,7 +535,7 @@ async function renderWordCloud(type = 'stock') {
     container.innerHTML = `
         <div class="cloud-header">
             <div class="cloud-info-top">
-                <span class="cloud-title">📊 ${type === 'stock' ? '실시간 인기종목' : '국내 인기 ETF'} TOP 30</span>
+                <span class="cloud-title">📊 ${type === 'stock' ? '실시간 인기종목' : '국내 인기 ETF'} TOP 30</span><br>
                 <span class="cloud-meta">🕒 ${now.getHours()}시 10분 기준 업데이트</span>
             </div>
             <div class="cloud-info-top">
@@ -560,18 +568,21 @@ async function renderWordCloud(type = 'stock') {
         WordCloud(canvas, {
             list: data,
             // [수정] gridSize를 낮춰 종목 간격을 촘촘하게 (레퍼런스 스타일)
-            gridSize: isMobile ? 8 : 16, 
-            // [수정] weightFactor를 높여 글씨를 더 큼직하게 배치
-            weightFactor: (size) => (size * (canvas.width / 1024)) * (isMobile ? 2.5 : 1.7),
+            gridSize: isMobile ? 3 : 8, 
+            weightFactor: (size) => {
+                const base = canvas.width / (isMobile ? 350 : 850);
+                return size * base * (isMobile ? 1.6 : 1.1); // 모바일에서 글씨를 조금 더 크게
+            },
             fontFamily: 'Pretendard, sans-serif',
             color: () => document.body.classList.contains('dark-mode') ? 
                 ['#8C9EFF', '#B2FF59', '#80D8FF'][Math.floor(Math.random()*3)] : 
-                ['#1A237E', '#2E7D32', '#C62828'][Math.floor(Math.random()*3)],
+                ['#1A237E', '#7d907e', '#C62828'][Math.floor(Math.random()*3)],
             rotateRatio: 0,
             backgroundColor: 'transparent',
             drawOutOfBound: false,
             // [추가] 배치 모양을 타원형으로 설정하여 더 균형 있게 배치
-            shape: 'elliptic',
+            shrinkToFit: true,     // ✅ 캔버스에 맞춰 크기 자동 조절
+            shape: 'circle',       // 중앙 집중형 배치
             click: (item, dim, event) => showActionMenu(item, event.pageX, event.pageY)
         });
     }
@@ -582,9 +593,21 @@ function showActionMenu(item, x, y) {
     const [name, weight, code] = item;
     document.querySelector('.cloud-action-menu')?.remove();
     
+    // 1. 모바일 접속 여부 확인
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // 2. 환경에 따른 베이스 URL 설정
+    const searchBase = isMobile ? 'https://m.search.naver.com' : 'https://search.naver.com';
+    // 네이버 주식 모바일 주소는 m.stock.naver.com 을 사용합니다.
+    const stockBase  = isMobile ? 'https://m.stock.naver.com/domestic/stock' : 'https://finance.naver.com/item/main.naver';
+
+    // 3. 종목 상세 페이지 파라미터 구성 (모바일은 경로 방식, PC는 쿼리 방식)
+    const stockLink = isMobile ? `${stockBase}/${code}/total` : `${stockBase}?code=${code}`;
+    const searchLink = `${searchBase}/search.naver?query=${encodeURIComponent(name)}`;
+
     const menu = document.createElement('div');
     menu.className = 'cloud-action-menu';
-    
+
     // 화면 끝부분 클릭 시 팝업 위치 보정
     const posX = x + 160 > window.innerWidth ? x - 160 : x;
     const posY = y + 120 > window.innerHeight ? y - 120 : y;
@@ -593,8 +616,8 @@ function showActionMenu(item, x, y) {
     menu.style.top = `${posY}px`;
 
     menu.innerHTML = `
-        <div class="cloud-action-item" onclick="window.open('https://search.naver.com/search.naver?query=${encodeURIComponent(name)}', '_blank')">검색결과</div>
-        <div class="cloud-action-item" onclick="window.open('https://finance.naver.com/item/main.naver?code=${code}', '_blank')">차트 이동</div>
+        <div class="cloud-action-item" onclick="window.open('${searchLink}', '_blank')">검색결과</div>
+        <div class="cloud-action-item" onclick="window.open('${stockLink}', '_blank')">차트 이동</div>
     `;
     
     document.body.appendChild(menu);

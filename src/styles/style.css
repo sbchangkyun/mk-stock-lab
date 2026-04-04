@@ -60,8 +60,8 @@ body {
 .independent-ticker { 
     width: 100%; 
     background: var(--container-bg); 
-    border-bottom: 1.5px solid var(--border-color); 
-    height: 46px; /* 54px -> 64px로 변경 (글자 잘림 해결) */
+    border-bottom: 0.1px solid var(--border-color); 
+    height: 54px; /* 54px -> 64px로 변경 (글자 잘림 해결) */
     overflow: hidden; 
     position: relative;
     /* 중요: flex를 제거하고 block으로 설정하여 내부 위젯의 자동 너비를 보장합니다. */
@@ -71,7 +71,7 @@ body {
 .independent-ticker > div { 
     /* 0.8 배율로 줄였을 때 100% 화면을 채우기 위해 너비를 125%로 설정 */
     width: 125% !important; 
-    height: 55px; /* 내부 위젯이 넉넉히 그려질 높이 */
+    height: 54px; /* 내부 위젯이 넉넉히 그려질 높이 */
     transform: scale(0.8); 
     transform-origin: left top; /* 왼쪽 상단 기준 축소 */
     margin-right: -25%; 
