@@ -188,25 +188,48 @@ function renderPagination(totalItems, menuType) {
     container.appendChild(nav);
 }
 
-// [삭제되었던 코드 복구] 경제 뉴스 실행부
-async function fetchNews(page = 1) {
-    currentPage = page;
-    const container = document.getElementById('chart_container');
-    if (!container || currentMenu !== '경제 뉴스') return;
+// 5. 유틸리티 및 메뉴 제어 (중복 및 문법 오류 교정본)
+function changeMenu(element, menuName) {
+    currentMenu = menuName;
+    currentPage = 1; // 메뉴를 바꿀 때 무조건 1페이지로 초기화
 
-    // 로딩 처리
-    container.innerHTML = '<div style="padding:20px; text-align:center;">경제 뉴스를 불러오는 중...</div>';
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
     
-    const allNews = await getNewsData();
+    const sw = document.getElementById('search_wrapper');
+    const cc = document.getElementById('chart_container');
     
-    // ✅ 공통 리스트 렌더러 호출 (페이지 번호와 메뉴타입 전달)
-    renderNewsList(allNews, page, '경제 뉴스');
+    if(cc) { 
+        cc.innerHTML = ""; // 기존 뉴스 로딩 메시지나 내용을 즉시 삭제
+        cc.style.overflowY = menuName.includes('뉴스') ? 'auto' : 'hidden'; 
+    }
     
-    // 페이지 최상단으로 스크롤
-    container.scrollTo(0, 0);
+    if(menuName === '차트') { 
+        if(sw) sw.style.display = 'flex'; 
+        updateChart(currentSymbol); 
+    }
+    else if(menuName === '경제 뉴스') {
+        if(sw) sw.style.display = 'none'; 
+        fetchNews(1); 
+    }
+    else if(menuName === '크립토 뉴스') {
+        if(sw) sw.style.display = 'none'; 
+        renderCryptoPage(1);
+    }
+    else if(menuName === '실시간검색어') {
+        if(sw) sw.style.display = 'none';
+        // 뉴스 로딩 로직이 화면을 덮어쓰지 않도록 50ms 지연 후 실행
+        setTimeout(() => {
+            if(currentMenu === '실시간검색어') renderWordCloud();
+        }, 50);
+    } 
+    else { 
+        if(sw) sw.style.display = 'none';
+        cc.innerHTML = `<div style="padding:100px; text-align:center;">[${menuName}] 준비 중</div>`; 
+    }
 }
 
-// [수정] 크립토 뉴스 실행부 (기존 drawCryptoUI 사용 안 함)
+// [수정] 크립토 뉴스 실행부
 async function renderCryptoPage(page = 1) {
     currentPage = page;
     const container = document.getElementById('chart_container');
@@ -216,41 +239,16 @@ async function renderCryptoPage(page = 1) {
     renderNewsList(news, page, '크립토 뉴스');
 }
 
-// 5. 유틸리티
-function changeMenu(element, menuName) {
-    currentMenu = menuName;
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    element.classList.add('active');
-    
-    const sw = document.getElementById('search_wrapper');
+// [추가] 경제 뉴스 실행부
+async function fetchNews(page = 1) {
+    currentPage = page;
     const cc = document.getElementById('chart_container');
+    if (!cc || currentMenu !== '경제 뉴스') return;
     
-    if(cc) { 
-        cc.innerHTML = ""; 
-        // '경제 뉴스' 또는 '크립토 뉴스'일 때 스크롤 허용
-        cc.style.overflowY = (menuName === '경제 뉴스' || menuName === '크립토 뉴스') ? 'auto' : 'hidden'; 
-    }
+    cc.innerHTML = '<div style="padding:20px; text-align:center;">경제 뉴스를 불러오는 중...</div>';
     
-    if(menuName === '차트') { 
-        if(sw) sw.style.display = 'flex'; 
-        updateChart(currentSymbol); 
-    }
-    else if(menuName === '경제 뉴스') { // 명칭 변경
-        if(sw) sw.style.display = 'none'; 
-        fetchNews(1); 
-    }
-    else if(menuName === '크립토 뉴스') { // 명칭 변경
-        if(sw) sw.style.display = 'none'; 
-        renderCryptoPage(1);
-    }
-    else if(menuName === '실시간검색어') {
-        if(sw) sw.style.display = 'none'; 
-        renderWordCloud(); 
-    }
-    else { 
-        if(sw) sw.style.display = 'none'; 
-        cc.innerHTML = `<div style="padding:100px; text-align:center;">[${menuName}] 준비 중</div>`; 
-    }
+    const allNews = await getNewsData();
+    renderNewsList(allNews, page, '경제 뉴스');
 }
 
 function updateChart(symbol, theme) {
@@ -425,17 +423,16 @@ async function fetchJsonWithProxy(targetUrl) {
             // 핵심: 텍스트로 받지 않고 '바이너리(덩어리)'로 받습니다.
             const buffer = await res.arrayBuffer();
 
-            // 2. 네이버 전용 해석기(EUC-KR)를 준비합니다.
-            const decoder = new TextDecoder('euc-kr');
-            let text = decoder.decode(buffer);
+            // 2. 기본적으로 utf-8로 시도하되, 데이터에 따라 유연하게 대응
+            let text = new TextDecoder('utf-8').decode(buffer);
 
-            // 3. 만약 해석된 글자가 이상하면(프록시가 이미 UTF-8로 바꿨다면) 재해석합니다.
-            if (text.includes('')) {
-                text = new TextDecoder('utf-8').decode(buffer);
-            }
-
-            // 4. JSON 파싱 전, 불필요한 공백이나 제어문자 제거
-            return JSON.parse(text.trim());
+           // 만약 JSON 파싱에 실패하거나 글자가 깨진다면 EUC-KR 시도 로직 추가 권장
+           try {
+               return JSON.parse(text);
+           } catch(e) {
+               text = new TextDecoder('euc-kr').decode(buffer);
+               return JSON.parse(text);
+}
 
         } catch (e) {
             console.warn(`프록시 재시도 중...`);
