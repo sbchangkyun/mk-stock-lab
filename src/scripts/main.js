@@ -6,8 +6,9 @@ const stockMap = {
     "애플": "NASDAQ:AAPL", "테슬라": "NASDAQ:TSLA", "엔비디아": "NASDAQ:NVDA" 
 };
 
-const TI_API_KEY = '5a12d5e7de7949b0841c584499f69f75'; // 크립토 키
-const API_KEY = 'cf7769de37440b7ec7e6a4d9030f4e6a';    // 뉴스 키
+const TI_API_KEY = import.meta.env.PUBLIC_TI_API_KEY; // 토큰인사이트
+const API_KEY = import.meta.env.PUBLIC_GNEWS_API_KEY; // G뉴스
+
 const FETCH_INTERVAL = 30 * 60 * 1000;                // 뉴스 30분 캐싱
 const CRYPTO_NEWS_INTERVAL = 30 * 60 * 1000;    // 30분 캐싱
 

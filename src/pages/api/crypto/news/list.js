@@ -1,7 +1,7 @@
 // src/pages/api/crypto/news/list.js - 진단용 버전
 
 export async function GET() {
-    const TI_API_KEY = '5a12d5e7de7949b0841c584499f69f75';
+    const TI_API_KEY = import.meta.env.PUBLIC_TI_API_KEY;
 
     try {
         const response = await fetch('https://api.tokeninsight.com/api/v1/news/list', {
