@@ -2,7 +2,7 @@
   "name": "MK Stock Lab",
   "short_name": "MK스탁",
   "description": "실시간 투자 및 경제 뉴스 분석 연구소",
-  "start_url": "index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f0f3fa",
   "theme_color": "#1A237E",
