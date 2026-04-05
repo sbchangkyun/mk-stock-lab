@@ -6,7 +6,7 @@ const stockMap = {
     "애플": "NASDAQ:AAPL", "테슬라": "NASDAQ:TSLA", "엔비디아": "NASDAQ:NVDA" 
 };
 
-const TI_API_KEY = 'd213dca6ac0c40d791286caa227484d5'; // 크립토 키
+const TI_API_KEY = '5a12d5e7de7949b0841c584499f69f75'; // 크립토 키
 const API_KEY = 'cf7769de37440b7ec7e6a4d9030f4e6a';    // 뉴스 키
 const FETCH_INTERVAL = 30 * 60 * 1000;                // 뉴스 30분 캐싱
 const CRYPTO_NEWS_INTERVAL = 30 * 60 * 1000;    // 30분 캐싱
@@ -35,16 +35,32 @@ async function getNewsData() {
     }
     
     try {
-        // ✅ 뉴스 API 주소로 수정 (기존 ETF 주소에서 변경)
-        const apiUrl = `https://newsapi.org/v2/top-headlines?country=kr&category=business&pageSize=100&apiKey=${API_KEY}`;
-        
-        // ✅ fetchJsonWithProxy 결과인 json을 바로 사용 (response.json() 중복 호출 제거)
-        const json = await fetchJsonWithProxy(apiUrl);
-        
-        const finalNews = (json.articles || []).slice(0, MAX_ITEMS); 
+        // ✅ GNews 무료플랜은 1회에 10개 제한 → 10페이지 × 10개 = 100개를 위해 순차 호출
+        const allArticles = [];
+
+        for (let page = 1; page <= 10; page++) {
+            const apiUrl = `https://gnews.io/api/v4/top-headlines?category=business&lang=ko&country=kr&max=10&page=${page}&apikey=${API_KEY}`;
+            
+            try {
+                const json = await fetchJsonWithProxy(apiUrl);
+                const articles = json.articles || [];
+                
+                if (articles.length === 0) break; // 더 이상 기사가 없으면 중단
+                
+                allArticles.push(...articles);
+                console.log(`경제 뉴스 ${page}페이지 로드: ${articles.length}개 (누적 ${allArticles.length}개)`);
+
+            } catch (e) {
+                console.warn(`경제 뉴스 ${page}페이지 로드 실패, 중단`);
+                break;
+            }
+        }
+
+        const finalNews = allArticles.slice(0, MAX_ITEMS);
         localStorage.setItem('mk_news_cache', JSON.stringify(finalNews));
         localStorage.setItem('mk_news_last_fetch', now.toString());
         return finalNews;
+
     } catch (e) { 
         console.error("News Fetch Error:", e);
         return cachedNews ? JSON.parse(cachedNews) : []; 
@@ -65,16 +81,21 @@ async function getTICryptoNews() {
     
     try {
         // 1. 외부 API 주소 설정
-        const targetUrl = `https://api.tokeninsight.com/api/v1/news/list`;
+        const response = await fetch(`/api/crypto/news/list`, {
+            headers: {
+                'TI_API_KEY': TI_API_KEY   // ← 언더스코어(_) 주의!
+            }
+        });
 
-        // 2. 프록시를 통해 데이터 가져오기
-        const jsonResult = await fetchJsonWithProxy(targetUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        // 3. 데이터 구조 파싱 (중복 선언 해결)
-        const rawList = Array.isArray(jsonResult.data)
-            ? jsonResult.data
-            : (jsonResult.data?.list || jsonResult.data?.items || jsonResult.data?.data || []);
-        console.log("TI 응답 구조 확인:", JSON.stringify(jsonResult).slice(0, 300));
+        const json = await response.json();   // ← 변수명도 json으로 복원
+
+        // 2. 데이터 구조 파싱
+        const rawList = Array.isArray(json.data)
+            ? json.data
+            : (json.data?.list || json.data?.items || json.data?.data || []);
+        console.log("TI 응답 구조 확인:", JSON.stringify(json).slice(0, 300));
         
         if (rawList.length > 0) {
             const articles = rawList.map(item => ({ 
@@ -89,7 +110,6 @@ async function getTICryptoNews() {
             localStorage.setItem('mk_crypto_news_last_fetch', now.toString());
             return articles;
         }
-
         console.warn("TokenInsight API returned empty or invalid data:", json);
         return [];
 
@@ -152,7 +172,7 @@ function renderPagination(totalItems, menuType) {
 
     const totalPages = Math.min(Math.ceil(totalItems / ITEMS_PER_PAGE), MAX_PAGES);
     // ✅ 데이터가 적어도 페이지 번호 1은 보이게 하려면 totalItems < 1 조건으로 변경 가능
-    if (totalPages <= 1) return;
+    if (totalPages < 1) return;
 
     const nav = document.createElement('div');
     nav.className = 'pagination';
@@ -409,31 +429,28 @@ function shouldRefreshCloud(lastTime) {
 }
 
 // ETF JSON API 전용 헬퍼 (.json() 파싱)
-async function fetchJsonWithProxy(targetUrl) {
+async function fetchJsonWithProxy(targetUrl, customHeaders = {}) {
     const proxies = [
+        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
         url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
         url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
     ];
 
     for (const makeUrl of proxies) {
         try {
-            const res = await fetch(makeUrl(targetUrl));
+            const res = await fetch(makeUrl(targetUrl), {
+                headers: customHeaders  // ✅ 헤더 전달
+            });
             if (!res.ok) continue;
 
-            // 핵심: 텍스트로 받지 않고 '바이너리(덩어리)'로 받습니다.
             const buffer = await res.arrayBuffer();
-
-            // 2. 기본적으로 utf-8로 시도하되, 데이터에 따라 유연하게 대응
             let text = new TextDecoder('utf-8').decode(buffer);
-
-           // 만약 JSON 파싱에 실패하거나 글자가 깨진다면 EUC-KR 시도 로직 추가 권장
-           try {
-               return JSON.parse(text);
-           } catch(e) {
-               text = new TextDecoder('euc-kr').decode(buffer);
-               return JSON.parse(text);
-}
-
+            try {
+                return JSON.parse(text);
+            } catch(e) {
+                text = new TextDecoder('euc-kr').decode(buffer);
+                return JSON.parse(text);
+            }
         } catch (e) {
             console.warn(`프록시 재시도 중...`);
         }
@@ -532,7 +549,7 @@ async function renderWordCloud(type = 'stock') {
     container.innerHTML = `
         <div class="cloud-header">
             <div class="cloud-info-top">
-                <span class="cloud-title">📊 ${type === 'stock' ? '실시간 인기종목' : '국내 인기 ETF'} TOP 30</span><br>
+                <span class="cloud-title">📊 ${type === 'stock' ? '실시간 인기종목' : '국내 인기 ETF'} TOP 30<br></span>
                 <span class="cloud-meta">🕒 ${now.getHours()}시 10분 기준 업데이트</span>
             </div>
             <div class="cloud-info-top">
