@@ -1,0 +1,152 @@
+---
+// src/components/Auth/AuthModal.astro
+import GoogleLogin from "./GoogleLogin.astro";
+---
+
+<div id="auth-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modal-title">로그인</h2>
+      <button id="close-modal" class="close-btn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <GoogleLogin />
+
+      <div class="divider">또는</div>
+
+      <div class="input-group hidden" id="nickname-group">
+        <label>닉네임</label>
+        <input type="text" placeholder="닉네임을 입력하세요" id="auth-nickname" />
+      </div>
+
+      <div class="input-group">
+        <label>이메일</label>
+        <input type="email" placeholder="이메일을 입력하세요" id="auth-email" />
+      </div>
+      
+      <div class="input-group">
+        <label>비밀번호</label>
+        <input type="password" placeholder="비밀번호를 입력하세요" id="auth-password" />
+      </div>
+
+      <button class="submit-btn" id="auth-submit">로그인</button>
+
+      <p class="footer-text" id="login-footer">
+        계정이 없으신가요? <a href="#" class="toggle-link">회원가입</a>
+      </p>
+      <p class="footer-text hidden" id="signup-footer">
+        이미 계정이 있으신가요? <a href="#" class="toggle-link">로그인</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* 디자인 (CSS) - 벤치마크 스타일 적용 */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .hidden { display: none; }
+  .modal-content {
+    background: white; width: 90%; max-width: 400px; padding: 24px; border-radius: 16px; position: relative;
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+  .divider { margin: 20px 0; text-align: center; color: #888; font-size: 14px; position: relative; }
+  .input-group { margin-bottom: 15px; }
+  .input-group label { display: block; font-size: 14px; margin-bottom: 5px; font-weight: 600; }
+  .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+  .submit-btn {
+    width: 100%; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 8px;
+    font-weight: 600; cursor: pointer; margin-top: 10px;
+  }
+  .footer-text { text-align: center; margin-top: 20px; font-size: 14px; color: #666; }
+  .footer-text a { color: #3b82f6; text-decoration: none; font-weight: 600; }
+</style>
+
+<script>
+  import { supabase } from "../../lib/supabase";
+
+  // 1. 필요한 요소들 가져오기
+  const modalTitle = document.getElementById('modal-title');
+  const nicknameGroup = document.getElementById('nickname-group');
+  const authBtn = document.getElementById('auth-submit');
+  const toggleLink = document.getElementById('toggle-auth');
+  
+  let isSignUpMode = false;
+
+  // 2. [모드 전환] 로그인 <-> 회원가입 스위치 로직
+  const loginFooter = document.getElementById('login-footer');
+  const signupFooter = document.getElementById('signup-footer');
+  const toggleLinks = document.querySelectorAll('.toggle-link');
+
+  // 모드를 강제로 변경하는 함수 (초기화용)
+  const setAuthMode = (signUp: boolean) => {
+    isSignUpMode = signUp;
+
+      if (isSignUpMode) {
+        modalTitle!.innerText = "회원가입";
+        nicknameGroup!.classList.remove('hidden');
+        authBtn!.innerText = "회원가입 하기";
+        
+        // 문구 교체 (로그인 문구 숨기고, 회원가입용 문구 보여주기)
+        loginFooter!.classList.add('hidden');
+        signupFooter!.classList.remove('hidden');
+      } else {
+        modalTitle!.innerText = "로그인";
+        nicknameGroup!.classList.add('hidden');
+        authBtn!.innerText = "로그인";
+        
+        // 문구 교체 (회원가입 문구 숨기고, 로그인용 문구 보여주기)
+        signupFooter!.classList.add('hidden');
+        loginFooter!.classList.remove('hidden');
+      }
+    };
+
+    toggleLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        // setAuthMode 함수를 호출하여 화면(제목, 버튼, 입력칸)을 실제로 바꿔줍니다.
+        setAuthMode(!isSignUpMode);
+      });
+    });
+
+  // 3. [데이터 처리] 버튼 클릭 시 회원가입 또는 로그인 실행
+  authBtn?.addEventListener('click', async () => {
+    const email = (document.getElementById('auth-email') as HTMLInputElement).value;
+    const password = (document.getElementById('auth-password') as HTMLInputElement).value;
+    const nickname = (document.getElementById('auth-nickname') as HTMLInputElement).value;
+
+    if (isSignUpMode) {
+      // 닉네임 입력 여부 확인 추가
+      if (!nickname.trim()) {
+        alert("닉네임을 입력해 주세요.");
+        return;
+      }
+      // 회원가입 로직
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { display_name: nickname } 
+        }
+      });
+
+      if (error) alert("회원가입 실패: " + error.message);
+      else alert("가입 확인 이메일을 보냈습니다! 이메일을 꼭 확인해 주세요.");
+    } else {
+      // 로그인 로직
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) alert("로그인 실패: " + error.message);
+      else {
+        alert("로그인 성공!");
+        location.reload();
+      }
+    }
+  });
+
+  // 페이지 로드 시 기본적으로 로그인 모드(false)로 설정
+setAuthMode(false);
+</script>

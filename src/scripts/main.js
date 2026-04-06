@@ -536,7 +536,7 @@ async function renderWordCloud(type = 'stock') {
             gridSize: isMobile ? 3 : 8, 
             weightFactor: (size) => {
                 const base = canvas.width / (isMobile ? 350 : 850);
-                return size * base * (isMobile ? 1.6 : 1.1); // 모바일에서 글씨를 조금 더 크게
+                return size * base * (isMobile ? 1.1 : 1.1); // 모바일에서 글씨를 조금 더 크게
             },
             fontFamily: 'Pretendard, sans-serif',
             color: () => document.body.classList.contains('dark-mode') ? 

@@ -56,6 +56,36 @@ body {
 #themeToggle svg { width: 18px; height: 18px; fill: var(--text-main); }
 #loginBtn { padding: 0 18px; height: 32px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
+/* --- 로그인/로그아웃 버튼 최종 상태 관리 --- */
+
+/* 1. 처음에는 모든 버튼을 숨깁니다 (자바스크립트가 판단하기 전까지) */
+.header-actions .auth-btn {
+    display: none !important; 
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    height: 32px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+/* 2. 자바스크립트가 .hidden 클래스를 제거한 버튼만 화면에 보여줍니다 */
+.header-actions .auth-btn:not(.hidden) {
+    display: inline-flex !important;
+}
+
+/* 3. 각 버튼별 개별 색상 설정 */
+#open-login-btn { background-color: var(--accent-color) !important; }
+#logout-btn { background-color: var(--text-sub) !important; }
+
+/* 4. [보안책] hidden이 붙은 요소는 어떤 경우에도 숨깁니다 */
+.hidden { display: none !important; }
+
 /* [수정] 티커 벨트: 높이를 54px에서 64px로 늘려 잘림 방지 및 정렬 해제 */
 .independent-ticker { 
     width: 100%; 
@@ -227,7 +257,7 @@ button#searchBtn { height: 42px; padding: 0 25px; background-color: var(--accent
 
     /* 3. 구름 너비 확장 */
     #word-cloud-canvas {
-        max-width: 95% !important; 
+        max-width: 90% !important; 
     }
 }
 
