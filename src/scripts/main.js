@@ -85,10 +85,7 @@ async function getTICryptoNews() {
     
     try {
         // 1. 외부 API 주소 설정
-        const response = await fetch(`/api/crypto/news/list`, {
-            headers: {
-                'TI_API_KEY': TI_API_KEY   // ← 언더스코어(_) 주의!
-            }
+        const response = await fetch(`/api/list`, {
         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
