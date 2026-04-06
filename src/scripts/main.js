@@ -40,12 +40,15 @@ async function getNewsData() {
         const allArticles = [];
 
         for (let page = 1; page <= 10; page++) {
-            const apiUrl = `https://gnews.io/api/v4/top-headlines?category=business&lang=ko&country=kr&max=10&page=${page}&apikey=${API_KEY}`;
+            const apiUrl = `/api/news?page=${page}`; // 내부 API 경로로 변경
             
             try {
-                const json = await fetchJsonWithProxy(apiUrl);
-                const articles = json.articles || [];
+                const res = await fetch(apiUrl); // 일반 fetch 사용
+                const json = await res.json();
                 
+                // GNews API의 응답 데이터는 json.articles에 들어있습니다.
+                const articles = json.articles || [];
+
                 if (articles.length === 0) break; // 더 이상 기사가 없으면 중단
                 
                 allArticles.push(...articles);
@@ -429,57 +432,6 @@ function shouldRefreshCloud(lastTime) {
     return last.getTime() < target.getTime();
 }
 
-// ETF JSON API 전용 헬퍼 (.json() 파싱)
-async function fetchJsonWithProxy(targetUrl, customHeaders = {}) {
-    const proxies = [
-        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-    ];
-
-    for (const makeUrl of proxies) {
-        try {
-            const res = await fetch(makeUrl(targetUrl), {
-                headers: customHeaders  // ✅ 헤더 전달
-            });
-            if (!res.ok) continue;
-
-            const buffer = await res.arrayBuffer();
-            let text = new TextDecoder('utf-8').decode(buffer);
-            try {
-                return JSON.parse(text);
-            } catch(e) {
-                text = new TextDecoder('euc-kr').decode(buffer);
-                return JSON.parse(text);
-            }
-        } catch (e) {
-            console.warn(`프록시 재시도 중...`);
-        }
-    }
-    throw new Error('데이터 수신 실패');
-}
-
-// 인기종목 HTML 전용 헬퍼 (EUC-KR 디코딩)
-async function fetchHtmlWithProxy(targetUrl) {
-    const proxies = [
-        url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-    ];
-    for (const makeUrl of proxies) {
-        try {
-            const res = await fetch(makeUrl(targetUrl));
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const buffer = await res.arrayBuffer();
-            const html = new TextDecoder('euc-kr').decode(buffer);
-            if (html.length > 500) return html;
-        } catch (e) {
-            console.warn(`HTML 프록시 실패, 다음으로 시도:`, e.message);
-        }
-    }
-    throw new Error('모든 HTML 프록시 실패');
-}
-
 async function getCloudData(type = 'stock') {
     const cacheKey = `mk_cloud_${type}_cache`;
     const timeKey  = `mk_cloud_${type}_last`;
@@ -492,8 +444,8 @@ async function getCloudData(type = 'stock') {
         let data = [];
 
         if (type === 'etf') {
-            // 네이버 ETF API 호출
-            const response = await fetchJsonWithProxy('https://finance.naver.com/api/sise/etfItemList.nhn');
+            // ETF API 호출
+            const response = await (await fetch('/api/etf')).json();
             // 네이버 API 특유의 경로(result -> etfItemList)를 찾아 들어감
             const list = response?.result?.etfItemList || response?.etfItemList || [];
 
@@ -511,8 +463,9 @@ async function getCloudData(type = 'stock') {
                 });
 
         } else {
-            // 인기종목은 JSON API 없음 → HTML 파싱 유지
-            const html = await fetchHtmlWithProxy('https://finance.naver.com/sise/lastsearch2.naver');
+            // Stock API 호출 (서버에서 이미 EUC-KR 디코딩을 해서 보내줌)
+            const htmlResponse = await fetch('/api/stock');
+            const html = await htmlResponse.text();
             const doc  = new DOMParser().parseFromString(html, 'text/html');
             const els  = doc.querySelectorAll('a.tltle');
 
