@@ -9,8 +9,24 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from supabase import create_client
 
-load_dotenv()
-supabase = create_client(os.environ.get("PUBLIC_SUPABASE_URL"), os.environ.get("PUBLIC_SUPABASE_ANON_KEY"))
+# load_dotenv()
+# supabase = create_client(os.environ.get("PUBLIC_SUPABASE_URL"), os.environ.get("PUBLIC_SUPABASE_ANON_KEY"))
+
+# GitHub Actions의 env 환경변수를 우선적으로 가져옵니다.
+url = os.environ.get("PUBLIC_SUPABASE_URL")
+key = os.environ.get("PUBLIC_SUPABASE_ANON_KEY")
+
+# 만약 환경변수가 없다면(로컬 실행 시) .env 파일을 읽어옵니다.
+if not url or not key:
+    from dotenv import load_dotenv
+    load_dotenv()
+    url = os.environ.get("PUBLIC_SUPABASE_URL")
+    key = os.environ.get("PUBLIC_SUPABASE_ANON_KEY")
+
+if not url:
+    raise ValueError("PUBLIC_SUPABASE_URL이 설정되지 않았습니다.")
+
+supabase = create_client(url, key)
 
 def scrape_seibro():
     options = Options()
