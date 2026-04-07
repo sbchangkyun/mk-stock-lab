@@ -1,0 +1,88 @@
+---
+/* src/pages/seibro.astro */
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Nav from '../components/Nav.astro';
+import Ticker from '../components/Ticker.astro';
+import Footer from '../components/Footer.astro';
+
+// Seibro 컴포넌트 임포트
+import HotPick from '../components/Seibro/HotPick.astro';
+import SeibroChartArea from '../components/Seibro/SeibroChartArea.astro';
+import SeibroTop30 from '../components/Seibro/SeibroTop30.astro';
+import HoldingChart from '../components/Seibro/HoldingChart.astro';
+---
+
+<Layout title="서학개미 수급 분석 Lab - MK Stock Lab">
+    <Header />
+    <Ticker /> <Nav />
+    
+    <main class="seibro-page-wrapper">
+        <div class="seibro-container">
+            <div class="section-header">
+                <h2>🔥 서학개미 수급 분석</h2>
+                <p>한국인의 미국 주식 투자 트렌드</p>
+                <div class="data-meta" style="font-size: 11px; color: #888; margin-top: 5px;">
+                    <span id="base-date">기준일: 불러오는 중...</span> | 
+                    <span>출처: 예탁결제원(SEIBRO)</span>
+                </div>
+            </div>
+
+            <div class="analysis-top-grid">
+                <HotPick />
+                <HoldingChart />
+            </div>
+
+            <div class="analysis-main-chart">
+                <SeibroChartArea />
+            </div>
+
+            <div class="analysis-bottom-list">
+                <SeibroTop30 />
+            </div>
+        </div>
+    </main>
+
+    <Footer />
+</Layout>
+
+<script>
+    // API 호출 후 첫 번째 데이터의 날짜를 화면에 표시
+    async function updateMeta() {
+        const res = await fetch('/api/holdings');
+        const data = await res.json();
+        if(data.length > 0) {
+            const dateElement = document.getElementById('base-date');
+            if (dateElement) {
+                dateElement.innerText = `기준일: ${data[0].recorded_at}`;
+            }
+        }
+    }
+    updateMeta();
+</script>
+
+<style>
+    .seibro-page-wrapper {
+        padding-top: 20px;
+        min-height: 80vh;
+    }
+    .seibro-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .analysis-top-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .analysis-main-chart {
+        margin-bottom: 20px;
+    }
+    @media (max-width: 768px) {
+        .analysis-top-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

@@ -293,3 +293,132 @@ button#searchBtn { height: 42px; padding: 0 25px; background-color: var(--accent
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ============================================================
+   서학개미 수급 분석 (Seibro) 섹션 스타일
+   ============================================================ */
+
+/* 1. 섹션 전체 컨테이너 */
+.seibro-section {
+    max-width: 1200px;
+    margin: 40px auto; /* 위아래 여백 확보 */
+    padding: 30px 20px;
+    background-color: var(--container-bg); /* 테마 대응 배경색 */
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 2. 섹션 헤더 (제목 및 설명) */
+.seibro-section .section-header {
+    margin-bottom: 30px;
+    border-left: 6px solid var(--accent-color); /* 포인트 컬러 사용 */
+    padding-left: 15px;
+}
+
+.seibro-section .section-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 8px 0;
+    color: var(--text-main);
+}
+
+.seibro-section .section-header p {
+    font-size: 14px;
+    color: var(--text-sub);
+    margin: 0;
+}
+
+/* 3. 분석 그리드 (급증주 1 : 차트 2 비율) */
+.analysis-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr; /* 급증주는 고정폭, 차트는 나머지 전체 */
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+/* 4. 모바일 대응 (반응형) */
+@media (max-width: 1024px) {
+    .analysis-grid {
+        grid-template-columns: 1fr; /* 태블릿/모바일에서는 세로로 배치 */
+    }
+    
+    .seibro-section {
+        margin: 20px 10px;
+        padding: 20px 15px;
+    }
+}
+
+/* 5. 컴포넌트 내부 공통 카드 스타일 (HotPick, ChartArea 등에 적용 가능) */
+.seibro-card {
+    background: var(--nav-hover);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+/* 종목명 말줄임 및 모바일 최적화 */
+.truncate-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px; /* 모바일 기준 너비 */
+}
+
+@media (min-width: 768px) {
+    .truncate-text {
+        max-width: 280px; /* PC 기준 너비 */
+    }
+}
+
+/* 차트 컨테이너 높이 고정 (차트 사라짐 방지) */
+.seibro-card canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* ============================================================
+   서학개미 TOP 30 최종 최적화 (줄내림 금지 및 너비 재조정)
+   ============================================================ */
+
+/* 1. 테이블 헤더 줄내림 방지 및 스타일 */
+.seibro-table th {
+    white-space: nowrap !important; /* 💡 핵심: 카테고리명 줄바꿈 강제 금지 */
+    word-break: keep-all;
+    padding: 12px 8px;
+    font-size: 13px;
+    border-bottom: 2px solid var(--border-color);
+    background-color: var(--container-bg);
+}
+
+/* 2. 테이블 레이아웃 고정 및 컬럼 비율 최적화 */
+.seibro-table {
+    table-layout: fixed !important; 
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* 컬럼 너비: 종목명에 최대한의 공간을 할당 (합계 100%) */
+.seibro-table th:nth-child(1), .seibro-table td:nth-child(1) { width: 10%; text-align: center; } /* 순위 */
+.seibro-table th:nth-child(2), .seibro-table td:nth-child(2) { width: 60%; }                /* 종목명 (확장) */
+.seibro-table th:nth-child(3), .seibro-table td:nth-child(3) { width: 20%; text-align: right; } /* 보관금액 */
+.seibro-table th:nth-child(4), .seibro-table td:nth-child(4) { width: 10%; text-align: right; } /* 전일대비 */
+
+/* 3. 모바일(767px 이하) 전용 미세 조정 */
+@media (max-width: 767px) {
+    .seibro-table th {
+        font-size: 12px !important; /* 모바일에서 헤더 폰트를 살짝 줄여 여유 확보 */
+        padding: 10px 4px !important;
+    }
+    
+    .seibro-table td {
+        padding: 10px 4px !important;
+        font-size: 11px !important;
+    }
+
+    .truncate-text {
+        max-width: 170px !important; /* 종목명 노출 길이 최대화 */
+        font-size: 12px;
+    }
+}

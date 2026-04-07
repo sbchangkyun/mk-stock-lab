@@ -1,4 +1,9 @@
-/* src/scripts/main.js - MK Stock Lab 통합 최종 수정 버전 */
+// 0. 독립 페이지 분기 로직: 수급 분석 페이지라면 기존 메인 로직 실행을 방지합니다.
+if (window.location.pathname.includes('/seibro')) {
+    console.log("MK Stock Lab: 수급 분석 전용 페이지 모드");
+    // 전역 함수 등록은 필요하므로 초기화 로직만 건너뜁니다.
+    window.isSeibroPage = window.location.pathname.includes('/seibro');
+}
 
 // 1. 설정 (중복 없이 한 번만 선언)
 const stockMap = { 
@@ -237,11 +242,11 @@ function changeMenu(element, menuName) {
         if(sw) sw.style.display = 'none'; 
         renderCryptoPage(1);
     }
-    else if(menuName === '실시간검색어') {
+    else if(menuName === '실시간') {
         if(sw) sw.style.display = 'none';
         // 뉴스 로딩 로직이 화면을 덮어쓰지 않도록 50ms 지연 후 실행
         setTimeout(() => {
-            if(currentMenu === '실시간검색어') renderWordCloud();
+            if(currentMenu === '실시간') renderWordCloud();
         }, 50);
     } 
     else { 
@@ -335,13 +340,31 @@ function changeChart() {
 }
 
 function initApp() {
+    // 공통 기능: 테마 적용 및 티커 렌더링 (모든 페이지)
     applyTheme(localStorage.getItem('theme') || 'light');
-    const expire = localStorage.getItem('adPopupExpire');
-    if (!expire || new Date().getTime() > expire) {
-        setTimeout(() => { 
-            const p = document.getElementById('slidePopup');
-            if(p) { p.classList.add('active'); startAdCountdown(); }
-        }, 500);
+
+    // 홈 페이지 전용 기능
+    if (!window.isSeibroPage) {
+        // 1. 광고 팝업 로직
+        const expire = localStorage.getItem('adPopupExpire');
+        if (!expire || new Date().getTime() > expire) {
+            setTimeout(() => { 
+                const p = document.getElementById('slidePopup');
+                if(p) { p.classList.add('active'); startAdCountdown(); }
+            }, 500);
+        }
+
+        // 2. URL 파라미터를 읽어 해당 메뉴로 자동 전환
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetMenu = urlParams.get('menu');
+        if (targetMenu) {
+            const menuItems = document.querySelectorAll('.nav-menu .nav-item');
+            menuItems.forEach(item => {
+                if (item.textContent.trim() === targetMenu) {
+                    changeMenu(item, targetMenu);
+                }
+            });
+        }
     }
 }
 
@@ -608,5 +631,7 @@ if (typeof window !== 'undefined') {
         handleRefresh,
         renderWordCloud,
     });
-    window.addEventListener('load', initApp);
+
+// 모든 페이지에서 initApp을 실행하여 테마와 티커를 활성화합니다.
+window.addEventListener('load', initApp);
 }

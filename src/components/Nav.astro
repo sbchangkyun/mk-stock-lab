@@ -1,11 +1,38 @@
 ---
-/* src/components/Nav.astro */
+/* src/components/Nav.astro - 최적화 버전 */
 ---
 <nav class="nav-menu-wrapper">
     <ul class="nav-menu">
-        <li class="nav-item active" onclick="changeMenu(this, '차트')">차트</li>
-        <li class="nav-item" onclick="changeMenu(this, '경제 뉴스')">경제 뉴스</li>
-        <li class="nav-item" onclick="changeMenu(this, '크립토 뉴스')">크립토 뉴스</li>
-        <li class="nav-item" onclick="changeMenu(this, '실시간검색어')">실시간</li>
+        <li class="nav-item" onclick="handleNav(this, '차트', '/')">차트</li>
+        <li class="nav-item" onclick="handleNav(this, '경제 뉴스', '/')">경제 뉴스</li>
+        <li class="nav-item" onclick="handleNav(this, '크립토 뉴스', '/')">크립토 뉴스</li>
+        <li class="nav-item" onclick="handleNav(this, '실시간', '/')">실시간</li>
+        <li class="nav-item" id="nav-seibro" onclick="location.href='/seibro'">수급 분석</li>
+
+</ul>
+
+
     </ul>
 </nav>
+
+<script is:inline>
+    // 1. 경로에 따른 메뉴 이동 및 탭 전환 통합 함수
+    window.handleNav = function(element, menuName, targetPath) {
+        const isHomePage = window.location.pathname === '/' || window.location.pathname === '/index.html';
+        
+        if (isHomePage) {
+            // 홈 페이지라면 기존 SPA 방식대로 탭만 전환
+            if (window.changeMenu) window.changeMenu(element, menuName);
+        } else {
+            // 다른 페이지라면 쿼리 파라미터를 들고 홈으로 이동
+            window.location.href = `/?menu=${encodeURIComponent(menuName)}`;
+        }
+    };
+
+    // 2. 현재 페이지 표시 (Active 클래스 관리)
+    const pathname = window.location.pathname;
+    if (pathname.includes('seibro')) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-seibro')?.classList.add('active');
+    }
+</script>

@@ -1,0 +1,80 @@
+<div class="seibro-card top30-container">
+    <div class="card-header">
+        <h3>🇺🇸 서학개미 Pick TOP 30</h3>
+    </div>
+    <table class="seibro-table">
+        <thead>
+            <tr>
+                <th>순위</th>
+                <th>종목명</th>
+                <th>보관금액</th>
+                <th>전일대비</th>
+            </tr>
+        </thead>
+        <tbody id="top30-body">
+            <tr><td colspan="4" style="text-align:center; padding:40px;">데이터 분석 중...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .seibro-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .seibro-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color); font-size: 13px; }
+    .seibro-table td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+    .diff-cell.up { color: #f44336; font-weight: bold; }
+    .diff-cell.down { color: #2196f3; font-weight: bold; }
+</style>
+
+<script>
+    // 1. 데이터 구조 정의 (TypeScript 인터페이스)
+    interface SeibroHolding {
+        rank: number;
+        ticker: string;
+        stock_name: string;
+        holding_value: number;
+        recorded_at: string;
+        diff: number; // 전일 대비 차액
+    }
+
+    async function fetchTop30() {
+        const res = await fetch('/api/holdings');
+        
+        // 2. 응답 데이터를 SeibroHolding 배열 타입으로 지정
+        const data: SeibroHolding[] = await res.json();
+        const tbody = document.getElementById('top30-body');
+        if (!tbody || !data.length) return;
+
+        // 3. 'item' 매개변수에 명시적으로 타입을 지정합니다: (item: SeibroHolding)
+        tbody.innerHTML = data.slice(0, 30).map((item: SeibroHolding) => {
+            
+            const diff = item.diff || 0;
+            const diffClass = diff > 0 ? 'up' : (diff < 0 ? 'down' : '');
+            const diffSymbol = diff > 0 ? '▲' : (diff < 0 ? '▼' : '');
+            
+            // 금액 단위를 모바일에서 보기 좋게 $22.8B 형태로 변환하는 함수 (선택 사항)
+            const formattedValue = item.holding_value >= 1000000000 
+                ? (item.holding_value / 1000000000).toFixed(1) + 'B'
+                : item.holding_value.toLocaleString();
+
+            return `
+                <tr>
+                    <td>${item.rank}</td>
+                    <td onclick="alert('${item.stock_name.replace(/'/g, "\\'")}')" style="cursor:pointer;">
+                        <div class="truncate-text"
+                        title="${item.stock_name}"
+                        style="font-weight:bold;">
+                       ${item.stock_name}
+                    </div>
+                    
+                </td>
+                <td style="text-align:right;">$${formattedValue}</td>
+                <td class="diff-cell ${diffClass}" style="text-align:right;">
+                    ${diff !== 0 ? `${diffSymbol}` : '-'}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+    fetchTop30();
+</script>

@@ -1,0 +1,56 @@
+<div class="seibro-card" style="height: 450px; overflow: hidden;"> <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+        <h3>📈 보관금액 현황 (상위 10개)</h3>
+    </div>
+    <div style="height: 350px; width: 100%;"> <canvas id="correlationChart"></canvas>
+    </div>
+</div>
+
+<script>
+    import Chart from 'chart.js/auto';
+
+    interface SeibroData {
+        ticker: string;
+        stock_name: string; // 🌟 종목명 추가
+        holding_value: number;
+    }
+
+    async function initCorrelationChart() {
+        const res = await fetch('/api/holdings');
+        const data: SeibroData[] = await res.json();
+        const ctx = document.getElementById('correlationChart') as HTMLCanvasElement;
+        if (!ctx || !data.length) return;
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.slice(0, 10).map((d: SeibroData) => {
+                    const name = d.stock_name;
+                    return name.length > 12 ? name.substring(0, 12) + '...' : name;
+                }),
+
+                datasets: [{
+                    label: '보관금액 ($)',
+                    data: data.slice(0, 10).map((d: SeibroData) => d.holding_value),
+                    backgroundColor: 'rgba(48, 79, 254, 0.8)',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // 🌟 이 옵션이 없으면 무한 증식할 수 있습니다.
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                // 금액이 너무 크므로 'B'(Billion) 단위로 축약 표시
+                                return '$' + (Number(value) / 1000000000).toFixed(1) + 'B';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    initCorrelationChart();
+</script>

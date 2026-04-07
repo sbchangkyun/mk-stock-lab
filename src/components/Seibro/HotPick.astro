@@ -1,0 +1,29 @@
+<div class="seibro-card hot-pick-container">
+    <h3>🔥 자금 유입 급등주 (Top 10)</h3>
+    <div id="hot-pick-list"> <p class="loading">데이터 분석 중...</p>
+    </div>
+</div>
+
+<script>
+    async function renderHotPicks() {
+        const res = await fetch('/api/holdings');
+        const data = await res.json();
+        const container = document.getElementById('hot-pick-list');
+        if(!container || !data.length) return;
+
+        // 전일 대비(diff)가 가장 큰 상위 10개 추출
+        const hotPicks = [...data].sort((a, b) => (b.diff || 0) - (a.diff || 0)).slice(0, 10);
+
+        container.innerHTML = hotPicks.map(item => `
+            <div class="hot-item" style="display:flex; align-items:center; justify-content:space-between; gap:5px; padding:12px 0; border-bottom:1px solid var(--border-color);">
+                <span class="truncate-text" title="${item.stock_name}" style="flex-grow:1; font-weight:500;">
+                    ${item.stock_name}
+                </span>
+                <span style="color:#f44336; font-weight:bold; white-space:nowrap; min-width:60px; text-align:right;">
+                    ▲ $${(item.diff / 1000000).toFixed(1)}M
+                </span>
+            </div>
+        `).join('');
+    }
+    renderHotPicks();
+</script>
