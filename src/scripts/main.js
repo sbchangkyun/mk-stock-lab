@@ -1,8 +1,7 @@
 // 0. 독립 페이지 분기 로직: 수급 분석 페이지라면 기존 메인 로직 실행을 방지합니다.
-if (window.location.pathname.includes('/seibro')) {
+window.isSeibroPage = window.location.pathname.includes('/seibro');
+if (window.isSeibroPage) {
     console.log("MK Stock Lab: 수급 분석 전용 페이지 모드");
-    // 전역 함수 등록은 필요하므로 초기화 로직만 건너뜁니다.
-    window.isSeibroPage = window.location.pathname.includes('/seibro');
 }
 
 // 1. 설정 (중복 없이 한 번만 선언)
@@ -214,44 +213,67 @@ function renderPagination(totalItems, menuType) {
     container.appendChild(nav);
 }
 
-// 5. 유틸리티 및 메뉴 제어 (중복 및 문법 오류 교정본)
+// 2. 메뉴 변경 함수 (차트 강제 숨김 로직 추가)
 function changeMenu(element, menuName) {
-    currentMenu = menuName;
-    currentPage = 1; // 메뉴를 바꿀 때 무조건 1페이지로 초기화
+    // 0. 수급 분석 페이지 분기 처리
+    const isSeibro = window.location.pathname.includes('/seibro');
+    if (isSeibro && menuName !== '수급 분석') {
+        window.location.href = `/?menu=${encodeURIComponent(menuName)}`;
+        return; 
+    }
 
+    // 1. 전역 상태 설정
+    currentMenu = menuName;
+    currentPage = 1;
+
+    // 2. 메뉴 버튼 하이라이트 (element가 null인 초기 진입 상황 대응)
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    element.classList.add('active');
+    if (element) {
+        element.classList.add('active');
+    } else {
+        // 주소창 파라미터로 로드된 경우 텍스트로 메뉴를 찾아 불을 켭니다.
+        document.querySelectorAll('.nav-item').forEach(item => {
+            const itemText = item.innerText.replace(/\s+/g, ' ').trim();
+            if (itemText.includes(menuName) || menuName.includes(itemText)) {
+                item.classList.add('active');
+            }
+        });
+    }
     
+    // 3. 공통 UI 요소 선택
     const sw = document.getElementById('search_wrapper');
     const cc = document.getElementById('chart_container');
-    
-    if(cc) { 
-        cc.innerHTML = ""; // 기존 뉴스 로딩 메시지나 내용을 즉시 삭제
+    // TradingView가 생성하는 위젯 컨테이너를 직접 찾아 숨겨야 확실합니다.
+    const tvWidget = document.querySelector('.tradingview-widget-container');
+
+    if (cc) { 
+        cc.innerHTML = ""; 
+        cc.style.display = 'block';
         cc.style.overflowY = menuName.includes('뉴스') ? 'auto' : 'hidden'; 
     }
-    
-    if(menuName === '차트') { 
-        if(sw) sw.style.display = 'flex'; 
-        updateChart(currentSymbol); 
-    }
-    else if(menuName === '경제 뉴스') {
-        if(sw) sw.style.display = 'none'; 
-        fetchNews(1); 
-    }
-    else if(menuName === '크립토 뉴스') {
-        if(sw) sw.style.display = 'none'; 
-        renderCryptoPage(1);
-    }
-    else if(menuName === '실시간') {
-        if(sw) sw.style.display = 'none';
-        // 뉴스 로딩 로직이 화면을 덮어쓰지 않도록 50ms 지연 후 실행
-        setTimeout(() => {
-            if(currentMenu === '실시간') renderWordCloud();
-        }, 50);
-    } 
-    else { 
-        if(sw) sw.style.display = 'none';
-        cc.innerHTML = `<div style="padding:100px; text-align:center;">[${menuName}] 준비 중</div>`; 
+
+    // 4. 메뉴별 콘텐츠 실행 및 차트 가시성 제어
+    if (menuName === '차트') {
+        if (sw) sw.style.display = 'flex';
+        if (tvWidget) tvWidget.style.display = 'block'; // 차트 보이기
+        if (typeof updateChart === 'function') updateChart(currentSymbol); 
+    } else {
+        if (sw) sw.style.display = 'none';
+        if (tvWidget) tvWidget.style.display = 'none'; // 차트 숨기기 (핵심!)
+
+        if (menuName === '경제 뉴스') {
+            fetchNews(1);
+        } else if (menuName === '크립토 뉴스') {
+            renderCryptoPage(1);
+        } else if (menuName === '실시간') {
+            setTimeout(() => { 
+                if (currentMenu === '실시간') renderWordCloud(); 
+            }, 50);
+        } else if (menuName === '수급 분석') {
+            if (!isSeibro) window.location.href = '/seibro';
+        } else {
+            if (cc) cc.innerHTML = `<div style="padding:100px; text-align:center;">[${menuName}] 준비 중</div>`; 
+        }
     }
 }
 
@@ -277,13 +299,6 @@ async function fetchNews(page = 1) {
     renderNewsList(allNews, page, '경제 뉴스');
 }
 
-function updateChart(symbol, theme) {
-    currentSymbol = symbol;
-    const t = theme || (document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    const c = document.getElementById('chart_container');
-    if(c) c.innerHTML = `<iframe src="https://s.tradingview.com/widgetembed/?symbol=${symbol}&interval=D&theme=${t}&style=1&timezone=Asia%2FSeoul&locale=kr" width="100%" height="100%" frameborder="0"></iframe>`;
-}
-
 function toggleTheme() {
     const isDark = document.body.classList.toggle('dark-mode');
     const t = isDark ? 'dark' : 'light';
@@ -291,79 +306,68 @@ function toggleTheme() {
     applyTheme(t);
 }
 
+// 1. 로고 변경을 포함한 테마 적용 함수 (헤더 버그 해결)
 function applyTheme(t) {
     const icon = document.getElementById('themeIcon');
-    if (t === 'dark') { document.body.classList.add('dark-mode'); if(icon) icon.innerHTML = sunIconPath; }
-    else { document.body.classList.remove('dark-mode'); if(icon) icon.innerHTML = moonIconPath; }
-    renderTicker(t);
-    if(currentMenu === '차트') updateChart(currentSymbol, t);
-}
+    const logoImg = document.querySelector('.header-logo img'); // 로고 선택자 확인 필요
+    
+    if (t === 'dark') { 
+        document.body.classList.add('dark-mode'); 
+        if(icon) icon.innerHTML = sunIconPath; 
+        if(logoImg) logoImg.src = '/logo_white.svg'; // 다크모드 로고 경로
+    } else { 
+        document.body.classList.remove('dark-mode'); 
+        if(icon) icon.innerHTML = moonIconPath; 
+        if(logoImg) logoImg.src = '/logo_black.svg'; // 라이트모드 로고 경로
+    }
 
-function renderTicker(t) {
-    const area = document.getElementById('ticker_area');
-    if(!area) return;
-    area.innerHTML = "";
-    const container = document.createElement('div');
-    container.style.cssText = "height:55px; width:100%;";
-    const script = document.createElement('script');
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.async = true;
-    script.text = JSON.stringify({
-        "symbols": [
-            { "proName": "CAPITALCOM:DXY", "title": "달러인덱스" }, 
-            { "proName": "NASDAQ:NDAQ", "title": "나스닥" }, 
-            { "proName": "FRED:SP500", "title": "S&P 500" }, 
-            { "proName": "UPBIT:BTCKRW", "title": "비트코인" },
-            { "proName": "UPBIT:ETHKRW", "title": "이더리움" }, 
-            { "proName": "UPBIT:SOLKRW", "title": "솔라나" }, 
-            { "proName": "TVC:GOLD", "title": "골드" }, 
-            { "proName": "TVC:SILVER", "title": "실버" }, 
-            { "proName": "FX_IDC:USDKRW", "title": "원/달러" }
-        ],
-        "showSymbolLogo": true, 
-        "colorTheme": t, // 수정됨
-        "isTransparent": true, 
-        "displayMode": "adaptive", 
-        "locale": "kr"
-    });
-    container.appendChild(script);
-    area.appendChild(container); // 수정됨
-}
-
-function changeChart() {
-    const input = document.getElementById('stockInput');
-    const q = input?.value.trim();
-    if(!q) return;
-    let s = stockMap[q] || ( /^\d{6}$/.test(q) ? "KRX:" + q : q.toUpperCase() );
-    updateChart(s);
-    input.value = "";
+    if (typeof renderTicker === 'function') renderTicker(t);
+    if (currentMenu === '차트' && typeof updateChart === 'function') updateChart(currentSymbol, t);
 }
 
 function initApp() {
-    // 공통 기능: 테마 적용 및 티커 렌더링 (모든 페이지)
-    applyTheme(localStorage.getItem('theme') || 'light');
-
-    // 홈 페이지 전용 기능
+    // ✅ [버그 수정] applyTheme 호출 전에 URL의 목표 메뉴를 미리 읽어서
+    // currentMenu를 선설정합니다.
     if (!window.isSeibroPage) {
-        // 1. 광고 팝업 로직
+        const preCheck = new URLSearchParams(window.location.search).get('menu');
+        if (preCheck) {
+            currentMenu = preCheck;
+        }
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
+    if (!window.isSeibroPage) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetMenu = urlParams.get('menu');
+        
+        // 1. 주소창에 특정 메뉴(?menu=...)가 있는 경우
+        if (targetMenu) {
+            const menuItems = document.querySelectorAll('.nav-item');
+            let found = false;
+            menuItems.forEach(item => {
+                const itemText = item.innerText.replace(/\s+/g, ' ').trim(); 
+                if (itemText.includes(targetMenu) || targetMenu.includes(itemText)) {
+                    changeMenu(item, targetMenu);
+                    found = true;
+                }
+            });
+            // 일치하는 메뉴 항목을 못 찾았을 경우를 대비한 강제 호출
+            if (!found) changeMenu(null, targetMenu);
+        } 
+        // 2. 주소창에 메뉴가 없는 경우 (순수 홈 접속) -> 기본 '차트' 메뉴 실행
+        else {
+            changeMenu(null, '차트');
+        }
+
+        // 광고 팝업 로직은 그대로 유지...
         const expire = localStorage.getItem('adPopupExpire');
         if (!expire || new Date().getTime() > expire) {
             setTimeout(() => { 
                 const p = document.getElementById('slidePopup');
                 if(p) { p.classList.add('active'); startAdCountdown(); }
             }, 500);
-        }
-
-        // 2. URL 파라미터를 읽어 해당 메뉴로 자동 전환
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetMenu = urlParams.get('menu');
-        if (targetMenu) {
-            const menuItems = document.querySelectorAll('.nav-menu .nav-item');
-            menuItems.forEach(item => {
-                if (item.textContent.trim() === targetMenu) {
-                    changeMenu(item, targetMenu);
-                }
-            });
         }
     }
 }
@@ -387,9 +391,14 @@ function closePopup() {
     clearInterval(countdownInterval);
 }
 
+// 3. 광고 닫기 함수 (콘솔 에러 방지)
 function closeBottomAd() {
     const ad = document.getElementById('bottomAdBanner');
     if (ad) ad.style.display = 'none';
+    // PartnersCoupang 관련 에러 방지를 위해 정의 여부 확인
+    if (window.PartnersCoupang) {
+        console.log("Coupang Ad Closed");
+    }
 }
 
 function showGotcha() {
@@ -622,9 +631,7 @@ if (typeof window !== 'undefined') {
         closePopup, 
         changeMenu, 
         toggleTheme, 
-        changeChart, 
-        fetchNews, 
-        updateChart, 
+        fetchNews,  
         closeBottomAd, 
         renderCryptoPage, 
         showGotcha,

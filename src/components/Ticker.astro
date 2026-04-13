@@ -2,3 +2,46 @@
 /* src/components/Ticker.astro */
 ---
 <div class="independent-ticker" id="ticker_area"></div>
+
+<script is:inline>
+  // 이 함수를 Ticker 파일 안으로 옮겨옵니다.
+  function renderTicker(theme) {
+    const area = document.getElementById('ticker_area');
+    if (!area) return;
+    area.innerHTML = "";
+    
+    const container = document.createElement('div');
+    container.style.cssText = "height:55px; width:100%;";
+    
+    const script = document.createElement('script');
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+    script.async = true;
+    script.text = JSON.stringify({
+      "symbols": [
+        { "proName": "CAPITALCOM:DXY", "title": "달러인덱스" },
+        { "proName": "NASDAQ:NDAQ", "title": "나스닥" },
+        { "proName": "FRED:SP500", "title": "S&P 500" },
+        { "proName": "UPBIT:BTCKRW", "title": "비트코인" },
+        { "proName": "UPBIT:ETHKRW", "title": "이더리움" },
+        { "proName": "UPBIT:SOLKRW", "title": "솔라나" },
+        { "proName": "TVC:GOLD", "title": "골드" },
+        { "proName": "TVC:SILVER", "title": "실버" },
+        { "proName": "FX_IDC:USDKRW", "title": "원/달러" }
+      ],
+      "showSymbolLogo": true,
+      "colorTheme": theme || 'light',
+      "isTransparent": true,
+      "displayMode": "regular",
+      "locale": "kr"
+    });
+    
+    container.appendChild(script);
+    area.appendChild(container);
+  }
+
+  // 페이지 로드 시 바로 실행되도록 설정
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    renderTicker(savedTheme);
+  });
+</script>

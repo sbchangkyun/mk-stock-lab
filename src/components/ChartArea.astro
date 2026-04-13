@@ -8,3 +8,48 @@
     </div>
     <div id="chart_container"></div>
 </main>
+
+<script is:inline>
+  // 차트 업데이트 함수 (main.js에서 이관)
+  function updateChart(symbol, theme) {
+    const container = document.getElementById('chart_container');
+    if (!container) return;
+    container.innerHTML = "";
+
+    const script = document.createElement('script');
+    script.src = "https://s3.tradingview.com/tv.js";
+    script.async = true;
+    script.onload = () => {
+      new TradingView.widget({
+        "autosize": true,
+        "symbol": symbol,
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": theme,
+        "style": "1",
+        "locale": "kr",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "container_id": "chart_container"
+      });
+    };
+    container.appendChild(script);
+  }
+
+  // 검색 시 실행되는 함수
+  function changeChart() {
+    const input = document.getElementById('stockInput');
+    if (!input || !input.value) return;
+    
+    const symbol = input.value.toUpperCase();
+    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    
+    // 전역 변수 업데이트 (main.js와 연동을 위해)
+    if (window.hasOwnProperty('currentSymbol')) {
+        window.currentSymbol = symbol;
+    }
+    
+    updateChart(symbol, currentTheme);
+  }
+</script>

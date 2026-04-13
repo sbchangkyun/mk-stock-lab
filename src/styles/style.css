@@ -91,7 +91,7 @@ body {
     width: 100%; 
     background: var(--container-bg); 
     border-bottom: 0.1px solid var(--border-color); 
-    height: 58px; /* 54px -> 64px로 변경 (글자 잘림 해결) */
+    height: 40px; /* 54px -> 64px로 변경 (글자 잘림 해결) */
     overflow: hidden; 
     position: relative;
     /* 중요: flex를 제거하고 block으로 설정하여 내부 위젯의 자동 너비를 보장합니다. */
