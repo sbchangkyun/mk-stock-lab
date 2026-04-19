@@ -108,10 +108,43 @@ body {
     display: block;
 }
 
-/* 메뉴 및 레이아웃 */
-.nav-menu-wrapper { background: var(--container-bg); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 800; }
-.nav-menu { max-width: 1200px; margin: 0 auto; display: flex; list-style: none; padding: 0; margin: 0; }
-.nav-item { padding: 12px 18px; font-size: 15px; font-weight: bold; color: var(--text-main); cursor: pointer; border-bottom: 3px solid transparent; }
+/* 메뉴 및 레이아웃 (가로 슬라이드 반영) */
+.nav-menu-wrapper { 
+    background: var(--container-bg); 
+    border-bottom: 1px solid var(--border-color); 
+    position: sticky; 
+    top: 0; 
+    z-index: 800; 
+}
+.nav-menu { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    display: flex; 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+    /* --- 가로 슬라이드 핵심 코드 --- */
+    overflow-x: auto;           /* 가로 방향으로 내용이 넘치면 스크롤 허용 */
+    -webkit-overflow-scrolling: touch; /* 모바일에서 부드러운 스크롤 적용 */
+    scrollbar-width: none;      /* Firefox에서 스크롤바 숨기기 */
+}
+/* Chrome, Safari, Edge에서 스크롤바 숨기기 */
+.nav-menu::-webkit-scrollbar {
+    display: none; 
+}
+.nav-item { 
+    padding: 12px 18px; 
+    font-size: 15px; 
+    font-weight: bold; 
+    color: var(--text-main); 
+    cursor: pointer; 
+    border-bottom: 3px solid transparent; 
+    white-space: nowrap;        /* 줄바꿈 절대 금지 */
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    flex-shrink: 0;             /* 메뉴 너비가 좁아지지 않도록 고정 */
+}
 .nav-item.active { color: var(--accent-color); border-bottom: 3px solid var(--accent-color); }
 .main-wrapper { max-width: 1200px; margin: 0 auto; padding: 15px; }
 .search-area { display: flex; gap: 8px; margin-bottom: 15px; }

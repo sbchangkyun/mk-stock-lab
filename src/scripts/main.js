@@ -18,7 +18,7 @@ const CRYPTO_NEWS_INTERVAL = 30 * 60 * 1000;    // 30분 캐싱
 
 let currentSymbol = "NASDAQ:TSLA";
 let countdownInterval;
-let currentMenu = '차트';
+let currentMenu = '포트폴리오';
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 const MAX_PAGES = 10;
@@ -213,67 +213,84 @@ function renderPagination(totalItems, menuType) {
     container.appendChild(nav);
 }
 
-// 2. 메뉴 변경 함수 (차트 강제 숨김 로직 추가)
-function changeMenu(element, menuName) {
-    // 0. 수급 분석 페이지 분기 처리
+// [수정] 41라인부터 시작되는 changeMenu 함수 전체 교체
+window.changeMenu = async function(element, menuName) {
+    // 0. 수급 분석 페이지 분기 처리 (기존 로직 보존)
     const isSeibro = window.location.pathname.includes('/seibro');
     if (isSeibro && menuName !== '수급 분석') {
         window.location.href = `/?menu=${encodeURIComponent(menuName)}`;
         return; 
     }
 
-    // 1. 전역 상태 설정
+    // 1. 포트폴리오 로그인 체크 (💼 아이콘 포함 여부로 체크)
+    if (menuName.includes('포트폴리오')) {
+        if (window.supabase) {
+            const { data: { session } } = await window.supabase.auth.getSession();
+            if (!session) {
+                if (window.openAuthModal) window.openAuthModal();
+                return;
+            }
+        }
+    }
+
+    // 2. 전역 상태 및 하이라이트 설정
     currentMenu = menuName;
     currentPage = 1;
-
-    // 2. 메뉴 버튼 하이라이트 (element가 null인 초기 진입 상황 대응)
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     if (element) {
         element.classList.add('active');
     } else {
-        // 주소창 파라미터로 로드된 경우 텍스트로 메뉴를 찾아 불을 켭니다.
         document.querySelectorAll('.nav-item').forEach(item => {
-            const itemText = item.innerText.replace(/\s+/g, ' ').trim();
-            if (itemText.includes(menuName) || menuName.includes(itemText)) {
-                item.classList.add('active');
-            }
+            if (item.innerText.includes(menuName)) item.classList.add('active');
         });
     }
+
+    // 3. 화면 그리기 실행 (아래에서 만들 renderMenu 함수를 호출합니다)
+    renderMenu(menuName);
+}; // <--- 여기서 함수가 정확히 닫혀야 에러가 안 납니다!
     
-    // 3. 공통 UI 요소 선택
+// [추가] 115라인 근처 (changeMenu가 끝난 바로 다음 줄에 삽입)
+function renderMenu(menuName) {
     const sw = document.getElementById('search_wrapper');
     const cc = document.getElementById('chart_container');
-    // TradingView가 생성하는 위젯 컨테이너를 직접 찾아 숨겨야 확실합니다.
     const tvWidget = document.querySelector('.tradingview-widget-container');
 
+    // 기본적으로 검색창과 차트는 숨기고 시작
+    if (sw) sw.style.display = 'none';
+    if (tvWidget) tvWidget.style.display = 'none';
     if (cc) { 
         cc.innerHTML = ""; 
         cc.style.display = 'block';
         cc.style.overflowY = menuName.includes('뉴스') ? 'auto' : 'hidden'; 
     }
 
-    // 4. 메뉴별 콘텐츠 실행 및 차트 가시성 제어
-    if (menuName === '차트') {
-        if (sw) sw.style.display = 'flex';
-        if (tvWidget) tvWidget.style.display = 'block'; // 차트 보이기
-        if (typeof updateChart === 'function') updateChart(currentSymbol); 
-    } else {
-        if (sw) sw.style.display = 'none';
-        if (tvWidget) tvWidget.style.display = 'none'; // 차트 숨기기 (핵심!)
+    // 메뉴별 콘텐츠 그리기
+    if (menuName.includes('포트폴리오')) {
+        cc.innerHTML = `
+            <div class="portfolio-dashboard" style="padding: 20px; max-width: 1000px; margin: 0 auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin:0; font-size: 1.5rem;">💼 내 자산 현황</h2>
+                    <button onclick="alert('포트폴리오 생성 준비 중')" style="padding: 8px 16px; background: #1A237E; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">+ 포트폴리오 생성</button>
+                </div>
+                <div style="text-align: center; padding: 50px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #dee2e6;">
+                    <p style="font-size: 18px; color: #495057; font-weight: bold;">아직 생성된 포트폴리오가 없습니다.</p>
+                </div>
+            </div>
+        `;
+    } else if (menuName.includes('경제 뉴스')) {
+          if (sw) sw.style.display = 'none';
 
-        if (menuName === '경제 뉴스') {
-            fetchNews(1);
-        } else if (menuName === '크립토 뉴스') {
-            renderCryptoPage(1);
-        } else if (menuName === '실시간') {
-            setTimeout(() => { 
-                if (currentMenu === '실시간') renderWordCloud(); 
-            }, 50);
-        } else if (menuName === '수급 분석') {
-            if (!isSeibro) window.location.href = '/seibro';
-        } else {
-            if (cc) cc.innerHTML = `<div style="padding:100px; text-align:center;">[${menuName}] 준비 중</div>`; 
-        }
+          // 뉴스를 불러오는 동안 심심하지 않게 로딩 메시지를 보여줍니다.
+          if (cc) cc.innerHTML = `<div style="padding:100px; text-align:center; color: var(--text-sub);">📰 경제 뉴스를 불러오는 중입니다...</div>`;
+
+          // GNews API 기준에 맞춰 'business'로 요청합니다.
+          fetchNews(1);
+    } else if (menuName === '크립토 뉴스') {
+        renderCryptoPage(1);
+    } else if (menuName === '실시간') {
+        setTimeout(() => { if (currentMenu === '실시간') renderWordCloud(); }, 50);
+    } else if (menuName === '수급 분석') {
+        window.location.href = '/seibro';
     }
 }
 
@@ -299,12 +316,17 @@ async function fetchNews(page = 1) {
     renderNewsList(allNews, page, '경제 뉴스');
 }
 
-function toggleTheme() {
+// [복구] 테마 변경 기능
+window.toggleTheme = function() {
     const isDark = document.body.classList.toggle('dark-mode');
-    const t = isDark ? 'dark' : 'light';
-    localStorage.setItem('theme', t);
-    applyTheme(t);
-}
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+};
+
+// [복구] 광고 닫기 기능
+window.closeAd = function() {
+    const adPopup = document.getElementById('slidePopup');
+    if (adPopup) adPopup.style.display = 'none';
+};
 
 // 1. 로고 변경을 포함한 테마 적용 함수 (헤더 버그 해결)
 function applyTheme(t) {
@@ -322,7 +344,7 @@ function applyTheme(t) {
     }
 
     if (typeof renderTicker === 'function') renderTicker(t);
-    if (currentMenu === '차트' && typeof updateChart === 'function') updateChart(currentSymbol, t);
+    if (currentMenu === '포트폴리오' && typeof updateChart === 'function') updateChart(currentSymbol, t);
 }
 
 function initApp() {
@@ -356,9 +378,9 @@ function initApp() {
             // 일치하는 메뉴 항목을 못 찾았을 경우를 대비한 강제 호출
             if (!found) changeMenu(null, targetMenu);
         } 
-        // 2. 주소창에 메뉴가 없는 경우 (순수 홈 접속) -> 기본 '차트' 메뉴 실행
+        // 2. 주소창에 메뉴가 없는 경우 (순수 홈 접속) -> 기본 '포트폴리오' 메뉴 실행
         else {
-            changeMenu(null, '차트');
+            changeMenu(null, '포트폴리오');
         }
 
         // 광고 팝업 로직은 그대로 유지...
@@ -431,7 +453,7 @@ async function handleRefresh() {
     // 3. 현재 메뉴에 맞춰 데이터만 다시 호출
     if (currentMenu === '경제 뉴스') {
         localStorage.removeItem('mk_news_cache'); // 캐시 삭제 후 호출
-        await fetchNews(1);
+        await fetchNews('economy', 1);
     } else if (currentMenu === '크립토 뉴스') {
         localStorage.removeItem('mk_crypto_news_cache'); // 캐시 삭제 후 호출
         await renderCryptoPage(1);
