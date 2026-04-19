@@ -18,6 +18,17 @@ import '../styles/style.css';
     
 <body>
     <slot />
-    <script src="../scripts/main.js"></script>
+
+    <script>
+        // 1. Supabase 설정을 먼저 불러옵니다.
+        import { supabase } from '../lib/supabase.ts';
+        // 2. 전역 변수로 확실히 박아줍니다.
+        (window as any).supabase = supabase;
+
+        console.log("✅ Supabase 전역 등록 완료");
+
+        // 3. 그 다음 main.js를 실행합니다.
+        import '../scripts/main.js';
+    </script>
 </body>
 </html>

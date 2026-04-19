@@ -1,5 +1,6 @@
 ---
 /* src/components/ChartArea.astro */
+import Portfolio from './Portfolio.astro'; // 1. 포트폴리오 불러오기
 ---
 <main class="main-wrapper">
     <div class="search-area" id="search_wrapper" style="display: none;">
@@ -8,4 +9,8 @@
     </div>
 
     <div id="chart_container" class="content-display-area"></div>
+
+    <div id="portfolio_section" style="display: none;">
+        <Portfolio />
+    </div>
 </main>

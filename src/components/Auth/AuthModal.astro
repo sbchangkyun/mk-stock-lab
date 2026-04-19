@@ -70,6 +70,7 @@ import GoogleLogin from "./GoogleLogin.astro";
   import { supabase } from "../../lib/supabase";
 
   // 1. 필요한 요소들 가져오기
+  const modal = document.getElementById('auth-modal');
   const modalTitle = document.getElementById('modal-title');
   const nicknameGroup = document.getElementById('nickname-group');
   const authBtn = document.getElementById('auth-submit');
@@ -105,16 +106,21 @@ import GoogleLogin from "./GoogleLogin.astro";
       }
     };
 
-    toggleLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        // setAuthMode 함수를 호출하여 화면(제목, 버튼, 입력칸)을 실제로 바꿔줍니다.
-        setAuthMode(!isSignUpMode);
-      });
+  toggleLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      // setAuthMode 함수를 호출하여 화면(제목, 버튼, 입력칸)을 실제로 바꿔줍니다.
+      setAuthMode(!isSignUpMode);
     });
+  });
 
   // 3. [데이터 처리] 버튼 클릭 시 회원가입 또는 로그인 실행
   authBtn?.addEventListener('click', async () => {
+    if (!supabase) {
+      alert("데이터베이스 연결에 실패했습니다. 페이지를 새로고침 해주세요.");
+      return;
+    }
+    
     const email = (document.getElementById('auth-email') as HTMLInputElement).value;
     const password = (document.getElementById('auth-password') as HTMLInputElement).value;
     const nickname = (document.getElementById('auth-nickname') as HTMLInputElement).value;
@@ -148,5 +154,23 @@ import GoogleLogin from "./GoogleLogin.astro";
   });
 
   // 페이지 로드 시 기본적으로 로그인 모드(false)로 설정
-setAuthMode(false);
+  setAuthMode(false);
+
+  // ✅ [추가] window.openAuthModal 등록 — main.js에서 포트폴리오 클릭 시 이 함수를 호출합니다.
+  (window as any).openAuthModal = function() {
+    setAuthMode(false); // 항상 로그인 모드로 초기화하여 열기
+    modal?.classList.remove('hidden');
+  };
+
+  // ✅ [추가] 닫기 버튼(×) 클릭 시 모달 닫기
+  document.getElementById('close-modal')?.addEventListener('click', () => {
+    modal?.classList.add('hidden');
+  });
+
+  // ✅ [추가] 모달 바깥(어두운 오버레이) 클릭 시 모달 닫기
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
 </script>

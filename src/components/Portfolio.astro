@@ -1,0 +1,201 @@
+---
+/* src/components/Portfolio.astro */
+---
+
+<!-- ① 비로그인 상태: 기본으로 표시 -->
+<div id="portfolio-login-gate">
+    <div class="login-gate-box">
+        <div class="login-gate-icon">🔐</div>
+        <h3 class="login-gate-title">로그인이 필요합니다</h3>
+        <p class="login-gate-desc">
+            포트폴리오 기능은<br />
+            회원가입/로그인 후 이용할 수 있습니다.
+        </p>
+        <button
+            class="login-gate-btn"
+            onclick="if(window.openAuthModal) window.openAuthModal()"
+        >
+            회원가입 / 로그인
+        </button>
+    </div>
+</div>
+
+<!-- ② 로그인 완료 상태: main.js가 세션 확인 후 표시 -->
+<div id="portfolio-content" style="display: none;">
+    <div class="portfolio-dashboard">
+        <div class="portfolio-header">
+            <h2 class="portfolio-title">💼 내 자산 현황</h2>
+            <button
+                id="btn-create-portfolio"
+                class="portfolio-create-btn"
+                onmouseover="this.style.opacity='0.85'"
+                onmouseout="this.style.opacity='1'"
+            >
+                + 포트폴리오 생성
+            </button>
+        </div>
+
+        <div id="portfolio-empty-state" class="portfolio-empty">
+            <p>아직 생성된 포트폴리오가 없습니다.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ── 비로그인 게이트 ───────────────────────────── */
+    #portfolio-login-gate {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 20px 60px;
+    }
+
+    .login-gate-box {
+        width: 100%;
+        max-width: 480px;
+        text-align: center;
+        padding: 48px 32px;
+        border: 2px dashed var(--border-color);
+        border-radius: 16px;
+        background: var(--container-bg);
+    }
+
+    .login-gate-icon {
+        font-size: 52px;
+        margin-bottom: 16px;
+        line-height: 1;
+    }
+
+    .login-gate-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text-main);
+        margin: 0 0 10px 0;
+    }
+
+    .login-gate-desc {
+        font-size: 14px;
+        color: var(--text-sub);
+        line-height: 1.7;
+        margin: 0 0 28px 0;
+    }
+
+    .login-gate-btn {
+        display: inline-block;
+        padding: 13px 36px;
+        background: #1A237E;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.15s;
+        letter-spacing: 0.02em;
+    }
+
+    .login-gate-btn:hover {
+        opacity: 0.88;
+        transform: translateY(-1px);
+    }
+
+    .login-gate-btn:active {
+        transform: translateY(0);
+    }
+
+    /* ── 로그인 후 대시보드 ────────────────────────── */
+    .portfolio-dashboard {
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .portfolio-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .portfolio-title {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--text-main);
+    }
+
+    .portfolio-create-btn {
+        padding: 8px 16px;
+        background: #1A237E;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: opacity 0.2s;
+    }
+
+    .portfolio-empty {
+        text-align: center;
+        padding: 50px;
+        background: var(--nav-hover);
+        border-radius: 12px;
+        border: 2px dashed var(--border-color);
+    }
+
+    .portfolio-empty p {
+        font-size: 18px;
+        color: var(--text-sub);
+        font-weight: bold;
+        margin: 0;
+    }
+</style>
+
+<script>
+    import { supabase } from "../lib/supabase";
+
+    const createBtn = document.getElementById('btn-create-portfolio');
+
+    createBtn?.addEventListener('click', async () => {
+        const sb = (window as any).supabase;
+
+        if (!sb) {
+            return alert("데이터베이스 연결에 실패했습니다. 페이지를 새로고침(F5) 후 다시 시도해주세요.");
+        }
+
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) return alert("로그인이 필요합니다.");
+
+            const name = window.prompt("새 포트폴리오 이름을 입력하세요.");
+            if (!name || name.trim() === "") return;
+
+            const { error } = await sb
+                .from('portfolios')
+                .insert([{ name: name, user_id: session.user.id }]);
+
+            if (error) throw error;
+
+            alert(`'${name}' 포트폴리오가 생성되었습니다!`);
+            location.reload();
+        } catch (err: any) {
+            console.error("Portfolio Create Error:", err);
+            alert("생성 실패: " + err.message);
+        }
+    });
+    // ✅ [추가] 인증 상태 변화 실시간 감지 (로그아웃 시 로그인 게이트로 복귀)
+    // 상단에서 import한 supabase 객체를 사용합니다.
+    supabase?.auth.onAuthStateChange((event, session) => {
+        const loginGate = document.getElementById('portfolio-login-gate');
+        const content = document.getElementById('portfolio-content');
+
+        if (session) {
+            // 로그인 완료 → 포트폴리오 콘텐츠 표시
+            if (loginGate) loginGate.style.display = 'none';
+            if (content) content.style.display = 'block';
+        } else {
+            // 로그아웃 → 로그인 안내 게이트로 복귀
+            if (loginGate) loginGate.style.display = 'flex';
+            if (content) content.style.display = 'none';
+        }
+    });
+</script>

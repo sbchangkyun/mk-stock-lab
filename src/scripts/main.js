@@ -226,10 +226,19 @@ window.changeMenu = async function(element, menuName) {
     if (menuName.includes('포트폴리오')) {
         if (window.supabase) {
             const { data: { session } } = await window.supabase.auth.getSession();
+            const loginGate = document.getElementById('portfolio-login-gate');
+            const content   = document.getElementById('portfolio-content');
+
             if (!session) {
-                if (window.openAuthModal) window.openAuthModal();
-                return;
+                // ✅ 빈 화면 대신 로그인 안내 UI 표시 (모달 자동 오픈 제거)
+                if (loginGate) loginGate.style.display = 'flex';
+                if (content)   content.style.display   = 'none';
+            } else {
+                // ✅ 로그인 완료 → 포트폴리오 콘텐츠 표시
+                if (loginGate) loginGate.style.display = 'none';
+                if (content)   content.style.display   = 'block';
             }
+            // ✅ return 제거 → 아래 renderMenu()가 정상 실행되어 portfolio_section이 보임
         }
     }
 
@@ -249,50 +258,40 @@ window.changeMenu = async function(element, menuName) {
     renderMenu(menuName);
 }; // <--- 여기서 함수가 정확히 닫혀야 에러가 안 납니다!
     
-// [추가] 115라인 근처 (changeMenu가 끝난 바로 다음 줄에 삽입)
 function renderMenu(menuName) {
     const sw = document.getElementById('search_wrapper');
     const cc = document.getElementById('chart_container');
     const tvWidget = document.querySelector('.tradingview-widget-container');
+    const ps = document.getElementById('portfolio_section'); // 포트폴리오 섹션 가져오기
 
-    // 기본적으로 검색창과 차트는 숨기고 시작
+    // 1. 모든 영역을 일단 숨김
     if (sw) sw.style.display = 'none';
     if (tvWidget) tvWidget.style.display = 'none';
-    if (cc) { 
-        cc.innerHTML = ""; 
-        cc.style.display = 'block';
-        cc.style.overflowY = menuName.includes('뉴스') ? 'auto' : 'hidden'; 
-    }
+    if (cc) cc.style.display = 'none';
+    if (ps) ps.style.display = 'none';
 
-    // 메뉴별 콘텐츠 그리기
+    // 2. 메뉴별 콘텐츠 스위칭
     if (menuName.includes('포트폴리오')) {
-        cc.innerHTML = `
-            <div class="portfolio-dashboard" style="padding: 20px; max-width: 1000px; margin: 0 auto;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="margin:0; font-size: 1.5rem;">💼 내 자산 현황</h2>
-                    <button onclick="alert('포트폴리오 생성 준비 중')" style="padding: 8px 16px; background: #1A237E; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">+ 포트폴리오 생성</button>
-                </div>
-                <div style="text-align: center; padding: 50px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #dee2e6;">
-                    <p style="font-size: 18px; color: #495057; font-weight: bold;">아직 생성된 포트폴리오가 없습니다.</p>
-                </div>
-            </div>
-        `;
-    } else if (menuName.includes('경제 뉴스')) {
-          if (sw) sw.style.display = 'none';
+        if (ps) ps.style.display = 'block'; // 포트폴리오만 보이기
+    } else {
+        if (cc) {
+            cc.style.display = 'block'; // 뉴스/차트 박스 보이기
+            cc.innerHTML = ""; 
+            cc.style.overflowY = menuName.includes('뉴스') ? 'auto' : 'hidden';
+        }
 
-          // 뉴스를 불러오는 동안 심심하지 않게 로딩 메시지를 보여줍니다.
-          if (cc) cc.innerHTML = `<div style="padding:100px; text-align:center; color: var(--text-sub);">📰 경제 뉴스를 불러오는 중입니다...</div>`;
-
-          // GNews API 기준에 맞춰 'business'로 요청합니다.
-          fetchNews(1);
-    } else if (menuName === '크립토 뉴스') {
-        renderCryptoPage(1);
-    } else if (menuName === '실시간') {
-        setTimeout(() => { if (currentMenu === '실시간') renderWordCloud(); }, 50);
-    } else if (menuName === '수급 분석') {
-        window.location.href = '/seibro';
+        if (menuName.includes('경제 뉴스')) {
+            if (cc) cc.innerHTML = `<div style="padding:100px; text-align:center; color: var(--text-sub);">📰 경제 뉴스를 불러오는 중입니다...</div>`;
+            fetchNews(1);
+        } else if (menuName === '크립토 뉴스') {
+            renderCryptoPage(1);
+        } else if (menuName === '실시간') {
+            setTimeout(() => { if (currentMenu === '실시간') renderWordCloud(); }, 50);
+        } else if (menuName === '수급 분석') {
+            window.location.href = '/seibro';
+        }
     }
-}
+} // <--- renderMenu 함수 끝
 
 // [수정] 크립토 뉴스 실행부
 async function renderCryptoPage(page = 1) {
@@ -647,20 +646,29 @@ function showActionMenu(item, x, y) {
 }
 
 // 앱 초기화 실행
+// 함수 등록을 에러가 날 수 있는 initApp 실행보다 먼저 합니다.
 if (typeof window !== 'undefined') {
-    // [중요] 모든 기능을 브라우저 전역 객체에 등록합니다. 
-    Object.assign(window, { 
-        closePopup, 
-        changeMenu, 
-        toggleTheme, 
-        fetchNews,  
-        closeBottomAd, 
-        renderCryptoPage, 
+    Object.assign(window, {
+        renderMenu,
+        changeMenu,
+        closePopup,
+        fetchNews,
+        closeBottomAd,
+        renderCryptoPage,
         showGotcha,
         handleRefresh,
         renderWordCloud,
+        initApp
     });
 
-// 모든 페이지에서 initApp을 실행하여 테마와 티커를 활성화합니다.
-window.addEventListener('load', initApp);
+    // 앱 초기화 실행 (에러가 나더라도 다른 함수 등록은 방해하지 않도록)
+    window.addEventListener('load', async () => {
+        try {
+            if (typeof initApp === 'function') {
+                await initApp();
+            }
+        } catch (e) {
+            console.error("앱 초기화 중 오류 발생:", e);
+        }
+    });
 }
