@@ -22,24 +22,27 @@
 
 <!-- ② 로그인 완료 상태: main.js가 세션 확인 후 표시 -->
 <div id="portfolio-content" style="display: none;">
-    <div class="portfolio-dashboard">
+    <div class="portfolio-dashboard benchmark-theme">
+        <section id="portfolio-summary-card" class="portfolio-summary-card" style="display:none;"></section>
         <div class="portfolio-header">
-            <h2 class="portfolio-title">💼 내 자산 현황</h2>
+            <div>
+                <h2 class="portfolio-title">포트폴리오</h2>
+            </div>
             <button
                 id="btn-create-portfolio"
                 class="portfolio-create-btn"
                 onmouseover="this.style.opacity='0.85'"
                 onmouseout="this.style.opacity='1'"
             >
-                + 포트폴리오 생성
+                + 생성
             </button>
         </div>
 
         <div id="portfolio-empty-state" class="portfolio-empty">
             <p>아직 생성된 포트폴리오가 없습니다.</p>
         </div>
+        <div id="portfolio-list" class="portfolio-list" style="display: none;"></div>
     </div>
-    <div id="portfolio-list" class="portfolio-list" style="display: none;"></div>
 </div>
 
 <style>
@@ -111,6 +114,57 @@
         margin: 0 auto;
     }
 
+    .benchmark-theme {
+        background: linear-gradient(180deg, #071630 0%, #071125 100%);
+        border-radius: 18px;
+        box-shadow: 0 8px 30px rgba(5, 15, 40, 0.25);
+        border: 1px solid rgba(77, 116, 221, 0.25);
+    }
+
+    .portfolio-summary-card {
+        border-radius: 28px;
+        padding: 24px;
+        margin-bottom: 16px;
+        color: #fff;
+        background: linear-gradient(135deg, #3167ff 0%, #7a2cff 100%);
+        box-shadow: 0 8px 24px rgba(61, 92, 255, 0.35);
+    }
+
+    .summary-label {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.75);
+        letter-spacing: 0.06em;
+    }
+
+    .summary-total {
+        margin: 6px 0 22px;
+        font-size: 44px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-top: 12px;
+    }
+
+    .summary-item-title {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.75);
+        margin: 0;
+    }
+
+    .summary-item-value {
+        font-size: 25px;
+        font-weight: 700;
+        margin: 2px 0 0;
+    }
+
     .portfolio-header {
         display: flex;
         justify-content: space-between;
@@ -120,16 +174,24 @@
 
     .portfolio-title {
         margin: 0;
-        font-size: 1.5rem;
-        color: var(--text-main);
+        font-size: 2rem;
+        color: #fff;
+        letter-spacing: -0.02em;
+    }
+
+        .portfolio-subtitle {
+        margin: 2px 0 0;
+        font-size: 13px;
+        color: #82a6e8;
+
     }
 
     .portfolio-create-btn {
         padding: 8px 16px;
-        background: #1A237E;
+        background: #2754de;
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: 999px;
         cursor: pointer;
         font-weight: bold;
         transition: opacity 0.2s;
@@ -152,27 +214,115 @@
 
     .portfolio-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 12px;
+        grid-template-columns: 1fr;
+        gap: 14px;
     }
 
     .portfolio-card {
-        border: 1px solid var(--border-color);
-        border-radius: 10px;
-        padding: 14px;
-        background: var(--container-bg);
-    }
-
-    .portfolio-card h3 {
-        margin: 0;
-        font-size: 16px;
-        color: var(--text-main);
+        border: 1px solid rgba(67, 128, 255, 0.7);
+        border-radius: 28px;
+        padding: 16px;
+        background: linear-gradient(180deg, #162746 0%, #13213d 100%);
+        color: #eef4ff;
     }
 
     .portfolio-card p {
         margin: 6px 0 0 0;
         font-size: 12px;
-        color: var(--text-sub);
+        color: #8aacdf;
+    }
+
+    .portfolio-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .portfolio-card-title {
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 30px;
+    }
+
+    .portfolio-card-title:hover {
+        text-decoration: underline;
+    }
+
+    .portfolio-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .portfolio-action-btn {
+        border: 1px solid rgba(141, 171, 240, 0.4);
+        background: rgba(9, 22, 44, 0.35);
+        color: #bed5ff;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .portfolio-action-btn:hover {
+        opacity: 0.8;
+    }
+
+    .portfolio-main-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+    }
+
+    .portfolio-value {
+        font-size: 40px;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .portfolio-profit {
+        font-size: 16px;
+        color: #ff6d6d;
+        font-weight: 700;
+    }
+
+    .portfolio-items {
+        margin-top: 12px;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .portfolio-card.is-open .portfolio-items {
+        display: flex;
+    }
+
+    .portfolio-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(130, 173, 255, 0.2);
+        border-radius: 14px;
+        padding: 10px 12px;
+    }
+
+    .portfolio-item-name {
+        font-weight: 700;
+        color: #f3f7ff;
+        font-size: 14px;
+    }
+
+    .portfolio-item-meta {
+        font-size: 12px;
+        color: #8fb2ea;
     }
 </style>
 
@@ -180,8 +330,53 @@
     import { supabase } from "../lib/supabase";
 
     const createBtn = document.getElementById('btn-create-portfolio');
-        const emptyState = document.getElementById('portfolio-empty-state');
+    const emptyState = document.getElementById('portfolio-empty-state');
     const listContainer = document.getElementById('portfolio-list');
+    const summaryCard = document.getElementById('portfolio-summary-card');
+    const escapeHtml = (value: string = '') =>
+        value
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    const encodeData = (value: string = '') => encodeURIComponent(value);
+    const decodeData = (value: string = '') => decodeURIComponent(value);
+    const currencyFormatter = new Intl.NumberFormat('ko-KR');
+    const formatMoney = (value: number) => `${currencyFormatter.format(Math.round(value || 0))}원`;
+    const calcPortfolioValue = (portfolio: any) =>
+        (portfolio.portfolio_items || []).reduce((sum: number, item: any) =>
+            sum + (Number(item.quantity) * Number(item.avg_price || 0)), 0
+        );
+
+    const renderSummary = (portfolios: any[]) => {
+        if (!summaryCard) return;
+        if (!portfolios || portfolios.length === 0) {
+            summaryCard.style.display = 'none';
+            summaryCard.innerHTML = '';
+            return;
+        }
+
+        const totalAssets = portfolios.reduce((sum, portfolio) => sum + calcPortfolioValue(portfolio), 0);
+        const totalItems = portfolios.reduce((sum, portfolio) => sum + (portfolio.portfolio_items?.length || 0), 0);
+        const profit = 0;
+
+        summaryCard.style.display = 'block';
+        summaryCard.innerHTML = `
+            <p class="summary-label">TOTAL ASSETS SUMMARY</p>
+            <p class="summary-total">${formatMoney(totalAssets)}</p>
+            <div class="summary-grid">
+                <div>
+                    <p class="summary-item-title">INVESTMENT</p>
+                    <p class="summary-item-value">${formatMoney(totalAssets)}</p>
+                </div>
+                <div style="text-align:right;">
+                    <p class="summary-item-title">PROFIT (${totalItems}종목)</p>
+                    <p class="summary-item-value">+${formatMoney(profit)}</p>
+                </div>
+            </div>
+        `;
+    };
 
     const renderPortfolioList = (portfolios: any[]) => {
         if (!emptyState || !listContainer) return;
@@ -190,15 +385,52 @@
             emptyState.style.display = 'block';
             listContainer.style.display = 'none';
             listContainer.innerHTML = '';
+            renderSummary([]);
             return;
         }
 
         emptyState.style.display = 'none';
         listContainer.style.display = 'grid';
+        renderSummary(portfolios);
         listContainer.innerHTML = portfolios.map((portfolio) => `
-            <article class="portfolio-card">
-                <h3>${portfolio.name}</h3>
-                <p>생성일: ${new Date(portfolio.created_at).toLocaleDateString('ko-KR')}</p>
+            <article class="portfolio-card is-open">
+                <div class="portfolio-card-header">
+                    <button
+                        class="portfolio-card-title js-open-add-stock"
+                        data-portfolio-id="${portfolio.id}"
+                        data-portfolio-name="${encodeData(portfolio.name)}"
+                    >
+                        ${escapeHtml(portfolio.name)}
+                    </button>
+                    <div class="portfolio-actions">
+                        <button class="portfolio-action-btn js-rename" data-portfolio-id="${portfolio.id}" data-portfolio-name="${encodeData(portfolio.name)}">수정</button>
+                        <button class="portfolio-action-btn js-delete" data-portfolio-id="${portfolio.id}" data-portfolio-name="${encodeData(portfolio.name)}">삭제</button>
+                    </div>
+                </div>
+                <div class="portfolio-main-row">
+                    <div>
+                        <p>생성일: ${new Date(portfolio.created_at).toLocaleDateString('ko-KR')}</p>
+                        <p>보유 종목: ${portfolio.portfolio_items?.length || 0}개</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="portfolio-value">${formatMoney(calcPortfolioValue(portfolio))}</div>
+                        <div class="portfolio-profit">+0.00%</div>
+                    </div>
+                </div>
+                <div class="portfolio-items">
+                    ${(portfolio.portfolio_items?.length || 0) === 0
+                        ? `<div class="portfolio-item-row"><div class="portfolio-item-meta">데이터가 존재하지 않습니다.</div></div>`
+                        : portfolio.portfolio_items.map((item: any) => `
+                            <div class="portfolio-item-row">
+                                <div>
+                                    <div class="portfolio-item-name">${escapeHtml(item.symbol || 'UNKNOWN')}</div>
+                                    <div class="portfolio-item-meta">수량 ${Number(item.quantity || 0).toLocaleString()} · 평단 ${Number(item.avg_price || 0).toLocaleString()} ${escapeHtml(item.currency || '')}</div>
+                                </div>
+                                <div class="portfolio-item-meta">${formatMoney(Number(item.quantity || 0) * Number(item.avg_price || 0))}</div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
             </article>
         `).join('');
     };
@@ -215,7 +447,18 @@
 
         const { data, error } = await sb
             .from('portfolios')
-            .select('id, name, created_at')
+            .select(`
+                id,
+                name,
+                created_at,
+                portfolio_items (
+                    id,
+                    symbol,
+                    quantity,
+                    avg_price,
+                    currency
+                )
+            `)
             .eq('user_id', session.user.id)
             .order('created_at', { ascending: false });
 
@@ -254,6 +497,7 @@
             alert("생성 실패: " + err.message);
         }
     });
+
     // ✅ [추가] 인증 상태 변화 실시간 감지 (로그아웃 시 로그인 게이트로 복귀)
     // 상단에서 import한 supabase 객체를 사용합니다.
     supabase?.auth.onAuthStateChange((event, session) => {
@@ -270,6 +514,81 @@
             if (loginGate) loginGate.style.display = 'flex';
             if (content) content.style.display = 'none';
             renderPortfolioList([]);
+        }
+    });
+
+    listContainer?.addEventListener('click', async (event) => {
+        const target = event.target as HTMLElement;
+        const button = target.closest('button');
+        if (!button) return;
+
+        const sb = (window as any).supabase;
+        if (!sb) {
+            alert('데이터베이스 연결에 실패했습니다.');
+            return;
+        }
+
+        const portfolioId = button.dataset.portfolioId || '';
+        const portfolioName = decodeData(button.dataset.portfolioName || '');
+        if (!portfolioId) return;
+
+        if (button.classList.contains('js-open-add-stock')) {
+            const hiddenInput = document.getElementById('currentPortfolioId') as HTMLInputElement | null;
+            if (hiddenInput) hiddenInput.value = portfolioId;
+            const nameSpan = document.getElementById('modalPortfolioName');
+            if (nameSpan) nameSpan.textContent = portfolioName;
+
+            const modal = document.getElementById('addStockModal');
+            if (!modal) {
+                alert('종목 추가 모달을 찾지 못했습니다. 새로고침 후 다시 시도해주세요.');
+                return;
+            }
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+            return;
+        }
+
+        if (button.classList.contains('js-rename')) {
+            const nextName = window.prompt('새 포트폴리오 이름을 입력하세요.', portfolioName);
+            if (!nextName || nextName.trim() === '' || nextName.trim() === portfolioName) return;
+
+            const { error } = await sb
+                .from('portfolios')
+                .update({ name: nextName.trim() })
+                .eq('id', portfolioId);
+
+            if (error) {
+                alert('이름 수정 실패: ' + error.message);
+                return;
+            }
+            await loadPortfolios();
+            return;
+        }
+
+        if (button.classList.contains('js-delete')) {
+            const confirmed = window.confirm(`'${portfolioName}' 포트폴리오를 삭제할까요?\n보유 종목도 함께 삭제됩니다.`);
+            if (!confirmed) return;
+
+            const { error: itemDeleteError } = await sb
+                .from('portfolio_items')
+                .delete()
+                .eq('portfolio_id', portfolioId);
+
+            if (itemDeleteError) {
+                alert('보유 종목 삭제 실패: ' + itemDeleteError.message);
+                return;
+            }
+
+            const { error: portfolioDeleteError } = await sb
+                .from('portfolios')
+                .delete()
+                .eq('id', portfolioId);
+
+            if (portfolioDeleteError) {
+                alert('포트폴리오 삭제 실패: ' + portfolioDeleteError.message);
+                return;
+            }
+            await loadPortfolios();
         }
     });
 
