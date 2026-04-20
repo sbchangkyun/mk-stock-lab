@@ -422,7 +422,7 @@
                         : portfolio.portfolio_items.map((item: any) => `
                             <div class="portfolio-item-row">
                                 <div>
-                                    <div class="portfolio-item-name">${escapeHtml(item.name || item.symbol || 'UNKNOWN')}</div>
+                                    <div class="portfolio-item-name">${escapeHtml(item.symbol || 'UNKNOWN')}</div>
                                     <div class="portfolio-item-meta">수량 ${Number(item.quantity || 0).toLocaleString()} · 평단 ${Number(item.avg_price || 0).toLocaleString()} ${escapeHtml(item.currency || '')}</div>
                                 </div>
                                 <div class="portfolio-item-meta">${formatMoney(Number(item.quantity || 0) * Number(item.avg_price || 0))}</div>
@@ -449,14 +449,7 @@
             .select(`
                 id,
                 name,
-                created_at,
-                portfolio_items (
-                    id,
-                    name,
-                    quantity,
-                    avg_price,
-                    currency
-                )
+                created_at
             `)
             .eq('user_id', session.user.id)
             .order('created_at', { ascending: false });
