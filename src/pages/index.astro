@@ -9,22 +9,57 @@ import ChartArea from '../components/ChartArea.astro';
 import Footer from '../components/Footer.astro';
 import AddStockModal from '../components/Portfolio/AddStockModal.astro';
 import { supabase } from '../lib/supabase';
+import Portfolio from '../components/Portfolio.astro';
 
 // ── 인증 확인 ──────────────────────────────────────────
 const { data: { session } } = await supabase.auth.getSession();
 const isLoggedIn = !!session;
 
-// ── 포트폴리오 그룹 목록 fetch (로그인 시에만) ──────────
-let portfolios: { id: string; name: string; created_at: string }[] = [];
+
+/* src/pages/index.astro 상단 */
+
+// 1. 개별 종목(Item)의 타입을 정의합니다.
+interface PortfolioItem {
+  id: string;
+  symbol: string;
+  quantity: number;
+  avg_price: number;
+  currency: string;
+}
+
+// 2. 포트폴리오 그룹의 타입을 정의하며, 내부에 종목 리스트를 포함시킵니다.
+interface PortfolioGroup {
+  id: string;
+  name: string;
+  created_at: string;
+  portfolio_items: PortfolioItem[]; // 이 부분이 추가되어야 오류가 사라집니다.
+}
+
+// 3. 변수 선언 시 위에서 만든 타입을 적용합니다.
+let portfolios: PortfolioGroup[] = []; 
+
+// ... (기존 인증 확인 및 fetch 로직)
 if (isLoggedIn && session) {
   const { data, error } = await supabase
-    .from('portfolios')
-    .select('id, name, created_at')
-    .eq('user_id', session.user.id)
-    .order('created_at', { ascending: false });
+  .from('portfolios')
+  .select(`
+    id, 
+    name, 
+    created_at,
+    portfolio_items (
+      id,
+      symbol,
+      quantity,
+      avg_price,
+      currency
+    )
+  `)
+  .eq('user_id', session.user.id)
+  .order('created_at', { ascending: false });
 
   if (!error && data) {
-    portfolios = data;
+    // Supabase에서 가져온 데이터를 타입에 맞게 할당합니다.
+    portfolios = data as unknown as PortfolioGroup[];
   }
 }
 ---
@@ -34,28 +69,6 @@ if (isLoggedIn && session) {
     <Header />
     <Ticker />
     <Nav />
-
-    <div id="toast">힝 속았지?</div>
-
-    <!-- ── 미로그인: 안내 섹션 ───────────────────────── -->
-    {!isLoggedIn && (
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-            <div class="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/50 p-12 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center gap-4">
-                <div class="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">로그인이 필요합니다</h3>
-                    <p class="text-sm text-gray-500 mt-1">포트폴리오를 관리하려면 먼저 로그인하세요.</p>
-                </div>
-                <a href="/login" class="mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 px-6 rounded-lg transition-all active:scale-95 shadow-sm">
-                    로그인하기
-                </a>
-            </div>
-        </div>
-    )}
 
     <!-- ── 로그인: 포트폴리오 그룹 섹션 ──────────────── -->
     {isLoggedIn && (
@@ -87,38 +100,46 @@ if (isLoggedIn && session) {
                     <p class="text-gray-400 dark:text-gray-500 text-sm font-medium">포트폴리오 그룹이 없습니다.</p>
                     <p class="text-gray-400 dark:text-gray-600 text-xs">위의 버튼으로 첫 번째 그룹을 만들어보세요!</p>
                 </div>
-            ) : (
+                        ) : (
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {portfolios.map((portfolio) => (
-                        <button
-                            class="portfolio-card group text-left w-full bg-white dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-200 cursor-pointer"
+                    {portfolios.map((portfolio) => (    
+                      <div class="portfolio-card ...">
+                        <div class="flex justify-between items-center mb-4">
+                          <h3 class="text-base font-bold text-gray-800 dark:text-white">{portfolio.name}</h3>
+                          <button 
+                            class="add-stock-btn text-xs text-indigo-500 font-semibold hover:underline"
                             data-portfolio-id={portfolio.id}
                             data-portfolio-name={portfolio.name}
-                        >
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/40 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/70 rounded-lg flex items-center justify-center transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                    </svg>
+                          >
+                            + 종목 추가
+                          </button>
+                        </div>
+
+                        <div class="space-y-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                          {portfolio.portfolio_items && portfolio.portfolio_items.length > 0 ? (
+                            portfolio.portfolio_items.map((item) => (
+                              <div class="flex justify-between items-center text-sm p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+                                <span class="font-medium text-gray-700 dark:text-gray-300">{item.symbol}</span>
+                                <div class="text-right">
+                                  <p class="text-xs text-gray-900 dark:text-white font-semibold">
+                                    {item.quantity}주
+                                  </p>
+                                  <p class="text-[10px] text-gray-400">
+                                    평단: {Number(item.avg_price).toLocaleString()} {item.currency}
+                                  </p>
                                 </div>
-                                <span class="text-xs text-indigo-400 dark:text-indigo-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                    종목 추가
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </span>
-                            </div>
-                            <h3 class="font-bold text-gray-800 dark:text-white text-base leading-snug">{portfolio.name}</h3>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                {new Date(portfolio.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 생성
-                            </p>
-                        </button>
+                              </div>
+                            ))
+                          ) : (
+                            <p class="text-[11px] text-gray-400 text-center py-4">아직 등록된 종목이 없습니다.</p>
+                          )}
+                        </div>
+                      </div>
                     ))}
                 </div>
             )}
         </div>
     )}
-
     <ChartArea />
     <Footer />
 
@@ -131,47 +152,59 @@ if (isLoggedIn && session) {
 
         // ── 새 포트폴리오 그룹 생성 ────────────────────────
         document.getElementById('createPortfolioBtn')?.addEventListener('click', async () => {
-            const name = prompt('새 포트폴리오 이름을 입력하세요.\n(예: 미국 주식, 국내 성장주, ETF 모음)');
+            const name = prompt('새 포트폴리오 이름을 입력하세요.');
             if (!name?.trim()) return;
 
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                alert('로그인이 필요합니다.');
-                return;
-            }
+            try {
+                // 현재 세션에서 유저 정보를 가져옵니다.
+                const { data: { session } } = await supabase.auth.getSession();
+                const user = session?.user;
 
-            const { error } = await supabase
-                .from('portfolios')
-                .insert([{ user_id: user.id, name: name.trim() }]);
+                if (!user) {
+                    alert('로그인 세션이 만료되었습니다. 다시 로그인해주세요.');
+                    return;
+                }
 
-            if (error) {
-                alert('생성 실패: ' + error.message);
-            } else {
-                window.location.reload();
+                const { data, error } = await supabase
+                    .from('portfolios')
+                    .insert([{ user_id: user.id, name: name.trim() }])
+                    .select(); // 생성된 데이터를 확인하기 위해 추가
+
+                if (error) {
+                    console.error('Insert Error:', error);
+                    alert('생성 실패: ' + error.message);
+                } else {
+                    console.log('Created:', data);
+                    window.location.reload(); // 페이지를 새로고침하여 목록 갱신
+                }
+            } catch (e) {
+                console.error('System Error:', e);
+                alert('시스템 오류가 발생했습니다.');
             }
         });
 
         // ── 포트폴리오 카드 클릭 → 모달 열기 ──────────────
         const modal = document.getElementById('addStockModal');
 
-        document.querySelectorAll<HTMLElement>('.portfolio-card').forEach((card) => {
-            card.addEventListener('click', () => {
-                const portfolioId   = card.dataset.portfolioId   || '';
-                const portfolioName = card.dataset.portfolioName || '';
+        // index.astro 하단 스크립트 수정
+document.querySelectorAll<HTMLElement>('.add-stock-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // 카드 자체의 클릭 이벤트가 있다면 방지
+        
+        const portfolioId   = btn.dataset.portfolioId   || '';
+        const portfolioName = btn.dataset.portfolioName || '';
 
-                // 모달에 선택된 portfolio_id 주입
-                const hiddenInput = document.getElementById('currentPortfolioId') as HTMLInputElement | null;
-                if (hiddenInput) hiddenInput.value = portfolioId;
+        // 모달에 정보 주입 후 열기 [cite: 35, 36]
+        const hiddenInput = document.getElementById('currentPortfolioId') as HTMLInputElement | null;
+        if (hiddenInput) hiddenInput.value = portfolioId;
 
-                // 모달 타이틀에 그룹명 표시
-                const nameSpan = document.getElementById('modalPortfolioName');
-                if (nameSpan) nameSpan.textContent = portfolioName;
+        const nameSpan = document.getElementById('modalPortfolioName');
+        if (nameSpan) nameSpan.textContent = portfolioName;
 
-                // 모달 열기
-                modal?.classList.remove('hidden');
-                modal?.classList.add('flex');
-                document.body.style.overflow = 'hidden';
-            });
-        });
+        const modal = document.getElementById('addStockModal');
+        modal?.classList.remove('hidden');
+        modal?.classList.add('flex');
+    });
+});
     </script>
 </Layout>
