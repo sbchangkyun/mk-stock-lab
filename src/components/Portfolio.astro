@@ -115,10 +115,10 @@
     }
 
     .benchmark-theme {
-        background: linear-gradient(180deg, #071630 0%, #071125 100%);
+        background: transparent;
         border-radius: 18px;
-        box-shadow: 0 8px 30px rgba(5, 15, 40, 0.25);
-        border: 1px solid rgba(77, 116, 221, 0.25);
+        box-shadow: none;
+        border: none;
     }
 
     .portfolio-summary-card {
@@ -174,16 +174,15 @@
 
     .portfolio-title {
         margin: 0;
-        font-size: 2rem;
-        color: #fff;
-        letter-spacing: -0.02em;
+        font-size: 18px;
+        color: var(--text-main);
+        letter-spacing: 0;
     }
 
-        .portfolio-subtitle {
+    .portfolio-subtitle {
         margin: 2px 0 0;
-        font-size: 13px;
-        color: #82a6e8;
-
+        font-size: 12px;
+        color: var(--text-sub);
     }
 
     .portfolio-create-btn {
@@ -219,17 +218,17 @@
     }
 
     .portfolio-card {
-        border: 1px solid rgba(67, 128, 255, 0.7);
+        border: 1px solid var(--border-color);
         border-radius: 28px;
         padding: 16px;
-        background: linear-gradient(180deg, #162746 0%, #13213d 100%);
-        color: #eef4ff;
+        background: var(--container-bg);
+        color: var(--text-main);
     }
 
     .portfolio-card p {
         margin: 6px 0 0 0;
         font-size: 12px;
-        color: #8aacdf;
+        color: var(--text-sub);
     }
 
     .portfolio-card-header {
@@ -246,9 +245,9 @@
         background: transparent;
         text-align: left;
         cursor: pointer;
-        color: #ffffff;
+        color: var(--text-main);
         font-weight: 700;
-        font-size: 30px;
+        font-size: 22px;
     }
 
     .portfolio-card-title:hover {
@@ -261,9 +260,9 @@
     }
 
     .portfolio-action-btn {
-        border: 1px solid rgba(141, 171, 240, 0.4);
-        background: rgba(9, 22, 44, 0.35);
-        color: #bed5ff;
+        border: 1px solid var(--border-color);
+        background: var(--container-bg);
+        color: var(--text-sub);
         border-radius: 999px;
         padding: 5px 10px;
         font-size: 12px;
@@ -282,9 +281,9 @@
     }
 
     .portfolio-value {
-        font-size: 40px;
+        font-size: 28px;
         font-weight: 800;
-        color: #fff;
+        color: var(--text-main);
     }
 
     .portfolio-profit {
@@ -308,21 +307,21 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(130, 173, 255, 0.2);
+        background: var(--nav-hover);
+        border: 1px solid var(--border-color);
         border-radius: 14px;
         padding: 10px 12px;
     }
 
     .portfolio-item-name {
         font-weight: 700;
-        color: #f3f7ff;
+        color: var(--text-main);
         font-size: 14px;
     }
 
     .portfolio-item-meta {
         font-size: 12px;
-        color: #8fb2ea;
+        color: var(--text-sub);
     }
 </style>
 
@@ -423,7 +422,7 @@
                         : portfolio.portfolio_items.map((item: any) => `
                             <div class="portfolio-item-row">
                                 <div>
-                                    <div class="portfolio-item-name">${escapeHtml(item.symbol || 'UNKNOWN')}</div>
+                                    <div class="portfolio-item-name">${escapeHtml(item.name || item.symbol || 'UNKNOWN')}</div>
                                     <div class="portfolio-item-meta">수량 ${Number(item.quantity || 0).toLocaleString()} · 평단 ${Number(item.avg_price || 0).toLocaleString()} ${escapeHtml(item.currency || '')}</div>
                                 </div>
                                 <div class="portfolio-item-meta">${formatMoney(Number(item.quantity || 0) * Number(item.avg_price || 0))}</div>
@@ -453,7 +452,7 @@
                 created_at,
                 portfolio_items (
                     id,
-                    symbol,
+                    name,
                     quantity,
                     avg_price,
                     currency
