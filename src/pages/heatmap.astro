@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Heatmap | MK Stock Lab" activePath="/heatmap">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Heatmap</p>
+      <h1>Market heatmap shell</h1>
+      <p class="lead">Index and portfolio heatmap data will be wired after the market data and portfolio phases.</p>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Heatmap universes">
+    <span class="tab active">KOSPI200</span>
+    <span class="tab">KOSDAQ150</span>
+    <span class="tab">S&amp;P500</span>
+    <span class="tab">NASDAQ100</span>
+    <span class="tab">My Portfolio</span>
+  </div>
+
+  <section class="heatmap-placeholder">
+    <p class="eyebrow">Global color scale</p>
+    <h2>Green for positive, red for negative, gray near zero</h2>
+    <div class="heatmap-grid" aria-label="Sample heatmap cells">
+      <div class="heatmap-cell up">AAPL<small>+5.2%</small></div>
+      <div class="heatmap-cell flat">MSFT<small>+0.1%</small></div>
+      <div class="heatmap-cell down">TSLA<small>-5.4%</small></div>
+      <div class="heatmap-cell up">NVDA<small>+3.0%</small></div>
+      <div class="heatmap-cell flat">005930<small>-0.2%</small></div>
+    </div>
+  </section>
+</Layout>

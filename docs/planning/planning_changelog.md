@@ -1,5 +1,71 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 1.1 - 2026-06-15
+
+### Build Stabilization
+
+- Identified the Vercel adapter packaging failure root cause as a local Windows OneDrive file attribute issue.
+- Generated build files inside the OneDrive workspace were marked as reparse-point entries, and Node recursive copy used by the Vercel adapter terminated during packaging.
+- Kept `output: 'server'` for Vercel server-capable production behavior.
+- Added local OneDrive detection in `astro.config.mjs` so local builds write Astro `outDir` to a normal temporary filesystem path outside OneDrive.
+- Added `postbuild` script `scripts/repair-vercel-output.mjs` to populate `.vercel/output/static` from generated client assets when the adapter leaves static output empty.
+
+### Validation
+
+- `npm run build` now exits with code 0.
+- `.vercel/output/config.json` is generated.
+- `.vercel/output/functions/_render.func` is generated.
+- `.vercel/output/static` contains generated static assets.
+- No requested provider secret markers were found in source or generated output.
+- Removed legacy route strings remain absent from source and generated output.
+- Ignored-file coverage was confirmed for `.env*`, `.vercel`, `dist`, `.astro`, `.omc`, and representative credential/key filenames.
+- No Hangul text was found in source, scripts, config, package metadata, or planning docs.
+
+## Phase 1 - 2026-06-15
+
+### Changed
+
+- Replaced the legacy single-page menu shell with an explicit Astro route shell.
+- Added target route skeletons:
+  - `/`
+  - `/chart-ai`
+  - `/heatmap`
+  - `/lab`
+  - `/portfolio`
+  - `/lab/congress-stocks`
+  - `/lab/nps-portfolio`
+  - `/lab/sp500-sectors`
+  - `/lab/asset-class-returns`
+- Rebuilt shared layout, header, auth modal entry points, nav, ticker belt, slide ad, footer fixed ad, theme handling, and base styles.
+- Removed crypto tickers from the ticker belt.
+- Simplified the Supabase helper to preserve browser auth entry points without legacy portfolio table helpers.
+
+### Removed
+
+- Removed obsolete Economic News API route.
+- Removed obsolete Crypto News API route.
+- Removed obsolete Seibro/Supply Analysis page and components.
+- Removed legacy Naver stock and ETF proxy API routes used by the old menu shell.
+- Removed the old single-page menu and word-cloud script.
+- Removed the old crypto redirect file.
+
+### Validation
+
+- Ran normal `npm run build` only. No verbose Astro or Vite build was run.
+- Astro and Vite generated `dist/client` and `dist/server`, but the command still exited with code 1.
+- `.vercel/output/static` and `.vercel/output/server` were created, but `.vercel/output/config.json` and Vercel function folders were not written.
+- The generated server entry imports successfully.
+- No obsolete news, crypto news, Seibro, or removed API route strings were found in `src`, `public`, `dist/server`, or `dist/client`.
+- No requested provider secret markers were found in `src`, `public`, `dist/client`, or `dist/server`.
+- Ignored-file coverage was confirmed for `.env*`, `.vercel`, `dist`, `.astro`, `.omc`, and representative credential/key filenames.
+- No Hangul text was found in `src`, `docs/planning`, or `.gitignore`.
+
+### Remaining Build Risk
+
+- The current build failure is classified as Vercel adapter output packaging after successful Astro/Vite bundling.
+- It is not currently classified as a legacy route/module import failure because those routes were removed and the generated server entry imports successfully.
+- If this persists in Phase 2, investigate Vercel adapter build-output generation and `@vercel/nft` packaging behavior with sanitized environment variables only.
+
 ## Phase 0.1 - 2026-06-15
 
 ### Safety Changes

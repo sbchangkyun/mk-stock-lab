@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const labCards = [
+  { title: 'Congress Stocks', href: '/lab/congress-stocks', phase: 'Phase 8', description: 'Disclosure-based stock holdings research shell.' },
+  { title: 'NPS Portfolio', href: '/lab/nps-portfolio', phase: 'Phase 8', description: 'National Pension Service holdings research shell.' },
+  { title: 'S&P 500 Sectors', href: '/lab/sp500-sectors', phase: 'Phase 6', description: 'Annual sector return comparison shell.' },
+  { title: 'Asset-Class Returns', href: '/lab/asset-class-returns', phase: 'Phase 6', description: 'Cross-asset annual return comparison shell.' },
+];
+---
+
+<Layout title="Lab | MK Stock Lab" activePath="/lab">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Lab</p>
+      <h1>Public investment data content</h1>
+      <p class="lead">Lab pages will use a public, ad-supported content layout with data tables, charts, methodology, FAQ, and related cards.</p>
+    </div>
+  </header>
+
+  <section class="grid-4">
+    {labCards.map((card) => (
+      <a class="route-card" href={card.href}>
+        <p class="eyebrow">{card.phase}</p>
+        <h2>{card.title}</h2>
+        <p>{card.description}</p>
+      </a>
+    ))}
+  </section>
+</Layout>

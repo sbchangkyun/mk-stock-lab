@@ -1,0 +1,40 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const sectors = [
+  'S&P 500 Index',
+  'S&P 500 Information Technology Index',
+  'S&P 500 Consumer Discretionary Index',
+  'S&P 500 Communication Services Index',
+  'S&P 500 Industrials Index',
+  'S&P 500 Energy Index',
+  'S&P 500 Financials Index',
+  'S&P 500 Materials Index',
+  'S&P 500 Health Care Index',
+  'S&P 500 Utilities Index',
+  'S&P 500 Consumer Staples Index',
+  'S&P 500 Real Estate Index',
+];
+---
+
+<Layout title="S&P 500 Sectors | MK Stock Lab" activePath="/lab">
+  <p class="breadcrumb"><a href="/lab">Lab</a> / S&amp;P 500 Sectors</p>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Phase 6 Lab page</p>
+      <h1>S&amp;P 500 sector returns shell</h1>
+      <p class="lead">Annual sector return data, charts, methodology, FAQ, and related ETF cards will be added in Lab MVP 1.</p>
+    </div>
+  </header>
+
+  <table class="data-table">
+    <thead>
+      <tr><th>Required index</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {sectors.map((sector) => (
+        <tr><td>{sector}</td><td>Planned</td></tr>
+      ))}
+    </tbody>
+  </table>
+</Layout>

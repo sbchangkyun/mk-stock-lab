@@ -1,457 +1,665 @@
-/* style.css - MK Stock Lab 통합 스타일 */
 :root {
-    --bg-color: #f0f3fa; --container-bg: #ffffff; --text-main: #333333;
-    --text-sub: #777777; --border-color: #e0e3eb; --header-logo: #1A237E;
-    --accent-color: #1A237E; --nav-hover: #f8f9fa;
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-muted: #eef3fb;
+  --text: #172033;
+  --text-muted: #637083;
+  --border: #d9e1ec;
+  --primary: #0f4fd8;
+  --primary-dark: #0b3ea8;
+  --positive: #118a4f;
+  --negative: #c43f3f;
+  --neutral: #8993a4;
+  --shadow: 0 12px 36px rgba(20, 36, 64, 0.08);
 }
 
 body.dark-mode {
-    --bg-color: #121212; --container-bg: #1e1e1e; --text-main: #e0e0e0;
-    --text-sub: #aaaaaa; --border-color: #333333; --header-logo: #8c9eff;
-    --accent-color: #3949ab; --nav-hover: #2c2c2c;
+  --bg: #101722;
+  --surface: #162131;
+  --surface-muted: #1d2a3d;
+  --text: #edf3fb;
+  --text-muted: #a8b4c5;
+  --border: #2d3b50;
+  --primary: #6ea2ff;
+  --primary-dark: #9bbdff;
+  --shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
 }
 
-body { 
-    font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; 
-    background-color: var(--bg-color); color: var(--text-main);
-    overflow-x: hidden; padding-bottom: 140px; transition: background-color 0.3s ease;
+* {
+  box-sizing: border-box;
 }
 
-/* 팝업 관련 */
-#slidePopup { position: fixed; top: -100%; left: 0; width: 100%; background-color: var(--container-bg); box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 9999; transition: top 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
-#slidePopup.active { top: 0; }
-.ad-content { max-width: 1200px; margin: 0 auto; padding: 15px; text-align: center; position: relative; }
-.popup-close-btn { 
-    position: absolute; 
-    bottom: 50px; /* 초기 위치 */
-    right: 15px; 
-    background: rgba(0,0,0,0.5); 
-    color: #fff; 
-    width: 24px; 
-    height: 24px; 
-    border-radius: 50%; 
-    font-size: 16px; 
-    line-height: 22px; 
-    text-align: center; 
-    cursor: pointer; 
-    z-index: 10001; 
-    /* 위치 변경 시 부드럽게 움직이도록 설정 */
-    transition: bottom 0.4s ease-in-out;
-}
-/* [추가] 1초 뒤 적용될 이동 위치 */
-.popup-close-btn.moved { 
-    bottom: 15px; /* 50px에서 15px로 내려가서 클릭하기 어렵게 만듦 */
-}
-.close-bar { width: 100%; padding: 10px 15px; background-color: var(--nav-hover); border-top: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: flex-start; gap: 5px; box-sizing: border-box; }
-.timer-info { font-size: 13px; font-weight: bold; color: var(--text-main); }
-.no-show-area { width: 100%; text-align: right; margin-top: -20px; }
-#timerText { color: #ff4d4d; }
-
-/* 헤더 */
-.header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; }
-.logo-area svg { width: 140px; height: 40px; cursor: pointer; }
-.logo-area svg text { fill: var(--header-logo); }
-.header-actions { display: flex; align-items: center; gap: 12px; }
-#themeToggle { cursor: pointer; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; border-radius: 50%; background: var(--container-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-#themeToggle svg { width: 18px; height: 18px; fill: var(--text-main); }
-#loginBtn { padding: 0 18px; height: 32px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
-
-/* --- 로그인/로그아웃 버튼 최종 상태 관리 --- */
-
-/* 1. 처음에는 모든 버튼을 숨깁니다 (자바스크립트가 판단하기 전까지) */
-.header-actions .auth-btn {
-    display: none !important; 
-    align-items: center;
-    justify-content: center;
-    padding: 0 18px;
-    height: 32px;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: 0.3s;
+body {
+  margin: 0;
+  min-width: 1080px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, Arial, "Malgun Gothic", sans-serif;
+  letter-spacing: 0;
+  padding-bottom: 124px;
 }
 
-/* 2. 자바스크립트가 .hidden 클래스를 제거한 버튼만 화면에 보여줍니다 */
-.header-actions .auth-btn:not(.hidden) {
-    display: inline-flex !important;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-/* 3. 각 버튼별 개별 색상 설정 */
-#open-login-btn { background-color: var(--accent-color) !important; }
-#logout-btn { background-color: var(--text-sub) !important; }
-
-/* 4. [보안책] hidden이 붙은 요소는 어떤 경우에도 숨깁니다 */
-.hidden { display: none !important; }
-
-/* [수정] 티커 벨트: 높이를 54px에서 64px로 늘려 잘림 방지 및 정렬 해제 */
-.independent-ticker { 
-    width: 100%; 
-    background: var(--container-bg); 
-    border-bottom: 0.1px solid var(--border-color); 
-    height: 40px; /* 54px -> 64px로 변경 (글자 잘림 해결) */
-    overflow: hidden; 
-    position: relative;
-    /* 중요: flex를 제거하고 block으로 설정하여 내부 위젯의 자동 너비를 보장합니다. */
-    display: block !important; 
+button,
+input {
+  font: inherit;
 }
 
-.independent-ticker > div { 
-    /* 0.8 배율로 줄였을 때 100% 화면을 채우기 위해 너비를 125%로 설정 */
-    width: 125% !important; 
-    height: 54px; /* 내부 위젯이 넉넉히 그려질 높이 */
-    transform: scale(0.8); 
-    transform-origin: left top; /* 왼쪽 상단 기준 축소 */
-    margin-right: -25%; 
-    display: block;
+.hidden {
+  display: none !important;
 }
 
-/* 메뉴 및 레이아웃 (가로 슬라이드 반영) */
-.nav-menu-wrapper { 
-    background: var(--container-bg); 
-    border-bottom: 1px solid var(--border-color); 
-    position: sticky; 
-    top: 0; 
-    z-index: 800; 
-}
-.nav-menu { 
-    max-width: 1200px; 
-    margin: 0 auto; 
-    display: flex; 
-    list-style: none; 
-    padding: 0; 
-    margin: 0; 
-    /* --- 가로 슬라이드 핵심 코드 --- */
-    overflow-x: auto;           /* 가로 방향으로 내용이 넘치면 스크롤 허용 */
-    -webkit-overflow-scrolling: touch; /* 모바일에서 부드러운 스크롤 적용 */
-    scrollbar-width: none;      /* Firefox에서 스크롤바 숨기기 */
-}
-/* Chrome, Safari, Edge에서 스크롤바 숨기기 */
-.nav-menu::-webkit-scrollbar {
-    display: none; 
-}
-.nav-item { 
-    padding: 12px 18px; 
-    font-size: 15px; 
-    font-weight: bold; 
-    color: var(--text-main); 
-    cursor: pointer; 
-    border-bottom: 3px solid transparent; 
-    white-space: nowrap;        /* 줄바꿈 절대 금지 */
-    display: flex; 
-    align-items: center; 
-    gap: 6px; 
-    flex-shrink: 0;             /* 메뉴 너비가 좁아지지 않도록 고정 */
-}
-.nav-item.active { color: var(--accent-color); border-bottom: 3px solid var(--accent-color); }
-.main-wrapper { max-width: 1200px; margin: 0 auto; padding: 15px; }
-.search-area { display: flex; gap: 8px; margin-bottom: 15px; }
-input#stockInput { flex: 1; height: 42px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; background: var(--container-bg); color: var(--text-main); }
-button#searchBtn { height: 42px; padding: 0 25px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-
-/* 뉴스 및 차트 영역 */
-#chart_container { width: 100%; height: 600px; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background-color: var(--container-bg); position: relative; }
-
-.news-item { display: flex; gap: 15px; padding: 15px; border-bottom: 1px solid var(--border-color); text-decoration: none; color: inherit; transition: background 0.2s; }
-.news-item:hover { background-color: var(--nav-hover); }
-.news-thumbnail { width: 100px; height: 70px; border-radius: 6px; object-fit: cover; background-color: #eee; flex-shrink: 0; }
-.news-title { font-size: 15px; font-weight: bold; margin-bottom: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.news-source { font-size: 12px; color: var(--text-sub); }
-
-/* 페이지네이션 디자인 */
-.pagination-nav { display: flex; justify-content: center; gap: 8px; padding: 25px 10px; border-top: 1px solid var(--border-color); margin-top: auto; background-color: var(--container-bg); }
-.pagination-nav button { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-main); border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-.pagination-nav button:hover { background-color: var(--nav-hover); border-color: var(--accent-color); }
-.pagination-nav button.active { background-color: var(--accent-color); color: #ffffff; border-color: var(--accent-color); }
-
-/* 푸터 및 하단 광고 */
-.fixed-bottom-area { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 900; background-color: var(--container-bg); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-.bottom-ad-banner { width: 100%; text-align: center; padding: 5px 0; border-bottom: 1px solid var(--border-color); position: relative; overflow: hidden; /* 영역 이탈 방지 */}
-.bottom-ad-banner img { max-width: 100% !important; height: auto !important; display: block; margin: 0 auto; /* 배너 이미지가 화면보다 커지지 않게 합니다 */} 
-.close-ad-btn { position: absolute; top: 2px; right: 8px; background: rgba(0,0,0,0.5); color: #fff; width: 20px; height: 20px; border-radius: 50%; font-size: 14px; line-height: 18px; text-align: center; cursor: pointer; z-index: 1001; }
-.fixed-footer { padding: 4px 0; text-align: center; display: flex; justify-content: center; align-items: center; gap: 15px; }
-.footer-content { font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 10px; white-space: nowrap; }
-
-/* 모바일 최적화 */
-@media (max-width: 767px) {
-    #chart_container { height: 480px; }
-    .nav-item { padding: 12px 10px; font-size: 13px; }
-    .pagination-nav { gap: 4px; padding: 15px 5px; }
-    .pagination-nav button { min-width: 28px; height: 28px; font-size: 11px; }
-}
-#toast {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8); color: #fff; padding: 12px 24px;
-    border-radius: 30px; z-index: 10000; display: none;
+.site-header {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 40px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
 
-/* ============================================================
-   실시간 검색어 (워드 클라우드) 대시보드 스타일
-   ============================================================ */
-
-/* 클라우드 상단 정보바 */
-.cloud-header {
-    padding: 15px;
-    background: var(--nav-hover);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    /* [추가] 클라우드 배경보다 위로 올라오도록 설정 */
-    position: relative; 
-    z-index: 10;
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.cloud-info-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap; /* 모바일 대응: 요소가 많으면 줄바꿈 */
+.brand-symbol {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: var(--primary);
+  border-radius: 8px;
+  font-weight: 800;
 }
 
-.cloud-title { 
-    font-size: 16px; 
-    font-weight: 800; 
-    color: var(--accent-color); 
+.brand-text {
+  display: grid;
+  gap: 2px;
 }
 
-.cloud-meta { 
-    font-size: 12px; 
-    color: var(--text-sub); 
+.brand-text strong {
+  font-size: 18px;
 }
 
-.cloud-source-link { 
-    color: var(--accent-color); 
-    text-decoration: none; 
-    font-weight: bold; 
-    transition: opacity 0.2s;
+.brand-text small {
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
-.cloud-source-link:hover { opacity: 0.7; }
-
-/* 종목/ETF 전환 탭 */
-.cloud-tabs { 
-    display: flex; 
-    gap: 8px; 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.cloud-tab-btn {
-    padding: 6px 14px;
-    font-size: 12px;
-    border: 1px solid var(--border-color);
-    background: var(--container-bg);
-    color: var(--text-main);
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
+.icon-button,
+.header-button,
+.primary-action,
+.oauth-button,
+.text-button,
+.footer-ad-close,
+.ad-close-button {
+  border: 0;
+  cursor: pointer;
 }
 
-.cloud-tab-btn.active { 
-    background: var(--accent-color); 
-    color: #fff; 
-    border-color: var(--accent-color); 
+.icon-button {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text);
 }
 
-/* [최종 보정] 실시간 검색어 대시보드 스타일 */
-#cloud-canvas-wrapper {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    height: 95%;
-    min-height: 400px; /* 모바일 가독성을 위해 높이 상향 */
-    display: flex; 
-    align-items: flex-start; 
-    justify-content: center;
-    overflow: hidden;
-    background-color: var(--container-bg);
-    padding-top: 5px; /* 상단 헤더와의 미세 간격 */
+.icon-button svg,
+.footer-ad-close svg,
+.ad-close-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
-#word-cloud-canvas {
-    max-width: 85% !important; /* PC 기본값 */
-    max-height: 98% !important;
-    cursor: pointer;
+.header-button,
+.primary-action {
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 700;
 }
 
-/* 모바일 웹 최적화: 구름 크기 확대 및 상단 이동 */
-@media (max-width: 767px) {
-    /* 1. 상단 정보바(제목/탭) 여백을 줄여 공간 확보 */
-    .cloud-header {
-        padding: 8px 15px !important; 
-    }
-
-    /* 2. 구름 영역 전체를 위로 강제로 끌어올림 */
-    #cloud-canvas-wrapper {
-        margin-top: -30px !important; /* 수치가 커질수록 더 위로 올라갑니다 */
-        padding-top: 0 !important;
-    }
-
-    /* 3. 구름 너비 확장 */
-    #word-cloud-canvas {
-        max-width: 90% !important; 
-    }
+.header-button.secondary {
+  background: var(--surface-muted);
+  color: var(--text);
 }
 
-/* 액션 메뉴 디자인 및 중앙 정렬 */
-.cloud-action-menu {
-    position: absolute;
-    background: var(--container-bg);
-    border: 1.5px solid var(--accent-color);
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-    z-index: 5000;
-    min-width: 160px;
-    overflow: hidden;
+.ticker-belt {
+  height: 44px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
 }
 
-.cloud-action-item {
-    padding: 15px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--text-main);
-    border-bottom: 1px solid var(--border-color);
-    text-align: center;
-    transition: background 0.2s;
+.ticker-widget {
+  height: 44px;
 }
 
-.cloud-action-item:last-child { border-bottom: none; }
-.cloud-action-item:hover { background: var(--nav-hover); color: var(--accent-color); }
-
-@keyframes cloudFadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+.primary-nav {
+  position: sticky;
+  top: 0;
+  z-index: 700;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(14px);
 }
 
-/* ============================================================
-   서학개미 수급 분석 (Seibro) 섹션 스타일
-   ============================================================ */
-
-/* 1. 섹션 전체 컨테이너 */
-.seibro-section {
-    max-width: 1200px;
-    margin: 40px auto; /* 위아래 여백 확보 */
-    padding: 30px 20px;
-    background-color: var(--container-bg); /* 테마 대응 배경색 */
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+body.dark-mode .primary-nav {
+  background: rgba(22, 33, 49, 0.94);
 }
 
-/* 2. 섹션 헤더 (제목 및 설명) */
-.seibro-section .section-header {
-    margin-bottom: 30px;
-    border-left: 6px solid var(--accent-color); /* 포인트 컬러 사용 */
-    padding-left: 15px;
+.nav-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 20px;
 }
 
-.seibro-section .section-header h2 {
-    font-size: 22px;
-    font-weight: 800;
-    margin: 0 0 8px 0;
-    color: var(--text-main);
+.nav-link {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.seibro-section .section-header p {
-    font-size: 14px;
-    color: var(--text-sub);
-    margin: 0;
+.nav-link.active,
+.nav-link:hover {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
-/* 3. 분석 그리드 (급증주 1 : 차트 2 비율) */
-.analysis-grid {
-    display: grid;
-    grid-template-columns: 350px 1fr; /* 급증주는 고정폭, 차트는 나머지 전체 */
-    gap: 25px;
-    margin-bottom: 40px;
+.site-main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
 }
 
-/* 4. 모바일 대응 (반응형) */
-@media (max-width: 1024px) {
-    .analysis-grid {
-        grid-template-columns: 1fr; /* 태블릿/모바일에서는 세로로 배치 */
-    }
-    
-    .seibro-section {
-        margin: 20px 10px;
-        padding: 20px 15px;
-    }
+.hero-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 28px;
 }
 
-/* 5. 컴포넌트 내부 공통 카드 스타일 (HotPick, ChartArea 등에 적용 가능) */
-.seibro-card {
-    background: var(--nav-hover);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid var(--border-color);
+.hero-copy,
+.panel,
+.feature-card,
+.route-card,
+.auth-required {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
 }
 
-/* 종목명 말줄임 및 모바일 최적화 */
-.truncate-text {
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 140px; /* 모바일 기준 너비 */
+.hero-copy {
+  padding: 36px;
 }
 
-@media (min-width: 768px) {
-    .truncate-text {
-        max-width: 280px; /* PC 기준 너비 */
-    }
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
-/* 차트 컨테이너 높이 고정 (차트 사라짐 방지) */
-.seibro-card canvas {
-    width: 100% !important;
-    height: auto !important;
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
 }
 
-/* ============================================================
-   서학개미 TOP 30 최종 최적화 (줄내림 금지 및 너비 재조정)
-   ============================================================ */
-
-/* 1. 테이블 헤더 줄내림 방지 및 스타일 */
-.seibro-table th {
-    white-space: nowrap !important; /* 💡 핵심: 카테고리명 줄바꿈 강제 금지 */
-    word-break: keep-all;
-    padding: 12px 8px;
-    font-size: 13px;
-    border-bottom: 2px solid var(--border-color);
-    background-color: var(--container-bg);
+h1 {
+  margin-bottom: 16px;
+  font-size: 44px;
+  line-height: 1.08;
 }
 
-/* 2. 테이블 레이아웃 고정 및 컬럼 비율 최적화 */
-.seibro-table {
-    table-layout: fixed !important; 
-    width: 100%;
-    border-collapse: collapse;
+h2 {
+  font-size: 24px;
 }
 
-/* 컬럼 너비: 종목명에 최대한의 공간을 할당 (합계 100%) */
-.seibro-table th:nth-child(1), .seibro-table td:nth-child(1) { width: 10%; text-align: center; } /* 순위 */
-.seibro-table th:nth-child(2), .seibro-table td:nth-child(2) { width: 60%; }                /* 종목명 (확장) */
-.seibro-table th:nth-child(3), .seibro-table td:nth-child(3) { width: 20%; text-align: right; } /* 보관금액 */
-.seibro-table th:nth-child(4), .seibro-table td:nth-child(4) { width: 10%; text-align: right; } /* 전일대비 */
+.lead {
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1.7;
+  max-width: 760px;
+}
 
-/* 3. 모바일(767px 이하) 전용 미세 조정 */
-@media (max-width: 767px) {
-    .seibro-table th {
-        font-size: 12px !important; /* 모바일에서 헤더 폰트를 살짝 줄여 여유 확보 */
-        padding: 10px 4px !important;
-    }
-    
-    .seibro-table td {
-        padding: 10px 4px !important;
-        font-size: 11px !important;
-    }
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
 
-    .truncate-text {
-        max-width: 170px !important; /* 종목명 노출 길이 최대화 */
-        font-size: 12px;
-    }
+.button-link {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.button-link.secondary {
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
+.market-panel {
+  padding: 28px;
+}
+
+.metric-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.metric-row strong {
+  color: var(--text);
+}
+
+.positive {
+  color: var(--positive);
+}
+
+.negative {
+  color: var(--negative);
+}
+
+.neutral {
+  color: var(--neutral);
+}
+
+.grid-3,
+.grid-4 {
+  display: grid;
+  gap: 16px;
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.feature-card,
+.route-card,
+.panel,
+.auth-required {
+  padding: 24px;
+}
+
+.feature-card p,
+.route-card p,
+.panel p,
+.auth-required p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin-bottom: 10px;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 20px;
+}
+
+.chart-placeholder,
+.heatmap-placeholder,
+.table-placeholder {
+  min-height: 420px;
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.heatmap-cell {
+  min-height: 86px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 6px;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.heatmap-cell small {
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.heatmap-cell.up {
+  background: #118a4f;
+}
+
+.heatmap-cell.down {
+  background: #c43f3f;
+}
+
+.heatmap-cell.flat {
+  background: #8993a4;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tab.active {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.breadcrumb {
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.data-table th {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 18, 32, 0.52);
+}
+
+.modal-panel {
+  width: min(420px, calc(100vw - 40px));
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-form input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.oauth-button {
+  width: 100%;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 800;
+}
+
+.oauth-button img {
+  width: 18px;
+  height: 18px;
+}
+
+.divider {
+  margin: 18px 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.text-button {
+  background: transparent;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.modal-note {
+  margin: 16px 0 0;
+  text-align: center;
+}
+
+.slide-ad {
+  position: fixed;
+  top: -260px;
+  left: 0;
+  z-index: 1800;
+  width: 100%;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: top 0.35s ease;
+}
+
+.slide-ad.active {
+  top: 0;
+}
+
+.slide-ad-content {
+  position: relative;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 20px 8px;
+  text-align: center;
+}
+
+.ad-wrapper,
+.footer-ad-wrapper {
+  display: flex;
+  justify-content: center;
+  min-height: 70px;
+}
+
+.ad-close-button,
+.footer-ad-close {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: #ffffff;
+  background: rgba(23, 32, 51, 0.72);
+  border-radius: 8px;
+}
+
+.ad-close-button {
+  top: 18px;
+  right: 24px;
+}
+
+.ad-disclaimer,
+.slide-ad-footer {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.slide-ad-footer {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 20px 12px;
+}
+
+.fixed-bottom-area {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 900;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.bottom-ad-banner {
+  position: relative;
+  min-height: 76px;
+}
+
+.footer-ad-close {
+  top: 8px;
+  right: 14px;
+}
+
+.site-footer {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.section-stack {
+  display: grid;
+  gap: 20px;
+}
+
+.status-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.status-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  background: var(--surface-muted);
+  border-radius: 8px;
 }

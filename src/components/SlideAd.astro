@@ -1,122 +1,29 @@
----
-/* src/components/SlideAd.astro */
----
-<div id="slidePopup">
-    <div class="ad-content">
-        <div class="ad-wrapper">
-            <script is:inline src="https://ads-partners.coupang.com/g.js"></script>
-            <script is:inline>
-                new PartnersCoupang.G({
-                    "id": 977521,
-                    "template": "carousel",
-                    "trackingCode": "AF7826180",
-                    "width": "320",
-                    "height": "140",
-                    "tsource": ""
-                });
-            </script>
-        </div>
-
-        <div class="popup-close-btn" onclick="closePopup()">×</div>
-
-        <p class="ad-disclaimer">이 포스팅은 쿠팡 파트너스 활동의 일환으로 수수료를 제공받습니다.</p>
+<aside id="slidePopup" class="slide-ad" aria-label="Sponsored offer">
+  <div class="slide-ad-content">
+    <button class="ad-close-button" type="button" onclick="closePopup()" aria-label="Close sponsored offer">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18"></path>
+      </svg>
+    </button>
+    <div class="ad-wrapper">
+      <script is:inline src="https://ads-partners.coupang.com/g.js"></script>
+      <script is:inline>
+        if (typeof PartnersCoupang !== 'undefined') {
+          new PartnersCoupang.G({
+            id: 977521,
+            template: 'carousel',
+            trackingCode: 'AF7826180',
+            width: '320',
+            height: '140',
+            tsource: '',
+          });
+        }
+      </script>
     </div>
-
-    <div class="close-bar">
-        <div class="timer-info"><span id="timerText">10</span>초 후 자동 종료</div>
-        
-        <div class="no-show-area">
-            <label style="font-size:11px; font-weight:normal;">
-                <input type="checkbox" id="noShowCheckbox"> 오늘 하루 보지 않기
-            </label>
-        </div>
-    </div>
-</div>
-
-<style>
-    /* 슬라이드 팝업 기본 설정 */
-    #slidePopup {
-        position: fixed;
-        top: -100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        z-index: 10000;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        transition: top 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    #slidePopup.active {
-        top: 0;
-    }
-
-    .ad-content { 
-        position: relative; 
-        padding: 30px 15px 15px; /* X 버튼 공간 확보를 위해 상단 패딩 조절 */
-        text-align: center;
-        min-height: 180px; /* 캐러셀 로드 전 높이 확보 */
-    }
-
-    /* 캐러셀 중앙 정렬 제어 */
-    .ad-wrapper {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 10px;
-        min-width: 320px;
-    }
-
-    /* [X 버튼 스타일] 우측 상단 배치 */
-    .popup-close-btn {
-        position: absolute;
-        top: 90px;
-        right: 50px;
-        width: 18px;
-        height: 18px;
-        line-height: 14px;
-        border: 1px solid #ddd;
-        border-radius: 50%;
-        font-size: 20px;
-        cursor: pointer;
-        color: #ffffff;
-        background: rgba(0,0,0,0.5);
-        transition: all 0.4s ease;
-        z-index: 10001;
-        text-align: center;
-    }
-
-    /* 1초 뒤 아래로 움직이며 사라지는 기믹 */
-    .popup-close-btn.moved {
-        transform: translateY(50px);
-        opacity: 0.3;
-        pointer-events: auto;
-    }
-
-    .ad-disclaimer {
-        font-size: 10px;
-        color: #bbb;
-        margin: 0;
-    }
-
-    /* [하단 바 스타일] 타이머 좌측 끝, 체크박스 우측 끝 */
-    .close-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 12px;
-        background: #f8f9fa;
-        border-top: 1px solid #eee;
-    }
-
-    .timer-info {
-        font-size: 10px;
-        text-align: left;
-        color: #666;
-        flex: 1;
-    }
-
-    .no-show-area {
-        font-size: 11px;
-        text-align: right;
-        color: #666;
-    }
-</style>
+    <p class="ad-disclaimer">Sponsored affiliate placement. MK Stock Lab may receive a commission.</p>
+  </div>
+  <div class="slide-ad-footer">
+    <span><span id="timerText">10</span>s auto close</span>
+    <label><input type="checkbox" id="noShowCheckbox" /> Hide for today</label>
+  </div>
+</aside>

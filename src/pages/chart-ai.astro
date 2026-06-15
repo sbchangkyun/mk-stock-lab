@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Chart AI | MK Stock Lab" activePath="/chart-ai">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Chart AI</p>
+      <h1>AI-ready chart workspace</h1>
+      <p class="lead">Search, chart, and analysis logic will be added in later phases. This shell preserves the target layout without provider calls.</p>
+    </div>
+  </header>
+
+  <section class="workspace-grid">
+    <div class="chart-placeholder">
+      <p class="eyebrow">Chart area</p>
+      <h2>Candlestick chart placeholder</h2>
+      <p>TradingView Lightweight Charts or an equivalent lightweight chart library will be integrated after the market data layer is ready.</p>
+    </div>
+
+    <aside class="panel">
+      <p class="eyebrow">Analysis panel</p>
+      <h2>Login required for AI analysis</h2>
+      <p>Future free limit: 3 analyses per user per day, reset at KST 00:00.</p>
+      <ul class="status-list">
+        <li><span>Assets</span><strong>KR stocks, US stocks, ETFs</strong></li>
+        <li><span>Timeframes</span><strong>Daily, weekly, monthly</strong></li>
+        <li><span>Crypto</span><strong class="neutral">Not supported</strong></li>
+      </ul>
+    </aside>
+  </section>
+</Layout>

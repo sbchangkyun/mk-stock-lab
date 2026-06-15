@@ -1,210 +1,49 @@
 ---
-/* src/pages/index.astro */
 import Layout from '../layouts/Layout.astro';
-import SlideAd from '../components/SlideAd.astro';
-import Header from '../components/Header.astro';
-import Ticker from '../components/Ticker.astro';
-import Nav from '../components/Nav.astro';
-import ChartArea from '../components/ChartArea.astro';
-import Footer from '../components/Footer.astro';
-import AddStockModal from '../components/Portfolio/AddStockModal.astro';
-import { supabase } from '../lib/supabase';
-import Portfolio from '../components/Portfolio.astro';
-
-// ── 인증 확인 ──────────────────────────────────────────
-const { data: { session } } = await supabase.auth.getSession();
-const isLoggedIn = !!session;
-
-
-/* src/pages/index.astro 상단 */
-
-// 1. 개별 종목(Item)의 타입을 정의합니다.
-interface PortfolioItem {
-  id: string;
-  symbol: string;
-  quantity: number;
-  avg_price: number;
-  currency: string;
-}
-
-// 2. 포트폴리오 그룹의 타입을 정의하며, 내부에 종목 리스트를 포함시킵니다.
-interface PortfolioGroup {
-  id: string;
-  name: string;
-  created_at: string;
-  portfolio_items: PortfolioItem[]; // 이 부분이 추가되어야 오류가 사라집니다.
-}
-
-// 3. 변수 선언 시 위에서 만든 타입을 적용합니다.
-let portfolios: PortfolioGroup[] = []; 
-
-// ... (기존 인증 확인 및 fetch 로직)
-if (isLoggedIn && session) {
-  const { data, error } = await supabase
-  .from('portfolios')
-  .select(`
-    id, 
-    name, 
-    created_at,
-    portfolio_items (
-      id,
-      symbol,
-      quantity,
-      avg_price,
-      currency
-    )
-  `)
-  .eq('user_id', session.user.id)
-  .order('created_at', { ascending: false });
-
-  if (!error && data) {
-    // Supabase에서 가져온 데이터를 타입에 맞게 할당합니다.
-    portfolios = data as unknown as PortfolioGroup[];
-  }
-}
 ---
 
-<Layout title="MK Stock Lab - 실시간 투자·경제 뉴스">
-    <SlideAd />
-    <Header />
-    <Ticker />
-    <Nav />
+<Layout title="MK Stock Lab | Investment Data Platform" activePath="/">
+  <section class="hero-section">
+    <div class="hero-copy">
+      <p class="eyebrow">MK Stock Lab rebuild preview</p>
+      <h1>Market data, AI chart review, and portfolio tools in one workspace.</h1>
+      <p class="lead">
+        A public investment data platform for Korean and US stock and ETF investors. The MVP shell is ready for Chart AI, heatmaps, Lab research, and portfolio management.
+      </p>
+      <div class="hero-actions">
+        <a class="button-link" href="/chart-ai">Open Chart AI</a>
+        <a class="button-link secondary" href="/lab">Explore Lab</a>
+      </div>
+    </div>
 
-    <!-- ── 로그인: 포트폴리오 그룹 섹션 ──────────────── -->
-    {isLoggedIn && (
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    <aside class="panel market-panel">
+      <p class="eyebrow">Market snapshot</p>
+      <h2>Core coverage</h2>
+      <div class="metric-list">
+        <div class="metric-row"><span>Korean stocks</span><strong>KOSPI / KOSDAQ</strong></div>
+        <div class="metric-row"><span>US stocks</span><strong>NYSE / Nasdaq</strong></div>
+        <div class="metric-row"><span>ETFs</span><strong>KR / US listed</strong></div>
+        <div class="metric-row"><span>Crypto</span><strong class="neutral">Excluded from main product</strong></div>
+      </div>
+    </aside>
+  </section>
 
-            <!-- 섹션 헤더 -->
-            <div class="flex justify-between items-center mb-5">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-white">나의 포트폴리오</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">그룹을 선택해 종목을 추가하세요.</p>
-                </div>
-                <button
-                    id="createPortfolioBtn"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 px-5 rounded-lg shadow-sm transition-all active:scale-95 flex items-center gap-2"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    새 포트폴리오
-                </button>
-            </div>
-
-            <!-- 포트폴리오 카드 그리드 -->
-            {portfolios.length === 0 ? (
-                <div class="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/30 py-16 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 text-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-300 dark:text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <p class="text-gray-400 dark:text-gray-500 text-sm font-medium">포트폴리오 그룹이 없습니다.</p>
-                    <p class="text-gray-400 dark:text-gray-600 text-xs">위의 버튼으로 첫 번째 그룹을 만들어보세요!</p>
-                </div>
-                        ) : (
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {portfolios.map((portfolio) => (    
-                      <div class="portfolio-card ...">
-                        <div class="flex justify-between items-center mb-4">
-                          <h3 class="text-base font-bold text-gray-800 dark:text-white">{portfolio.name}</h3>
-                          <button 
-                            class="add-stock-btn text-xs text-indigo-500 font-semibold hover:underline"
-                            data-portfolio-id={portfolio.id}
-                            data-portfolio-name={portfolio.name}
-                          >
-                            + 종목 추가
-                          </button>
-                        </div>
-
-                        <div class="space-y-2 border-t border-gray-100 dark:border-gray-700 pt-3">
-                          {portfolio.portfolio_items && portfolio.portfolio_items.length > 0 ? (
-                            portfolio.portfolio_items.map((item) => (
-                              <div class="flex justify-between items-center text-sm p-2 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
-                                <span class="font-medium text-gray-700 dark:text-gray-300">{item.symbol}</span>
-                                <div class="text-right">
-                                  <p class="text-xs text-gray-900 dark:text-white font-semibold">
-                                    {item.quantity}주
-                                  </p>
-                                  <p class="text-[10px] text-gray-400">
-                                    평단: {Number(item.avg_price).toLocaleString()} {item.currency}
-                                  </p>
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <p class="text-[11px] text-gray-400 text-center py-4">아직 등록된 종목이 없습니다.</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    )}
-    <ChartArea />
-    <Footer />
-
-    <AddStockModal />
-    
-    <script is:inline src="https://cdn.jsdelivr.net/gh/timdream/wordcloud2.js@gh-pages/src/wordcloud2.js"></script>
-
-    <script>
-        import { supabase } from '../lib/supabase';
-
-        // ── 새 포트폴리오 그룹 생성 ────────────────────────
-        document.getElementById('createPortfolioBtn')?.addEventListener('click', async () => {
-            const name = prompt('새 포트폴리오 이름을 입력하세요.');
-            if (!name?.trim()) return;
-
-            try {
-                // 현재 세션에서 유저 정보를 가져옵니다.
-                const { data: { session } } = await supabase.auth.getSession();
-                const user = session?.user;
-
-                if (!user) {
-                    alert('로그인 세션이 만료되었습니다. 다시 로그인해주세요.');
-                    return;
-                }
-
-                const { data, error } = await supabase
-                    .from('portfolios')
-                    .insert([{ user_id: user.id, name: name.trim() }])
-                    .select(); // 생성된 데이터를 확인하기 위해 추가
-
-                if (error) {
-                    console.error('Insert Error:', error);
-                    alert('생성 실패: ' + error.message);
-                } else {
-                    console.log('Created:', data);
-                    window.location.reload(); // 페이지를 새로고침하여 목록 갱신
-                }
-            } catch (e) {
-                console.error('System Error:', e);
-                alert('시스템 오류가 발생했습니다.');
-            }
-        });
-
-        // ── 포트폴리오 카드 클릭 → 모달 열기 ──────────────
-        const modal = document.getElementById('addStockModal');
-
-        // index.astro 하단 스크립트 수정
-document.querySelectorAll<HTMLElement>('.add-stock-btn').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation(); // 카드 자체의 클릭 이벤트가 있다면 방지
-        
-        const portfolioId   = btn.dataset.portfolioId   || '';
-        const portfolioName = btn.dataset.portfolioName || '';
-
-        // 모달에 정보 주입 후 열기 [cite: 35, 36]
-        const hiddenInput = document.getElementById('currentPortfolioId') as HTMLInputElement | null;
-        if (hiddenInput) hiddenInput.value = portfolioId;
-
-        const nameSpan = document.getElementById('modalPortfolioName');
-        if (nameSpan) nameSpan.textContent = portfolioName;
-
-        const modal = document.getElementById('addStockModal');
-        modal?.classList.remove('hidden');
-        modal?.classList.add('flex');
-    });
-});
-    </script>
+  <section class="grid-4">
+    <a class="feature-card" href="/chart-ai">
+      <h2>Chart AI</h2>
+      <p>Route shell for market-data-based AI chart analysis with login gating and daily usage limits in a later phase.</p>
+    </a>
+    <a class="feature-card" href="/heatmap">
+      <h2>Heatmap</h2>
+      <p>Desktop-first market heatmap shell for index universes and a future portfolio view.</p>
+    </a>
+    <a class="feature-card" href="/lab">
+      <h2>Lab</h2>
+      <p>Public data-content hub for sector returns, asset-class returns, NPS holdings, and Congress stocks.</p>
+    </a>
+    <a class="feature-card" href="/portfolio">
+      <h2>Portfolio</h2>
+      <p>Login-required portfolio workspace shell for holdings, risk notes, and allocation views.</p>
+    </a>
+  </section>
 </Layout>

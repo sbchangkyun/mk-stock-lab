@@ -1,34 +1,42 @@
 ---
-/* src/layouts/Layout.astro */
-const { title } = Astro.props;
+import Header from '../components/Header.astro';
+import Ticker from '../components/Ticker.astro';
+import Nav from '../components/Nav.astro';
+import SlideAd from '../components/SlideAd.astro';
+import Footer from '../components/Footer.astro';
 import '../styles/style.css';
+
+const {
+  title = 'MK Stock Lab',
+  description = 'Public investment data platform for Korean and US stock and ETF investors.',
+  activePath = Astro.url.pathname,
+  pageClass = '',
+} = Astro.props;
 ---
+
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
     <title>{title}</title>
-    
-    <link rel="icon" type="image/svg+xml" href="/logo.svg">
-    
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <meta name="theme-color" content="#1A237E">
-    
-<body>
-    <slot />
-
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="theme-color" content="#0f4fd8" />
+  </head>
+  <body class={pageClass}>
+    <SlideAd />
+    <Header />
+    <Ticker />
+    <Nav currentPath={activePath} />
+    <main class="site-main">
+      <slot />
+    </main>
+    <Footer />
     <script>
-        // 1. Supabase 설정을 먼저 불러옵니다.
-        import { supabase } from '../lib/supabase.ts';
-        // 2. 전역 변수로 확실히 박아줍니다.
-        (window as any).supabase = supabase;
-
-        console.log("✅ Supabase 전역 등록 완료");
-
-        // 3. 그 다음 main.js를 실행합니다.
-        import '../scripts/main.js';
+      import '../scripts/main.js';
     </script>
-</body>
+  </body>
 </html>

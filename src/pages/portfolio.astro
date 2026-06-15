@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Portfolio | MK Stock Lab" activePath="/portfolio">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Portfolio</p>
+      <h1>Portfolio workspace shell</h1>
+      <p class="lead">The portfolio rebuild will add multi-portfolio holdings, KRW/USD support, allocations, P/L, and rule-based risk notes.</p>
+    </div>
+  </header>
+
+  <section class="auth-required">
+    <h2>Login-required area</h2>
+    <p>Supabase Auth entry points are preserved in the header. Data schema and portfolio CRUD are intentionally deferred to later phases.</p>
+    <ul class="status-list">
+      <li><span>Base currency</span><strong>KRW</strong></li>
+      <li><span>Supported currency</span><strong>USD</strong></li>
+      <li><span>Portfolio AI Agent</span><strong class="neutral">Coming soon</strong></li>
+    </ul>
+  </section>
+</Layout>
