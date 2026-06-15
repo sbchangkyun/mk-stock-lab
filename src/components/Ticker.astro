@@ -1,38 +1,34 @@
-<div class="ticker-belt" id="ticker_area" aria-label="Market ticker"></div>
+---
+const tickerItems = [
+  { label: 'S&P 500', value: 'US large cap' },
+  { label: 'Nasdaq 100', value: 'Growth index' },
+  { label: 'Dow Jones', value: 'Blue chips' },
+  { label: 'KOSPI', value: 'Korea main board' },
+  { label: 'KOSDAQ', value: 'Korea growth board' },
+  { label: 'USD/KRW', value: 'FX watch' },
+  { label: 'Dollar Index', value: 'Macro gauge' },
+  { label: 'Gold', value: 'Safe-haven asset' },
+  { label: 'WTI Oil', value: 'Energy benchmark' },
+];
+---
+
+<div class="ticker-belt" id="ticker_area" aria-label="Market ticker">
+  <div class="ticker-track">
+    {tickerItems.map((item) => (
+      <span class="ticker-chip">
+        <strong>{item.label}</strong>
+        <span>{item.value}</span>
+      </span>
+    ))}
+  </div>
+</div>
 
 <script is:inline>
   function renderMarketTicker(theme) {
     const area = document.getElementById('ticker_area');
     if (!area) return;
-    area.innerHTML = '';
-
-    const container = document.createElement('div');
-    container.className = 'ticker-widget';
-
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
-    script.async = true;
-    script.text = JSON.stringify({
-      symbols: [
-        { proName: 'FOREXCOM:SPXUSD', title: 'S&P 500' },
-        { proName: 'NASDAQ:NDX', title: 'Nasdaq 100' },
-        { proName: 'TVC:DJI', title: 'Dow Jones' },
-        { proName: 'KRX:KOSPI', title: 'KOSPI' },
-        { proName: 'KRX:KOSDAQ', title: 'KOSDAQ' },
-        { proName: 'FX_IDC:USDKRW', title: 'USD/KRW' },
-        { proName: 'TVC:DXY', title: 'Dollar Index' },
-        { proName: 'TVC:GOLD', title: 'Gold' },
-        { proName: 'TVC:USOIL', title: 'WTI Oil' },
-      ],
-      showSymbolLogo: true,
-      colorTheme: theme || 'light',
-      isTransparent: true,
-      displayMode: 'regular',
-      locale: 'en',
-    });
-
-    container.appendChild(script);
-    area.appendChild(container);
+    area.dataset.theme = theme || 'light';
+    area.dataset.ready = 'true';
   }
 
   window.renderMarketTicker = renderMarketTicker;
