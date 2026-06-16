@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2G - 2026-06-16
+
+### Validation README Verification
+
+- Confirmed root `README.md` still contains the existing Astro Starter Kit content.
+- Confirmed root `README.md` was not changed during Phase 2G.
+- Confirmed `supabase/validation/README.md` exists and was the file modified by Phase 2F.
+- Corrected `supabase/validation/README.md` to use the required `# Supabase Validation` title and focused disposable validation structure.
+- Confirmed `supabase/validation/README.md` cross-references `supabase/validation/validate_rebuild_schema_v0_1.sql` and `docs/planning/supabase_disposable_project_setup_guide_v0.1.md`.
+- Recorded the Astro Starter Kit root README as unrelated existing project documentation debt.
+
+### Safety Notes
+
+- No Supabase connection was attempted.
+- No Supabase project was created.
+- No migration was applied anywhere.
+- No database command was run.
+
 ## Phase 2F - 2026-06-16
 
 ### Disposable Project Setup Preparation
