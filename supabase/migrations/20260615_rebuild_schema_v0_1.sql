@@ -74,7 +74,7 @@ create table public.ai_usage_daily (
   free_limit integer not null default 3 check (free_limit > 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  unique (user_id, usage_date_kst)
+  constraint ai_usage_daily_user_id_usage_date_kst_key unique (user_id, usage_date_kst)
 );
 
 comment on table public.ai_usage_daily is 'Daily Chart AI usage counters keyed by user and KST date.';
@@ -553,7 +553,7 @@ begin
 
   return query
   with changed as (
-    insert into public.ai_usage_daily as u (
+    insert into public.ai_usage_daily as target_usage (
       user_id,
       usage_date_kst,
       used_count,
@@ -565,33 +565,41 @@ begin
       1,
       p_free_limit
     )
-    on conflict (user_id, usage_date_kst) do update
-      set used_count = u.used_count + 1,
-          free_limit = greatest(u.free_limit, excluded.free_limit),
+    on conflict on constraint ai_usage_daily_user_id_usage_date_kst_key do update
+      set used_count = target_usage.used_count + 1,
+          free_limit = greatest(target_usage.free_limit, excluded.free_limit),
           updated_at = now()
-      where u.used_count < u.free_limit
+      where target_usage.used_count < target_usage.free_limit
     returning
-      true::boolean as allowed,
-      u.used_count,
-      u.free_limit,
-      greatest(u.free_limit - u.used_count, 0)::integer as remaining_count,
-      u.usage_date_kst
+      true::boolean as out_allowed,
+      target_usage.used_count as out_used_count,
+      target_usage.free_limit as out_free_limit,
+      greatest(target_usage.free_limit - target_usage.used_count, 0)::integer as out_remaining_count,
+      target_usage.usage_date_kst as out_usage_date_kst
   ),
   current_usage as (
     select
-      false::boolean as allowed,
-      u.used_count,
-      u.free_limit,
-      greatest(u.free_limit - u.used_count, 0)::integer as remaining_count,
-      u.usage_date_kst
-    from public.ai_usage_daily as u
-    where u.user_id = p_user_id
-      and u.usage_date_kst = v_usage_date_kst
+      false::boolean as out_allowed,
+      existing_usage.used_count as out_used_count,
+      existing_usage.free_limit as out_free_limit,
+      greatest(existing_usage.free_limit - existing_usage.used_count, 0)::integer as out_remaining_count,
+      existing_usage.usage_date_kst as out_usage_date_kst
+    from public.ai_usage_daily as existing_usage
+    where existing_usage.user_id = p_user_id
+      and existing_usage.usage_date_kst = v_usage_date_kst
       and not exists (select 1 from changed)
   )
-  select * from changed
-  union all
-  select * from current_usage;
+  select
+    result_rows.out_allowed,
+    result_rows.out_used_count,
+    result_rows.out_free_limit,
+    result_rows.out_remaining_count,
+    result_rows.out_usage_date_kst
+  from (
+    select * from changed
+    union all
+    select * from current_usage
+  ) as result_rows;
 end;
 $$;
 

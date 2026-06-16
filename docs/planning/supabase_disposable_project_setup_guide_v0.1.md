@@ -61,9 +61,10 @@ Do not perform these steps until the owner explicitly approves applying the migr
 3. Run the migration.
 4. Paste validation SQL from `supabase/validation/validate_rebuild_schema_v0_1.sql`.
 5. Run the validation.
-6. Copy non-secret validation output only.
-7. Do not copy database passwords, service-role keys, anon keys, tokens, or connection strings.
-8. Record results in the validation result template.
+6. If the usage function raises a `usage_date_kst` ambiguity error, review `supabase/validation/patch_consume_chart_ai_usage_v0_1.sql` and apply it only after owner approval for the disposable project.
+7. Copy non-secret validation output only.
+8. Do not copy database passwords, service-role keys, anon keys, tokens, or connection strings.
+9. Record results in the validation result template.
 
 ## Results The Operator Should Capture
 

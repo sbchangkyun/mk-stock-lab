@@ -200,7 +200,13 @@ order by tablename, indexname;
 -- Disposable-only examples.
 -- Keep commented unless the target database is disposable and the operator approved testing.
 
--- Chart AI usage function test using a disposable UUID and service-role context:
+-- Chart AI usage function test using a disposable UUID and service-role context.
+-- If this test raises an ambiguity error, review patch_consume_chart_ai_usage_v0_1.sql.
+-- Expected results:
+-- call 1: allowed = true, remaining_count = 2
+-- call 2: allowed = true, remaining_count = 1
+-- call 3: allowed = true, remaining_count = 0
+-- call 4: allowed = false, remaining_count = 0
 -- select * from internal.consume_chart_ai_usage('00000000-0000-0000-0000-000000000001'::uuid, 3);
 -- select * from internal.consume_chart_ai_usage('00000000-0000-0000-0000-000000000001'::uuid, 3);
 -- select * from internal.consume_chart_ai_usage('00000000-0000-0000-0000-000000000001'::uuid, 3);

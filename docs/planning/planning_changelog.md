@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2H - 2026-06-16
+
+### Chart AI Usage Function Fix
+
+- Disposable validation found a runtime ambiguity in `internal.consume_chart_ai_usage(uuid, integer)`.
+- The observed error reported ambiguous `usage_date_kst` resolution inside the PL/pgSQL function.
+- Fixed the migration source by naming the `ai_usage_daily` user/date unique constraint and using `on conflict on constraint ai_usage_daily_user_id_usage_date_kst_key`.
+- Updated the function body to use internal `out_*` aliases and table-qualified references so output column names do not conflict with table columns.
+- Created `supabase/validation/patch_consume_chart_ai_usage_v0_1.sql` for disposable validation project repair.
+- Updated validation docs to mention the disposable-only patch and the expected four-call usage test results.
+
+### Safety Notes
+
+- No Supabase connection was attempted by Codex.
+- No database command was run by Codex.
+- No migration or patch was applied by Codex.
+- The patch file is for the disposable validation project only and does not authorize production migration.
+
 ## Phase 2G - 2026-06-16
 
 ### Validation README Verification
