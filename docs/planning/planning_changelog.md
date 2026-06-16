@@ -1,5 +1,26 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2B - 2026-06-16
+
+### Supabase SQL Review
+
+- Reviewed `supabase/migrations/20260615_rebuild_schema_v0_1.sql` for table coverage, RLS shape, grants, function safety, and server-write boundaries.
+- Confirmed all 14 required tables remain drafted.
+- Confirmed `chart_ai_cache` remains non-personal and has no `user_id`.
+- Hardened `profiles` so normal authenticated clients can insert only their own initial profile fields and update only editable columns.
+- Kept profile plan changes server-controlled.
+- Removed anonymous and authenticated insert access for `ad_events`; ad tracking is now documented as server-write only.
+- Added explicit service-role table grants for server-side writes and newer Supabase Data API grant behavior.
+- Revoked public client execution from `public.set_updated_at()`.
+- Updated `internal.consume_chart_ai_usage(uuid, integer)` to return `remaining_count`.
+
+### Validation Plan
+
+- Added `docs/planning/supabase_local_validation_checklist_v0.1.md` for disposable database validation.
+- Updated `docs/planning/supabase_schema_notes_v0.1.md` with SQL review results, RLS review, `ad_events` decision, `profiles` decision, and local validation steps.
+- No remote Supabase command was run.
+- No local database migration was applied because Supabase CLI and `psql` are not installed locally.
+
 ## Phase 2A - 2026-06-16
 
 ### Supabase Migration Draft

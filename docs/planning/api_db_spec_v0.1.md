@@ -190,6 +190,18 @@ Unique key: `(user_id, usage_date_kst)`.
 - `internal.consume_chart_ai_usage(uuid, integer)` is drafted as a server-only atomic usage function for the KST daily free limit of 3. It is not wired to UI or API routes yet.
 - `profiles` does not include a public insert policy in this draft. A later onboarding phase should decide between server-side profile creation and an auth user creation trigger.
 
+## Phase 2B SQL Review Decisions
+
+- `profiles` now supports a later login-time upsert path instead of an auth trigger.
+- Authenticated users may insert only their own initial profile fields and update only editable profile columns.
+- `profiles.plan` remains server-controlled and must not be writable from normal authenticated clients.
+- `ad_events` is server-write only. Anonymous and authenticated client inserts were removed from the draft to reduce abuse risk.
+- Server-side routes should record ad events with service-role access and API-level rate limiting.
+- Service-role table grants are explicit for server-side writes and compatibility with newer Supabase Data API exposure defaults.
+- `internal.consume_chart_ai_usage(uuid, integer)` returns `remaining_count` in addition to `allowed`, `used_count`, `free_limit`, and `usage_date_kst`.
+- `public.set_updated_at()` execution is revoked from public client roles because it is only used by table triggers.
+- Disposable validation steps are maintained in `docs/planning/supabase_local_validation_checklist_v0.1.md`.
+
 ## Current API Audit
 
 Existing endpoints to remove or replace:

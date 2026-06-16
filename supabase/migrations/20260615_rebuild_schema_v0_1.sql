@@ -22,6 +22,10 @@ $$;
 
 comment on function public.set_updated_at() is 'Sets updated_at to the current transaction timestamp before row updates.';
 
+revoke all on function public.set_updated_at() from public;
+revoke all on function public.set_updated_at() from anon;
+revoke all on function public.set_updated_at() from authenticated;
+
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text,
@@ -228,7 +232,7 @@ create table public.ad_events (
   created_at timestamptz not null default now()
 );
 
-comment on table public.ad_events is 'Minimal ad interaction events. Do not store direct personal contact or payment data.';
+comment on table public.ad_events is 'Server-written minimal ad interaction events. Do not store direct personal contact or payment data.';
 
 create trigger set_profiles_updated_at
 before update on public.profiles
@@ -322,10 +326,12 @@ revoke all on table
   public.lab_nps_holdings,
   public.lab_congress_stock_holdings,
   public.ad_events
-from anon, authenticated;
+from public, anon, authenticated;
 
-grant usage on schema public to anon, authenticated;
-grant select, update on public.profiles to authenticated;
+grant usage on schema public to anon, authenticated, service_role;
+grant select on public.profiles to authenticated;
+grant insert (id, email, display_name) on public.profiles to authenticated;
+grant update (email, display_name) on public.profiles to authenticated;
 grant select, insert, update, delete on public.portfolios to authenticated;
 grant select, insert, update, delete on public.portfolio_positions to authenticated;
 grant select on public.ai_usage_daily to authenticated;
@@ -338,13 +344,34 @@ grant select on public.lab_sp500_sector_returns to anon, authenticated;
 grant select on public.lab_asset_class_returns to anon, authenticated;
 grant select on public.lab_nps_holdings to anon, authenticated;
 grant select on public.lab_congress_stock_holdings to anon, authenticated;
-grant insert on public.ad_events to anon, authenticated;
+grant select, insert, update, delete on table
+  public.profiles,
+  public.portfolios,
+  public.portfolio_positions,
+  public.ai_usage_daily,
+  public.market_symbols,
+  public.market_quote_cache,
+  public.market_chart_cache,
+  public.chart_ai_cache,
+  public.heatmap_cache,
+  public.lab_sp500_sector_returns,
+  public.lab_asset_class_returns,
+  public.lab_nps_holdings,
+  public.lab_congress_stock_holdings,
+  public.ad_events
+to service_role;
 
 create policy profiles_select_own
 on public.profiles
 for select
 to authenticated
 using ((select auth.uid()) = id);
+
+create policy profiles_insert_own_free
+on public.profiles
+for insert
+to authenticated
+with check ((select auth.uid()) = id and plan = 'free');
 
 create policy profiles_update_own
 on public.profiles
@@ -498,12 +525,6 @@ for select
 to anon, authenticated
 using (true);
 
-create policy ad_events_insert_minimal
-on public.ad_events
-for insert
-to anon, authenticated
-with check (user_id is null or (select auth.uid()) = user_id);
-
 create or replace function internal.consume_chart_ai_usage(
   p_user_id uuid,
   p_free_limit integer default 3
@@ -512,6 +533,7 @@ returns table (
   allowed boolean,
   used_count integer,
   free_limit integer,
+  remaining_count integer,
   usage_date_kst date
 )
 language plpgsql
@@ -552,6 +574,7 @@ begin
       true::boolean as allowed,
       u.used_count,
       u.free_limit,
+      greatest(u.free_limit - u.used_count, 0)::integer as remaining_count,
       u.usage_date_kst
   ),
   current_usage as (
@@ -559,6 +582,7 @@ begin
       false::boolean as allowed,
       u.used_count,
       u.free_limit,
+      greatest(u.free_limit - u.used_count, 0)::integer as remaining_count,
       u.usage_date_kst
     from public.ai_usage_daily as u
     where u.user_id = p_user_id
