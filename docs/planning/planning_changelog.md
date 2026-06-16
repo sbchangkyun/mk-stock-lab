@@ -1,5 +1,26 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2I - 2026-06-16
+
+### Disposable Validation Result
+
+- Created `docs/planning/supabase_disposable_validation_result_v0.1.md`.
+- Recorded operator-performed disposable Supabase validation results.
+- Recorded that the migration was manually applied to a separate disposable validation project.
+- Recorded that `supabase/validation/patch_consume_chart_ai_usage_v0_1.sql` was manually applied to the disposable validation project.
+- Recorded that the patched `internal.consume_chart_ai_usage(uuid, integer)` four-call test passed with remaining counts `2`, `1`, `0`, `0`.
+- Recorded that full validation SQL was rerun successfully after the patch.
+- Recorded that Supabase Advisors reported no critical warnings according to the operator.
+- Updated `supabase/validation/README.md` with a cross-reference to the validation result document.
+
+### Safety Notes
+
+- Codex did not connect to Supabase.
+- Codex did not run any database command.
+- Codex did not apply migration or patch SQL.
+- Production Supabase was not touched.
+- Successful disposable validation does not authorize production application.
+
 ## Phase 2H - 2026-06-16
 
 ### Chart AI Usage Function Fix
