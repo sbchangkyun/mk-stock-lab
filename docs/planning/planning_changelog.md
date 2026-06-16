@@ -1,5 +1,26 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2D - 2026-06-16
+
+### Disposable Validation Preparation
+
+- Created `docs/planning/supabase_disposable_validation_plan_v0.1.md`.
+- Created `supabase/validation/validate_rebuild_schema_v0_1.sql` as a read-only validation script for disposable databases after migration application.
+- Created `supabase/validation/README.md` with validation script safety notes.
+- Checked local tool availability:
+  - Supabase CLI is not installed.
+  - `psql` is not installed.
+  - Docker is not installed.
+- Documented validation options for local Supabase CLI, direct disposable Postgres with `psql`, and Supabase branch or disposable remote database only after explicit owner approval.
+
+### Safety Notes
+
+- No tool was installed.
+- No local database service was started.
+- No migration was applied locally, to a disposable database, to a branch database, or to a remote database.
+- No remote Supabase command was run.
+- The validation SQL includes only read-only catalog checks plus commented disposable-only examples.
+
 ## Phase 2C - 2026-06-16
 
 ### Human Review Package
