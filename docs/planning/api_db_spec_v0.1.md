@@ -178,6 +178,18 @@ Unique key: `(user_id, usage_date_kst)`.
 | `lab_*` | Public read; server-only writes |
 | `ad_events` | Server-written where possible |
 
+## Phase 2A Migration Draft Decisions
+
+- The local migration draft lives at `supabase/migrations/20260615_rebuild_schema_v0_1.sql`.
+- The draft creates all Phase 2 target tables in the `public` schema and enables RLS on each public table.
+- The draft includes explicit grants for `anon` and `authenticated` where client Data API access is intended, because newer Supabase projects may not expose public tables automatically.
+- Portfolio write access is limited to authenticated users and further restricted by ownership policies.
+- Market, Lab, and non-personal Chart AI cache tables are public read and have no public write policies.
+- `heatmap_cache` supports public universe rows with `user_id is null` and user-scoped portfolio heatmap rows with `user_id` set.
+- `ad_events` permits minimal anonymous or authenticated inserts with no public select policy. This should be revisited before production if all ad tracking should be server-side.
+- `internal.consume_chart_ai_usage(uuid, integer)` is drafted as a server-only atomic usage function for the KST daily free limit of 3. It is not wired to UI or API routes yet.
+- `profiles` does not include a public insert policy in this draft. A later onboarding phase should decide between server-side profile creation and an auth user creation trigger.
+
 ## Current API Audit
 
 Existing endpoints to remove or replace:

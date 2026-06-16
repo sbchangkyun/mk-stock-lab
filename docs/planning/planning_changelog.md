@@ -1,5 +1,26 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2A - 2026-06-16
+
+### Supabase Migration Draft
+
+- Created `supabase/migrations/20260615_rebuild_schema_v0_1.sql` as a local-only migration draft.
+- Created `docs/planning/supabase_schema_notes_v0.1.md` with review gates before any remote database application.
+- Updated `docs/planning/api_db_spec_v0.1.md` with concrete schema decisions from the draft.
+- Drafted tables for profiles, portfolios, portfolio positions, Chart AI usage, market caches, Lab datasets, and ad events.
+- Enabled RLS on every public table in the draft.
+- Added explicit grants for intended `anon` and `authenticated` Data API access paths.
+- Added `public.set_updated_at()` and triggers for mutable tables.
+- Added `internal.consume_chart_ai_usage(uuid, integer)` as a server-only draft function for atomic KST daily Chart AI usage tracking.
+
+### Safety Notes
+
+- No Supabase remote connection was used.
+- No local or remote migration was applied.
+- No database reset, drop, or destructive command was run.
+- Supabase CLI was not installed locally, so no CLI dry-run was available.
+- Phase 2B should review the SQL in a disposable local or branch database before any production application.
+
 ## Phase 1.2 - 2026-06-15
 
 ### Browser Smoke Check
