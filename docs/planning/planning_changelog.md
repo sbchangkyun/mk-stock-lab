@@ -1,5 +1,24 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2C - 2026-06-16
+
+### Human Review Package
+
+- Created `docs/planning/supabase_human_review_v0.1.md` for owner approval or rejection before any database application.
+- Summarized all 14 migration tables by product group.
+- Added a table-by-table approval matrix with all statuses set to `Pending owner review`.
+- Documented RLS and access-control behavior for profiles, portfolios, usage, market/cache, Lab, and ad event tables.
+- Documented critical security decisions from Phase 2B, including server-only `ad_events`, server-controlled profile plans, non-personal `chart_ai_cache`, and service-role-only usage function execution.
+- Added an explicit remote application gate requiring a separate owner command.
+- Reiterated that Phase 2C does not authorize any database changes.
+
+### Safety Notes
+
+- No SQL migration file was changed during Phase 2C.
+- No local, disposable, branch, or remote database migration was applied.
+- No remote Supabase command was run.
+- Phase 2C should lead to owner review, disposable validation preparation, or a remote application plan only after explicit owner approval.
+
 ## Phase 2B - 2026-06-16
 
 ### Supabase SQL Review
