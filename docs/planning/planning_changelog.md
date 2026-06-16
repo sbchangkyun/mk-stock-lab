@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2F - 2026-06-16
+
+### Disposable Project Setup Preparation
+
+- Created `docs/planning/supabase_disposable_project_setup_guide_v0.1.md`.
+- Documented manual-only setup steps for a separate disposable Supabase validation project.
+- Added disposable naming guidance, SQL Editor validation workflow, allowed validation-result fields, prohibited secret-bearing captures, disposal options, hard stop conditions, and explicit owner approval phrases.
+- Updated `supabase/validation/README.md` with a cross-reference to the disposable project setup guide.
+- Reiterated that Phase 2F does not authorize remote access, agent-created projects, migration application, or database mutation.
+
+### Safety Notes
+
+- No Supabase connection was attempted.
+- No Supabase project was created.
+- No migration was applied anywhere.
+- No database command was run.
+- No secret value, project ref, database URL, token, password, anon key, or service-role key was requested or recorded.
+
 ## Phase 2E - 2026-06-16
 
 ### Remote Disposable Validation Planning

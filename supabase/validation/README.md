@@ -12,6 +12,7 @@ This folder contains read-only validation scripts for disposable database checks
 - Do not include connection strings or secrets in this folder.
 - Apply migrations only after explicit operator approval.
 - Keep optional mutation tests commented unless the database is disposable and the operator approved the test.
+- For manual disposable project setup, review `docs/planning/supabase_disposable_project_setup_guide_v0.1.md` first.
 
 ## Example Use
 
