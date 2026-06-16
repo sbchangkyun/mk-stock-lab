@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2E - 2026-06-16
+
+### Remote Disposable Validation Planning
+
+- Created `docs/planning/supabase_remote_disposable_validation_plan_v0.1.md`.
+- Documented two remote disposable validation target options:
+  - Supabase branch database from the existing project.
+  - Separate disposable Supabase project.
+- Recommended a separate disposable Supabase project as the safer default when branch isolation, production data, or operator experience is uncertain.
+- Added pre-flight checks, hard stop conditions, SQL Editor workflow, CLI placeholder workflow, and a validation result template.
+- Reiterated that Phase 2E does not authorize remote access or database mutation.
+
+### Safety Notes
+
+- No Supabase project connection was attempted.
+- No migration was applied anywhere.
+- No database command was run.
+- No production deployment setting or product feature was changed.
+- No secret value, project ref, database URL, token, password, or service-role key was requested or recorded.
+
 ## Phase 2D - 2026-06-16
 
 ### Disposable Validation Preparation
