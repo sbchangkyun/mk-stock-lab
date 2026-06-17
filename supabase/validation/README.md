@@ -34,6 +34,7 @@ The patch SQL exists only to repair the already-created disposable validation pr
 
 ## Related Planning Docs
 
+- `docs/planning/supabase_production_migration_application_plan_v0.1.md`
 - `docs/planning/supabase_disposable_validation_result_v0.1.md`
 - `docs/planning/supabase_disposable_project_setup_guide_v0.1.md`
 - `docs/planning/supabase_remote_disposable_validation_plan_v0.1.md`

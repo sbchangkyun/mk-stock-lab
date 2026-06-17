@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2J - 2026-06-17
+
+### Production Migration Application Plan
+
+- Created `docs/planning/supabase_production_migration_application_plan_v0.1.md`.
+- Documented the production migration hard gates, backup/recovery checks, pre-flight checklist, future Phase 2K execution sequence, patch handling rule, post-migration validation checklist, and production test user policy.
+- Recorded that successful disposable validation does not authorize production migration.
+- Recorded the exact owner approval phrase required before Phase 2K can start.
+- Documented that `supabase/validation/patch_consume_chart_ai_usage_v0_1.sql` is disposable-validation repair SQL and should not be applied to fresh production when the fixed source migration is used.
+- Updated `supabase/validation/README.md` with a cross-reference to the production migration application plan.
+
+### Safety Notes
+
+- Codex did not connect to Supabase.
+- Codex did not run any database command.
+- Codex did not apply migration or patch SQL.
+- Production Supabase was not touched.
+- No secret values, project refs, URLs, connection strings, tokens, anon keys, service-role keys, or database passwords were requested or recorded.
+- Disposable project retention remains an owner decision; disposable credentials must never be used in Vercel production.
+
 ## Phase 2I - 2026-06-16
 
 ### Disposable Validation Result
