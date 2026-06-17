@@ -1,5 +1,29 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2J.1 - 2026-06-17
+
+### Final Production Migration Readiness Review
+
+- Created `docs/planning/supabase_production_migration_readiness_review_v0.1.md`.
+- Reviewed the Phase 2J production migration application plan against existing Phase 2 migration, validation, and human-review documents.
+- Recorded the verdict: `Ready for owner decision, not ready for execution`.
+- Documented unresolved owner confirmations for production target identity, production schema/data state, backup/recovery readiness, rollback feasibility, maintenance timing, production test user policy, disposable credential separation, and post-migration validation ownership.
+- Confirmed by static review only that the fixed source migration is the production source of truth and that `supabase/validation/patch_consume_chart_ai_usage_v0_1.sql` remains disposable repair SQL.
+- Updated `supabase/validation/README.md` with a cross-reference to the readiness review.
+
+### Safety Notes
+
+- Codex did not connect to Supabase.
+- Codex did not run SQL.
+- Codex did not run Supabase CLI.
+- Codex did not run `psql`.
+- Codex did not run any database command.
+- No production migration was applied.
+- No secret values, project refs, URLs, connection strings, tokens, anon keys, service-role keys, JWT secrets, or database passwords were requested or recorded.
+- Owner confirmations remain required before Phase 2K.
+- The exact Phase 2K approval phrase remains mandatory.
+- Production data, backup, and rollback decision gaps remain documented blockers before execution.
+
 ## Phase 2J - 2026-06-17
 
 ### Production Migration Application Plan
