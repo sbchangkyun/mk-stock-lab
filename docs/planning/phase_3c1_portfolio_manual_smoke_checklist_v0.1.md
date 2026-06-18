@@ -132,6 +132,62 @@ Phase 3C.4 포트폴리오 UX 재점검 결과:
 - 비밀 정보 없는 메모:
 ```
 
+## Phase 3C.5 Expected State Deltas
+
+After Phase 3C.5, the owner manual smoke should also confirm:
+
+- After login is confirmed, menu navigation keeps `로그아웃` visible.
+- Menu navigation does not show unnecessary `확인 중` after a valid signed-in state is already known.
+- Logged-out `/portfolio` shows a lock-style `로그인이 필요합니다` UI.
+- The compact status bar does not show a duplicate login action.
+- Portfolio name placeholder is `계좌 이름`.
+- Portfolio card actions are smaller and visually calmer.
+- Portfolio cards expose `위로` and `아래로` order controls.
+- Position rows show a logo or fallback avatar.
+- Position rows show a KR/US country badge.
+- The manual `시장` select is not visible.
+- The manual `자산 유형` select remains absent.
+- The currency display toggle shows `현지통화 기준` and `원화 기준`.
+- USD positions in KRW display mode show pending KRW conversion, not fake converted values.
+- Valuation amount and return sorting controls exist.
+- The position list is visually cleaner and closer to a modern finance app hierarchy.
+- Lab uses the corrected `국회의원 보유 주식` label.
+
+## Phase 3C.5 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.5 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.5 포트폴리오 리스트 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인: 통과/실패
+- 메뉴 이동 중 `로그아웃` 표시 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 로그아웃 상태의 물쇠형 `로그인이 필요합니다` UI: 통과/실패
+- compact 상태바 중복 로그인 제거: 통과/실패
+- `계좌 이름` placeholder: 통과/실패
+- 포트폴리오 카드 `수정`/`삭제` 크기 개선: 통과/실패
+- 포트폴리오 순서 변경 버튼: 통과/실패
+- 보유 종목 로고 또는 fallback 아바타: 통과/실패
+- 종목 국가 배지: 통과/실패
+- `시장` 수동 선택 제거: 통과/실패
+- `자산 유형` 수동 선택 제거 유지: 통과/실패
+- 통화 표시 토글 `현지통화 기준 / 원화 기준`: 통과/실패
+- USD 종목의 원화 기준 표시가 `원화 환산 예정` 등으로 안전하게 표시: 통과/실패/해당 없음
+- 평가금액/수익률 정렬 컨트롤: 통과/실패
+- 종목 리스트가 토스증권 참고형으로 더 정리됨: 통과/실패
+- Lab의 `국회의원 보유 주식` 라벨 정정: 통과/실패
+- 포트폴리오 생성/조회/수정/삭제: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제: 통과/실패/미실행
+- 로그아웃 즉시 데이터 숨김: 통과/실패
+- 재로그인 후 데이터 재조회: 통과/실패/해당 없음
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
 ## Pass/Fail Result Template
 
 Use this Korean-first format when reporting results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
@@ -207,12 +263,12 @@ Stop the manual smoke immediately if any of these occur:
 
 Choose exactly one:
 
-- If Phase 3C.4 smoke passes: proceed to Phase 3D Chart AI usage guard and server-only execution skeleton.
-- If Phase 3C.4 smoke fails: prepare focused Phase 3C.5 Portfolio UX smoke fix packet using non-secret failure details.
+- If Phase 3C.5 smoke passes: proceed to Phase 3D Chart AI usage guard and server-only execution skeleton.
+- If Phase 3C.5 smoke fails: prepare focused Phase 3C.6 Portfolio UX smoke fix packet using non-secret failure details.
 
 Options:
 
-- Option A: Run Phase 3C.4 manual Portfolio smoke now and report non-secret pass/fail.
+- Option A: Run Phase 3C.5 manual Portfolio smoke now and report non-secret pass/fail.
 - Option B: Proceed to Phase 3D without manual Portfolio smoke.
 - Option C: Run Advisor/security follow-up before additional DB-backed feature work.
 

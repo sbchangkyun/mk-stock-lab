@@ -1,5 +1,47 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.5 - 2026-06-19
+
+### Portfolio List Redesign
+
+- Removed the header's visible server-rendered `확인 중` auth button state so normal signed-in navigation can avoid that flash when the non-secret signed-in UI hint exists.
+- Added a lock-style logged-out Portfolio UI with `로그인이 필요합니다` and a `회원가입 / 로그인` action.
+- Removed the duplicate login action from the compact Portfolio status bar.
+- Changed the Portfolio name placeholder to `계좌 이름`.
+- Applied smaller Portfolio card action controls and added client-side `위로`/`아래로` ordering controls.
+- Added `src/data/securityLogos.json` for operator-provided logo mappings.
+- Added position logo rendering, local fallback avatars, and KR/US country badges.
+- Removed the visible `시장` field from the position form and added temporary internal market inference.
+- Added a display-only currency mode toggle: `현지통화 기준` and `원화 기준`.
+- Preserved safe USD/KRW behavior by showing `원화 환산 예정` instead of fake FX conversion.
+- Replaced the position table with a cleaner card/list layout inspired by financial app information hierarchy.
+- Added placeholder-safe valuation and return sorting controls.
+- Corrected visible Lab copy from `미국 의회 주식` to `국회의원 보유 주식`.
+
+### Backlog And Provider Notes
+
+- Documented that an official KIS logo/image API was not confirmed from accessible docs.
+- Used only owner/operator-provided logo URL mappings and local fallback avatars.
+- Preserved the note that KIS REST API APP KEY, KIS REST API APP Secret, and OpenDART API KEY have been issued for future phases, without recording values.
+- Preserved the desktop left-side rotating image ad banner as backlog only.
+- Did not implement provider integration, Chart AI provider calls, ad-event writes, banner implementation, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo scraping, or remote logo discovery.
+
+### Safety And Scope
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No authenticated Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider credentials were requested or recorded.
+- `npm run build` passed.
+- Vercel output generation passed.
+- Local unauthenticated HTTP smoke passed using `npm run dev` because the Vercel adapter does not support `astro preview`.
+- Source and generated-output scans found only expected server-only service-role source markers and no browser/static exposure.
+- Recommended next action: run the Phase 3C.5 owner manual smoke using the Korean result template.
+
 ## Phase 3C.4 - 2026-06-18
 
 ### Portfolio UX Polish

@@ -19,7 +19,16 @@ import Layout from '../layouts/Layout.astro';
       <span class="status-pill neutral"><i aria-hidden="true"></i><span>평가</span><strong>준비 중</strong></span>
     </div>
     <p id="portfolio-readiness-copy">로그인과 프로필 준비가 완료되면 포트폴리오 데이터를 불러옵니다.</p>
-    <button class="text-button hidden" id="portfolio-login-action" type="button">로그인</button>
+  </section>
+
+  <section class="portfolio-lock-state hidden" id="portfolio-lock-state" aria-live="polite">
+    <div class="lock-visual" aria-hidden="true"><span></span></div>
+    <div>
+      <p class="eyebrow">접속 필요</p>
+      <h2>로그인이 필요합니다</h2>
+      <p>회원가입 또는 로그인 후 포트폴리오와 보유 종목을 관리할 수 있습니다.</p>
+    </div>
+    <button class="primary-action" id="portfolio-login-action" type="button">회원가입 / 로그인</button>
   </section>
 
   <section class="portfolio-mvp hidden" id="portfolio-mvp">
@@ -36,7 +45,7 @@ import Layout from '../layouts/Layout.astro';
         <input type="hidden" id="portfolio-id" />
         <label>
           이름
-          <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="핵심 보유 종목" />
+          <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="계좌 이름" />
         </label>
         <label>
           기준 통화
@@ -62,23 +71,21 @@ import Layout from '../layouts/Layout.astro';
           <h2 id="selected-portfolio-title">포트폴리오를 선택하세요</h2>
           <p id="selected-portfolio-meta">포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.</p>
         </div>
+        <div class="segmented-control" id="currency-display-toggle" aria-label="통화 표시 기준">
+          <button class="active" type="button" data-display-mode="local">현지통화 기준</button>
+          <button type="button" data-display-mode="krw">원화 기준</button>
+        </div>
       </div>
 
       <form class="position-form hidden" id="position-form">
         <input type="hidden" id="position-id" />
         <input type="hidden" id="position-symbol" />
+        <input type="hidden" id="position-market" value="KR" />
         <input type="hidden" id="position-asset-type" value="stock" />
         <div class="form-grid">
           <label class="form-field-wide">
             종목명 또는 티커
             <input id="position-security-input" maxlength="160" required placeholder="삼성전자 또는 005930" />
-          </label>
-          <label>
-            시장
-            <select id="position-market">
-              <option value="KR">KR</option>
-              <option value="US">US</option>
-            </select>
           </label>
           <label>
             통화
@@ -111,22 +118,20 @@ import Layout from '../layouts/Layout.astro';
       </form>
 
       <div class="empty-state" id="positions-empty">포트폴리오를 선택하면 보유 종목을 관리할 수 있습니다.</div>
-      <div class="table-wrap hidden" id="positions-table-wrap">
-        <table class="data-table compact-table">
-          <thead>
-            <tr>
-              <th>종목</th>
-              <th>시장</th>
-              <th>수량</th>
-              <th>매수가</th>
-              <th>현재가</th>
-              <th>평가금액</th>
-              <th>수익률</th>
-              <th>관리</th>
-            </tr>
-          </thead>
-          <tbody id="positions-table-body"></tbody>
-        </table>
+      <div class="positions-list-wrap hidden" id="positions-list-wrap">
+        <div class="positions-toolbar">
+          <div>
+            <p class="eyebrow">정렬</p>
+            <span>평가금액과 수익률 데이터는 연동 후 정렬됩니다.</span>
+          </div>
+          <div class="sort-controls" aria-label="보유 종목 정렬">
+            <button type="button" data-sort="valuation-desc">평가금액 ↓</button>
+            <button type="button" data-sort="valuation-asc">평가금액 ↑</button>
+            <button type="button" data-sort="return-desc">수익률 ↓</button>
+            <button type="button" data-sort="return-asc">수익률 ↑</button>
+          </div>
+        </div>
+        <div class="positions-list" id="positions-list"></div>
       </div>
     </section>
   </section>
@@ -134,6 +139,7 @@ import Layout from '../layouts/Layout.astro';
   <div class="toast hidden" id="portfolio-toast" role="status" aria-live="polite"></div>
 
   <script>
+    import securityLogoMap from '../data/securityLogos.json';
     import { bootstrapProfileForCurrentSession } from '../lib/profileBootstrap';
     import { portfolioApi, PortfolioApiError, type Portfolio, type PortfolioPosition } from '../lib/portfolioClient';
     import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
@@ -154,6 +160,9 @@ import Layout from '../layouts/Layout.astro';
       portfolios: Portfolio[];
       positions: PortfolioPosition[];
       selectedPortfolioId: string | null;
+      portfolioOrder: string[];
+      positionSort: 'none' | 'valuation-asc' | 'valuation-desc' | 'return-asc' | 'return-desc';
+      currencyDisplayMode: 'local' | 'krw';
       loading: boolean;
     };
 
@@ -161,6 +170,9 @@ import Layout from '../layouts/Layout.astro';
       portfolios: [],
       positions: [],
       selectedPortfolioId: null,
+      portfolioOrder: [],
+      positionSort: 'none',
+      currencyDisplayMode: 'local',
       loading: false,
     };
 
@@ -267,6 +279,7 @@ import Layout from '../layouts/Layout.astro';
     };
 
     const money = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
+    const logoMappings = securityLogoMap as Record<string, { name?: string; symbol?: string; country?: 'KR' | 'US'; logoUrl?: string }>;
 
     const getElement = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
     const selectedPortfolio = () => state.portfolios.find((portfolio) => portfolio.id === state.selectedPortfolioId) ?? null;
@@ -279,6 +292,8 @@ import Layout from '../layouts/Layout.astro';
         "'": '&#39;',
       })[char] || char);
     const tickerLikePattern = /^[A-Za-z0-9.-]{1,16}$/;
+    const krCodePattern = /^\d{6}$/;
+    const normalizeLogoKey = (value: string | null | undefined) => String(value || '').trim().toUpperCase();
     const toInternalSymbol = (value: string) => {
       const normalized = value.trim();
       if (tickerLikePattern.test(normalized)) return normalized.toUpperCase();
@@ -292,14 +307,87 @@ import Layout from '../layouts/Layout.astro';
         name: tickerLikePattern.test(normalized) ? '' : normalized,
       };
     };
+    const inferMarket = (securityInput: string, currency: 'KRW' | 'USD') => {
+      const normalized = securityInput.trim();
+      if (krCodePattern.test(normalized)) return 'KR';
+      if (tickerLikePattern.test(normalized) && /[A-Za-z]/.test(normalized)) return 'US';
+      return currency === 'USD' ? 'US' : 'KR';
+    };
+    const inferCountry = (position: PortfolioPosition) => {
+      const mapped = getLogoMapping(position);
+      if (mapped?.country === 'KR' || mapped?.country === 'US') return mapped.country;
+      if (position.market === 'KR' || krCodePattern.test(position.symbol)) return 'KR';
+      if (position.market === 'US' || position.currency === 'USD') return 'US';
+      return position.currency === 'KRW' ? 'KR' : 'US';
+    };
+    const getLogoMapping = (position: PortfolioPosition) => {
+      const keys = [
+        normalizeLogoKey(position.symbol),
+        normalizeLogoKey(position.name),
+      ].filter(Boolean);
+      return keys.map((key) => logoMappings[key]).find(Boolean) ?? null;
+    };
+    const getSafeLogoUrl = (position: PortfolioPosition) => {
+      const logoUrl = getLogoMapping(position)?.logoUrl;
+      if (!logoUrl) return null;
+      try {
+        const url = new URL(logoUrl);
+        return url.protocol === 'https:' ? url.toString() : null;
+      } catch {
+        return null;
+      }
+    };
+    const getAvatarText = (position: PortfolioPosition) => {
+      const label = getPositionPrimaryLabel(position).replace(/\s+/g, '');
+      if (!label) return 'MK';
+      if (/^[A-Za-z0-9.-]+$/.test(label)) return label.slice(0, 3).toUpperCase();
+      return label.slice(0, 2);
+    };
     const getPositionPrimaryLabel = (position: PortfolioPosition) => position.name || position.symbol || '종목명 미입력';
     const getPositionSecondaryLabel = (position: PortfolioPosition) => {
       if (position.name && position.symbol && position.name !== position.symbol) return position.symbol;
       if (!position.name && position.symbol) return '티커 직접 입력';
       return '티커 미확인';
     };
-    const getValuationPlaceholder = (portfolio: Portfolio, position: PortfolioPosition) =>
-      portfolio.baseCurrency === 'KRW' && position.currency === 'USD' ? '원화 환산 예정' : '데이터 대기';
+    const formatLocalAmount = (currency: 'KRW' | 'USD', amount: number) => `${currency} ${money.format(amount)}`;
+    const formatBuyPrice = (position: PortfolioPosition) => {
+      const local = formatLocalAmount(position.currency, position.buyPrice);
+      if (state.currencyDisplayMode === 'krw' && position.currency === 'USD') {
+        return { primary: '원화 환산 예정', secondary: local };
+      }
+      return { primary: local, secondary: '' };
+    };
+    const getValuationPlaceholder = (portfolio: Portfolio, position: PortfolioPosition) => {
+      if (state.currencyDisplayMode === 'krw' && position.currency === 'USD') {
+        return { primary: '원화 환산 예정', secondary: 'FX 연동 후 원화 표시' };
+      }
+      if (portfolio.baseCurrency === 'KRW' && position.currency === 'USD') {
+        return { primary: '원화 환산 예정', secondary: '' };
+      }
+      return { primary: '데이터 대기', secondary: '' };
+    };
+    const getPositionSortValue = (_position: PortfolioPosition, _kind: 'valuation' | 'return') => null as number | null;
+    const getOrderedPortfolios = () => {
+      const byId = new Map(state.portfolios.map((portfolio) => [portfolio.id, portfolio]));
+      const ordered = state.portfolioOrder.map((id) => byId.get(id)).filter(Boolean) as Portfolio[];
+      const missing = state.portfolios.filter((portfolio) => !state.portfolioOrder.includes(portfolio.id));
+      return [...ordered, ...missing];
+    };
+    const getSortedPositions = () => {
+      const rows = [...state.positions];
+      if (state.positionSort === 'none') return rows;
+
+      const [kind, direction] = state.positionSort.split('-') as ['valuation' | 'return', 'asc' | 'desc'];
+      return rows
+        .map((position, index) => ({ position, index, value: getPositionSortValue(position, kind) }))
+        .sort((a, b) => {
+          if (a.value === null && b.value === null) return a.index - b.index;
+          if (a.value === null) return 1;
+          if (b.value === null) return -1;
+          return direction === 'asc' ? a.value - b.value : b.value - a.value;
+        })
+        .map((item) => item.position);
+    };
 
     const showToast = (message: string) => {
       const toast = getElement<HTMLDivElement>('portfolio-toast');
@@ -331,7 +419,7 @@ import Layout from '../layouts/Layout.astro';
       const login = getElement<HTMLElement>('portfolio-login-status');
       const profile = getElement<HTMLElement>('portfolio-profile-status');
       const api = getElement<HTMLElement>('portfolio-api-status');
-      const loginAction = getElement<HTMLButtonElement>('portfolio-login-action');
+      const lockState = getElement<HTMLElement>('portfolio-lock-state');
       const app = getElement<HTMLElement>('portfolio-mvp');
 
       if (root) root.dataset.state = nextState;
@@ -340,7 +428,7 @@ import Layout from '../layouts/Layout.astro';
       if (login) login.textContent = content.login;
       if (profile) profile.textContent = content.profile;
       if (api) api.textContent = content.api;
-      loginAction?.classList.toggle('hidden', !content.showLogin);
+      lockState?.classList.toggle('hidden', !content.showLogin);
       app?.classList.toggle('hidden', !content.showApp);
     };
 
@@ -348,6 +436,7 @@ import Layout from '../layouts/Layout.astro';
       state.portfolios = [];
       state.positions = [];
       state.selectedPortfolioId = null;
+      state.portfolioOrder = [];
       state.loading = false;
       resetPortfolioForm();
       resetPositionForm();
@@ -366,7 +455,7 @@ import Layout from '../layouts/Layout.astro';
       getElement<HTMLInputElement>('position-id')!.value = '';
       getElement<HTMLInputElement>('position-security-input')!.value = '';
       getElement<HTMLInputElement>('position-symbol')!.value = '';
-      getElement<HTMLSelectElement>('position-market')!.value = 'KR';
+      getElement<HTMLInputElement>('position-market')!.value = 'KR';
       getElement<HTMLInputElement>('position-asset-type')!.value = 'stock';
       getElement<HTMLSelectElement>('position-currency')!.value = 'KRW';
       getElement<HTMLInputElement>('position-buy-date')!.value = '';
@@ -385,7 +474,7 @@ import Layout from '../layouts/Layout.astro';
       empty.classList.toggle('hidden', state.portfolios.length > 0);
       list.innerHTML = '';
 
-      state.portfolios.forEach((portfolio) => {
+      getOrderedPortfolios().forEach((portfolio, index, ordered) => {
         const item = document.createElement('article');
         item.className = `portfolio-item${portfolio.id === state.selectedPortfolioId ? ' active' : ''}`;
         item.innerHTML = `
@@ -394,8 +483,10 @@ import Layout from '../layouts/Layout.astro';
             <span>${portfolio.baseCurrency}</span>
           </button>
           <div class="portfolio-item-actions">
-            <button class="text-button" type="button" data-action="edit-portfolio" data-id="${portfolio.id}">수정</button>
-            <button class="text-button danger" type="button" data-action="delete-portfolio" data-id="${portfolio.id}">삭제</button>
+            <button class="table-action-button" type="button" data-action="move-portfolio-up" data-id="${portfolio.id}" ${index === 0 ? 'disabled' : ''} aria-label="${escapeHtml(portfolio.name)} 위로 이동">위로</button>
+            <button class="table-action-button" type="button" data-action="move-portfolio-down" data-id="${portfolio.id}" ${index === ordered.length - 1 ? 'disabled' : ''} aria-label="${escapeHtml(portfolio.name)} 아래로 이동">아래로</button>
+            <button class="table-action-button" type="button" data-action="edit-portfolio" data-id="${portfolio.id}">수정</button>
+            <button class="table-action-button danger" type="button" data-action="delete-portfolio" data-id="${portfolio.id}">삭제</button>
           </div>
         `;
         list.appendChild(item);
@@ -408,11 +499,11 @@ import Layout from '../layouts/Layout.astro';
       const meta = getElement<HTMLElement>('selected-portfolio-meta');
       const form = getElement<HTMLFormElement>('position-form');
       const empty = getElement<HTMLDivElement>('positions-empty');
-      const wrap = getElement<HTMLDivElement>('positions-table-wrap');
-      const body = getElement<HTMLTableSectionElement>('positions-table-body');
-      if (!title || !meta || !form || !empty || !wrap || !body) return;
+      const wrap = getElement<HTMLDivElement>('positions-list-wrap');
+      const list = getElement<HTMLDivElement>('positions-list');
+      if (!title || !meta || !form || !empty || !wrap || !list) return;
 
-      body.innerHTML = '';
+      list.innerHTML = '';
 
       if (!portfolio) {
         title.textContent = '포트폴리오를 선택하세요';
@@ -432,27 +523,55 @@ import Layout from '../layouts/Layout.astro';
       empty.classList.toggle('hidden', state.positions.length > 0);
       wrap.classList.toggle('hidden', state.positions.length === 0);
 
-      state.positions.forEach((position) => {
-        const row = document.createElement('tr');
+      getSortedPositions().forEach((position) => {
+        const item = document.createElement('article');
+        const logoUrl = getSafeLogoUrl(position);
+        const country = inferCountry(position);
         const primaryLabel = getPositionPrimaryLabel(position);
         const secondaryLabel = getPositionSecondaryLabel(position);
-        row.innerHTML = `
-          <td class="position-name-cell">
+        const buyPrice = formatBuyPrice(position);
+        const valuation = getValuationPlaceholder(portfolio, position);
+        item.className = 'position-card';
+        item.innerHTML = `
+          <div class="security-avatar-wrap">
+            <div class="security-avatar">
+              ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" alt="" loading="lazy" data-logo-image />` : ''}
+              <span class="${logoUrl ? 'hidden' : ''}" data-logo-fallback>${escapeHtml(getAvatarText(position))}</span>
+            </div>
+            <span class="country-badge">${country}</span>
+          </div>
+          <div class="position-identity">
             <strong>${escapeHtml(primaryLabel)}</strong>
             <small>${escapeHtml(secondaryLabel)}</small>
-          </td>
-          <td>${position.market}</td>
-          <td>${money.format(position.quantity)}</td>
-          <td>${position.currency} ${money.format(position.buyPrice)}</td>
-          <td><span class="metric-placeholder">연동 예정</span></td>
-          <td><span class="metric-placeholder">${getValuationPlaceholder(portfolio, position)}</span></td>
-          <td><span class="metric-placeholder">-</span></td>
-          <td class="table-actions">
+          </div>
+          <div class="position-metric">
+            <span>수량</span>
+            <strong>${money.format(position.quantity)}</strong>
+          </div>
+          <div class="position-metric">
+            <span>매수가</span>
+            <strong>${escapeHtml(buyPrice.primary)}</strong>
+            ${buyPrice.secondary ? `<small>${escapeHtml(buyPrice.secondary)}</small>` : ''}
+          </div>
+          <div class="position-metric">
+            <span>현재가</span>
+            <strong class="metric-placeholder">연동 예정</strong>
+          </div>
+          <div class="position-metric">
+            <span>평가금액</span>
+            <strong class="metric-placeholder">${escapeHtml(valuation.primary)}</strong>
+            ${valuation.secondary ? `<small>${escapeHtml(valuation.secondary)}</small>` : ''}
+          </div>
+          <div class="position-metric">
+            <span>수익률</span>
+            <strong class="metric-placeholder">-</strong>
+          </div>
+          <div class="table-actions position-actions">
             <button class="table-action-button" type="button" data-action="edit-position" data-id="${position.id}">수정</button>
             <button class="table-action-button danger" type="button" data-action="delete-position" data-id="${position.id}">삭제</button>
-          </td>
+          </div>
         `;
-        body.appendChild(row);
+        list.appendChild(item);
       });
     };
 
@@ -468,6 +587,11 @@ import Layout from '../layouts/Layout.astro';
 
     const loadPortfolios = async () => {
       state.portfolios = await portfolioApi.listPortfolios();
+      const knownIds = new Set(state.portfolios.map((portfolio) => portfolio.id));
+      state.portfolioOrder = [
+        ...state.portfolioOrder.filter((id) => knownIds.has(id)),
+        ...state.portfolios.map((portfolio) => portfolio.id).filter((id) => !state.portfolioOrder.includes(id)),
+      ];
       if (!state.selectedPortfolioId || !state.portfolios.some((portfolio) => portfolio.id === state.selectedPortfolioId)) {
         state.selectedPortfolioId = state.portfolios[0]?.id ?? null;
       }
@@ -535,10 +659,45 @@ import Layout from '../layouts/Layout.astro';
     getElement<HTMLButtonElement>('portfolio-cancel-edit')?.addEventListener('click', resetPortfolioForm);
     getElement<HTMLButtonElement>('position-cancel-edit')?.addEventListener('click', resetPositionForm);
 
-    getElement<HTMLSelectElement>('position-market')?.addEventListener('change', (event) => {
-      const market = (event.currentTarget as HTMLSelectElement).value;
-      getElement<HTMLSelectElement>('position-currency')!.value = market === 'KR' ? 'KRW' : 'USD';
+    const syncInferredMarket = () => {
+      const securityInput = getElement<HTMLInputElement>('position-security-input')?.value || '';
+      const currency = (getElement<HTMLSelectElement>('position-currency')?.value || 'KRW') as 'KRW' | 'USD';
+      const market = inferMarket(securityInput, currency);
+      const marketInput = getElement<HTMLInputElement>('position-market');
+      if (marketInput) marketInput.value = market;
+    };
+
+    getElement<HTMLInputElement>('position-security-input')?.addEventListener('input', syncInferredMarket);
+    getElement<HTMLSelectElement>('position-currency')?.addEventListener('change', syncInferredMarket);
+
+    getElement<HTMLDivElement>('currency-display-toggle')?.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-display-mode]');
+      if (!target) return;
+      state.currencyDisplayMode = target.dataset.displayMode === 'krw' ? 'krw' : 'local';
+      getElement<HTMLDivElement>('currency-display-toggle')
+        ?.querySelectorAll<HTMLButtonElement>('button[data-display-mode]')
+        .forEach((button) => button.classList.toggle('active', button === target));
+      renderPositions();
     });
+
+    getElement<HTMLDivElement>('positions-list-wrap')?.addEventListener('click', (event) => {
+      const sortTarget = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-sort]');
+      if (!sortTarget) return;
+      const nextSort = sortTarget.dataset.sort as AppState['positionSort'] | undefined;
+      if (!nextSort) return;
+      state.positionSort = state.positionSort === nextSort ? 'none' : nextSort;
+      getElement<HTMLDivElement>('positions-list-wrap')
+        ?.querySelectorAll<HTMLButtonElement>('button[data-sort]')
+        .forEach((button) => button.classList.toggle('active', state.positionSort === button.dataset.sort));
+      renderPositions();
+    });
+
+    getElement<HTMLDivElement>('positions-list')?.addEventListener('error', (event) => {
+      const image = event.target as HTMLImageElement | null;
+      if (!image?.matches('[data-logo-image]')) return;
+      image.hidden = true;
+      image.parentElement?.querySelector<HTMLElement>('[data-logo-fallback]')?.classList.remove('hidden');
+    }, true);
 
     getElement<HTMLFormElement>('portfolio-form')?.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -575,6 +734,17 @@ import Layout from '../layouts/Layout.astro';
         resetPositionForm();
         renderAll();
         await loadPositions(id);
+      }
+
+      if (target.dataset.action === 'move-portfolio-up' || target.dataset.action === 'move-portfolio-down') {
+        const ordered = getOrderedPortfolios().map((portfolio) => portfolio.id);
+        const index = ordered.indexOf(id);
+        const offset = target.dataset.action === 'move-portfolio-up' ? -1 : 1;
+        const nextIndex = index + offset;
+        if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return;
+        [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
+        state.portfolioOrder = ordered;
+        renderPortfolios();
       }
 
       if (target.dataset.action === 'edit-portfolio') {
@@ -616,17 +786,19 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
       const identity = toPositionIdentity(securityInput);
+      const currency = getElement<HTMLSelectElement>('position-currency')!.value as 'KRW' | 'USD';
+      const market = inferMarket(securityInput, currency);
       const input = {
         portfolioId: state.selectedPortfolioId,
         symbol: identity.symbol,
-        market: getElement<HTMLSelectElement>('position-market')!.value as 'KR' | 'US',
+        market,
         assetType: 'stock' as const,
         name: identity.name,
         buyPrice: Number(getElement<HTMLInputElement>('position-buy-price')!.value),
         quantity: Number(getElement<HTMLInputElement>('position-quantity')!.value),
         buyDate: getElement<HTMLInputElement>('position-buy-date')!.value,
         memo: getElement<HTMLTextAreaElement>('position-memo')!.value,
-        currency: getElement<HTMLSelectElement>('position-currency')!.value as 'KRW' | 'USD',
+        currency,
       };
 
       try {
@@ -644,7 +816,7 @@ import Layout from '../layouts/Layout.astro';
       }
     });
 
-    getElement<HTMLTableSectionElement>('positions-table-body')?.addEventListener('click', async (event) => {
+    getElement<HTMLDivElement>('positions-list')?.addEventListener('click', async (event) => {
       const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]');
       if (!target) return;
       const id = target.dataset.id;
@@ -657,7 +829,7 @@ import Layout from '../layouts/Layout.astro';
         getElement<HTMLInputElement>('position-id')!.value = position.id;
         getElement<HTMLInputElement>('position-security-input')!.value = position.name || position.symbol;
         getElement<HTMLInputElement>('position-symbol')!.value = position.symbol;
-        getElement<HTMLSelectElement>('position-market')!.value = position.market;
+        getElement<HTMLInputElement>('position-market')!.value = position.market;
         getElement<HTMLInputElement>('position-asset-type')!.value = position.assetType || 'stock';
         getElement<HTMLSelectElement>('position-currency')!.value = position.currency;
         getElement<HTMLInputElement>('position-buy-date')!.value = position.buyDate || '';
