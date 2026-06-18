@@ -1,14 +1,38 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase public environment variables are missing.');
+let browserSupabaseClient: SupabaseClient | null = null;
+
+export const isSupabaseConfigured = () => Boolean(supabaseUrl && supabaseAnonKey);
+
+export const getBrowserSupabaseClient = () => {
+  if (!isSupabaseConfigured()) return null;
+
+  if (!browserSupabaseClient) {
+    browserSupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+  }
+
+  return browserSupabaseClient;
+};
+
+export const getCurrentSession = async (): Promise<Session | null> => {
+  const client = getBrowserSupabaseClient();
+  if (!client) return null;
+
+  const { data, error } = await client.auth.getSession();
+  if (error) return null;
+
+  return data.session;
+};
+
+export const supabase = getBrowserSupabaseClient();
+
+if (!isSupabaseConfigured() && typeof window !== 'undefined') {
+  console.error('Supabase public configuration is missing.');
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
-
-if (typeof window !== 'undefined') {
-  (window as any).supabase = supabase;
+if (typeof window !== 'undefined' && supabase) {
+  (window as Window & { supabase?: SupabaseClient }).supabase = supabase;
 }

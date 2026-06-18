@@ -4,9 +4,17 @@
 </button>
 
 <script>
-  import { supabase } from '../../lib/supabase';
+  import { getBrowserSupabaseClient, isSupabaseConfigured } from '../../lib/supabase';
 
   document.getElementById('google-login-btn')?.addEventListener('click', async () => {
+    if (!isSupabaseConfigured()) {
+      window.alert('Login is unavailable because Supabase is not configured.');
+      return;
+    }
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) return;
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

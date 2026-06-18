@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3B - 2026-06-18
+
+### Auth/Profile Boundary Implementation
+
+- Implemented the browser-safe Supabase helper boundary in `src/lib/supabase.ts`.
+- Added browser-safe profile bootstrap helper logic in `src/lib/profileBootstrap.ts`.
+- Added the server-only Supabase helper boundary in `src/lib/server/supabaseAdmin.ts`.
+- Added `POST /api/auth/profile-bootstrap` in `src/pages/api/auth/profile-bootstrap.ts`.
+- Wired the existing auth shell to call profile bootstrap after a signed-in session exists.
+- Updated the Portfolio shell to show login/profile readiness states without implementing Portfolio CRUD.
+- Created `docs/planning/phase_3b_auth_profile_boundary_result_v0.1.md`.
+
+### Safety And Scope
+
+- No profile bootstrap endpoint call was made by Codex during validation.
+- No Supabase SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No Portfolio CRUD, Chart AI provider call, ad-event write route, market provider ingestion, OpenAI, Gemini, KIS, or OpenDART integration was implemented.
+- No secret values were requested or recorded.
+
+### Validation
+
+- `npm run build` passed.
+- `.vercel/output/config.json`, `.vercel/output/functions/_render.func`, and `.vercel/output/static` were generated.
+- Product source/generated secret marker scan found only the expected server-only source occurrence for the service-role variable marker.
+- Service-role exposure scan found expected server-only source occurrences only.
+- Browser/static bundle server-only marker scan found no service-role marker and no server-only helper marker.
+- Disposable identifier scan found no product source or generated-output matches.
+- Removed legacy route scan found no product source or generated-output matches.
+- Broad crypto scope scan found no newly added broad crypto feature; existing crypto-not-supported and asset-class Bitcoin copy remain within the approved scope.
+- Ignored-file coverage was confirmed for `.env*`, `.vercel`, `dist`, `.astro`, `.omc`, representative credentials, certificates, and key files.
+- Recommended next phase: Phase 3C Portfolio MVP integration.
+
 ## Phase 3A - 2026-06-18
 
 ### App/Server Integration Planning

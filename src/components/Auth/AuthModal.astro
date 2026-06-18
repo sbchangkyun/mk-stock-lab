@@ -36,7 +36,8 @@ import GoogleLogin from './GoogleLogin.astro';
 </div>
 
 <script>
-  import { supabase } from '../../lib/supabase';
+  import { bootstrapProfileForCurrentSession } from '../../lib/profileBootstrap';
+  import { getBrowserSupabaseClient, isSupabaseConfigured } from '../../lib/supabase';
 
   const modal = document.getElementById('auth-modal');
   const closeButton = document.getElementById('close-auth-modal');
@@ -72,6 +73,15 @@ import GoogleLogin from './GoogleLogin.astro';
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    if (!isSupabaseConfigured()) {
+      window.alert('Login is unavailable because Supabase is not configured.');
+      return;
+    }
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) return;
+
     const email = (document.getElementById('auth-email') as HTMLInputElement | null)?.value ?? '';
     const password = (document.getElementById('auth-password') as HTMLInputElement | null)?.value ?? '';
 
@@ -85,6 +95,8 @@ import GoogleLogin from './GoogleLogin.astro';
       window.alert(error.message);
       return;
     }
+
+    await bootstrapProfileForCurrentSession();
     closeModal();
   });
 </script>

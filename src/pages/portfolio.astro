@@ -11,13 +11,129 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </header>
 
-  <section class="auth-required">
-    <h2>Login-required area</h2>
-    <p>Supabase Auth entry points are preserved in the header. Data schema and portfolio CRUD are intentionally deferred to later phases.</p>
+  <section class="auth-required portfolio-readiness" id="portfolio-readiness" data-state="checking">
+    <div>
+      <p class="eyebrow">Profile readiness</p>
+      <h2 id="portfolio-readiness-title">Checking login status</h2>
+      <p id="portfolio-readiness-copy">Portfolio data stays disabled until login and profile setup are ready.</p>
+    </div>
+    <button class="primary-action" id="portfolio-login-action" type="button">Login</button>
     <ul class="status-list">
+      <li><span>Login</span><strong id="portfolio-login-status">Checking</strong></li>
+      <li><span>Profile</span><strong id="portfolio-profile-status">Checking</strong></li>
+      <li><span>Portfolio MVP</span><strong class="neutral">Not implemented</strong></li>
       <li><span>Base currency</span><strong>KRW</strong></li>
       <li><span>Supported currency</span><strong>USD</strong></li>
-      <li><span>Portfolio AI Agent</span><strong class="neutral">Coming soon</strong></li>
     </ul>
   </section>
+
+  <script>
+    import { bootstrapProfileForCurrentSession } from '../lib/profileBootstrap';
+    import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
+
+    type PortfolioState = 'checking' | 'disabled' | 'signed_out' | 'pending' | 'ready' | 'failed';
+
+    const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; showLogin: boolean }> = {
+      checking: {
+        title: 'Checking login status',
+        copy: 'Portfolio data stays disabled until login and profile setup are ready.',
+        login: 'Checking',
+        profile: 'Checking',
+        showLogin: false,
+      },
+      disabled: {
+        title: 'Login is unavailable',
+        copy: 'Supabase configuration is not available in this runtime. Portfolio CRUD is not implemented.',
+        login: 'Unavailable',
+        profile: 'Not ready',
+        showLogin: false,
+      },
+      signed_out: {
+        title: 'Login required',
+        copy: 'Sign in to prepare your profile. Portfolio CRUD will be added in the next implementation phase.',
+        login: 'Required',
+        profile: 'Not ready',
+        showLogin: true,
+      },
+      pending: {
+        title: 'Preparing profile',
+        copy: 'Profile bootstrap is pending. Portfolio CRUD remains disabled in Phase 3B.',
+        login: 'Signed in',
+        profile: 'Pending',
+        showLogin: false,
+      },
+      ready: {
+        title: 'Profile ready',
+        copy: 'Your profile foundation is ready. Portfolio creation and holdings management are intentionally deferred.',
+        login: 'Signed in',
+        profile: 'Ready',
+        showLogin: false,
+      },
+      failed: {
+        title: 'Profile setup needs attention',
+        copy: 'Profile setup did not complete. Portfolio CRUD remains disabled.',
+        login: 'Signed in',
+        profile: 'Needs retry',
+        showLogin: false,
+      },
+    };
+
+    const setPortfolioState = (state: PortfolioState) => {
+      const content = stateContent[state];
+      const root = document.getElementById('portfolio-readiness');
+      const title = document.getElementById('portfolio-readiness-title');
+      const copy = document.getElementById('portfolio-readiness-copy');
+      const login = document.getElementById('portfolio-login-status');
+      const profile = document.getElementById('portfolio-profile-status');
+      const loginAction = document.getElementById('portfolio-login-action');
+
+      if (root) root.dataset.state = state;
+      if (title) title.textContent = content.title;
+      if (copy) copy.textContent = content.copy;
+      if (login) login.textContent = content.login;
+      if (profile) profile.textContent = content.profile;
+      loginAction?.classList.toggle('hidden', !content.showLogin);
+    };
+
+    const initPortfolioReadiness = async () => {
+      const state = window as Window & { mkPortfolioReadinessReady?: boolean };
+      if (state.mkPortfolioReadinessReady) return;
+      state.mkPortfolioReadinessReady = true;
+
+      const loginAction = document.getElementById('portfolio-login-action');
+      loginAction?.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('mk:open-auth'));
+      });
+
+      if (!isSupabaseConfigured()) {
+        setPortfolioState('disabled');
+        return;
+      }
+
+      const supabase = getBrowserSupabaseClient();
+      if (!supabase) {
+        setPortfolioState('disabled');
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        setPortfolioState('signed_out');
+        return;
+      }
+
+      setPortfolioState('pending');
+      const result = await bootstrapProfileForCurrentSession();
+      setPortfolioState(result.status === 'ready' ? 'ready' : result.status);
+    };
+
+    window.addEventListener('mk:profile-bootstrap', (event) => {
+      const detail = (event as CustomEvent).detail;
+      if (!detail?.status) return;
+      setPortfolioState(detail.status);
+    });
+
+    document.addEventListener('astro:page-load', initPortfolioReadiness);
+    initPortfolioReadiness();
+  </script>
 </Layout>

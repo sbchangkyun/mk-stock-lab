@@ -25,7 +25,8 @@ import AuthModal from './Auth/AuthModal.astro';
 <AuthModal />
 
 <script>
-  import { supabase } from '../lib/supabase';
+  import { bootstrapProfileForCurrentSession, dispatchProfileBootstrapStatus } from '../lib/profileBootstrap';
+  import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
 
   const updateAuthButtons = (user: unknown) => {
     const loginButton = document.getElementById('open-login-btn');
@@ -36,7 +37,24 @@ import AuthModal from './Auth/AuthModal.astro';
     logoutButton.classList.toggle('hidden', !user);
   };
 
+  const syncProfileBootstrap = async (session: unknown) => {
+    if (!session) {
+      dispatchProfileBootstrapStatus({
+        status: 'signed_out',
+        profileReady: false,
+        message: 'Login is required.',
+      });
+      return;
+    }
+
+    await bootstrapProfileForCurrentSession();
+  };
+
   const setupHeaderAuth = async () => {
+    const state = window as Window & { mkHeaderAuthReady?: boolean };
+    if (state.mkHeaderAuthReady) return;
+    state.mkHeaderAuthReady = true;
+
     const loginButton = document.getElementById('open-login-btn');
     const logoutButton = document.getElementById('logout-btn');
 
@@ -44,16 +62,32 @@ import AuthModal from './Auth/AuthModal.astro';
       window.dispatchEvent(new CustomEvent('mk:open-auth'));
     });
 
+    if (!isSupabaseConfigured()) {
+      updateAuthButtons(null);
+      dispatchProfileBootstrapStatus({
+        status: 'disabled',
+        profileReady: false,
+        message: 'Supabase public configuration is unavailable.',
+      });
+      return;
+    }
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) return;
+
     logoutButton?.addEventListener('click', async () => {
       await supabase.auth.signOut();
       updateAuthButtons(null);
+      await syncProfileBootstrap(null);
     });
 
-    const { data } = await supabase.auth.getUser();
-    updateAuthButtons(data.user);
+    const { data } = await supabase.auth.getSession();
+    updateAuthButtons(data.session?.user ?? null);
+    await syncProfileBootstrap(data.session);
 
     supabase.auth.onAuthStateChange((_event, session) => {
       updateAuthButtons(session?.user ?? null);
+      void syncProfileBootstrap(session);
     });
   };
 
