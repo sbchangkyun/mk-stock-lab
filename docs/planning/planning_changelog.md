@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2J.2 - 2026-06-18
+
+### Owner Confirmation Package
+
+- Created `docs/planning/supabase_owner_confirmation_package_v0.1.md`.
+- Converted the Phase 2J.1 owner-confirmation blockers into a fillable decision form.
+- Preserved backup/rollback and production data-state blockers before any Phase 2K execution.
+- Preserved disposable credential separation from production and Vercel production settings.
+- Documented allowed answer choices, evidence requirements, stop conditions, secret-safe reporting rules, production test user policy, decision outcomes, readiness scores, and the exact Phase 2K approval phrase gate.
+- Updated `supabase/validation/README.md` with a cross-reference to the owner confirmation package.
+
+### Safety Notes
+
+- Codex did not connect to Supabase.
+- Codex did not run SQL.
+- Codex did not run Supabase CLI.
+- Codex did not run `psql`.
+- Codex did not run any database command.
+- No production migration was applied.
+- No secret values, project refs, URLs, connection strings, tokens, anon keys, service-role keys, JWT secrets, or database passwords were requested or recorded.
+- The exact Phase 2K approval phrase remains mandatory and was not requested by this package-generation phase.
+
 ## Phase 2J.1 - 2026-06-17
 
 ### Final Production Migration Readiness Review
