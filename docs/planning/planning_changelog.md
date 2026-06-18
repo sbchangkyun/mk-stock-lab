@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2L - 2026-06-18
+
+### Production Reset/Drop And Supabase Migration
+
+- Created `docs/planning/supabase_production_reset_migration_result_v0.1.md`.
+- Confirmed the exact Phase 2L approval gate passed.
+- Used the Supabase connector for approved production DB execution.
+- Performed metadata dependency review before reset/drop.
+- Dropped only approved legacy/test public tables:
+  - `public.portfolio_items`
+  - `public.portfolio_assets`
+  - `public.seibro_holdings`
+  - `public.portfolios`
+- Applied `supabase/migrations/20260615_rebuild_schema_v0_1.sql`.
+- Did not apply `supabase/validation/patch_consume_chart_ai_usage_v0_1.sql`.
+- Ran `supabase/validation/validate_rebuild_schema_v0_1.sql`; the connector returned only the final result set, so targeted read-only validation queries were run separately.
+- Confirmed 14 required public tables exist and RLS is enabled on all 14.
+- Confirmed `ad_events` has no public select or insert policy.
+- Confirmed `chart_ai_cache` has no `user_id`.
+- Confirmed `public.set_updated_at()` and `internal.consume_chart_ai_usage(uuid, integer)` exist.
+- Confirmed `internal.consume_chart_ai_usage(uuid, integer)` is executable only by `service_role`.
+- Confirmed the Phase 2H `usage_date_kst` ambiguity fix is present.
+- Skipped the usage-function runtime test because no safe Auth Admin/test-user creation channel was available through the connector.
+- Checked Supabase Advisors and recorded non-secret high-level findings.
+- Did not mutate Vercel env vars.
+- Did not deploy.
+
+### Safety Notes
+
+- Supabase production DB mutation was limited to the approved legacy/test table reset/drop and fixed source migration.
+- No Supabase CLI command was run.
+- No `psql` command was run.
+- No Vercel env value was read, printed, pulled, added, updated, removed, or overwritten.
+- No secret values, project refs, URLs, connection strings, tokens, anon keys, service-role keys, JWT secrets, database passwords, or Vercel tokens were requested or recorded.
+- Production DB schema is ready for the next integration planning phase, with Advisor and runtime-test follow-up items documented.
+
 ## Phase 2K - 2026-06-18
 
 ### Production Supabase Migration Attempt
