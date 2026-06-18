@@ -1,5 +1,32 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2J.3 - 2026-06-18
+
+### Vercel Production Environment Separation Audit
+
+- Created `docs/planning/vercel_production_env_separation_audit_v0.1.md`.
+- Recorded owner confirmations for production target identity, production data state, reset/rebuild acceptance, backup/restore decision, rollback owner, maintenance timing, production test auth user allowance, and Phase 2K Vercel env var exclusion.
+- Confirmed application source and generated output do not contain requested provider secret markers or disposable validation identifiers.
+- Confirmed `.gitignore` coverage for `.env*`, `.vercel/`, `dist/`, `.astro/`, `.omc/`, credentials, certificates, and key files.
+- Checked Vercel project linkage without printing IDs; this checkout is not linked.
+- Confirmed Vercel CLI is available, but read-only production env metadata could not be queried because project linkage is missing.
+- Classified Vercel production env separation as `Not cleared; Vercel metadata unavailable`.
+- Documented the remaining manual Vercel Production value-provenance check.
+- Documented the acceleration policy for next work.
+
+### Safety Notes
+
+- Codex did not connect to Supabase.
+- Codex did not run SQL.
+- Codex did not run Supabase CLI.
+- Codex did not run `psql`.
+- Codex did not run any database command.
+- Codex did not read, print, pull, add, update, or remove any Vercel env value.
+- Codex did not run a deployment.
+- No production migration was applied.
+- No secret values, project refs, URLs, connection strings, tokens, anon keys, service-role keys, JWT secrets, database passwords, or Vercel tokens were requested or recorded.
+- The exact Phase 2K approval phrase remains mandatory.
+
 ## Phase 2J.2 - 2026-06-18
 
 ### Owner Confirmation Package
