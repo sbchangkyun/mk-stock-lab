@@ -6,8 +6,8 @@ import Layout from '../layouts/Layout.astro';
   <header class="page-header">
     <div>
       <p class="eyebrow">Portfolio</p>
-      <h1>Portfolio workspace shell</h1>
-      <p class="lead">The portfolio rebuild will add multi-portfolio holdings, KRW/USD support, allocations, P/L, and rule-based risk notes.</p>
+      <h1>Portfolio MVP workspace</h1>
+      <p class="lead">Create portfolios and track simple KR/US stock or ETF positions. Valuation, performance analytics, and market data refresh are deferred.</p>
     </div>
   </header>
 
@@ -21,87 +21,384 @@ import Layout from '../layouts/Layout.astro';
     <ul class="status-list">
       <li><span>Login</span><strong id="portfolio-login-status">Checking</strong></li>
       <li><span>Profile</span><strong id="portfolio-profile-status">Checking</strong></li>
-      <li><span>Portfolio MVP</span><strong class="neutral">Not implemented</strong></li>
-      <li><span>Base currency</span><strong>KRW</strong></li>
-      <li><span>Supported currency</span><strong>USD</strong></li>
+      <li><span>Portfolio API</span><strong id="portfolio-api-status">Waiting</strong></li>
+      <li><span>Valuation</span><strong class="neutral">Not implemented</strong></li>
     </ul>
   </section>
 
+  <section class="portfolio-mvp hidden" id="portfolio-mvp">
+    <aside class="portfolio-sidebar panel">
+      <div class="portfolio-panel-header">
+        <div>
+          <p class="eyebrow">Portfolios</p>
+          <h2>My portfolios</h2>
+        </div>
+        <button class="text-button" id="portfolio-refresh" type="button">Refresh</button>
+      </div>
+
+      <form class="compact-form" id="portfolio-form">
+        <input type="hidden" id="portfolio-id" />
+        <label>
+          Name
+          <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="Core holdings" />
+        </label>
+        <label>
+          Base currency
+          <select id="portfolio-base-currency" name="baseCurrency">
+            <option value="KRW">KRW</option>
+            <option value="USD">USD</option>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button class="primary-action" id="portfolio-submit" type="submit">Create portfolio</button>
+          <button class="text-button hidden" id="portfolio-cancel-edit" type="button">Cancel edit</button>
+        </div>
+      </form>
+
+      <div class="empty-state hidden" id="portfolio-empty">No portfolios yet.</div>
+      <div class="portfolio-list" id="portfolio-list" aria-live="polite"></div>
+    </aside>
+
+    <section class="portfolio-detail panel">
+      <div class="portfolio-panel-header">
+        <div>
+          <p class="eyebrow">Positions</p>
+          <h2 id="selected-portfolio-title">Select a portfolio</h2>
+          <p id="selected-portfolio-meta">Position management appears after a portfolio is selected.</p>
+        </div>
+      </div>
+
+      <form class="position-form hidden" id="position-form">
+        <input type="hidden" id="position-id" />
+        <div class="form-grid">
+          <label>
+            Symbol
+            <input id="position-symbol" maxlength="32" required placeholder="005930 or AAPL" />
+          </label>
+          <label>
+            Market
+            <select id="position-market">
+              <option value="KR">KR</option>
+              <option value="US">US</option>
+            </select>
+          </label>
+          <label>
+            Type
+            <select id="position-asset-type">
+              <option value="stock">Stock</option>
+              <option value="etf">ETF</option>
+            </select>
+          </label>
+          <label>
+            Currency
+            <select id="position-currency">
+              <option value="KRW">KRW</option>
+              <option value="USD">USD</option>
+            </select>
+          </label>
+          <label>
+            Name
+            <input id="position-name" maxlength="160" placeholder="Optional display name" />
+          </label>
+          <label>
+            Buy date
+            <input id="position-buy-date" type="date" />
+          </label>
+          <label>
+            Buy price
+            <input id="position-buy-price" type="number" min="0" step="0.0001" required />
+          </label>
+          <label>
+            Quantity
+            <input id="position-quantity" type="number" min="0.0001" step="0.0001" required />
+          </label>
+        </div>
+        <label>
+          Memo
+          <textarea id="position-memo" maxlength="500" rows="3" placeholder="Optional note"></textarea>
+        </label>
+        <div class="form-actions">
+          <button class="primary-action" id="position-submit" type="submit">Add position</button>
+          <button class="text-button hidden" id="position-cancel-edit" type="button">Cancel edit</button>
+        </div>
+      </form>
+
+      <div class="empty-state" id="positions-empty">Select a portfolio to manage positions.</div>
+      <div class="table-wrap hidden" id="positions-table-wrap">
+        <table class="data-table compact-table">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Market</th>
+              <th>Type</th>
+              <th>Quantity</th>
+              <th>Buy price</th>
+              <th>Currency</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="positions-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <div class="toast hidden" id="portfolio-toast" role="status" aria-live="polite"></div>
+
   <script>
     import { bootstrapProfileForCurrentSession } from '../lib/profileBootstrap';
+    import { portfolioApi, PortfolioApiError, type Portfolio, type PortfolioPosition } from '../lib/portfolioClient';
     import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
 
     type PortfolioState = 'checking' | 'disabled' | 'signed_out' | 'pending' | 'ready' | 'failed';
+    type AppState = {
+      portfolios: Portfolio[];
+      positions: PortfolioPosition[];
+      selectedPortfolioId: string | null;
+      loading: boolean;
+    };
 
-    const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; showLogin: boolean }> = {
+    const state: AppState = {
+      portfolios: [],
+      positions: [],
+      selectedPortfolioId: null,
+      loading: false,
+    };
+
+    const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; api: string; showLogin: boolean; showApp: boolean }> = {
       checking: {
         title: 'Checking login status',
         copy: 'Portfolio data stays disabled until login and profile setup are ready.',
         login: 'Checking',
         profile: 'Checking',
+        api: 'Waiting',
         showLogin: false,
+        showApp: false,
       },
       disabled: {
-        title: 'Login is unavailable',
-        copy: 'Supabase configuration is not available in this runtime. Portfolio CRUD is not implemented.',
+        title: 'Portfolio API unavailable',
+        copy: 'Supabase configuration is not available in this runtime. No portfolio data was loaded.',
         login: 'Unavailable',
         profile: 'Not ready',
+        api: 'Unavailable',
         showLogin: false,
+        showApp: false,
       },
       signed_out: {
         title: 'Login required',
-        copy: 'Sign in to prepare your profile. Portfolio CRUD will be added in the next implementation phase.',
+        copy: 'Sign in to prepare your profile and load your portfolios.',
         login: 'Required',
         profile: 'Not ready',
+        api: 'Waiting',
         showLogin: true,
+        showApp: false,
       },
       pending: {
         title: 'Preparing profile',
-        copy: 'Profile bootstrap is pending. Portfolio CRUD remains disabled in Phase 3B.',
+        copy: 'Profile bootstrap is pending. Portfolio data will load after setup completes.',
         login: 'Signed in',
         profile: 'Pending',
+        api: 'Waiting',
         showLogin: false,
+        showApp: false,
       },
       ready: {
         title: 'Profile ready',
-        copy: 'Your profile foundation is ready. Portfolio creation and holdings management are intentionally deferred.',
+        copy: 'Portfolio MVP is available. Market data, valuation, and performance analytics are not implemented yet.',
         login: 'Signed in',
         profile: 'Ready',
+        api: 'Ready',
         showLogin: false,
+        showApp: true,
       },
       failed: {
         title: 'Profile setup needs attention',
-        copy: 'Profile setup did not complete. Portfolio CRUD remains disabled.',
+        copy: 'Profile setup did not complete. Portfolio data is disabled until setup succeeds.',
         login: 'Signed in',
         profile: 'Needs retry',
+        api: 'Waiting',
         showLogin: false,
+        showApp: false,
       },
     };
 
-    const setPortfolioState = (state: PortfolioState) => {
-      const content = stateContent[state];
-      const root = document.getElementById('portfolio-readiness');
-      const title = document.getElementById('portfolio-readiness-title');
-      const copy = document.getElementById('portfolio-readiness-copy');
-      const login = document.getElementById('portfolio-login-status');
-      const profile = document.getElementById('portfolio-profile-status');
-      const loginAction = document.getElementById('portfolio-login-action');
+    const money = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
 
-      if (root) root.dataset.state = state;
+    const getElement = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
+    const selectedPortfolio = () => state.portfolios.find((portfolio) => portfolio.id === state.selectedPortfolioId) ?? null;
+    const escapeHtml = (value: string | null | undefined) =>
+      String(value || '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char] || char);
+
+    const showToast = (message: string) => {
+      const toast = getElement<HTMLDivElement>('portfolio-toast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      window.setTimeout(() => toast.classList.add('hidden'), 3200);
+    };
+
+    const normalizeError = (error: unknown) => {
+      if (error instanceof PortfolioApiError) return error.message;
+      return 'Portfolio request failed.';
+    };
+
+    const setPortfolioState = (nextState: PortfolioState) => {
+      const content = stateContent[nextState];
+      const root = getElement<HTMLElement>('portfolio-readiness');
+      const title = getElement<HTMLElement>('portfolio-readiness-title');
+      const copy = getElement<HTMLElement>('portfolio-readiness-copy');
+      const login = getElement<HTMLElement>('portfolio-login-status');
+      const profile = getElement<HTMLElement>('portfolio-profile-status');
+      const api = getElement<HTMLElement>('portfolio-api-status');
+      const loginAction = getElement<HTMLButtonElement>('portfolio-login-action');
+      const app = getElement<HTMLElement>('portfolio-mvp');
+
+      if (root) root.dataset.state = nextState;
       if (title) title.textContent = content.title;
       if (copy) copy.textContent = content.copy;
       if (login) login.textContent = content.login;
       if (profile) profile.textContent = content.profile;
+      if (api) api.textContent = content.api;
       loginAction?.classList.toggle('hidden', !content.showLogin);
+      app?.classList.toggle('hidden', !content.showApp);
+    };
+
+    const resetPortfolioForm = () => {
+      getElement<HTMLInputElement>('portfolio-id')!.value = '';
+      getElement<HTMLInputElement>('portfolio-name')!.value = '';
+      getElement<HTMLSelectElement>('portfolio-base-currency')!.value = 'KRW';
+      getElement<HTMLButtonElement>('portfolio-submit')!.textContent = 'Create portfolio';
+      getElement<HTMLButtonElement>('portfolio-cancel-edit')?.classList.add('hidden');
+    };
+
+    const resetPositionForm = () => {
+      getElement<HTMLInputElement>('position-id')!.value = '';
+      getElement<HTMLInputElement>('position-symbol')!.value = '';
+      getElement<HTMLSelectElement>('position-market')!.value = 'KR';
+      getElement<HTMLSelectElement>('position-asset-type')!.value = 'stock';
+      getElement<HTMLSelectElement>('position-currency')!.value = 'KRW';
+      getElement<HTMLInputElement>('position-name')!.value = '';
+      getElement<HTMLInputElement>('position-buy-date')!.value = '';
+      getElement<HTMLInputElement>('position-buy-price')!.value = '';
+      getElement<HTMLInputElement>('position-quantity')!.value = '';
+      getElement<HTMLTextAreaElement>('position-memo')!.value = '';
+      getElement<HTMLButtonElement>('position-submit')!.textContent = 'Add position';
+      getElement<HTMLButtonElement>('position-cancel-edit')?.classList.add('hidden');
+    };
+
+    const renderPortfolios = () => {
+      const list = getElement<HTMLDivElement>('portfolio-list');
+      const empty = getElement<HTMLDivElement>('portfolio-empty');
+      if (!list || !empty) return;
+
+      empty.classList.toggle('hidden', state.portfolios.length > 0);
+      list.innerHTML = '';
+
+      state.portfolios.forEach((portfolio) => {
+        const item = document.createElement('article');
+        item.className = `portfolio-item${portfolio.id === state.selectedPortfolioId ? ' active' : ''}`;
+        item.innerHTML = `
+          <button class="portfolio-select" type="button" data-action="select" data-id="${portfolio.id}">
+            <strong>${escapeHtml(portfolio.name)}</strong>
+            <span>${portfolio.baseCurrency}</span>
+          </button>
+          <div class="portfolio-item-actions">
+            <button class="text-button" type="button" data-action="edit-portfolio" data-id="${portfolio.id}">Edit</button>
+            <button class="text-button danger" type="button" data-action="delete-portfolio" data-id="${portfolio.id}">Delete</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    };
+
+    const renderPositions = () => {
+      const portfolio = selectedPortfolio();
+      const title = getElement<HTMLElement>('selected-portfolio-title');
+      const meta = getElement<HTMLElement>('selected-portfolio-meta');
+      const form = getElement<HTMLFormElement>('position-form');
+      const empty = getElement<HTMLDivElement>('positions-empty');
+      const wrap = getElement<HTMLDivElement>('positions-table-wrap');
+      const body = getElement<HTMLTableSectionElement>('positions-table-body');
+      if (!title || !meta || !form || !empty || !wrap || !body) return;
+
+      body.innerHTML = '';
+
+      if (!portfolio) {
+        title.textContent = 'Select a portfolio';
+        meta.textContent = 'Position management appears after a portfolio is selected.';
+        form.classList.add('hidden');
+        empty.textContent = 'Select a portfolio to manage positions.';
+        empty.classList.remove('hidden');
+        wrap.classList.add('hidden');
+        return;
+      }
+
+      title.textContent = portfolio.name;
+      meta.textContent = `Base currency: ${portfolio.baseCurrency}`;
+      form.classList.remove('hidden');
+
+      empty.textContent = 'No positions yet.';
+      empty.classList.toggle('hidden', state.positions.length > 0);
+      wrap.classList.toggle('hidden', state.positions.length === 0);
+
+      state.positions.forEach((position) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${escapeHtml(position.symbol)}</strong><small>${escapeHtml(position.name)}</small></td>
+          <td>${position.market}</td>
+          <td>${position.assetType.toUpperCase()}</td>
+          <td>${money.format(position.quantity)}</td>
+          <td>${money.format(position.buyPrice)}</td>
+          <td>${position.currency}</td>
+          <td class="table-actions">
+            <button class="text-button" type="button" data-action="edit-position" data-id="${position.id}">Edit</button>
+            <button class="text-button danger" type="button" data-action="delete-position" data-id="${position.id}">Delete</button>
+          </td>
+        `;
+        body.appendChild(row);
+      });
+    };
+
+    const renderAll = () => {
+      renderPortfolios();
+      renderPositions();
+    };
+
+    const loadPositions = async (portfolioId: string) => {
+      state.positions = await portfolioApi.listPositions(portfolioId);
+      renderPositions();
+    };
+
+    const loadPortfolios = async () => {
+      state.portfolios = await portfolioApi.listPortfolios();
+      if (!state.selectedPortfolioId || !state.portfolios.some((portfolio) => portfolio.id === state.selectedPortfolioId)) {
+        state.selectedPortfolioId = state.portfolios[0]?.id ?? null;
+      }
+      renderAll();
+      if (state.selectedPortfolioId) await loadPositions(state.selectedPortfolioId);
+    };
+
+    const loadPortfolioMvp = async () => {
+      try {
+        await loadPortfolios();
+      } catch (error) {
+        setPortfolioState(error instanceof PortfolioApiError && error.status === 503 ? 'disabled' : 'failed');
+        showToast(normalizeError(error));
+      }
     };
 
     const initPortfolioReadiness = async () => {
-      const state = window as Window & { mkPortfolioReadinessReady?: boolean };
-      if (state.mkPortfolioReadinessReady) return;
-      state.mkPortfolioReadinessReady = true;
+      const marker = window as Window & { mkPortfolioMvpReady?: boolean };
+      if (marker.mkPortfolioMvpReady) return;
+      marker.mkPortfolioMvpReady = true;
 
-      const loginAction = document.getElementById('portfolio-login-action');
-      loginAction?.addEventListener('click', () => {
+      getElement<HTMLButtonElement>('portfolio-login-action')?.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('mk:open-auth'));
       });
 
@@ -124,13 +421,163 @@ import Layout from '../layouts/Layout.astro';
 
       setPortfolioState('pending');
       const result = await bootstrapProfileForCurrentSession();
-      setPortfolioState(result.status === 'ready' ? 'ready' : result.status);
+      const ready = result.status === 'ready';
+      setPortfolioState(ready ? 'ready' : result.status);
+      if (ready) await loadPortfolioMvp();
     };
+
+    getElement<HTMLButtonElement>('portfolio-refresh')?.addEventListener('click', () => {
+      void loadPortfolioMvp();
+    });
+
+    getElement<HTMLButtonElement>('portfolio-cancel-edit')?.addEventListener('click', resetPortfolioForm);
+    getElement<HTMLButtonElement>('position-cancel-edit')?.addEventListener('click', resetPositionForm);
+
+    getElement<HTMLSelectElement>('position-market')?.addEventListener('change', (event) => {
+      const market = (event.currentTarget as HTMLSelectElement).value;
+      getElement<HTMLSelectElement>('position-currency')!.value = market === 'KR' ? 'KRW' : 'USD';
+    });
+
+    getElement<HTMLFormElement>('portfolio-form')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const id = getElement<HTMLInputElement>('portfolio-id')!.value;
+      const input = {
+        name: getElement<HTMLInputElement>('portfolio-name')!.value,
+        baseCurrency: getElement<HTMLSelectElement>('portfolio-base-currency')!.value as 'KRW' | 'USD',
+      };
+
+      try {
+        if (id) {
+          await portfolioApi.updatePortfolio({ id, ...input });
+          showToast('Portfolio updated.');
+        } else {
+          const created = await portfolioApi.createPortfolio(input);
+          state.selectedPortfolioId = created.id;
+          showToast('Portfolio created.');
+        }
+        resetPortfolioForm();
+        await loadPortfolios();
+      } catch (error) {
+        showToast(normalizeError(error));
+      }
+    });
+
+    getElement<HTMLDivElement>('portfolio-list')?.addEventListener('click', async (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]');
+      if (!target) return;
+      const id = target.dataset.id;
+      if (!id) return;
+
+      if (target.dataset.action === 'select') {
+        state.selectedPortfolioId = id;
+        resetPositionForm();
+        renderAll();
+        await loadPositions(id);
+      }
+
+      if (target.dataset.action === 'edit-portfolio') {
+        const portfolio = state.portfolios.find((item) => item.id === id);
+        if (!portfolio) return;
+        getElement<HTMLInputElement>('portfolio-id')!.value = portfolio.id;
+        getElement<HTMLInputElement>('portfolio-name')!.value = portfolio.name;
+        getElement<HTMLSelectElement>('portfolio-base-currency')!.value = portfolio.baseCurrency;
+        getElement<HTMLButtonElement>('portfolio-submit')!.textContent = 'Update portfolio';
+        getElement<HTMLButtonElement>('portfolio-cancel-edit')?.classList.remove('hidden');
+      }
+
+      if (target.dataset.action === 'delete-portfolio') {
+        const portfolio = state.portfolios.find((item) => item.id === id);
+        if (!portfolio) return;
+        const confirmed = window.confirm(`Delete portfolio "${portfolio.name}" and its positions?`);
+        if (!confirmed) return;
+        try {
+          await portfolioApi.deletePortfolio(id);
+          if (state.selectedPortfolioId === id) state.selectedPortfolioId = null;
+          resetPortfolioForm();
+          resetPositionForm();
+          showToast('Portfolio deleted.');
+          await loadPortfolios();
+        } catch (error) {
+          showToast(normalizeError(error));
+        }
+      }
+    });
+
+    getElement<HTMLFormElement>('position-form')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!state.selectedPortfolioId) return;
+
+      const id = getElement<HTMLInputElement>('position-id')!.value;
+      const input = {
+        portfolioId: state.selectedPortfolioId,
+        symbol: getElement<HTMLInputElement>('position-symbol')!.value,
+        market: getElement<HTMLSelectElement>('position-market')!.value as 'KR' | 'US',
+        assetType: getElement<HTMLSelectElement>('position-asset-type')!.value as 'stock' | 'etf',
+        name: getElement<HTMLInputElement>('position-name')!.value,
+        buyPrice: Number(getElement<HTMLInputElement>('position-buy-price')!.value),
+        quantity: Number(getElement<HTMLInputElement>('position-quantity')!.value),
+        buyDate: getElement<HTMLInputElement>('position-buy-date')!.value,
+        memo: getElement<HTMLTextAreaElement>('position-memo')!.value,
+        currency: getElement<HTMLSelectElement>('position-currency')!.value as 'KRW' | 'USD',
+      };
+
+      try {
+        if (id) {
+          await portfolioApi.updatePosition({ id, ...input });
+          showToast('Position updated.');
+        } else {
+          await portfolioApi.createPosition(input);
+          showToast('Position added.');
+        }
+        resetPositionForm();
+        await loadPositions(state.selectedPortfolioId);
+      } catch (error) {
+        showToast(normalizeError(error));
+      }
+    });
+
+    getElement<HTMLTableSectionElement>('positions-table-body')?.addEventListener('click', async (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]');
+      if (!target) return;
+      const id = target.dataset.id;
+      if (!id) return;
+
+      const position = state.positions.find((item) => item.id === id);
+      if (!position) return;
+
+      if (target.dataset.action === 'edit-position') {
+        getElement<HTMLInputElement>('position-id')!.value = position.id;
+        getElement<HTMLInputElement>('position-symbol')!.value = position.symbol;
+        getElement<HTMLSelectElement>('position-market')!.value = position.market;
+        getElement<HTMLSelectElement>('position-asset-type')!.value = position.assetType;
+        getElement<HTMLSelectElement>('position-currency')!.value = position.currency;
+        getElement<HTMLInputElement>('position-name')!.value = position.name || '';
+        getElement<HTMLInputElement>('position-buy-date')!.value = position.buyDate || '';
+        getElement<HTMLInputElement>('position-buy-price')!.value = String(position.buyPrice);
+        getElement<HTMLInputElement>('position-quantity')!.value = String(position.quantity);
+        getElement<HTMLTextAreaElement>('position-memo')!.value = position.memo || '';
+        getElement<HTMLButtonElement>('position-submit')!.textContent = 'Update position';
+        getElement<HTMLButtonElement>('position-cancel-edit')?.classList.remove('hidden');
+      }
+
+      if (target.dataset.action === 'delete-position') {
+        const confirmed = window.confirm(`Delete position "${position.symbol}"?`);
+        if (!confirmed || !state.selectedPortfolioId) return;
+        try {
+          await portfolioApi.deletePosition(id);
+          showToast('Position deleted.');
+          await loadPositions(state.selectedPortfolioId);
+        } catch (error) {
+          showToast(normalizeError(error));
+        }
+      }
+    });
 
     window.addEventListener('mk:profile-bootstrap', (event) => {
       const detail = (event as CustomEvent).detail;
       if (!detail?.status) return;
-      setPortfolioState(detail.status);
+      setPortfolioState(detail.status === 'ready' ? 'ready' : detail.status);
+      if (detail.status === 'ready') void loadPortfolioMvp();
     });
 
     document.addEventListener('astro:page-load', initPortfolioReadiness);

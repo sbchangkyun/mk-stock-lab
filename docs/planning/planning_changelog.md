@@ -1,5 +1,45 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C - 2026-06-18
+
+### Portfolio MVP Integration
+
+- Added server-side Portfolio API boundaries in `src/pages/api/portfolio/portfolios.ts` and `src/pages/api/portfolio/positions.ts`.
+- Added server-only Portfolio ownership and validation helpers in `src/lib/server/portfolio.ts`.
+- Added browser-safe Portfolio API wrapper in `src/lib/portfolioClient.ts`.
+- Rebuilt `/portfolio` from readiness-only placeholder into a minimal Portfolio MVP shell with portfolio list/create/update/delete and position list/create/update/delete UI.
+- Preserved login/profile readiness behavior from Phase 3B.
+- Kept symbols as plain user input; no provider lookup, valuation, performance analytics, or market refresh was added.
+- Created `docs/planning/phase_3c_portfolio_mvp_result_v0.1.md`.
+
+### Safety And Scope
+
+- Portfolio API derives ownership from a server-validated Supabase session token and never trusts a browser-submitted `user_id`.
+- Portfolio API routes explicitly scope service-role queries to the validated user ID.
+- Non-owned portfolio or position access returns sanitized not-found behavior.
+- No Portfolio write endpoint was called by Codex during validation.
+- No Supabase SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No Chart AI provider call, ad-event write, market/provider ingestion, valuation analytics, or performance analytics was implemented.
+- No secret values were requested or recorded.
+
+### Validation
+
+- `npm run build` passed.
+- `.vercel/output/config.json`, `.vercel/output/functions/_render.func`, and `.vercel/output/static` were generated.
+- Product source/generated secret marker scan found only the expected server-only source occurrence for the service-role variable marker.
+- Service-role exposure scan found expected server-only source occurrences only.
+- Browser/static bundle server-only marker scan found no service-role marker and no server-only helper marker.
+- Disposable identifier scan found no product source or generated-output matches.
+- Removed legacy route scan found no product source or generated-output matches.
+- Broad crypto scope scan found no newly added broad crypto feature; existing crypto-not-supported and asset-class Bitcoin copy remain within approved scope.
+- Ignored-file coverage was confirmed for `.env*`, `.vercel`, `dist`, `.astro`, `.omc`, representative credentials, certificates, and key files.
+- In-app browser smoke was unavailable; fallback local HTTP smoke confirmed `/portfolio` returns 200 and unauthenticated Portfolio API GET requests return 401 without write calls.
+- Recommended next phase: Phase 3D Chart AI usage guard and server-only AI execution skeleton.
+
 ## Phase 3B - 2026-06-18
 
 ### Auth/Profile Boundary Implementation
