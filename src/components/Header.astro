@@ -29,6 +29,30 @@ import AuthModal from './Auth/AuthModal.astro';
   import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
 
   type HeaderAuthState = 'checking' | 'signed_in' | 'signed_out' | 'unavailable';
+  const AUTH_UI_HINT_KEY = 'mk-stock-lab-auth-ui-hint';
+
+  const readAuthUiHint = () => {
+    try {
+      return window.localStorage.getItem(AUTH_UI_HINT_KEY);
+    } catch {
+      return null;
+    }
+  };
+
+  const writeAuthUiHint = (status: HeaderAuthState) => {
+    try {
+      if (status === 'signed_in') {
+        window.localStorage.setItem(AUTH_UI_HINT_KEY, 'signed_in');
+        return;
+      }
+
+      if (status === 'signed_out' || status === 'unavailable') {
+        window.localStorage.removeItem(AUTH_UI_HINT_KEY);
+      }
+    } catch {
+      // Local storage can be unavailable in private or constrained browser contexts.
+    }
+  };
 
   const dispatchHeaderAuthState = (status: HeaderAuthState) => {
     window.dispatchEvent(new CustomEvent('mk:auth-state', { detail: { status } }));
@@ -49,6 +73,7 @@ import AuthModal from './Auth/AuthModal.astro';
     }
 
     if (status === 'signed_in') {
+      writeAuthUiHint(status);
       loginButton.classList.add('hidden');
       loginButton.removeAttribute('disabled');
       logoutButton.classList.remove('hidden');
@@ -56,6 +81,7 @@ import AuthModal from './Auth/AuthModal.astro';
       return;
     }
 
+    writeAuthUiHint(status);
     loginButton.textContent = status === 'unavailable' ? '설정 필요' : '로그인';
     loginButton.removeAttribute('disabled');
     loginButton.classList.remove('hidden');
@@ -81,7 +107,7 @@ import AuthModal from './Auth/AuthModal.astro';
     const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
     if (!loginButton || !logoutButton || loginButton.dataset.authReady === 'true') return;
     loginButton.dataset.authReady = 'true';
-    updateAuthButtons('checking');
+    updateAuthButtons(readAuthUiHint() === 'signed_in' ? 'signed_in' : 'checking');
 
     loginButton?.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('mk:open-auth'));

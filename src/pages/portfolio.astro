@@ -11,19 +11,15 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </header>
 
-  <section class="auth-required portfolio-readiness" id="portfolio-readiness" data-state="checking">
-    <div>
-      <p class="eyebrow">접속 상태</p>
-      <h2 id="portfolio-readiness-title">로그인 상태 확인 중</h2>
-      <p id="portfolio-readiness-copy">로그인과 프로필 준비가 완료되면 포트폴리오 데이터를 불러옵니다.</p>
+  <section class="portfolio-status-bar" id="portfolio-readiness" data-state="checking">
+    <div class="portfolio-status-items" aria-label="포트폴리오 상태">
+      <span class="status-pill" data-status-key="login"><i aria-hidden="true"></i><span>로그인</span><strong id="portfolio-login-status">확인 중</strong></span>
+      <span class="status-pill" data-status-key="profile"><i aria-hidden="true"></i><span>프로필</span><strong id="portfolio-profile-status">확인 중</strong></span>
+      <span class="status-pill" data-status-key="api"><i aria-hidden="true"></i><span>API</span><strong id="portfolio-api-status">대기 중</strong></span>
+      <span class="status-pill neutral"><i aria-hidden="true"></i><span>평가</span><strong>준비 중</strong></span>
     </div>
-    <button class="primary-action" id="portfolio-login-action" type="button">로그인</button>
-    <ul class="status-list">
-      <li><span>로그인</span><strong id="portfolio-login-status">확인 중</strong></li>
-      <li><span>프로필</span><strong id="portfolio-profile-status">확인 중</strong></li>
-      <li><span>포트폴리오 API</span><strong id="portfolio-api-status">대기 중</strong></li>
-      <li><span>평가 기능</span><strong class="neutral">준비 중</strong></li>
-    </ul>
+    <p id="portfolio-readiness-copy">로그인과 프로필 준비가 완료되면 포트폴리오 데이터를 불러옵니다.</p>
+    <button class="text-button hidden" id="portfolio-login-action" type="button">로그인</button>
   </section>
 
   <section class="portfolio-mvp hidden" id="portfolio-mvp">
@@ -70,10 +66,12 @@ import Layout from '../layouts/Layout.astro';
 
       <form class="position-form hidden" id="position-form">
         <input type="hidden" id="position-id" />
+        <input type="hidden" id="position-symbol" />
+        <input type="hidden" id="position-asset-type" value="stock" />
         <div class="form-grid">
-          <label>
-            티커
-            <input id="position-symbol" maxlength="32" required placeholder="005930 또는 AAPL" />
+          <label class="form-field-wide">
+            종목명 또는 티커
+            <input id="position-security-input" maxlength="160" required placeholder="삼성전자 또는 005930" />
           </label>
           <label>
             시장
@@ -83,22 +81,11 @@ import Layout from '../layouts/Layout.astro';
             </select>
           </label>
           <label>
-            자산 유형
-            <select id="position-asset-type">
-              <option value="stock">주식</option>
-              <option value="etf">ETF</option>
-            </select>
-          </label>
-          <label>
             통화
             <select id="position-currency">
               <option value="KRW">KRW</option>
               <option value="USD">USD</option>
             </select>
-          </label>
-          <label>
-            종목명
-            <input id="position-name" maxlength="160" placeholder="선택 입력" />
           </label>
           <label>
             매수일
@@ -128,12 +115,13 @@ import Layout from '../layouts/Layout.astro';
         <table class="data-table compact-table">
           <thead>
             <tr>
-              <th>티커</th>
+              <th>종목</th>
               <th>시장</th>
-              <th>유형</th>
               <th>수량</th>
               <th>매수가</th>
-              <th>통화</th>
+              <th>현재가</th>
+              <th>평가금액</th>
+              <th>수익률</th>
               <th>관리</th>
             </tr>
           </thead>
@@ -290,6 +278,28 @@ import Layout from '../layouts/Layout.astro';
         '"': '&quot;',
         "'": '&#39;',
       })[char] || char);
+    const tickerLikePattern = /^[A-Za-z0-9.-]{1,16}$/;
+    const toInternalSymbol = (value: string) => {
+      const normalized = value.trim();
+      if (tickerLikePattern.test(normalized)) return normalized.toUpperCase();
+      return normalized.slice(0, 32);
+    };
+    const toPositionIdentity = (value: string) => {
+      const normalized = value.trim();
+      const symbol = toInternalSymbol(normalized);
+      return {
+        symbol,
+        name: tickerLikePattern.test(normalized) ? '' : normalized,
+      };
+    };
+    const getPositionPrimaryLabel = (position: PortfolioPosition) => position.name || position.symbol || '종목명 미입력';
+    const getPositionSecondaryLabel = (position: PortfolioPosition) => {
+      if (position.name && position.symbol && position.name !== position.symbol) return position.symbol;
+      if (!position.name && position.symbol) return '티커 직접 입력';
+      return '티커 미확인';
+    };
+    const getValuationPlaceholder = (portfolio: Portfolio, position: PortfolioPosition) =>
+      portfolio.baseCurrency === 'KRW' && position.currency === 'USD' ? '원화 환산 예정' : '데이터 대기';
 
     const showToast = (message: string) => {
       const toast = getElement<HTMLDivElement>('portfolio-toast');
@@ -354,11 +364,11 @@ import Layout from '../layouts/Layout.astro';
 
     const resetPositionForm = () => {
       getElement<HTMLInputElement>('position-id')!.value = '';
+      getElement<HTMLInputElement>('position-security-input')!.value = '';
       getElement<HTMLInputElement>('position-symbol')!.value = '';
       getElement<HTMLSelectElement>('position-market')!.value = 'KR';
-      getElement<HTMLSelectElement>('position-asset-type')!.value = 'stock';
+      getElement<HTMLInputElement>('position-asset-type')!.value = 'stock';
       getElement<HTMLSelectElement>('position-currency')!.value = 'KRW';
-      getElement<HTMLInputElement>('position-name')!.value = '';
       getElement<HTMLInputElement>('position-buy-date')!.value = '';
       getElement<HTMLInputElement>('position-buy-price')!.value = '';
       getElement<HTMLInputElement>('position-quantity')!.value = '';
@@ -424,16 +434,22 @@ import Layout from '../layouts/Layout.astro';
 
       state.positions.forEach((position) => {
         const row = document.createElement('tr');
+        const primaryLabel = getPositionPrimaryLabel(position);
+        const secondaryLabel = getPositionSecondaryLabel(position);
         row.innerHTML = `
-          <td><strong>${escapeHtml(position.symbol)}</strong><small>${escapeHtml(position.name)}</small></td>
+          <td class="position-name-cell">
+            <strong>${escapeHtml(primaryLabel)}</strong>
+            <small>${escapeHtml(secondaryLabel)}</small>
+          </td>
           <td>${position.market}</td>
-          <td>${position.assetType === 'stock' ? '주식' : 'ETF'}</td>
           <td>${money.format(position.quantity)}</td>
-          <td>${money.format(position.buyPrice)}</td>
-          <td>${position.currency}</td>
+          <td>${position.currency} ${money.format(position.buyPrice)}</td>
+          <td><span class="metric-placeholder">연동 예정</span></td>
+          <td><span class="metric-placeholder">${getValuationPlaceholder(portfolio, position)}</span></td>
+          <td><span class="metric-placeholder">-</span></td>
           <td class="table-actions">
-            <button class="text-button" type="button" data-action="edit-position" data-id="${position.id}">수정</button>
-            <button class="text-button danger" type="button" data-action="delete-position" data-id="${position.id}">삭제</button>
+            <button class="table-action-button" type="button" data-action="edit-position" data-id="${position.id}">수정</button>
+            <button class="table-action-button danger" type="button" data-action="delete-position" data-id="${position.id}">삭제</button>
           </td>
         `;
         body.appendChild(row);
@@ -594,12 +610,18 @@ import Layout from '../layouts/Layout.astro';
       if (!state.selectedPortfolioId) return;
 
       const id = getElement<HTMLInputElement>('position-id')!.value;
+      const securityInput = getElement<HTMLInputElement>('position-security-input')!.value.trim();
+      if (!securityInput) {
+        showToast('종목명 또는 티커를 입력하세요.');
+        return;
+      }
+      const identity = toPositionIdentity(securityInput);
       const input = {
         portfolioId: state.selectedPortfolioId,
-        symbol: getElement<HTMLInputElement>('position-symbol')!.value,
+        symbol: identity.symbol,
         market: getElement<HTMLSelectElement>('position-market')!.value as 'KR' | 'US',
-        assetType: getElement<HTMLSelectElement>('position-asset-type')!.value as 'stock' | 'etf',
-        name: getElement<HTMLInputElement>('position-name')!.value,
+        assetType: 'stock' as const,
+        name: identity.name,
         buyPrice: Number(getElement<HTMLInputElement>('position-buy-price')!.value),
         quantity: Number(getElement<HTMLInputElement>('position-quantity')!.value),
         buyDate: getElement<HTMLInputElement>('position-buy-date')!.value,
@@ -633,11 +655,11 @@ import Layout from '../layouts/Layout.astro';
 
       if (target.dataset.action === 'edit-position') {
         getElement<HTMLInputElement>('position-id')!.value = position.id;
+        getElement<HTMLInputElement>('position-security-input')!.value = position.name || position.symbol;
         getElement<HTMLInputElement>('position-symbol')!.value = position.symbol;
         getElement<HTMLSelectElement>('position-market')!.value = position.market;
-        getElement<HTMLSelectElement>('position-asset-type')!.value = position.assetType;
+        getElement<HTMLInputElement>('position-asset-type')!.value = position.assetType || 'stock';
         getElement<HTMLSelectElement>('position-currency')!.value = position.currency;
-        getElement<HTMLInputElement>('position-name')!.value = position.name || '';
         getElement<HTMLInputElement>('position-buy-date')!.value = position.buyDate || '';
         getElement<HTMLInputElement>('position-buy-price')!.value = String(position.buyPrice);
         getElement<HTMLInputElement>('position-quantity')!.value = String(position.quantity);
@@ -647,7 +669,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
       if (target.dataset.action === 'delete-position') {
-        const confirmed = window.confirm(`"${position.symbol}" 종목을 삭제할까요?`);
+        const confirmed = window.confirm(`"${getPositionPrimaryLabel(position)}" 종목을 삭제할까요?`);
         if (!confirmed || !state.selectedPortfolioId) return;
         try {
           await portfolioApi.deletePosition(id);

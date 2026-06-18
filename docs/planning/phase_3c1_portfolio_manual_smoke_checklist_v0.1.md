@@ -87,6 +87,51 @@ After Phase 3C.3, the owner manual smoke should also confirm:
 - Re-login reloads persisted Portfolio and Position data if the disposable data still exists.
 - Current visible shell and Portfolio MVP UI labels are Korean-first.
 
+## Phase 3C.4 Expected State Deltas
+
+After Phase 3C.4, the owner manual smoke should also confirm:
+
+- After login is confirmed, menu navigation keeps `로그아웃` visible.
+- Menu navigation does not show unnecessary `확인 중` after a valid signed-in state is already known.
+- `/portfolio` shows a compact status bar instead of a large readiness card.
+- The position form uses one visible `종목명 또는 티커` field.
+- The manual `자산 유형` select is not visible.
+- Position table placeholders exist for `현재가`, `평가금액`, and `수익률`.
+- A USD position in a KRW-base portfolio shows FX/valuation as pending, not falsely calculated.
+- Position rows show security name on the first line and ticker/code status on the second line.
+- `수정` and `삭제` actions are smaller and visually cleaner.
+- Pretendard or improved Korean font rendering is visible.
+
+## Phase 3C.4 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.4 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.4 포트폴리오 UX 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인: 통과/실패
+- 메뉴 이동 중 `로그아웃` 표시 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- `/portfolio` 진입: 통과/실패
+- compact 상태바 표시: 통과/실패
+- 포트폴리오 생성/조회/수정/삭제: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제: 통과/실패/미실행
+- `종목명 또는 티커` 단일 입력창: 통과/실패
+- `자산 유형` 수동 선택 제거: 통과/실패
+- 현재가/평가금액/수익률 자리 표시: 통과/실패
+- USD 종목의 원화 환산 예정 표시: 통과/실패/해당 없음
+- 종목명 상단·티커 하단 표시: 통과/실패
+- 수정/삭제 버튼 크기와 테이블 구분선 개선: 통과/실패
+- Pretendard 또는 개선된 한글 폰트 느낌: 통과/실패
+- 로그아웃 즉시 데이터 숨김: 통과/실패
+- 재로그인 후 데이터 재조회: 통과/실패/해당 없음
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
 ## Pass/Fail Result Template
 
 Use this Korean-first format when reporting results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
@@ -162,12 +207,12 @@ Stop the manual smoke immediately if any of these occur:
 
 Choose exactly one:
 
-- If smoke passes: proceed to Phase 3D Chart AI usage guard and server-only execution skeleton.
-- If smoke fails: prepare focused Phase 3C.2 Portfolio smoke fix packet using non-secret failure details.
+- If Phase 3C.4 smoke passes: proceed to Phase 3D Chart AI usage guard and server-only execution skeleton.
+- If Phase 3C.4 smoke fails: prepare focused Phase 3C.5 Portfolio UX smoke fix packet using non-secret failure details.
 
 Options:
 
-- Option A: Run manual Portfolio smoke now and report non-secret pass/fail.
+- Option A: Run Phase 3C.4 manual Portfolio smoke now and report non-secret pass/fail.
 - Option B: Proceed to Phase 3D without manual Portfolio smoke.
 - Option C: Run Advisor/security follow-up before additional DB-backed feature work.
 

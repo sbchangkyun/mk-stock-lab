@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.4 - 2026-06-18
+
+### Portfolio UX Polish
+
+- Added a non-secret browser UI hint so the header can keep `로그아웃` visible during normal navigation after a signed-in state has already been confirmed.
+- Replaced the large Portfolio readiness card with a compact status bar for login, profile, Portfolio API, and valuation readiness.
+- Polished Portfolio position form spacing, table borders, row display, and `수정`/`삭제` action styling.
+- Replaced separate visible ticker and name inputs with one `종목명 또는 티커` field.
+- Removed the visible `자산 유형` select while preserving an internal `stock` default for the current API/schema contract.
+- Added safe placeholders for `현재가`, `평가금액`, and `수익률`.
+- Added USD-in-KRW valuation placeholder behavior so USD buy price remains displayed as USD and KRW valuation remains pending.
+- Updated position rows to show security name first and ticker/code status second.
+- Added the `pretendard` package and imported its package CSS for project-managed, self-hosted Korean font rendering.
+
+### Backlog And Provider Notes
+
+- Preserved the note that KIS REST API APP KEY, KIS REST API APP Secret, and OpenDART API KEY have been issued for future phases, without recording values.
+- Preserved the desktop left-side rotating image ad banner as backlog only.
+- Did not implement provider integration, Chart AI provider calls, ad-event writes, banner implementation, FX conversion, valuation analytics, performance analytics, or provider autocomplete.
+
+### Safety And Scope
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No authenticated Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider credentials were requested or recorded.
+- `npm run build` passed.
+- Vercel output generation passed.
+- Local unauthenticated HTTP smoke passed using `npm run dev` because the Vercel adapter does not support `astro preview`.
+- Source and generated-output scans found only expected server-only service-role source markers and no browser/static exposure.
+- Recommended next action: run the Phase 3C.4 owner manual smoke using the Korean result template.
+
 ## Phase 3C.3 - 2026-06-18
 
 ### Auth And Portfolio State Stabilization

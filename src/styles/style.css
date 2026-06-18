@@ -1,3 +1,5 @@
+@import "pretendard/dist/web/variable/pretendardvariable.css";
+
 :root {
   --bg: #f5f7fb;
   --surface: #ffffff;
@@ -34,7 +36,7 @@ body {
   min-width: 1080px;
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, Arial, "Malgun Gothic", sans-serif;
+  font-family: Pretendard, Inter, Arial, "Malgun Gothic", sans-serif;
   letter-spacing: 0;
   padding-bottom: 124px;
 }
@@ -482,6 +484,10 @@ h2 {
   text-align: left;
 }
 
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 .data-table th {
   background: var(--surface-muted);
   color: var(--text-muted);
@@ -708,13 +714,74 @@ h2 {
   border-radius: 8px;
 }
 
-.portfolio-readiness {
-  display: grid;
-  gap: 18px;
+.portfolio-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: -4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(20, 36, 64, 0.05);
 }
 
-.portfolio-readiness .primary-action {
-  width: fit-content;
+.portfolio-status-bar p {
+  flex: 1;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.portfolio-status-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--neutral);
+}
+
+.status-pill strong {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.portfolio-status-bar[data-state="ready"] .status-pill:not(.neutral) i,
+.portfolio-status-bar[data-state="profile_ready"] .status-pill[data-status-key="login"] i,
+.portfolio-status-bar[data-state="profile_ready"] .status-pill[data-status-key="profile"] i,
+.portfolio-status-bar[data-state="api_pending"] .status-pill[data-status-key="login"] i,
+.portfolio-status-bar[data-state="api_pending"] .status-pill[data-status-key="profile"] i,
+.portfolio-status-bar[data-state="signed_in"] .status-pill[data-status-key="login"] i,
+.portfolio-status-bar[data-state="profile_pending"] .status-pill[data-status-key="login"] i {
+  background: var(--positive);
+}
+
+.portfolio-status-bar[data-state="signed_out"] .status-pill[data-status-key="login"] i,
+.portfolio-status-bar[data-state="profile_failed"] .status-pill[data-status-key="profile"] i,
+.portfolio-status-bar[data-state="public_config_missing"] .status-pill i,
+.portfolio-status-bar[data-state="profile_config_missing"] .status-pill[data-status-key="profile"] i,
+.portfolio-status-bar[data-state="portfolio_config_missing"] .status-pill[data-status-key="api"] i {
+  background: var(--negative);
 }
 
 .portfolio-mvp {
@@ -777,6 +844,10 @@ h2 {
   gap: 12px;
 }
 
+.form-field-wide {
+  grid-column: span 2;
+}
+
 .form-actions,
 .portfolio-item-actions,
 .table-actions {
@@ -784,6 +855,10 @@ h2 {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.position-form .form-actions {
+  margin-bottom: 14px;
 }
 
 .portfolio-list {
@@ -833,6 +908,7 @@ h2 {
 }
 
 .table-wrap {
+  margin-top: 4px;
   overflow-x: auto;
 }
 
@@ -841,10 +917,56 @@ h2 {
   white-space: nowrap;
 }
 
+.compact-table th {
+  letter-spacing: 0;
+}
+
 .compact-table small {
   display: block;
   color: var(--text-muted);
   font-size: 12px;
+}
+
+.position-name-cell strong {
+  display: block;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.position-name-cell small {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.metric-placeholder {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.table-actions {
+  justify-content: flex-end;
+}
+
+.table-action-button {
+  min-height: 28px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.table-action-button:hover {
+  background: var(--surface-muted);
+}
+
+.table-action-button.danger {
+  color: var(--negative);
 }
 
 .text-button.danger {
@@ -873,11 +995,24 @@ h2 {
   .form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .form-field-wide {
+    grid-column: span 2;
+  }
+
+  .portfolio-status-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 640px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .form-field-wide {
+    grid-column: span 1;
   }
 
   .portfolio-panel-header,
