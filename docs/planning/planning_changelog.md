@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3A - 2026-06-18
+
+### App/Server Integration Planning
+
+- Created `docs/planning/app_server_integration_plan_v0.1.md`.
+- Acknowledged Phase 2L production schema readiness for application/server integration planning.
+- Documented the current Astro route shell, Supabase browser helper, auth entry points, shared layout/nav/ticker/ad components, and the absence of current server endpoint files.
+- Documented route-to-table integration mapping, service-role boundary principles, environment variable categories, planned server API boundaries, Chart AI usage-guard requirements, Portfolio/Auth/Profile sequence, public Lab/Heatmap read strategy, and ad-event server-write design.
+- Preserved Advisor follow-ups and the pending runtime test for `internal.consume_chart_ai_usage(uuid, integer)`.
+- Recommended the next implementation packet: Phase 3B Supabase client/server helper boundary and auth/profile bootstrap.
+
+### Safety And Scope
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No feature implementation, API route creation, provider integration, or database write path was added.
+- No secret values were requested or recorded.
+
+### Validation
+
+- Run normal `npm run build` only for Phase 3A validation.
+- Scan source and generated output for requested provider secret markers.
+- Scan source and generated output for service-role exposure markers, reporting docs-only occurrences separately.
+- Scan source and generated output for disposable validation identifiers, reporting docs-only occurrences separately.
+- Confirm removed legacy route strings remain absent from product source and generated output.
+- Confirm ignored-file coverage for `.env*`, `.vercel`, `dist`, `.astro`, `.omc`, credentials, certificates, and key files.
+- Confirm final `git status --short`.
+
 ## Phase 2L - 2026-06-18
 
 ### Production Reset/Drop And Supabase Migration

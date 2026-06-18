@@ -34,6 +34,7 @@ The patch SQL exists only to repair the already-created disposable validation pr
 
 ## Related Planning Docs
 
+- `docs/planning/app_server_integration_plan_v0.1.md`
 - `docs/planning/supabase_production_reset_migration_result_v0.1.md`
 - `docs/planning/supabase_production_migration_result_v0.1.md`
 - `docs/planning/vercel_production_env_separation_audit_v0.1.md`
