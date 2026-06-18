@@ -77,24 +77,45 @@ Expected states:
 
 The login/signup modal should show Korean labels, a signup nickname field, a signup password confirmation field, and a Korean password mismatch validation message.
 
+## Phase 3C.3 Expected State Deltas
+
+After Phase 3C.3, the owner manual smoke should also confirm:
+
+- Header auth controls do not briefly show a signed-out/login state during navigation after a valid session exists.
+- `/portfolio` waits for session resolution before showing signed-out content.
+- Sign-out immediately hides Portfolio and Position user data.
+- Re-login reloads persisted Portfolio and Position data if the disposable data still exists.
+- Current visible shell and Portfolio MVP UI labels are Korean-first.
+
 ## Pass/Fail Result Template
 
-Use this format when reporting results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+Use this Korean-first format when reporting results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
 
 ```text
-Phase 3C.1 manual Portfolio smoke result:
+Phase 3C.3 포트폴리오 수동 점검 결과:
 
-* App target: local / deployed
-* Browser: [browser name only]
-* Sign-in: pass/fail
-* Profile bootstrap: pass/fail
-* Portfolio create/read/edit/delete: pass/fail
-* Position create/read/edit/delete: pass/fail
-* Refresh persistence: pass/fail
-* Sign-out hides data: pass/fail
-* Console secret/token/raw error check: pass/fail
-* Test data cleanup: pass/fail
-* Non-secret notes:
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인: 통과/실패
+- 헤더 로그인 상태 유지: 통과/실패
+- 메뉴 이동 중 로그인 상태 깜박임 없음: 통과/실패
+- `/portfolio` 진입: 통과/실패
+- 포트폴리오 화면의 로그인 상태: 통과/실패
+- 프로필 상태: 통과/실패
+- 포트폴리오 API 상태: 통과/실패
+- 기존 포트폴리오 자동 재조회: 통과/실패/해당 없음
+- 포트폴리오 생성/조회/수정/삭제: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제: 통과/실패/미실행
+- 새로고침 후 데이터 유지: 통과/실패/미실행
+- 로그아웃 즉시 데이터 숨김: 통과/실패
+- 재로그인 후 데이터 재조회: 통과/실패/해당 없음
+- 한국어 UI 표시: 통과/실패
+- 회원가입 닉네임 입력칸: 통과/실패
+- 회원가입 비밀번호 확인칸: 통과/실패
+- 비밀번호 불일치 검증: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
 ```
 
 ## Failure Triage Guide

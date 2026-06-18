@@ -1,11 +1,11 @@
 ---
 const { currentPath = '/' } = Astro.props;
 const navItems = [
-  { label: 'Home', href: '/' },
+  { label: '홈', href: '/' },
   { label: 'Chart AI', href: '/chart-ai' },
-  { label: 'Heatmap', href: '/heatmap' },
+  { label: '히트맵', href: '/heatmap' },
   { label: 'Lab', href: '/lab' },
-  { label: 'Portfolio', href: '/portfolio' },
+  { label: '포트폴리오', href: '/portfolio' },
 ];
 
 const isActive = (href: string) => {
@@ -14,7 +14,7 @@ const isActive = (href: string) => {
 };
 ---
 
-<nav class="primary-nav" aria-label="Primary navigation">
+<nav class="primary-nav" aria-label="주요 메뉴">
   <div class="nav-inner">
     {navItems.map((item) => (
       <a class:list={['nav-link', { active: isActive(item.href) }]} href={item.href}>

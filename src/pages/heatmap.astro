@@ -6,23 +6,23 @@ import Layout from '../layouts/Layout.astro';
   <header class="page-header">
     <div>
       <p class="eyebrow">Heatmap</p>
-      <h1>Market heatmap shell</h1>
-      <p class="lead">Index and portfolio heatmap data will be wired after the market data and portfolio phases.</p>
+      <h1>시장 히트맵</h1>
+      <p class="lead">지수와 포트폴리오 히트맵 데이터는 시장 데이터와 포트폴리오 단계 이후 연결합니다.</p>
     </div>
   </header>
 
-  <div class="tabs" role="tablist" aria-label="Heatmap universes">
+  <div class="tabs" role="tablist" aria-label="히트맵 대상">
     <span class="tab active">KOSPI200</span>
     <span class="tab">KOSDAQ150</span>
     <span class="tab">S&amp;P500</span>
     <span class="tab">NASDAQ100</span>
-    <span class="tab">My Portfolio</span>
+    <span class="tab">내 포트폴리오</span>
   </div>
 
   <section class="heatmap-placeholder">
-    <p class="eyebrow">Global color scale</p>
-    <h2>Green for positive, red for negative, gray near zero</h2>
-    <div class="heatmap-grid" aria-label="Sample heatmap cells">
+    <p class="eyebrow">색상 기준</p>
+    <h2>상승은 초록색, 하락은 빨간색, 보합은 회색으로 표시합니다</h2>
+    <div class="heatmap-grid" aria-label="히트맵 예시 셀">
       <div class="heatmap-cell up">AAPL<small>+5.2%</small></div>
       <div class="heatmap-cell flat">MSFT<small>+0.1%</small></div>
       <div class="heatmap-cell down">TSLA<small>-5.4%</small></div>

@@ -1,5 +1,39 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.3 - 2026-06-18
+
+### Auth And Portfolio State Stabilization
+
+- Replaced the header's initial signed-out visual default with a neutral session-checking state to reduce auth-state flicker during navigation.
+- Added a shared browser-only auth-state event so Portfolio can react to checking, signed-in, signed-out, and unavailable states.
+- Cleared portfolio list, selected portfolio, position list, edit forms, and loading state immediately on sign-out.
+- Reran profile bootstrap and Portfolio list loading after signed-in state so re-login can reload persisted Portfolio data.
+- Preserved signup nickname and password confirmation fields and Korean validation messages.
+
+### Korean UI Conversion
+
+- Converted the current visible shell and Portfolio MVP UI to Korean-first copy across header, nav, ticker helper text, home, Chart AI, Heatmap, Lab, Portfolio, slide ad, and footer ad surfaces.
+- Preserved approved brand, feature, financial proper noun, ticker, currency, and route labels where appropriate.
+- Updated owner manual smoke reporting format to Korean-first copy while preserving secret-safety rules.
+
+### Backlog And Provider Notes
+
+- Preserved the note that KIS REST API APP KEY, KIS REST API APP Secret, and OpenDART API KEY have been issued for future phases, without recording values.
+- Preserved the desktop left-side rotating image ad banner as backlog only.
+- Did not implement a left-side banner, ad-event route, database change, provider integration, valuation analytics, or performance analytics.
+
+### Safety And Scope
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No authenticated Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider credentials were requested or recorded.
+- Recommended next action: rerun focused owner manual Portfolio smoke using the Korean result template.
+
 ## Phase 3C.2 - 2026-06-18
 
 ### Portfolio Smoke Fix

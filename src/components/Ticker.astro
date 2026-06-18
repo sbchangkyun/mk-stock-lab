@@ -1,18 +1,18 @@
 ---
 const tickerItems = [
-  { label: 'S&P 500', value: 'US large cap' },
-  { label: 'Nasdaq 100', value: 'Growth index' },
-  { label: 'Dow Jones', value: 'Blue chips' },
-  { label: 'KOSPI', value: 'Korea main board' },
-  { label: 'KOSDAQ', value: 'Korea growth board' },
-  { label: 'USD/KRW', value: 'FX watch' },
-  { label: 'Dollar Index', value: 'Macro gauge' },
-  { label: 'Gold', value: 'Safe-haven asset' },
-  { label: 'WTI Oil', value: 'Energy benchmark' },
+  { label: 'S&P 500', value: '미국 대형주' },
+  { label: 'Nasdaq 100', value: '성장주 지수' },
+  { label: 'Dow Jones', value: '우량주 지수' },
+  { label: 'KOSPI', value: '국내 대표 시장' },
+  { label: 'KOSDAQ', value: '국내 성장 시장' },
+  { label: 'USD/KRW', value: '환율 점검' },
+  { label: 'Dollar Index', value: '달러 흐름' },
+  { label: 'Gold', value: '안전자산' },
+  { label: 'WTI Oil', value: '에너지 기준가' },
 ];
 ---
 
-<div class="ticker-belt" id="ticker_area" aria-label="Market ticker">
+<div class="ticker-belt" id="ticker_area" aria-label="시장 지표">
   <div class="ticker-track">
     {tickerItems.map((item) => (
       <span class="ticker-chip">

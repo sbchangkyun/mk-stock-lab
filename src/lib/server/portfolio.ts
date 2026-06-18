@@ -61,7 +61,7 @@ export const methodNotAllowed = () =>
     {
       ok: false,
       code: 'METHOD_NOT_ALLOWED',
-      message: 'Method not allowed.',
+      message: '허용되지 않는 요청 방식입니다.',
     },
     405,
   );
@@ -79,12 +79,12 @@ export const readJsonBody = async (request: Request): Promise<ApiResult<Record<s
   try {
     const body = await request.json();
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
-      return apiFailure(400, 'INVALID_PAYLOAD', 'Invalid request payload.');
+      return apiFailure(400, 'INVALID_PAYLOAD', '요청 내용을 확인해 주세요.');
     }
 
     return apiSuccess(body as Record<string, unknown>);
   } catch {
-    return apiFailure(400, 'INVALID_PAYLOAD', 'Invalid request payload.');
+    return apiFailure(400, 'INVALID_PAYLOAD', '요청 내용을 확인해 주세요.');
   }
 };
 
@@ -112,6 +112,20 @@ export const toErrorResponse = (failure: ApiFailure) =>
   );
 
 const asString = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+const fieldLabel = (field: string) => {
+  const labels: Record<string, string> = {
+    id: 'ID',
+    portfolioId: '포트폴리오',
+    name: '이름',
+    baseCurrency: '기준 통화',
+    market: '시장',
+    currency: '통화',
+    symbol: '티커',
+    buyPrice: '매수가',
+    quantity: '수량',
+  };
+  return labels[field] || field;
+};
 
 const optionalString = (value: unknown, maxLength: number) => {
   if (value === undefined || value === null) return null;
@@ -122,28 +136,28 @@ const optionalString = (value: unknown, maxLength: number) => {
 
 const requiredString = (value: unknown, field: string, maxLength: number) => {
   const text = asString(value);
-  if (!text) return apiFailure(400, 'INVALID_PAYLOAD', `${field} is required.`);
-  if (text.length > maxLength) return apiFailure(400, 'INVALID_PAYLOAD', `${field} is too long.`);
+  if (!text) return apiFailure(400, 'INVALID_PAYLOAD', `${fieldLabel(field)} 입력이 필요합니다.`);
+  if (text.length > maxLength) return apiFailure(400, 'INVALID_PAYLOAD', `${fieldLabel(field)} 입력이 너무 깁니다.`);
   return apiSuccess(text);
 };
 
 const enumValue = <T extends string>(value: unknown, allowed: readonly T[], field: string, fallback?: T) => {
   const raw = typeof value === 'string' ? value.trim().toUpperCase() : '';
   const normalized = allowed.find((item) => item.toUpperCase() === raw) ?? fallback;
-  if (!normalized) return apiFailure(400, 'INVALID_PAYLOAD', `${field} is invalid.`);
+  if (!normalized) return apiFailure(400, 'INVALID_PAYLOAD', `${fieldLabel(field)} 값을 확인해 주세요.`);
   return apiSuccess(normalized);
 };
 
 const assetTypeValue = (value: unknown) => {
   const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
   if (raw === 'stock' || raw === 'etf') return apiSuccess(raw);
-  return apiFailure(400, 'INVALID_PAYLOAD', 'assetType is invalid.');
+  return apiFailure(400, 'INVALID_PAYLOAD', '자산 유형을 확인해 주세요.');
 };
 
 const nonNegativeNumber = (value: unknown, field: string) => {
   const number = Number(value);
   if (!Number.isFinite(number) || number < 0) {
-    return apiFailure(400, 'INVALID_PAYLOAD', `${field} is invalid.`);
+    return apiFailure(400, 'INVALID_PAYLOAD', `${fieldLabel(field)} 값을 확인해 주세요.`);
   }
   return apiSuccess(number);
 };
@@ -151,7 +165,7 @@ const nonNegativeNumber = (value: unknown, field: string) => {
 const positiveNumber = (value: unknown, field: string) => {
   const number = Number(value);
   if (!Number.isFinite(number) || number <= 0) {
-    return apiFailure(400, 'INVALID_PAYLOAD', `${field} is invalid.`);
+    return apiFailure(400, 'INVALID_PAYLOAD', `${fieldLabel(field)} 값을 확인해 주세요.`);
   }
   return apiSuccess(number);
 };
@@ -159,12 +173,12 @@ const positiveNumber = (value: unknown, field: string) => {
 const optionalDate = (value: unknown) => {
   if (value === undefined || value === null || value === '') return apiSuccess(null);
   if (typeof value !== 'string' || !datePattern.test(value)) {
-    return apiFailure(400, 'INVALID_PAYLOAD', 'buyDate is invalid.');
+    return apiFailure(400, 'INVALID_PAYLOAD', '매수일을 확인해 주세요.');
   }
 
   const date = new Date(`${value}T00:00:00.000Z`);
   if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
-    return apiFailure(400, 'INVALID_PAYLOAD', 'buyDate is invalid.');
+    return apiFailure(400, 'INVALID_PAYLOAD', '매수일을 확인해 주세요.');
   }
 
   return apiSuccess(value);
@@ -172,7 +186,7 @@ const optionalDate = (value: unknown) => {
 
 const validUuid = (value: unknown, field: string) => {
   if (typeof value !== 'string' || !uuidPattern.test(value)) {
-    return apiFailure(400, 'INVALID_PAYLOAD', `${field} is invalid.`);
+    return apiFailure(400, 'INVALID_PAYLOAD', `${fieldLabel(field)} 값을 확인해 주세요.`);
   }
 
   return apiSuccess(value);
@@ -213,7 +227,7 @@ export const listPortfolios = async (userId: string) => {
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
-  if (error || !data) return apiFailure(500, 'PORTFOLIO_LIST_FAILED', 'Could not load portfolios.');
+  if (error || !data) return apiFailure(500, 'PORTFOLIO_LIST_FAILED', '포트폴리오를 불러오지 못했습니다.');
   return apiSuccess(data.map((row) => mapPortfolio(row as PortfolioRow)));
 };
 
@@ -234,7 +248,7 @@ export const createPortfolio = async (userId: string, body: Record<string, unkno
     .select(portfolioSelect)
     .single();
 
-  if (error || !data) return apiFailure(500, 'PORTFOLIO_CREATE_FAILED', 'Could not create portfolio.');
+  if (error || !data) return apiFailure(500, 'PORTFOLIO_CREATE_FAILED', '포트폴리오를 만들지 못했습니다.');
   return apiSuccess(mapPortfolio(data as PortfolioRow));
 };
 
@@ -256,7 +270,7 @@ export const updatePortfolio = async (userId: string, body: Record<string, unkno
   }
 
   if (Object.keys(updates).length === 0) {
-    return apiFailure(400, 'INVALID_PAYLOAD', 'No portfolio fields to update.');
+    return apiFailure(400, 'INVALID_PAYLOAD', '수정할 포트폴리오 항목이 없습니다.');
   }
 
   const { data, error } = await getSupabaseAdminClient()
@@ -267,8 +281,8 @@ export const updatePortfolio = async (userId: string, body: Record<string, unkno
     .select(portfolioSelect)
     .maybeSingle();
 
-  if (error) return apiFailure(500, 'PORTFOLIO_UPDATE_FAILED', 'Could not update portfolio.');
-  if (!data) return apiFailure(404, 'PORTFOLIO_NOT_FOUND', 'Portfolio not found.');
+  if (error) return apiFailure(500, 'PORTFOLIO_UPDATE_FAILED', '포트폴리오를 수정하지 못했습니다.');
+  if (!data) return apiFailure(404, 'PORTFOLIO_NOT_FOUND', '포트폴리오를 찾을 수 없습니다.');
   return apiSuccess(mapPortfolio(data as PortfolioRow));
 };
 
@@ -284,8 +298,8 @@ export const deletePortfolio = async (userId: string, idValue: unknown) => {
     .select('id')
     .maybeSingle();
 
-  if (error) return apiFailure(500, 'PORTFOLIO_DELETE_FAILED', 'Could not delete portfolio.');
-  if (!data) return apiFailure(404, 'PORTFOLIO_NOT_FOUND', 'Portfolio not found.');
+  if (error) return apiFailure(500, 'PORTFOLIO_DELETE_FAILED', '포트폴리오를 삭제하지 못했습니다.');
+  if (!data) return apiFailure(404, 'PORTFOLIO_NOT_FOUND', '포트폴리오를 찾을 수 없습니다.');
   return apiSuccess({ id: id.data });
 };
 
@@ -300,8 +314,8 @@ export const ensurePortfolioOwned = async (userId: string, portfolioIdValue: unk
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (error) return apiFailure(500, 'PORTFOLIO_LOOKUP_FAILED', 'Could not verify portfolio.');
-  if (!data) return apiFailure(404, 'PORTFOLIO_NOT_FOUND', 'Portfolio not found.');
+  if (error) return apiFailure(500, 'PORTFOLIO_LOOKUP_FAILED', '포트폴리오를 확인하지 못했습니다.');
+  if (!data) return apiFailure(404, 'PORTFOLIO_NOT_FOUND', '포트폴리오를 찾을 수 없습니다.');
   return apiSuccess(portfolioId.data);
 };
 
@@ -315,7 +329,7 @@ export const listPositions = async (userId: string, portfolioIdValue: unknown) =
     .eq('portfolio_id', owned.data)
     .order('created_at', { ascending: false });
 
-  if (error || !data) return apiFailure(500, 'POSITION_LIST_FAILED', 'Could not load positions.');
+  if (error || !data) return apiFailure(500, 'POSITION_LIST_FAILED', '보유 종목을 불러오지 못했습니다.');
   return apiSuccess(data.map((row) => mapPosition(row as PositionRow)));
 };
 
@@ -361,7 +375,7 @@ export const createPosition = async (userId: string, body: Record<string, unknow
     .select(positionSelect)
     .single();
 
-  if (error || !data) return apiFailure(500, 'POSITION_CREATE_FAILED', 'Could not create position.');
+  if (error || !data) return apiFailure(500, 'POSITION_CREATE_FAILED', '보유 종목을 추가하지 못했습니다.');
   return apiSuccess(mapPosition(data as PositionRow));
 };
 
@@ -375,11 +389,11 @@ export const updatePosition = async (userId: string, body: Record<string, unknow
     .eq('id', id.data)
     .maybeSingle();
 
-  if (lookupError) return apiFailure(500, 'POSITION_LOOKUP_FAILED', 'Could not verify position.');
-  if (!existing) return apiFailure(404, 'POSITION_NOT_FOUND', 'Position not found.');
+  if (lookupError) return apiFailure(500, 'POSITION_LOOKUP_FAILED', '보유 종목을 확인하지 못했습니다.');
+  if (!existing) return apiFailure(404, 'POSITION_NOT_FOUND', '보유 종목을 찾을 수 없습니다.');
 
   const owned = await ensurePortfolioOwned(userId, existing.portfolio_id);
-  if (!owned.ok) return apiFailure(404, 'POSITION_NOT_FOUND', 'Position not found.');
+  if (!owned.ok) return apiFailure(404, 'POSITION_NOT_FOUND', '보유 종목을 찾을 수 없습니다.');
 
   const updates: Record<string, unknown> = {};
   if (body.symbol !== undefined) {
@@ -421,7 +435,7 @@ export const updatePosition = async (userId: string, body: Record<string, unknow
   }
 
   if (Object.keys(updates).length === 0) {
-    return apiFailure(400, 'INVALID_PAYLOAD', 'No position fields to update.');
+    return apiFailure(400, 'INVALID_PAYLOAD', '수정할 보유 종목 항목이 없습니다.');
   }
 
   const { data, error } = await getSupabaseAdminClient()
@@ -432,8 +446,8 @@ export const updatePosition = async (userId: string, body: Record<string, unknow
     .select(positionSelect)
     .maybeSingle();
 
-  if (error) return apiFailure(500, 'POSITION_UPDATE_FAILED', 'Could not update position.');
-  if (!data) return apiFailure(404, 'POSITION_NOT_FOUND', 'Position not found.');
+  if (error) return apiFailure(500, 'POSITION_UPDATE_FAILED', '보유 종목을 수정하지 못했습니다.');
+  if (!data) return apiFailure(404, 'POSITION_NOT_FOUND', '보유 종목을 찾을 수 없습니다.');
   return apiSuccess(mapPosition(data as PositionRow));
 };
 
@@ -447,11 +461,11 @@ export const deletePosition = async (userId: string, idValue: unknown) => {
     .eq('id', id.data)
     .maybeSingle();
 
-  if (lookupError) return apiFailure(500, 'POSITION_LOOKUP_FAILED', 'Could not verify position.');
-  if (!existing) return apiFailure(404, 'POSITION_NOT_FOUND', 'Position not found.');
+  if (lookupError) return apiFailure(500, 'POSITION_LOOKUP_FAILED', '보유 종목을 확인하지 못했습니다.');
+  if (!existing) return apiFailure(404, 'POSITION_NOT_FOUND', '보유 종목을 찾을 수 없습니다.');
 
   const owned = await ensurePortfolioOwned(userId, existing.portfolio_id);
-  if (!owned.ok) return apiFailure(404, 'POSITION_NOT_FOUND', 'Position not found.');
+  if (!owned.ok) return apiFailure(404, 'POSITION_NOT_FOUND', '보유 종목을 찾을 수 없습니다.');
 
   const { data, error } = await getSupabaseAdminClient()
     .from('portfolio_positions')
@@ -461,7 +475,7 @@ export const deletePosition = async (userId: string, idValue: unknown) => {
     .select('id')
     .maybeSingle();
 
-  if (error) return apiFailure(500, 'POSITION_DELETE_FAILED', 'Could not delete position.');
-  if (!data) return apiFailure(404, 'POSITION_NOT_FOUND', 'Position not found.');
+  if (error) return apiFailure(500, 'POSITION_DELETE_FAILED', '보유 종목을 삭제하지 못했습니다.');
+  if (!data) return apiFailure(404, 'POSITION_NOT_FOUND', '보유 종목을 찾을 수 없습니다.');
   return apiSuccess({ id: id.data });
 };

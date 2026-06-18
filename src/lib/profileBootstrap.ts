@@ -48,7 +48,7 @@ export const bootstrapProfileForCurrentSession = async (): Promise<ProfileBootst
   dispatchProfileBootstrapStatus({
     status: 'pending',
     profileReady: false,
-    message: 'Preparing profile.',
+    message: '프로필을 준비하고 있습니다.',
   });
 
   try {

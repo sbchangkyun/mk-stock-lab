@@ -2,18 +2,18 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Portfolio | MK Stock Lab" activePath="/portfolio">
+<Layout title="포트폴리오 | MK Stock Lab" activePath="/portfolio">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Portfolio</p>
-      <h1>Portfolio MVP workspace</h1>
-      <p class="lead">Create portfolios and track simple KR/US stock or ETF positions. Valuation, performance analytics, and market data refresh are deferred.</p>
+      <p class="eyebrow">포트폴리오</p>
+      <h1>내 투자 포트폴리오</h1>
+      <p class="lead">국내와 미국 주식, ETF 보유 종목을 간단히 관리합니다. 시세 평가, 성과 분석, 시장 데이터 갱신은 이후 단계에서 연결합니다.</p>
     </div>
   </header>
 
   <section class="auth-required portfolio-readiness" id="portfolio-readiness" data-state="checking">
     <div>
-      <p class="eyebrow">Profile readiness</p>
+      <p class="eyebrow">접속 상태</p>
       <h2 id="portfolio-readiness-title">로그인 상태 확인 중</h2>
       <p id="portfolio-readiness-copy">로그인과 프로필 준비가 완료되면 포트폴리오 데이터를 불러옵니다.</p>
     </div>
@@ -22,7 +22,7 @@ import Layout from '../layouts/Layout.astro';
       <li><span>로그인</span><strong id="portfolio-login-status">확인 중</strong></li>
       <li><span>프로필</span><strong id="portfolio-profile-status">확인 중</strong></li>
       <li><span>포트폴리오 API</span><strong id="portfolio-api-status">대기 중</strong></li>
-      <li><span>Valuation</span><strong class="neutral">Not implemented</strong></li>
+      <li><span>평가 기능</span><strong class="neutral">준비 중</strong></li>
     </ul>
   </section>
 
@@ -30,41 +30,41 @@ import Layout from '../layouts/Layout.astro';
     <aside class="portfolio-sidebar panel">
       <div class="portfolio-panel-header">
         <div>
-          <p class="eyebrow">Portfolios</p>
-          <h2>My portfolios</h2>
+          <p class="eyebrow">포트폴리오</p>
+          <h2>내 포트폴리오</h2>
         </div>
-        <button class="text-button" id="portfolio-refresh" type="button">Refresh</button>
+        <button class="text-button" id="portfolio-refresh" type="button">새로고침</button>
       </div>
 
       <form class="compact-form" id="portfolio-form">
         <input type="hidden" id="portfolio-id" />
         <label>
-          Name
-          <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="Core holdings" />
+          이름
+          <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="핵심 보유 종목" />
         </label>
         <label>
-          Base currency
+          기준 통화
           <select id="portfolio-base-currency" name="baseCurrency">
             <option value="KRW">KRW</option>
             <option value="USD">USD</option>
           </select>
         </label>
         <div class="form-actions">
-          <button class="primary-action" id="portfolio-submit" type="submit">Create portfolio</button>
-          <button class="text-button hidden" id="portfolio-cancel-edit" type="button">Cancel edit</button>
+          <button class="primary-action" id="portfolio-submit" type="submit">포트폴리오 만들기</button>
+          <button class="text-button hidden" id="portfolio-cancel-edit" type="button">수정 취소</button>
         </div>
       </form>
 
-      <div class="empty-state hidden" id="portfolio-empty">No portfolios yet.</div>
+      <div class="empty-state hidden" id="portfolio-empty">아직 등록된 포트폴리오가 없습니다.</div>
       <div class="portfolio-list" id="portfolio-list" aria-live="polite"></div>
     </aside>
 
     <section class="portfolio-detail panel">
       <div class="portfolio-panel-header">
         <div>
-          <p class="eyebrow">Positions</p>
-          <h2 id="selected-portfolio-title">Select a portfolio</h2>
-          <p id="selected-portfolio-meta">Position management appears after a portfolio is selected.</p>
+          <p class="eyebrow">보유 종목</p>
+          <h2 id="selected-portfolio-title">포트폴리오를 선택하세요</h2>
+          <p id="selected-portfolio-meta">포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.</p>
         </div>
       </div>
 
@@ -72,69 +72,69 @@ import Layout from '../layouts/Layout.astro';
         <input type="hidden" id="position-id" />
         <div class="form-grid">
           <label>
-            Symbol
-            <input id="position-symbol" maxlength="32" required placeholder="005930 or AAPL" />
+            티커
+            <input id="position-symbol" maxlength="32" required placeholder="005930 또는 AAPL" />
           </label>
           <label>
-            Market
+            시장
             <select id="position-market">
               <option value="KR">KR</option>
               <option value="US">US</option>
             </select>
           </label>
           <label>
-            Type
+            자산 유형
             <select id="position-asset-type">
-              <option value="stock">Stock</option>
+              <option value="stock">주식</option>
               <option value="etf">ETF</option>
             </select>
           </label>
           <label>
-            Currency
+            통화
             <select id="position-currency">
               <option value="KRW">KRW</option>
               <option value="USD">USD</option>
             </select>
           </label>
           <label>
-            Name
-            <input id="position-name" maxlength="160" placeholder="Optional display name" />
+            종목명
+            <input id="position-name" maxlength="160" placeholder="선택 입력" />
           </label>
           <label>
-            Buy date
+            매수일
             <input id="position-buy-date" type="date" />
           </label>
           <label>
-            Buy price
+            매수가
             <input id="position-buy-price" type="number" min="0" step="0.0001" required />
           </label>
           <label>
-            Quantity
+            수량
             <input id="position-quantity" type="number" min="0.0001" step="0.0001" required />
           </label>
         </div>
         <label>
-          Memo
-          <textarea id="position-memo" maxlength="500" rows="3" placeholder="Optional note"></textarea>
+          메모
+          <textarea id="position-memo" maxlength="500" rows="3" placeholder="선택 입력"></textarea>
         </label>
         <div class="form-actions">
-          <button class="primary-action" id="position-submit" type="submit">Add position</button>
-          <button class="text-button hidden" id="position-cancel-edit" type="button">Cancel edit</button>
+          <button class="primary-action" id="position-submit" type="submit">종목 추가</button>
+          <button class="text-button hidden" id="position-cancel-edit" type="button">수정 취소</button>
         </div>
       </form>
 
-      <div class="empty-state" id="positions-empty">Select a portfolio to manage positions.</div>
+      <div class="empty-state" id="positions-empty">포트폴리오를 선택하면 보유 종목을 관리할 수 있습니다.</div>
       <div class="table-wrap hidden" id="positions-table-wrap">
         <table class="data-table compact-table">
           <thead>
             <tr>
-              <th>Symbol</th>
-              <th>Market</th>
-              <th>Type</th>
-              <th>Quantity</th>
-              <th>Buy price</th>
-              <th>Currency</th>
-              <th>Actions</th>
+              <th>티커</th>
+              <th>시장</th>
+              <th>유형</th>
+              <th>수량</th>
+              <th>매수가</th>
+              <th>통화</th>
+              <th>관리</th>
             </tr>
           </thead>
           <tbody id="positions-table-body"></tbody>
@@ -154,10 +154,12 @@ import Layout from '../layouts/Layout.astro';
       | 'checking'
       | 'public_config_missing'
       | 'signed_out'
+      | 'signed_in'
       | 'profile_pending'
       | 'profile_ready'
       | 'profile_failed'
       | 'profile_config_missing'
+      | 'api_pending'
       | 'portfolio_config_missing'
       | 'ready';
     type AppState = {
@@ -202,12 +204,30 @@ import Layout from '../layouts/Layout.astro';
         showLogin: true,
         showApp: false,
       },
+      signed_in: {
+        title: '로그인 확인 완료',
+        copy: '프로필 상태를 확인하고 있습니다.',
+        login: '로그인됨',
+        profile: '확인 중',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
       profile_pending: {
         title: '프로필 준비 중',
         copy: '프로필 준비가 끝나면 포트폴리오 데이터를 불러옵니다.',
         login: '로그인됨',
         profile: '준비 중',
         api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      api_pending: {
+        title: '포트폴리오 API 확인 중',
+        copy: '프로필 준비가 완료되어 포트폴리오 데이터를 불러오고 있습니다.',
+        login: '로그인됨',
+        profile: '준비 완료',
+        api: '확인 중',
         showLogin: false,
         showApp: false,
       },
@@ -314,11 +334,21 @@ import Layout from '../layouts/Layout.astro';
       app?.classList.toggle('hidden', !content.showApp);
     };
 
+    const clearPortfolioData = () => {
+      state.portfolios = [];
+      state.positions = [];
+      state.selectedPortfolioId = null;
+      state.loading = false;
+      resetPortfolioForm();
+      resetPositionForm();
+      renderAll();
+    };
+
     const resetPortfolioForm = () => {
       getElement<HTMLInputElement>('portfolio-id')!.value = '';
       getElement<HTMLInputElement>('portfolio-name')!.value = '';
       getElement<HTMLSelectElement>('portfolio-base-currency')!.value = 'KRW';
-      getElement<HTMLButtonElement>('portfolio-submit')!.textContent = 'Create portfolio';
+      getElement<HTMLButtonElement>('portfolio-submit')!.textContent = '포트폴리오 만들기';
       getElement<HTMLButtonElement>('portfolio-cancel-edit')?.classList.add('hidden');
     };
 
@@ -333,7 +363,7 @@ import Layout from '../layouts/Layout.astro';
       getElement<HTMLInputElement>('position-buy-price')!.value = '';
       getElement<HTMLInputElement>('position-quantity')!.value = '';
       getElement<HTMLTextAreaElement>('position-memo')!.value = '';
-      getElement<HTMLButtonElement>('position-submit')!.textContent = 'Add position';
+      getElement<HTMLButtonElement>('position-submit')!.textContent = '종목 추가';
       getElement<HTMLButtonElement>('position-cancel-edit')?.classList.add('hidden');
     };
 
@@ -354,8 +384,8 @@ import Layout from '../layouts/Layout.astro';
             <span>${portfolio.baseCurrency}</span>
           </button>
           <div class="portfolio-item-actions">
-            <button class="text-button" type="button" data-action="edit-portfolio" data-id="${portfolio.id}">Edit</button>
-            <button class="text-button danger" type="button" data-action="delete-portfolio" data-id="${portfolio.id}">Delete</button>
+            <button class="text-button" type="button" data-action="edit-portfolio" data-id="${portfolio.id}">수정</button>
+            <button class="text-button danger" type="button" data-action="delete-portfolio" data-id="${portfolio.id}">삭제</button>
           </div>
         `;
         list.appendChild(item);
@@ -375,20 +405,20 @@ import Layout from '../layouts/Layout.astro';
       body.innerHTML = '';
 
       if (!portfolio) {
-        title.textContent = 'Select a portfolio';
-        meta.textContent = 'Position management appears after a portfolio is selected.';
+        title.textContent = '포트폴리오를 선택하세요';
+        meta.textContent = '포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.';
         form.classList.add('hidden');
-        empty.textContent = 'Select a portfolio to manage positions.';
+        empty.textContent = '포트폴리오를 선택하면 보유 종목을 관리할 수 있습니다.';
         empty.classList.remove('hidden');
         wrap.classList.add('hidden');
         return;
       }
 
       title.textContent = portfolio.name;
-      meta.textContent = `Base currency: ${portfolio.baseCurrency}`;
+      meta.textContent = `기준 통화: ${portfolio.baseCurrency}`;
       form.classList.remove('hidden');
 
-      empty.textContent = 'No positions yet.';
+      empty.textContent = '아직 등록된 보유 종목이 없습니다.';
       empty.classList.toggle('hidden', state.positions.length > 0);
       wrap.classList.toggle('hidden', state.positions.length === 0);
 
@@ -397,13 +427,13 @@ import Layout from '../layouts/Layout.astro';
         row.innerHTML = `
           <td><strong>${escapeHtml(position.symbol)}</strong><small>${escapeHtml(position.name)}</small></td>
           <td>${position.market}</td>
-          <td>${position.assetType.toUpperCase()}</td>
+          <td>${position.assetType === 'stock' ? '주식' : 'ETF'}</td>
           <td>${money.format(position.quantity)}</td>
           <td>${money.format(position.buyPrice)}</td>
           <td>${position.currency}</td>
           <td class="table-actions">
-            <button class="text-button" type="button" data-action="edit-position" data-id="${position.id}">Edit</button>
-            <button class="text-button danger" type="button" data-action="delete-position" data-id="${position.id}">Delete</button>
+            <button class="text-button" type="button" data-action="edit-position" data-id="${position.id}">수정</button>
+            <button class="text-button danger" type="button" data-action="delete-position" data-id="${position.id}">삭제</button>
           </td>
         `;
         body.appendChild(row);
@@ -430,13 +460,26 @@ import Layout from '../layouts/Layout.astro';
     };
 
     const loadPortfolioMvp = async () => {
+      if (state.loading) return;
       try {
+        state.loading = true;
+        setPortfolioState('api_pending');
         await loadPortfolios();
         setPortfolioState('ready');
       } catch (error) {
         setPortfolioState(error instanceof PortfolioApiError && error.status === 503 ? 'portfolio_config_missing' : 'profile_failed');
         showToast(normalizeError(error));
+      } finally {
+        state.loading = false;
       }
+    };
+
+    const runProfileAndPortfolioLoad = async () => {
+      setPortfolioState('signed_in');
+      const result = await bootstrapProfileForCurrentSession();
+      const ready = result.status === 'ready';
+      setPortfolioState(ready ? 'profile_ready' : mapProfileStatus(result.status));
+      if (ready) await loadPortfolioMvp();
     };
 
     const initPortfolioReadiness = async () => {
@@ -461,15 +504,12 @@ import Layout from '../layouts/Layout.astro';
 
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
+        clearPortfolioData();
         setPortfolioState('signed_out');
         return;
       }
 
-      setPortfolioState('profile_pending');
-      const result = await bootstrapProfileForCurrentSession();
-      const ready = result.status === 'ready';
-      setPortfolioState(ready ? 'profile_ready' : mapProfileStatus(result.status));
-      if (ready) await loadPortfolioMvp();
+      await runProfileAndPortfolioLoad();
     };
 
     getElement<HTMLButtonElement>('portfolio-refresh')?.addEventListener('click', () => {
@@ -527,14 +567,14 @@ import Layout from '../layouts/Layout.astro';
         getElement<HTMLInputElement>('portfolio-id')!.value = portfolio.id;
         getElement<HTMLInputElement>('portfolio-name')!.value = portfolio.name;
         getElement<HTMLSelectElement>('portfolio-base-currency')!.value = portfolio.baseCurrency;
-        getElement<HTMLButtonElement>('portfolio-submit')!.textContent = 'Update portfolio';
+        getElement<HTMLButtonElement>('portfolio-submit')!.textContent = '포트폴리오 수정';
         getElement<HTMLButtonElement>('portfolio-cancel-edit')?.classList.remove('hidden');
       }
 
       if (target.dataset.action === 'delete-portfolio') {
         const portfolio = state.portfolios.find((item) => item.id === id);
         if (!portfolio) return;
-        const confirmed = window.confirm(`Delete portfolio "${portfolio.name}" and its positions?`);
+        const confirmed = window.confirm(`"${portfolio.name}" 포트폴리오와 보유 종목을 삭제할까요?`);
         if (!confirmed) return;
         try {
           await portfolioApi.deletePortfolio(id);
@@ -602,12 +642,12 @@ import Layout from '../layouts/Layout.astro';
         getElement<HTMLInputElement>('position-buy-price')!.value = String(position.buyPrice);
         getElement<HTMLInputElement>('position-quantity')!.value = String(position.quantity);
         getElement<HTMLTextAreaElement>('position-memo')!.value = position.memo || '';
-        getElement<HTMLButtonElement>('position-submit')!.textContent = 'Update position';
+        getElement<HTMLButtonElement>('position-submit')!.textContent = '종목 수정';
         getElement<HTMLButtonElement>('position-cancel-edit')?.classList.remove('hidden');
       }
 
       if (target.dataset.action === 'delete-position') {
-        const confirmed = window.confirm(`Delete position "${position.symbol}"?`);
+        const confirmed = window.confirm(`"${position.symbol}" 종목을 삭제할까요?`);
         if (!confirmed || !state.selectedPortfolioId) return;
         try {
           await portfolioApi.deletePosition(id);
@@ -622,8 +662,27 @@ import Layout from '../layouts/Layout.astro';
     window.addEventListener('mk:profile-bootstrap', (event) => {
       const detail = (event as CustomEvent).detail;
       if (!detail?.status) return;
+      if (detail.status === 'signed_out') {
+        clearPortfolioData();
+        setPortfolioState('signed_out');
+        return;
+      }
       setPortfolioState(detail.status === 'ready' ? 'profile_ready' : mapProfileStatus(detail.status));
       if (detail.status === 'ready') void loadPortfolioMvp();
+    });
+
+    window.addEventListener('mk:auth-state', (event) => {
+      const detail = (event as CustomEvent).detail;
+      if (detail?.status === 'checking') {
+        setPortfolioState('checking');
+      }
+      if (detail?.status === 'signed_out') {
+        clearPortfolioData();
+        setPortfolioState('signed_out');
+      }
+      if (detail?.status === 'signed_in') {
+        void runProfileAndPortfolioLoad();
+      }
     });
 
     document.addEventListener('astro:page-load', initPortfolioReadiness);

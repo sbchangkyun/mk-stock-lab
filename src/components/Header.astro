@@ -3,21 +3,21 @@ import AuthModal from './Auth/AuthModal.astro';
 ---
 
 <header class="site-header">
-  <a class="brand-mark" href="/" aria-label="MK Stock Lab home">
+  <a class="brand-mark" href="/" aria-label="MK Stock Lab 홈">
     <span class="brand-symbol">MK</span>
     <span class="brand-text">
       <strong>MK Stock Lab</strong>
-      <small>Investment Data Platform</small>
+      <small>투자 데이터 플랫폼</small>
     </span>
   </a>
 
   <div class="header-actions">
-    <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
+    <button class="icon-button" id="themeToggle" type="button" aria-label="테마 전환">
       <svg id="themeIcon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 4a8 8 0 1 0 8 8 6 6 0 0 1-8-8Z"></path>
       </svg>
     </button>
-    <button class="header-button" id="open-login-btn" type="button">로그인</button>
+    <button class="header-button" id="open-login-btn" type="button" disabled>확인 중</button>
     <button class="header-button secondary hidden" id="logout-btn" type="button">로그아웃</button>
   </div>
 </header>
@@ -28,13 +28,39 @@ import AuthModal from './Auth/AuthModal.astro';
   import { bootstrapProfileForCurrentSession, dispatchProfileBootstrapStatus } from '../lib/profileBootstrap';
   import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
 
-  const updateAuthButtons = (user: unknown) => {
+  type HeaderAuthState = 'checking' | 'signed_in' | 'signed_out' | 'unavailable';
+
+  const dispatchHeaderAuthState = (status: HeaderAuthState) => {
+    window.dispatchEvent(new CustomEvent('mk:auth-state', { detail: { status } }));
+  };
+
+  const updateAuthButtons = (status: HeaderAuthState) => {
     const loginButton = document.getElementById('open-login-btn');
-    const logoutButton = document.getElementById('logout-btn');
+    const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
     if (!loginButton || !logoutButton) return;
 
-    loginButton.classList.toggle('hidden', Boolean(user));
-    logoutButton.classList.toggle('hidden', !user);
+    if (status === 'checking') {
+      loginButton.textContent = '확인 중';
+      loginButton.setAttribute('disabled', 'true');
+      loginButton.classList.remove('hidden');
+      logoutButton.classList.add('hidden');
+      dispatchHeaderAuthState(status);
+      return;
+    }
+
+    if (status === 'signed_in') {
+      loginButton.classList.add('hidden');
+      loginButton.removeAttribute('disabled');
+      logoutButton.classList.remove('hidden');
+      dispatchHeaderAuthState(status);
+      return;
+    }
+
+    loginButton.textContent = status === 'unavailable' ? '설정 필요' : '로그인';
+    loginButton.removeAttribute('disabled');
+    loginButton.classList.remove('hidden');
+    logoutButton.classList.add('hidden');
+    dispatchHeaderAuthState(status);
   };
 
   const syncProfileBootstrap = async (session: unknown) => {
@@ -51,19 +77,18 @@ import AuthModal from './Auth/AuthModal.astro';
   };
 
   const setupHeaderAuth = async () => {
-    const state = window as Window & { mkHeaderAuthReady?: boolean };
-    if (state.mkHeaderAuthReady) return;
-    state.mkHeaderAuthReady = true;
-
-    const loginButton = document.getElementById('open-login-btn');
-    const logoutButton = document.getElementById('logout-btn');
+    const loginButton = document.getElementById('open-login-btn') as HTMLButtonElement | null;
+    const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
+    if (!loginButton || !logoutButton || loginButton.dataset.authReady === 'true') return;
+    loginButton.dataset.authReady = 'true';
+    updateAuthButtons('checking');
 
     loginButton?.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('mk:open-auth'));
     });
 
     if (!isSupabaseConfigured()) {
-      updateAuthButtons(null);
+      updateAuthButtons('unavailable');
       dispatchProfileBootstrapStatus({
         status: 'public_config_missing',
         profileReady: false,
@@ -76,17 +101,17 @@ import AuthModal from './Auth/AuthModal.astro';
     if (!supabase) return;
 
     logoutButton?.addEventListener('click', async () => {
+      updateAuthButtons('signed_out');
       await supabase.auth.signOut();
-      updateAuthButtons(null);
       await syncProfileBootstrap(null);
     });
 
     const { data } = await supabase.auth.getSession();
-    updateAuthButtons(data.session?.user ?? null);
+    updateAuthButtons(data.session ? 'signed_in' : 'signed_out');
     await syncProfileBootstrap(data.session);
 
     supabase.auth.onAuthStateChange((_event, session) => {
-      updateAuthButtons(session?.user ?? null);
+      updateAuthButtons(session ? 'signed_in' : 'signed_out');
       void syncProfileBootstrap(session);
     });
   };
