@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 2K - 2026-06-18
+
+### Production Supabase Migration Attempt
+
+- Created `docs/planning/supabase_production_migration_result_v0.1.md`.
+- Confirmed the exact Phase 2K approval gate passed.
+- Used the Supabase connector for read-only project and table metadata checks.
+- Confirmed the production target is distinct from the disposable validation project without recording project refs, URLs, database hosts, keys, or connection strings.
+- Stopped before migration because read-only production metadata showed existing public tables, including `public.portfolios`, which conflicts with the reviewed migration source.
+- Did not apply `supabase/migrations/20260615_rebuild_schema_v0_1.sql`.
+- Did not apply `supabase/validation/patch_consume_chart_ai_usage_v0_1.sql`.
+- Did not run `supabase/validation/validate_rebuild_schema_v0_1.sql`.
+- Did not perform the usage-function runtime test.
+- Did not create a production test auth user.
+- Did not run Supabase Advisors.
+- Did not mutate Vercel env vars.
+- Did not deploy.
+
+### Safety Notes
+
+- No SQL was run by Codex.
+- No Supabase CLI command was run.
+- No `psql` command was run.
+- No database object was created, dropped, reset, truncated, altered, or mutated.
+- No Vercel env value was read, printed, pulled, added, updated, removed, or overwritten.
+- No secret values, project refs, URLs, connection strings, tokens, anon keys, service-role keys, JWT secrets, database passwords, or Vercel tokens were requested or recorded.
+- Production DB readiness remains blocked until an owner-approved reset/drop procedure or revised migration handles the existing test/legacy public tables.
+
 ## Phase 2J.3 - 2026-06-18
 
 ### Vercel Production Environment Separation Audit
