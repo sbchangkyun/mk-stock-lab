@@ -58,12 +58,12 @@ export class PortfolioApiError extends Error {
 
 const getAuthHeaders = async () => {
   if (!isSupabaseConfigured()) {
-    throw new PortfolioApiError(503, 'SUPABASE_NOT_CONFIGURED', 'Portfolio API is unavailable.');
+    throw new PortfolioApiError(503, 'SUPABASE_NOT_CONFIGURED', '포트폴리오 API 설정이 아직 완료되지 않았습니다.');
   }
 
   const session = await getCurrentSession();
   if (!session) {
-    throw new PortfolioApiError(401, 'AUTH_REQUIRED', 'Login is required.');
+    throw new PortfolioApiError(401, 'AUTH_REQUIRED', '로그인이 필요합니다.');
   }
 
   return {
@@ -79,7 +79,7 @@ const parseResponse = async <T>(response: Response, key?: string): Promise<T> =>
     throw new PortfolioApiError(
       response.status,
       payload?.code || 'PORTFOLIO_API_ERROR',
-      payload?.message || 'Portfolio request failed.',
+      payload?.message || '포트폴리오 요청에 실패했습니다.',
     );
   }
 

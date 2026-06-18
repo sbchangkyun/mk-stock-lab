@@ -2,7 +2,8 @@ import { createClient, type SupabaseClient, type User } from '@supabase/supabase
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-const getSupabaseServiceRoleKey = () => process.env.SUPABASE_SERVICE_ROLE_KEY;
+const getSupabaseServiceRoleKey = () =>
+  process.env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
 type UserValidationResult =
   | { ok: true; user: User }
@@ -65,7 +66,7 @@ export const validateUserFromBearerToken = async (
       ok: false,
       status: 401,
       code: 'AUTH_REQUIRED',
-      message: 'Login is required.',
+      message: '로그인이 필요합니다.',
     };
   }
 
@@ -74,7 +75,7 @@ export const validateUserFromBearerToken = async (
       ok: false,
       status: 503,
       code: 'SUPABASE_PUBLIC_CONFIG_MISSING',
-      message: 'Supabase public configuration is unavailable.',
+      message: '로그인 설정이 아직 완료되지 않았습니다.',
     };
   }
 
@@ -96,7 +97,7 @@ export const validateUserFromBearerToken = async (
       ok: false,
       status: 401,
       code: 'AUTH_INVALID',
-      message: 'Login is required.',
+      message: '로그인이 필요합니다.',
     };
   }
 

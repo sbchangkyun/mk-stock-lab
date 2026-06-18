@@ -5,8 +5,11 @@ import GoogleLogin from './GoogleLogin.astro';
 <div class="modal-overlay hidden" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
   <div class="modal-panel">
     <div class="modal-header">
-      <h2 id="auth-title">Login</h2>
-      <button class="icon-button" id="close-auth-modal" type="button" aria-label="Close login dialog">
+      <div>
+        <p class="eyebrow">MK Stock Lab</p>
+        <h2 id="auth-title">로그인</h2>
+      </div>
+      <button class="icon-button" id="close-auth-modal" type="button" aria-label="로그인 창 닫기">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M6 6l12 12M18 6 6 18"></path>
         </svg>
@@ -15,22 +18,32 @@ import GoogleLogin from './GoogleLogin.astro';
 
     <GoogleLogin />
 
-    <div class="divider">or</div>
+    <div class="divider">또는</div>
 
     <form class="auth-form" id="auth-form">
-      <label>
-        Email
-        <input id="auth-email" type="email" autocomplete="email" required />
+      <label class="signup-only hidden" id="auth-nickname-label">
+        닉네임
+        <input id="auth-nickname" type="text" autocomplete="nickname" maxlength="120" placeholder="서비스에서 사용할 이름" />
       </label>
       <label>
-        Password
-        <input id="auth-password" type="password" autocomplete="current-password" required />
+        이메일
+        <input id="auth-email" type="email" autocomplete="email" required placeholder="name@example.com" />
       </label>
-      <button class="primary-action" type="submit" id="auth-submit">Login</button>
+      <label>
+        비밀번호
+        <input id="auth-password" type="password" autocomplete="current-password" required placeholder="비밀번호" />
+      </label>
+      <label class="signup-only hidden" id="auth-password-confirm-label">
+        비밀번호 확인
+        <input id="auth-password-confirm" type="password" autocomplete="new-password" placeholder="비밀번호 재입력" />
+      </label>
+      <p class="auth-error hidden" id="auth-error" role="alert"></p>
+      <button class="primary-action" type="submit" id="auth-submit">로그인</button>
     </form>
 
     <p class="modal-note">
-      <button class="text-button" id="toggle-auth-mode" type="button">Create an account</button>
+      <span id="auth-mode-copy">계정이 없으신가요?</span>
+      <button class="text-button" id="toggle-auth-mode" type="button">회원가입</button>
     </p>
   </div>
 </div>
@@ -45,18 +58,40 @@ import GoogleLogin from './GoogleLogin.astro';
   const title = document.getElementById('auth-title');
   const submitButton = document.getElementById('auth-submit');
   const toggleButton = document.getElementById('toggle-auth-mode');
+  const modeCopy = document.getElementById('auth-mode-copy');
+  const nicknameLabel = document.getElementById('auth-nickname-label');
+  const passwordConfirmLabel = document.getElementById('auth-password-confirm-label');
+  const nicknameInput = document.getElementById('auth-nickname') as HTMLInputElement | null;
+  const emailInput = document.getElementById('auth-email') as HTMLInputElement | null;
+  const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null;
+  const passwordConfirmInput = document.getElementById('auth-password-confirm') as HTMLInputElement | null;
+  const errorMessage = document.getElementById('auth-error');
   let signupMode = false;
+
+  const setError = (message: string) => {
+    if (!errorMessage) return;
+    errorMessage.textContent = message;
+    errorMessage.classList.toggle('hidden', !message);
+  };
 
   const setMode = (nextMode: boolean) => {
     signupMode = nextMode;
-    if (title) title.textContent = signupMode ? 'Create account' : 'Login';
-    if (submitButton) submitButton.textContent = signupMode ? 'Create account' : 'Login';
-    if (toggleButton) toggleButton.textContent = signupMode ? 'Use existing account' : 'Create an account';
+    if (title) title.textContent = signupMode ? '회원가입' : '로그인';
+    if (submitButton) submitButton.textContent = signupMode ? '회원가입' : '로그인';
+    if (toggleButton) toggleButton.textContent = signupMode ? '로그인하기' : '회원가입';
+    if (modeCopy) modeCopy.textContent = signupMode ? '이미 계정이 있으신가요?' : '계정이 없으신가요?';
+    nicknameLabel?.classList.toggle('hidden', !signupMode);
+    passwordConfirmLabel?.classList.toggle('hidden', !signupMode);
+    if (nicknameInput) nicknameInput.required = signupMode;
+    if (passwordConfirmInput) passwordConfirmInput.required = signupMode;
+    if (passwordInput) passwordInput.autocomplete = signupMode ? 'new-password' : 'current-password';
+    setError('');
   };
 
   const closeModal = () => {
     modal?.classList.add('hidden');
     form?.reset();
+    setError('');
   };
 
   const openModal = () => {
@@ -71,28 +106,58 @@ import GoogleLogin from './GoogleLogin.astro';
   });
   toggleButton?.addEventListener('click', () => setMode(!signupMode));
 
+  const validateSignup = () => {
+    const nickname = nicknameInput?.value.trim() ?? '';
+    const email = emailInput?.value.trim() ?? '';
+    const password = passwordInput?.value ?? '';
+    const passwordConfirm = passwordConfirmInput?.value ?? '';
+
+    if (!nickname) return '닉네임을 입력해 주세요.';
+    if (!email) return '이메일을 입력해 주세요.';
+    if (!password) return '비밀번호를 입력해 주세요.';
+    if (!passwordConfirm) return '비밀번호 확인을 입력해 주세요.';
+    if (password !== passwordConfirm) return '비밀번호가 일치하지 않습니다.';
+    return '';
+  };
+
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    setError('');
 
     if (!isSupabaseConfigured()) {
-      window.alert('Login is unavailable because Supabase is not configured.');
+      setError('로그인 설정이 아직 완료되지 않았습니다.');
       return;
     }
 
     const supabase = getBrowserSupabaseClient();
     if (!supabase) return;
 
-    const email = (document.getElementById('auth-email') as HTMLInputElement | null)?.value ?? '';
-    const password = (document.getElementById('auth-password') as HTMLInputElement | null)?.value ?? '';
+    const email = emailInput?.value.trim() ?? '';
+    const password = passwordInput?.value ?? '';
+    const nickname = nicknameInput?.value.trim() ?? '';
+
+    if (signupMode) {
+      const validationError = validateSignup();
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+    }
 
     if (submitButton) submitButton.setAttribute('disabled', 'true');
     const { error } = signupMode
-      ? await supabase.auth.signUp({ email, password })
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { name: nickname },
+          },
+        })
       : await supabase.auth.signInWithPassword({ email, password });
 
     if (submitButton) submitButton.removeAttribute('disabled');
     if (error) {
-      window.alert(error.message);
+      setError('인증 정보를 확인해 주세요.');
       return;
     }
 

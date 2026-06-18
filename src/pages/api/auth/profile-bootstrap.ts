@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request }) => {
         ok: false,
         profileReady: false,
         code: 'PROFILE_BOOTSTRAP_DISABLED',
-        message: 'Profile setup is unavailable.',
+        message: '프로필 API 설정이 아직 완료되지 않았습니다.',
       },
       503,
     );
@@ -77,7 +77,7 @@ export const POST: APIRoute = async ({ request }) => {
           ok: false,
           profileReady: false,
           code: 'PROFILE_BOOTSTRAP_FAILED',
-          message: 'Profile setup failed.',
+          message: '프로필 설정에 실패했습니다.',
         },
         500,
       );
@@ -97,7 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
         ok: false,
         profileReady: false,
         code: 'PROFILE_BOOTSTRAP_FAILED',
-        message: 'Profile setup failed.',
+        message: '프로필 설정에 실패했습니다.',
       },
       500,
     );

@@ -1,7 +1,8 @@
 import { getBrowserSupabaseClient, getCurrentSession, isSupabaseConfigured } from './supabase';
 
 type ProfileBootstrapStatus =
-  | 'disabled'
+  | 'public_config_missing'
+  | 'server_config_missing'
   | 'signed_out'
   | 'pending'
   | 'ready'
@@ -25,9 +26,9 @@ export const dispatchProfileBootstrapStatus = (result: ProfileBootstrapResult) =
 export const bootstrapProfileForCurrentSession = async (): Promise<ProfileBootstrapResult> => {
   if (!isSupabaseConfigured() || !getBrowserSupabaseClient()) {
     const result: ProfileBootstrapResult = {
-      status: 'disabled',
+      status: 'public_config_missing',
       profileReady: false,
-      message: 'Supabase public configuration is unavailable.',
+      message: '로그인 설정이 아직 완료되지 않았습니다.',
     };
     dispatchProfileBootstrapStatus(result);
     return result;
@@ -38,7 +39,7 @@ export const bootstrapProfileForCurrentSession = async (): Promise<ProfileBootst
     const result: ProfileBootstrapResult = {
       status: 'signed_out',
       profileReady: false,
-      message: 'Login is required.',
+      message: '로그인이 필요합니다.',
     };
     dispatchProfileBootstrapStatus(result);
     return result;
@@ -63,9 +64,9 @@ export const bootstrapProfileForCurrentSession = async (): Promise<ProfileBootst
 
     if (!response.ok || !payload?.ok) {
       const result: ProfileBootstrapResult = {
-        status: response.status === 503 ? 'disabled' : 'failed',
+        status: response.status === 503 ? 'server_config_missing' : 'failed',
         profileReady: false,
-        message: payload?.message || 'Profile setup is unavailable.',
+        message: payload?.message || '프로필 설정을 완료할 수 없습니다.',
       };
       dispatchProfileBootstrapStatus(result);
       return result;
@@ -74,7 +75,7 @@ export const bootstrapProfileForCurrentSession = async (): Promise<ProfileBootst
     const result: ProfileBootstrapResult = {
       status: 'ready',
       profileReady: Boolean(payload.profileReady),
-      message: 'Profile is ready.',
+      message: '프로필 준비가 완료되었습니다.',
       profile: {
         displayName: payload.profile?.displayName ?? null,
         plan: payload.profile?.plan ?? null,
@@ -86,7 +87,7 @@ export const bootstrapProfileForCurrentSession = async (): Promise<ProfileBootst
     const result: ProfileBootstrapResult = {
       status: 'failed',
       profileReady: false,
-      message: 'Profile setup request failed.',
+      message: '프로필 설정 요청에 실패했습니다.',
     };
     dispatchProfileBootstrapStatus(result);
     return result;

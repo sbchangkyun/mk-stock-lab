@@ -30,7 +30,7 @@ export const getCurrentSession = async (): Promise<Session | null> => {
 export const supabase = getBrowserSupabaseClient();
 
 if (!isSupabaseConfigured() && typeof window !== 'undefined') {
-  console.error('Supabase public configuration is missing.');
+  console.error('로그인 설정이 아직 완료되지 않았습니다.');
 }
 
 if (typeof window !== 'undefined' && supabase) {

@@ -63,6 +63,20 @@ Mark each item pass, fail, or not run. Record only non-secret notes.
 23. Confirm the Portfolio UI does not introduce broad crypto functionality outside the approved asset-class context.
 24. Confirm slide ad and footer fixed ad do not block Portfolio navigation or cleanup.
 
+## Phase 3C.2 Expected State Deltas
+
+After Phase 3C.2, a signed-in owner-approved test account should not see Login as unavailable on `/portfolio`.
+
+Expected states:
+
+- Missing public browser login config: Login shows setup needed and Portfolio remains disabled.
+- Signed out: Login shows required and the login button is visible.
+- Signed in, profile bootstrap pending: Login shows signed in and Profile shows pending.
+- Signed in, server-side profile or Portfolio config missing: Login stays signed in while Profile or Portfolio API shows a sanitized setup-needed message.
+- Signed in, profile and Portfolio API ready: Login, Profile, and Portfolio API show ready/available states.
+
+The login/signup modal should show Korean labels, a signup nickname field, a signup password confirmation field, and a Korean password mismatch validation message.
+
 ## Pass/Fail Result Template
 
 Use this format when reporting results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

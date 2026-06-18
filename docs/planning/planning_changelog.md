@@ -1,5 +1,42 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.2 - 2026-06-18
+
+### Portfolio Smoke Fix
+
+- Fixed local server-side Supabase service-role category detection to support Astro server-side runtime lookup while preserving Vercel `process.env` behavior.
+- Split Portfolio readiness states so public login config, profile bootstrap config, profile readiness, and Portfolio API availability are shown separately.
+- Prevented a server-side Portfolio/API configuration issue from being displayed as Login unavailable after successful sign-in.
+- Preserved Phase 3C Portfolio MVP list/create/update/delete UI and server-side ownership checks.
+
+### Auth Modal UI
+
+- Restored login/signup modal direction toward Korean product UI.
+- Updated header login/logout labels and modal labels/buttons/messages to Korean product strings.
+- Added signup nickname field.
+- Added signup password confirmation field.
+- Added client-side signup validation for nickname, email, password, password confirmation, and password mismatch.
+- Kept password values out of logs, docs, and persistent state.
+
+### Backlog And Provider Notes
+
+- Documented that the KIS REST API APP KEY, KIS REST API APP Secret, and OpenDART API KEY have been issued for future phases, without recording values.
+- Documented that future KIS/OpenDART phases must include secret-safe local and deployment environment registration guidance.
+- Captured the desktop left-side rotating image ad banner requirement as backlog only.
+- Did not implement a left-side banner, ad-event route, database change, provider integration, valuation analytics, or performance analytics.
+
+### Safety And Scope
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No authenticated Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider credentials were requested or recorded.
+- Recommended next action: rerun focused owner manual Portfolio smoke and report only non-secret pass/fail results.
+
 ## Phase 3C.1 - 2026-06-18
 
 ### Portfolio Manual Smoke Checklist

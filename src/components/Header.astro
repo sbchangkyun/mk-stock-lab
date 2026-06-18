@@ -17,8 +17,8 @@ import AuthModal from './Auth/AuthModal.astro';
         <path d="M12 4a8 8 0 1 0 8 8 6 6 0 0 1-8-8Z"></path>
       </svg>
     </button>
-    <button class="header-button" id="open-login-btn" type="button">Login</button>
-    <button class="header-button secondary hidden" id="logout-btn" type="button">Logout</button>
+    <button class="header-button" id="open-login-btn" type="button">로그인</button>
+    <button class="header-button secondary hidden" id="logout-btn" type="button">로그아웃</button>
   </div>
 </header>
 
@@ -42,7 +42,7 @@ import AuthModal from './Auth/AuthModal.astro';
       dispatchProfileBootstrapStatus({
         status: 'signed_out',
         profileReady: false,
-        message: 'Login is required.',
+        message: '로그인이 필요합니다.',
       });
       return;
     }
@@ -65,9 +65,9 @@ import AuthModal from './Auth/AuthModal.astro';
     if (!isSupabaseConfigured()) {
       updateAuthButtons(null);
       dispatchProfileBootstrapStatus({
-        status: 'disabled',
+        status: 'public_config_missing',
         profileReady: false,
-        message: 'Supabase public configuration is unavailable.',
+        message: '로그인 설정이 아직 완료되지 않았습니다.',
       });
       return;
     }

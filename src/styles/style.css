@@ -45,7 +45,9 @@ a {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -498,8 +500,8 @@ h2 {
 }
 
 .modal-panel {
-  width: min(420px, calc(100vw - 40px));
-  padding: 24px;
+  width: min(440px, calc(100vw - 40px));
+  padding: 26px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -511,6 +513,11 @@ h2 {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 18px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
 }
 
 .auth-form {
@@ -534,6 +541,17 @@ h2 {
   border-radius: 8px;
   background: var(--surface);
   color: var(--text);
+}
+
+.auth-error {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(196, 63, 63, 0.3);
+  border-radius: 8px;
+  background: rgba(196, 63, 63, 0.08);
+  color: var(--negative);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .oauth-button {
@@ -570,6 +588,8 @@ h2 {
 .modal-note {
   margin: 16px 0 0;
   text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .slide-ad {

@@ -95,7 +95,7 @@ export const getPortfolioRequestContext = async (request: Request): Promise<ApiR
   }
 
   if (!isSupabaseServerConfigured()) {
-    return apiFailure(503, 'PORTFOLIO_API_DISABLED', 'Portfolio API is unavailable.');
+    return apiFailure(503, 'PORTFOLIO_API_DISABLED', '포트폴리오 API 설정이 아직 완료되지 않았습니다.');
   }
 
   return apiSuccess({ user: validation.user });
