@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.1 - 2026-06-18
+
+### Portfolio Manual Smoke Checklist
+
+- Created `docs/planning/phase_3c1_portfolio_manual_smoke_checklist_v0.1.md`.
+- Prepared an owner-performed manual smoke checklist and non-secret result template for the Phase 3C Portfolio MVP.
+- Documented disposable test data, manual browser checks, failure triage, stop conditions, cleanup, and next-action options.
+- Confirmed Phase 3C authenticated write validation remains owner-performed.
+
+### Safety And Scope
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed.
+- No Auth user was created.
+- No Portfolio API write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No code implementation was performed.
+- No secret values were requested or recorded.
+- Next decision depends on the owner manual smoke result.
+
 ## Phase 3C - 2026-06-18
 
 ### Portfolio MVP Integration
