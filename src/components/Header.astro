@@ -4,7 +4,9 @@ import AuthModal from './Auth/AuthModal.astro';
 
 <header class="site-header">
   <a class="brand-mark" href="/" aria-label="MK Stock Lab 홈">
-    <img class="brand-logo" src="/logo.svg" alt="MK Stock Lab 로고" width="48" height="48" />
+    <span class="brand-logo-frame">
+      <img class="brand-logo" src="/logo.svg" alt="MK Stock Lab 로고" width="48" height="48" />
+    </span>
     <span class="brand-text">
       <strong>MK Stock Lab</strong>
       <small>투자 데이터 플랫폼</small>
@@ -12,6 +14,7 @@ import AuthModal from './Auth/AuthModal.astro';
   </a>
 
   <div class="header-actions">
+    <span class="today-placeholder" aria-label="Today visitor count placeholder">Today: 000</span>
     <button class="icon-button" id="themeToggle" type="button" aria-label="테마 전환">
       <svg id="themeIcon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 4a8 8 0 1 0 8 8 6 6 0 0 1-8-8Z"></path>
@@ -39,22 +42,32 @@ import AuthModal from './Auth/AuthModal.astro';
     }
   };
 
+  const applyDocumentAuthHint = (status: HeaderAuthState) => {
+    const root = document.documentElement;
+    root.classList.toggle('auth-hint-signed-in', status === 'signed_in');
+    root.classList.toggle('auth-hint-signed-out', status === 'signed_out' || status === 'unavailable');
+  };
+
   const writeAuthUiHint = (status: HeaderAuthState) => {
     try {
       if (status === 'signed_in') {
         window.localStorage.setItem(AUTH_UI_HINT_KEY, 'signed_in');
+        applyDocumentAuthHint(status);
         return;
       }
 
       if (status === 'signed_out') {
         window.localStorage.setItem(AUTH_UI_HINT_KEY, 'signed_out');
+        applyDocumentAuthHint(status);
         return;
       }
 
       if (status === 'unavailable') {
         window.localStorage.removeItem(AUTH_UI_HINT_KEY);
+        applyDocumentAuthHint(status);
       }
     } catch {
+      applyDocumentAuthHint(status);
       // Local storage can be unavailable in private or constrained browser contexts.
     }
   };

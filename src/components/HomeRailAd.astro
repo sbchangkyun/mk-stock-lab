@@ -1,0 +1,78 @@
+---
+import homeAdBanners from '../data/homeAdBanners.json';
+
+const activeBanners = homeAdBanners
+  .filter((banner) => banner.isActive)
+  .sort((a, b) => a.displayOrder - b.displayOrder);
+
+const hasMultipleBanners = activeBanners.length > 1;
+---
+
+{
+  activeBanners.length > 0 && (
+    <aside
+      class:list={['home-rail-ad', { 'is-carousel': hasMultipleBanners }]}
+      data-home-rail-ad
+      data-count={activeBanners.length}
+      aria-label="Home sample banner rail"
+    >
+      <div class="home-rail-viewport">
+        <div class="home-rail-track">
+          {activeBanners.map((banner) => (
+            <a class="home-rail-card" href={banner.href} aria-label={banner.alt}>
+              <img src={banner.imageSrc} alt={banner.alt} width="160" height="600" loading="lazy" />
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+{
+  hasMultipleBanners && (
+    <script>
+      const setupHomeRailAd = () => {
+        const rails = document.querySelectorAll<HTMLElement>('[data-home-rail-ad].is-carousel');
+        rails.forEach((rail) => {
+          const track = rail.querySelector<HTMLElement>('.home-rail-track');
+          const cards = rail.querySelectorAll<HTMLElement>('.home-rail-card');
+          if (!track || cards.length < 2 || rail.dataset.ready === 'true') return;
+
+          rail.dataset.ready = 'true';
+          let activeIndex = 0;
+          let intervalId: number | null = null;
+          const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+          const render = () => {
+            track.style.transitionDuration = reduceMotion.matches ? '0ms' : '320ms';
+            track.style.transform = `translateX(-${activeIndex * 100}%)`;
+          };
+
+          const start = () => {
+            if (intervalId !== null) return;
+            intervalId = window.setInterval(() => {
+              activeIndex = (activeIndex + 1) % cards.length;
+              render();
+            }, 5000);
+          };
+
+          const stop = () => {
+            if (intervalId === null) return;
+            window.clearInterval(intervalId);
+            intervalId = null;
+          };
+
+          rail.addEventListener('mouseenter', stop);
+          rail.addEventListener('mouseleave', start);
+          reduceMotion.addEventListener('change', render);
+          render();
+          start();
+        });
+      };
+
+      document.addEventListener('astro:page-load', setupHomeRailAd);
+      setupHomeRailAd();
+    </script>
+  )
+}

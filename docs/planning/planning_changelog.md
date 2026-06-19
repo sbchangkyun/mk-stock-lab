@@ -1,5 +1,49 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.9 - 2026-06-19
+
+### Header, Home Rail, And Today Placeholder
+
+- Added an early coarse auth UI hint in the document head to prevent a signed-in user from briefly seeing `로그인` during ordinary navigation before session resolution completes.
+- Preserved signed-out `로그인`, signed-in `로그아웃`, and unavailable `설정 필요`.
+- Kept visible `확인 중` absent from ordinary header auth UI.
+- Reworked the header logo treatment so `public/logo.svg` is displayed inside a fixed 42px frame with the SVG scaled inside the frame, making the inner mark appear larger without growing the whole header logo box.
+- Added a subtle display-only `Today: 000` header placeholder.
+- Documented future real Today visitor-count logic using KST date, a per-day browser localStorage counted flag, a future server aggregate increment API, service-role-only DB writes, an aggregate read endpoint, and no IP/User-Agent/email/user_id storage for the MVP.
+- Real visitor-count API, DB table, migration, DB write, local counting, and analytics were not implemented.
+
+### Home Right Rail Sample Banners
+
+- Added a Home-only right rail component.
+- Added two local generated 160x600 SVG sample banners:
+  - `public/ads/home-rail/home-rail-sample-01.svg`
+  - `public/ads/home-rail/home-rail-sample-02.svg`
+- Added `src/data/homeAdBanners.json` with two active sample banners.
+- Implemented zero/one/two-plus banner behavior:
+  - zero active banners render no rail.
+  - one active banner renders static.
+  - two or more active banners rotate every 5 seconds with a left-slide transition.
+- Added reduced-motion handling and hover pause for the sample carousel.
+- Kept the rail hidden below the wide-desktop breakpoint and Home-only.
+- No ad-event route, analytics, or real outbound ad tracking was implemented.
+
+### Safety And Validation
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, Chart AI provider call, AI execution, real visitor-count API/DB, ad-event write, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo scraping, remote logo discovery, or external asset download was implemented.
+- No secrets were requested or recorded.
+- Provider credential status remains preserved for future phases without values.
+- Normal `npm run build` passed and Vercel output was generated.
+- Local unauthenticated HTTP smoke passed for the required active routes, and removed legacy routes returned 404.
+- Browser connector visual smoke was not completed because the in-app browser path was unavailable.
+- Recommended next action: run the Phase 3C.9 owner manual smoke using the Korean result template.
+
 ## Phase 3C.8 - 2026-06-19
 
 ### Header Auth And Logo Polish

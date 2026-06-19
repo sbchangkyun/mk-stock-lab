@@ -75,9 +75,9 @@ textarea {
 }
 
 .brand-symbol,
-.brand-logo {
-  width: 48px;
-  height: 48px;
+.brand-logo-frame {
+  width: 42px;
+  height: 42px;
 }
 
 .brand-symbol {
@@ -90,10 +90,22 @@ textarea {
   font-weight: 800;
 }
 
-.brand-logo {
-  display: block;
+.brand-logo-frame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   border-radius: 8px;
+  background: #ffffff;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  display: block;
   object-fit: contain;
+  transform: scale(1.12);
+  transform-origin: center;
 }
 
 .brand-text {
@@ -114,6 +126,14 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.today-placeholder {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.58;
+  white-space: nowrap;
 }
 
 .icon-button,
@@ -171,6 +191,20 @@ textarea {
 .header-button.secondary {
   background: var(--surface-muted);
   color: var(--text);
+}
+
+html.auth-hint-signed-in #open-login-btn {
+  display: none !important;
+}
+
+html.auth-hint-signed-in #logout-btn.hidden {
+  display: inline-flex !important;
+}
+
+@media (max-width: 1180px) {
+  .today-placeholder {
+    display: none;
+  }
 }
 
 .ticker-belt {
@@ -351,6 +385,57 @@ h2 {
 
 .metric-row strong {
   color: var(--text);
+}
+
+.home-rail-ad {
+  display: none;
+}
+
+@media (min-width: 1660px) {
+  .home-rail-ad {
+    position: fixed;
+    top: 188px;
+    right: max(24px, calc((100vw - 1240px) / 2 - 184px));
+    z-index: 520;
+    width: 160px;
+  }
+
+  .home-rail-viewport {
+    width: 160px;
+    height: 600px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .home-rail-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 320ms ease;
+    will-change: transform;
+  }
+
+  .home-rail-card {
+    flex: 0 0 100%;
+    width: 160px;
+    height: 600px;
+  }
+
+  .home-rail-card img {
+    width: 160px;
+    height: 600px;
+    display: block;
+    object-fit: cover;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-rail-track {
+    transition-duration: 1ms;
+  }
 }
 
 .positive {

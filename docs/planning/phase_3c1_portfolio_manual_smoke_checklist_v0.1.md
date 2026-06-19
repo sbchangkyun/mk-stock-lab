@@ -284,6 +284,51 @@ Phase 3C.8 헤더/로고/배너공간 사전점검 결과:
 - 비밀 정보 없는 메모:
 ```
 
+## Phase 3C.9 Expected State Deltas
+
+After Phase 3C.9, the owner manual smoke should also confirm:
+
+- Signed-in menu navigation does not briefly flash `로그인`.
+- Signed-in normal header state remains `로그아웃`.
+- Signed-out normal header state remains `로그인`.
+- Visible `확인 중` remains absent.
+- The logo box remains balanced while the inner MK mark appears larger.
+- Header shows subtle `Today: 000`.
+- Real visitor counting is not active yet.
+- Home right rail appears only on sufficiently wide desktop.
+- Home right rail is not shown on non-Home pages.
+- The two sample banners rotate every 5 seconds with left-slide motion.
+- Portfolio lock UI remains.
+- Bottom-sheet motion remains.
+- Portfolio refresh icon remains.
+- Chart AI selected-security prefill still works.
+
+## Phase 3C.9 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.9 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.9 헤더/배너/Today 사전점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 좌측 상단 로고 박스 안의 MK 마크가 더 크게 보임: 통과/실패
+- 헤더의 연한 회색 `Today: 000` 표시: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- Home 우측 세로 배너가 넓은 데스크톱에서 표시됨: 통과/실패/화면폭 부족
+- Home 우측 세로 배너가 2개 샘플로 5초마다 왼쪽 슬라이드 전환됨: 통과/실패/미실행
+- Home 우측 세로 배너가 다른 페이지에는 표시되지 않음: 통과/실패
+- 포트폴리오 잠금 UI 유지: 통과/실패
+- 바텀시트 모션 유지: 통과/실패
+- 포트폴리오 새로고침 아이콘 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
 ## Phase 3C.5 Pass/Fail Result Template
 
 Use this Korean-first format when reporting Phase 3C.5 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

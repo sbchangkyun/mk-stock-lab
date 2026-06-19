@@ -1,0 +1,18 @@
+[
+  {
+    "id": "home-rail-sample-01",
+    "imageSrc": "/ads/home-rail/home-rail-sample-01.svg",
+    "alt": "Sample home rail banner 01",
+    "href": "#",
+    "isActive": true,
+    "displayOrder": 1
+  },
+  {
+    "id": "home-rail-sample-02",
+    "imageSrc": "/ads/home-rail/home-rail-sample-02.svg",
+    "alt": "Sample home rail banner 02",
+    "href": "#",
+    "isActive": true,
+    "displayOrder": 2
+  }
+]

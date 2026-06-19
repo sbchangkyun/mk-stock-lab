@@ -25,6 +25,16 @@ const {
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta name="theme-color" content="#0f4fd8" />
+    <script is:inline>
+      try {
+        const hint = window.localStorage.getItem('mk-stock-lab-auth-ui-hint');
+        const root = document.documentElement;
+        root.classList.toggle('auth-hint-signed-in', hint === 'signed_in');
+        root.classList.toggle('auth-hint-signed-out', hint === 'signed_out' || !hint);
+      } catch {
+        document.documentElement.classList.add('auth-hint-signed-out');
+      }
+    </script>
   </head>
   <body class={pageClass}>
     <SlideAd />
