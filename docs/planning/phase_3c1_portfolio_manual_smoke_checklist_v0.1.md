@@ -245,6 +245,45 @@ Phase 3C.7 포트폴리오 시각/모션 재점검 결과:
 - 비밀 정보 없는 메모:
 ```
 
+## Phase 3C.8 Expected State Deltas
+
+After Phase 3C.8, the owner manual smoke should also confirm:
+
+- Signed-in menu navigation does not visibly show `확인 중`.
+- Signed-out menu navigation does not visibly show `확인 중`.
+- Signed-out normal header state remains `로그인`.
+- Signed-in normal header state remains `로그아웃`.
+- Header logo is slightly larger and visually balanced with the brand text.
+- Phase 3C.7 lock UI still uses a clear lock visual.
+- Phase 3C.7 bottom-sheet motion still works.
+- Portfolio refresh remains an icon button.
+- Chart AI selected-security prefill still works.
+- The Home vertical banner feasibility report exists.
+- No actual Home vertical banner is shown yet.
+
+## Phase 3C.8 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.8 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.8 헤더/로고/배너공간 사전점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 좌측 상단 로고 크기 확대와 정렬: 통과/실패
+- 포트폴리오 잠금 UI 유지: 통과/실패
+- 바텀시트 모션 유지: 통과/실패
+- 포트폴리오 새로고침 아이콘 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Home 세로 배너 공간 산출 보고서 확인: 통과/실패
+- 실제 배너가 아직 노출되지 않음: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
 ## Phase 3C.5 Pass/Fail Result Template
 
 Use this Korean-first format when reporting Phase 3C.5 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

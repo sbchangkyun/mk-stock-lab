@@ -965,9 +965,6 @@ import Layout from '../layouts/Layout.astro';
 
     window.addEventListener('mk:auth-state', (event) => {
       const detail = (event as CustomEvent).detail;
-      if (detail?.status === 'checking') {
-        setPortfolioState('checking');
-      }
       if (detail?.status === 'signed_out') {
         clearPortfolioData();
         setPortfolioState('signed_out');

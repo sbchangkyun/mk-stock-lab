@@ -1,5 +1,43 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.8 - 2026-06-19
+
+### Header Auth And Logo Polish
+
+- Removed the header's user-visible auth `checking` state branch so ordinary navigation only presents `로그인`, `로그아웃`, or `설정 필요`.
+- Removed Portfolio's response to header `checking` events so header navigation cannot push the Portfolio shell back into a checking display.
+- Preserved signed-out `로그인` and signed-in `로그아웃` labels.
+- Increased the top-left `public/logo.svg` display size from 42px to 48px while keeping the 72px header height stable.
+- Preserved Auth, Portfolio, Chart AI prefill, bottom-sheet motion, lock UI, refresh icon, sorting/order controls, logo/fallback avatar, country badge, Pretendard, and Korean UI behavior.
+
+### Home Vertical Banner Feasibility
+
+- Produced a report-only feasibility plan for a future Home vertical ad rail.
+- Confirmed the current centered content frame is 1240px wide.
+- Estimated side gutter space at common desktop widths: 63px at 1366px, 100px at 1440px, 148px at 1536px, and 340px at 1920px.
+- Recommended a Home-only right-side rail for a later phase.
+- Recommended owner-created `160x600` images first, with optional `200x600` images for wider desktop testing.
+- Recommended hiding the future rail below roughly 1660px and showing no rail or reserved space when no active banner exists.
+- Recommended future paths `public/ads/home-rail/` and `src/data/homeAdBanners.json`, but did not add or wire them in this phase.
+- Banner implementation, banner carousel, banner assets, outbound ad link behavior, and ad-event routes were not added.
+
+### Safety And Validation
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, Chart AI provider call, AI execution, ad-event write, banner implementation, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo scraping, remote logo discovery, or external asset download was implemented.
+- No secrets were requested or recorded.
+- Provider credential status remains preserved for future phases without values.
+- Normal `npm run build` passed and Vercel output was generated.
+- Local unauthenticated HTTP smoke passed for the required active routes, and removed legacy routes returned 404.
+- Browser connector visual smoke was not completed because the in-app `iab` browser was unavailable.
+- Recommended next action: run the Phase 3C.8 owner manual smoke using the Korean result template.
+
 ## Phase 3C.7 - 2026-06-19
 
 ### Portfolio Visual Polish

@@ -4,7 +4,7 @@ import AuthModal from './Auth/AuthModal.astro';
 
 <header class="site-header">
   <a class="brand-mark" href="/" aria-label="MK Stock Lab 홈">
-    <img class="brand-logo" src="/logo.svg" alt="MK Stock Lab 로고" width="42" height="42" />
+    <img class="brand-logo" src="/logo.svg" alt="MK Stock Lab 로고" width="48" height="48" />
     <span class="brand-text">
       <strong>MK Stock Lab</strong>
       <small>투자 데이터 플랫폼</small>
@@ -17,7 +17,7 @@ import AuthModal from './Auth/AuthModal.astro';
         <path d="M12 4a8 8 0 1 0 8 8 6 6 0 0 1-8-8Z"></path>
       </svg>
     </button>
-    <button class="header-button" id="open-login-btn" type="button" disabled>로그인</button>
+    <button class="header-button" id="open-login-btn" type="button">로그인</button>
     <button class="header-button secondary hidden" id="logout-btn" type="button">로그아웃</button>
   </div>
 </header>
@@ -28,7 +28,7 @@ import AuthModal from './Auth/AuthModal.astro';
   import { bootstrapProfileForCurrentSession, dispatchProfileBootstrapStatus } from '../lib/profileBootstrap';
   import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
 
-  type HeaderAuthState = 'checking' | 'signed_in' | 'signed_out' | 'unavailable';
+  type HeaderAuthState = 'signed_in' | 'signed_out' | 'unavailable';
   const AUTH_UI_HINT_KEY = 'mk-stock-lab-auth-ui-hint';
 
   const readAuthUiHint = () => {
@@ -67,15 +67,6 @@ import AuthModal from './Auth/AuthModal.astro';
     const loginButton = document.getElementById('open-login-btn');
     const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
     if (!loginButton || !logoutButton) return;
-
-    if (status === 'checking') {
-      loginButton.textContent = readAuthUiHint() === 'signed_in' ? '로그아웃' : '로그인';
-      loginButton.setAttribute('disabled', 'true');
-      loginButton.classList.toggle('hidden', readAuthUiHint() === 'signed_in');
-      logoutButton.classList.toggle('hidden', readAuthUiHint() !== 'signed_in');
-      dispatchHeaderAuthState(status);
-      return;
-    }
 
     if (status === 'signed_in') {
       writeAuthUiHint(status);
