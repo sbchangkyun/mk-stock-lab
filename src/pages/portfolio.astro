@@ -22,7 +22,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <section class="portfolio-lock-state hidden" id="portfolio-lock-state" aria-live="polite">
-    <div class="lock-visual" aria-hidden="true"><span class="lock-body"></span><span class="lock-emoji">🔐</span></div>
+    <div class="lock-visual" aria-hidden="true">🔐</div>
     <div>
       <p class="eyebrow">접속 필요</p>
       <h2>로그인이 필요합니다</h2>
@@ -38,7 +38,12 @@ import Layout from '../layouts/Layout.astro';
           <p class="eyebrow">포트폴리오</p>
           <h2>내 포트폴리오</h2>
         </div>
-        <button class="text-button" id="portfolio-refresh" type="button">새로고침</button>
+        <button class="icon-button refresh-icon-button" id="portfolio-refresh" type="button" aria-label="새로고침" title="새로고침">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-2.34 5.66"></path>
+            <path d="M20 5v6h-6"></path>
+          </svg>
+        </button>
       </div>
 
       <form class="compact-form" id="portfolio-form">
@@ -99,7 +104,7 @@ import Layout from '../layouts/Layout.astro';
     </section>
   </section>
 
-  <div class="position-sheet hidden" id="position-sheet" role="dialog" aria-modal="true" aria-labelledby="position-sheet-title">
+  <div class="position-sheet" id="position-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="position-sheet-title">
     <button class="position-sheet-backdrop" id="position-sheet-backdrop" type="button" aria-label="입력창 닫기"></button>
     <section class="position-sheet-panel">
       <header class="position-sheet-header">
@@ -297,6 +302,8 @@ import Layout from '../layouts/Layout.astro';
     const usdMoney = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4 });
     const krwMoney = new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 0 });
     const logoMappings = securityLogoMap as Record<string, { name?: string; symbol?: string; country?: 'KR' | 'US'; logoUrl?: string }>;
+    const positionSheetMotionMs = 260;
+    let positionSheetCloseTimer: number | null = null;
 
     const getElement = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
     const selectedPortfolio = () => state.portfolios.find((portfolio) => portfolio.id === state.selectedPortfolioId) ?? null;
@@ -500,15 +507,47 @@ import Layout from '../layouts/Layout.astro';
       const title = getElement<HTMLElement>('position-sheet-title');
       const submit = getElement<HTMLButtonElement>('position-submit');
       if (!sheet || !title || !submit) return;
+      if (positionSheetCloseTimer) {
+        window.clearTimeout(positionSheetCloseTimer);
+        positionSheetCloseTimer = null;
+      }
       title.textContent = mode === 'edit' ? '종목 수정' : '종목 추가';
       submit.textContent = mode === 'edit' ? '종목 수정' : '종목 추가';
-      sheet.classList.remove('hidden');
+      sheet.classList.remove('closing');
+      sheet.classList.add('open');
+      sheet.setAttribute('aria-hidden', 'false');
       window.setTimeout(() => getElement<HTMLInputElement>('position-security-input')?.focus(), 0);
     };
 
     const closePositionSheet = () => {
-      getElement<HTMLDivElement>('position-sheet')?.classList.add('hidden');
-      resetPositionForm();
+      const sheet = getElement<HTMLDivElement>('position-sheet');
+      if (!sheet) {
+        resetPositionForm();
+        return;
+      }
+
+      const finishClose = () => {
+        sheet.classList.remove('closing');
+        resetPositionForm();
+        positionSheetCloseTimer = null;
+      };
+
+      sheet.setAttribute('aria-hidden', 'true');
+      if (!sheet.classList.contains('open')) {
+        finishClose();
+        return;
+      }
+
+      sheet.classList.add('closing');
+      sheet.classList.remove('open');
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        finishClose();
+        return;
+      }
+
+      if (positionSheetCloseTimer) window.clearTimeout(positionSheetCloseTimer);
+      positionSheetCloseTimer = window.setTimeout(finishClose, positionSheetMotionMs);
     };
 
     const renderPortfolios = () => {
@@ -713,7 +752,7 @@ import Layout from '../layouts/Layout.astro';
     getElement<HTMLButtonElement>('position-sheet-close')?.addEventListener('click', closePositionSheet);
     getElement<HTMLButtonElement>('position-sheet-backdrop')?.addEventListener('click', closePositionSheet);
     window.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !getElement<HTMLDivElement>('position-sheet')?.classList.contains('hidden')) {
+      if (event.key === 'Escape' && getElement<HTMLDivElement>('position-sheet')?.classList.contains('open')) {
         closePositionSheet();
       }
     });

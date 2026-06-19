@@ -198,6 +198,53 @@ Phase 3C.6 포트폴리오 최종 UX 재점검 결과:
 - 비밀 정보 없는 메모:
 ```
 
+## Phase 3C.7 Expected State Deltas
+
+After Phase 3C.7, the owner manual smoke should also confirm:
+
+- Signed-out menu navigation keeps `로그인` visible.
+- Signed-in menu navigation keeps `로그아웃` visible.
+- Normal menu navigation does not visibly show `확인 중`.
+- Logged-out lock UI uses only `🔐` or another clean lock visual.
+- Lock icon has no sky-blue background.
+- Lock icon is large and visually clear.
+- Position add bottom sheet opens with slide-up motion.
+- Position edit bottom sheet opens with the same slide-up motion.
+- Bottom sheet closes with slide-down or natural exit motion.
+- Top-left logo uses the original project logo if found.
+- Portfolio refresh is shown as an icon button, not visible text.
+- Chart AI selected-security prefill still works.
+
+## Phase 3C.7 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.7 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.7 포트폴리오 시각/모션 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 로그아웃 잠금 UI가 `🔐` 아이콘 중심으로 명확함: 통과/실패
+- 잠금 아이콘에 불필요한 배경/겹침 없음: 통과/실패
+- 잠금 아이콘 크기 적절함: 통과/실패
+- `종목 추가` 바텀시트가 아래에서 위로 자연스럽게 열림: 통과/실패
+- 포지션 수정 바텀시트도 동일하게 자연스럽게 열림: 통과/실패/미실행
+- 바텀시트 닫기 동작이 자연스러움: 통과/실패
+- 사이트 좌측 상단 로고가 기존 프로젝트 로고로 적용됨: 통과/실패/자산 없음
+- 포트폴리오 `새로고침`이 아이콘 버튼으로 표시됨: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- 포트폴리오 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- 로그아웃 즉시 데이터 숨김 유지: 통과/실패
+- 재로그인 후 데이터 재조회 유지: 통과/실패/해당 없음
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
 ## Phase 3C.5 Pass/Fail Result Template
 
 Use this Korean-first format when reporting Phase 3C.5 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

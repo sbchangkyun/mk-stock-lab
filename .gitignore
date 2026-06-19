@@ -21,6 +21,8 @@ pnpm-debug.log*
 .env.production
 *.pem
 *.key
+*.crt
+*.cer
 *.p12
 *.pfx
 service-account*.json

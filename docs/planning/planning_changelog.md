@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.7 - 2026-06-19
+
+### Portfolio Visual Polish
+
+- Replaced the signed-out Portfolio lock treatment with one larger `🔐` visual.
+- Removed the sky-blue/gradient lock-icon background and overlapping lock drawing layers.
+- Added bottom-sheet slide-up and slide-down/fade motion for position add/edit.
+- Added reduced-motion handling for the bottom-sheet transition.
+- Searched local/tracked logo assets and applied `public/logo.svg` to the top-left header brand area.
+- Replaced the visible Portfolio refresh text with an icon-only circular-arrow button while preserving `aria-label="새로고침"`.
+- Preserved auth label stability: signed-out `로그인`, signed-in `로그아웃`, and no visible checking label in ordinary navigation.
+- Preserved Chart AI selected-security prefill without provider, AI, market-data, or authenticated calls.
+- Hardened ignored-file coverage for certificate files.
+- Preserved the provider credential status note for future phases without recording values.
+- Preserved the desktop left-side rotating image ad banner as backlog only.
+
+### Safety And Validation
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, Chart AI provider call, AI execution, ad-event write, banner implementation, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo scraping, remote logo discovery, or external asset download was implemented.
+- No secrets were requested or recorded.
+- Normal `npm run build` passed and Vercel output was generated.
+- Local unauthenticated HTTP smoke passed for the required active routes, and removed legacy routes returned 404.
+- Browser connector visual smoke was not completed because the in-app `iab` browser was unavailable.
+- Recommended next action: run the Phase 3C.7 owner manual smoke using the Korean result template.
+
 ## Phase 3C.6 - 2026-06-19
 
 ### Portfolio Final UX Smoke Fix
