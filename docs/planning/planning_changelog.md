@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.10 - 2026-06-19
+
+### Home Rail Preview And Isolation
+
+- Verified that `HomeRailAd` is imported only by the Home route and not by shared layout or non-Home pages.
+- Added Home-only `railPreview=1` support at `/?railPreview=1`.
+- Preview mode forces the Home rail visible below the normal breakpoint for owner smoke testing.
+- Preview mode is query-only and is not persisted to localStorage or sessionStorage.
+- Confirmed non-Home preview URLs do not render the rail:
+  - `/portfolio?railPreview=1`
+  - `/chart-ai?railPreview=1`
+  - `/lab?railPreview=1`
+- Preserved normal production breakpoint behavior: Home rail remains hidden below `1660px` unless `railPreview=1` is present on Home.
+- Preserved two-banner 5-second left-slide rotation, hover pause, reduced-motion handling, and zero/one/two-plus behavior.
+- Preserved `Today: 000`, header auth stability, Chart AI prefill, Portfolio behavior, and provider credential status notes for future phases without values.
+
+### Safety And Validation
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, Chart AI provider call, AI execution, real visitor-count API/DB, ad-event write/tracking, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo/banner scraping, remote discovery, or external asset download was implemented.
+- No secrets were requested or recorded.
+- Normal `npm run build` passed and Vercel output was generated.
+- `npm run preview` was confirmed unsupported by the installed `@astrojs/vercel` adapter, so local route smoke used an isolated `npm run dev` server.
+- Local unauthenticated HTTP smoke passed for required active and preview routes, and removed legacy routes returned 404.
+- Recommended next action: run the Phase 3C.10 owner manual smoke using `/?railPreview=1`.
+
 ## Phase 3C.9 - 2026-06-19
 
 ### Header, Home Rail, And Today Placeholder

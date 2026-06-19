@@ -1,6 +1,8 @@
 ---
 import homeAdBanners from '../data/homeAdBanners.json';
 
+const { preview = false } = Astro.props;
+
 const activeBanners = homeAdBanners
   .filter((banner) => banner.isActive)
   .sort((a, b) => a.displayOrder - b.displayOrder);
@@ -11,8 +13,9 @@ const hasMultipleBanners = activeBanners.length > 1;
 {
   activeBanners.length > 0 && (
     <aside
-      class:list={['home-rail-ad', { 'is-carousel': hasMultipleBanners }]}
+      class:list={['home-rail-ad', { 'is-carousel': hasMultipleBanners, 'rail-preview': preview }]}
       data-home-rail-ad
+      data-home-rail-preview={preview ? 'true' : undefined}
       data-count={activeBanners.length}
       aria-label="Home sample banner rail"
     >
