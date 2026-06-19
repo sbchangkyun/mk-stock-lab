@@ -826,7 +826,7 @@ h2 {
   border-radius: 14px 14px 0 0;
 }
 
-.lock-visual span {
+.lock-visual .lock-body {
   position: absolute;
   left: 15px;
   bottom: 12px;
@@ -836,12 +836,26 @@ h2 {
   background: var(--primary);
 }
 
+.lock-emoji {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  font-size: 27px;
+  line-height: 1;
+}
+
 .portfolio-mvp {
   display: grid;
   grid-template-columns: 360px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
   margin-top: 20px;
+}
+
+.portfolio-detail {
+  min-width: 0;
 }
 
 .portfolio-mvp.hidden {
@@ -854,6 +868,14 @@ h2 {
   gap: 16px;
   align-items: flex-start;
   margin-bottom: 18px;
+}
+
+.portfolio-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
 }
 
 .compact-form,
@@ -940,10 +962,6 @@ h2 {
   align-items: center;
 }
 
-.position-form .form-actions {
-  margin-bottom: 14px;
-}
-
 .portfolio-list {
   display: grid;
   gap: 10px;
@@ -1028,6 +1046,50 @@ h2 {
   font-size: 12px;
 }
 
+.chart-prefill-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.selected-security {
+  display: grid;
+  gap: 3px;
+}
+
+.selected-security strong {
+  font-size: 18px;
+}
+
+.selected-security span,
+.chart-search-shell span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.selected-security.muted strong {
+  color: var(--text-muted);
+}
+
+.chart-search-shell {
+  display: grid;
+  gap: 6px;
+}
+
+.chart-search-shell input {
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text);
+}
+
 .table-actions {
   justify-content: flex-end;
 }
@@ -1060,6 +1122,8 @@ h2 {
 .positions-list-wrap {
   display: grid;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .positions-toolbar {
@@ -1086,13 +1150,17 @@ h2 {
 .positions-list {
   display: grid;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .position-card {
   display: grid;
-  grid-template-columns: 58px minmax(170px, 1.4fr) repeat(5, minmax(104px, 0.8fr)) auto;
+  grid-template-columns: 58px minmax(0, 1.35fr) repeat(5, minmax(0, 0.8fr)) minmax(74px, auto);
   gap: 12px;
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1148,10 +1216,22 @@ h2 {
   min-width: 0;
 }
 
+.position-name-link {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  color: inherit;
+}
+
 .position-identity strong {
   color: var(--text);
   font-size: 15px;
   line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.position-name-link:hover strong {
+  color: var(--primary);
 }
 
 .position-identity small,
@@ -1159,11 +1239,13 @@ h2 {
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .position-metric {
   display: grid;
   gap: 4px;
+  min-width: 0;
 }
 
 .position-metric span {
@@ -1174,11 +1256,54 @@ h2 {
 
 .position-metric strong {
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .position-actions {
   justify-content: flex-end;
   min-width: 74px;
+}
+
+.position-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  align-items: end;
+}
+
+.position-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(12, 19, 31, 0.38);
+  cursor: pointer;
+}
+
+.position-sheet-panel {
+  position: relative;
+  width: min(920px, calc(100vw - 32px));
+  max-height: calc(100vh - 80px);
+  margin: 0 auto 18px;
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.position-sheet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.position-sheet-header h2,
+.position-sheet-header p {
+  margin: 0;
 }
 
 .text-button.danger {
@@ -1223,7 +1348,7 @@ h2 {
   }
 
   .position-card {
-    grid-template-columns: 58px minmax(180px, 1fr) repeat(2, minmax(120px, 0.8fr));
+    grid-template-columns: 58px minmax(160px, 1fr) repeat(2, minmax(104px, 0.8fr));
     overflow-x: auto;
   }
 }
@@ -1240,6 +1365,15 @@ h2 {
   .portfolio-panel-header,
   .portfolio-select {
     flex-direction: column;
+  }
+
+  .portfolio-panel-actions {
+    justify-content: flex-start;
+  }
+
+  .position-sheet-panel {
+    width: calc(100vw - 20px);
+    margin-bottom: 10px;
   }
 
   .toast {

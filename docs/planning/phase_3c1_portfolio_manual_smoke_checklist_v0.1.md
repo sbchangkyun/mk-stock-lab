@@ -153,6 +153,51 @@ After Phase 3C.5, the owner manual smoke should also confirm:
 - The position list is visually cleaner and closer to a modern finance app hierarchy.
 - Lab uses the corrected `국회의원 보유 주식` label.
 
+## Phase 3C.6 Expected State Deltas
+
+After Phase 3C.6, the owner manual smoke should also confirm:
+
+- Signed-out menu navigation keeps `로그인` visible.
+- Signed-in menu navigation keeps `로그아웃` visible.
+- Ordinary menu navigation does not visibly show `확인 중` in the header auth entry.
+- Logged-out `/portfolio` shows a clear lock-style UI.
+- Position cards do not overflow the parent panel.
+- The position add form is not always visible in the main detail panel.
+- The `종목 추가` button opens a bottom sheet.
+- Position edit actions reuse the same bottom sheet.
+- The currency display toggle shows `달러 기준` and `원화 기준`.
+- USD buy-price display uses compact dollar formatting such as `$90.25`.
+- KRW buy-price display uses compact won formatting such as `52,300원`.
+- Clicking a position name opens `/chart-ai` with `symbol`, `name`, and `market` query parameters.
+- Chart AI displays the selected security from query parameters without provider, AI, market-data, or authenticated calls.
+
+## Phase 3C.6 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.6 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.6 포트폴리오 최종 UX 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 로그아웃 잠금 UI가 명확함: 통과/실패
+- 포지션 리스트가 부모 영역 밖으로 넘치지 않음: 통과/실패
+- `종목 추가` 버튼으로 바텀시트 열림: 통과/실패
+- 포지션 수정도 같은 바텀시트 사용: 통과/실패
+- 통화 토글 `달러 기준` / `원화 기준` 표시: 통과/실패
+- USD 금액 `$90.25` 형식 표시: 통과/실패/해당 없음
+- KRW 금액 `52,300원` 형식 표시: 통과/실패/해당 없음
+- 종목명 클릭 시 Chart AI로 이동: 통과/실패
+- Chart AI 선택 종목 프리필 표시: 통과/실패
+- Chart AI에서 외부 AI/provider 호출 없음: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
 ## Phase 3C.5 Pass/Fail Result Template
 
 Use this Korean-first format when reporting Phase 3C.5 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

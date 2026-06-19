@@ -1,31 +1,60 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const selectedSymbol = (Astro.url.searchParams.get('symbol') || '').slice(0, 32);
+const selectedName = (Astro.url.searchParams.get('name') || '').slice(0, 160);
+const selectedMarket = (Astro.url.searchParams.get('market') || '').slice(0, 12);
+const selectedLabel = selectedName || selectedSymbol;
 ---
 
 <Layout title="Chart AI | MK Stock Lab" activePath="/chart-ai">
   <header class="page-header">
     <div>
       <p class="eyebrow">Chart AI</p>
-      <h1>AI 차트 분석 작업 공간</h1>
-      <p class="lead">검색, 차트, 분석 로직은 이후 단계에서 연결합니다. 현재 화면은 외부 AI 호출 없이 목표 레이아웃만 제공합니다.</p>
+      <h1>차트 분석 작업 공간</h1>
+      <p class="lead">검색, 차트, 분석 로직은 이후 단계에서 연결합니다. 현재 화면은 AI 호출 없이 목표 레이아웃과 선택 종목 상태만 제공합니다.</p>
     </div>
   </header>
 
   <section class="workspace-grid">
     <div class="chart-placeholder">
+      <div class="chart-prefill-panel">
+        <p class="eyebrow">선택한 종목</p>
+        {selectedLabel ? (
+          <div class="selected-security">
+            <strong>{selectedLabel}</strong>
+            <span>{selectedSymbol || '티커 대기'} · {selectedMarket || '시장 대기'}</span>
+          </div>
+        ) : (
+          <div class="selected-security muted">
+            <strong>종목을 검색하세요</strong>
+            <span>포트폴리오 보유 종목을 클릭하면 이 화면에 검색값이 채워집니다.</span>
+          </div>
+        )}
+        <label class="chart-search-shell">
+          <span>검색어</span>
+          <input
+            type="search"
+            value={selectedLabel}
+            placeholder="종목명 또는 티커"
+            aria-label="Chart AI 종목 검색어"
+          />
+        </label>
+      </div>
+
       <p class="eyebrow">차트 영역</p>
       <h2>캔들차트 준비 영역</h2>
-      <p>시장 데이터 계층이 준비된 뒤 경량 차트 라이브러리를 연결합니다.</p>
+      <p>실제 시세 데이터와 경량 차트 라이브러리는 다음 구현 단계에서 연결합니다.</p>
     </div>
 
     <aside class="panel">
       <p class="eyebrow">분석 패널</p>
       <h2>AI 분석은 로그인 후 사용</h2>
-      <p>향후 무료 사용 한도는 사용자당 하루 3회이며 KST 00:00에 초기화됩니다.</p>
+      <p>이 화면은 종목 선택과 분석 진입 상태만 표시합니다. OpenAI, Gemini, KIS, OpenDART 호출은 아직 실행하지 않습니다.</p>
       <ul class="status-list">
         <li><span>대상 자산</span><strong>국내 주식, 미국 주식, ETF</strong></li>
         <li><span>기간</span><strong>일봉, 주봉, 월봉</strong></li>
-        <li><span>가상자산</span><strong class="neutral">지원하지 않음</strong></li>
+        <li><span>AI 호출</span><strong class="neutral">연결 전</strong></li>
       </ul>
     </aside>
   </section>

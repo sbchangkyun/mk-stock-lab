@@ -1,5 +1,31 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.6 - 2026-06-19
+
+### Portfolio Final UX Smoke Fix
+
+- Removed the visible auth-checking label from ordinary header and Portfolio shell navigation states.
+- Strengthened the signed-out Portfolio lock state with a visible lock treatment.
+- Moved the position add/edit form into a bottom sheet opened by `종목 추가`.
+- Reused the bottom sheet for position edit actions.
+- Changed the currency display toggle labels to `달러 기준` and `원화 기준`.
+- Changed local money formatting to compact USD and KRW display.
+- Linked position names to Chart AI with `symbol`, `name`, and `market` query parameters.
+- Added a safe Chart AI query-prefill skeleton without provider, AI, market-data, or authenticated calls.
+- Tightened `.gitignore` coverage for literal `dist` and service-account credential JSON probes.
+
+### Validation
+
+- Ran normal `npm run build`; it exits with code 0.
+- Confirmed `.vercel/output/config.json` and `.vercel/output/functions/_render.func` are generated.
+- Confirmed `astro preview` is still unsupported by the installed Vercel adapter, so the local smoke check used the Astro dev server.
+- Confirmed target routes return HTTP 200.
+- Confirmed removed legacy routes return HTTP 404 and do not expose old surface markers.
+- Confirmed no requested provider secret markers appear in source, public assets, or generated Vercel output.
+- Confirmed no service-role marker appears in client-facing source or generated static output.
+- Confirmed ignored-file coverage for `.env*`, `.vercel`, `.vercel/output`, `dist`, `dist/`, `.astro`, `.omc`, representative key files, service-account JSON files, credential files, and secret files.
+- Browser connector smoke was not completed because the in-app `iab` browser was unavailable in this session; owner visual and console smoke remains recommended before Phase 3D.
+
 ## Phase 3C.5 - 2026-06-19
 
 ### Portfolio List Redesign

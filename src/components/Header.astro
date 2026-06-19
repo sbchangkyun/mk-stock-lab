@@ -17,7 +17,7 @@ import AuthModal from './Auth/AuthModal.astro';
         <path d="M12 4a8 8 0 1 0 8 8 6 6 0 0 1-8-8Z"></path>
       </svg>
     </button>
-    <button class="header-button hidden" id="open-login-btn" type="button" disabled>로그인</button>
+    <button class="header-button" id="open-login-btn" type="button" disabled>로그인</button>
     <button class="header-button secondary hidden" id="logout-btn" type="button">로그아웃</button>
   </div>
 </header>
@@ -46,7 +46,12 @@ import AuthModal from './Auth/AuthModal.astro';
         return;
       }
 
-      if (status === 'signed_out' || status === 'unavailable') {
+      if (status === 'signed_out') {
+        window.localStorage.setItem(AUTH_UI_HINT_KEY, 'signed_out');
+        return;
+      }
+
+      if (status === 'unavailable') {
         window.localStorage.removeItem(AUTH_UI_HINT_KEY);
       }
     } catch {
@@ -64,10 +69,10 @@ import AuthModal from './Auth/AuthModal.astro';
     if (!loginButton || !logoutButton) return;
 
     if (status === 'checking') {
-      loginButton.textContent = '확인 중';
+      loginButton.textContent = readAuthUiHint() === 'signed_in' ? '로그아웃' : '로그인';
       loginButton.setAttribute('disabled', 'true');
-      loginButton.classList.remove('hidden');
-      logoutButton.classList.add('hidden');
+      loginButton.classList.toggle('hidden', readAuthUiHint() === 'signed_in');
+      logoutButton.classList.toggle('hidden', readAuthUiHint() !== 'signed_in');
       dispatchHeaderAuthState(status);
       return;
     }
@@ -107,7 +112,7 @@ import AuthModal from './Auth/AuthModal.astro';
     const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
     if (!loginButton || !logoutButton || loginButton.dataset.authReady === 'true') return;
     loginButton.dataset.authReady = 'true';
-    updateAuthButtons(readAuthUiHint() === 'signed_in' ? 'signed_in' : 'checking');
+    updateAuthButtons(readAuthUiHint() === 'signed_in' ? 'signed_in' : 'signed_out');
 
     loginButton?.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('mk:open-auth'));
