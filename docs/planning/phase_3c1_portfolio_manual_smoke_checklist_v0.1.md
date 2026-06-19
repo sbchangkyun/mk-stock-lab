@@ -329,6 +329,52 @@ Phase 3C.9 헤더/배너/Today 사전점검 결과:
 - 비밀 정보 없는 메모:
 ```
 
+## Phase 3C.11 Expected State Deltas
+
+After Phase 3C.11, the owner manual smoke should also confirm:
+
+- `/?railPreview=1` visibly shows the Home rail in the normal local browser viewport.
+- `/?railPreview=1` positions the Home rail inside the visible viewport.
+- `/?railPreview=1` rotates the two sample banners every 5 seconds.
+- `/?railPreview=1` pauses rotation on hover if tested.
+- `/portfolio?railPreview=1` does not show the Home rail.
+- `/chart-ai?railPreview=1` does not show the Home rail.
+- `/lab?railPreview=1` does not show the Home rail.
+- Normal Home without preview still follows the wide-desktop breakpoint.
+- `Today: 000` still appears.
+- Real visitor counting is not active.
+- Header auth state remains stable.
+- Portfolio and Chart AI behavior remain stable.
+
+## Phase 3C.11 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.11 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.11 Home 배너 Preview 표시 재점검 결과:
+
+* 테스트 대상: local / deployed
+* 브라우저: Chrome 등
+* Home 일반 접속에서 화면폭 부족 시 배너 숨김 유지: 통과/실패/화면폭 충분
+* `/?railPreview=1`에서 Home 배너가 실제 화면 안에 보임: 통과/실패
+* `/?railPreview=1`에서 배너 위치가 화면 오른쪽에 정상 표시됨: 통과/실패
+* `/?railPreview=1`에서 2개 샘플 배너가 5초마다 왼쪽 슬라이드 전환: 통과/실패
+* `/?railPreview=1`에서 배너 hover 시 전환 일시정지: 통과/실패/미실행
+* `/portfolio?railPreview=1`에서 배너 미노출: 통과/실패
+* `/chart-ai?railPreview=1`에서 배너 미노출: 통과/실패
+* `/lab?railPreview=1`에서 배너 미노출: 통과/실패
+* 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+* 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+* 헤더의 연한 회색 `Today: 000` 표시 유지: 통과/실패
+* 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+* 포트폴리오 잠금 UI 유지: 통과/실패
+* 바텀시트 모션 유지: 통과/실패
+* 포트폴리오 새로고침 아이콘 유지: 통과/실패
+* Chart AI 선택 종목 프리필 유지: 통과/실패
+* 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3C.10 Expected State Deltas
 
 After Phase 3C.10, the owner manual smoke should also confirm:

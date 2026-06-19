@@ -1,5 +1,38 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.11 - 2026-06-19
+
+### Home Rail Preview Visibility Hard Fix
+
+- Recorded the owner Phase 3C.10 smoke result: normal Home breakpoint behavior passed, but `/?railPreview=1` did not visibly show the rail in the owner browser.
+- Identified the issue as a visual preview hardening gap, not a route-isolation or non-Home import problem.
+- Added a hard visibility path for `/?railPreview=1` with server-rendered inline root visibility styles.
+- Added stronger preview CSS selectors for `.home-rail-ad[data-home-rail-preview="true"]` and `.home-rail-ad.rail-preview`.
+- Forced preview display, visibility, opacity, pointer events, fixed positioning, safe right/top values, width, z-index, and viewport-safe height.
+- Added a Home-only query fallback that reapplies the preview marker and class from `window.location.search` without localStorage or sessionStorage.
+- Preserved two-banner carousel behavior, 5000ms interval, left-slide transform, hover pause, and reduced-motion handling.
+- Preserved non-Home route isolation for Portfolio, Chart AI, Lab, and Lab detail routes.
+- Preserved normal production breakpoint behavior: Home rail remains hidden below `1660px` unless `railPreview=1` is present on Home.
+- Preserved `Today: 000`, header auth label stability, Chart AI prefill, Portfolio behavior, and provider credential status notes for future phases without values.
+
+### Safety And Validation
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, Chart AI provider call, AI execution, real visitor-count API/DB, ad-event write/tracking, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo/banner scraping, remote discovery, or external asset download was implemented.
+- No real visitor count implementation was added.
+- No ad-event tracking was added.
+- No secrets were requested or recorded.
+- Normal `npm run build` passed and Vercel output was generated.
+- Local unauthenticated HTTP smoke passed for required active and preview routes, and removed legacy routes returned 404.
+- Browser visual smoke could not be completed because the in-app browser backend was unavailable and local Playwright was not installed.
+- Recommended next action: run the Phase 3C.11 owner manual smoke using `/?railPreview=1`.
+
 ## Phase 3C.10 - 2026-06-19
 
 ### Home Rail Preview And Isolation
