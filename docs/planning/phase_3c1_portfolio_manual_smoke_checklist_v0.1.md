@@ -329,6 +329,56 @@ Phase 3C.9 헤더/배너/Today 사전점검 결과:
 - 비밀 정보 없는 메모:
 ```
 
+## Phase 3C.12 Expected State Deltas
+
+After Phase 3C.12, the owner manual smoke should also confirm:
+
+- `/?railPreview=1` shows a visible Home preview panel in the page body.
+- The preview panel has an obvious `HOME RAIL PREVIEW` label or equivalent.
+- Sample Banner 01 and Sample Banner 02 are visible or have visible text fallback.
+- The two sample banners rotate every 5 seconds.
+- Hover pause works if tested.
+- `/portfolio?railPreview=1` does not show the preview panel.
+- `/chart-ai?railPreview=1` does not show the preview panel.
+- `/lab?railPreview=1` does not show the preview panel.
+- `/heatmap?railPreview=1` does not show the preview panel.
+- Normal Home without preview still follows the wide-desktop breakpoint.
+- `Today: 000` still appears.
+- Real visitor counting is not active.
+- Header auth state remains stable.
+- Portfolio and Chart AI behavior remain stable.
+
+## Phase 3C.12 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.12 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.12 Home 배너 Preview Fallback 재점검 결과:
+
+* 테스트 대상: local / deployed
+* 브라우저: Chrome 등
+* Home 일반 접속에서 화면폭 부족 시 기존 배너 숨김 유지: 통과/실패/화면폭 충분
+* `/?railPreview=1`에서 Home 본문 안에 Preview 패널이 보임: 통과/실패
+* Preview 패널에 `HOME RAIL PREVIEW` 또는 식별 가능한 라벨이 보임: 통과/실패
+* Preview 패널에서 Sample Banner 01/02 이미지 또는 텍스트 fallback이 보임: 통과/실패
+* Preview 패널에서 2개 샘플 배너가 5초마다 전환됨: 통과/실패
+* Preview 패널 hover 시 전환 일시정지: 통과/실패/미실행
+* `/portfolio?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* `/chart-ai?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* `/lab?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* `/heatmap?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+* 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+* 헤더의 연한 회색 `Today: 000` 표시 유지: 통과/실패
+* 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+* 포트폴리오 잠금 UI 유지: 통과/실패
+* 바텀시트 모션 유지: 통과/실패
+* 포트폴리오 새로고침 아이콘 유지: 통과/실패
+* Chart AI 선택 종목 프리필 유지: 통과/실패
+* 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3C.11 Expected State Deltas
 
 After Phase 3C.11, the owner manual smoke should also confirm:

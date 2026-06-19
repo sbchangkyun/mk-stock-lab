@@ -1,12 +1,15 @@
 ---
 import HomeRailAd from '../components/HomeRailAd.astro';
+import HomeRailPreviewPanel from '../components/HomeRailPreviewPanel.astro';
 import Layout from '../layouts/Layout.astro';
 
 const railPreview = Astro.url.searchParams.get('railPreview') === '1';
 ---
 
 <Layout title="MK Stock Lab | 투자 데이터 플랫폼" activePath="/">
-  <HomeRailAd preview={railPreview} />
+  {!railPreview && <HomeRailAd />}
+
+  {railPreview && <HomeRailPreviewPanel />}
 
   <section class="hero-section">
     <div class="hero-copy">

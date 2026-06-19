@@ -1,5 +1,46 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3C.12 - 2026-06-19
+
+### Home Rail Preview Fallback Panel
+
+- Recorded the owner Phase 3C.11 smoke result: normal Home breakpoint behavior passed, but the fixed `/?railPreview=1` rail remained invisible in the owner browser.
+- Added a guaranteed Home-only in-page preview fallback panel for `/?railPreview=1`.
+- Added fallback panel DOM markers:
+  - `data-home-rail-preview-panel`
+  - `home-rail-preview-panel`
+  - `data-preview-banner-track`
+  - `data-preview-banner-card`
+  - `data-preview-banner-index`
+- Added visible `HOME RAIL PREVIEW` label and concise preview helper copy.
+- Added text fallback labels for sample SVG image failure:
+  - `Sample Banner 01`
+  - `Sample Banner 02`
+- Added small preview thumbnails so both sample banner entries are visible immediately.
+- Added preview-specific carousel behavior with 5000ms interval, left-slide transform, hover pause, and reduced-motion handling.
+- Chose to hide the fixed right rail during `railPreview=1`; the in-page fallback panel is now the single owner-smoke acceptance surface.
+- Preserved non-Home route isolation for Portfolio, Chart AI, Heatmap, Lab, and Lab detail routes.
+- Preserved normal production breakpoint behavior: normal Home rail remains hidden below `1660px`.
+- Preserved `Today: 000`, header auth label stability, Chart AI prefill, Portfolio behavior, and provider credential status notes for future phases without values.
+
+### Safety And Validation
+
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, Chart AI provider call, AI execution, real visitor-count API/DB, ad-event write/tracking, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo/banner scraping, remote discovery, or external asset download was implemented.
+- No real visitor count implementation was added.
+- No ad-event tracking was added.
+- No secrets were requested or recorded.
+- Normal `npm run build` passed and Vercel output was generated.
+- Local unauthenticated HTTP smoke passed for required active and preview routes, and removed legacy routes returned 404.
+- Browser visual smoke could not be completed because the in-app browser backend was unavailable.
+- Recommended next action: run the Phase 3C.12 owner manual smoke using `/?railPreview=1`.
+
 ## Phase 3C.11 - 2026-06-19
 
 ### Home Rail Preview Visibility Hard Fix
