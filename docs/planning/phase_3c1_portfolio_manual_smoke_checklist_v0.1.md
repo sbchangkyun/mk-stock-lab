@@ -579,15 +579,46 @@ Stop the manual smoke immediately if any of these occur:
 
 Choose exactly one:
 
-- If Phase 3C.5 smoke passes: proceed to Phase 3D Chart AI usage guard and server-only execution skeleton.
-- If Phase 3C.5 smoke fails: prepare focused Phase 3C.6 Portfolio UX smoke fix packet using non-secret failure details.
+- If Phase 3D smoke passes: proceed to the next approved Chart AI provider-boundary planning or integration-preparation phase.
+- If Phase 3D smoke fails: prepare a focused Phase 3D follow-up using non-secret failure details.
 
 Options:
 
-- Option A: Run Phase 3C.5 manual Portfolio smoke now and report non-secret pass/fail.
-- Option B: Proceed to Phase 3D without manual Portfolio smoke.
-- Option C: Run Advisor/security follow-up before additional DB-backed feature work.
+- Option A: Run Phase 3D manual Chart AI skeleton smoke now and report non-secret pass/fail.
+- Option B: Prepare the next Chart AI provider-boundary planning phase after Phase 3D smoke passes.
+- Option C: Run Advisor/security follow-up before additional provider-backed feature work.
 
 ## Final Statement
 
 Phase 3C.1 is checklist and documentation only. Codex performed no production mutation, no environment mutation, no deployment, and no code implementation for this phase.
+
+## Phase 3D Chart AI Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3D results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3D Chart AI 사용량 가드 Skeleton 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/chart-ai` 진입: 통과/실패
+- `/chart-ai?symbol=005930&name=삼성전자&market=KR` 선택 종목 프리필: 통과/실패
+- 선택 종목 없이 실행 시 종목 선택 필요 안내: 통과/실패
+- 로그아웃 상태에서 `AI 분석 실행` 클릭 시 로그인 필요 상태 표시: 통과/실패
+- 로그인 상태에서 `AI 분석 실행` 클릭 시 서버 사용량 가드 확인 시도: 통과/실패/미실행
+- 성공 시 실제 AI 분석이 아니라 준비 상태 안내만 표시: 통과/실패/미실행
+- 일일 한도 초과 시 한도 안내 표시: 통과/실패/미실행
+- 서비스 설정 부족 시 설정 필요 안내 표시: 통과/실패/미실행
+- OpenAI/Gemini/KIS/OpenDART 실제 호출 없음: 통과/실패
+- Chart AI 화면에서 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- Header의 `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- Portfolio 잠금 UI 유지: 통과/실패
+- Portfolio 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- Portfolio에서 Chart AI 선택 종목 프리필 유지: 통과/실패
+- Home `/?railPreview=1` fallback preview 유지: 통과/실패/미실행
+- 비밀 정보 없는 메모:
+```

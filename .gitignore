@@ -23,6 +23,7 @@ pnpm-debug.log*
 *.key
 *.crt
 *.cer
+*.cert
 *.p12
 *.pfx
 service-account*.json

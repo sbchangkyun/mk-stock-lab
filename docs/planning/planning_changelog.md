@@ -1,5 +1,44 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3D - 2026-06-19
+
+### Chart AI Usage Guard Skeleton
+
+- Added POST-only `/api/chart-ai/analyze`.
+- Added server-only usage helper `src/lib/server/chartAiUsage.ts`.
+- Reused the existing bearer-token validation boundary and derived user ID from server-validated auth state.
+- Did not accept or trust browser-submitted `user_id`.
+- Limited request fields to `symbol`, `name`, `market`, `timeframe`, and `question`.
+- Added deterministic placeholder response with `status: "ready_for_provider_integration"` for authenticated and allowed requests.
+- Added `src/lib/chartAiClient.ts` as a browser-safe helper that obtains the current Supabase session and sends a bearer token without logging or storing it.
+- Updated `/chart-ai` with Korean execution states, selected-security prefill preservation, timeframe/question inputs, and an `AI 분석 실행` button.
+- Preserved Chart AI provider non-execution: no OpenAI, Gemini, KIS, OpenDART, market data, cache write, or AI analysis was implemented.
+- Preserved Portfolio behavior, Header auth stability, `Today: 000`, and Home rail preview behavior.
+- Hardened ignored-file coverage by adding `*.cert`.
+
+### Safety And Validation
+
+- Ran normal `npm run build`; build passed.
+- Confirmed `.vercel/output/config.json`, `_render.func`, and static output exist.
+- `npm run preview` was unavailable because the Vercel adapter does not support Astro preview.
+- Used local `npm run dev` for unauthenticated HTTP smoke only.
+- Confirmed active routes returned 200 and removed legacy routes returned 404.
+- Confirmed unauthenticated POST to `/api/chart-ai/analyze` returned sanitized 401.
+- No authenticated Chart AI production endpoint call was made by Codex.
+- No Supabase connection was attempted by Codex for authenticated writes.
+- No Portfolio write endpoint was called by Codex.
+- No SQL, Supabase CLI, `psql`, migration, or DB command was run.
+- No production DB mutation was performed by Codex validation.
+- No Auth user was created.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No real visitor-count API/DB, local counter, migration, or analytics was added.
+- No ad-event route or tracking logic was added.
+- No provider integration, Chart AI provider call, AI execution, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo/banner scraping, remote discovery, or external asset download was implemented.
+- No secrets were requested, read from ignored env files, recorded, or printed.
+- Browser automation was not completed because Playwright was not installed and no browser-control tool was directly available.
+- Recommended next action: run the Phase 3D owner manual smoke for signed-out and signed-in Chart AI skeleton behavior.
+
 ## Phase 3C.12 - 2026-06-19
 
 ### Home Rail Preview Fallback Panel

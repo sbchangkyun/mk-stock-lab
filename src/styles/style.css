@@ -1336,13 +1336,72 @@ body.dark-mode .home-rail-preview-panel {
   gap: 6px;
 }
 
-.chart-search-shell input {
+.chart-search-shell input,
+.chart-search-shell select,
+.chart-search-shell textarea {
   min-height: 42px;
   padding: 9px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface-muted);
   color: var(--text);
+  font: inherit;
+}
+
+.chart-search-shell textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.chart-ai-run-panel {
+  align-content: start;
+}
+
+.chart-ai-run-button {
+  width: 100%;
+  justify-content: center;
+  margin: 6px 0;
+  border: 0;
+  cursor: pointer;
+}
+
+.chart-ai-run-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.chart-ai-result {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-muted);
+}
+
+.chart-ai-result strong {
+  color: var(--text);
+}
+
+.chart-ai-result p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.chart-ai-result[data-state='success'] {
+  border-color: rgba(17, 138, 79, 0.35);
+  background: rgba(17, 138, 79, 0.08);
+}
+
+.chart-ai-result[data-state='limit'],
+.chart-ai-result[data-state='auth'] {
+  border-color: rgba(204, 141, 28, 0.35);
+  background: rgba(204, 141, 28, 0.1);
+}
+
+.chart-ai-result[data-state='error'] {
+  border-color: rgba(196, 63, 63, 0.35);
+  background: rgba(196, 63, 63, 0.08);
 }
 
 .table-actions {

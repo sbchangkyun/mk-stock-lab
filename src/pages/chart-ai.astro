@@ -1,9 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const selectedSymbol = (Astro.url.searchParams.get('symbol') || '').slice(0, 32);
+const selectedSymbol = (Astro.url.searchParams.get('symbol') || '').slice(0, 32).toUpperCase();
 const selectedName = (Astro.url.searchParams.get('name') || '').slice(0, 160);
-const selectedMarket = (Astro.url.searchParams.get('market') || '').slice(0, 12);
+const selectedMarketRaw = (Astro.url.searchParams.get('market') || '').slice(0, 12).toUpperCase();
+const selectedMarket = selectedMarketRaw === 'US' ? 'US' : 'KR';
 const selectedLabel = selectedName || selectedSymbol;
 ---
 
@@ -11,29 +12,36 @@ const selectedLabel = selectedName || selectedSymbol;
   <header class="page-header">
     <div>
       <p class="eyebrow">Chart AI</p>
-      <h1>차트 분석 작업 공간</h1>
-      <p class="lead">검색, 차트, 분석 로직은 이후 단계에서 연결합니다. 현재 화면은 AI 호출 없이 목표 레이아웃과 선택 종목 상태만 제공합니다.</p>
+      <h1>차트 AI 분석</h1>
+      <p class="lead">선택한 종목을 기준으로 서버 사용량 가드와 실행 경계를 먼저 확인합니다. 실제 시세, 차트 데이터, AI 모델 호출은 다음 단계에서 연결합니다.</p>
     </div>
   </header>
 
   <section class="workspace-grid">
     <div class="chart-placeholder">
-      <div class="chart-prefill-panel">
-        <p class="eyebrow">선택한 종목</p>
+      <div
+        class="chart-prefill-panel"
+        data-chart-prefill
+        data-symbol={selectedSymbol}
+        data-name={selectedName}
+        data-market={selectedMarket}
+      >
+        <p class="eyebrow">선택 종목</p>
         {selectedLabel ? (
           <div class="selected-security">
             <strong>{selectedLabel}</strong>
-            <span>{selectedSymbol || '티커 대기'} · {selectedMarket || '시장 대기'}</span>
+            <span>{selectedSymbol || '티커 대기'} · {selectedMarket}</span>
           </div>
         ) : (
           <div class="selected-security muted">
             <strong>종목을 검색하세요</strong>
-            <span>포트폴리오 보유 종목을 클릭하면 이 화면에 검색값이 채워집니다.</span>
+            <span>포트폴리오 보유 종목에서 Chart AI를 열면 선택 정보가 채워집니다.</span>
           </div>
         )}
         <label class="chart-search-shell">
           <span>검색어</span>
           <input
+            id="chartAiName"
             type="search"
             value={selectedLabel}
             placeholder="종목명 또는 티커"
@@ -47,15 +55,111 @@ const selectedLabel = selectedName || selectedSymbol;
       <p>실제 시세 데이터와 경량 차트 라이브러리는 다음 구현 단계에서 연결합니다.</p>
     </div>
 
-    <aside class="panel">
+    <aside class="panel chart-ai-run-panel">
       <p class="eyebrow">분석 패널</p>
-      <h2>AI 분석은 로그인 후 사용</h2>
-      <p>이 화면은 종목 선택과 분석 진입 상태만 표시합니다. OpenAI, Gemini, KIS, OpenDART 호출은 아직 실행하지 않습니다.</p>
+      <h2>로그인 후 사용량 가드 확인</h2>
+      <p>이 단계는 서버가 로그인 세션을 검증하고 일일 사용 한도를 확인하는 실행 골격입니다. OpenAI, Gemini, KIS, OpenDART 호출은 아직 실행하지 않습니다.</p>
+
+      <label class="chart-search-shell">
+        <span>기간</span>
+        <select id="chartAiTimeframe" aria-label="Chart AI 분석 기간">
+          <option value="1D">일봉</option>
+          <option value="1W">주봉</option>
+          <option value="1M">월봉</option>
+        </select>
+      </label>
+
+      <label class="chart-search-shell">
+        <span>질문</span>
+        <textarea
+          id="chartAiQuestion"
+          rows="4"
+          maxlength="500"
+          placeholder="궁금한 점을 짧게 입력하세요"
+          aria-label="Chart AI 질문"
+        ></textarea>
+      </label>
+
+      <button class="button-link chart-ai-run-button" id="chartAiRunButton" type="button">
+        AI 분석 실행
+      </button>
+
+      <div class="chart-ai-result" id="chartAiResult" data-state="idle" role="status" aria-live="polite">
+        <strong>대기 중</strong>
+        <p>종목을 선택하고 로그인한 뒤 사용량 가드를 확인할 수 있습니다.</p>
+      </div>
+
       <ul class="status-list">
         <li><span>대상 자산</span><strong>국내 주식, 미국 주식, ETF</strong></li>
-        <li><span>기간</span><strong>일봉, 주봉, 월봉</strong></li>
+        <li><span>일일 한도</span><strong>무료 3회</strong></li>
         <li><span>AI 호출</span><strong class="neutral">연결 전</strong></li>
       </ul>
     </aside>
   </section>
+
+  <script>
+    import { analyzeChartAi, ChartAiApiError } from '../lib/chartAiClient';
+
+    const setupChartAiPanel = () => {
+      const prefill = document.querySelector<HTMLElement>('[data-chart-prefill]');
+      const runButton = document.getElementById('chartAiRunButton') as HTMLButtonElement | null;
+      const result = document.getElementById('chartAiResult');
+      const nameInput = document.getElementById('chartAiName') as HTMLInputElement | null;
+      const timeframeInput = document.getElementById('chartAiTimeframe') as HTMLSelectElement | null;
+      const questionInput = document.getElementById('chartAiQuestion') as HTMLTextAreaElement | null;
+      if (!prefill || !runButton || !result || runButton.dataset.ready === 'true') return;
+      runButton.dataset.ready = 'true';
+
+      const setResult = (state: string, title: string, message: string) => {
+        result.dataset.state = state;
+        result.replaceChildren();
+        const titleElement = document.createElement('strong');
+        titleElement.textContent = title;
+        const messageElement = document.createElement('p');
+        messageElement.textContent = message;
+        result.append(titleElement, messageElement);
+      };
+
+      runButton.addEventListener('click', async () => {
+        const symbol = prefill.dataset.symbol || '';
+        const market = prefill.dataset.market === 'US' ? 'US' : 'KR';
+        const name = nameInput?.value.trim() || prefill.dataset.name || '';
+
+        if (!symbol) {
+          setResult('error', '종목 선택 필요', '포트폴리오에서 종목을 선택하거나 티커가 포함된 링크로 다시 열어 주세요.');
+          return;
+        }
+
+        runButton.disabled = true;
+        setResult('loading', '확인 중', '로그인 세션과 오늘 사용 가능한 분석 횟수를 확인하고 있습니다.');
+
+        try {
+          const response = await analyzeChartAi({
+            symbol,
+            name,
+            market,
+            timeframe: timeframeInput?.value === '1W' || timeframeInput?.value === '1M' ? timeframeInput.value : '1D',
+            question: questionInput?.value || undefined,
+          });
+
+          const usage = response.usage;
+          const remainingText = typeof usage?.remaining === 'number' ? `남은 횟수 ${usage.remaining}회` : '사용량 확인 완료';
+          setResult('success', '서버 가드 통과', `${response.summary || '분석 준비 상태입니다.'} ${remainingText}`);
+        } catch (error) {
+          if (error instanceof ChartAiApiError) {
+            const state = error.status === 429 ? 'limit' : error.status === 401 ? 'auth' : 'error';
+            setResult(state, error.status === 401 ? '로그인 필요' : '요청 실패', error.message);
+            return;
+          }
+
+          setResult('error', '요청 실패', 'AI 분석 요청을 처리하지 못했습니다.');
+        } finally {
+          runButton.disabled = false;
+        }
+      });
+    };
+
+    document.addEventListener('astro:page-load', setupChartAiPanel);
+    setupChartAiPanel();
+  </script>
 </Layout>
