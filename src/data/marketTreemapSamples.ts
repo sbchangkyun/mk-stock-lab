@@ -4,11 +4,20 @@ export type MarketPeriodId = '1d' | '1w' | '1m' | '3m' | '6m' | '1y';
 export type MarketConstituent = {
   symbol: string;
   name: string;
+  displayName?: string;
   sector: string;
+  market?: 'KR' | 'US' | 'GLOBAL';
   value: number;
   baseChangePct: number;
   momentum: number;
   trend: number;
+  sourcePortfolios?: string[];
+};
+
+export type MarketPortfolioScope = {
+  id: string;
+  label: string;
+  constituents: MarketConstituent[];
 };
 
 export type MarketUniverse = {
@@ -17,6 +26,7 @@ export type MarketUniverse = {
   asOf: string;
   currency: string;
   constituents: MarketConstituent[];
+  portfolioScopes?: MarketPortfolioScope[];
 };
 
 export const marketPeriods: Array<{ id: MarketPeriodId; label: string; multiplier: number }> = [
@@ -35,8 +45,8 @@ export const marketUniverses: MarketUniverse[] = [
     asOf: 'Sample 2026-06-20',
     currency: 'KRW',
     constituents: [
-      { symbol: '005930', name: 'Samsung Electronics', sector: 'Technology', value: 720, baseChangePct: 1.6, momentum: 1.4, trend: 5.8 },
-      { symbol: '000660', name: 'SK Hynix', sector: 'Technology', value: 420, baseChangePct: 3.2, momentum: 4.2, trend: 7.4 },
+      { symbol: '005930', name: 'Samsung Electronics', displayName: '삼성전자', market: 'KR', sector: 'Technology', value: 720, baseChangePct: 1.6, momentum: 1.4, trend: 5.8 },
+      { symbol: '000660', name: 'SK Hynix', displayName: 'SK하이닉스', market: 'KR', sector: 'Technology', value: 420, baseChangePct: 3.2, momentum: 4.2, trend: 7.4 },
       { symbol: '035420', name: 'NAVER', sector: 'Technology', value: 118, baseChangePct: -0.8, momentum: 1.2, trend: -3.8 },
       { symbol: '035720', name: 'Kakao', sector: 'Technology', value: 72, baseChangePct: -1.6, momentum: -0.9, trend: -4.7 },
       { symbol: '005380', name: 'Hyundai Motor', sector: 'Industrials', value: 168, baseChangePct: 0.7, momentum: -0.4, trend: 3.2 },
@@ -148,13 +158,37 @@ export const marketUniverses: MarketUniverse[] = [
     currency: 'Mixed',
     constituents: [
       { symbol: 'AAPL', name: 'Apple', sector: 'US Stocks', value: 38, baseChangePct: 0.9, momentum: 0.6, trend: 3.2 },
-      { symbol: '005930', name: 'Samsung Electronics', sector: 'KR Stocks', value: 34, baseChangePct: 1.6, momentum: 1.4, trend: 5.8 },
+      { symbol: '005930', name: 'Samsung Electronics', displayName: '삼성전자', market: 'KR', sector: 'KR Stocks', value: 34, baseChangePct: 1.6, momentum: 1.4, trend: 5.8 },
       { symbol: 'NVDA', name: 'NVIDIA', sector: 'US Stocks', value: 28, baseChangePct: 4.2, momentum: 5.2, trend: 8.1 },
-      { symbol: '105560', name: 'KB Financial', sector: 'KR Stocks', value: 18, baseChangePct: 1.3, momentum: 1.0, trend: 4.1 },
+      { symbol: '105560', name: 'KB Financial', displayName: 'KB금융', market: 'KR', sector: 'KR Stocks', value: 18, baseChangePct: 1.3, momentum: 1.0, trend: 4.1 },
       { symbol: 'SPY', name: 'S&P500 ETF', sector: 'ETF', value: 44, baseChangePct: 0.7, momentum: 0.8, trend: 2.7 },
       { symbol: 'QQQ', name: 'NASDAQ ETF', sector: 'ETF', value: 32, baseChangePct: 1.4, momentum: 1.6, trend: 4.2 },
       { symbol: 'GLD', name: 'Gold ETF', sector: 'ETF', value: 16, baseChangePct: -0.3, momentum: -0.2, trend: 0.9 },
-      { symbol: '068270', name: 'Celltrion', sector: 'KR Stocks', value: 14, baseChangePct: 2.0, momentum: 2.3, trend: 4.2 },
+      { symbol: '068270', name: 'Celltrion', displayName: '셀트리온', market: 'KR', sector: 'KR Stocks', value: 14, baseChangePct: 2.0, momentum: 2.3, trend: 4.2 },
+    ],
+    portfolioScopes: [
+      {
+        id: 'core-growth',
+        label: 'Core Growth',
+        constituents: [
+          { symbol: 'AAPL', name: 'Apple', market: 'US', sector: 'US Stocks', value: 38, baseChangePct: 0.9, momentum: 0.6, trend: 3.2 },
+          { symbol: '005930', name: 'Samsung Electronics', displayName: '삼성전자', market: 'KR', sector: 'KR Stocks', value: 34, baseChangePct: 1.6, momentum: 1.4, trend: 5.8 },
+          { symbol: 'NVDA', name: 'NVIDIA', market: 'US', sector: 'US Stocks', value: 28, baseChangePct: 4.2, momentum: 5.2, trend: 8.1 },
+          { symbol: 'QQQ', name: 'NASDAQ ETF', market: 'US', sector: 'ETF', value: 32, baseChangePct: 1.4, momentum: 1.6, trend: 4.2 },
+          { symbol: '068270', name: 'Celltrion', displayName: '셀트리온', market: 'KR', sector: 'KR Stocks', value: 14, baseChangePct: 2.0, momentum: 2.3, trend: 4.2 },
+        ],
+      },
+      {
+        id: 'income-balance',
+        label: 'Income Balance',
+        constituents: [
+          { symbol: 'AAPL', name: 'Apple', market: 'US', sector: 'US Stocks', value: 16, baseChangePct: 0.9, momentum: 0.6, trend: 3.2 },
+          { symbol: '005930', name: 'Samsung Electronics', displayName: '삼성전자', market: 'KR', sector: 'KR Stocks', value: 12, baseChangePct: 1.6, momentum: 1.4, trend: 5.8 },
+          { symbol: '105560', name: 'KB Financial', displayName: 'KB금융', market: 'KR', sector: 'KR Stocks', value: 18, baseChangePct: 1.3, momentum: 1.0, trend: 4.1 },
+          { symbol: 'SPY', name: 'S&P500 ETF', market: 'US', sector: 'ETF', value: 44, baseChangePct: 0.7, momentum: 0.8, trend: 2.7 },
+          { symbol: 'GLD', name: 'Gold ETF', market: 'US', sector: 'ETF', value: 16, baseChangePct: -0.3, momentum: -0.2, trend: 0.9 },
+        ],
+      },
     ],
   },
 ];

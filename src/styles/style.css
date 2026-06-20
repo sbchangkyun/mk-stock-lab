@@ -1362,6 +1362,15 @@ h2 {
   gap: 12px;
 }
 
+.market-portfolio-scope-group {
+  display: none;
+}
+
+.market-dashboard[data-active-universe='my-portfolio'] .market-portfolio-scope-group {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+}
+
 .market-control-label {
   color: var(--text-muted);
   font-size: 12px;

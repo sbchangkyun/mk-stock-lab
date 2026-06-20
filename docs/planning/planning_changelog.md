@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3F.3 - 2026-06-20
+
+### Portfolio Aggregate View And Display-Name Chart Labels
+
+- Added My Portfolio `전체 보기` in the Market dashboard sample model.
+- Added individual sample portfolio scope selection for `Core Growth` and `Income Balance`.
+- Added aggregate portfolio logic for the sample data path.
+- Merged duplicate securities by market + symbol.
+- Used deterministic sample value for Treemap area sizing and weighted merged return/momentum/trend values by sample value.
+- Switched Treemap visible labels from ticker-first to display-name-first.
+- Switched Momentum / Trend visible labels from ticker-first to display-name-first.
+- Preserved ticker/symbol in SVG title, aria label, internal metadata, and export filenames.
+- Added display-name support to sample constituents and Korean display names for selected Korean sample securities.
+- Preserved the `d3-hierarchy` Treemap engine.
+- Preserved `Treemap`, `Momentum / Trend`, and `같이 보기` view modes.
+- Preserved fullscreen and browser-only PNG export.
+- Preserved Home sticky ad behavior.
+- Preserved Chart AI chart-first UX and selected-security prefill.
+- Preserved Portfolio CRUD, Header auth stability, and `Today: 000`.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No reference-site scraping/fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or `psql` was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3F.3 owner manual smoke in Chrome.
+
 ## Phase 3F.2 - 2026-06-20
 
 ### Hierarchy Treemap Engine And Market View Modes
