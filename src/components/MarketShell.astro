@@ -1,4 +1,5 @@
 ---
+import { hierarchy, treemap, treemapSquarify, type HierarchyRectangularNode } from 'd3-hierarchy';
 import { marketPeriods, marketUniverses, type MarketConstituent, type MarketPeriodId, type MarketUniverseId } from '../data/marketTreemapSamples';
 
 type Rect = {
@@ -54,9 +55,12 @@ type DashboardView = {
   decliners: number;
 };
 
-type WeightedNode<T> = {
-  item: T;
-  area: number;
+type TreemapDatum = {
+  name: string;
+  value?: number;
+  sector?: string;
+  item?: MarketConstituent;
+  children?: TreemapDatum[];
 };
 
 const treemapWidth = 1120;
@@ -92,88 +96,12 @@ const colorForChange = (changePct: number) => {
 const returnForPeriod = (item: MarketConstituent, multiplier: number) =>
   clamp(item.baseChangePct * multiplier + item.trend * Math.max(0, multiplier - 1) * 0.16, -12, 12);
 
-const insetRect = (rect: Rect, inset: number) => ({
-  x: rect.x + inset,
-  y: rect.y + inset,
-  width: Math.max(0, rect.width - inset * 2),
-  height: Math.max(0, rect.height - inset * 2),
+const nodeRect = (node: HierarchyRectangularNode<TreemapDatum>): Rect => ({
+  x: node.x0,
+  y: node.y0,
+  width: Math.max(0, node.x1 - node.x0),
+  height: Math.max(0, node.y1 - node.y0),
 });
-
-const worstAspect = <T,>(row: WeightedNode<T>[], side: number) => {
-  if (!row.length || side <= 0) return Number.POSITIVE_INFINITY;
-  const sum = row.reduce((total, node) => total + node.area, 0);
-  const min = Math.min(...row.map((node) => node.area));
-  const max = Math.max(...row.map((node) => node.area));
-  if (sum <= 0 || min <= 0) return Number.POSITIVE_INFINITY;
-  const sideSquared = side * side;
-  return Math.max((sideSquared * max) / (sum * sum), (sum * sum) / (sideSquared * min));
-};
-
-const layoutRow = <T,>(row: WeightedNode<T>[], rect: Rect) => {
-  const rowArea = row.reduce((total, node) => total + node.area, 0);
-  const laidOut: Array<{ item: T; rect: Rect }> = [];
-  const remaining = { ...rect };
-
-  if (rect.width >= rect.height) {
-    const rowHeight = rowArea / rect.width;
-    let x = rect.x;
-    row.forEach((node, index) => {
-      const isLast = index === row.length - 1;
-      const width = isLast ? rect.x + rect.width - x : node.area / rowHeight;
-      laidOut.push({ item: node.item, rect: { x, y: rect.y, width, height: rowHeight } });
-      x += width;
-    });
-    remaining.y += rowHeight;
-    remaining.height = Math.max(0, remaining.height - rowHeight);
-  } else {
-    const rowWidth = rowArea / rect.height;
-    let y = rect.y;
-    row.forEach((node, index) => {
-      const isLast = index === row.length - 1;
-      const height = isLast ? rect.y + rect.height - y : node.area / rowWidth;
-      laidOut.push({ item: node.item, rect: { x: rect.x, y, width: rowWidth, height } });
-      y += height;
-    });
-    remaining.x += rowWidth;
-    remaining.width = Math.max(0, remaining.width - rowWidth);
-  }
-
-  return { laidOut, remaining };
-};
-
-const squarify = <T extends { value: number }>(items: T[], rect: Rect) => {
-  const total = items.reduce((sum, item) => sum + Math.max(1, item.value), 0);
-  const area = rect.width * rect.height;
-  const nodes = items
-    .map((item) => ({ item, area: (Math.max(1, item.value) / total) * area }))
-    .sort((a, b) => b.area - a.area);
-  const results: Array<{ item: T; rect: Rect }> = [];
-  let remaining = { ...rect };
-  let row: Array<WeightedNode<T>> = [];
-
-  while (nodes.length) {
-    const next = nodes[0];
-    const side = Math.min(remaining.width, remaining.height);
-    const currentWorst = row.length ? worstAspect(row, side) : Number.POSITIVE_INFINITY;
-    const candidateWorst = worstAspect([...row, next], side);
-
-    if (!row.length || candidateWorst <= currentWorst) {
-      row.push(nodes.shift() as WeightedNode<T>);
-    } else {
-      const layout = layoutRow(row, remaining);
-      results.push(...layout.laidOut);
-      remaining = layout.remaining;
-      row = [];
-    }
-  }
-
-  if (row.length) {
-    const layout = layoutRow(row, remaining);
-    results.push(...layout.laidOut);
-  }
-
-  return results;
-};
 
 const buildTreemap = (items: MarketConstituent[], multiplier: number): TreemapSector[] => {
   const sectorMap = new Map<string, MarketConstituent[]>();
@@ -191,25 +119,51 @@ const buildTreemap = (items: MarketConstituent[], multiplier: number): TreemapSe
     }))
     .sort((a, b) => b.value - a.value);
 
-  return squarify(sectors, { x: 0, y: 0, width: treemapWidth, height: treemapHeight }).map(({ item: sector, rect }, sectorIndex) => {
-    const sectorRect = insetRect(rect, 4);
-    const tileArea = insetRect(sectorRect, 5);
-    const tiles = squarify(sector.items, tileArea).map(({ item, rect: tileRect }, tileIndex) => ({
-      ...insetRect(tileRect, 2),
-      key: `${sector.label}-${item.symbol}-${tileIndex}`,
-      clipId: safeToken(`clip-${sector.label}-${item.symbol}-${tileIndex}`),
-      symbol: item.symbol,
-      name: item.name,
-      sector: item.sector,
-      value: item.value,
-      changePct: returnForPeriod(item, multiplier),
-    }));
+  const root = hierarchy<TreemapDatum>({
+    name: 'Market',
+    children: sectors.map((sector) => ({
+      name: sector.label,
+      sector: sector.label,
+      children: sector.items.map((item) => ({
+        name: item.symbol,
+        value: item.value,
+        sector: sector.label,
+        item,
+      })),
+    })),
+  })
+    .sum((datum) => datum.value ?? 0)
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
+  treemap<TreemapDatum>()
+    .tile(treemapSquarify.ratio(1.18))
+    .size([treemapWidth, treemapHeight])
+    .round(true)
+    .paddingOuter(4)
+    .paddingInner(3)
+    .paddingTop((node) => (node.depth === 1 ? 22 : 0))(root);
+
+  return (root.children ?? []).map((sectorNode, sectorIndex) => {
+    const sectorRect = nodeRect(sectorNode);
+    const tiles = sectorNode.leaves().map((leaf, tileIndex) => {
+      const item = leaf.data.item as MarketConstituent;
+      return {
+        ...nodeRect(leaf),
+        key: `${sectorNode.data.name}-${item.symbol}-${tileIndex}`,
+        clipId: safeToken(`clip-${sectorNode.data.name}-${item.symbol}-${tileIndex}`),
+        symbol: item.symbol,
+        name: item.name,
+        sector: item.sector,
+        value: item.value,
+        changePct: returnForPeriod(item, multiplier),
+      };
+    });
 
     return {
       ...sectorRect,
-      key: `${sector.label}-${sectorIndex}`,
-      label: sector.label,
-      value: sector.value,
+      key: `${sectorNode.data.name}-${sectorIndex}`,
+      label: sectorNode.data.name,
+      value: sectorNode.value ?? 0,
       tiles,
     };
   });
@@ -281,7 +235,7 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
   </div>
 </header>
 
-<section class="market-dashboard" data-market-dashboard data-active-universe={firstView.universeId} data-active-period={firstView.periodId}>
+<section class="market-dashboard" data-market-dashboard data-active-universe={firstView.universeId} data-active-period={firstView.periodId} data-active-view="treemap">
   <div class="market-control-panel" aria-label="시장 대시보드 선택">
     <div class="market-control-group">
       <span class="market-control-label">시장</span>
@@ -315,6 +269,20 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
         ))}
       </div>
     </div>
+    <div class="market-control-group">
+      <span class="market-control-label">보기</span>
+      <div class="market-tab-list compact" role="tablist" aria-label="보기 선택">
+        <button class="market-tab-button is-active" type="button" role="tab" aria-selected="true" data-market-view-tab="treemap">
+          Treemap
+        </button>
+        <button class="market-tab-button" type="button" role="tab" aria-selected="false" data-market-view-tab="momentum">
+          Momentum / Trend
+        </button>
+        <button class="market-tab-button" type="button" role="tab" aria-selected="false" data-market-view-tab="combined">
+          같이 보기
+        </button>
+      </div>
+    </div>
   </div>
 
   <div class="market-dashboard-stage">
@@ -339,7 +307,7 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
         </div>
 
         <div class="market-dashboard-grid">
-          <article class="market-chart-card market-treemap-card" id={view.treemapId} data-exportable-card>
+          <article class="market-chart-card market-treemap-card" id={view.treemapId} data-market-view-card="treemap" data-exportable-card>
             <div class="market-card-header">
               <div>
                 <h3>{view.universeLabel} Treemap</h3>
@@ -422,7 +390,7 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
             </div>
           </article>
 
-          <article class="market-chart-card market-scatter-card" id={view.scatterId} data-exportable-card>
+          <article class="market-chart-card market-scatter-card" id={view.scatterId} data-market-view-card="momentum" data-exportable-card>
             <div class="market-card-header">
               <div>
                 <h3>{view.universeLabel} Momentum / Trend</h3>
@@ -506,11 +474,13 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
 
     const universeTabs = Array.from(dashboard.querySelectorAll<HTMLButtonElement>('[data-market-universe-tab]'));
     const periodTabs = Array.from(dashboard.querySelectorAll<HTMLButtonElement>('[data-market-period-tab]'));
+    const viewTabs = Array.from(dashboard.querySelectorAll<HTMLButtonElement>('[data-market-view-tab]'));
     const panels = Array.from(dashboard.querySelectorAll<HTMLElement>('[data-market-panel]'));
 
-    const setActive = (universe: string, period: string) => {
+    const setActive = (universe: string, period: string, view: string) => {
       dashboard.dataset.activeUniverse = universe;
       dashboard.dataset.activePeriod = period;
+      dashboard.dataset.activeView = view;
 
       universeTabs.forEach((tab) => {
         const active = tab.dataset.marketUniverseTab === universe;
@@ -520,6 +490,12 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
 
       periodTabs.forEach((tab) => {
         const active = tab.dataset.marketPeriodTab === period;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      viewTabs.forEach((tab) => {
+        const active = tab.dataset.marketViewTab === view;
         tab.classList.toggle('is-active', active);
         tab.setAttribute('aria-selected', active ? 'true' : 'false');
       });
@@ -535,7 +511,8 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
       tab.addEventListener('click', () => {
         const universe = tab.dataset.marketUniverseTab;
         const period = dashboard.dataset.activePeriod;
-        if (universe && period) setActive(universe, period);
+        const view = dashboard.dataset.activeView || 'treemap';
+        if (universe && period) setActive(universe, period, view);
       });
     });
 
@@ -543,7 +520,17 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
       tab.addEventListener('click', () => {
         const universe = dashboard.dataset.activeUniverse;
         const period = tab.dataset.marketPeriodTab;
-        if (universe && period) setActive(universe, period);
+        const view = dashboard.dataset.activeView || 'treemap';
+        if (universe && period) setActive(universe, period, view);
+      });
+    });
+
+    viewTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const universe = dashboard.dataset.activeUniverse;
+        const period = dashboard.dataset.activePeriod;
+        const view = tab.dataset.marketViewTab;
+        if (universe && period && view) setActive(universe, period, view);
       });
     });
   };

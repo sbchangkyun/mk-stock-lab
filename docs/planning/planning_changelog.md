@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3F.2 - 2026-06-20
+
+### Hierarchy Treemap Engine And Market View Modes
+
+- Replaced the failed local squarify helper with a hierarchy-based squarified Treemap layout.
+- Added `d3-hierarchy` as a focused dependency.
+- Used `hierarchy`, `treemap`, and `treemapSquarify` only in `src/components/MarketShell.astro`.
+- Improved true nested rectangle composition through root -> sector -> constituent hierarchy.
+- Preserved value-based area mapping from provider-free sample values.
+- Preserved sector grouping with sector parent nodes and constituent leaf nodes.
+- Preserved market-style return color direction: positive red, negative blue, neutral gray.
+- Added Market view-mode selector:
+  - `Treemap`
+  - `Momentum / Trend`
+  - `같이 보기`
+- Made `Treemap` mode a full-width Treemap view.
+- Made `Momentum / Trend` mode a full-width scatter view.
+- Preserved combined view with both charts.
+- Preserved `/market` and `/heatmap`.
+- Preserved visible `Treemap` terminology.
+- Preserved fullscreen and browser-only PNG export.
+- Preserved Home sticky ad behavior.
+- Preserved Chart AI chart-first UX and selected-security prefill.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No reference-site scraping/fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or `psql` was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3F.2 owner manual smoke in Chrome.
+
 ## Phase 3F.1 - 2026-06-20
 
 ### Treemap Visual Quality And PC Width Polish
