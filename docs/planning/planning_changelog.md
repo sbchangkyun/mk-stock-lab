@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3H - 2026-06-21
+
+### Server-only Provider Adapter Scaffolding
+
+- Added server-only provider type contracts in `src/lib/server/providers/types.ts`.
+- Added provider error utilities in `src/lib/server/providers/providerErrors.ts`.
+- Added a server-only runtime guard in `src/lib/server/providers/serverOnly.ts`.
+- Added env name registry metadata in `src/lib/server/providers/providerEnv.ts`, names only.
+- Added KIS adapter shell in `src/lib/server/providers/kisClient.ts` with no external calls.
+- Added OpenDART adapter shell in `src/lib/server/providers/openDartClient.ts` with no external calls.
+- Added AI provider shell in `src/lib/server/providers/aiProviderClient.ts` with no external calls.
+- Added market data readiness shells for quotes, charts, and security master.
+- Added Portfolio valuation readiness shell in `src/lib/server/portfolioValuation.ts`.
+- Added Chart AI context builder shell in `src/lib/server/chartAi/contextBuilder.ts`.
+- Added `scripts/check_server_only_provider_boundaries.mjs`.
+- Added `npm run check:provider-boundaries`.
+- Documented that `src/lib/server/portfolioValuation.ts` is used because existing `src/lib/server/portfolio.ts` blocks the planned directory path.
+- Added Phase 3H owner review checklist.
+- Server-only provider adapter scaffolding only; no provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No DB migration was added.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Portfolio write endpoint was called by Codex.
+- No Supabase connection was attempted by Codex validation.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No visitor count was implemented.
+- No ad-event tracking was implemented.
+- No secrets were requested or recorded.
+- Recommended next action: owner review of Phase 3H, then approve Phase 3I only if KIS quote read integration should begin.
+
 ## Phase 3G - 2026-06-20
 
 ### Provider/Data Readiness Planning

@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "postbuild": "node scripts/repair-vercel-output.mjs",
+    "check:provider-boundaries": "node scripts/check_server_only_provider_boundaries.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
