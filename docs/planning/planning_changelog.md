@@ -1,5 +1,34 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3E.2 - 2026-06-20
+
+### Home Sidebar Rail And Market Scatter Export Stabilization
+
+- Converted the Home ad rail from viewport-fixed placement into an in-flow Home-only right sidebar.
+- Removed the obsolete fixed Home rail `top` and `right` positioning path.
+- Preserved the `1440px` Home rail display breakpoint, full `160x600` local sample banners, 5-second rotation, hover pause, and reduced-motion handling.
+- Preserved Home-only isolation; non-Home routes do not import or render `HomeRailAd`.
+- Renamed the bottom footer/ad wrapper away from the old fixed-area class while keeping it in natural document flow.
+- Reworked the Market expanded modal as a bounded grid with hidden overflow so scatter cards fit the modal viewport.
+- Made the expanded modal close `X` visually clearer with explicit stroke SVG rendering.
+- Hardened scatter SVG rendering with explicit white background, plot background, axes, point colors, and point label colors.
+- Kept browser-only `html-to-image` PNG export and excluded modal close controls from capture.
+- Preserved Heatmap export behavior.
+- Preserved `/market` and `/heatmap`.
+- Preserved Chart AI chart-first UX, selected-security prefill, and server-only usage guard boundary.
+- Preserved Header auth label stability and `Today: 000`.
+- Preserved Portfolio behavior by scope.
+- No Supabase connection was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, real AI analysis, real market-data fetch, Trading Economics fetch/scrape, real visitor count, ad-event tracking, analytics, FX conversion, valuation analytics, performance analytics, provider autocomplete, scraping, or external asset download was added.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3E.2 owner manual smoke in Chrome.
+
 ## Phase 3E.1 - 2026-06-20
 
 ### Home Rail, Footer, Market Fullscreen, And Export Polish

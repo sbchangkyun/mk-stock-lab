@@ -53,7 +53,7 @@ export const exportCardAsPng = async (card: HTMLElement, baseFilename: string) =
     },
     filter: (node) => {
       if (!(node instanceof HTMLElement)) return true;
-      return !node.closest('[data-card-actions], [data-export-card], [data-expand-card]');
+      return !node.closest('[data-card-actions], [data-export-card], [data-expand-card], [data-close-expanded-card]');
     },
   });
 
