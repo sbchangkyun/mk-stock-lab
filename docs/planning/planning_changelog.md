@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3L - 2026-06-21
+
+### Persistent Quote Cache Migration Review
+
+- Created `docs/planning/phase_3l_persistent_quote_cache_migration_review_v0.1.md`.
+- Reviewed the existing `market_quote_cache` migration shape against the Phase 3K persistent quote cache policy.
+- Inventoried the current migration files and confirmed `supabase/migrations/20260615_rebuild_schema_v0_1.sql` is the only migration file.
+- Documented current `market_quote_cache` columns: `id`, `symbol`, `market`, `quote_json`, `cached_at`, and `expires_at`.
+- Documented current constraints, indexes, RLS enablement, grants, and public read policy.
+- Assessed that the current schema can support a minimal persistent adapter by storing normalized `QuoteSnapshot` and lifecycle metadata in `quote_json`.
+- Documented limitations of relying only on `quote_json`, `cached_at`, and `expires_at`.
+- Classified required Phase 3M decisions, recommended production hardening changes, optional future improvements, and not-recommended storage patterns.
+- Documented data safety rules forbidding raw KIS payloads, headers, keys, tokens, authorization headers, account numbers, raw errors, stack traces, connection strings, DB passwords, user IDs, portfolio IDs, and position IDs.
+- Reviewed RLS, Data API grant, public read, and service-role write boundaries.
+- Added a non-executable SQL draft inside the planning document only.
+- Added future roadmap and approval gates for migration, Supabase writes, provider live calls, UI wiring, Vercel env mutation, and deployment.
+- Added a minimal Korean owner review checklist.
+- Review/planning only; no migration file was added.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Supabase connection or write occurred.
+- No app source files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No Vercel env value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secret values were requested or recorded.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3L changed documentation only.
+- Recommended next action: owner review, then approve Phase 3M only if disabled persistent cache adapter work should begin.
+
 ## Phase 3K - 2026-06-21
 
 ### Persistent Quote Cache Policy Planning
