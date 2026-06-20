@@ -729,3 +729,33 @@ Phase 3E.2 Home 광고/시장 산점도 재점검 결과:
 - 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
 - 비밀 정보 없는 메모:
 ```
+
+## Phase 3E.3 Home Sidebar Sticky Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E.3 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E.3 Home 광고 Sticky 보정 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 광고 배너가 본문 오른쪽 영역에 표시됨: 통과/실패/화면폭 부족
+- Home 광고 배너가 스크롤 중 일정 위치에서 따라옴: 통과/실패
+- Home 광고 배너가 header/nav/ticker 영역을 침범하지 않음: 통과/실패
+- Home 광고 배너가 footer/footer ad 영역을 침범하지 않음: 통과/실패
+- footer 근처에서 Home 광고 배너가 자연스럽게 멈추거나 본문과 함께 벗어남: 통과/실패
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- Home 광고 배너 hover 시 전환 일시정지: 통과/실패/미실행
+- 비 Home 페이지에서 Home 광고 배너 미노출: 통과/실패
+- Market 산점도 카드 확대 보기에서 차트가 검은 영역 없이 표시됨: 통과/실패
+- Market 산점도 PNG 저장 시 검은 사각형 없이 저장됨: 통과/실패/미실행
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```

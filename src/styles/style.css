@@ -287,6 +287,7 @@ body.dark-mode .primary-nav {
 }
 
 body.home-page .site-main {
+  --home-rail-sticky-top: 112px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
@@ -409,6 +410,8 @@ h2 {
 }
 
 .home-rail-viewport {
+  position: sticky;
+  top: var(--home-rail-sticky-top);
   width: 160px;
   height: 600px;
   aspect-ratio: 4 / 15;

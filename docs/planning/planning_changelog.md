@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3E.3 - 2026-06-20
+
+### Safe Sticky Home Sidebar Ad
+
+- Added sticky behavior to the in-flow Home right sidebar by applying `position: sticky` to the inner Home rail viewport.
+- Fixed Home ad scroll-follow behavior without returning to the unsafe viewport-fixed rail.
+- Preserved header/nav/ticker collision prevention with a Home-only `112px` sticky top offset.
+- Preserved footer/footer ad collision prevention by keeping the outer rail in normal Home grid flow.
+- Preserved Home-only ad behavior.
+- Preserved the `1440px` display breakpoint.
+- Preserved full `160x600` local sample banners.
+- Preserved 5-second rotation, hover pause, and reduced-motion handling.
+- Preserved non-Home ad absence.
+- Preserved Market scatter fullscreen/export fixes.
+- Preserved Chart AI chart-first UX and selected-security prefill.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No Trading Economics scraping or fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or `psql` was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3E.3 owner manual smoke in Chrome.
+
 ## Phase 3E.2 - 2026-06-20
 
 ### Home Sidebar Rail And Market Scatter Export Stabilization
