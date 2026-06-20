@@ -790,3 +790,44 @@ Phase 3E.4 Home 광고 Sticky Range 보정 점검 결과:
 - 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
 - 비밀 정보 없는 메모:
 ```
+## Phase 3F Market Treemap Dashboard Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F 시장 Treemap 대시보드 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 메뉴명이 `시장`으로 표시됨: 통과/실패
+- 기존 주요 메뉴에서 `Heatmap` 메뉴명이 보이지 않음: 통과/실패
+- `/market` 진입: 통과/실패
+- `/heatmap` 진입 시 새 시장 Treemap 대시보드가 표시됨: 통과/실패
+- KOSPI200 선택 버튼 표시: 통과/실패
+- KOSDAQ150 선택 버튼 표시: 통과/실패
+- S&P500 선택 버튼 표시: 통과/실패
+- NASDAQ100 선택 버튼 표시: 통과/실패
+- My Portfolio 선택 버튼 표시: 통과/실패
+- 기간 선택 `1일`, `1주`, `1개월`, `3개월`, `6개월`, `1년` 표시: 통과/실패
+- 선택한 시장과 기간에 맞는 큰 Treemap 카드 표시: 통과/실패
+- Treemap 타일이 섹터별로 묶여 보임: 통과/실패
+- Treemap 타일 크기가 비중에 따라 달라 보임: 통과/실패
+- Treemap 색상 범례 표시: 통과/실패
+- 선택한 시장과 기간에 맞는 Momentum / Trend 산점도 표시: 통과/실패
+- 산점도 축 라벨 `단기 모멘텀`, `장기 트렌드`가 플롯 영역을 침범하지 않음: 통과/실패
+- Treemap 카드 우측 상단 카메라 아이콘 표시: 통과/실패
+- 산점도 카드 우측 상단 카메라 아이콘 표시: 통과/실패
+- Treemap 카드 크게 보기 동작: 통과/실패
+- 산점도 카드 크게 보기 동작: 통과/실패
+- 카메라 아이콘 클릭 시 PNG 이미지가 로컬에 저장됨: 통과/실패/미실행
+- Home 오른쪽 광고 배너 sticky 동작 유지: 통과/실패/화면폭 부족
+- `/chart-ai`, `/portfolio`, `/lab`, `/market`, `/heatmap`에서 Home 광고 배너 미노출: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한국경제 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```

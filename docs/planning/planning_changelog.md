@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3F - 2026-06-20
+
+### Market Treemap Dashboard Redesign
+
+- Rebuilt the Market surface as a Treemap-first dashboard.
+- Preserved `/market` as the primary route and `/heatmap` as a backward-compatible alias.
+- Replaced visible Market/Home `Heatmap` product language with `Treemap` where safe.
+- Added universe controls for `KOSPI200`, `KOSDAQ150`, `S&P500`, `NASDAQ100`, and `My Portfolio`.
+- Added period controls for `1일`, `1주`, `1개월`, `3개월`, `6개월`, and `1년`.
+- Added deterministic provider-free sample market data in `src/data/marketTreemapSamples.ts`.
+- Added one selected-universe Treemap card and one selected-universe Momentum / Trend scatter card.
+- Implemented sector grouping, value-sized Treemap tiles, return-color mapping, and a visible color legend.
+- Fixed Market scatter axis label placement so Korean labels remain outside the plot area.
+- Preserved fullscreen/expanded card behavior and browser-only PNG export.
+- Treemap export filenames now use `treemap`.
+- Preserved Home sticky sidebar ad behavior.
+- Preserved Chart AI chart-first UX and selected-security prefill.
+- Preserved Portfolio behavior by scope.
+- Preserved Header auth label stability and `Today: 000`.
+- No Supabase connection for writes was attempted.
+- No SQL, Supabase CLI, `psql`, or DB command was run.
+- No production DB mutation was performed by Codex.
+- No Auth user was created.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No provider integration, Chart AI provider call, AI execution, real market-data fetch, Trading Economics/ETFshopping/Hankyung fetch or scrape, real visitor count, ad-event tracking, analytics, FX conversion, valuation analytics, performance analytics, provider autocomplete, logo/banner scraping, remote discovery, or external asset download was added.
+- No secrets were requested or recorded.
+- `npm run preview` remains unsupported by the installed Vercel adapter; local HTTP smoke used `npm run dev`.
+- Recommended next action: run the Phase 3F owner manual smoke in Chrome.
+
 ## Phase 3E.4 - 2026-06-20
 
 ### Home Sidebar Sticky Range Fix
