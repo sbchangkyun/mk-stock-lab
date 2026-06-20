@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3K - 2026-06-21
+
+### Persistent Quote Cache Policy Planning
+
+- Created `docs/planning/phase_3k_persistent_quote_cache_policy_plan_v0.1.md`.
+- Planned the future transition from Phase 3J in-memory quote cache to a Supabase-backed persistent quote cache.
+- Documented the current Phase 3J baseline: module-local `Map`, normalized `QuoteSnapshot` only, 15-second fresh TTL, 120-second stale TTL, stale fallback on provider failure, no DB persistence, and no UI wiring.
+- Documented persistent cache goals for reduced KIS calls, normalized public quote payloads, stale fallback, server-only writes, and approval-gated production activation.
+- Documented proposed `market_quote_cache` table usage using the existing planned table and optional future columns.
+- Documented data that may be persisted and data that must never be persisted, including raw KIS payloads, headers, keys, tokens, account numbers, raw errors, and stack traces.
+- Documented RLS, Data API grant, and service-role write boundaries.
+- Documented TTL, fresh, stale, expired, invalidation, cleanup, refresh deduplication, and provider quota protection policy.
+- Documented future API response metadata policy and security/privacy requirements.
+- Documented relationship to Market, Portfolio, Chart AI, Treemap, OpenDART, and future US stock support.
+- Added a future implementation roadmap with approval gates for migration review, Supabase write code, disposable validation, UI live-data wiring, production env, and deployment.
+- Added a minimal Korean owner review checklist.
+- Planning only; no DB migration was added.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Supabase connection was attempted.
+- No Supabase write or cache write was implemented.
+- No persistent cache implementation was added.
+- No UI live quote wiring was added.
+- No provider behavior changed.
+- No Vercel env value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secret values were requested or recorded.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3K changed documentation only.
+- Recommended next action: owner review, then approve Phase 3L only if persistent quote cache migration review should begin.
+
 ## Phase 3J - 2026-06-21
 
 ### Quote Cache Stale Fallback Policy
