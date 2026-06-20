@@ -1,3 +1,27 @@
+## Phase 3G Provider/Data Readiness Planning Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3G owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3G Provider/Data Readiness Planning 검토 결과:
+
+* Provider/Data 연동 전 설계 문서로 충분함: 통과/실패
+* KIS 역할과 범위가 명확함: 통과/실패
+* OpenDART 역할과 범위가 명확함: 통과/실패
+* Chart AI provider 역할과 제한사항이 명확함: 통과/실패
+* server-only provider boundary가 명확함: 통과/실패
+* browser에서 provider key를 절대 다루지 않는 구조가 명확함: 통과/실패
+* Market quote/chart/treemap API 후보가 명확함: 통과/실패
+* Portfolio valuation readiness가 명확함: 통과/실패
+* Chart AI context package 설계가 명확함: 통과/실패
+* cache/stale/fallback 정책이 명확함: 통과/실패
+* env var 이름만 있고 실제 값이 기록되지 않음: 통과/실패
+* error handling과 browser 노출 메시지가 안전함: 통과/실패
+* provider call, DB migration, SQL, Vercel env mutation, deployment가 실제로 수행되지 않음: 통과/실패
+* 다음 phase 승인 게이트가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3F.4 Portfolio Page Aggregate And Market Fit Manual Smoke Delta
 
 Use this Korean-first format when reporting Phase 3F.4 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

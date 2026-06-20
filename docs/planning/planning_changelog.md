@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3G - 2026-06-20
+
+### Provider/Data Readiness Planning
+
+- Created `docs/planning/phase_3g_provider_data_readiness_plan_v0.1.md`.
+- Documented current Home, Market, Chart AI, Lab, and Portfolio architecture status.
+- Documented provider roles for KIS, OpenDART, OpenAI/Gemini, Supabase, and optional future providers.
+- Defined server-only provider boundary principles and forbidden browser import rules.
+- Planned conceptual future API routes for market quote, chart, treemap, Portfolio valuation, and Chart AI analysis.
+- Defined conceptual data contracts for security identity, security master, quote snapshots, candles, chart series, Treemap constituents, Momentum / Trend points, Portfolio valuation, Chart AI context packages, provider cache records, provider errors, and fallback states.
+- Aligned cache policy with existing planned tables: `market_symbols`, `market_quote_cache`, `market_chart_cache`, `chart_ai_cache`, and `heatmap_cache`.
+- Documented Portfolio valuation readiness, aggregate `전체 보기` valuation behavior, and placeholder rules.
+- Documented Market dashboard readiness for KOSPI200, KOSDAQ150, S&P500, NASDAQ100, and My Portfolio.
+- Documented Chart AI readiness, context-builder design, usage guard preservation, and output restrictions.
+- Documented environment variable names only, without values.
+- Documented sanitized error taxonomy, Korean UI error copy guidance, and logging restrictions.
+- Added an approval-gated roadmap from Phase 3H through Phase 3O.
+- Added a Phase 3G owner review checklist to the manual smoke checklist document.
+- Provider/data readiness planning only; no provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No DB migration was added.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Portfolio write endpoint was called by Codex.
+- No Supabase connection was attempted by Codex validation.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No visitor count was implemented.
+- No ad-event tracking was implemented.
+- No secrets were requested or recorded.
+- Recommended next action: owner review of the Phase 3G plan, then approve Phase 3H only if server-only scaffolding should begin.
+
 ## Phase 3F.4 - 2026-06-20
 
 ### Portfolio Page Aggregate And Market Viewport Fit
