@@ -1,3 +1,19 @@
+## Phase 3J Quote Cache Stale Fallback Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3J owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3J Quote Cache/Stale/Fallback 검토 결과:
+
+* Codex 자동 검증 결과가 통과함: 통과/실패
+* quote cache가 server-only in-memory 범위로 제한됨: 통과/실패
+* raw KIS payload/token/key가 cache 또는 응답에 저장/노출되지 않음: 통과/실패
+* provider 실패 시 stale-but-usable fallback 정책이 문서와 구현에 반영됨: 통과/실패
+* DB migration/Supabase cache write/UI live quote 연결이 아직 구현되지 않음: 통과/실패
+* 실제 KIS live smoke 재확인: 통과/실패/미실행
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3I KIS Quote Read Owner Review Delta
 
 Use this Korean-first format when reporting Phase 3I owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

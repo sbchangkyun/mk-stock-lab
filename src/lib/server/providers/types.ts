@@ -27,8 +27,20 @@ export type ProviderErrorEnvelope = {
 };
 
 export type ProviderResult<T> =
-  | { ok: true; data: T; staleState?: FallbackState }
+  | { ok: true; data: T; staleState?: FallbackState; fallback?: QuoteFallbackMetadata }
   | ProviderErrorEnvelope;
+
+export type QuoteFallbackMetadata = {
+  state: Extract<FallbackState, 'fresh' | 'stale-but-usable' | 'unavailable'>;
+  reason: 'provider-fresh' | 'cache-fresh' | 'cache-stale-provider-failed';
+  cache?: {
+    hit: boolean;
+    state: Extract<FallbackState, 'fresh' | 'stale-but-usable'>;
+    cachedAt: string;
+    freshUntil: string;
+    staleUntil: string;
+  };
+};
 
 export type ProviderConfigReadiness = {
   provider: ProviderName;

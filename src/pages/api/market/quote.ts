@@ -67,8 +67,9 @@ export const GET: APIRoute = async ({ url }) => {
   return jsonResponse({
     ok: true,
     data: result.data,
-    fallback: {
+    fallback: result.fallback ?? {
       state: result.staleState ?? result.data.staleState,
+      reason: 'provider-fresh',
     },
   });
 };

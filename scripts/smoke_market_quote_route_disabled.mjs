@@ -10,6 +10,7 @@ const outDir = path.join(tmpDir, 'out');
 const files = [
   'src/pages/api/market/quote.ts',
   'src/lib/server/marketData/quotes.ts',
+  'src/lib/server/marketData/quoteCache.ts',
   'src/lib/server/providers/kisClient.ts',
   'src/lib/server/providers/providerErrors.ts',
   'src/lib/server/providers/serverOnly.ts',
@@ -37,19 +38,35 @@ try {
 
   process.env.KIS_ENABLE_LIVE_QUOTES = 'false';
   const routeModule = await import(pathToFileURL(path.join(outDir, 'src/pages/api/market/quote.js')).href);
-  const unsafePattern = /KIS_APP_SECRET|KIS_APP_KEY|KIS_BASE_URL|access_token|appsecret|authorization|Bearer|stack|raw/;
-  const paths = [
-    '/api/market/quote?market=KR&symbol=005930',
-    '/api/market/quote?market=KR&symbol=ABC',
-    '/api/market/quote?market=US&symbol=AAPL',
+  const unsafePattern = /KIS_APP_SECRET|KIS_APP_KEY|KIS_BASE_URL|access_token|appsecret|appkey|authorization|Bearer|stack|raw/;
+  const cases = [
+    {
+      path: '/api/market/quote?market=KR&symbol=005930',
+      status: 503,
+      code: 'CONFIG_MISSING',
+    },
+    {
+      path: '/api/market/quote?market=KR&symbol=ABC',
+      status: 400,
+      code: 'VALIDATION_FAILED',
+    },
+    {
+      path: '/api/market/quote?market=US&symbol=AAPL',
+      status: 404,
+      code: 'SYMBOL_UNSUPPORTED',
+    },
   ];
 
-  for (const routePath of paths) {
-    const response = await routeModule.GET({ url: new URL(`http://127.0.0.1${routePath}`) });
+  for (const smokeCase of cases) {
+    const response = await routeModule.GET({ url: new URL(`http://127.0.0.1${smokeCase.path}`) });
     const bodyText = await response.text();
     const body = JSON.parse(bodyText);
+    const unsafeMarker = unsafePattern.test(bodyText);
+    if (response.status !== smokeCase.status || body.code !== smokeCase.code || body.ok !== false || unsafeMarker) {
+      throw new Error(`Route smoke failed for ${smokeCase.path}`);
+    }
     console.log(
-      `${routePath} status=${response.status} ok=${body.ok} code=${body.code} provider=${body.provider ?? ''} hasData=${Boolean(body.data)} unsafeMarker=${unsafePattern.test(bodyText)}`,
+      `${smokeCase.path} status=${response.status} ok=${body.ok} code=${body.code} provider=${body.provider ?? ''} hasData=${Boolean(body.data)} unsafeMarker=${unsafeMarker}`,
     );
   }
 } finally {

@@ -1,5 +1,43 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3J - 2026-06-21
+
+### Quote Cache Stale Fallback Policy
+
+- Added server-only in-memory quote cache for the local/dev KIS quote route.
+- Cached normalized `QuoteSnapshot` objects only.
+- Added cache key normalization such as `quote:KR:005930`.
+- Added local/dev TTL policy: 15-second fresh window and 120-second stale window.
+- Added fresh cache hit behavior with browser-safe fallback metadata.
+- Added stale-but-usable fallback behavior when provider refresh fails inside the stale window.
+- Added expired cache behavior that removes expired entries and returns sanitized provider errors when no usable cache exists.
+- Preserved existing local/dev provider feature gate and production-disabled provider execution.
+- Preserved `GET /api/market/quote` response shape with `{ ok, data, fallback }`.
+- Added `src/lib/server/marketData/quoteCache.ts`.
+- Added `scripts/smoke_quote_cache_policy.mjs`.
+- Updated disabled route smoke coverage for the new cache module.
+- Added Phase 3J result documentation and a minimal Korean owner review checklist.
+- No raw KIS payload was cached.
+- No token, key, app secret, authorization header, account number, raw headers, or raw errors were cached in quote cache.
+- No Supabase cache write was implemented.
+- No DB migration was added.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No UI live quote wiring was added.
+- No Vercel env value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No order, account, trading, balance, holdings, or WebSocket API was implemented.
+- No OpenDART, OpenAI, Gemini, real AI analysis, visitor count, ad-event tracking, scraping, remote discovery, external asset download, FX conversion, valuation analytics, performance analytics, or provider autocomplete was implemented.
+- No secret values were requested or recorded.
+- Ignored `.env*` contents were not read.
+- `node scripts/smoke_quote_cache_policy.mjs`: passed.
+- `node scripts/smoke_market_quote_route_disabled.mjs`: passed.
+- `npm run check:provider-boundaries`: passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed.
+- Recommended next action: optional owner live cache smoke, then approve the next provider/cache/UI phase only after reviewing scope.
+
 ## Phase 3I - 2026-06-21
 
 ### KIS Domestic Quote Read Route
