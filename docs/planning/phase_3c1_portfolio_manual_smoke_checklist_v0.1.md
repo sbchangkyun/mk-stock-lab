@@ -663,3 +663,39 @@ Phase 3E 시장/Chart AI/Home 광고 UX 점검 결과:
 - 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
 - 비밀 정보 없는 메모:
 ```
+
+## Phase 3E.1 Home Rail, Footer, Market Expand, And Export Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E.1 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E.1 Home 광고/시장 카드 보정 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 일반 접속에서 오른쪽 광고 배너가 하단 잘림 없이 표시됨: 통과/실패/화면폭 부족
+- 하단 footer 또는 footer ad가 스크롤을 따라다니지 않음: 통과/실패
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- `/chart-ai`, `/portfolio`, `/lab`, `/market`, `/heatmap`에서 Home 광고 배너 미노출: 통과/실패
+- 시장 페이지 진입: 통과/실패
+- Heatmap 카드 확대 아이콘 표시: 통과/실패
+- 산점도 카드 확대 아이콘 표시: 통과/실패
+- Heatmap 카드 확대 보기 열림: 통과/실패
+- 산점도 카드 확대 보기 열림: 통과/실패
+- 확대 보기 닫기 버튼 동작: 통과/실패
+- ESC로 확대 보기 닫힘: 통과/실패/미실행
+- 카메라 아이콘 클릭 시 PNG 이미지가 로컬에 저장됨: 통과/실패
+- 저장된 PNG에 카드 제목과 차트 본문이 포함됨: 통과/실패/미실행
+- 저장된 PNG에 카메라/확대 아이콘이 불필요하게 포함되지 않음: 통과/실패/미실행
+- `/chart-ai` 질문 입력 칸 제거 유지: 통과/실패
+- `/chart-ai` 차트 불러오기 버튼 유지: 통과/실패
+- `/chart-ai` 일봉/주봉/월봉 선택이 차트 영역에 유지: 통과/실패
+- `/chart-ai?symbol=005930&name=삼성전자&market=KR` 선택 종목 프리필 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics 실제 호출 없음: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```

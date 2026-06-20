@@ -1,5 +1,44 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3E.1 - 2026-06-20
+
+### Home Rail, Footer, Market Fullscreen, And Export Polish
+
+- Removed fixed viewport-following behavior from the bottom footer/ad area.
+- Removed body bottom padding that compensated for the fixed bottom area.
+- Kept the footer/ad block at the natural document bottom.
+- Fixed Home rail clipping by moving the rail top offset higher and using a viewport-aware `min(600px, calc(100vh - 156px))` rail height.
+- Preserved Home-only rail behavior and the `1440px` display breakpoint.
+- Preserved existing local Home sample banners, 5-second rotation, hover pause, and reduced-motion handling.
+- Added Market card expand/fullscreen controls for heatmap and scatter cards.
+- Added modal close behavior through close button, backdrop click, and ESC.
+- Hardened PNG export by replacing the fragile custom SVG `foreignObject` canvas path with browser-only `html-to-image`.
+- Added `html-to-image` to `package.json` and `package-lock.json`.
+- Kept export local-only; no upload, DB storage, analytics, or ad-event tracking was added.
+- Preserved `/market` and `/heatmap`.
+- Preserved Chart AI chart-first UX and the Phase 3D server-only usage guard skeleton.
+
+### Safety And Validation
+
+- Ran normal `npm run build`; build passed.
+- Confirmed `.vercel/output/config.json`, `_render.func`, and static output exist.
+- Confirmed local unauthenticated HTTP smoke for active routes and removed legacy routes.
+- Confirmed unauthenticated POST to `/api/chart-ai/analyze` returned sanitized 401.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No Trading Economics scraping or fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or `psql` was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No real visitor-count API/DB, local counter, migration, or analytics was added.
+- No ad-event route or tracking logic was added.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3E.1 owner manual smoke in Chrome.
+
 ## Phase 3E - 2026-06-20
 
 ### Market, Chart AI UX, And Home Ad Shell
