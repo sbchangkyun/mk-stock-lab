@@ -622,3 +622,44 @@ Phase 3D Chart AI 사용량 가드 Skeleton 점검 결과:
 - Home `/?railPreview=1` fallback preview 유지: 통과/실패/미실행
 - 비밀 정보 없는 메모:
 ```
+
+## Phase 3E Market, Chart AI, And Home Ad Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E 시장/Chart AI/Home 광고 UX 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 일반 접속에서 오른쪽 광고 배너 표시: 통과/실패/화면폭 부족
+- Home에서 `HOME RAIL PREVIEW` 패널이 더 이상 보이지 않음: 통과/실패
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- `/chart-ai`, `/portfolio`, `/lab`, `/market` 또는 `/heatmap`에서 Home 광고 배너 미노출: 통과/실패
+- 메뉴명이 `시장`으로 표시됨: 통과/실패
+- 기존 Heatmap 메뉴명이 주요 메뉴에서 제거됨: 통과/실패
+- 시장 페이지 진입: 통과/실패
+- KOSPI200 섹션 표시: 통과/실패
+- KOSDAQ150 섹션 표시: 통과/실패
+- S&P500 섹션 표시: 통과/실패
+- NASDAQ100 섹션 표시: 통과/실패
+- My Portfolio holdings 섹션 표시: 통과/실패
+- 각 섹션의 Heatmap 카드 표시: 통과/실패
+- 각 섹션의 단기 모멘텀 × 장기 트렌드 산점도 카드 표시: 통과/실패
+- Heatmap 카드 오른쪽 상단 카메라 아이콘 표시: 통과/실패
+- 산점도 카드 오른쪽 상단 카메라 아이콘 표시: 통과/실패
+- 카메라 아이콘 클릭 시 PNG 이미지가 로컬에 저장됨: 통과/실패
+- `/chart-ai` 질문 입력 칸 제거: 통과/실패
+- `/chart-ai` 종목명/티커 입력 옆 `차트 불러오기` 버튼 표시: 통과/실패
+- `/chart-ai` 일봉/주봉/월봉 선택이 차트 영역에 표시: 통과/실패
+- `/chart-ai?symbol=005930&name=삼성전자&market=KR` 선택 종목 프리필 유지: 통과/실패
+- `AI 분석 실행`이 차트 준비 이후 후속 액션으로 보임: 통과/실패
+- 실제 AI 분석이 아니라 준비 상태 안내만 표시: 통과/실패/미실행
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics 실제 호출 없음: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```

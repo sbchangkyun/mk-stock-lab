@@ -1,27 +1,19 @@
 ---
 import homeAdBanners from '../data/homeAdBanners.json';
 
-const { preview = false } = Astro.props;
-
 const activeBanners = homeAdBanners
   .filter((banner) => banner.isActive)
   .sort((a, b) => a.displayOrder - b.displayOrder);
 
 const hasMultipleBanners = activeBanners.length > 1;
-
-const previewStyle = preview
-  ? 'display:block;visibility:visible;opacity:1;pointer-events:auto;position:fixed;top:168px;right:16px;width:160px;z-index:1700;'
-  : undefined;
 ---
 
 {
   activeBanners.length > 0 && (
     <aside
-      class:list={['home-rail-ad', { 'is-carousel': hasMultipleBanners, 'rail-preview': preview }]}
+      class:list={['home-rail-ad', { 'is-carousel': hasMultipleBanners }]}
       data-home-rail-ad
-      data-home-rail-preview={preview ? 'true' : undefined}
       data-count={activeBanners.length}
-      style={previewStyle}
       aria-label="Home sample banner rail"
     >
       <div class="home-rail-viewport">
@@ -41,14 +33,8 @@ const previewStyle = preview
   activeBanners.length > 0 && (
     <script>
       const setupHomeRailAd = () => {
-        const previewEnabled = new URLSearchParams(window.location.search).get('railPreview') === '1';
         const rails = document.querySelectorAll<HTMLElement>('[data-home-rail-ad]');
         rails.forEach((rail) => {
-          if (previewEnabled) {
-            rail.classList.add('rail-preview');
-            rail.dataset.homeRailPreview = 'true';
-          }
-
           const track = rail.querySelector<HTMLElement>('.home-rail-track');
           const cards = rail.querySelectorAll<HTMLElement>('.home-rail-card');
           if (!rail.classList.contains('is-carousel') || !track || cards.length < 2 || rail.dataset.ready === 'true') return;

@@ -1,23 +1,28 @@
 ---
 const { currentPath = '/' } = Astro.props;
 const navItems = [
-  { label: '홈', href: '/' },
+  { label: 'Home', href: '/' },
   { label: 'Chart AI', href: '/chart-ai' },
-  { label: '히트맵', href: '/heatmap' },
+  { label: '시장', href: '/market', aliases: ['/heatmap'] },
   { label: 'Lab', href: '/lab' },
   { label: '포트폴리오', href: '/portfolio' },
 ];
 
-const isActive = (href: string) => {
+const isActive = (item: (typeof navItems)[number]) => {
+  const { href } = item;
   if (href === '/') return currentPath === '/';
-  return currentPath === href || currentPath.startsWith(`${href}/`);
+  return (
+    currentPath === href ||
+    currentPath.startsWith(`${href}/`) ||
+    Boolean(item.aliases?.some((alias) => currentPath === alias || currentPath.startsWith(`${alias}/`)))
+  );
 };
 ---
 
 <nav class="primary-nav" aria-label="주요 메뉴">
   <div class="nav-inner">
     {navItems.map((item) => (
-      <a class:list={['nav-link', { active: isActive(item.href) }]} href={item.href}>
+      <a class:list={['nav-link', { active: isActive(item) }]} href={item.href}>
         {item.label}
       </a>
     ))}

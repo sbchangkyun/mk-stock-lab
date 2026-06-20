@@ -108,18 +108,18 @@ export const POST: APIRoute = async ({ request }) => {
     market: input.market,
     timeframe: input.timeframe,
     usage,
-    summary: `${input.name || input.symbol} 분석 요청이 서버 사용량 가드까지 통과했습니다.`,
+    summary: `${input.name || input.symbol} ${input.timeframe} 차트 분석 준비 요청이 서버 사용량 가드를 통과했습니다.`,
     sections: [
       {
         title: '현재 단계',
-        body: '실제 시세, 차트 데이터, AI 모델 호출은 아직 연결되지 않았습니다.',
+        body: '실제 시세, 캔들차트 데이터, AI 모델 호출은 아직 연결되지 않았습니다.',
       },
       {
         title: '다음 단계',
-        body: '향후 서버 전용 provider 경계에서 시장 데이터와 AI 분석을 연결합니다.',
+        body: '향후 서버 전용 provider 경계에서 차트 데이터와 AI 분석을 연결합니다.',
       },
     ],
-    disclaimer: '이 화면은 투자 조언이 아니며, 현재는 서버 실행 경계 검증용 결과만 제공합니다.',
+    disclaimer: '이 화면은 투자 조언이 아니며, 현재는 서버 실행 경계 검증용 차트 분석 준비 결과만 제공합니다.',
   });
 };
 

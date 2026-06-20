@@ -6,6 +6,7 @@ const selectedName = (Astro.url.searchParams.get('name') || '').slice(0, 160);
 const selectedMarketRaw = (Astro.url.searchParams.get('market') || '').slice(0, 12).toUpperCase();
 const selectedMarket = selectedMarketRaw === 'US' ? 'US' : 'KR';
 const selectedLabel = selectedName || selectedSymbol;
+const chartReady = Boolean(selectedSymbol);
 ---
 
 <Layout title="Chart AI | MK Stock Lab" activePath="/chart-ai">
@@ -13,12 +14,12 @@ const selectedLabel = selectedName || selectedSymbol;
     <div>
       <p class="eyebrow">Chart AI</p>
       <h1>차트 AI 분석</h1>
-      <p class="lead">선택한 종목을 기준으로 서버 사용량 가드와 실행 경계를 먼저 확인합니다. 실제 시세, 차트 데이터, AI 모델 호출은 다음 단계에서 연결합니다.</p>
+      <p class="lead">종목 차트를 먼저 불러온 뒤 서버 사용량 가드를 통과하면 AI 분석 준비 상태를 확인합니다. 실제 시세, 차트 데이터, AI 모델 호출은 다음 단계에서 연결합니다.</p>
     </div>
   </header>
 
   <section class="workspace-grid">
-    <div class="chart-placeholder">
+    <div class="chart-placeholder chart-workspace" data-chart-workspace data-chart-ready={chartReady ? 'true' : 'false'}>
       <div
         class="chart-prefill-panel"
         data-chart-prefill
@@ -26,67 +27,61 @@ const selectedLabel = selectedName || selectedSymbol;
         data-name={selectedName}
         data-market={selectedMarket}
       >
-        <p class="eyebrow">선택 종목</p>
-        {selectedLabel ? (
-          <div class="selected-security">
-            <strong>{selectedLabel}</strong>
-            <span>{selectedSymbol || '티커 대기'} · {selectedMarket}</span>
-          </div>
-        ) : (
-          <div class="selected-security muted">
-            <strong>종목을 검색하세요</strong>
-            <span>포트폴리오 보유 종목에서 Chart AI를 열면 선택 정보가 채워집니다.</span>
-          </div>
-        )}
-        <label class="chart-search-shell">
-          <span>검색어</span>
-          <input
-            id="chartAiName"
-            type="search"
-            value={selectedLabel}
-            placeholder="종목명 또는 티커"
-            aria-label="Chart AI 종목 검색어"
-          />
-        </label>
+        <p class="eyebrow">종목 검색</p>
+        <div class="chart-load-row">
+          <label class="chart-search-shell">
+            <span>종목명 또는 티커</span>
+            <input
+              id="chartAiSecurityInput"
+              type="search"
+              value={selectedLabel}
+              placeholder="종목명 또는 티커"
+              aria-label="Chart AI 종목명 또는 티커"
+            />
+          </label>
+          <button class="button-link secondary chart-load-button" id="chartAiLoadButton" type="button">
+            차트 불러오기
+          </button>
+        </div>
+
+        <div class="chart-interval-control" role="group" aria-label="차트 기간">
+          <button class="active" type="button" data-chart-interval="1D">일봉</button>
+          <button type="button" data-chart-interval="1W">주봉</button>
+          <button type="button" data-chart-interval="1M">월봉</button>
+        </div>
       </div>
 
-      <p class="eyebrow">차트 영역</p>
-      <h2>캔들차트 준비 영역</h2>
-      <p>실제 시세 데이터와 경량 차트 라이브러리는 다음 구현 단계에서 연결합니다.</p>
+      <div class="chart-canvas-shell">
+        <p class="eyebrow">차트 영역</p>
+        <h2 id="chartAiChartTitle">{chartReady ? `${selectedLabel} · 일봉 차트 준비` : '캔들차트 준비 영역'}</h2>
+        <p id="chartAiChartCopy">
+          {chartReady
+            ? '선택 종목의 차트 플레이스홀더가 준비되었습니다. 실제 시세 데이터와 일봉/주봉/월봉 차트는 다음 단계에서 연결합니다.'
+            : '실제 시세 데이터와 일봉/주봉/월봉 차트는 다음 구현 단계에서 연결합니다. 티커를 입력한 뒤 차트 불러오기를 눌러 주세요.'}
+        </p>
+        <div class="chart-skeleton" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
     </div>
 
     <aside class="panel chart-ai-run-panel">
       <p class="eyebrow">분석 패널</p>
-      <h2>로그인 후 사용량 가드 확인</h2>
+      <h2>차트 준비 후 AI 분석 실행</h2>
       <p>이 단계는 서버가 로그인 세션을 검증하고 일일 사용 한도를 확인하는 실행 골격입니다. OpenAI, Gemini, KIS, OpenDART 호출은 아직 실행하지 않습니다.</p>
 
-      <label class="chart-search-shell">
-        <span>기간</span>
-        <select id="chartAiTimeframe" aria-label="Chart AI 분석 기간">
-          <option value="1D">일봉</option>
-          <option value="1W">주봉</option>
-          <option value="1M">월봉</option>
-        </select>
-      </label>
+      <div class="selected-security" id="chartAiSelectedSummary">
+        <strong>{chartReady ? selectedLabel : '차트 준비 전'}</strong>
+        <span>{chartReady ? `${selectedSymbol} · ${selectedMarket}` : '차트를 먼저 불러오면 AI 분석 실행이 활성화됩니다.'}</span>
+      </div>
 
-      <label class="chart-search-shell">
-        <span>질문</span>
-        <textarea
-          id="chartAiQuestion"
-          rows="4"
-          maxlength="500"
-          placeholder="궁금한 점을 짧게 입력하세요"
-          aria-label="Chart AI 질문"
-        ></textarea>
-      </label>
-
-      <button class="button-link chart-ai-run-button" id="chartAiRunButton" type="button">
+      <button class="button-link chart-ai-run-button" id="chartAiRunButton" type="button" disabled={!chartReady}>
         AI 분석 실행
       </button>
 
       <div class="chart-ai-result" id="chartAiResult" data-state="idle" role="status" aria-live="polite">
         <strong>대기 중</strong>
-        <p>종목을 선택하고 로그인한 뒤 사용량 가드를 확인할 수 있습니다.</p>
+        <p>차트를 준비한 뒤 로그인 상태에서 사용량 가드를 확인할 수 있습니다.</p>
       </div>
 
       <ul class="status-list">
@@ -102,31 +97,96 @@ const selectedLabel = selectedName || selectedSymbol;
 
     const setupChartAiPanel = () => {
       const prefill = document.querySelector<HTMLElement>('[data-chart-prefill]');
+      const workspace = document.querySelector<HTMLElement>('[data-chart-workspace]');
+      const loadButton = document.getElementById('chartAiLoadButton') as HTMLButtonElement | null;
       const runButton = document.getElementById('chartAiRunButton') as HTMLButtonElement | null;
       const result = document.getElementById('chartAiResult');
-      const nameInput = document.getElementById('chartAiName') as HTMLInputElement | null;
-      const timeframeInput = document.getElementById('chartAiTimeframe') as HTMLSelectElement | null;
-      const questionInput = document.getElementById('chartAiQuestion') as HTMLTextAreaElement | null;
-      if (!prefill || !runButton || !result || runButton.dataset.ready === 'true') return;
+      const input = document.getElementById('chartAiSecurityInput') as HTMLInputElement | null;
+      const title = document.getElementById('chartAiChartTitle');
+      const copy = document.getElementById('chartAiChartCopy');
+      const selectedSummary = document.getElementById('chartAiSelectedSummary');
+      const intervalButtons = document.querySelectorAll<HTMLButtonElement>('[data-chart-interval]');
+      if (!prefill || !workspace || !loadButton || !runButton || !result || !input || !title || !copy || !selectedSummary) return;
+      if (runButton.dataset.ready === 'true') return;
       runButton.dataset.ready = 'true';
 
-      const setResult = (state: string, title: string, message: string) => {
-        result.dataset.state = state;
+      const intervalLabel: Record<string, string> = {
+        '1D': '일봉',
+        '1W': '주봉',
+        '1M': '월봉',
+      };
+
+      const symbolPattern = /^[A-Za-z0-9._-]{1,32}$/;
+      const state = {
+        symbol: prefill.dataset.symbol || '',
+        name: prefill.dataset.name || '',
+        market: prefill.dataset.market === 'US' ? 'US' : 'KR',
+        timeframe: '1D',
+        ready: Boolean(prefill.dataset.symbol),
+      };
+
+      const setResult = (nextState: string, nextTitle: string, message: string) => {
+        result.dataset.state = nextState;
         result.replaceChildren();
         const titleElement = document.createElement('strong');
-        titleElement.textContent = title;
+        titleElement.textContent = nextTitle;
         const messageElement = document.createElement('p');
         messageElement.textContent = message;
         result.append(titleElement, messageElement);
       };
 
-      runButton.addEventListener('click', async () => {
-        const symbol = prefill.dataset.symbol || '';
-        const market = prefill.dataset.market === 'US' ? 'US' : 'KR';
-        const name = nameInput?.value.trim() || prefill.dataset.name || '';
+      const renderChartState = () => {
+        workspace.dataset.chartReady = state.ready ? 'true' : 'false';
+        runButton.disabled = !state.ready;
+        const label = state.name || state.symbol;
 
-        if (!symbol) {
-          setResult('error', '종목 선택 필요', '포트폴리오에서 종목을 선택하거나 티커가 포함된 링크로 다시 열어 주세요.');
+        title.textContent = state.ready ? `${label} · ${intervalLabel[state.timeframe]} 차트 준비` : '캔들차트 준비 영역';
+        copy.textContent = state.ready
+          ? '선택 종목의 차트 플레이스홀더가 준비되었습니다. 실제 시세 데이터와 일봉/주봉/월봉 차트는 다음 단계에서 연결합니다.'
+          : '실제 시세 데이터와 일봉/주봉/월봉 차트는 다음 구현 단계에서 연결합니다. 티커를 입력한 뒤 차트 불러오기를 눌러 주세요.';
+
+        selectedSummary.replaceChildren();
+        const summaryTitle = document.createElement('strong');
+        summaryTitle.textContent = state.ready ? label : '차트 준비 전';
+        const summaryMeta = document.createElement('span');
+        summaryMeta.textContent = state.ready ? `${state.symbol} · ${state.market}` : '차트를 먼저 불러오면 AI 분석 실행이 활성화됩니다.';
+        selectedSummary.append(summaryTitle, summaryMeta);
+      };
+
+      loadButton.addEventListener('click', () => {
+        const value = input.value.trim();
+        if (!value) {
+          setResult('error', '종목 선택 필요', '종목명 또는 티커를 입력해 주세요.');
+          return;
+        }
+
+        const initialLabel = prefill.dataset.name || prefill.dataset.symbol || '';
+        const initialSymbol = prefill.dataset.symbol || '';
+        const nextSymbol = initialSymbol && value === initialLabel ? initialSymbol : value.toUpperCase();
+        if (!symbolPattern.test(nextSymbol)) {
+          setResult('error', '티커 입력 필요', '현재 단계에서는 영문 또는 숫자 티커로 차트 준비 상태를 만들 수 있습니다.');
+          return;
+        }
+
+        state.symbol = nextSymbol;
+        state.name = initialSymbol && value === initialLabel ? prefill.dataset.name || '' : '';
+        state.ready = true;
+        setResult('idle', '차트 준비 완료', 'AI 분석 실행을 누르면 서버 사용량 가드를 확인합니다.');
+        renderChartState();
+      });
+
+      intervalButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const timeframe = button.dataset.chartInterval || '1D';
+          state.timeframe = timeframe === '1W' || timeframe === '1M' ? timeframe : '1D';
+          intervalButtons.forEach((item) => item.classList.toggle('active', item === button));
+          renderChartState();
+        });
+      });
+
+      runButton.addEventListener('click', async () => {
+        if (!state.ready || !state.symbol) {
+          setResult('error', '차트 준비 필요', '차트를 먼저 불러와 주세요.');
           return;
         }
 
@@ -135,28 +195,29 @@ const selectedLabel = selectedName || selectedSymbol;
 
         try {
           const response = await analyzeChartAi({
-            symbol,
-            name,
-            market,
-            timeframe: timeframeInput?.value === '1W' || timeframeInput?.value === '1M' ? timeframeInput.value : '1D',
-            question: questionInput?.value || undefined,
+            symbol: state.symbol,
+            name: state.name || undefined,
+            market: state.market,
+            timeframe: state.timeframe === '1W' || state.timeframe === '1M' ? state.timeframe : '1D',
           });
 
           const usage = response.usage;
           const remainingText = typeof usage?.remaining === 'number' ? `남은 횟수 ${usage.remaining}회` : '사용량 확인 완료';
-          setResult('success', '서버 가드 통과', `${response.summary || '분석 준비 상태입니다.'} ${remainingText}`);
+          setResult('success', '서버 가드 통과', `${response.summary || '차트 분석 준비 상태입니다.'} ${remainingText}`);
         } catch (error) {
           if (error instanceof ChartAiApiError) {
-            const state = error.status === 429 ? 'limit' : error.status === 401 ? 'auth' : 'error';
-            setResult(state, error.status === 401 ? '로그인 필요' : '요청 실패', error.message);
+            const nextState = error.status === 429 ? 'limit' : error.status === 401 ? 'auth' : 'error';
+            setResult(nextState, error.status === 401 ? '로그인 필요' : '요청 실패', error.message);
             return;
           }
 
           setResult('error', '요청 실패', 'AI 분석 요청을 처리하지 못했습니다.');
         } finally {
-          runButton.disabled = false;
+          renderChartState();
         }
       });
+
+      renderChartState();
     };
 
     document.addEventListener('astro:page-load', setupChartAiPanel);

@@ -1,31 +1,26 @@
 ---
 import HomeRailAd from '../components/HomeRailAd.astro';
-import HomeRailPreviewPanel from '../components/HomeRailPreviewPanel.astro';
 import Layout from '../layouts/Layout.astro';
-
-const railPreview = Astro.url.searchParams.get('railPreview') === '1';
 ---
 
-<Layout title="MK Stock Lab | 투자 데이터 플랫폼" activePath="/">
-  {!railPreview && <HomeRailAd />}
-
-  {railPreview && <HomeRailPreviewPanel />}
+<Layout title="MK Stock Lab | 투자 데이터 플랫폼" activePath="/" pageClass="home-page">
+  <HomeRailAd />
 
   <section class="hero-section">
     <div class="hero-copy">
-      <p class="eyebrow">MK Stock Lab 리빌드 미리보기</p>
-      <h1>시장 데이터, AI 차트 리뷰, 포트폴리오 관리를 한 곳에서.</h1>
+      <p class="eyebrow">MK Stock Lab Preview</p>
+      <h1>시장 데이터, AI 차트 리뷰, 포트폴리오 관리를 한 곳에서</h1>
       <p class="lead">
-        국내와 미국 주식, ETF 투자자를 위한 공개 투자 데이터 플랫폼입니다. Chart AI, 히트맵, Lab 리서치, 포트폴리오 관리 기능을 단계적으로 연결합니다.
+        국내와 미국 주식, ETF 투자자를 위한 공개 투자 데이터 플랫폼입니다. Chart AI, 시장, Lab 리서치, 포트폴리오 관리 기능을 단계적으로 연결합니다.
       </p>
       <div class="hero-actions">
         <a class="button-link" href="/chart-ai">Chart AI 열기</a>
-        <a class="button-link secondary" href="/lab">Lab 둘러보기</a>
+        <a class="button-link secondary" href="/market">시장 보기</a>
       </div>
     </div>
 
     <aside class="panel market-panel">
-      <p class="eyebrow">시장 범위</p>
+      <p class="eyebrow">Market Coverage</p>
       <h2>핵심 커버리지</h2>
       <div class="metric-list">
         <div class="metric-row"><span>국내 주식</span><strong>KOSPI / KOSDAQ</strong></div>
@@ -39,15 +34,15 @@ const railPreview = Astro.url.searchParams.get('railPreview') === '1';
   <section class="grid-4">
     <a class="feature-card" href="/chart-ai">
       <h2>Chart AI</h2>
-      <p>시장 데이터 기반 AI 차트 분석을 위한 작업 공간입니다. 로그인과 일일 사용 한도는 이후 단계에서 서버로 연결합니다.</p>
+      <p>선택한 종목의 차트 준비 상태를 기준으로 서버 사용량 가드를 확인하는 분석 진입 화면입니다.</p>
     </a>
-    <a class="feature-card" href="/heatmap">
-      <h2>히트맵</h2>
-      <p>지수 구성 종목과 향후 포트폴리오 보기를 위한 PC 중심 시장 히트맵 화면입니다.</p>
+    <a class="feature-card" href="/market">
+      <h2>시장</h2>
+      <p>KOSPI200, KOSDAQ150, S&amp;P500, NASDAQ100, 포트폴리오를 Heatmap과 Momentum/Trend 산점도로 비교합니다.</p>
     </a>
     <a class="feature-card" href="/lab">
       <h2>Lab</h2>
-      <p>섹터 수익률, 자산군 수익률, 국민연금 보유 현황, 국회의원 보유 주식 데이터를 다루는 공개 리서치 허브입니다.</p>
+      <p>섹터 수익률, 자산군 수익률, 국민연금 보유 현황, 국회의원 보유 주식 데이터를 모아보는 공개 리서치 허브입니다.</p>
     </a>
     <a class="feature-card" href="/portfolio">
       <h2>포트폴리오</h2>

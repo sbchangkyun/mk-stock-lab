@@ -1,5 +1,47 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3E - 2026-06-20
+
+### Market, Chart AI UX, And Home Ad Shell
+
+- Activated the normal Home right-side ad rail on `/`.
+- Lowered the Home rail display breakpoint and added a Home-only content-width adjustment so the `160x600` rail can be visible locally without covering primary content.
+- Removed the Phase 3C.12 in-page Home preview fallback panel from product source.
+- Preserved existing local Home ad sample SVGs and `src/data/homeAdBanners.json`.
+- Changed the primary nav label from Heatmap to `시장`.
+- Added `/market` as the primary Market route.
+- Kept `/heatmap` as a backward-compatible Market route.
+- Rebuilt the Market surface with KOSPI200, KOSDAQ150, S&P500, NASDAQ100, and My Portfolio holdings sections.
+- Added provider-free heatmap cards and short-term momentum vs long-term trend scatter cards for each section.
+- Added camera buttons for each Market card.
+- Added browser-only local PNG export with no new dependency.
+- Removed the Chart AI question input from the UI.
+- Removed `question` from the browser Chart AI request payload while leaving server-side tolerance for older payloads.
+- Added `차트 불러오기` as the chart-load action near the security input.
+- Moved Chart AI interval controls into the chart area as `일봉`, `주봉`, and `월봉`.
+- Preserved Chart AI selected-security query prefill and the Phase 3D server-only usage guard skeleton.
+
+### Safety And Validation
+
+- Ran normal `npm run build`; build passed.
+- Confirmed `.vercel/output/config.json`, `_render.func`, and static output exist.
+- Confirmed local unauthenticated HTTP smoke for active routes and removed legacy routes.
+- Confirmed unauthenticated POST to `/api/chart-ai/analyze` returned sanitized 401.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No Trading Economics scraping or fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or `psql` was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No real visitor-count API/DB, local counter, migration, or analytics was added.
+- No ad-event route or tracking logic was added.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3E owner manual smoke for Home rail visibility, Market card export, and Chart AI chart-first flow.
+
 ## Phase 3D - 2026-06-19
 
 ### Chart AI Usage Guard Skeleton

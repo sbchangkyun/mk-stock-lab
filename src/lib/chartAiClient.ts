@@ -5,7 +5,6 @@ export type ChartAiAnalyzeInput = {
   name?: string;
   market: 'KR' | 'US';
   timeframe?: '1D' | '1W' | '1M';
-  question?: string;
 };
 
 export class ChartAiApiError extends Error {
