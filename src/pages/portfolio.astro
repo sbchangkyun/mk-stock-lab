@@ -176,9 +176,15 @@ import Layout from '../layouts/Layout.astro';
       | 'api_pending'
       | 'portfolio_config_missing'
       | 'ready';
+    type DisplayPortfolioPosition = PortfolioPosition & {
+      sourcePortfolioIds?: string[];
+      sourcePortfolioNames?: string[];
+      sourcePositionIds?: string[];
+    };
     type AppState = {
       portfolios: Portfolio[];
-      positions: PortfolioPosition[];
+      positions: DisplayPortfolioPosition[];
+      positionsByPortfolioId: Record<string, DisplayPortfolioPosition[]>;
       selectedPortfolioId: string | null;
       portfolioOrder: string[];
       positionSort: 'none' | 'valuation-asc' | 'valuation-desc' | 'return-asc' | 'return-desc';
@@ -189,6 +195,7 @@ import Layout from '../layouts/Layout.astro';
     const state: AppState = {
       portfolios: [],
       positions: [],
+      positionsByPortfolioId: {},
       selectedPortfolioId: null,
       portfolioOrder: [],
       positionSort: 'none',
@@ -303,10 +310,13 @@ import Layout from '../layouts/Layout.astro';
     const krwMoney = new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 0 });
     const logoMappings = securityLogoMap as Record<string, { name?: string; symbol?: string; country?: 'KR' | 'US'; logoUrl?: string }>;
     const positionSheetMotionMs = 260;
+    const aggregatePortfolioId = '__all_portfolios__';
     let positionSheetCloseTimer: number | null = null;
 
     const getElement = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
     const selectedPortfolio = () => state.portfolios.find((portfolio) => portfolio.id === state.selectedPortfolioId) ?? null;
+    const isAggregatePortfolioId = (id: string | null | undefined) => id === aggregatePortfolioId;
+    const isAggregateSelected = () => isAggregatePortfolioId(state.selectedPortfolioId);
     const escapeHtml = (value: string | null | undefined) =>
       String(value || '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
@@ -390,11 +400,11 @@ import Layout from '../layouts/Layout.astro';
       }
       return { primary: local, secondary: '' };
     };
-    const getValuationPlaceholder = (portfolio: Portfolio, position: PortfolioPosition) => {
+    const getValuationPlaceholder = (portfolio: Portfolio | null, position: PortfolioPosition) => {
       if (state.currencyDisplayMode === 'krw' && position.currency === 'USD') {
         return { primary: '원화 환산 예정', secondary: 'FX 연동 후 원화 표시' };
       }
-      if (portfolio.baseCurrency === 'KRW' && position.currency === 'USD') {
+      if (portfolio?.baseCurrency === 'KRW' && position.currency === 'USD') {
         return { primary: '원화 환산 예정', secondary: '' };
       }
       return { primary: '데이터 대기', secondary: '' };
@@ -405,6 +415,68 @@ import Layout from '../layouts/Layout.astro';
       const ordered = state.portfolioOrder.map((id) => byId.get(id)).filter(Boolean) as Portfolio[];
       const missing = state.portfolios.filter((portfolio) => !state.portfolioOrder.includes(portfolio.id));
       return [...ordered, ...missing];
+    };
+    const getAggregatePositionKey = (position: PortfolioPosition) => {
+      const market = normalizeLogoKey(position.market || 'NA');
+      const symbol = normalizeLogoKey(position.symbol || position.name || position.id);
+      return `${market}::${symbol}`;
+    };
+    const toSafeAggregateId = (key: string) => `aggregate-${key.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+    const getAggregatePositions = () => {
+      type AggregateDraft = DisplayPortfolioPosition & {
+        totalCostBasis: number;
+        totalQuantity: number;
+      };
+      const grouped = new Map<string, AggregateDraft>();
+      const portfolioById = new Map(state.portfolios.map((portfolio) => [portfolio.id, portfolio]));
+
+      getOrderedPortfolios().forEach((portfolio) => {
+        (state.positionsByPortfolioId[portfolio.id] || []).forEach((position) => {
+          const key = getAggregatePositionKey(position);
+          const quantity = Number.isFinite(position.quantity) ? position.quantity : 0;
+          const buyPrice = Number.isFinite(position.buyPrice) ? position.buyPrice : 0;
+          const totalCostBasis = buyPrice * quantity;
+          const sourceName = portfolioById.get(portfolio.id)?.name || portfolio.name;
+          const existing = grouped.get(key);
+
+          if (!existing) {
+            grouped.set(key, {
+              ...position,
+              id: toSafeAggregateId(key),
+              portfolioId: aggregatePortfolioId,
+              quantity,
+              buyPrice,
+              memo: '',
+              sourcePortfolioIds: [portfolio.id],
+              sourcePortfolioNames: [sourceName],
+              sourcePositionIds: [position.id],
+              totalCostBasis,
+              totalQuantity: quantity,
+            });
+            return;
+          }
+
+          existing.quantity += quantity;
+          existing.totalCostBasis += totalCostBasis;
+          existing.totalQuantity += quantity;
+          existing.buyPrice = existing.totalQuantity > 0 ? existing.totalCostBasis / existing.totalQuantity : existing.buyPrice;
+          if (!existing.name && position.name) existing.name = position.name;
+          if (!existing.symbol && position.symbol) existing.symbol = position.symbol;
+          if (!existing.market && position.market) existing.market = position.market;
+          if (!existing.buyDate && position.buyDate) existing.buyDate = position.buyDate;
+          if (!existing.sourcePortfolioIds?.includes(portfolio.id)) existing.sourcePortfolioIds?.push(portfolio.id);
+          if (!existing.sourcePortfolioNames?.includes(sourceName)) existing.sourcePortfolioNames?.push(sourceName);
+          if (!existing.sourcePositionIds?.includes(position.id)) existing.sourcePositionIds?.push(position.id);
+        });
+      });
+
+      return Array.from(grouped.values()).sort((a, b) => getPositionPrimaryLabel(a).localeCompare(getPositionPrimaryLabel(b), 'ko-KR'));
+    };
+    const getPositionSourceText = (position: DisplayPortfolioPosition) => {
+      if (!isAggregateSelected()) return '';
+      const names = position.sourcePortfolioNames || [];
+      if (names.length === 0) return '';
+      return `포함: ${names.join(', ')}`;
     };
     const getSortedPositions = () => {
       const rows = [...state.positions];
@@ -471,6 +543,7 @@ import Layout from '../layouts/Layout.astro';
     const clearPortfolioData = () => {
       state.portfolios = [];
       state.positions = [];
+      state.positionsByPortfolioId = {};
       state.selectedPortfolioId = null;
       state.portfolioOrder = [];
       state.loading = false;
@@ -558,6 +631,19 @@ import Layout from '../layouts/Layout.astro';
       empty.classList.toggle('hidden', state.portfolios.length > 0);
       list.innerHTML = '';
 
+      if (state.portfolios.length > 0) {
+        const aggregateItem = document.createElement('article');
+        aggregateItem.className = `portfolio-item portfolio-item-aggregate${isAggregateSelected() ? ' active' : ''}`;
+        aggregateItem.innerHTML = `
+          <button class="portfolio-select" type="button" data-action="select" data-id="${aggregatePortfolioId}">
+            <strong>전체 보기</strong>
+            <span>${state.portfolios.length}개 계좌</span>
+          </button>
+          <small class="portfolio-item-note">보유 종목을 종목/시장 기준으로 합산합니다.</small>
+        `;
+        list.appendChild(aggregateItem);
+      }
+
       getOrderedPortfolios().forEach((portfolio, index, ordered) => {
         const item = document.createElement('article');
         item.className = `portfolio-item${portfolio.id === state.selectedPortfolioId ? ' active' : ''}`;
@@ -579,6 +665,7 @@ import Layout from '../layouts/Layout.astro';
 
     const renderPositions = () => {
       const portfolio = selectedPortfolio();
+      const aggregateSelected = isAggregateSelected();
       const title = getElement<HTMLElement>('selected-portfolio-title');
       const meta = getElement<HTMLElement>('selected-portfolio-meta');
       const openSheetButton = getElement<HTMLButtonElement>('open-position-sheet');
@@ -589,7 +676,7 @@ import Layout from '../layouts/Layout.astro';
 
       list.innerHTML = '';
 
-      if (!portfolio) {
+      if (!portfolio && !aggregateSelected) {
         title.textContent = '포트폴리오를 선택하세요';
         meta.textContent = '포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.';
         openSheetButton.classList.add('hidden');
@@ -600,11 +687,14 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
 
-      title.textContent = portfolio.name;
-      meta.textContent = `기준 통화: ${portfolio.baseCurrency}`;
-      openSheetButton.classList.remove('hidden');
+      title.textContent = aggregateSelected ? '전체 포트폴리오' : portfolio!.name;
+      meta.textContent = aggregateSelected
+        ? `${state.portfolios.length}개 포트폴리오의 보유 종목을 종목/시장 기준으로 합산합니다.`
+        : `기준 통화: ${portfolio!.baseCurrency}`;
+      openSheetButton.classList.toggle('hidden', aggregateSelected);
+      if (aggregateSelected) closePositionSheet();
 
-      empty.textContent = '아직 등록된 보유 종목이 없습니다.';
+      empty.textContent = state.portfolios.length === 0 ? '아직 등록된 포트폴리오가 없습니다.' : '아직 등록된 보유 종목이 없습니다.';
       empty.classList.toggle('hidden', state.positions.length > 0);
       wrap.classList.toggle('hidden', state.positions.length === 0);
 
@@ -614,9 +704,10 @@ import Layout from '../layouts/Layout.astro';
         const country = inferCountry(position);
         const primaryLabel = getPositionPrimaryLabel(position);
         const secondaryLabel = getPositionSecondaryLabel(position);
+        const sourceText = getPositionSourceText(position);
         const buyPrice = formatBuyPrice(position);
-        const valuation = getValuationPlaceholder(portfolio, position);
-        item.className = 'position-card';
+        const valuation = getValuationPlaceholder(aggregateSelected ? null : portfolio, position);
+        item.className = `position-card${aggregateSelected ? ' aggregate-position' : ''}`;
         item.innerHTML = `
           <div class="security-avatar-wrap">
             <div class="security-avatar">
@@ -630,6 +721,7 @@ import Layout from '../layouts/Layout.astro';
             <strong>${escapeHtml(primaryLabel)}</strong>
             <small>${escapeHtml(secondaryLabel)}</small>
             </a>
+            ${sourceText ? `<small class="position-source-text">${escapeHtml(sourceText)}</small>` : ''}
           </div>
           <div class="position-metric">
             <span>수량</span>
@@ -654,8 +746,10 @@ import Layout from '../layouts/Layout.astro';
             <strong class="metric-placeholder">-</strong>
           </div>
           <div class="table-actions position-actions">
-            <button class="table-action-button" type="button" data-action="edit-position" data-id="${position.id}">수정</button>
-            <button class="table-action-button danger" type="button" data-action="delete-position" data-id="${position.id}">삭제</button>
+            ${aggregateSelected
+              ? '<span class="readonly-badge">읽기 전용</span>'
+              : `<button class="table-action-button" type="button" data-action="edit-position" data-id="${position.id}">수정</button>
+            <button class="table-action-button danger" type="button" data-action="delete-position" data-id="${position.id}">삭제</button>`}
           </div>
         `;
         list.appendChild(item);
@@ -667,23 +761,47 @@ import Layout from '../layouts/Layout.astro';
       renderPositions();
     };
 
-    const loadPositions = async (portfolioId: string) => {
-      state.positions = await portfolioApi.listPositions(portfolioId);
+    const loadAllPortfolioPositions = async (force = false) => {
+      await Promise.all(getOrderedPortfolios().map(async (portfolio) => {
+        if (!force && state.positionsByPortfolioId[portfolio.id]) return;
+        state.positionsByPortfolioId[portfolio.id] = await portfolioApi.listPositions(portfolio.id);
+      }));
+    };
+
+    const loadPositions = async (portfolioId: string, force = false) => {
+      if (isAggregatePortfolioId(portfolioId)) {
+        await loadAllPortfolioPositions(force);
+        state.positions = getAggregatePositions();
+        renderPositions();
+        return;
+      }
+
+      const positions = await portfolioApi.listPositions(portfolioId);
+      state.positionsByPortfolioId[portfolioId] = positions;
+      state.positions = positions;
       renderPositions();
     };
 
     const loadPortfolios = async () => {
       state.portfolios = await portfolioApi.listPortfolios();
       const knownIds = new Set(state.portfolios.map((portfolio) => portfolio.id));
+      state.positionsByPortfolioId = Object.fromEntries(
+        Object.entries(state.positionsByPortfolioId).filter(([id]) => knownIds.has(id)),
+      );
       state.portfolioOrder = [
         ...state.portfolioOrder.filter((id) => knownIds.has(id)),
         ...state.portfolios.map((portfolio) => portfolio.id).filter((id) => !state.portfolioOrder.includes(id)),
       ];
-      if (!state.selectedPortfolioId || !state.portfolios.some((portfolio) => portfolio.id === state.selectedPortfolioId)) {
-        state.selectedPortfolioId = state.portfolios[0]?.id ?? null;
+      if (state.portfolios.length === 0) {
+        state.selectedPortfolioId = null;
+      } else if (
+        !state.selectedPortfolioId ||
+        (!isAggregateSelected() && !state.portfolios.some((portfolio) => portfolio.id === state.selectedPortfolioId))
+      ) {
+        state.selectedPortfolioId = aggregatePortfolioId;
       }
       renderAll();
-      if (state.selectedPortfolioId) await loadPositions(state.selectedPortfolioId);
+      if (state.selectedPortfolioId) await loadPositions(state.selectedPortfolioId, true);
     };
 
     const loadPortfolioMvp = async () => {
@@ -746,6 +864,10 @@ import Layout from '../layouts/Layout.astro';
     getElement<HTMLButtonElement>('portfolio-cancel-edit')?.addEventListener('click', resetPortfolioForm);
     getElement<HTMLButtonElement>('position-cancel-edit')?.addEventListener('click', closePositionSheet);
     getElement<HTMLButtonElement>('open-position-sheet')?.addEventListener('click', () => {
+      if (isAggregateSelected()) {
+        showToast('개별 포트폴리오를 선택한 뒤 종목을 추가해 주세요.');
+        return;
+      }
       resetPositionForm();
       openPositionSheet('create');
     });
@@ -835,6 +957,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
       if (target.dataset.action === 'move-portfolio-up' || target.dataset.action === 'move-portfolio-down') {
+        if (isAggregatePortfolioId(id)) return;
         const ordered = getOrderedPortfolios().map((portfolio) => portfolio.id);
         const index = ordered.indexOf(id);
         const offset = target.dataset.action === 'move-portfolio-up' ? -1 : 1;
@@ -846,6 +969,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
       if (target.dataset.action === 'edit-portfolio') {
+        if (isAggregatePortfolioId(id)) return;
         const portfolio = state.portfolios.find((item) => item.id === id);
         if (!portfolio) return;
         getElement<HTMLInputElement>('portfolio-id')!.value = portfolio.id;
@@ -856,6 +980,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
       if (target.dataset.action === 'delete-portfolio') {
+        if (isAggregatePortfolioId(id)) return;
         const portfolio = state.portfolios.find((item) => item.id === id);
         if (!portfolio) return;
         const confirmed = window.confirm(`"${portfolio.name}" 포트폴리오와 보유 종목을 삭제할까요?`);
@@ -875,7 +1000,10 @@ import Layout from '../layouts/Layout.astro';
 
     getElement<HTMLFormElement>('position-form')?.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!state.selectedPortfolioId) return;
+      if (!state.selectedPortfolioId || isAggregateSelected()) {
+        showToast('개별 포트폴리오를 선택한 뒤 종목을 추가해 주세요.');
+        return;
+      }
 
       const id = getElement<HTMLInputElement>('position-id')!.value;
       const securityInput = getElement<HTMLInputElement>('position-security-input')!.value.trim();

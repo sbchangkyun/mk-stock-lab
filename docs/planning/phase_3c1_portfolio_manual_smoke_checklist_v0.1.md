@@ -1,3 +1,40 @@
+## Phase 3F.4 Portfolio Page Aggregate And Market Fit Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F.4 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F.4 Portfolio 전체 보기/Market 화면 맞춤 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/portfolio` 진입: 통과/실패
+- 포트폴리오가 1개 이상 있을 때 `전체 보기`가 목록 맨 위에 표시됨: 통과/실패
+- `전체 보기` 선택 시 모든 포트폴리오 보유 종목이 합산 표시됨: 통과/실패
+- 같은 시장/티커 종목이 하나의 행으로 합산됨: 통과/실패/미실행
+- `전체 보기`에서 종목 추가 버튼이 보이지 않거나 사용할 수 없음: 통과/실패
+- `전체 보기` 행에서 수정/삭제 대신 읽기 전용 상태가 표시됨: 통과/실패
+- 개별 포트폴리오 선택 시 기존 종목 추가/수정/삭제 유지: 통과/실패/미실행
+- 평가금액/현재가가 실제 시세처럼 표시되지 않고 기존 placeholder 유지: 통과/실패
+- `/market` 진입: 통과/실패
+- `/market` Treemap 단독 보기에서 차트가 PC 화면에 더 잘 맞음: 통과/실패
+- `/market` Momentum / Trend 단독 보기에서 내부 여백이 줄고 plot 영역이 커짐: 통과/실패
+- `/heatmap` 호환 진입 유지: 통과/실패
+- Treemap 표시명 중심 라벨 유지: 통과/실패
+- 보기 선택 `Treemap` / `Momentum / Trend` / `같이 보기` 유지: 통과/실패
+- Treemap 크게 보기 동작: 통과/실패
+- Momentum / Trend 크게 보기 동작: 통과/실패
+- Treemap PNG 저장: 통과/실패/미실행
+- Momentum / Trend PNG 저장: 통과/실패/미실행
+- Home sticky 광고 유지: 통과/실패/화면폭 부족
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Portfolio 개별 CRUD 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한경 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
 ## Phase 3F.3 Portfolio Aggregate And Display-Name Manual Smoke Delta
 
 Use this Korean-first format when reporting Phase 3F.3 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

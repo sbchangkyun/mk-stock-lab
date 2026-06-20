@@ -1,5 +1,40 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3F.4 - 2026-06-20
+
+### Portfolio Page Aggregate And Market Viewport Fit
+
+- Added `/portfolio` synthetic `전체 보기` as a browser UI state option above real portfolios.
+- Used safe synthetic id `__all_portfolios__` only in client state, not as a mutation target.
+- Merged Portfolio page positions by stable market and symbol identity.
+- Summed duplicate quantities and calculated weighted average buy price for aggregate rows.
+- Added source portfolio names to aggregate rows.
+- Kept aggregate rows read-only with no edit/delete buttons.
+- Hid and guarded add-position behavior while synthetic aggregate mode is selected.
+- Preserved individual portfolio selection, portfolio CRUD, and position CRUD.
+- Preserved placeholder valuation behavior; no live market value, FX conversion, or fake valuation was added.
+- Tuned Market Treemap single-view height and card spacing for better PC viewport fit.
+- Tuned Momentum / Trend SVG viewBox and plot rectangle to reduce inner whitespace and enlarge the usable plot area.
+- Preserved the `d3-hierarchy` Treemap engine.
+- Preserved display-name-first chart labels and ticker metadata.
+- Preserved Market view modes, fullscreen, and browser-only PNG export.
+- Preserved `/market` primary route and `/heatmap` backward-compatible route.
+- Preserved Home sticky ad, Chart AI chart-first UX, Portfolio behavior, Header auth stability, and `Today: 000`.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No Trading Economics, ETFshopping, Hankyung, or reference-site scraping/fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or psql command was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No real visitor count or ad-event tracking was implemented.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3F.4 owner manual smoke in Chrome.
+
 ## Phase 3F.3 - 2026-06-20
 
 ### Portfolio Aggregate View And Display-Name Chart Labels
