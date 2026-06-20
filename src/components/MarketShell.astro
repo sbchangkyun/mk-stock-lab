@@ -42,6 +42,9 @@ type DashboardView = {
     sector: string;
     x: number;
     y: number;
+    labelX: number;
+    labelY: number;
+    showLabel: boolean;
     momentum: number;
     trend: number;
     changePct: number;
@@ -51,11 +54,25 @@ type DashboardView = {
   decliners: number;
 };
 
-const treemapWidth = 860;
-const treemapHeight = 420;
-const scatterWidth = 560;
-const scatterHeight = 340;
-const plot = { x: 76, y: 58, width: 394, height: 222 };
+type WeightedNode<T> = {
+  item: T;
+  area: number;
+};
+
+const treemapWidth = 1120;
+const treemapHeight = 560;
+const scatterWidth = 720;
+const scatterHeight = 520;
+const plot = { x: 78, y: 62, width: 574, height: 372 };
+const returnScale = [
+  { label: '-5% 이하', color: '#174ea6' },
+  { label: '-3%', color: '#2563eb' },
+  { label: '-1%', color: '#7aa5f8' },
+  { label: '0%', color: '#9aa4b2' },
+  { label: '+1%', color: '#f29a76' },
+  { label: '+3%', color: '#d54a3f' },
+  { label: '+5% 이상', color: '#9d1c22' },
+];
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 const formatChange = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
@@ -63,40 +80,17 @@ const formatValue = (value: number, currency: string) => `${value.toLocaleString
 const safeToken = (value: string) => value.replace(/[^a-zA-Z0-9_-]/g, '-');
 
 const colorForChange = (changePct: number) => {
-  if (changePct >= 6) return '#9d1c22';
-  if (changePct >= 3) return '#c93434';
-  if (changePct >= 0.8) return '#e76f51';
-  if (changePct <= -6) return '#174ea6';
+  if (changePct >= 5) return '#9d1c22';
+  if (changePct >= 3) return '#d54a3f';
+  if (changePct >= 1) return '#f29a76';
+  if (changePct <= -5) return '#174ea6';
   if (changePct <= -3) return '#2563eb';
-  if (changePct <= -0.8) return '#5b8def';
+  if (changePct <= -1) return '#7aa5f8';
   return '#9aa4b2';
 };
 
 const returnForPeriod = (item: MarketConstituent, multiplier: number) =>
   clamp(item.baseChangePct * multiplier + item.trend * Math.max(0, multiplier - 1) * 0.16, -12, 12);
-
-const layoutWeighted = <T extends { value: number }>(
-  items: T[],
-  rect: Rect,
-  vertical: boolean,
-) => {
-  const total = items.reduce((sum, item) => sum + Math.max(1, item.value), 0);
-  let offset = 0;
-
-  return items.map((item, index) => {
-    const remainingItems = items.length - index;
-    const isLast = remainingItems === 1;
-    const ratio = Math.max(1, item.value) / total;
-    const length = vertical ? rect.width : rect.height;
-    const size = isLast ? length - offset : Math.max(24, length * ratio);
-    const child = vertical
-      ? { x: rect.x + offset, y: rect.y, width: size, height: rect.height }
-      : { x: rect.x, y: rect.y + offset, width: rect.width, height: size };
-
-    offset += size;
-    return { item, rect: child };
-  });
-};
 
 const insetRect = (rect: Rect, inset: number) => ({
   x: rect.x + inset,
@@ -104,6 +98,82 @@ const insetRect = (rect: Rect, inset: number) => ({
   width: Math.max(0, rect.width - inset * 2),
   height: Math.max(0, rect.height - inset * 2),
 });
+
+const worstAspect = <T,>(row: WeightedNode<T>[], side: number) => {
+  if (!row.length || side <= 0) return Number.POSITIVE_INFINITY;
+  const sum = row.reduce((total, node) => total + node.area, 0);
+  const min = Math.min(...row.map((node) => node.area));
+  const max = Math.max(...row.map((node) => node.area));
+  if (sum <= 0 || min <= 0) return Number.POSITIVE_INFINITY;
+  const sideSquared = side * side;
+  return Math.max((sideSquared * max) / (sum * sum), (sum * sum) / (sideSquared * min));
+};
+
+const layoutRow = <T,>(row: WeightedNode<T>[], rect: Rect) => {
+  const rowArea = row.reduce((total, node) => total + node.area, 0);
+  const laidOut: Array<{ item: T; rect: Rect }> = [];
+  const remaining = { ...rect };
+
+  if (rect.width >= rect.height) {
+    const rowHeight = rowArea / rect.width;
+    let x = rect.x;
+    row.forEach((node, index) => {
+      const isLast = index === row.length - 1;
+      const width = isLast ? rect.x + rect.width - x : node.area / rowHeight;
+      laidOut.push({ item: node.item, rect: { x, y: rect.y, width, height: rowHeight } });
+      x += width;
+    });
+    remaining.y += rowHeight;
+    remaining.height = Math.max(0, remaining.height - rowHeight);
+  } else {
+    const rowWidth = rowArea / rect.height;
+    let y = rect.y;
+    row.forEach((node, index) => {
+      const isLast = index === row.length - 1;
+      const height = isLast ? rect.y + rect.height - y : node.area / rowWidth;
+      laidOut.push({ item: node.item, rect: { x: rect.x, y, width: rowWidth, height } });
+      y += height;
+    });
+    remaining.x += rowWidth;
+    remaining.width = Math.max(0, remaining.width - rowWidth);
+  }
+
+  return { laidOut, remaining };
+};
+
+const squarify = <T extends { value: number }>(items: T[], rect: Rect) => {
+  const total = items.reduce((sum, item) => sum + Math.max(1, item.value), 0);
+  const area = rect.width * rect.height;
+  const nodes = items
+    .map((item) => ({ item, area: (Math.max(1, item.value) / total) * area }))
+    .sort((a, b) => b.area - a.area);
+  const results: Array<{ item: T; rect: Rect }> = [];
+  let remaining = { ...rect };
+  let row: Array<WeightedNode<T>> = [];
+
+  while (nodes.length) {
+    const next = nodes[0];
+    const side = Math.min(remaining.width, remaining.height);
+    const currentWorst = row.length ? worstAspect(row, side) : Number.POSITIVE_INFINITY;
+    const candidateWorst = worstAspect([...row, next], side);
+
+    if (!row.length || candidateWorst <= currentWorst) {
+      row.push(nodes.shift() as WeightedNode<T>);
+    } else {
+      const layout = layoutRow(row, remaining);
+      results.push(...layout.laidOut);
+      remaining = layout.remaining;
+      row = [];
+    }
+  }
+
+  if (row.length) {
+    const layout = layoutRow(row, remaining);
+    results.push(...layout.laidOut);
+  }
+
+  return results;
+};
 
 const buildTreemap = (items: MarketConstituent[], multiplier: number): TreemapSector[] => {
   const sectorMap = new Map<string, MarketConstituent[]>();
@@ -121,16 +191,10 @@ const buildTreemap = (items: MarketConstituent[], multiplier: number): TreemapSe
     }))
     .sort((a, b) => b.value - a.value);
 
-  return layoutWeighted(sectors, { x: 0, y: 0, width: treemapWidth, height: treemapHeight }, true).map(({ item: sector, rect }, sectorIndex) => {
+  return squarify(sectors, { x: 0, y: 0, width: treemapWidth, height: treemapHeight }).map(({ item: sector, rect }, sectorIndex) => {
     const sectorRect = insetRect(rect, 4);
-    const tileArea = {
-      x: sectorRect.x + 4,
-      y: sectorRect.y + 30,
-      width: Math.max(0, sectorRect.width - 8),
-      height: Math.max(0, sectorRect.height - 34),
-    };
-    const verticalTiles = tileArea.height > tileArea.width;
-    const tiles = layoutWeighted(sector.items, tileArea, verticalTiles).map(({ item, rect: tileRect }, tileIndex) => ({
+    const tileArea = insetRect(sectorRect, 5);
+    const tiles = squarify(sector.items, tileArea).map(({ item, rect: tileRect }, tileIndex) => ({
       ...insetRect(tileRect, 2),
       key: `${sector.label}-${item.symbol}-${tileIndex}`,
       clipId: safeToken(`clip-${sector.label}-${item.symbol}-${tileIndex}`),
@@ -152,19 +216,24 @@ const buildTreemap = (items: MarketConstituent[], multiplier: number): TreemapSe
 };
 
 const buildScatterPoints = (items: MarketConstituent[], multiplier: number) =>
-  items.map((item) => {
+  items.map((item, index) => {
     const trend = clamp(item.trend * (0.55 + multiplier * 0.12), -10, 10);
     const momentum = clamp(item.momentum * (0.72 + multiplier * 0.1), -10, 10);
     const x = plot.x + ((trend + 10) / 20) * plot.width;
     const y = plot.y + ((10 - momentum) / 20) * plot.height;
     const changePct = returnForPeriod(item, multiplier);
+    const labelAbove = index % 3 === 1;
+    const labelLeft = index % 4 === 2;
 
     return {
       symbol: item.symbol,
       name: item.name,
       sector: item.sector,
-      x: clamp(x, plot.x + 8, plot.x + plot.width - 8),
-      y: clamp(y, plot.y + 8, plot.y + plot.height - 8),
+      x: clamp(x, plot.x + 10, plot.x + plot.width - 10),
+      y: clamp(y, plot.y + 10, plot.y + plot.height - 10),
+      labelX: labelLeft ? -12 : 12,
+      labelY: labelAbove ? -10 : 5,
+      showLabel: item.value >= 80 || index < 10,
       momentum,
       trend,
       changePct,
@@ -274,7 +343,7 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
             <div class="market-card-header">
               <div>
                 <h3>{view.universeLabel} Treemap</h3>
-                <p>섹터별로 묶고 시가총액 비중으로 타일 크기를 배치한 샘플 Treemap입니다.</p>
+                <p>섹터별 그룹과 종목 비중을 함께 보여주는 squarified 샘플 Treemap입니다.</p>
               </div>
               <div class="market-card-actions" data-card-actions>
                 <button
@@ -303,31 +372,38 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
             </div>
 
             <svg class="market-treemap-svg" viewBox={`0 0 ${treemapWidth} ${treemapHeight}`} role="img" aria-label={`${view.universeLabel} ${view.periodLabel} Treemap`}>
-              <rect x="0" y="0" width={treemapWidth} height={treemapHeight} rx="18" fill="#f7f9fc" />
+              <rect x="0" y="0" width={treemapWidth} height={treemapHeight} rx="14" fill="#f8fafc" />
               {view.sectors.map((sector) => (
                 <g>
-                  <rect x={sector.x} y={sector.y} width={sector.width} height={sector.height} rx="14" fill="#eef3f8" stroke="#d8e2ee" />
-                  <text x={sector.x + 12} y={sector.y + 20} class="market-treemap-sector-label">{sector.label}</text>
+                  <rect x={sector.x} y={sector.y} width={sector.width} height={sector.height} rx="10" fill="#edf2f7" stroke="#cbd5e1" stroke-width="1.5" />
+                  {sector.width > 112 && sector.height > 58 && (
+                    <text x={sector.x + 10} y={sector.y + 18} class="market-treemap-sector-label">{sector.label}</text>
+                  )}
                   {sector.tiles.map((tile) => (
                     <g>
                       <title>{`${tile.symbol} ${tile.name} ${formatChange(tile.changePct)} · ${formatValue(tile.value, view.currency)}`}</title>
                       <clipPath id={`${view.id}-${tile.clipId}`}>
-                        <rect x={tile.x} y={tile.y} width={tile.width} height={tile.height} rx="8" />
+                        <rect x={tile.x} y={tile.y} width={tile.width} height={tile.height} rx="5" />
                       </clipPath>
                       <rect
                         x={tile.x}
                         y={tile.y}
                         width={tile.width}
                         height={tile.height}
-                        rx="8"
+                        rx="5"
                         fill={colorForChange(tile.changePct)}
                         stroke="#ffffff"
-                        stroke-width="1.6"
+                        stroke-width="1.4"
                       />
-                      {(tile.width > 54 && tile.height > 30) && (
+                      {(tile.width > 76 && tile.height > 42) && (
                         <g clip-path={`url(#${view.id}-${tile.clipId})`}>
-                          <text x={tile.x + 8} y={tile.y + 17} class="market-treemap-symbol">{tile.symbol}</text>
-                          {tile.height > 48 && <text x={tile.x + 8} y={tile.y + 36} class="market-treemap-change">{formatChange(tile.changePct)}</text>}
+                          <text x={tile.x + 8} y={tile.y + 18} class="market-treemap-symbol">{tile.symbol}</text>
+                          <text x={tile.x + 8} y={tile.y + 37} class="market-treemap-change">{formatChange(tile.changePct)}</text>
+                        </g>
+                      )}
+                      {(tile.width > 54 && tile.height > 28 && !(tile.width > 76 && tile.height > 42)) && (
+                        <g clip-path={`url(#${view.id}-${tile.clipId})`}>
+                          <text x={tile.x + 7} y={tile.y + 18} class="market-treemap-symbol compact">{tile.symbol}</text>
                         </g>
                       )}
                     </g>
@@ -336,10 +412,13 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
               ))}
             </svg>
 
-            <div class="market-legend" aria-label="수익률 색상 범례">
-              <span><i class="negative"></i>-3% 이하</span>
-              <span><i class="flat"></i>중립</span>
-              <span><i class="positive"></i>+3% 이상</span>
+            <div class="market-return-scale" aria-label="수익률 색상 범례">
+              <div class="market-return-ramp" aria-hidden="true">
+                {returnScale.map((step) => <span style={`background:${step.color}`}></span>)}
+              </div>
+              <div class="market-return-labels">
+                {returnScale.map((step) => <span>{step.label}</span>)}
+              </div>
             </div>
           </article>
 
@@ -376,20 +455,22 @@ const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-
             </div>
             <svg class="market-scatter-chart" viewBox={`0 0 ${scatterWidth} ${scatterHeight}`} role="img" aria-label={`${view.universeLabel} ${view.periodLabel} momentum trend scatter`}>
               <rect x="0" y="0" width={scatterWidth} height={scatterHeight} rx="16" fill="#ffffff" />
-              <rect x={plot.x} y={plot.y} width={plot.width} height={plot.height} rx="10" fill="#f7f9fc" stroke="#d8e2ee" />
+              <rect x={plot.x} y={plot.y} width={plot.width} height={plot.height} rx="10" fill="#f8fafc" stroke="#d8e2ee" />
               <line x1={plot.x + plot.width / 2} y1={plot.y} x2={plot.x + plot.width / 2} y2={plot.y + plot.height} stroke="#aeb8c6" stroke-width="1" />
               <line x1={plot.x} y1={plot.y + plot.height / 2} x2={plot.x + plot.width} y2={plot.y + plot.height / 2} stroke="#aeb8c6" stroke-width="1" />
-              <text x={plot.x} y="30" class="scatter-axis-label">단기 모멘텀</text>
-              <text x={plot.x + plot.width / 2} y="324" text-anchor="middle" class="scatter-axis-label">장기 트렌드</text>
-              <text x={plot.x + plot.width - 102} y={plot.y + 24} class="scatter-quadrant">강한 추세</text>
+              <text x={plot.x} y={plot.y - 22} class="scatter-axis-label">단기 모멘텀</text>
+              <text x={plot.x + plot.width} y={plot.y + plot.height + 30} text-anchor="end" class="scatter-axis-label">장기 트렌드</text>
+              <text x={plot.x + plot.width - 108} y={plot.y + 24} class="scatter-quadrant">강한 추세</text>
               <text x={plot.x + 16} y={plot.y + 24} class="scatter-quadrant">반등 후보</text>
-              <text x={plot.x + plot.width - 112} y={plot.y + plot.height - 16} class="scatter-quadrant">추세 둔화</text>
-              <text x={plot.x + 16} y={plot.y + plot.height - 16} class="scatter-quadrant">약한 흐름</text>
+              <text x={plot.x + plot.width - 112} y={plot.y + plot.height - 18} class="scatter-quadrant">추세 둔화</text>
+              <text x={plot.x + 16} y={plot.y + plot.height - 18} class="scatter-quadrant">약한 흐름</text>
               {view.scatterPoints.map((point) => (
                 <g class="scatter-point" transform={`translate(${point.x} ${point.y})`}>
                   <title>{`${point.symbol} ${point.name} · Momentum ${point.momentum.toFixed(1)} · Trend ${point.trend.toFixed(1)}`}</title>
-                  <circle r="6.5" fill={point.color} stroke="#ffffff" stroke-width="2" />
-                  <text x="10" y="4">{point.symbol}</text>
+                  <circle r="7.5" fill={point.color} stroke="#ffffff" stroke-width="2" />
+                  {point.showLabel && (
+                    <text x={point.labelX} y={point.labelY} text-anchor={point.labelX < 0 ? 'end' : 'start'}>{point.symbol}</text>
+                  )}
                 </g>
               ))}
             </svg>

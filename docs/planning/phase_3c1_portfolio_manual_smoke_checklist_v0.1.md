@@ -1,3 +1,41 @@
+## Phase 3F.1 Treemap Visual Quality Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F.1 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F.1 Treemap 시각화 품질 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/market` 진입: 통과/실패
+- `/heatmap` 호환 진입: 통과/실패
+- visible UI에서 `Treemap` 명칭 유지: 통과/실패
+- Treemap이 세로 막대 나열이 아니라 크고 작은 직사각형 블록 조합처럼 보임: 통과/실패
+- Treemap이 직사각형 영역을 빈틈 적게 채움: 통과/실패
+- 섹터/그룹 구분이 자연스럽게 보임: 통과/실패
+- 대형 종목 타일이 의미 있게 크게 보임: 통과/실패
+- 중소형 종목 타일이 남은 영역을 촘촘히 채움: 통과/실패
+- Treemap 색상 범례가 명확함: 통과/실패
+- PC Web 좌우 여백이 줄어듦: 통과/실패
+- Home 본문 영역이 이전보다 넓게 느껴짐: 통과/실패
+- Market dashboard가 이전보다 넓게 느껴짐: 통과/실패
+- Momentum / Trend 산점도가 이전보다 크게 보임: 통과/실패
+- 산점도 `단기 모멘텀` 문구가 표 영역을 침범하지 않음: 통과/실패
+- 산점도 `장기 트렌드` 문구가 plot 직사각형 우측 하단에 배치됨: 통과/실패
+- Treemap 크게 보기 동작: 통과/실패
+- 산점도 크게 보기 동작: 통과/실패
+- Treemap PNG 저장: 통과/실패/미실행
+- 산점도 PNG 저장: 통과/실패/미실행
+- Home 광고 sticky 동작 유지: 통과/실패/화면폭 부족
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한경 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
 # Phase 3C.1 Portfolio Manual Smoke Checklist v0.1
 
 ## Status And Scope

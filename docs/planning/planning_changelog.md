@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3F.1 - 2026-06-20
+
+### Treemap Visual Quality And PC Width Polish
+
+- Corrected the Market Treemap from a column-like layout to a squarified/nested layout.
+- Replaced the old slice-only layout helper with a deterministic local `squarify` helper.
+- Improved sector grouping by squarifying sector blocks in the full Treemap rectangle.
+- Improved value-based tile sizing by squarifying constituents inside each sector block.
+- Adjusted sample values for selected large names so the visual hierarchy is clearer while keeping provider-free sample data.
+- Improved Treemap tile text rules for large, medium, and small rectangles.
+- Replaced the three-chip legend with a granular stepped return scale.
+- Preserved return color direction: negative blue, neutral gray, positive red.
+- Optimized PC web width with a shared `1500px` page max width.
+- Widened Home, Market, nav, and slide-ad content containers while keeping responsive margins.
+- Improved Market card ratio so the Treemap is dominant and scatter remains readable.
+- Enlarged the normal scatter chart.
+- Moved `장기 트렌드` to the bottom-right of the scatter plot rectangle.
+- Kept `단기 모멘텀` outside the plot area.
+- Preserved Treemap terminology.
+- Preserved `/market` and `/heatmap`.
+- Preserved fullscreen and browser-only PNG export.
+- Preserved Home sticky ad behavior.
+- Preserved Chart AI chart-first UX and selected-security prefill.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No Trading Economics, ETFshopping, or Hankyung scraping/fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or `psql` was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3F.1 owner manual smoke in Chrome.
+
 ## Phase 3F - 2026-06-20
 
 ### Market Treemap Dashboard Redesign

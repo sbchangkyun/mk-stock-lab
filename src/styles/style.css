@@ -1,6 +1,7 @@
 @import "pretendard/dist/web/variable/pretendardvariable.css";
 
 :root {
+  --page-max-width: 1500px;
   --bg: #f5f7fb;
   --surface: #ffffff;
   --surface-muted: #eef3fb;
@@ -255,7 +256,7 @@ body.dark-mode .primary-nav {
 }
 
 .nav-inner {
-  max-width: 1240px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -281,9 +282,10 @@ body.dark-mode .primary-nav {
 }
 
 .site-main {
-  max-width: 1240px;
+  width: min(calc(100% - 48px), var(--page-max-width));
+  max-width: none;
   margin: 0 auto;
-  padding: 32px 20px 48px;
+  padding: 32px 0 48px;
 }
 
 body.home-page .site-main {
@@ -753,7 +755,7 @@ h2 {
 
 .slide-ad-content {
   position: relative;
-  max-width: 1240px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   padding: 24px 20px 8px;
   text-align: center;
@@ -791,7 +793,7 @@ h2 {
 }
 
 .slide-ad-footer {
-  max-width: 1240px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -1450,8 +1452,8 @@ h2 {
 
 .market-dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.85fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1.62fr) minmax(420px, 0.98fr);
+  gap: 18px;
   align-items: stretch;
 }
 
@@ -1468,11 +1470,11 @@ h2 {
 }
 
 .market-treemap-card {
-  min-height: 560px;
+  min-height: 690px;
 }
 
 .market-scatter-card {
-  min-height: 560px;
+  min-height: 690px;
 }
 
 .market-card-header {
@@ -1538,14 +1540,17 @@ h2 {
 
 .market-treemap-svg {
   width: 100%;
-  min-height: 430px;
+  min-height: 540px;
   display: block;
   background: #ffffff;
 }
 
 .market-treemap-sector-label {
-  fill: #334155;
-  font-size: 12px;
+  fill: rgba(15, 23, 42, 0.88);
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 3px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 0;
 }
@@ -1561,51 +1566,49 @@ h2 {
 }
 
 .market-treemap-symbol {
-  font-size: 13px;
+  font-size: 14px;
 }
 
-.market-treemap-change {
+.market-treemap-symbol.compact {
   font-size: 11px;
 }
 
-.market-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.market-treemap-change {
+  font-size: 12px;
+}
+
+.market-return-scale {
+  display: grid;
+  gap: 7px;
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 800;
 }
 
-.market-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.market-legend i {
-  width: 16px;
-  height: 8px;
-  display: inline-block;
+.market-return-ramp {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--border);
   border-radius: 999px;
+  background: var(--surface-muted);
 }
 
-.market-legend i.negative {
-  background: #2563eb;
+.market-return-ramp span {
+  min-height: 12px;
 }
 
-.market-legend i.flat {
-  background: #9aa4b2;
-}
-
-.market-legend i.positive {
-  background: #c93434;
+.market-return-labels {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
 }
 
 .market-scatter-chart {
   width: 100%;
   height: auto;
-  min-height: 430px;
+  min-height: 540px;
   display: block;
   overflow: visible;
   background: #ffffff;
@@ -1615,7 +1618,7 @@ h2 {
 .scatter-quadrant,
 .scatter-point text {
   fill: var(--text-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -1630,6 +1633,9 @@ h2 {
 
 .scatter-point text {
   fill: var(--text);
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.86);
+  stroke-width: 3px;
 }
 
 body.modal-open {
@@ -1658,8 +1664,8 @@ body.modal-open {
 .market-card-modal-panel {
   position: relative;
   z-index: 1;
-  width: min(1180px, calc(100vw - 48px));
-  height: min(820px, calc(100vh - 48px));
+  width: min(1420px, calc(100vw - 48px));
+  height: min(900px, calc(100vh - 48px));
   max-height: calc(100vh - 48px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -1989,7 +1995,7 @@ body.modal-open {
 
   .market-treemap-card,
   .market-scatter-card {
-    min-height: 440px;
+    min-height: 500px;
   }
 
   .portfolio-mvp {
@@ -2021,6 +2027,10 @@ body.modal-open {
 }
 
 @media (max-width: 640px) {
+  .site-main {
+    width: min(calc(100% - 28px), var(--page-max-width));
+  }
+
   .market-control-panel {
     padding: 12px;
   }
@@ -2037,7 +2047,11 @@ body.modal-open {
 
   .market-treemap-svg,
   .market-scatter-chart {
-    min-height: 320px;
+    min-height: 340px;
+  }
+
+  .market-return-labels {
+    font-size: 10px;
   }
 
   .form-grid {
