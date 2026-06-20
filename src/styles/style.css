@@ -288,15 +288,22 @@ body.dark-mode .primary-nav {
 
 body.home-page .site-main {
   --home-rail-sticky-top: 112px;
+}
+
+.home-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  align-items: start;
+  align-items: stretch;
   column-gap: 24px;
 }
 
-body.home-page .hero-section,
-body.home-page .grid-4 {
-  grid-column: 1;
+.home-main-column {
+  min-width: 0;
+}
+
+.home-sidebar-column {
+  display: none;
+  min-width: 160px;
 }
 
 .hero-section {
@@ -403,10 +410,7 @@ h2 {
   display: none;
   position: static;
   width: 160px;
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  justify-self: end;
-  align-self: start;
+  height: 100%;
 }
 
 .home-rail-viewport {
@@ -445,8 +449,15 @@ h2 {
 }
 
 @media (min-width: 1440px) {
-  body.home-page .site-main {
+  .home-shell {
     grid-template-columns: minmax(0, 1fr) 176px;
+  }
+
+  .home-sidebar-column {
+    display: block;
+    align-self: stretch;
+    justify-self: end;
+    height: 100%;
   }
 
   .home-rail-ad {

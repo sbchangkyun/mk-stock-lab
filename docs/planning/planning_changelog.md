@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3E.4 - 2026-06-20
+
+### Home Sidebar Sticky Range Fix
+
+- Fixed the Home sticky range by restructuring the Home layout into a shared `home-shell` wrapper with a main content column and a right sidebar column.
+- Preserved the in-flow sidebar architecture.
+- Fixed scroll-follow behavior without returning to a fixed viewport rail.
+- Preserved header/nav/ticker collision prevention with the existing `112px` sticky top offset.
+- Preserved footer/footer ad collision prevention by keeping the rail constrained to the Home shell.
+- Preserved Home-only ad behavior.
+- Preserved the `1440px` breakpoint.
+- Preserved full `160x600` local sample banners.
+- Preserved 5-second rotation, hover pause, and reduced-motion handling.
+- Preserved non-Home ad absence.
+- Preserved Market scatter fullscreen/export fixes.
+- Preserved Chart AI chart-first UX and selected-security prefill.
+- Recorded a Phase 3F planning note: rename visible `Heatmap` terminology to `Treemap` during the Market Treemap redesign.
+- Did not implement the Phase 3F Treemap redesign.
+- No provider call was implemented.
+- No real AI analysis was implemented.
+- No real market-data fetching was implemented.
+- No Trading Economics, ETFshopping, Hankyung, or reference-site scraping/fetching was implemented.
+- No DB migration was added.
+- No direct SQL, Supabase CLI, or `psql` was run.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Vercel environment variable was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secrets were requested or recorded.
+- Recommended next action: run the Phase 3E.4 owner manual smoke in Chrome.
+
 ## Phase 3E.3 - 2026-06-20
 
 ### Safe Sticky Home Sidebar Ad

@@ -4,7 +4,8 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="MK Stock Lab | 투자 데이터 플랫폼" activePath="/" pageClass="home-page">
-  <HomeRailAd />
+  <div class="home-shell">
+    <div class="home-main-column">
 
   <section class="hero-section">
     <div class="hero-copy">
@@ -49,4 +50,10 @@ import Layout from '../layouts/Layout.astro';
       <p>로그인 후 보유 종목, 메모, 배분 관리를 시작하는 개인 포트폴리오 작업 공간입니다.</p>
     </a>
   </section>
+    </div>
+
+    <div class="home-sidebar-column" aria-label="Home advertising sidebar">
+      <HomeRailAd />
+    </div>
+  </div>
 </Layout>
