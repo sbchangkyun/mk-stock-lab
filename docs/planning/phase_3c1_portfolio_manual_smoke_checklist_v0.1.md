@@ -1,3 +1,27 @@
+## Phase 3I KIS Quote Read Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3I owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3I KIS Quote Read 연동 검토 결과:
+
+* KIS 국내주식 현재가 read-only 범위로 제한됨: 통과/실패
+* server route 안에서만 KIS 호출 가능함: 통과/실패
+* local/dev feature flag 없이 KIS 호출이 차단됨: 통과/실패
+* browser/client 코드에 KIS key/token이 노출되지 않음: 통과/실패
+* env var는 이름만 있고 실제 값이 기록되지 않음: 통과/실패
+* 주문/매매/계좌/잔고 API가 구현되지 않음: 통과/실패
+* DB migration/cache write/Supabase write가 구현되지 않음: 통과/실패
+* Market/Portfolio/Chart AI UI에 live quote가 아직 연결되지 않음: 통과/실패
+* disabled/config 상태에서 sanitized error만 반환됨: 통과/실패
+* 잘못된 symbol 입력이 sanitized validation error로 처리됨: 통과/실패
+* 실제 local KIS quote smoke를 수행함: 통과/실패/미실행
+* 실제 local KIS quote smoke 응답에 token/key/raw provider payload가 없음: 통과/실패/미실행
+* 브라우저 콘솔과 generated browser/static output에 KIS secret marker가 없음: 통과/실패
+* provider call, Vercel env mutation, deployment가 승인 범위 밖에서 수행되지 않음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3H Server-only Provider Adapter Scaffolding Owner Review Delta
 
 Use this Korean-first format when reporting Phase 3H owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

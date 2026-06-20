@@ -1,5 +1,47 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3I - 2026-06-21
+
+### KIS Domestic Quote Read Route
+
+- Added KIS domestic stock quote read integration behind `GET /api/market/quote`.
+- Kept the route local/dev-only and guarded by `KIS_ENABLE_LIVE_QUOTES`.
+- Added production-disabled KIS quote readiness handling.
+- Added server-only KIS token request and domestic quote request code.
+- Added module-local in-memory KIS token cache only.
+- Added normalized `QuoteSnapshot` output for verified KIS quote fields.
+- Added sanitized provider error responses for disabled config, invalid input, unsupported markets, token failure, provider failure, and rate-limit paths.
+- Added `KIS_ENABLE_LIVE_QUOTES` to the server-only provider env registry as a name only.
+- Updated the market quote service wrapper for KR quote reads and unsupported-market responses.
+- Updated provider-boundary validation so `fetch` is allowed only in the KIS provider module.
+- Added disabled-mode route smoke script that does not require credentials or make a live KIS call.
+- Added Phase 3I result documentation and Korean owner review checklist.
+- Market, Portfolio, Chart AI, Home, and Lab UI remain disconnected from `/api/market/quote`.
+- No order, account, trading, balance, holdings, or WebSocket API was implemented.
+- No DB migration was added.
+- No direct SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Supabase write or cache write was implemented.
+- No Auth user was created.
+- No production authenticated write validation was performed by Codex.
+- No Portfolio write endpoint was called by Codex.
+- No Vercel env value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No OpenDART, OpenAI, Gemini, real AI analysis, visitor count, ad-event tracking, scraping, remote discovery, external asset download, FX conversion, valuation analytics, performance analytics, or provider autocomplete was implemented.
+- No secret values were requested or recorded.
+- Ignored `.env*` contents were not read.
+- Official KIS Developers and official Korea Investment Open API GitHub samples were verified before implementation.
+- `npm run check:provider-boundaries`: passed.
+- `npx tsc --noEmit`: passed.
+- `npm run build`: passed.
+- `node scripts/smoke_market_quote_route_disabled.mjs`: passed.
+- Disabled/config smoke returned sanitized `503 CONFIG_MISSING`.
+- Invalid KR symbol smoke returned sanitized `400 VALIDATION_FAILED`.
+- Unsupported US quote smoke returned sanitized `404 SYMBOL_UNSUPPORTED`.
+- Live KIS smoke was not run by Codex.
+- Recommended next action: owner local live smoke for `/api/market/quote?market=KR&symbol=005930` with private local env values, then decide the next approved provider phase.
+
 ## Phase 3H - 2026-06-21
 
 ### Server-only Provider Adapter Scaffolding

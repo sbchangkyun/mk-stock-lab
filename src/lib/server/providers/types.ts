@@ -32,9 +32,10 @@ export type ProviderResult<T> =
 
 export type ProviderConfigReadiness = {
   provider: ProviderName;
-  ready: false;
-  reason: 'not_implemented' | 'config_missing' | 'approval_required';
+  ready: boolean;
+  reason: 'ready' | 'not_implemented' | 'config_missing' | 'approval_required' | 'disabled' | 'production_not_allowed';
   requiredEnvNames: string[];
+  missingEnvNames?: string[];
   optionalEnvNames?: string[];
 };
 
@@ -65,6 +66,11 @@ export type QuoteSnapshot = SecurityIdentity & {
   marketState: 'open' | 'closed' | 'delayed' | 'unknown';
   asOf: string;
   staleState: FallbackState;
+  providerMeta?: {
+    provider: Extract<ProviderName, 'kis'>;
+    source: 'kis-domestic-quote';
+    delayed?: boolean;
+  };
 };
 
 export type Candle = {

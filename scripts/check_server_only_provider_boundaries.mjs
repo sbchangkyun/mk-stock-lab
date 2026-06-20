@@ -4,11 +4,15 @@ import path from 'node:path';
 const root = process.cwd();
 const srcDir = path.join(root, 'src');
 const providerDir = path.join(srcDir, 'lib', 'server', 'providers');
+const kisProviderFile = 'src/lib/server/providers/kisClient.ts';
 const forbiddenAdapterPatterns = [
-  { label: 'network fetch call', pattern: /\bfetch\s*\(/ },
   { label: 'axios usage', pattern: /\baxios\b/ },
   { label: 'raw external URL', pattern: /https?:\/\// },
   { label: 'provider SDK client construction', pattern: /\bnew\s+(OpenAI|GoogleGenerativeAI)\b/ },
+];
+const forbiddenKisPatterns = [
+  { label: 'console logging', pattern: /\bconsole\.(log|debug|info|warn|error)\s*\(/ },
+  { label: 'browser storage use', pattern: /\b(localStorage|sessionStorage)\b/ },
 ];
 
 const walk = (dir) => {
@@ -28,9 +32,20 @@ const failures = [];
 for (const file of providerFiles) {
   const relative = toPosix(file);
   const content = fs.readFileSync(file, 'utf8');
+  const isKisProvider = relative === kisProviderFile;
   for (const rule of forbiddenAdapterPatterns) {
     if (rule.pattern.test(content)) {
       failures.push(`${relative}: contains ${rule.label}`);
+    }
+  }
+
+  if (/\bfetch\s*\(/.test(content) && !isKisProvider) {
+    failures.push(`${relative}: contains network fetch call outside approved KIS adapter`);
+  }
+
+  if (isKisProvider) {
+    for (const rule of forbiddenKisPatterns) {
+      if (rule.pattern.test(content)) failures.push(`${relative}: contains ${rule.label}`);
     }
   }
 }
