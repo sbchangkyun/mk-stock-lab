@@ -1,3 +1,26 @@
+## Phase 3S Persistent Quote Cache Enablement Smoke Harness Owner Review Delta
+
+Use this Korean-first format when reviewing Phase 3S. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, environment values, or secret-bearing output.
+
+```text
+Phase 3S Persistent Quote Cache Enablement Smoke Harness 검토 결과:
+
+* owner-run persistent adapter live smoke harness가 준비됨: 통과/실패
+* live smoke가 fail-closed 방식으로 구현됨: 통과/실패
+* live smoke 실행 시 owner approval flags가 필요함: 통과/실패
+* dry-run/mock validation이 통과함: 통과/실패
+* Codex가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Codex에 의해 접근/변경되지 않음: 통과/실패
+* smoke payload가 normalized public quote snapshot으로 제한됨: 통과/실패
+* raw KIS payload/token/key/header/account data가 저장/출력되지 않음: 통과/실패
+* cleanup/restore 전략이 문서화됨: 통과/실패
+* UI live quote wiring이 아직 구현되지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* 다음 단계가 owner manual live smoke 실행/결과 기록임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3R Persistent Quote Cache Adapter Owner Review Delta
 
 Use this Korean-first format when reviewing Phase 3R. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, environment values, or secret-bearing output.

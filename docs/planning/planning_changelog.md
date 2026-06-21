@@ -1,5 +1,50 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3S - 2026-06-21
+
+### Persistent Quote Cache Enablement Smoke Harness
+
+- Created `docs/planning/phase_3s_persistent_quote_cache_enablement_smoke_harness_result_v0.1.md`.
+- Added `scripts/owner_smoke_persistent_quote_cache_live.mjs`.
+- Added `npm run smoke:persistent-quote-cache-live:dry`.
+- Prepared an owner-run persistent adapter live smoke harness.
+- The live smoke harness is fail-closed.
+- Live mode requires all explicit owner approval flags before any live Supabase access can occur:
+  - `QUOTE_CACHE_BACKEND=supabase`
+  - `PHASE_3S_LIVE_SMOKE=OWNER_APPROVED`
+  - `PHASE_3S_TARGET_CONFIRMED=production-or-controlled-runtime-confirmed`
+  - `PHASE_3S_BACKUP_RISK_ACCEPTED=OWNER_ACCEPTS_CURRENT_RISK`
+  - owner-selected `PHASE_3S_SMOKE_MARKET`
+  - owner-selected `PHASE_3S_SMOKE_SYMBOL`
+- Dry-run/mock validation passed.
+- The dry-run path uses a mock Supabase client and does not import the live Supabase admin helper.
+- The harness validates normalized cache-key creation, success write, readback, fresh classification, stale classification, sanitized failure metadata update, and cleanup/delete behavior.
+- The live path includes a cleanup/restore strategy for the selected smoke cache key.
+- No live Supabase query or write was executed by Codex.
+- No SQL was executed by Codex.
+- No Supabase MCP database query was run by Codex.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Codex.
+- No production DB was touched by Codex.
+- No live KIS call was run by Codex.
+- No UI live quote wiring was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No root `README.md` change was made.
+- No migration file change was made.
+- No production SQL pack file change was made.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, or secret-bearing outputs were recorded.
+- Validation passed:
+  - `npm run smoke:persistent-quote-cache-live:dry`
+  - `node scripts/smoke_persistent_quote_cache_adapter.mjs`
+  - `node scripts/smoke_quote_cache_policy.mjs`
+  - `node scripts/smoke_market_quote_route_disabled.mjs`
+  - `npm run check:provider-boundaries`
+  - `npx tsc --noEmit`
+  - `npm run build`
+- Browser/static output scans found no provider secret markers or server-only markers.
+- Recommended next action: owner manually runs the live smoke only after confirming runtime target and risk acceptance, then records sanitized pass/fail results in a separate phase.
+
 ## Phase 3R - 2026-06-21
 
 ### Persistent Quote Cache Adapter
