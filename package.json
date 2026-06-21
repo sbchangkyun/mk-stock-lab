@@ -12,6 +12,7 @@
     "check:provider-boundaries": "node scripts/check_server_only_provider_boundaries.mjs",
     "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
     "smoke:persistent-quote-cache-live:dry": "node scripts/owner_smoke_persistent_quote_cache_live.mjs",
+    "smoke:kis-quote-live:dry": "node scripts/owner_smoke_kis_quote_live.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

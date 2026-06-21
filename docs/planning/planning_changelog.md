@@ -1,5 +1,40 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3Y - 2026-06-21
+
+### Local KIS Quote Smoke Harness
+
+- Created `scripts/owner_smoke_kis_quote_live.mjs` — fail-closed, owner-run, local-only KIS quote smoke harness.
+- Added `smoke:kis-quote-live:dry` npm script.
+- Harness is fail-closed and defaults to dry-run/mock mode.
+- Live KIS mode requires all five owner approval guard env vars with exact required values.
+- Live KIS mode rejects production runtime (`NODE_ENV` or `VERCEL_ENV` equals `production`) with `PRODUCTION_RUNTIME_NOT_ALLOWED`.
+- Live KIS mode rejects `KIS_ACCOUNT_NO` presence with `ACCOUNT_ENV_NOT_ALLOWED` — quote-only scope enforced.
+- Harness checks only env name presence for KIS config, never values.
+- Harness uses stub KIS provider in dry-run mode — no live KIS code loaded.
+- Harness uses in-process mock cache for cache-write, fresh-readback, cleanup-restore steps in both modes.
+- Harness emits sanitized `phase3y step=... status=... sanitized=true` output only.
+- Forbidden output pattern blocks raw KIS fields, credentials, tokens, secrets, and stack traces.
+- Step labels implemented: guard-check, runtime-check, smoke-identity-validation, account-env-check, kis-env-preflight, runtime-setup, provider-import, quote-fetch, quote-normalization, cache-backend-check, cache-write, fresh-readback, cleanup-restore, final-result, dry-run-guard-sim, dry-run-runtime-sim, dry-run-env-sim, dry-run-identity-sim, dry-run-account-env-sim.
+- Dry-run/mock validation passed — all 32 output lines confirmed.
+- `wouldEmitGuardNotApproved=true`, `currentRuntimeIsProduction=false`, `wouldEmitKisConfigMissing=true`, `errorDetected=true`, `accountEnvCurrentlyAbsent=true` all confirmed.
+- `npm run check:provider-boundaries` passed.
+- `npx tsc --noEmit` passed.
+- `npm run build` passed.
+- No live KIS call by Claude Code.
+- No live Supabase query/write by Claude Code.
+- No SQL.
+- No Supabase MCP DB query.
+- No project listing.
+- No production DB touch.
+- No `.env*` read.
+- No Vercel env mutation.
+- No deployment.
+- No UI live quote wiring.
+- No production KIS guard change.
+- No project refs, secrets, screenshots, raw errors, or stack traces recorded.
+- Recommended next action: owner manually runs local KIS quote smoke and records sanitized output in Phase 3Z.
+
 ## Phase 3X - 2026-06-21
 
 ### Vercel Environment Readiness And KIS Production Gate Decision Plan
