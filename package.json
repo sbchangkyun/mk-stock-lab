@@ -13,6 +13,7 @@
     "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
     "smoke:persistent-quote-cache-live:dry": "node scripts/owner_smoke_persistent_quote_cache_live.mjs",
     "smoke:kis-quote-live:dry": "node scripts/owner_smoke_kis_quote_live.mjs",
+    "smoke:supabase-cache-live-kis-quote:dry": "node scripts/owner_smoke_supabase_cache_live_kis_quote.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

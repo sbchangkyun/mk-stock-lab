@@ -2,6 +2,32 @@
 
 ## Phase 3AB - 2026-06-21
 
+### Supabase Persistent Cache Live KIS Quote Harness Implementation (Option B)
+
+- Created `scripts/owner_smoke_supabase_cache_live_kis_quote.mjs` — fail-closed owner-run harness.
+- Added `smoke:supabase-cache-live-kis-quote:dry` script to `package.json`.
+- Created `docs/planning/phase_3ab_supabase_persistent_cache_live_kis_quote_harness_result_v0.1.md`.
+- Dry-run validation passed: all 26 output lines passed the forbidden output pattern scanner. No live KIS call. No live Supabase connection.
+- Implementation uses Strategy 1 (in-process memory flush): first `getQuoteSnapshot()` call writes to memory + Supabase; `clearQuoteCacheForTests()` clears in-memory Map only; second `getQuoteSnapshot()` reads from Supabase → `cache-fresh`. This conclusively proves Supabase readback because the second `cache-fresh` response cannot come from the cleared in-memory Map.
+- Dry-run mock: `supabaseAdmin.ts` replaced with an in-process stub backed by a `Map`; `options.provider` injected as a mock KIS provider returning a synthetic snapshot; `QUOTE_CACHE_BACKEND=supabase` set internally.
+- Dry-run key results: `firstCallReason=provider-fresh`, `secondCallReason=cache-fresh`, `supabaseReadbackConclusive=true`, `mockUpsertCalled=true`, `mockSelectCalled=true`.
+- TypeScript compiled to isolated `.astro/phase3ab-smoke-*/out/` temp directory; cleaned up in `finally` block.
+- Forbidden output pattern blocks KIS credentials, Supabase credentials, `supabase.co`, raw KIS field names, `stack`, `trace`, and all other sensitive terms.
+- Guard env var names required for live mode: `MK_STOCK_LAB_PHASE_3AB_LIVE_APPROVAL=OWNER_APPROVES_LIVE_KIS_AND_SUPABASE_CACHE_SMOKE`, `MK_STOCK_LAB_PHASE_3AB_LIVE_MODE=true`.
+- Additional live mode requirements: `QUOTE_CACHE_BACKEND=supabase`, `KIS_ACCOUNT_NO` absent, non-production runtime, symbol via `MK_STOCK_LAB_PHASE_3AB_SYMBOL`.
+- No live KIS call by Claude Code.
+- No live Supabase query/write by Claude Code.
+- No SQL executed.
+- No Astro dev server started.
+- No Vercel command or environment mutation.
+- No deployment.
+- No UI wiring.
+- No production KIS guard changed.
+- No secrets, price values, raw KIS fields, raw errors, or stack traces recorded.
+- Live run requires explicit owner action (procedure documented in result file Section 7).
+
+## Phase 3AB - 2026-06-21
+
 ### Supabase Persistent Cache Live KIS Quote Validation Plan (Planning Only)
 
 - Created `docs/planning/phase_3ab_supabase_persistent_cache_live_kis_quote_validation_plan_v0.1.md`.
