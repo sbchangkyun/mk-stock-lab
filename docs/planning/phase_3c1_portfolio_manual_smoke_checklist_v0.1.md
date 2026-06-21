@@ -1,3 +1,24 @@
+## Phase 3N.7 Dashboard SQL Validation Result Owner Review Delta
+
+Use this Korean-first format when reviewing the Phase 3N.7 dashboard SQL validation result record. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3N.7 Dashboard SQL Validation Result 기록 결과:
+
+* Phase 3N.6 SQL pack 수동 실행 결과가 문서화됨: 통과/실패
+* disposable project에서만 실행한 것으로 기록됨: 통과/실패
+* production DB 접근/변경 없음이 기록됨: 통과/실패
+* baseline/fixture 결과가 all pass로 기록됨: 통과/실패
+* Phase 3M migration 적용 결과가 pass로 기록됨: 통과/실패
+* schema/constraint/index/backfill/RLS/grant/negative validation 결과가 all pass로 기록됨: 통과/실패
+* cleanup 결과가 pass로 기록됨: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* production 적용은 별도 승인 gate 전까지 차단됨: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3N.5 Runtime-only Supabase Target SQL Validation Owner Review Delta
 
 Use this Korean-first format when reporting Phase 3N.5 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.

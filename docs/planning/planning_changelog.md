@@ -1,5 +1,42 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3N.7 - 2026-06-21
+
+### Dashboard SQL Validation Result
+
+- Created `docs/planning/phase_3n7_dashboard_sql_validation_result_v0.1.md`.
+- Owner manually ran the Phase 3N.6 SQL pack in the disposable Supabase Dashboard SQL Editor.
+- Owner reported all sanitized validation results passed.
+- Target category remains `disposable-remote-approved`.
+- Phase 3M migration disposable validation is recorded as passed based on owner-provided sanitized results.
+- Validated migration: `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Step 01 baseline/fixture SQL passed.
+- Synthetic rows insertion passed.
+- Step 02 Phase 3M migration application passed.
+- Step 03 schema validation passed.
+- Step 03 constraint/index validation passed.
+- Step 03 backfill validation passed.
+- Step 03 RLS/grant validation passed.
+- Step 04 negative validation passed.
+- Step 05 cleanup passed.
+- No SQL was executed by Codex.
+- No Supabase MCP database query was run by Codex.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Codex.
+- No Supabase write occurred by Codex.
+- No production DB was touched.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, or secret-bearing outputs were recorded.
+- No app source files changed.
+- No migration files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No persistent cache adapter was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3N.7 changed documentation only.
+- Recommended next action: prepare a separate production migration approval and execution plan, or proceed to the next implementation phase only after owner approval.
+
 ## Phase 3N.6 - 2026-06-21
 
 ### Dashboard SQL Validation Pack
