@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3N.5 - 2026-06-21
+
+### Runtime Target SQL Validation Attempt
+
+- Created `docs/planning/phase_3n5_runtime_target_sql_validation_result_v0.1.md`.
+- Owner approved runtime-only use of the already-configured disposable Supabase project identifier solely as an MCP tool target argument.
+- Target category remains `disposable-remote-approved`.
+- Stopped before SQL because no runtime-only target handle is available to Codex in the callable context without recording or discovering the identifier.
+- Supabase projects were not listed.
+- Migration file intended for validation: `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Baseline migration file: `supabase/migrations/20260615_rebuild_schema_v0_1.sql`.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, or secret-bearing outputs were recorded.
+- No SQL was run.
+- No migration was applied.
+- No Supabase MCP database query was run.
+- No Supabase write occurred.
+- No production DB was touched.
+- No app source files changed.
+- No migration files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No persistent cache adapter was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3N.5 changed documentation only.
+- Recommended next action: adjust the secure MCP setup so SQL tools can use the scoped disposable target without Codex supplying a visible target identifier value, then rerun Phase 3N.5.
+
 ## Phase 3N.4 - 2026-06-21
 
 ### Disposable Supabase SQL Validation Attempt
