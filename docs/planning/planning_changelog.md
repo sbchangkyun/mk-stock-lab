@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3X - 2026-06-21
+
+### Vercel Environment Readiness And KIS Production Gate Decision Plan
+
+- Created Vercel env readiness and KIS production gate decision plan.
+- Recorded Phase 3W baseline: Phase 3V cache smoke passed; KIS live end-to-end flow unvalidated; UI live quote wiring blocked; Vercel env mutation blocked.
+- Recorded that KIS live provider end-to-end flow remains unvalidated.
+- Recorded that UI live quote wiring remains blocked.
+- Documented required env names by names only, without values.
+- Documented secret/non-secret/project-identifying variable classification.
+- Documented local vs Vercel Preview vs Vercel Production readiness strategy.
+- Documented current production KIS guard behavior: `isProductionRuntime()` returns `production_not_allowed` when `NODE_ENV` or `VERCEL_ENV` is `production`; fail-closed regardless of env var values.
+- Documented that setting Vercel Production env values alone does not enable production KIS calls.
+- Documented production KIS gate decision options: Option A (keep production blocked), Option B (Preview-only live KIS), Option C (production read-only KIS behind multiple gates).
+- Recommended local owner-run KIS smoke (Phase 3Y) before any Vercel mutation, production guard code change, deployment, or UI wiring.
+- Documented owner approval gates for: local KIS env check, live KIS call, Vercel env mutation, production guard code change, deployment, server-side HTTP smoke, UI wiring, Portfolio/Chart AI integration, account-context variable setup.
+- Documented future phase sequence: Phase 3Y (local KIS smoke), Phase 3Z (result recording), Phase 3AA (API endpoint verification), Phase 3AB (gate decision), Phase 3AC (Vercel env and deployment), Phase 3AD (controlled UI wiring).
+- No code changes.
+- No live KIS call.
+- No live Supabase query/write.
+- No SQL.
+- No Supabase MCP DB query.
+- No project listing.
+- No production DB touch.
+- No `.env*` read.
+- No Vercel env mutation.
+- No deployment.
+- No UI live quote wiring.
+- No project refs, secrets, screenshots, raw errors, or stack traces recorded.
+- Recommended next action: Phase 3Y local owner-run KIS quote smoke harness plan or implementation, only after owner approval.
+
 ## Phase 3W - 2026-06-21
 
 ### Controlled Live Quote Integration Readiness Plan
