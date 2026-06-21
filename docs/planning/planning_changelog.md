@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AB - 2026-06-21
+
+### Supabase Persistent Cache Live KIS Quote Validation Plan (Planning Only)
+
+- Created `docs/planning/phase_3ab_supabase_persistent_cache_live_kis_quote_validation_plan_v0.1.md`.
+- Phase 3AB is planning-only. No live calls were run. No execution occurred.
+- Plan defines a future owner-run validation for the combined path: live KIS quote response persisted to and read back from Supabase persistent quote cache through the full quote pipeline with `QUOTE_CACHE_BACKEND=supabase`.
+- Remaining gap documented: Phase 3V validated Supabase cache independently with a synthetic payload; Phase 3Z validated local live KIS quote fetch and normalization with in-process mock cache; Phase 3AA validated the HTTP route response shape; none of these validated live KIS data flowing through Supabase persistent cache.
+- Key finding: the current `/api/market/quote` response contract can distinguish `provider-fresh` from `cache-fresh` via `fallback.reason`, but cannot conclusively prove Supabase readback (vs memory readback) in the same process, because both backends are written simultaneously by `setConfiguredQuoteCacheEntry()`.
+- Cold-start readback approach defined: a two-run procedure with a process restart between runs clears the in-memory cache, making a `cache-fresh` second-request response conclusively attributable to Supabase.
+- Three execution options defined: Option A (manual cold-start), Option B (fail-closed harness using `clearQuoteCacheForTests()` for timing-reliable in-process Supabase readback proof), Option C (temporary instrumentation — least preferred).
+- Recommended path: Option B harness, modeled after Phase 3Y, requiring explicit owner approval before implementation.
+- TTL timing constraint documented: 15-second fresh TTL (`QUOTE_CACHE_FRESH_TTL_MS = 15_000`) makes Option A timing-sensitive.
+- Safety gates defined: owner-run only, local non-production, `KIS_ACCOUNT_NO` absent, all secrets private, sanitized evidence only.
+- Owner evidence template provided with cold-start two-run evidence fields.
+- No live KIS call by Claude Code.
+- No live Supabase query/write by Claude Code.
+- No SQL executed.
+- No Astro dev server started by Claude Code.
+- No Vercel command or environment mutation.
+- No deployment.
+- No UI wiring.
+- No source code or scripts changed.
+- No production KIS guard changed.
+- No project refs, secrets, price values, raw KIS fields, screenshots, raw errors, or stack traces recorded.
+- Any future execution requires explicit owner approval.
+- Harness implementation (Option B) requires explicit owner approval.
+
 ## Phase 3AA - 2026-06-21
 
 ### Owner-Run Manual Local HTTP Endpoint Verification Result
