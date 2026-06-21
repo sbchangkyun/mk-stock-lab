@@ -1,3 +1,26 @@
+## Phase 3R Persistent Quote Cache Adapter Owner Review Delta
+
+Use this Korean-first format when reviewing Phase 3R. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, environment values, or secret-bearing output.
+
+```text
+Phase 3R Persistent Supabase Quote Cache Adapter 검토 결과:
+
+* persistent Supabase quote cache adapter가 server-only로 구현됨: 통과/실패
+* memory cache가 default backend로 유지됨: 통과/실패
+* Supabase persistent backend가 opt-in 방식으로만 동작함: 통과/실패
+* raw KIS payload/token/key/header/account data가 저장되지 않음: 통과/실패
+* quote_json에는 normalized public quote snapshot만 저장되도록 제한됨: 통과/실패
+* service-role/server-side write boundary가 유지됨: 통과/실패
+* browser/client 코드가 persistent adapter를 import하지 않음: 통과/실패
+* Codex가 Supabase live query/write를 실행하지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* UI live quote wiring이 아직 구현되지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* mock/static validation이 통과함: 통과/실패
+* 다음 단계가 별도 adapter enablement 또는 API smoke approval임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3Q Production Migration Execution Result Owner Review Delta
 
 Use this Korean-first format when reviewing the Phase 3Q production migration execution result record. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.

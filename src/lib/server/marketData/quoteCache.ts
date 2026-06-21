@@ -5,8 +5,10 @@ const moduleName = 'marketData/quoteCache';
 
 export const QUOTE_CACHE_FRESH_TTL_MS = 15_000;
 export const QUOTE_CACHE_STALE_TTL_MS = 120_000;
+export const QUOTE_CACHE_BACKEND_ENV_NAME = 'QUOTE_CACHE_BACKEND';
 
 export type QuoteCacheState = Extract<FallbackState, 'fresh' | 'stale-but-usable' | 'expired' | 'unavailable'>;
+export type QuoteCacheBackendName = 'memory' | 'supabase';
 
 export type QuoteCacheEntry = {
   snapshot: QuoteSnapshot;
@@ -90,4 +92,52 @@ export const cloneQuoteSnapshotForCache = (snapshot: QuoteSnapshot, staleState?:
 export const clearQuoteCacheForTests = () => {
   assertServerRuntime(moduleName);
   quoteCache.clear();
+};
+
+export const getConfiguredQuoteCacheBackendName = (): QuoteCacheBackendName => {
+  assertServerRuntime(moduleName);
+  return process.env[QUOTE_CACHE_BACKEND_ENV_NAME] === 'supabase' ? 'supabase' : 'memory';
+};
+
+export const isSupabaseQuoteCacheBackendEnabled = () => getConfiguredQuoteCacheBackendName() === 'supabase';
+
+const loadSupabaseQuoteCache = async () => import('./supabaseQuoteCache');
+
+export const getConfiguredQuoteCacheEntry = async (
+  identity: Pick<SecurityIdentity, 'market' | 'symbol'>,
+  nowMs = Date.now(),
+): Promise<(QuoteCacheEntry & { state: QuoteCacheState }) | null> => {
+  assertServerRuntime(moduleName);
+  if (!isSupabaseQuoteCacheBackendEnabled()) return getQuoteCacheEntry(identity, nowMs);
+
+  const persistentCache = await loadSupabaseQuoteCache();
+  const persistentEntry = await persistentCache.readSupabaseQuoteCacheEntry(identity, { nowMs });
+  if (persistentEntry.ok) return persistentEntry.entry;
+
+  return getQuoteCacheEntry(identity, nowMs);
+};
+
+export const setConfiguredQuoteCacheEntry = async (
+  snapshot: QuoteSnapshot,
+  nowMs = Date.now(),
+): Promise<QuoteCacheEntry> => {
+  assertServerRuntime(moduleName);
+  const memoryEntry = setQuoteCacheEntry(snapshot, nowMs);
+  if (!isSupabaseQuoteCacheBackendEnabled()) return memoryEntry;
+
+  const persistentCache = await loadSupabaseQuoteCache();
+  const persistentWrite = await persistentCache.writeSupabaseQuoteCacheSuccess(snapshot, { nowMs });
+  return persistentWrite.ok ? persistentWrite.entry : memoryEntry;
+};
+
+export const recordConfiguredQuoteCacheRefreshFailure = async (
+  identity: Pick<SecurityIdentity, 'market' | 'symbol'>,
+  errorCode: string,
+  nowMs = Date.now(),
+) => {
+  assertServerRuntime(moduleName);
+  if (!isSupabaseQuoteCacheBackendEnabled()) return;
+
+  const persistentCache = await loadSupabaseQuoteCache();
+  await persistentCache.writeSupabaseQuoteCacheRefreshFailure(identity, errorCode, { nowMs });
 };

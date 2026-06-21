@@ -1,9 +1,14 @@
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+type ImportMetaWithEnv = ImportMeta & {
+  env?: Record<string, string | undefined>;
+};
+
+const getImportMetaEnv = () => (import.meta as ImportMetaWithEnv).env ?? {};
+const getSupabaseUrl = () => getImportMetaEnv().PUBLIC_SUPABASE_URL;
+const getSupabaseAnonKey = () => getImportMetaEnv().PUBLIC_SUPABASE_ANON_KEY;
 const getSupabaseServiceRoleKey = () =>
-  process.env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_SERVICE_ROLE_KEY || getImportMetaEnv().SUPABASE_SERVICE_ROLE_KEY;
 
 type UserValidationResult =
   | { ok: true; user: User }
@@ -18,9 +23,9 @@ const assertServerRuntime = () => {
 };
 
 export const isSupabaseServerConfigured = () =>
-  Boolean(supabaseUrl && supabaseAnonKey && getSupabaseServiceRoleKey());
+  Boolean(getSupabaseUrl() && getSupabaseAnonKey() && getSupabaseServiceRoleKey());
 
-export const isSupabasePublicServerConfigured = () => Boolean(supabaseUrl && supabaseAnonKey);
+export const isSupabasePublicServerConfigured = () => Boolean(getSupabaseUrl() && getSupabaseAnonKey());
 
 export const getSupabaseAdminClient = () => {
   assertServerRuntime();
@@ -30,8 +35,9 @@ export const getSupabaseAdminClient = () => {
   }
 
   if (!adminClient) {
+    const supabaseUrl = getSupabaseUrl();
     const serviceRoleKey = getSupabaseServiceRoleKey();
-    if (!serviceRoleKey) {
+    if (!supabaseUrl || !serviceRoleKey) {
       throw new Error('Supabase server configuration is missing.');
     }
 
@@ -79,6 +85,8 @@ export const validateUserFromBearerToken = async (
     };
   }
 
+  const supabaseUrl = getSupabaseUrl() ?? '';
+  const supabaseAnonKey = getSupabaseAnonKey() ?? '';
   const authClient = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,

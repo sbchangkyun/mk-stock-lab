@@ -1,5 +1,51 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3R - 2026-06-21
+
+### Persistent Quote Cache Adapter
+
+- Created `docs/planning/phase_3r_persistent_quote_cache_adapter_result_v0.1.md`.
+- Implemented a server-only persistent Supabase quote cache adapter for `market_quote_cache`.
+- Kept the adapter disabled by default.
+- Preserved the in-memory quote cache as the default backend.
+- Added the non-secret `QUOTE_CACHE_BACKEND` runtime switch; only the explicit value `supabase` selects the persistent adapter.
+- Added normalized cache-key handling using `quote:{market}:{UPPER_SYMBOL}`.
+- Added persistent cache read support with fresh, stale-but-usable, expired, and miss classification.
+- Added success upsert support for normalized public quote snapshots only.
+- Added sanitized refresh-failure metadata write support for existing cache rows.
+- Reused the existing server-only Supabase admin helper without printing or resolving environment values during validation.
+- Adjusted the Supabase admin helper so mock-only Node validation can import server code without resolving env values at module load time.
+- Updated the quote service to use the configured cache backend while preserving default memory behavior.
+- Strengthened provider/server boundary validation against client imports of server modules and the persistent quote cache adapter.
+- Added `scripts/smoke_persistent_quote_cache_adapter.mjs`.
+- Added `npm run smoke:persistent-quote-cache`.
+- Raw KIS payloads are not persisted.
+- Provider headers, authorization headers, app keys, tokens, account numbers, raw errors, stack traces, DB URLs, connection strings, user IDs, portfolio IDs, and position IDs are not persisted.
+- No UI live quote wiring was implemented.
+- No live Supabase query or write was executed by Codex.
+- No Supabase MCP database query was run by Codex.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Codex.
+- No SQL was executed by Codex.
+- No production DB was touched by Codex.
+- No live KIS call was run by Codex.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No root `README.md` change was made.
+- No migration file change was made.
+- No production SQL pack file change was made.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, or secret-bearing outputs were recorded.
+- Validation passed:
+  - `node scripts/smoke_persistent_quote_cache_adapter.mjs`
+  - `node scripts/smoke_quote_cache_policy.mjs`
+  - `node scripts/smoke_market_quote_route_disabled.mjs`
+  - `npm run check:provider-boundaries`
+  - `npx tsc --noEmit`
+  - `npm run build`
+- Vercel output artifacts were generated: `.vercel/output/config.json`, `.vercel/output/functions/_render.func`, and `.vercel/output/static`.
+- Browser/static output scans found no provider secret markers or server-only markers.
+- Recommended next action: run a separate owner-approved persistent adapter enablement/API smoke before any UI live quote wiring.
+
 ## Phase 3Q - 2026-06-21
 
 ### Production Migration Execution Result

@@ -10,6 +10,7 @@
     "build": "astro build",
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:provider-boundaries": "node scripts/check_server_only_provider_boundaries.mjs",
+    "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

@@ -4,8 +4,9 @@ import { assertServerRuntime } from '../providers/serverOnly';
 import type { ProviderResult, QuoteSnapshot, SecurityIdentity } from '../providers/types';
 import {
   cloneQuoteSnapshotForCache,
-  getQuoteCacheEntry,
-  setQuoteCacheEntry,
+  getConfiguredQuoteCacheEntry,
+  recordConfiguredQuoteCacheRefreshFailure,
+  setConfiguredQuoteCacheEntry,
   toQuoteCacheMetadata,
 } from './quoteCache';
 
@@ -41,7 +42,7 @@ export const getQuoteSnapshot = async (
   if (validationError) return validationError;
 
   const nowMs = options.nowMs ?? Date.now();
-  const cached = getQuoteCacheEntry(identity, nowMs);
+  const cached = await getConfiguredQuoteCacheEntry(identity, nowMs);
 
   if (cached?.state === 'fresh') {
     const snapshot = cloneQuoteSnapshotForCache(cached.snapshot, 'fresh');
@@ -61,7 +62,7 @@ export const getQuoteSnapshot = async (
   const providerResult = await provider(identity);
 
   if (providerResult.ok) {
-    const entry = setQuoteCacheEntry(providerResult.data, nowMs);
+    const entry = await setConfiguredQuoteCacheEntry(providerResult.data, nowMs);
     return {
       ok: true,
       data: cloneQuoteSnapshotForCache(providerResult.data, 'fresh'),
@@ -73,6 +74,8 @@ export const getQuoteSnapshot = async (
       },
     };
   }
+
+  await recordConfiguredQuoteCacheRefreshFailure(identity, providerResult.code, nowMs);
 
   if (cached?.state === 'stale-but-usable') {
     const snapshot = cloneQuoteSnapshotForCache(cached.snapshot, 'stale-but-usable');

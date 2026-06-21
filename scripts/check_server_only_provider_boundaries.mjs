@@ -54,9 +54,18 @@ for (const file of sourceFiles) {
   const relative = toPosix(file);
   const content = fs.readFileSync(file, 'utf8');
   const importsProviderModule = /from\s+['"].*server\/providers|import\s*\(['"].*server\/providers/.test(content);
+  const importsServerModule = /from\s+['"].*lib\/server|import\s*\(['"].*lib\/server/.test(content);
+  const importsPersistentQuoteCache =
+    /from\s+['"].*server\/marketData\/supabaseQuoteCache|import\s*\(['"].*server\/marketData\/supabaseQuoteCache/.test(content);
   const isServerFile = relative.startsWith('src/lib/server/') || relative.startsWith('src/pages/api/');
   if (importsProviderModule && !isServerFile) {
     failures.push(`${relative}: imports server provider module outside server boundary`);
+  }
+  if (importsServerModule && !isServerFile) {
+    failures.push(`${relative}: imports server module outside server boundary`);
+  }
+  if (importsPersistentQuoteCache && !isServerFile) {
+    failures.push(`${relative}: imports persistent quote cache adapter outside server boundary`);
   }
 }
 
