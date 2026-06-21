@@ -1,3 +1,27 @@
+## Phase 3Q Production Migration Execution Result Owner Review Delta
+
+Use this Korean-first format when reviewing the Phase 3Q production migration execution result record. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3Q Production Migration Execution Result 기록 결과:
+
+* production 수동 실행 결과가 문서화됨: 통과/실패
+* production target confirmed 결과가 기록됨: 통과/실패
+* Free Plan backup/PITR/snapshot 미제공 리스크 수용이 기록됨: 통과/실패
+* Script 01 precheck all pass 및 safe_to_apply pass가 기록됨: 통과/실패
+* Script 02 Phase 3M migration applied pass가 기록됨: 통과/실패
+* Script 03 post-migration validation pass가 기록됨: 통과/실패
+* RLS/grants preserved pass가 기록됨: 통과/실패
+* Script 04 cleanup-none pass가 기록됨: 통과/실패
+* production DB changed yes가 기록됨: 통과/실패
+* rollback/corrective action needed no가 기록됨: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 단계가 별도 persistent cache adapter 구현 승인임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3P Production Dashboard SQL Execution Pack Owner Review Delta
 
 Use this Korean-first format when reviewing the Phase 3P production Dashboard SQL execution pack. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.

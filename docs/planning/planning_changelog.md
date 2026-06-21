@@ -1,5 +1,43 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3Q - 2026-06-21
+
+### Production Migration Execution Result
+
+- Created `docs/planning/phase_3q_production_migration_execution_result_v0.1.md`.
+- Owner manually executed the Phase 3P production Dashboard SQL script pack in Supabase SQL Editor.
+- Owner reported production target confirmation passed.
+- Owner reported disposable/non-production target was not selected.
+- Owner reported the production project is on Free Plan.
+- Owner reported dashboard-native scheduled backup, PITR, or snapshot was unavailable.
+- Owner explicitly accepted the backup-unavailable risk before running Script 02.
+- Script 01 production prechecks passed.
+- Script 01 final row `safe_to_apply_phase_3m_migration` passed.
+- Script 02 Phase 3M migration application passed.
+- Script 03 post-migration validation passed.
+- Script 03 RLS/grants preserved passed.
+- Script 04 cleanup-none confirmation passed.
+- Production DB changed by owner manual execution, not by Codex.
+- Rollback or corrective action was not needed according to the owner-provided sanitized result.
+- No SQL was executed by Codex.
+- No Supabase MCP database query was run by Codex.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Codex.
+- No Supabase write occurred by Codex.
+- No production DB was touched by Codex.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, or secret-bearing outputs were recorded.
+- No app source files changed.
+- No migration files changed.
+- No production SQL pack files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No persistent cache adapter was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3Q changed documentation only.
+- Recommended next action: approve the next implementation phase only after owner review, with persistent cache adapter work kept separate.
+
 ## Phase 3P - 2026-06-21
 
 ### Production Dashboard SQL Execution Pack
