@@ -1,3 +1,28 @@
+## Phase 3U Owner Live Smoke Diagnostic Improvement Owner Review Delta
+
+Use this format when reviewing Phase 3U. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3U Owner Live Smoke Diagnostic Improvement 검토 결과:
+
+* owner live smoke harness에 단계별 sanitized diagnostic label이 추가됨: 통과/실패
+* `UNEXPECTED_SAFE_FAILURE`가 last-resort fallback으로 축소됨: 통과/실패
+* setup/import/config/client-construction/precheck/write/readback/cleanup 실패 구간이 구분됨: 통과/실패
+* config preflight가 값 노출 없이 존재 여부만 검증함: 통과/실패
+* Node harness와 Astro `import.meta.env` 경계가 안전하게 개선됨: 통과/실패/해당 없음
+* live mode fail-closed guard가 유지됨: 통과/실패
+* dry-run/mock validation이 통과함: 통과/실패
+* Claude Code가 live smoke를 재실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* 다음 단계가 별도 owner-approved live retry/result phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3T Owner Live Smoke Failed Result Owner Review Delta
 
 Use this Korean-first format when reviewing Phase 3T. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.

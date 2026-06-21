@@ -5,8 +5,11 @@ type ImportMetaWithEnv = ImportMeta & {
 };
 
 const getImportMetaEnv = () => (import.meta as ImportMetaWithEnv).env ?? {};
-const getSupabaseUrl = () => getImportMetaEnv().PUBLIC_SUPABASE_URL;
-const getSupabaseAnonKey = () => getImportMetaEnv().PUBLIC_SUPABASE_ANON_KEY;
+// Falls back to process.env so the owner-run Node harness can supply these
+// without relying on import.meta.env, which is Astro-runtime-only.
+const getSupabaseUrl = () => getImportMetaEnv().PUBLIC_SUPABASE_URL ?? process.env['PUBLIC_SUPABASE_URL'];
+const getSupabaseAnonKey = () =>
+  getImportMetaEnv().PUBLIC_SUPABASE_ANON_KEY ?? process.env['PUBLIC_SUPABASE_ANON_KEY'];
 const getSupabaseServiceRoleKey = () =>
   process.env.SUPABASE_SERVICE_ROLE_KEY || getImportMetaEnv().SUPABASE_SERVICE_ROLE_KEY;
 

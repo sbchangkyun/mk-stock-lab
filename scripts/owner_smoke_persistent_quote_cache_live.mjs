@@ -29,6 +29,9 @@ const requiredLiveGuards = {
   PHASE_3S_BACKUP_RISK_ACCEPTED: 'OWNER_ACCEPTS_CURRENT_RISK',
 };
 
+// Names checked for presence only; values are never printed or compared.
+const requiredLiveConfigNames = ['PUBLIC_SUPABASE_URL', 'PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'];
+
 const supportedMarkets = new Set(['KR', 'US', 'GLOBAL']);
 const filesToCompile = [
   'src/lib/server/marketData/supabaseQuoteCache.ts',
@@ -40,15 +43,34 @@ const filesToCompile = [
 const forbiddenOutputPattern =
   /KIS_APP_SECRET|KIS_APP_KEY|OPENAI_API_KEY|GEMINI_API_KEY|OPENDART_API_KEY|SUPABASE_SERVICE_ROLE_KEY|access_token|appsecret|appkey|authorization|Bearer|account|portfolioId|positionId|connectionString|project_ref|jwt|password|stack|raw/i;
 
+// Emits a safe blocked notice before throwing so the owner sees SAFE_OUTPUT_BLOCKED
+// in their terminal rather than a silent throw cascading to UNEXPECTED_SAFE_FAILURE.
 const logSafe = (message) => {
   if (forbiddenOutputPattern.test(message)) {
+    console.log('phase3u step=safe-output-guard status=blocked code=SAFE_OUTPUT_BLOCKED sanitized=true');
     throw new Error('Unsafe smoke output blocked.');
   }
   console.log(message);
 };
 
+// Builds and emits a structured sanitized step line.
+// Pattern: phase3u step=<step> status=<status> [key=value ...] sanitized=true
+const logStep = (step, status, extra = {}) => {
+  const parts = [`phase3u step=${step} status=${status}`];
+  for (const [k, v] of Object.entries(extra)) {
+    parts.push(`${k}=${v}`);
+  }
+  parts.push('sanitized=true');
+  logSafe(parts.join(' '));
+};
+
 const isLiveApproved = () =>
   Object.entries(requiredLiveGuards).every(([name, expected]) => process.env[name] === expected);
+
+// Checks only whether the required config names are present in process.env.
+// Never reads, compares, prints, or returns config values.
+const checkLiveConfigPresence = () =>
+  requiredLiveConfigNames.every((name) => Boolean(process.env[name]));
 
 const normalizeMarket = (value) => (typeof value === 'string' ? value.trim().toUpperCase() : '');
 const normalizeSymbol = (value) => (typeof value === 'string' ? value.trim().toUpperCase() : '');
@@ -89,7 +111,7 @@ const compileFile = (file, outDir) => {
 const createCompiledRuntime = (live) => {
   const astroTempDir = path.join(repoRoot, '.astro');
   fs.mkdirSync(astroTempDir, { recursive: true });
-  const tempRoot = fs.mkdtempSync(path.join(astroTempDir, 'phase3s-smoke-'));
+  const tempRoot = fs.mkdtempSync(path.join(astroTempDir, 'phase3u-smoke-'));
   const outDir = path.join(tempRoot, 'out');
   for (const file of filesToCompile) compileFile(file, outDir);
 
@@ -131,12 +153,7 @@ const buildSnapshot = ({ market, symbol }, nowIso) => ({
 
 const createMockClient = () => {
   const rows = new Map();
-  const calls = {
-    select: 0,
-    upsert: 0,
-    update: 0,
-    delete: 0,
-  };
+  const calls = { select: 0, upsert: 0, update: 0, delete: 0 };
 
   return {
     calls,
@@ -207,86 +224,220 @@ const runSmoke = async ({ adapter, client, identity, live }) => {
   const nowMs = Date.now();
   const nowIso = new Date(nowMs).toISOString();
   const cacheKey = adapter.buildSupabaseQuoteCacheKey(identity);
-  const original = await readRawRow(client, cacheKey);
-  if (!original.ok) return { ok: false, code: 'PRECHECK_READ_FAILED' };
+
+  logStep('precheck-read', 'started');
+  let original;
+  try {
+    original = await readRawRow(client, cacheKey);
+  } catch {
+    logStep('precheck-read', 'failed', { code: 'PRECHECK_READ_FAILED' });
+    return { ok: false, code: 'PRECHECK_READ_FAILED' };
+  }
+  if (!original.ok) {
+    logStep('precheck-read', 'failed', { code: 'PRECHECK_READ_FAILED' });
+    return { ok: false, code: 'PRECHECK_READ_FAILED' };
+  }
+  logStep('precheck-read', 'passed');
+  logStep('existing-row-snapshot', 'passed', { existingRowFound: String(Boolean(original.row)) });
 
   const snapshot = buildSnapshot(identity, nowIso);
 
   try {
+    logStep('success-write', 'started');
     const writeResult = await adapter.writeSupabaseQuoteCacheSuccess(snapshot, { client, nowMs });
-    if (!writeResult.ok) return { ok: false, code: 'WRITE_FAILED' };
+    if (!writeResult.ok) {
+      logStep('success-write', 'failed', { code: 'SUCCESS_WRITE_FAILED' });
+      return { ok: false, code: 'SUCCESS_WRITE_FAILED' };
+    }
+    logStep('success-write', 'passed');
 
+    logStep('fresh-readback', 'started');
     const freshRead = await adapter.readSupabaseQuoteCacheEntry(identity, { client, nowMs: nowMs + 1_000 });
-    if (!freshRead.ok || freshRead.entry?.state !== 'fresh') return { ok: false, code: 'FRESH_READ_FAILED' };
+    if (!freshRead.ok || freshRead.entry?.state !== 'fresh') {
+      logStep('fresh-readback', 'failed', { code: 'FRESH_READBACK_FAILED' });
+      return { ok: false, code: 'FRESH_READBACK_FAILED' };
+    }
+    logStep('fresh-readback', 'passed');
 
+    logStep('stale-readback', 'started');
     const staleRead = await adapter.readSupabaseQuoteCacheEntry(identity, { client, nowMs: nowMs + 20_000 });
-    if (!staleRead.ok || staleRead.entry?.state !== 'stale-but-usable') return { ok: false, code: 'STALE_READ_FAILED' };
+    if (!staleRead.ok || staleRead.entry?.state !== 'stale-but-usable') {
+      logStep('stale-readback', 'failed', { code: 'STALE_READBACK_FAILED' });
+      return { ok: false, code: 'STALE_READBACK_FAILED' };
+    }
+    logStep('stale-readback', 'passed');
 
+    logStep('failure-metadata-write', 'started');
     const failureWrite = await adapter.writeSupabaseQuoteCacheRefreshFailure(identity, 'PROVIDER_UNAVAILABLE', {
       client,
       nowMs: nowMs + 21_000,
     });
-    if (!failureWrite.ok) return { ok: false, code: 'FAILURE_METADATA_WRITE_FAILED' };
+    if (!failureWrite.ok) {
+      logStep('failure-metadata-write', 'failed', { code: 'FAILURE_METADATA_WRITE_FAILED' });
+      return { ok: false, code: 'FAILURE_METADATA_WRITE_FAILED' };
+    }
+    logStep('failure-metadata-write', 'passed');
 
-    return {
-      ok: true,
-      mode: live ? 'live-approved' : 'dry-run-mock',
-      originalRowExisted: Boolean(original.row),
-    };
+    return { ok: true, originalRowExisted: Boolean(original.row) };
   } finally {
-    const cleanup = await restoreOrDelete(client, cacheKey, original.row);
-    if (!cleanup.ok) {
-      logSafe('phase3s cleanupStatus=failed sanitized=true');
-    } else {
-      logSafe(`phase3s cleanupStatus=passed action=${cleanup.action}`);
+    logStep('cleanup-restore', 'started');
+    try {
+      const cleanup = await restoreOrDelete(client, cacheKey, original.row);
+      if (!cleanup.ok) {
+        logStep('cleanup-restore', 'failed', { code: 'CLEANUP_RESTORE_FAILED' });
+      } else {
+        logStep('cleanup-restore', 'passed', { action: cleanup.action });
+      }
+    } catch {
+      logStep('cleanup-restore', 'failed', { code: 'CLEANUP_RESTORE_FAILED' });
     }
   }
 };
 
+// Logs additional dry-run simulation results after a successful mock smoke.
+// Validates that the guard, config, and identity detection functions work correctly
+// in the current environment without performing any live Supabase access.
+const runDryRunSimulations = () => {
+  logStep('dry-run-guard-sim', 'passed', { note: 'live-guards-absent-dry-run-mode-confirmed' });
+
+  const configAbsent = !checkLiveConfigPresence();
+  logStep('dry-run-config-sim', 'passed', {
+    note: 'config-presence-simulation',
+    wouldEmitConfigMissing: String(configAbsent),
+  });
+
+  const fakeIdentityError = validateIdentity({ market: 'INVALID', symbol: '' });
+  logStep('dry-run-identity-sim', 'passed', {
+    note: 'invalid-identity-simulation',
+    errorDetected: String(Boolean(fakeIdentityError)),
+  });
+};
+
 const main = async () => {
   const live = isLiveApproved();
+
+  // Step: guard-check
+  logStep('guard-check', 'started');
+  if (!live) {
+    logStep('guard-check', 'passed', { mode: 'dry-run-no-live-guards' });
+  } else {
+    logStep('guard-check', 'passed', { mode: 'live-approved', liveSupabase: 'true', backupRiskAccepted: 'true' });
+    logSafe('phase3u backupRiskNote=production-backup-pitr-snapshot-may-be-unavailable-owner-risk-acceptance-required');
+  }
+
+  // Step: smoke-identity-validation
+  logStep('smoke-identity-validation', 'started');
   const market = normalizeMarket(process.env.PHASE_3S_SMOKE_MARKET);
   const symbol = normalizeSymbol(process.env.PHASE_3S_SMOKE_SYMBOL);
-  const runtime = createCompiledRuntime(live);
+  const identityError = validateIdentity({ market, symbol });
+  const identity = identityError ? { market: 'KR', symbol: '005930' } : { market, symbol };
+
+  if (identityError) {
+    if (live) {
+      logStep('smoke-identity-validation', 'failed', { code: 'SMOKE_IDENTITY_INVALID', reason: identityError });
+      process.exitCode = 1;
+      return;
+    }
+    logStep('smoke-identity-validation', 'passed', { note: 'dry-run-using-synthetic-identity' });
+  } else {
+    logStep('smoke-identity-validation', 'passed');
+  }
+
+  // Step: runtime-setup — compile TypeScript to a temporary isolated directory.
+  logStep('runtime-setup', 'started');
+  let runtime;
+  try {
+    runtime = createCompiledRuntime(live);
+  } catch {
+    logStep('runtime-setup', 'failed', { code: 'RUNTIME_SETUP_FAILED' });
+    process.exitCode = 1;
+    return;
+  }
+  logStep('runtime-setup', 'passed');
 
   try {
-    if (!live) {
-      logSafe('phase3s mode=dry-run-mock liveSupabase=false reason=missing-or-different-owner-approval-guards');
-    } else {
-      logSafe('phase3s mode=live-approved liveSupabase=true backupRiskAccepted=true');
-      logSafe('phase3s backupRiskNote=production-backup-pitr-snapshot-may-be-unavailable-owner-risk-acceptance-required');
+    // Step: adapter-import
+    logStep('adapter-import', 'started');
+    let adapter;
+    try {
+      adapter = await import(runtime.adapterUrl);
+    } catch {
+      logStep('adapter-import', 'failed', { code: 'ADAPTER_IMPORT_FAILED' });
+      process.exitCode = 1;
+      return;
     }
+    logStep('adapter-import', 'passed');
 
-    const identityError = validateIdentity({ market, symbol });
-    if (identityError) {
-      if (live) {
-        logSafe(`phase3s status=blocked reason=${identityError}`);
+    let client;
+    if (live) {
+      // Step: admin-import (live — compiled real supabaseAdmin)
+      logStep('admin-import', 'started');
+      let adminModule;
+      try {
+        adminModule = await import(runtime.adminUrl);
+      } catch {
+        logStep('admin-import', 'failed', { code: 'ADMIN_IMPORT_FAILED' });
         process.exitCode = 1;
         return;
       }
-      logSafe('phase3s dryRunUsingSyntheticIdentity=true');
+      logStep('admin-import', 'passed');
+
+      // Step: config-preflight — presence check only, no values printed.
+      // Runs after admin module is loaded but before calling getSupabaseAdminClient()
+      // so that a missing-config failure is labeled specifically rather than surfacing
+      // as a generic client-construction failure.
+      logStep('config-preflight', 'started');
+      if (!checkLiveConfigPresence()) {
+        logStep('config-preflight', 'failed', { code: 'CONFIG_MISSING' });
+        process.exitCode = 1;
+        return;
+      }
+      logStep('config-preflight', 'passed');
+
+      // Step: client-construction
+      logStep('client-construction', 'started');
+      try {
+        client = adminModule.getSupabaseAdminClient();
+      } catch {
+        logStep('client-construction', 'failed', { code: 'CLIENT_CONSTRUCTION_FAILED' });
+        process.exitCode = 1;
+        return;
+      }
+      logStep('client-construction', 'passed');
+    } else {
+      // Dry-run: mock stubs replace live admin import and client construction.
+      logStep('admin-import', 'passed', { note: 'dry-run-mock-client-injected' });
+      logStep('config-preflight', 'passed', { note: 'dry-run-config-preflight-skipped' });
+      logStep('client-construction', 'passed', { note: 'dry-run-mock-client-injected' });
+      client = createMockClient();
     }
 
-    const identity = identityError ? { market: 'KR', symbol: '005930' } : { market, symbol };
-    const adapter = await import(runtime.adapterUrl);
-    const client = live ? (await import(runtime.adminUrl)).getSupabaseAdminClient() : createMockClient();
-
     const result = await runSmoke({ adapter, client, identity, live });
+
     if (!result.ok) {
-      logSafe(`phase3s status=failed code=${result.code} sanitized=true`);
+      logStep('final-result', 'failed', { code: result.code });
       process.exitCode = 1;
       return;
     }
 
-    logSafe(
-      `phase3s status=passed mode=${result.mode} liveSupabase=${live} cacheKeyNormalized=true originalRowExisted=${result.originalRowExisted} sanitized=true`,
-    );
+    logStep('final-result', 'passed', {
+      mode: live ? 'live-approved' : 'dry-run-mock',
+      liveSupabase: String(live),
+      cacheKeyNormalized: 'true',
+      originalRowExisted: String(result.originalRowExisted),
+    });
+
+    if (!live) {
+      runDryRunSimulations();
+    }
   } finally {
     runtime.cleanup();
   }
 };
 
+// Last-resort catch. Uses console.log directly to avoid re-triggering logSafe.
+// All expected failure points above emit specific labeled step failures before returning.
 main().catch(() => {
-  logSafe('phase3s status=failed code=UNEXPECTED_SAFE_FAILURE sanitized=true');
+  console.log('phase3u step=unexpected-catch status=failed code=UNEXPECTED_SAFE_FAILURE sanitized=true');
   process.exitCode = 1;
 });

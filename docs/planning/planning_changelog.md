@@ -1,5 +1,51 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3U - 2026-06-21
+
+### Owner Live Smoke Diagnostic Improvement
+
+- Created `docs/planning/phase_3u_owner_live_smoke_diagnostic_improvement_result_v0.1.md`.
+- Improved `scripts/owner_smoke_persistent_quote_cache_live.mjs` with owner-safe step-level diagnostic labels.
+- Changed harness output prefix from `phase3s` to `phase3u`.
+- Added `logStep(step, status, extra)` helper emitting structured `phase3u step=... status=... sanitized=true` lines.
+- Added `checkLiveConfigPresence()` that checks only presence of required config names in `process.env`, never values.
+- Added config preflight step in live mode, running after admin import and before Supabase client construction.
+- Separated failure paths for: guard evaluation, smoke identity validation, runtime setup, adapter import, admin import, config presence, client construction, precheck read, existing-row snapshot, success write, fresh readback, stale readback, failure metadata write, cleanup/restore, and final result.
+- Reduced `UNEXPECTED_SAFE_FAILURE` to last-resort only in the top-level `.catch()` handler.
+- Updated top-level `.catch()` to use `console.log` directly, avoiding re-triggering `logSafe` in the catch path.
+- Updated `logSafe` to emit `SAFE_OUTPUT_BLOCKED` via `console.log` before throwing, so the owner sees a named blocked notice.
+- Added `runDryRunSimulations()` logging guard detection, config presence detection, and identity validation simulation results after a successful dry-run smoke.
+- Added `process.env` fallback to `src/lib/server/supabaseAdmin.ts` for `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` so the owner-run Node harness can supply these without relying on `import.meta.env`, which is Astro-runtime-only.
+- Astro runtime behavior unchanged: `import.meta.env.*` takes precedence via `??`.
+- Browser safety unchanged: `assertServerRuntime()` throws before any config access.
+- Fail-closed live mode preserved: all six required live approval guards remain unchanged.
+- Dry-run mode continues to use a mock Supabase client and never imports the live admin helper.
+- No live smoke was rerun by Claude Code.
+- No live Supabase query or write was executed by Claude Code.
+- No SQL was executed by Claude Code.
+- No Supabase MCP database query was run by Claude Code.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Claude Code.
+- No production DB was touched by Claude Code.
+- No ignored `.env*` contents were read.
+- No Vercel environment values were read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No UI live quote wiring was implemented.
+- No migration files were modified.
+- No production SQL pack files were modified.
+- No root `README.md` was modified.
+- No project refs, Supabase URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, raw DB errors, stack traces, or secret-bearing outputs were recorded.
+- Validation passed:
+  - `npm run smoke:persistent-quote-cache-live:dry`
+  - `node scripts/smoke_persistent_quote_cache_adapter.mjs`
+  - `node scripts/smoke_quote_cache_policy.mjs`
+  - `node scripts/smoke_market_quote_route_disabled.mjs`
+  - `npm run check:provider-boundaries`
+  - `npx tsc --noEmit`
+  - `npm run build`
+- Dry-run output confirmed all step labels present and sanitized, `dry-run-config-sim` reported `wouldEmitConfigMissing=true`, and cleanup-restore label appeared in mock success path.
+- Recommended next action: owner manually runs a live smoke retry as a separate approved Phase 3V or equivalent result phase, after setting required config names in the runtime environment.
+
 ## Phase 3T - 2026-06-21
 
 ### Owner Live Smoke Failed Result
