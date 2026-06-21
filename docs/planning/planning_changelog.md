@@ -1,5 +1,32 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3N.3 - 2026-06-21
+
+### Disposable Supabase MCP Target Designation Path
+
+- Created `docs/planning/phase_3n3_disposable_supabase_target_designation_result_v0.1.md`.
+- Documented the owner option 2 decision to use a pre-approved disposable Supabase target through Supabase MCP.
+- Confirmed Phase 3N.3 is target designation and safety-gate preparation only.
+- Recorded target category as `blocked-before-target-designation`.
+- Supabase MCP capability was available in the session, but no pre-approved disposable target was available through a non-recorded secure context.
+- Supabase projects were not listed because project listing could expose or record project references.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, or secret-bearing outputs were recorded.
+- No SQL was run.
+- No migration was applied.
+- No Supabase MCP database query was run.
+- No Supabase write occurred.
+- No production DB was touched.
+- No app source files changed.
+- No migration files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No persistent cache adapter was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3N.3 changed documentation only.
+- Recommended next action: designate a disposable target through a secure non-recorded tool context, then start Phase 3N.4 for SQL validation with a separate approval gate.
+
 ## Phase 3N.2 - 2026-06-21
 
 ### Disposable Supabase SQL Validation Attempt
