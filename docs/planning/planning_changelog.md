@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3N - 2026-06-21
+
+### Disposable Supabase Validation Plan
+
+- Created `docs/planning/phase_3n_disposable_supabase_validation_plan_v0.1.md`.
+- Planned disposable or controlled Supabase validation for `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Documented Phase 3M migration baseline, lifecycle columns, deterministic backfill, constraints, indexes, and unchanged RLS/grant boundary.
+- Defined disposable validation goals for migration application, schema inspection, RLS/grant checks, public-read safety, negative tests, and evidence capture.
+- Defined disposable environment requirements and allowed synthetic public quote test data.
+- Documented future precheck plan, migration application plan, negative validation plan, evidence policy, rollback/reset policy, pass criteria, and fail criteria.
+- Documented that production DB must not be used for first execution.
+- Added a minimal Korean owner review checklist.
+- Disposable validation plan only; no migration was applied.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Supabase connection or write occurred.
+- No app source files changed.
+- No provider behavior changed.
+- No KIS route behavior changed.
+- No UI live quote wiring was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secret values were requested or recorded.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3N changed documentation only.
+- Recommended next action: owner review, then execute disposable validation only after an explicit approval gate.
+
 ## Phase 3M - 2026-06-21
 
 ### Persistent Quote Cache Migration File Draft
