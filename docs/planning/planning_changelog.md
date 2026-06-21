@@ -1,5 +1,44 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3Z - 2026-06-21
+
+### Owner Local KIS Quote Smoke Result
+
+- Recorded owner manual local KIS quote smoke result.
+- Owner-provided sanitized output showed live-approved mode passed.
+- `guard-check` passed — live-approved mode entered.
+- `runtime-check` passed — local non-production runtime confirmed.
+- `smoke-identity-validation` passed — KR market and 6-digit owner-selected symbol accepted.
+- `account-env-check` passed — `KIS_ACCOUNT_NO` confirmed absent.
+- `kis-env-preflight` passed — all required KIS config names present by boolean-only evidence.
+- `runtime-setup` passed — TypeScript compiled to isolated temp directory.
+- `provider-import` passed — live KIS client loaded.
+- `quote-fetch` passed — live KIS quote received.
+- `quote-normalization` passed — all required public fields present; `staleState=fresh`.
+- `cache-backend-check` passed — `configuredBackend=supabase`; in-process mock used for Phase 3Y cache validation, not live Supabase.
+- `cache-write` passed — in-process mock write.
+- `fresh-readback` passed — `state=fresh` from mock.
+- `cleanup-restore` passed — `action=deleted-smoke-cache-entry`.
+- `final-result` passed — `liveKis=true quoteNormalized=true cacheValidated=true`.
+- This is the first recorded successful local live KIS quote smoke.
+- Supabase persistent cache write/readback with live KIS quote remains unvalidated.
+- `/api/market/quote` live endpoint remains unvalidated.
+- UI live quote wiring remains blocked.
+- Production KIS guard unchanged.
+- No live KIS call by Claude Code.
+- No live Supabase query/write by Claude Code.
+- No SQL.
+- No Supabase MCP DB query.
+- No project listing.
+- No production DB touch.
+- No `.env*` read.
+- No Vercel env mutation.
+- No deployment.
+- No UI live quote wiring.
+- No production KIS guard change.
+- No project refs, secrets, screenshots, raw errors, or stack traces recorded.
+- Recommended next action: Phase 3AA local `/api/market/quote` endpoint verification phase, only after owner approval.
+
 ## Phase 3Y - 2026-06-21
 
 ### Local KIS Quote Smoke Harness

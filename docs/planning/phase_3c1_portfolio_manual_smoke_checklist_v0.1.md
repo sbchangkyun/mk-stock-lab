@@ -1,3 +1,37 @@
+## Phase 3Z Owner Local KIS Quote Smoke Result Owner Review Delta
+
+Use this format when reviewing Phase 3Z. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3Z Owner Local KIS Quote Smoke Result 기록 결과:
+
+* owner manual local KIS quote smoke 성공 결과가 문서화됨: 통과/실패
+* sanitized `phase3y` output만 기록됨: 통과/실패
+* live-approved mode 통과가 기록됨: 통과/실패
+* local non-production runtime 통과가 기록됨: 통과/실패
+* `KIS_ACCOUNT_NO` 부재 확인이 기록됨: 통과/실패
+* KIS env name presence 확인이 값 노출 없이 기록됨: 통과/실패
+* provider-import 통과가 기록됨: 통과/실패
+* live KIS quote fetch 통과가 기록됨: 통과/실패
+* quote-normalization 통과가 기록됨: 통과/실패
+* in-process mock cache write/readback/cleanup 통과가 기록됨: 통과/실패
+* Supabase persistent cache live write/readback은 아직 미검증으로 기록됨: 통과/실패
+* `/api/market/quote` live endpoint는 아직 미검증으로 기록됨: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* production KIS guard가 변경되지 않음: 통과/실패
+* Claude Code가 live KIS call을 실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* 다음 단계가 별도 local `/api/market/quote` endpoint verification phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
 ## Phase 3Y Local KIS Quote Smoke Harness Owner Review Delta
 
 Use this format when reviewing Phase 3Y. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
