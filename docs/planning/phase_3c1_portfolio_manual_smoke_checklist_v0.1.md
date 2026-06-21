@@ -1,3 +1,27 @@
+## Phase 3T Owner Live Smoke Failed Result Owner Review Delta
+
+Use this Korean-first format when reviewing Phase 3T. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3T Owner Live Smoke Failed Result 기록 결과:
+
+* owner manual live smoke 실패 결과가 문서화됨: 통과/실패
+* live-approved mode 진입 결과가 기록됨: 통과/실패
+* backup risk acceptance flag 통과가 기록됨: 통과/실패
+* `UNEXPECTED_SAFE_FAILURE` 실패 코드가 기록됨: 통과/실패
+* `sanitized=true`가 기록됨: 통과/실패
+* persistent adapter live enablement가 통과로 기록되지 않음: 통과/실패
+* write/upsert/readback/cleanup 성공을 추정하지 않음: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* Codex가 live smoke를 재실행하지 않음: 통과/실패
+* Codex가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Codex에 의해 접근/변경되지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error가 기록되지 않음: 통과/실패
+* 다음 단계가 Phase 3U safe diagnostic improvement임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3S Persistent Quote Cache Enablement Smoke Harness Owner Review Delta
 
 Use this Korean-first format when reviewing Phase 3S. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, environment values, or secret-bearing output.

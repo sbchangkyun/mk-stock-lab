@@ -1,5 +1,40 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3T - 2026-06-21
+
+### Owner Live Smoke Failed Result
+
+- Created `docs/planning/phase_3t_owner_live_smoke_failed_result_v0.1.md`.
+- Recorded the owner-provided sanitized Phase 3S live smoke output.
+- Owner manually ran the Phase 3S live smoke.
+- Live-approved mode was entered.
+- The backup risk acceptance flag was accepted by the harness.
+- The live smoke failed with `UNEXPECTED_SAFE_FAILURE`.
+- The output was sanitized.
+- Persistent adapter live enablement is not passed.
+- Write/upsert success was not concluded.
+- Readback success was not concluded.
+- Cleanup/restore success was not concluded.
+- UI live quote wiring remains blocked.
+- Static code-path inspection was performed.
+- The broad failure boundary is after the live-approved and backup-risk log lines, before any labeled smoke step or cleanup line was reported.
+- Static diagnosis identified setup/import/config/client-construction/precheck boundaries as likely broad failure regions.
+- A specific static risk is that the owner-run Node harness imports the Supabase admin helper outside the Astro runtime while that helper resolves public Supabase config through `import.meta.env`.
+- Corrective action is needed before any live retry.
+- Recommended next action: Phase 3U safe diagnostic improvement before any owner manual live retry.
+- Codex did not rerun the live smoke.
+- Codex did not run live Supabase query or write.
+- Codex did not execute SQL.
+- Codex did not use Supabase MCP database tools.
+- Codex did not list projects.
+- Codex did not attempt a Supabase connection.
+- Codex did not touch production DB.
+- Codex did not read ignored `.env*` contents.
+- Codex did not mutate Vercel environment values.
+- Codex did not deploy.
+- No project refs, Supabase URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, raw DB errors, stack traces, or secret-bearing outputs were recorded.
+- Build was skipped because Phase 3T changed documentation only.
+
 ## Phase 3S - 2026-06-21
 
 ### Persistent Quote Cache Enablement Smoke Harness
