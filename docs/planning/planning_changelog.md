@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3N.1 - 2026-06-21
+
+### Disposable Supabase Migration Validation Attempt
+
+- Created `docs/planning/phase_3n1_disposable_supabase_validation_result_v0.1.md`.
+- Attempted to start disposable validation for `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Stopped before SQL because the hard safety gate could not be satisfied with non-secret evidence.
+- Environment category recorded as `blocked-before-target-selection`.
+- Confirmed local `docker` is unavailable.
+- Confirmed local `psql` is unavailable.
+- Confirmed Supabase CLI is unavailable on PATH.
+- Confirmed a Supabase MCP execution surface is available but was not used because no non-secret disposable target identifier or environment label was available.
+- Did not list Supabase projects because that could expose or record project references.
+- No production DB was touched.
+- No migration was applied.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Supabase MCP database query or migration command was run.
+- No Supabase connection or write occurred.
+- No app source files changed.
+- No migration files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secret values were requested or recorded.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3N.1 changed documentation only.
+- Recommended next action: establish a disposable validation target through a non-secret/secure channel, then rerun Phase 3N.1.
+
 ## Phase 3N - 2026-06-21
 
 ### Disposable Supabase Validation Plan
