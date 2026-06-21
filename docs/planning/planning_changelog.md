@@ -1,5 +1,45 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3V - 2026-06-21
+
+### Owner Live Smoke Retry Result
+
+- Owner manually ran the Phase 3U-improved live smoke retry.
+- Runtime config presence was confirmed by owner with boolean-only evidence.
+- All three required Supabase config names were present in the owner shell (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
+- Owner-provided sanitized live smoke output recorded in Phase 3V result document.
+- `guard-check` passed — live-approved mode entered, backup risk acknowledged.
+- `smoke-identity-validation` passed.
+- `runtime-setup` passed.
+- `adapter-import` passed.
+- `admin-import` passed.
+- `config-preflight` passed — all three required config names present.
+- `client-construction` passed — Supabase admin client constructed without error.
+- `precheck-read` passed.
+- `existing-row-snapshot` passed — reported `existingRowFound=false` (no pre-existing row).
+- `success-write` passed — normalized public quote snapshot written to `market_quote_cache`.
+- `fresh-readback` passed.
+- `stale-readback` passed.
+- `failure-metadata-write` passed.
+- `cleanup-restore` passed — `action=deleted-smoke-row` (smoke row deleted; no original row to restore).
+- `final-result` passed — `mode=live-approved liveSupabase=true cacheKeyNormalized=true originalRowExisted=false`.
+- Persistent quote cache owner live smoke retry passed.
+- UI live quote wiring remains blocked.
+- Created `docs/planning/phase_3v_owner_live_smoke_retry_result_v0.1.md`.
+- Updated `docs/planning/planning_changelog.md` with Phase 3V entry.
+- Updated `docs/planning/phase_3c1_portfolio_manual_smoke_checklist_v0.1.md` with Phase 3V Korean owner review checklist.
+- Claude Code did not rerun live smoke.
+- Claude Code did not run live Supabase query/write.
+- Claude Code did not execute SQL.
+- Claude Code did not use Supabase MCP DB tools.
+- Claude Code did not list projects.
+- Claude Code did not touch production DB.
+- Claude Code did not read `.env*` contents.
+- Claude Code did not mutate Vercel env.
+- Claude Code did not deploy.
+- No project refs, Supabase URLs, keys, tokens, connection strings, screenshots, raw DB errors, stack traces, or secret-bearing output were recorded.
+- Recommended next action: separate owner-approved planning/implementation phase for controlled live quote integration readiness; UI live quote wiring remains blocked until approved.
+
 ## Phase 3U - 2026-06-21
 
 ### Owner Live Smoke Diagnostic Improvement

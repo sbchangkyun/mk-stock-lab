@@ -1,3 +1,37 @@
+## Phase 3V Owner Live Smoke Retry Result Owner Review Delta
+
+Use this format when reviewing Phase 3V. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3V Owner Live Smoke Retry Result 기록 결과:
+
+* owner manual live smoke retry 성공 결과가 문서화됨: 통과/실패
+* runtime config presence가 값 노출 없이 true로 기록됨: 통과/실패
+* guard-check 통과가 기록됨: 통과/실패
+* smoke-identity-validation 통과가 기록됨: 통과/실패
+* runtime-setup / adapter-import / admin-import 통과가 기록됨: 통과/실패
+* config-preflight 통과가 기록됨: 통과/실패
+* client-construction 통과가 기록됨: 통과/실패
+* precheck-read 통과가 기록됨: 통과/실패
+* success-write 통과가 기록됨: 통과/실패
+* fresh-readback 통과가 기록됨: 통과/실패
+* stale-readback 통과가 기록됨: 통과/실패
+* failure-metadata-write 통과가 기록됨: 통과/실패
+* cleanup-restore 통과 및 smoke row 삭제가 기록됨: 통과/실패
+* final-result 통과가 기록됨: 통과/실패
+* Claude Code가 live smoke를 재실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* 다음 단계가 별도 controlled live quote integration readiness phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
 ## Phase 3U Owner Live Smoke Diagnostic Improvement Owner Review Delta
 
 Use this format when reviewing Phase 3U. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
