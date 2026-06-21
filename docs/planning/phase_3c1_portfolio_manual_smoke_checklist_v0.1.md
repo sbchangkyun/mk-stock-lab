@@ -1,3 +1,21 @@
+## Phase 3N.2 Disposable Supabase SQL Validation Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.2 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.2 Disposable Supabase SQL Validation 결과:
+
+* SQL 실행은 disposable 또는 controlled non-production 환경으로만 제한됨: 통과/실패
+* production DB에 접근/변경되지 않음: 통과/실패
+* Phase 3M migration 적용 검증은 target 미확인으로 아직 실행되지 않음: 통과/실패
+* schema/constraint/index/backfill live 검증은 아직 미실행임: 통과/실패
+* RLS/grant/public write 차단 live 검증은 아직 미실행임: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data가 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* reset/disposal은 target 미선택으로 해당 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3N.1 Disposable Supabase Migration Validation Owner Review Delta
 
 Use this Korean-first format when reporting Phase 3N.1 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
