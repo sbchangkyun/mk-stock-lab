@@ -1,5 +1,38 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3W - 2026-06-21
+
+### Controlled Live Quote Integration Readiness Plan
+
+- Created controlled live quote integration readiness plan.
+- Recorded that Phase 3V persistent quote cache live smoke passed.
+- Recorded that the Phase 3V smoke used a synthetic normalized quote snapshot, not a live KIS provider response.
+- Recorded that KIS live provider end-to-end flow remains unvalidated.
+- Recorded that UI live quote wiring remains blocked.
+- Recorded critical production runtime constraint: `kisClient.ts` `isProductionRuntime()` guard blocks KIS calls in production regardless of env var values — setting Vercel env vars alone is not sufficient.
+- Defined target end-to-end flow: KIS token fetch → quote fetch → normalization to `QuoteSnapshot` → cache write → API response shape.
+- Defined production environment readiness requirements by variable names only, without values.
+- Identified KIS secret env names (`KIS_APP_KEY`, `KIS_APP_SECRET`), non-secret feature flags (`KIS_ENABLE_LIVE_QUOTES`), and infrastructure names (`KIS_BASE_URL`).
+- Identified `KIS_ACCOUNT_NO` as optional, not needed for quote-only phase, not to be set until account-context phase is approved.
+- Defined live provider testing safety gates: runtime confirmation, quota/rate-limit risk acceptance, read-only scope, no account APIs.
+- Defined recommended future phase sequence: Phase 3X (Vercel env checklist), Phase 3Y (local KIS smoke harness), Phase 3Z (result recording), later phase (API endpoint verification), later phase (controlled UI wiring).
+- Defined first UI surface recommendation: read-only single-stock Market page quote display, only after server-side API smoke passes.
+- Explained why not Portfolio valuation or Chart AI first.
+- Defined API response verification checklist for future owner manual smoke.
+- Defined explicit non-goals: no UI wiring, no live calls, no env mutation, no deployment, no trading/account APIs, no WebSocket.
+- No live KIS call.
+- No live Supabase query/write.
+- No SQL.
+- No Supabase MCP DB query.
+- No project listing.
+- No production DB touch.
+- No `.env*` read.
+- No Vercel env mutation.
+- No deployment.
+- No UI live quote wiring.
+- No project refs, secrets, screenshots, raw errors, or stack traces recorded.
+- Recommended next action: owner reviews plan; if approved, start Phase 3X Vercel production env readiness checklist.
+
 ## Phase 3V - 2026-06-21
 
 ### Owner Live Smoke Retry Result
