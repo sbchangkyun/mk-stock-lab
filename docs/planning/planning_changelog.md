@@ -1,5 +1,34 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3O - 2026-06-21
+
+### Production Migration Approval Plan
+
+- Created `docs/planning/phase_3o_production_migration_approval_execution_plan_v0.1.md`.
+- Prepared a production migration approval and execution plan for `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Recorded that Phase 3N.7 disposable validation passed based on owner-provided sanitized results.
+- Defined production target separation checks using only non-secret labels.
+- Defined production readiness checklist, backup/rollback policy, precheck plan, execution sequence, post-migration validation plan, abort conditions, owner approval wording, and sanitized future result template.
+- Production migration remains blocked until a separate explicit owner approval.
+- No SQL was executed.
+- No Supabase MCP database query was run.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Codex.
+- No Supabase write occurred by Codex.
+- No production DB was touched.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, or secret-bearing outputs were recorded.
+- No app source files changed.
+- No migration files changed.
+- No planning SQL files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No persistent cache adapter was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3O changed documentation only.
+- Recommended next action: owner review and separate Phase 3P approval only if production execution should proceed.
+
 ## Phase 3N.7 - 2026-06-21
 
 ### Dashboard SQL Validation Result

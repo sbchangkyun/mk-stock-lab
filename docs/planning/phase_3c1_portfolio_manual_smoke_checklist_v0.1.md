@@ -1,3 +1,23 @@
+## Phase 3O Production Migration Approval Execution Plan Owner Review Delta
+
+Use this Korean-first format when reviewing the Phase 3O production migration approval and execution plan. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3O Production Migration Approval/Execution Plan 검토 결과:
+
+* Phase 3M migration의 production 적용 전 승인 계획이 문서화됨: 통과/실패
+* disposable validation all pass 결과가 근거로 반영됨: 통과/실패
+* production target 분리 확인 절차가 명확함: 통과/실패
+* backup/rollback 정책 검토 항목이 포함됨: 통과/실패
+* precheck, execution, postcheck, abort condition이 명확함: 통과/실패
+* production SQL 실행은 아직 승인/수행되지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 단계가 별도 Phase 3P production execution approval임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3N.7 Dashboard SQL Validation Result Owner Review Delta
 
 Use this Korean-first format when reviewing the Phase 3N.7 dashboard SQL validation result record. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
