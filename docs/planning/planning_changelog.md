@@ -1,5 +1,38 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3M - 2026-06-21
+
+### Persistent Quote Cache Migration File Draft
+
+- Added `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Converted the Phase 3L reviewed SQL draft into one migration file only.
+- Preserved the existing `public.market_quote_cache` table.
+- Added lifecycle and metadata columns for future persistent quote cache writes: `cache_key`, `provider`, `source`, `fresh_until`, `stale_until`, `schema_version`, `last_refresh_status`, `last_error_code`, and `updated_at`.
+- Added deterministic backfill from existing `symbol`, `market`, `cached_at`, and `expires_at` fields.
+- Added guarded checks for normalized duplicate cache identifiers and lifecycle ordering.
+- Added idempotent constraint creation through `DO` blocks.
+- Added indexes for `fresh_until`, `stale_until`, and `(market, symbol, provider, source)`.
+- Preserved existing public-read and service-role-write intent.
+- Did not add anon or authenticated write grants.
+- Did not change RLS policies.
+- Created `docs/planning/phase_3m_persistent_quote_cache_migration_file_result_v0.1.md`.
+- Updated the owner manual smoke checklist with a minimal Phase 3M owner review section.
+- Migration file drafted only; it was not applied.
+- No SQL was run.
+- No Supabase CLI was run.
+- No psql command was run.
+- No Supabase connection or write occurred.
+- No app source files changed.
+- No persistent cache adapter was implemented.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- No secret values were requested or recorded.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3M changed only a migration file and planning documentation.
+- Recommended next action: owner review, then disposable Supabase validation only after an explicit approval gate.
+
 ## Phase 3L - 2026-06-21
 
 ### Persistent Quote Cache Migration Review

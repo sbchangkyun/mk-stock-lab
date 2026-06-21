@@ -1,3 +1,20 @@
+## Phase 3M Persistent Quote Cache Migration File Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3M owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3M Persistent Quote Cache Migration File 검토 결과:
+
+* migration file은 생성되었지만 아직 실행되지 않음: 통과/실패
+* market_quote_cache lifecycle/metadata 컬럼 추가 목적이 명확함: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data 저장 컬럼이 없음: 통과/실패
+* anon/authenticated write 권한이 추가되지 않음: 통과/실패
+* app source/provider/UI 동작 변경이 없음: 통과/실패
+* SQL/Supabase CLI/psql/Supabase write가 실행되지 않음: 통과/실패
+* 다음 phase에서 실행 전 owner approval gate가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3L Persistent Quote Cache Migration Review Owner Review Delta
 
 Use this Korean-first format when reporting Phase 3L owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
