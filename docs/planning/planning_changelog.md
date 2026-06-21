@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AA - 2026-06-21
+
+### Local /api/market/quote HTTP Endpoint Verification Plan (Option A — Planning Only)
+
+- Created `docs/planning/phase_3aa_local_api_market_quote_http_endpoint_verification_plan_v0.1.md`.
+- This is documentation-only. No execution occurred.
+- Document defines the owner-run procedure for verifying the local `/api/market/quote` HTTP endpoint with live KIS backing.
+- Sections defined: objective, non-goals, safety gates, required env names, owner-run local procedure (9 steps), expected positive response shape, required absence checks, safe negative checks, owner evidence template, Option B approval boundary, and recommended next step.
+- Phase 3AA target flow: HTTP GET → Astro route → `getQuoteSnapshot()` → cache check → KIS token+quote → normalization → `{ ok: true, data: QuoteSnapshot, fallback }` with `Cache-Control: no-store`.
+- Phase 3AA is explicitly limited to local non-production only.
+- `isProductionRuntime()` guard in `kisClient.ts` must be confirmed false before any HTTP request.
+- `KIS_ACCOUNT_NO` must remain absent.
+- Owner sets KIS env vars privately in the local shell; Claude Code must not read env values.
+- Response evidence must be sanitized: field presence only, no actual price values, no raw KIS fields, no tokens, no keys, no account data, no raw errors, no stack traces.
+- Option B harness (`scripts/owner_smoke_api_quote_live.mjs`) is not part of this phase and requires explicit owner approval.
+- Harness implementation remains blocked until explicit owner approval.
+- No live KIS call was run by Claude Code.
+- No live Supabase query/write was run by Claude Code.
+- No SQL executed.
+- No Supabase MCP DB query.
+- No project listing.
+- No production DB touch.
+- No `.env*` read.
+- No Vercel env mutation.
+- No deployment.
+- No UI live quote wiring.
+- No production KIS guard change.
+- No source code changes.
+- No project refs, secrets, screenshots, raw errors, or stack traces recorded.
+- Recommended next action: owner reviews plan, then either runs manual procedure (Option A) or approves Option B harness.
+
 ## New Chat Handoff Pack - 2026-06-21
 
 ### Handoff Pack Creation
