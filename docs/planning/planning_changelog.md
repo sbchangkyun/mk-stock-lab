@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## New Chat Handoff Pack - 2026-06-21
+
+### Handoff Pack Creation
+
+- Created `docs/planning/new_chat_handoff/` directory with five handoff files.
+- Current completed phase recorded as Phase 3Z.
+- Next recommended phase recorded as Phase 3AA.
+- `CURRENT_STATE.md` — operational state snapshot including phase timeline, what is validated, what remains unvalidated, and blocked items.
+- `NEXT_TASK_PROMPT.md` — copy-ready Phase 3AA instruction requiring Claude Code read-back before any implementation.
+- `PROJECT_HANDOFF_INDEX.md` — source-of-truth file listing, safe startup commands, and expected read-back report structure.
+- `NEW_CHAT_BOOTSTRAP_PROMPT.txt` — concise paste-ready bootstrap for a new ChatGPT chat.
+- `HANDOFF_MANIFEST.json` — valid JSON manifest of project state, blocked actions, allowed startup actions, and secret handling policy.
+- Handoff requires Claude Code repo read-back before any new implementation work begins.
+- New chat must not rely on static summary alone.
+- No live KIS call.
+- No live Supabase query/write.
+- No SQL.
+- No Supabase MCP DB query.
+- No project listing.
+- No production DB touch.
+- No `.env*` read.
+- No Vercel env mutation.
+- No deployment.
+- No UI live quote wiring.
+- No production KIS guard change.
+- No source code changes.
+- No project refs, secrets, screenshots, raw errors, or stack traces recorded.
+
 ## Phase 3Z - 2026-06-21
 
 ### Owner Local KIS Quote Smoke Result

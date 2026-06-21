@@ -1,3 +1,34 @@
+## New Chat Handoff Pack Owner Review Delta
+
+Use this format when reviewing the new-chat handoff pack. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+New Chat Handoff Pack 생성 결과:
+
+* CURRENT_STATE.md가 생성되어 최신 프로젝트 상태가 정리됨: 통과/실패
+* NEXT_TASK_PROMPT.md가 생성되어 다음 Phase 3AA 준비 방향이 정리됨: 통과/실패
+* PROJECT_HANDOFF_INDEX.md가 생성되어 source-of-truth 문서 목록이 정리됨: 통과/실패
+* NEW_CHAT_BOOTSTRAP_PROMPT.txt가 생성되어 새 채팅 시작 문구가 준비됨: 통과/실패
+* HANDOFF_MANIFEST.json이 생성되고 valid JSON임: 통과/실패
+* 현재 완료 Phase가 Phase 3Z로 기록됨: 통과/실패
+* 다음 권장 Phase가 Phase 3AA로 기록됨: 통과/실패
+* 새 채팅이 static summary만 믿지 않고 Claude Code read-back을 먼저 수행하도록 설계됨: 통과/실패
+* local path와 branch가 명확히 기록됨: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* production KIS guard 변경이 계속 차단됨: 통과/실패
+* Vercel env mutation 및 deployment가 계속 차단됨: 통과/실패
+* Claude Code가 live KIS call을 실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* 다음 단계가 새 채팅에서 Claude Code read-back 후 Phase 3AA 준비임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
 ## Phase 3Z Owner Local KIS Quote Smoke Result Owner Review Delta
 
 Use this format when reviewing Phase 3Z. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
