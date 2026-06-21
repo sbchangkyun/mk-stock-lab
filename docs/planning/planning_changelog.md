@@ -2,6 +2,38 @@
 
 ## Phase 3AA - 2026-06-21
 
+### Owner-Run Manual Local HTTP Endpoint Verification Result
+
+- Created `docs/planning/phase_3aa_owner_local_api_market_quote_http_endpoint_verification_result_v0.1.md`.
+- Status: passed.
+- Owner manually ran the Phase 3AA Option A procedure from `phase_3aa_local_api_market_quote_http_endpoint_verification_plan_v0.1.md`.
+- Owner started local Astro dev server, sent `GET /api/market/quote?market=KR&symbol=<REDACTED_6_DIGIT_KR_CODE>`, and recorded sanitized boolean evidence only.
+- All 11 success criteria passed: HTTP 200, JSON parse OK, `Cache-Control: no-store`, `ok: true`, `data` object present, `fallback` object present, required normalized public fields (`market`, `symbol`, `price`, `currency`, `asOf`) present, `fallback.state` and `fallback.reason` present, raw KIS fields absent, secrets/tokens/raw errors absent.
+- `ForbiddenTermsFoundCount`: 0.
+- Evidence was sanitized: no actual stock symbol recorded (replaced with `<REDACTED_6_DIGIT_KR_CODE>`), no price value recorded, no raw response body recorded, no raw KIS fields, no tokens, no keys, no account data, no raw errors, no stack traces.
+- This is the first recorded successful end-to-end verification of the Astro `/api/market/quote` route with live KIS backing.
+- Combined with Phase 3Z, the local server-side quote path from HTTP request through KIS provider to normalized JSON response is now validated locally.
+- Supabase persistent cache live write/readback with a live KIS quote remains unvalidated.
+- Vercel Preview behavior remains unvalidated.
+- Vercel Production behavior remains blocked by `isProductionRuntime()` guard.
+- Gate decision (Option A/B/C from Phase 3X) remains pending.
+- UI wiring remains blocked.
+- Phase 3AA Option B harness (`scripts/owner_smoke_api_quote_live.mjs`) remains unimplemented and requires explicit owner approval.
+- No live KIS call by Claude Code.
+- No live Supabase query/write by Claude Code.
+- No SQL.
+- No Supabase MCP DB query.
+- No project listing.
+- No production DB touch.
+- No `.env*` read.
+- No Vercel env mutation.
+- No deployment.
+- No source code changes.
+- No script changes.
+- No production KIS guard change.
+- No UI live quote wiring.
+- No project refs, secrets, screenshots, raw errors, or stack traces recorded.
+
 ### Local /api/market/quote HTTP Endpoint Verification Plan (Option A — Planning Only)
 
 - Created `docs/planning/phase_3aa_local_api_market_quote_http_endpoint_verification_plan_v0.1.md`.
