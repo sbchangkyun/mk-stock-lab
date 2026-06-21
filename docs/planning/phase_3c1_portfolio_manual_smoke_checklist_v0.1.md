@@ -1242,3 +1242,21 @@ Phase 3F 시장 Treemap 대시보드 재점검 결과:
 - 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
 - 비밀 정보 없는 메모:
 ```
+
+## Phase 3N.6 Dashboard SQL Validation Pack Owner Review
+
+Use this Korean-first format when reviewing the Phase 3N.6 dashboard SQL validation pack. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3N.6 Dashboard SQL Validation Pack 검토 결과:
+
+* Dashboard SQL Editor에서 수동 검증할 수 있는 script pack이 준비됨: 통과/실패
+* production DB가 아닌 disposable project에서만 실행하도록 명시됨: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* schema/constraint/index/backfill/RLS/grant/negative validation 항목이 포함됨: 통과/실패
+* synthetic data와 cleanup 기준이 명확함: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 단계가 owner manual SQL execution 결과 확인임: 통과/실패
+* 비밀 정보 없는 메모:
+```

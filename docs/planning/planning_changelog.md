@@ -1,5 +1,35 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3N.6 - 2026-06-21
+
+### Dashboard SQL Validation Pack
+
+- Created `docs/planning/phase_3n6_dashboard_sql_validation_pack_v0.1.md`.
+- Created dashboard SQL validation scripts under `docs/planning/sql_validation/`.
+- Prepared a manual Supabase Dashboard SQL Editor validation pack for `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Included baseline table detection and instructions to run `supabase/migrations/20260615_rebuild_schema_v0_1.sql` manually if the disposable project lacks the baseline table.
+- Included synthetic public-safe quote cache fixtures for `KR` `005930` and `KR` `000660`.
+- Included a copy-ready Phase 3M migration script without modifying the migration file.
+- Included schema, constraint, index, backfill, RLS, grant, and negative validation queries.
+- Included cleanup SQL limited to the synthetic validation rows.
+- No SQL was executed by Codex.
+- No Supabase MCP database query was run.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Codex.
+- No Supabase write occurred by Codex.
+- No production DB was touched.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, or secret-bearing outputs were recorded.
+- No app source files changed.
+- No migration files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No persistent cache adapter was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3N.6 changed documentation and planning SQL files only.
+- Recommended next action: owner manually runs the validation pack in the disposable Supabase Dashboard SQL Editor and returns sanitized pass/fail results only.
+
 ## Phase 3N.5 - 2026-06-21
 
 ### Runtime Target SQL Validation Attempt
