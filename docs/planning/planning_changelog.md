@@ -1,5 +1,32 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3N.3A - 2026-06-21
+
+### Supabase Target Status Check
+
+- Created `docs/planning/phase_3n3a_supabase_target_status_check_v0.1.md`.
+- Checked whether a pre-approved disposable or controlled non-production Supabase MCP target is already designated.
+- Used only non-secret local and tool-surface evidence.
+- Recorded target-status result as `not-designated`.
+- Confirmed no default selected target is visible in the current tool interface.
+- Confirmed the available Supabase MCP database tools require an explicit target identifier for execution.
+- Supabase projects were not listed.
+- No project refs, URLs, connection strings, passwords, keys, JWT secrets, tokens, or secret-bearing outputs were recorded.
+- No SQL was run.
+- No migration was applied.
+- No Supabase MCP database query was run.
+- No Supabase write occurred.
+- No production DB was touched.
+- No app source files changed.
+- No migration files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3N.3A changed documentation only.
+- Recommended next action: owner must designate a disposable or controlled non-production target through a secure tool context before Phase 3N.4.
+
 ## Phase 3N.3 - 2026-06-21
 
 ### Disposable Supabase MCP Target Designation Path

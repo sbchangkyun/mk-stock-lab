@@ -1,3 +1,20 @@
+## Phase 3N.3A Supabase Target Status Check Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.3A owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.3A Supabase Target Status Check 결과:
+
+* 현재 target 지정 상태가 비밀값 없이 점검됨: 통과/실패
+* project listing 또는 project ref 기록이 수행되지 않음: 통과/실패
+* SQL 실행 및 migration 적용이 수행되지 않음: 통과/실패
+* Supabase DB query가 수행되지 않음: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* target 상태 결과가 명확함: 통과/실패
+* 다음 단계 판단 기준이 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
 ## Phase 3N.3 Disposable Supabase Target Designation Owner Review Delta
 
 Use this Korean-first format when reporting Phase 3N.3 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
