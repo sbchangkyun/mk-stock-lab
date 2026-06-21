@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3P - 2026-06-21
+
+### Production Dashboard SQL Execution Pack
+
+- Created `docs/planning/phase_3p_production_dashboard_sql_execution_pack_v0.1.md`.
+- Created production SQL pack files under `docs/planning/sql_production/`.
+- Prepared production Dashboard SQL precheck and execution pack for `supabase/migrations/20260621_market_quote_cache_lifecycle_columns.sql`.
+- Created read-only production precheck script with stop-before-migration pass/fail rows and `safe_to_apply_phase_3m_migration`.
+- Created production migration script whose executable body matches the disposable-validated Phase 3M migration after safety comments.
+- Created read-only post-migration validation script with schema, constraint, index, backfill, RLS, grant, public-read, service-role, and overall validation rows.
+- Created no-write production cleanup confirmation script.
+- Production migration remains manual owner action and is not considered executed by this phase.
+- No SQL was executed by Codex.
+- No Supabase MCP database query was run.
+- No Supabase project listing was run.
+- No Supabase connection was attempted by Codex.
+- No Supabase write occurred by Codex.
+- No production DB was touched by Codex.
+- No project refs, project URLs, connection strings, DB passwords, service-role keys, anon keys, JWT secrets, tokens, screenshots, or secret-bearing outputs were recorded.
+- No app source files changed.
+- No migration files changed.
+- No Phase 3N.6 validation SQL files changed.
+- No provider behavior changed.
+- No UI live quote wiring was implemented.
+- No persistent cache adapter was implemented.
+- No Vercel environment value was read, printed, pulled, added, updated, or removed.
+- No deployment was run.
+- Ignored `.env*` contents were not read.
+- Build was skipped because Phase 3P changed documentation and planning SQL files only.
+- Recommended next action: owner reviews the pack, confirms backup/rollback and production target, then manually executes only if explicitly approved.
+
 ## Phase 3O - 2026-06-21
 
 ### Production Migration Approval Plan
