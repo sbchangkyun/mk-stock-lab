@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AG - 2026-06-22
+
+### Global Page Gutter Layout Refinement (Implemented)
+
+- Created `docs/planning/phase_3ag_global_page_gutter_layout_refinement_result_v0.1.md`.
+- Modified `src/styles/style.css`: added `--page-gutter-x: clamp(20px, 2.25vw, 40px)` CSS variable; applied to `.site-header`, `.ticker-track`, `.nav-inner`, and `.site-main`; removed redundant `@media (max-width: 640px)` `.site-main` width override.
+- **Ad banner 160 × 600 preserved.** `.home-rail-viewport` (160 × 600), `.home-rail-ad` (160 px), `.home-sidebar-column` (min-width 160 px), and the 1440 px+ home shell grid (`minmax(0, 1fr) 176px`) are all unchanged.
+- **All app pages inherit the global gutter.** Home, Chart AI, Market, Lab, Portfolio, and any page using `Layout.astro` receive the gutter change through the shared `.site-main` rule.
+- **Gutter values**: 20 px (mobile/narrow, clamped minimum) → ~29 px (1280 px viewport) → ~32 px (1440 px viewport) → 40 px (1920 px+, clamped maximum; `--page-max-width: 1500px` takes over beyond that).
+- Header, ticker, nav, and main content left edges are now aligned to the same horizontal offset at every viewport size.
+- `npm run build`: pass. `git diff --check`: pass. Only `src/styles/style.css` and documentation files changed.
+- No API, KIS, Supabase, or Vercel/deployment changes occurred. No live network calls were made. No UI live quote wiring was added. No secrets or price values were recorded.
+- Owner browser review required at 1280 px, 1440 px, 1920 px, and mobile width to confirm visual result.
+
 ## Phase 3AF Owner-Run Result - 2026-06-22
 
 ### Vercel Preview Endpoint Validation Result (Owner-Run, Passed)

@@ -2,6 +2,7 @@
 
 :root {
   --page-max-width: 1500px;
+  --page-gutter-x: clamp(20px, 2.25vw, 40px);
   --bg: #f5f7fb;
   --surface: #ffffff;
   --surface-muted: #eef3fb;
@@ -63,7 +64,7 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 0 40px;
+  padding: 0 var(--page-gutter-x);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
@@ -219,7 +220,7 @@ html.auth-hint-signed-in #logout-btn.hidden {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 40px;
+  padding: 0 var(--page-gutter-x);
   white-space: nowrap;
 }
 
@@ -261,7 +262,7 @@ body.dark-mode .primary-nav {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 20px;
+  padding: 0 var(--page-gutter-x);
 }
 
 .nav-link {
@@ -282,7 +283,7 @@ body.dark-mode .primary-nav {
 }
 
 .site-main {
-  width: min(calc(100% - 48px), var(--page-max-width));
+  width: min(calc(100% - 2 * var(--page-gutter-x)), var(--page-max-width));
   max-width: none;
   margin: 0 auto;
   padding: 32px 0 48px;
@@ -2091,10 +2092,6 @@ body.modal-open {
 }
 
 @media (max-width: 640px) {
-  .site-main {
-    width: min(calc(100% - 28px), var(--page-max-width));
-  }
-
   .market-control-panel {
     padding: 12px;
   }
