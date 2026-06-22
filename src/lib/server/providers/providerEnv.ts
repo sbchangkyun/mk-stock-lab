@@ -5,6 +5,7 @@ export type ProviderEnvName =
   | 'KIS_APP_SECRET'
   | 'KIS_BASE_URL'
   | 'KIS_ENABLE_LIVE_QUOTES'
+  | 'KIS_ENABLE_PREVIEW_LIVE_QUOTES'
   | 'KIS_ACCOUNT_NO'
   | 'OPENDART_API_KEY'
   | 'OPENAI_API_KEY'
@@ -27,6 +28,7 @@ export const providerEnvRegistry: ProviderEnvMetadata[] = [
   { name: 'KIS_APP_SECRET', provider: 'kis', owner: 'owner', serverOnly: true, browserSafe: false, requiredPhase: '3I', shouldLogValue: false, productionAllowed: false },
   { name: 'KIS_BASE_URL', provider: 'kis', owner: 'engineering', serverOnly: true, browserSafe: false, requiredPhase: '3I', shouldLogValue: false, productionAllowed: false },
   { name: 'KIS_ENABLE_LIVE_QUOTES', provider: 'kis', owner: 'engineering', serverOnly: true, browserSafe: false, requiredPhase: '3I', shouldLogValue: false, productionAllowed: false },
+  { name: 'KIS_ENABLE_PREVIEW_LIVE_QUOTES', provider: 'kis', owner: 'engineering', serverOnly: true, browserSafe: false, requiredPhase: '3AE', shouldLogValue: false, productionAllowed: false },
   { name: 'KIS_ACCOUNT_NO', provider: 'kis', owner: 'owner', serverOnly: true, browserSafe: false, requiredPhase: 'future-account-context', shouldLogValue: false, optional: true },
   { name: 'OPENDART_API_KEY', provider: 'opendart', owner: 'owner', serverOnly: true, browserSafe: false, requiredPhase: '3O', shouldLogValue: false },
   { name: 'OPENAI_API_KEY', provider: 'openai', owner: 'owner', serverOnly: true, browserSafe: false, requiredPhase: '3N', shouldLogValue: false },

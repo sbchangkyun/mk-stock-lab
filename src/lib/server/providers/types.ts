@@ -45,7 +45,7 @@ export type QuoteFallbackMetadata = {
 export type ProviderConfigReadiness = {
   provider: ProviderName;
   ready: boolean;
-  reason: 'ready' | 'not_implemented' | 'config_missing' | 'approval_required' | 'disabled' | 'production_not_allowed';
+  reason: 'ready' | 'not_implemented' | 'config_missing' | 'approval_required' | 'disabled' | 'production_not_allowed' | 'preview_guard_required';
   requiredEnvNames: string[];
   missingEnvNames?: string[];
   optionalEnvNames?: string[];

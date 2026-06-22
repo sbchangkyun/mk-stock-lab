@@ -1,5 +1,28 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AE - 2026-06-22
+
+### Preview-Safe KIS Runtime Guard Implementation (Implemented and Locally Validated)
+
+- Created `docs/planning/phase_3ae_preview_safe_kis_runtime_guard_result_v0.1.md`.
+- Implements Phase 3AD Option B guard policy.
+- **Source files changed**: `src/lib/server/providers/kisClient.ts`, `src/lib/server/providers/providerEnv.ts`, `src/lib/server/providers/types.ts`, `package.json`.
+- **New files**: `scripts/check_kis_runtime_guard_policy.mjs`.
+- `isProductionRuntime()` replaced by `classifyRuntime()` returning one of six explicit runtime classes: `local`, `vercel-preview`, `vercel-production`, `vercel-development`, `node-production`, `unknown`.
+- `getKisQuoteConfigReadiness()` updated to:
+  - Hard-block `vercel-production`, `node-production`, and `unknown` → `production_not_allowed`.
+  - Block when `KIS_ACCOUNT_NO` is present → `production_not_allowed`.
+  - Block `vercel-preview` without `KIS_ENABLE_PREVIEW_LIVE_QUOTES=true` → `preview_guard_required`.
+  - Preserve existing `disabled`, `config_missing`, `ready` behavior for all other passing runtimes.
+- `'preview_guard_required'` added to `ProviderConfigReadiness.reason` union in `types.ts`.
+- `KIS_ENABLE_PREVIEW_LIVE_QUOTES` added to `ProviderEnvName` union and registry in `providerEnv.ts` with `productionAllowed: false`.
+- **Validation commands**: `node --check scripts/check_kis_runtime_guard_policy.mjs` (pass), `npm run check:kis-runtime-guard` (7/7 pass), `npm run check:provider-boundaries` (pass), `npx tsc --noEmit` (pass), `npm run build` (pass), `git diff --check` (pass).
+- **Production KIS**: Remains blocked — `VERCEL_ENV=production` is an absolute hard block, unchanged.
+- **Preview KIS**: Allowed only when `VERCEL_ENV=preview` AND `KIS_ENABLE_PREVIEW_LIVE_QUOTES=true` AND `KIS_ENABLE_LIVE_QUOTES=true` AND credentials present AND `KIS_ACCOUNT_NO` absent.
+- **Local KIS**: Unchanged.
+- No Vercel env mutation occurred. No deployment occurred. No live KIS call was run. No live Supabase query or write was run. No SQL was executed. No Astro dev server was started. No UI live quote wiring was implemented. No `.env*` contents were read. No secret, token, key, raw KIS field, price value, or account data was recorded.
+- Next step: Owner-approved Phase 3AF — Vercel Preview env mutation and deployment plan.
+
 ## Phase 3AD - 2026-06-22
 
 ### KIS Runtime Guard Preview/Production Decision (Decision-Only)

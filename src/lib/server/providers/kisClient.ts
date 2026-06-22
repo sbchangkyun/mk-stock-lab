@@ -14,6 +14,7 @@ const moduleName = 'kisClient';
 const requiredEnvNames = ['KIS_APP_KEY', 'KIS_APP_SECRET', 'KIS_BASE_URL'];
 const optionalEnvNames = ['KIS_ACCOUNT_NO'];
 const featureFlagEnvName = 'KIS_ENABLE_LIVE_QUOTES';
+const previewGuardFlagEnvName = 'KIS_ENABLE_PREVIEW_LIVE_QUOTES';
 const quotePath = '/uapi/domestic-stock/v1/quotations/inquire-price';
 const tokenPath = '/oauth2/tokenP';
 const domesticQuoteTrId = 'FHKST01010100';
@@ -57,10 +58,23 @@ let accessTokenCache: KisAccessTokenCache | null = null;
 
 const normalizeString = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
 
-const isProductionRuntime = () => {
-  const nodeEnv = normalizeString(process.env.NODE_ENV).toLowerCase();
+type KisRuntimeClass =
+  | 'local'
+  | 'vercel-preview'
+  | 'vercel-production'
+  | 'vercel-development'
+  | 'node-production'
+  | 'unknown';
+
+const classifyRuntime = (): KisRuntimeClass => {
   const vercelEnv = normalizeString(process.env.VERCEL_ENV).toLowerCase();
-  return nodeEnv === 'production' || vercelEnv === 'production';
+  const nodeEnv = normalizeString(process.env.NODE_ENV).toLowerCase();
+  if (vercelEnv === 'production') return 'vercel-production';
+  if (vercelEnv === 'preview') return 'vercel-preview';
+  if (vercelEnv === 'development') return 'vercel-development';
+  if (vercelEnv !== '') return 'unknown';
+  if (nodeEnv === 'production') return 'node-production';
+  return 'local';
 };
 
 const hasValue = (name: string) => normalizeString(process.env[name]).length > 0;
@@ -78,58 +92,36 @@ const getRuntimeConfig = (): KisRuntimeConfig | null => {
 export const getKisQuoteConfigReadiness = (): KisQuoteConfigReadiness => {
   assertServerRuntime(moduleName);
   const missingEnvNames = getMissingEnvNames();
-  const flagEnabled = process.env.KIS_ENABLE_LIVE_QUOTES === 'true';
-  const productionRuntime = isProductionRuntime();
+  const flagEnabled = process.env[featureFlagEnvName] === 'true';
+  const runtimeClass = classifyRuntime();
 
-  if (productionRuntime) {
-    return {
-      provider,
-      ready: false,
-      reason: 'production_not_allowed',
-      requiredEnvNames,
-      missingEnvNames,
-      optionalEnvNames,
-      featureFlagEnvName,
-      productionAllowed: false,
-    };
+  const base = { provider, requiredEnvNames, missingEnvNames, optionalEnvNames, featureFlagEnvName, productionAllowed: false } as const;
+
+  // Hard block: Vercel Production, non-Vercel NODE_ENV=production, unknown VERCEL_ENV value
+  if (runtimeClass === 'vercel-production' || runtimeClass === 'node-production' || runtimeClass === 'unknown') {
+    return { ...base, ready: false, reason: 'production_not_allowed' };
   }
 
+  // KIS_ACCOUNT_NO must be absent for quote-only scope
+  if (hasValue('KIS_ACCOUNT_NO')) {
+    return { ...base, ready: false, reason: 'production_not_allowed' };
+  }
+
+  // Vercel Preview requires explicit Preview opt-in guard
+  if (runtimeClass === 'vercel-preview' && process.env[previewGuardFlagEnvName] !== 'true') {
+    return { ...base, ready: false, reason: 'preview_guard_required' };
+  }
+
+  // Local / vercel-development / vercel-preview-with-guard: existing readiness checks
   if (!flagEnabled) {
-    return {
-      provider,
-      ready: false,
-      reason: 'disabled',
-      requiredEnvNames,
-      missingEnvNames,
-      optionalEnvNames,
-      featureFlagEnvName,
-      productionAllowed: false,
-    };
+    return { ...base, ready: false, reason: 'disabled' };
   }
 
   if (missingEnvNames.length > 0) {
-    return {
-      provider,
-      ready: false,
-      reason: 'config_missing',
-      requiredEnvNames,
-      missingEnvNames,
-      optionalEnvNames,
-      featureFlagEnvName,
-      productionAllowed: false,
-    };
+    return { ...base, ready: false, reason: 'config_missing' };
   }
 
-  return {
-    provider,
-    ready: true,
-    reason: 'ready',
-    requiredEnvNames,
-    missingEnvNames: [],
-    optionalEnvNames,
-    featureFlagEnvName,
-    productionAllowed: false,
-  };
+  return { ...base, ready: true, reason: 'ready', missingEnvNames: [] };
 };
 
 export const getKisAccessTokenReadiness = (): ProviderConfigReadiness => getKisQuoteConfigReadiness();
@@ -137,6 +129,13 @@ export const getKisAccessTokenReadiness = (): ProviderConfigReadiness => getKisQ
 const readinessToError = (readiness: KisQuoteConfigReadiness): ProviderErrorEnvelope => {
   if (readiness.reason === 'production_not_allowed') {
     return createProviderError('CONFIG_MISSING', 'KIS live quotes are disabled in this runtime.', {
+      provider,
+      staleState: 'unavailable',
+    });
+  }
+
+  if (readiness.reason === 'preview_guard_required') {
+    return createProviderError('CONFIG_MISSING', 'KIS live quotes require an explicit Preview guard in this runtime.', {
       provider,
       staleState: 'unavailable',
     });
