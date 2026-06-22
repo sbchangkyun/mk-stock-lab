@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AK - 2026-06-23
+
+### No-Network KIS Error/Fallback Validation Harness (Implemented, Passed)
+
+- Created `scripts/check_kis_error_fallback_paths.mjs` — no-network mock-based validation harness for KIS error and fallback paths.
+- Added `check:kis-error-fallback` npm script to `package.json`.
+- Created `docs/planning/phase_3ak_no_network_kis_error_fallback_validation_result_v0.1.md`.
+- **Status**: passed — 40/40 scenarios passed, exit code 0.
+- **Execution mode**: Local no-network mock validation only. No live KIS call, no live Supabase query or write, no Vercel CLI, no deployment, no HTTP request was made.
+- **Scenario groups**: (A) Runtime guard — 8 scenarios; (B) Env readiness — 6 scenarios; (C) Provider failure — 9 scenarios (token: 429, non-200, empty token, throws; quote: 429, non-200, rt_cd nonzero, missing price, throws); (D) Cache fallback — 6 state transitions; (E) Sanitization — 3 checks; (F) Request validation — 8 scenarios.
+- **No-network enforcement**: `globalThis.fetch` overridden at script start to throw on any real network attempt. All provider logic uses injected `fetchFn`; all cache logic uses injected mock functions.
+- **Forbidden output scan**: Zero forbidden terms found across all logged output lines and serialized result objects. `RawKisFieldsAbsent=true`, `ForbiddenTermsFoundCount=0`, `SecretsTokensRawErrorsAbsent=true`.
+- **Synthetic env values**: Fake placeholder credentials used to satisfy presence checks only; never printed in output or recorded.
+- **Env save/restore**: `process.env` fully restored in `finally` block after all tests.
+- **UI live quote wiring**: Remains blocked. No page was connected to live quote data. Explicit owner approval is required before any UI integration phase proceeds.
+- **Production KIS**: Remains blocked by `VERCEL_ENV=production` runtime guard (confirmed by Group A tests).
+- **KIS_ACCOUNT_NO**: Must remain absent in all scopes by policy (Group A confirms block is active).
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field, raw error, or stack trace was recorded.
+- No source code (`src/`) or API route logic was changed.
+
 ## Phase 3AJ - 2026-06-22
 
 ### KIS Error/Fallback Path Validation Plan (Planned)
