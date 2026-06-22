@@ -1,5 +1,30 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AF - 2026-06-22
+
+### Vercel Preview Env Mutation, Deployment, and Endpoint Validation Owner-Run Plan (Planning-Only)
+
+- Created `docs/planning/phase_3af_vercel_preview_env_deployment_endpoint_validation_owner_run_plan_v0.1.md`.
+- Phase 3AF is planning-only / owner-run procedure documentation. No execution was performed.
+- No Vercel CLI command was run.
+- No Vercel environment variable was mutated.
+- No deployment occurred.
+- No Preview endpoint was called.
+- No live KIS call was run by Claude Code.
+- No live Supabase query or write was run by Claude Code.
+- No SQL was executed.
+- No Astro dev server was started.
+- No source code or scripts were changed.
+- No KIS runtime guard was changed.
+- No UI wiring occurred.
+- **Document defines**: A future owner-run Vercel Preview validation procedure covering: (1) Preview-only env var mutation via Vercel UI, (2) Preview deployment trigger, (3) sanitized `/api/market/quote` endpoint test, (4) evidence recording using boolean-only Section 12 template, (5) cleanup plan.
+- **Required Preview env names (names only, no values)**: `KIS_APP_KEY`, `KIS_APP_SECRET`, `KIS_BASE_URL`, `KIS_ENABLE_LIVE_QUOTES=true`, `KIS_ENABLE_PREVIEW_LIVE_QUOTES=true`, `QUOTE_CACHE_BACKEND=supabase`, `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+- **`KIS_ACCOUNT_NO` must remain absent** in all scopes (Preview, Production, Development).
+- **Production scope must not be changed** during any Phase 3AF execution step.
+- **Includes**: PowerShell sanitized check template (Section 9), expected pass criteria table (Section 10), sanitized failure categories (Section 11), owner evidence template (Section 12), cleanup plan (Section 13), risk controls (Section 14).
+- Any future Vercel env mutation, deployment trigger, or Preview endpoint test requires explicit owner execution only. Owner must complete the Section 5 approval checklist before any step.
+- Production KIS remains blocked. UI wiring remains blocked.
+
 ## Phase 3AE - 2026-06-22
 
 ### Preview-Safe KIS Runtime Guard Implementation (Implemented and Locally Validated)
