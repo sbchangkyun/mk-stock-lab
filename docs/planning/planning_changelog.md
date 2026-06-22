@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AB - 2026-06-22
+
+### Owner-Run Live Supabase Persistent Cache + Live KIS Quote Validation Result
+
+- Created `docs/planning/phase_3ab_owner_live_supabase_cache_kis_quote_validation_result_v0.1.md`.
+- Status: passed.
+- Owner ran `npm run smoke:supabase-cache-live-kis-quote:dry` in live-approved mode with real KIS and Supabase credentials.
+- `guard-check`: passed — live approval guards verified.
+- `runtime-check`: passed — `nodeEnvIsProduction=false`, `vercelEnvIsProduction=false`.
+- `kis-accno-check`: passed — `kisAccnoAbsent=true`.
+- `cache-backend-check`: passed — `configuredBackend=supabase`.
+- `config-preflight`: passed — KIS and Supabase env names present.
+- `first-call`: passed — `firstCallReason=provider-fresh` (live KIS fetch succeeded; quote written to in-memory Map and Supabase).
+- `memory-flush`: passed — in-memory Map cleared; Supabase row untouched.
+- `second-call`: passed — `secondCallReason=cache-fresh` (Supabase served the fresh row).
+- `supabaseReadbackConclusive=true` — conclusive proof that Supabase persistent cache was written and read back correctly.
+- `final-result`: passed — `mode=live-approved liveKis=true liveSupabase=true`.
+- This is the first recorded end-to-end validation of: live KIS fetch → Supabase write → in-memory flush → Supabase readback → `cache-fresh`.
+- Post-run shell environment cleanup was recommended separately but was not part of the provided harness output.
+- No live KIS call by Claude Code — owner-run only.
+- No live Supabase query/write by Claude Code.
+- No SQL executed.
+- No Astro dev server started by Claude Code.
+- No Vercel command or environment mutation.
+- No deployment.
+- No source code, scripts, or `package.json` changed in this result-recording task.
+- No production KIS guard changed.
+- No UI wiring implemented.
+- No actual stock symbol, price value, secret, token, key, raw KIS field, raw response body, account data, raw error, or stack trace recorded.
+- Remaining unresolved areas: Vercel Preview environment validation, Vercel Production gate decision (Phase 3X Option A/B/C), UI live quote wiring, KIS rate-limit and error/fallback behavior, cold-start token cache behavior in Vercel.
+
 ## Phase 3AB - 2026-06-21
 
 ### Supabase Persistent Cache Live KIS Quote Harness Implementation (Option B)
