@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AC - 2026-06-22
+
+### Vercel Preview Environment Validation Plan (Planning Only)
+
+- Created `docs/planning/phase_3ac_vercel_preview_environment_validation_plan_v0.1.md`.
+- Phase 3AC is planning-only. No execution occurred.
+- No Vercel CLI command was run.
+- No Vercel env mutation occurred.
+- No deployment was triggered.
+- No live KIS call was run by Claude Code.
+- No live Supabase query/write was run by Claude Code.
+- No SQL was executed.
+- No Astro dev server was started.
+- No source code or scripts were changed.
+- No production KIS guard was changed.
+- No UI wiring occurred.
+- **Key finding**: The current `isProductionRuntime()` guard in `src/lib/server/providers/kisClient.ts` (lines 60–64) returns `true` when `NODE_ENV === 'production'` OR `VERCEL_ENV === 'production'`. Vercel sets `NODE_ENV=production` in all deployed runtimes, including Preview deployments. This means Preview live KIS calls are likely blocked by the `NODE_ENV` branch of the guard even when `VERCEL_ENV=preview`. Any live Preview KIS test will likely return `blocked_by_runtime_guard` without a separate guard-decision phase.
+- Plan defines: 4-option decision matrix (plan-only / Preview env mutation only / Preview endpoint test / defer), recommended safe sequence (investigate runtime env first without secrets), future owner-run procedure, expected blocked case handling (`blocked_by_runtime_guard`), sanitized evidence template, rollback/cleanup procedure, and approval boundary.
+- Any future Vercel env mutation, deployment, or Preview endpoint test requires explicit owner approval separate from this planning document.
+- Any production guard change to allow `VERCEL_ENV=preview` requires a separate gate-decision planning phase and explicit owner approval before any code change.
+- No project refs, secrets, price values, raw KIS fields, screenshots, raw errors, or stack traces recorded.
+
 ## Phase 3AB - 2026-06-22
 
 ### Owner-Run Live Supabase Persistent Cache + Live KIS Quote Validation Result
