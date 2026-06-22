@@ -2,7 +2,7 @@
 
 :root {
   --page-max-width: 1500px;
-  --page-gutter-x: clamp(20px, 2.25vw, 40px);
+  --page-gutter-x: clamp(24px, 4vw, 72px);
   --bg: #f5f7fb;
   --surface: #ffffff;
   --surface-muted: #eef3fb;

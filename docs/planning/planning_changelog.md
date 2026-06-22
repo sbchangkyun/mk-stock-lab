@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AH - 2026-06-22
+
+### Global Page Gutter Second Pass (Implemented)
+
+- Created `docs/planning/phase_3ah_global_page_gutter_second_pass_result_v0.1.md`.
+- Modified `src/styles/style.css`: updated `--page-gutter-x` from `clamp(20px, 2.25vw, 40px)` (Phase 3AG) to `clamp(24px, 4vw, 72px)`.
+- **Owner review finding**: Phase 3AG gutter change was too subtle; layout still felt cramped at 1280 px and 1440 px. This phase approximately doubles the growth rate (2.25 → 4 px per 100 px of viewport) and raises the maximum gutter from 40 px to 72 px.
+- **Approximate gutter values**: ~51 px at 1280 px, ~58 px at 1440 px, 72 px at 1920 px (clamped max; `--page-max-width: 1500px` auto-centering then dominates).
+- **Ad banner 160 × 600 preserved.** `.home-rail-viewport` (160 × 600), `.home-rail-ad` (160 px), `.home-sidebar-column` (min-width 160 px), and the 1440 px+ home shell grid (`minmax(0, 1fr) 176px`) are all unchanged.
+- No separate mobile media query added; `body { min-width: 1080px }` means effective minimum rendered gutter is ~43 px; clamp floor is 24 px.
+- All four gutter-consuming rules (`.site-header`, `.ticker-track`, `.nav-inner`, `.site-main`) continue to reference `var(--page-gutter-x)` unchanged from Phase 3AG.
+- `npm run build`: pass. `git diff --check`: pass. Only `src/styles/style.css` and documentation files changed.
+- No API, KIS, Supabase, Vercel, or deployment changes occurred. No live network calls were made. No UI live quote wiring was added. No secrets or price values were recorded.
+- Owner browser review required at 1280 px, 1440 px, 1920 px, and mobile width to confirm the gutter feels right.
+
 ## Phase 3AG - 2026-06-22
 
 ### Global Page Gutter Layout Refinement (Implemented)
