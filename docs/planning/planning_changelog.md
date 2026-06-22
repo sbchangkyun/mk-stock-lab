@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AI - 2026-06-22
+
+### Vercel Env Scope Cleanup Result (Owner-Run, Passed)
+
+- Created `docs/planning/phase_3ai_vercel_env_scope_cleanup_result_v0.1.md`.
+- **Status**: owner-confirmed pass.
+- **Execution mode**: Owner-run. Claude Code did not access Vercel, mutate Vercel env, run Vercel CLI, deploy, call the Preview endpoint, make HTTP requests, run live KIS calls, run live Supabase queries/writes, or execute SQL.
+- **Owner-run scope cleanup**: The owner performed Vercel environment scope cleanup outside Claude Code via the Vercel dashboard, resolving the Phase 3AF owner-approved Production and Preview env scope exception.
+- **Redeploy trigger commit**: `20f21ec chore: trigger preview redeploy after env scope cleanup` — owner-run empty commit and push to trigger Preview redeployment after env scope cleanup.
+- **Endpoint validation basis**: Phase 3AF sanitized Preview endpoint validation already passed (recorded in `phase_3af_owner_vercel_preview_endpoint_validation_result_v0.1.md`). No additional endpoint call was run by Claude Code in Phase 3AI.
+- **Production live KIS**: Remains blocked by `VERCEL_ENV=production` runtime guard. Unchanged.
+- **KIS_ACCOUNT_NO**: Must remain absent in all Vercel env scopes by policy.
+- **UI live quote wiring**: Remains blocked pending explicit owner gate decision.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field, raw error, or stack trace was recorded.
+- No source code, scripts, `package.json`, API logic, KIS runtime guard, Supabase logic, Vercel configuration, or UI wiring changed in this result-recording task.
+- The Phase 3AF dual-scope configuration is no longer the desired steady state. The official project record should reflect that the cleanup has been performed.
+
 ## Phase 3AH - 2026-06-22
 
 ### Global Page Gutter Second Pass (Implemented)
