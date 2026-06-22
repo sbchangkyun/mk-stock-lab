@@ -1,5 +1,29 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AD - 2026-06-22
+
+### KIS Runtime Guard Preview/Production Decision (Decision-Only)
+
+- Created `docs/planning/phase_3ad_kis_runtime_guard_preview_production_decision_v0.1.md`.
+- Phase 3AD is decision-only. No code change, no execution.
+- No source code was changed. `kisClient.ts` and `providerEnv.ts` are unchanged.
+- No KIS guard was changed. `isProductionRuntime()` is unchanged.
+- No Vercel env mutation occurred.
+- No deployment occurred.
+- No live KIS call was run.
+- No live Supabase query/write was run.
+- No SQL was executed.
+- No Astro dev server was started.
+- No UI wiring occurred.
+- **Decision problem**: Current `isProductionRuntime()` returns `true` when `NODE_ENV === 'production'` OR `VERCEL_ENV === 'production'`. Vercel sets `NODE_ENV=production` in all deployed runtimes including Preview. Therefore, Vercel Preview live KIS is blocked under the current guard via the `NODE_ENV` branch even when `VERCEL_ENV=preview`.
+- **Recommended option**: Option B — allow Vercel Preview live KIS only when `VERCEL_ENV=preview` AND a new explicit Preview guard env var (`KIS_ENABLE_PREVIEW_LIVE_QUOTES`) is set to `true`, in addition to existing `KIS_ENABLE_LIVE_QUOTES=true` and credential presence. Production hard block on `VERCEL_ENV=production` is unchanged. Local behavior is unchanged.
+- **Production KIS**: Remain permanently blocked — `VERCEL_ENV=production` is an absolute hard block in the recommended option.
+- **5-option decision matrix documented**: A (keep unchanged), B (Preview explicit opt-in — recommended), C (remove NODE_ENV block), D (runtime policy enum), E (defer all Vercel KIS testing).
+- Risk assessment documented for: accidental Production enablement, Preview secret mis-scoping, NODE_ENV misclassification, ambiguous runtime, provider error exposure, premature UI wiring.
+- Owner approval checklist provided for Phase 3AE implementation decision.
+- Any future guard implementation requires explicit owner approval for both code change and Vercel Preview env mutation/deployment in separate phases.
+- No project refs, secrets, price values, raw KIS fields, screenshots, raw errors, or stack traces recorded.
+
 ## Phase 3AC - 2026-06-22
 
 ### Vercel Preview Environment Validation Plan (Planning Only)
