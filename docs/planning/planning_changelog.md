@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AF Owner-Run Result - 2026-06-22
+
+### Vercel Preview Endpoint Validation Result (Owner-Run, Passed)
+
+- Created `docs/planning/phase_3af_owner_vercel_preview_endpoint_validation_result_v0.1.md`.
+- Status: **passed**. Owner-run Vercel Preview endpoint validation of `/api/market/quote` succeeded.
+- Owner configured Vercel environment variables outside Claude Code and called the Preview endpoint manually.
+- Deployment Protection bypass used with owner-provided secret; bypass secret not recorded.
+- Production and Preview env scopes were used as an owner-approved exception. Production live KIS remains blocked by the Phase 3AE runtime guard (`VERCEL_ENV=production` is an unconditional hard block regardless of env var scope).
+- **Sanitized result**: HTTP 200, JSON parse ok, `Cache-Control: no-store`, `ok: true`, `data` and `fallback` objects present, all required normalized fields present (`market`, `symbol`, `price`, `currency`, `asOf`, `fallback.state`, `fallback.reason`), raw KIS fields absent, forbidden term count 0, secrets/tokens/raw errors absent.
+- Actual stock symbol was redacted before recording (`<REDACTED_6_DIGIT_KR_CODE>`). Price value was not recorded. Preview URL was not recorded. Bypass secret was not recorded.
+- No live KIS call was run by Claude Code. No live Supabase query or write was run by Claude Code. No SQL was executed. No Astro dev server was started. No Vercel CLI command was run. No Vercel env mutation was performed by Claude Code. No deployment was performed by Claude Code. No HTTP request was made by Claude Code.
+- No source code, scripts, `package.json`, Vercel env, deployment, UI wiring, or KIS runtime guard was changed in this result-recording task.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field, raw error, or stack trace was recorded.
+- **Recommended future scope cleanup**: KIS credential env vars were set in both Production and Preview scopes as an owner-approved exception; removing them from Production scope is recommended.
+- Production KIS remains blocked. UI live quote wiring remains blocked.
+
 ## Phase 3AF - 2026-06-22
 
 ### Vercel Preview Env Mutation, Deployment, and Endpoint Validation Owner-Run Plan (Planning-Only)
