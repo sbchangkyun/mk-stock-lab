@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AJ - 2026-06-22
+
+### KIS Error/Fallback Path Validation Plan (Planned)
+
+- Created `docs/planning/phase_3aj_kis_error_fallback_path_validation_plan_v0.1.md`.
+- **Status**: planned — no implementation or live execution in this phase.
+- **Purpose**: Define a safe validation plan for KIS error, guard, and fallback behavior before any UI live quote integration is approved. Follows Phase 3AF (successful Preview path validation) and Phase 3AI (env scope cleanup).
+- **Validation scenario groups defined**: (A) runtime guard classification, (B) env readiness, (C) provider failure paths (token + quote), (D) cache fallback state transitions, (E) API response sanitization, (F) request validation.
+- **Recommended staged approach**: Phase 3AK (no-network mock/harness validation) → Phase 3AL (optional owner-run local validation if needed) → Phase 3AM (UI integration gate decision, requires explicit owner approval).
+- **UI live quote wiring**: Remains blocked. No page (Home, Market, Chart AI, Lab, Portfolio) may be connected to live quote data until Phase 3AK passes and the owner explicitly approves a UI integration phase.
+- **No source code, scripts, `package.json`, API logic, KIS runtime guard, Supabase logic, Vercel configuration, deployment, live KIS call, live Supabase query/write, SQL, Vercel CLI command, or HTTP request was involved in this planning task.**
+- **No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field, raw error, or stack trace was recorded.**
+
 ## Phase 3AI - 2026-06-22
 
 ### Vercel Env Scope Cleanup Result (Owner-Run, Passed)
