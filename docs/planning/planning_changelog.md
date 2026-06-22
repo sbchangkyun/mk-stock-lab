@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AL - 2026-06-23
+
+### Validation Sufficiency and UI Integration Gate Decision (Decided)
+
+- Created `docs/planning/phase_3al_validation_sufficiency_ui_integration_gate_decision_v0.1.md`.
+- **Status**: decided — gate conditionally opened for a minimal UI live quote integration planning phase.
+- **Execution mode**: Documentation-only gate decision. No live KIS call, Supabase query/write, SQL, Vercel CLI, deployment, HTTP request, or UI wiring involved.
+- **Evidence basis**: Phase 3AF successful-path owner-run Vercel Preview validation (14/14 criteria, `ForbiddenTermsFoundCount=0`) and Phase 3AK no-network mock harness (40/40 scenarios, all six groups A–F passed, `RawKisFieldsAbsent=true`, `ForbiddenTermsFoundCount=0`, build passed, no `src/` changes).
+- **Gate outcome**: Sufficient to proceed to a minimal UI live quote integration planning phase (Phase 3AM). Direct UI implementation remains blocked in Phase 3AL and in Phase 3AM; actual UI wiring implementation requires a separate explicit owner approval after the Phase 3AM plan is reviewed.
+- **Production KIS**: Remains blocked. The `VERCEL_ENV=production` hard block is in place. No Production endpoint has been validated or will be validated until a separate owner-approved production readiness phase.
+- **Account/order/trading/balance/holdings/WebSocket**: Remain entirely out of scope. No planning or implementation in any current or planned phase.
+- **Open limitations carried forward**: No live KIS outage validated; no live Supabase outage validated; Vercel cold-start token cache behavior uncharacterized; UI rendering not implemented; browser-side behavior untested.
+- **Recommended next phase**: Phase 3AM — Minimal UI Live Quote Integration Plan (surface selection, UI state specification, data contract mapping, feature flag strategy, sanitization plan, browser review checklist, implementation boundary). Phase 3AN implementation only after explicit owner approval of the Phase 3AM plan.
+- No source code, scripts, `package.json`, API logic, KIS guard, Supabase logic, or Vercel configuration changed in this decision task.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field, raw error, or stack trace was recorded.
+
 ## Phase 3AK - 2026-06-23
 
 ### No-Network KIS Error/Fallback Validation Harness (Implemented, Passed)
