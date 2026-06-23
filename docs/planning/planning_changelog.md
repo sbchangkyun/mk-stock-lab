@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AP - 2026-06-23
+
+### Preview Deployment Decision (Decided)
+
+- Created `docs/planning/phase_3ap_preview_deployment_decision_v0.1.md`.
+- **Status**: decided.
+- **Execution mode**: Documentation-only decision. No deployment, Vercel CLI, env mutation, HTTP request, or implementation change performed.
+- **Decision**: Proceed to owner-run Vercel Preview deployment in the next phase (Phase 3AQ) with `KIS_ENABLE_MARKET_QUOTE_CARD` absent or non-`'true'` (feature disabled by default).
+- **First Preview deployment goal**: Validate build and render stability and Market page layout with the card in its disabled state only.
+- **Enabling card in Preview**: Requires a separate explicit owner approval after disabled Preview deployment is confirmed stable. Not approved by this decision.
+- **Production deployment**: Not approved. Production KIS remains blocked by `VERCEL_ENV=production` guard.
+- **Expansion**: Home, Chart AI, Portfolio, Lab, AI analysis, portfolio integration, account/order/trading/balance/holdings/WebSocket features remain out of scope and unapproved.
+- **Evidence basis**: Phase 3AN validation (check:market-quote-card 25/25, check:kis-error-fallback 40/40, build clean) and Phase 3AO owner browser review (no blocking issues reported, implementation commit 99ddbcf).
+- No source code, scripts, `package.json`, styles, API logic, KIS guard, Supabase logic, Vercel config, deployment, live KIS call, live Supabase query/write, SQL, HTTP request, or env mutation changed in this decision task.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field value, raw error, or stack trace was recorded.
+
 ## Phase 3AO - 2026-06-23
 
 ### Owner Browser Review — Market Live Quote Card (Passed)
