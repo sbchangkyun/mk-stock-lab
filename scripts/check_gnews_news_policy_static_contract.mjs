@@ -230,6 +230,40 @@ if (!fixtureExists) {
   }
 }
 
+// --- Phase 3AZ artifact checks ---
+log('Phase 3AZ artifacts:');
+const RESULT_DOC_PATH = join(root, 'docs', 'planning', 'phase_3az_no_network_gnews_policy_validator_result_v0.1.md');
+const POLICY_UTILITY_PATH = join(root, 'src', 'lib', 'news', 'gnewsNewsPolicy.mjs');
+const ENGINE_CHECKER_PATH = join(root, 'scripts', 'check_gnews_news_policy_engine.mjs');
+const NEWS_API_ROUTE_PATH = join(root, 'src', 'pages', 'api', 'news');
+
+check('Phase 3AZ result doc exists', existsSync(RESULT_DOC_PATH));
+check('GNews policy utility module exists (src/lib/news/gnewsNewsPolicy.mjs)', existsSync(POLICY_UTILITY_PATH));
+check('GNews engine checker exists (scripts/check_gnews_news_policy_engine.mjs)', existsSync(ENGINE_CHECKER_PATH));
+
+let pkg3az = {};
+try { pkg3az = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-news-engine',
+  typeof pkg3az.scripts?.['check:gnews-news-engine'] === 'string',
+);
+
+check('No /api/news live route added (src/pages/api/news/ must not exist)', !existsSync(NEWS_API_ROUTE_PATH));
+
+if (existsSync(POLICY_UTILITY_PATH)) {
+  const utilContent = readFileSync(POLICY_UTILITY_PATH, 'utf8');
+  const utilActualFetch =
+    /(?:await|=\s*|return\s+)fetch\s*\(/.test(utilContent) ||
+    /\bfetch\s*\(\s*['"`]https?:/.test(utilContent);
+  check('Policy utility makes no actual fetch network call', !utilActualFetch);
+  check(
+    'Policy utility does not read GNEWS_API_KEY from env',
+    !(/import\.meta\.env\.(?:PUBLIC_)?GNEWS_API_KEY/.test(utilContent)) &&
+    !(/process\.env\.(?:PUBLIC_)?GNEWS_API_KEY/.test(utilContent)),
+  );
+}
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

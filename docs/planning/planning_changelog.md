@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AZ - 2026-06-24
+
+### No-network GNews Policy Validator Implementation (Implemented)
+
+- Created `docs/planning/phase_3az_no_network_gnews_policy_validator_result_v0.1.md`.
+- Created `src/lib/news/gnewsNewsPolicy.mjs` — no-network deterministic policy utility exporting: `POLICY` constants, `normalizeArticle`, `validateArticleShape`, `validateFixtureShape`, `detectDuplicateGroups`, `detectExpiredArticles`, `rankPruneCandidates`, `paginateArticles`, `selectHomeArticles`, `scanNewsPolicyForbiddenPatterns`, `checkArticleUrlDomains`, `summarizePolicyValidation`.
+- Created `scripts/check_gnews_news_policy_engine.mjs` — engine validator with 57 checks across 10 groups: fixture metadata (8), article shape (4), URL domain safety (2), category coverage (6), dedup detection (7), expiration detection (3), prune ranking (8), pagination (8), Home top-6 selection (6), security scan (5). **57/57 PASS**.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added 7 Phase 3AZ artifact checks. **51/51 PASS**.
+- Added `check:gnews-news-engine` script to `package.json`.
+- **Validation results**: `check:gnews-news-policy` 51/51 PASS; `check:gnews-news-engine` 57/57 PASS.
+- **Key findings**: 24 active non-duplicate articles; 1 exact-URL dup group; 1 expired (fixture-018); 1 low-score (fixture-009, score 22); Home selects 6 articles across 5 categories; 0 forbidden findings in fixture.
+- **Reference time**: `2026-06-23T09:00:00Z` (deterministic, not `Date.now()`).
+- **No runtime changes**: No live GNews call, no API route, no DB, no Supabase, no Home integration, no deployment.
+
 ## Phase 3AY - 2026-06-23
 
 ### GNews News Store Policy + No-network Schema/Fixture Design (Planned)
