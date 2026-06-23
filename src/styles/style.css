@@ -2734,3 +2734,116 @@ body.modal-open {
   font-size: 13px;
   color: var(--text-muted);
 }
+
+/* --- My Page Watchlist News Alert Search/Save Shell --- */
+
+.mp-notif-inner-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.mp-notif-body {
+  margin-top: 8px;
+}
+
+.mp-notif-body--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.mp-watchlist-search-label {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.mp-watchlist-section-label {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.mp-watchlist-search-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mp-watchlist-input {
+  flex: 1 1 180px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.mp-watchlist-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.mp-watchlist-add-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mp-watchlist-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.mp-watchlist-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  font-size: 13px;
+}
+
+.mp-watchlist-remove-btn {
+  min-height: 26px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mp-watchlist-remove-btn:hover {
+  background: var(--surface);
+  color: var(--negative);
+}
+
+.mp-watchlist-empty {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}

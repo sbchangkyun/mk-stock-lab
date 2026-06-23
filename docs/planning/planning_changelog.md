@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AX - 2026-06-23
+
+### Notification Favorite Stock Shell + About Footer Link + Home Ad Slot Expansion (Implemented)
+
+- Created `docs/planning/phase_3ax_notification_favorite_about_ad_slots_result_v0.1.md`.
+- **관심종목 뉴스 알림 search/save shell** (`src/pages/mypage.astro`): Row converted to `mp-notif-block`. Added search input ("관심종목 검색", placeholder "종목명 또는 종목코드를 입력하세요."), "관심종목 저장" button, in-memory rendered list ("저장된 관심종목", max 5, empty state, 삭제 per item), and "실제 뉴스 알림 저장 기능은 준비 중입니다." notice. No backend, no localStorage/sessionStorage, no API call. State resets on page reload.
+- **관심종목 지정가 알림 on/off toggle** (`src/pages/mypage.astro`): Added "알림 사용" toggle row inside the 지정가 알림 block. Unchecked → body dimmed (opacity 0.45, pointer-events none). No persistence, no API call.
+- **Footer 운영자 소개 link** (`src/components/Footer.astro`): Added `<a href="/about">운영자 소개</a>` as the first link before 개인정보처리방침. New footer order: 운영자 소개 / 개인정보처리방침 / 이용약관 / 제휴문의.
+- **About placeholder page** (`src/pages/about.astro`): Created with eyebrow ABOUT, title 운영자 소개, body "운영자 소개 내용은 준비 중입니다." No fabricated content. Benchmark URL `https://etfshopping.com/about` recorded as planning reference only — not fetched, copied, or embedded.
+- **Home ad rail 3-slot structure**: Added `public/ads/home-rail/home-rail-sample-03.svg` (160×600 dark-blue placeholder SVG) and added third entry to `src/data/homeAdBanners.json`. `HomeRailAd.astro` unchanged — carousel reads JSON dynamically. Now rotates Sample Banner 01, 02, 03.
+- **CSS additions** (`src/styles/style.css`): `.mp-notif-inner-row`, `.mp-notif-body`, `.mp-notif-body--disabled`, `.mp-watchlist-search-label`, `.mp-watchlist-section-label`, `.mp-watchlist-search-row`, `.mp-watchlist-input`, `.mp-watchlist-add-btn`, `.mp-watchlist-list`, `.mp-watchlist-item`, `.mp-watchlist-remove-btn`, `.mp-watchlist-empty`.
+- **Static validators updated**: `check_mypage_shell_static_contract.mjs` extended to 49 checks (Phase 3AX spec, added quote/news API forbidden checks). `check_header_footer_shell_static_contract.mjs` extended to 35 checks (added about page, footer order, benchmark safety). `check_home_ad_slots_static_contract.mjs` created (30 checks). `check:home-ad-slots` script added to `package.json`.
+- Validation: `check:mypage-shell` 49/49 PASS; `check:header-footer-shell` 35/35 PASS; `check:home-ad-slots` 30/30 PASS; `check:market-quote-card` 32/32 PASS; `npm run build` Complete (6.99s); `git diff --check` no errors.
+- No notification persistence, no Telegram integration, no external ad script, no tracking, no Supabase mutation, no API/KIS/Vercel/deployment changes, no live calls, no secrets recorded. Claude memory files not modified.
+
 ## Phase 3AW - 2026-06-23
 
 ### My Page Account/Notification Shell Revision + Legal Footer Fix (Implemented)

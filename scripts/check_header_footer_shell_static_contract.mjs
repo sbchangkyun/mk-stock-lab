@@ -1,5 +1,5 @@
 /**
- * Static structural validation for the header/footer UI shell.
+ * Static structural validation for the header/footer UI shell (Phase 3AX revision).
  * No network calls. No .env file reads. Exits non-zero on any failure.
  */
 
@@ -15,6 +15,7 @@ const FOOTER_PATH = join(root, 'src', 'components', 'Footer.astro');
 const PRIVACY_PATH = join(root, 'src', 'pages', 'privacy.astro');
 const TERMS_PATH = join(root, 'src', 'pages', 'terms.astro');
 const MYPAGE_PATH = join(root, 'src', 'pages', 'mypage.astro');
+const ABOUT_PATH = join(root, 'src', 'pages', 'about.astro');
 
 const PARTNERSHIP_URL = 'https://forms.gle/WAVSxaotdes6T5yJA';
 
@@ -28,6 +29,8 @@ const DELETION_PATTERNS = [
   'auth.admin.delete',
 ];
 
+const BENCHMARK_URL_PATTERN = 'etfshopping.com/about';
+
 const log = (msg) => process.stdout.write(msg + '\n');
 
 let failures = 0;
@@ -38,7 +41,7 @@ const check = (label, pass) => {
   if (!pass) failures++;
 };
 
-log('=== Header/Footer Shell Static Contract Check ===');
+log('=== Header/Footer Shell Static Contract Check (Phase 3AX) ===');
 log('');
 
 // --- File existence ---
@@ -53,6 +56,8 @@ const termsExists = existsSync(TERMS_PATH);
 check('terms.astro placeholder exists', termsExists);
 const mypageExists = existsSync(MYPAGE_PATH);
 check('mypage.astro placeholder exists', mypageExists);
+const aboutExists = existsSync(ABOUT_PATH);
+check('/about page exists', aboutExists);
 log('');
 
 if (!headerExists || !footerExists) {
@@ -81,13 +86,42 @@ log('');
 log('Footer content:');
 check('Footer contains © 2026 MK Stock Lab ver1.0', footerContent.includes('© 2026 MK Stock Lab ver1.0'));
 check('Footer does not link to YouTube', !footerContent.includes('youtube.com/@'));
+check('Footer contains 운영자 소개', footerContent.includes('운영자 소개'));
 check('Footer contains 개인정보처리방침', footerContent.includes('개인정보처리방침'));
 check('Footer contains 이용약관', footerContent.includes('이용약관'));
 check('Footer contains 제휴문의', footerContent.includes('제휴문의'));
 check('Footer contains exact partnership URL', footerContent.includes(PARTNERSHIP_URL));
 check('Partnership link uses rel="noopener noreferrer"', footerContent.includes('rel="noopener noreferrer"'));
+check('Footer links to /about', footerContent.includes('href="/about"'));
 check('Footer links to /privacy', footerContent.includes('href="/privacy"'));
 check('Footer links to /terms', footerContent.includes('href="/terms"'));
+check(
+  'Footer link order: 운영자 소개 before 개인정보처리방침',
+  footerContent.indexOf('/about') < footerContent.indexOf('/privacy'),
+);
+log('');
+
+// --- About page safety ---
+log('About page:');
+if (aboutExists) {
+  const aboutContent = readFileSync(ABOUT_PATH, 'utf8');
+  check('/about page contains 운영자 소개', aboutContent.includes('운영자 소개'));
+  check('/about page contains 준비 중 (placeholder marker)', aboutContent.includes('준비 중'));
+  const aboutFabricatedPatterns = FABRICATED_POLICY_PATTERNS.filter((p) => aboutContent.includes(p));
+  check(
+    `About page does not contain fabricated content patterns (checked: ${FABRICATED_POLICY_PATTERNS.length})`,
+    aboutFabricatedPatterns.length === 0,
+  );
+  check(
+    'About page does not embed benchmark URL content',
+    !aboutContent.includes(BENCHMARK_URL_PATTERN),
+  );
+} else {
+  check('/about page contains 운영자 소개', false);
+  check('/about page contains 준비 중', false);
+  check('About page does not contain fabricated content patterns', false);
+  check('About page does not embed benchmark URL content', false);
+}
 log('');
 
 // --- Placeholder page safety ---

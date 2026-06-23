@@ -14,5 +14,13 @@
     "href": "#",
     "isActive": true,
     "displayOrder": 2
+  },
+  {
+    "id": "home-rail-sample-03",
+    "imageSrc": "/ads/home-rail/home-rail-sample-03.svg",
+    "alt": "Sample home rail banner 03",
+    "href": "#",
+    "isActive": true,
+    "displayOrder": 3
   }
 ]

@@ -74,6 +74,7 @@ import Layout from '../layouts/Layout.astro';
     <section class="panel mp-section" aria-labelledby="mp-notif-heading">
       <h2 id="mp-notif-heading" class="mp-section-title">알림 설정</h2>
 
+      <!-- Telegram placeholder -->
       <div class="mp-notif-row">
         <div>
           <p class="mp-pref-label">내 텔레그램 연동</p>
@@ -82,14 +83,30 @@ import Layout from '../layouts/Layout.astro';
         <span class="mp-badge">준비 중</span>
       </div>
 
-      <div class="mp-notif-row">
-        <span class="mp-pref-label" id="lbl-watchlist-news">관심종목 뉴스 알림</span>
-        <label class="mp-toggle">
-          <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-watchlist-news" />
-          <span class="mp-toggle-track" aria-hidden="true"></span>
-        </label>
+      <!-- 관심종목 뉴스 알림 — search/save shell (in-memory only) -->
+      <div class="mp-notif-block">
+        <div class="mp-notif-block-header">
+          <span class="mp-pref-label" id="lbl-watchlist-news">관심종목 뉴스 알림</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-watchlist-news" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+        <p class="mp-notif-desc">관심종목 뉴스 알림을 받을 종목을 추가하세요. 최대 5개까지 등록할 수 있습니다.</p>
+        <p class="mp-watchlist-search-label">관심종목 검색</p>
+        <div class="mp-watchlist-search-row">
+          <input class="mp-watchlist-input" type="text" id="mpWatchlistInput"
+            placeholder="종목명 또는 종목코드를 입력하세요." aria-label="관심종목 검색"
+            maxlength="20" autocomplete="off" />
+          <button class="mp-watchlist-add-btn" type="button" id="mpWatchlistAddBtn">관심종목 저장</button>
+        </div>
+        <p class="mp-watchlist-section-label hidden" id="mpWatchlistHeader">저장된 관심종목</p>
+        <ul class="mp-watchlist-list hidden" id="mpWatchlistList" aria-live="polite" aria-label="저장된 관심종목 목록"></ul>
+        <p class="mp-watchlist-empty" id="mpWatchlistEmpty">등록된 관심종목이 없습니다.</p>
+        <p class="mp-alert-notice hidden" id="mpWatchlistNotice" role="status" aria-live="polite">실제 뉴스 알림 저장 기능은 준비 중입니다.</p>
       </div>
 
+      <!-- 내 포트 종목 뉴스 알림 -->
       <div class="mp-notif-row">
         <span class="mp-pref-label" id="lbl-portfolio-news">내 포트 종목 뉴스 알림</span>
         <label class="mp-toggle">
@@ -98,25 +115,36 @@ import Layout from '../layouts/Layout.astro';
         </label>
       </div>
 
+      <!-- 관심종목 지정가 알림 — with on/off toggle -->
       <div class="mp-notif-block">
         <div class="mp-notif-block-header">
           <span class="mp-pref-label">관심종목 지정가 알림</span>
           <span class="mp-badge">최대 5개</span>
         </div>
-        <p class="mp-notif-desc">등록된 지정가 알림이 없습니다.</p>
-        <button class="mp-add-btn" type="button" id="mpAddAlertBtn">+ 추가</button>
-        <div class="mp-alert-form hidden" id="mpAlertForm">
-          <div class="mp-alert-form-row">
-            <input class="mp-alert-input" type="text" inputmode="numeric" maxlength="6"
-              placeholder="종목코드 6자리" aria-label="종목코드" autocomplete="off" />
-            <input class="mp-alert-input" type="text" inputmode="decimal"
-              placeholder="지정가" aria-label="지정가" autocomplete="off" />
-            <button class="mp-alert-save-btn" type="button" id="mpAlertSaveBtn">저장</button>
+        <div class="mp-notif-inner-row">
+          <span class="mp-pref-label" id="lbl-price-alert-toggle">알림 사용</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" id="mpPriceAlertToggle" aria-labelledby="lbl-price-alert-toggle" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+        <div class="mp-notif-body mp-notif-body--disabled" id="mpPriceAlertBody">
+          <p class="mp-notif-desc">지정가 알림은 최대 5개까지 준비할 수 있습니다.</p>
+          <button class="mp-add-btn" type="button" id="mpAddAlertBtn">+ 추가</button>
+          <div class="mp-alert-form hidden" id="mpAlertForm">
+            <div class="mp-alert-form-row">
+              <input class="mp-alert-input" type="text" inputmode="numeric" maxlength="6"
+                placeholder="종목코드 6자리" aria-label="종목코드" autocomplete="off" />
+              <input class="mp-alert-input" type="text" inputmode="decimal"
+                placeholder="지정가" aria-label="지정가" autocomplete="off" />
+              <button class="mp-alert-save-btn" type="button" id="mpAlertSaveBtn">저장</button>
+            </div>
+            <p class="mp-alert-notice hidden" id="mpAlertNotice" role="status" aria-live="polite">저장 기능은 준비 중입니다.</p>
           </div>
-          <p class="mp-alert-notice hidden" id="mpAlertNotice" role="status" aria-live="polite">저장 기능은 준비 중입니다.</p>
         </div>
       </div>
 
+      <!-- 이벤트/혜택 알림 -->
       <div class="mp-notif-row">
         <span class="mp-pref-label" id="lbl-event-notif">이벤트/혜택 알림</span>
         <label class="mp-toggle">
@@ -125,6 +153,7 @@ import Layout from '../layouts/Layout.astro';
         </label>
       </div>
 
+      <!-- 공지사항 알림 -->
       <div class="mp-notif-row">
         <span class="mp-pref-label" id="lbl-announce-notif">공지사항 알림</span>
         <label class="mp-toggle">
@@ -193,7 +222,74 @@ import Layout from '../layouts/Layout.astro';
       }
     }
 
-    // Withdrawal confirmation flow
+    // --- Watchlist news alert search/save shell (in-memory, no persistence) ---
+    const watchlistItems: string[] = [];
+    const MAX_WATCHLIST = 5;
+
+    const renderWatchlist = () => {
+      const list = document.getElementById('mpWatchlistList') as HTMLUListElement | null;
+      const emptyEl = document.getElementById('mpWatchlistEmpty') as HTMLElement | null;
+      const headerEl = document.getElementById('mpWatchlistHeader') as HTMLElement | null;
+      if (!list) return;
+
+      if (watchlistItems.length === 0) {
+        list.classList.add('hidden');
+        headerEl?.classList.add('hidden');
+        emptyEl?.classList.remove('hidden');
+      } else {
+        list.classList.remove('hidden');
+        headerEl?.classList.remove('hidden');
+        emptyEl?.classList.add('hidden');
+        list.innerHTML = '';
+        watchlistItems.forEach((item, idx) => {
+          const li = document.createElement('li');
+          li.className = 'mp-watchlist-item';
+          const span = document.createElement('span');
+          span.textContent = item;
+          const btn = document.createElement('button');
+          btn.className = 'mp-watchlist-remove-btn';
+          btn.type = 'button';
+          btn.textContent = '삭제';
+          btn.setAttribute('aria-label', `${item} 삭제`);
+          btn.addEventListener('click', () => {
+            watchlistItems.splice(idx, 1);
+            renderWatchlist();
+          });
+          li.appendChild(span);
+          li.appendChild(btn);
+          list.appendChild(li);
+        });
+      }
+    };
+
+    const watchlistInput = document.getElementById('mpWatchlistInput') as HTMLInputElement | null;
+    const watchlistAddBtn = document.getElementById('mpWatchlistAddBtn') as HTMLButtonElement | null;
+    const watchlistNotice = document.getElementById('mpWatchlistNotice') as HTMLElement | null;
+
+    watchlistAddBtn?.addEventListener('click', () => {
+      const val = watchlistInput?.value.trim() ?? '';
+      if (!val || watchlistItems.length >= MAX_WATCHLIST || watchlistItems.includes(val)) return;
+      watchlistItems.push(val);
+      if (watchlistInput) watchlistInput.value = '';
+      renderWatchlist();
+      watchlistNotice?.classList.remove('hidden');
+    });
+
+    renderWatchlist();
+
+    // --- Price alert on/off toggle (UI only, no persistence) ---
+    const priceAlertToggle = document.getElementById('mpPriceAlertToggle') as HTMLInputElement | null;
+    const priceAlertBody = document.getElementById('mpPriceAlertBody') as HTMLElement | null;
+
+    if (priceAlertToggle && priceAlertBody) {
+      const syncPriceAlertBody = () => {
+        priceAlertBody.classList.toggle('mp-notif-body--disabled', !priceAlertToggle.checked);
+      };
+      priceAlertToggle.addEventListener('change', syncPriceAlertBody);
+      syncPriceAlertBody();
+    }
+
+    // --- Withdrawal confirmation flow ---
     const withdrawalBtn = document.getElementById('mpWithdrawalBtn') as HTMLButtonElement | null;
     const confirmPanel = document.getElementById('mpWithdrawalConfirm') as HTMLElement | null;
     const okBtn = document.getElementById('mpWithdrawalOk') as HTMLButtonElement | null;
@@ -216,7 +312,7 @@ import Layout from '../layouts/Layout.astro';
       noticeEl?.classList.remove('hidden');
     });
 
-    // Target-price alert add form (UI only, no persistence)
+    // --- Target-price alert add form (UI only, no persistence) ---
     const addAlertBtn = document.getElementById('mpAddAlertBtn') as HTMLButtonElement | null;
     const alertForm = document.getElementById('mpAlertForm') as HTMLElement | null;
     const alertSaveBtn = document.getElementById('mpAlertSaveBtn') as HTMLButtonElement | null;

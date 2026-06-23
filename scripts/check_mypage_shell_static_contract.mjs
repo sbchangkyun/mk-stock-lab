@@ -1,5 +1,5 @@
 /**
- * Static structural validation for the My Page shell (Phase 3AW revision).
+ * Static structural validation for the My Page shell (Phase 3AX revision).
  * No network calls. No .env file reads. Exits non-zero on any failure.
  */
 
@@ -25,8 +25,9 @@ const STORAGE_PATTERNS = ['localStorage.', 'sessionStorage.'];
 const CONSOLE_PATTERNS = ['console.log', 'console.error'];
 const ENV_PATTERNS = ['process.env.', 'import.meta.env.'];
 const KIS_PATTERNS = ['koreainvestment.com', 'KIS_'];
+const QUOTE_API_PATTERNS = ['/api/market/quote', 'quote?', 'stock-quote', 'price?symbol='];
+const NEWS_API_PATTERNS = ['news.naver.com', '/api/news', 'newsapi.org'];
 
-// Strings that must be ABSENT (removed from the page in Phase 3AW)
 const REMOVED_SERVICE_ROWS = ['기본 시작 페이지', '기본 시장', '화면 테마', '시세 카드 표시 설정'];
 const REMOVED_ACCOUNT_ROWS = ['계정 상태'];
 const REMOVED_DATA_ROWS = ['최근 활동', '데이터 관리'];
@@ -41,7 +42,7 @@ const check = (label, pass) => {
   if (!pass) failures++;
 };
 
-log('=== My Page Shell Static Contract Check (Phase 3AW) ===');
+log('=== My Page Shell Static Contract Check (Phase 3AX) ===');
 log('');
 
 // --- File existence ---
@@ -64,8 +65,8 @@ check('Page contains 내 계정', content.includes('내 계정'));
 check('Page contains 이메일', content.includes('이메일'));
 log('');
 
-// --- Account summary revisions ---
-log('Account summary revisions:');
+// --- Account summary ---
+log('Account summary:');
 check('Page contains Google 로그인', content.includes('Google 로그인'));
 check('계정 상태 row removed', !REMOVED_ACCOUNT_ROWS.some((r) => content.includes(r)));
 check('Page contains 마지막 접속 일시', content.includes('마지막 접속 일시'));
@@ -77,36 +78,50 @@ log('');
 log('Service section revisions:');
 const removedServiceFound = REMOVED_SERVICE_ROWS.filter((r) => content.includes(r));
 check(
-  `Removed service rows absent (checked: ${REMOVED_SERVICE_ROWS.length}: ${REMOVED_SERVICE_ROWS.join(', ')})`,
+  `Removed service rows absent (checked: ${REMOVED_SERVICE_ROWS.length})`,
   removedServiceFound.length === 0,
 );
-check('Page contains 공지사항 (service section)', content.includes('공지사항'));
-check('Page contains 이벤트/혜택 (service section)', content.includes('이벤트/혜택'));
+check('Page contains 공지사항', content.includes('공지사항'));
+check('Page contains 이벤트/혜택', content.includes('이벤트/혜택'));
 log('');
 
-// --- Data section revisions ---
-log('Data section revisions:');
+// --- Data section ---
+log('Data section:');
 check('Page contains 내 데이터', content.includes('내 데이터'));
 const removedDataFound = REMOVED_DATA_ROWS.filter((r) => content.includes(r));
 check(
-  `Removed data rows absent (checked: ${REMOVED_DATA_ROWS.length}: ${REMOVED_DATA_ROWS.join(', ')})`,
+  `Removed data rows absent (checked: ${REMOVED_DATA_ROWS.length})`,
   removedDataFound.length === 0,
 );
 log('');
 
-// --- Notification section ---
-log('Notification settings section:');
+// --- Notification section base ---
+log('Notification section:');
 check('Page contains 알림 설정', content.includes('알림 설정'));
 check('Page contains 내 텔레그램 연동', content.includes('내 텔레그램 연동'));
-check('Page contains 관심종목 뉴스 알림', content.includes('관심종목 뉴스 알림'));
 check('Page contains 내 포트 종목 뉴스 알림', content.includes('내 포트 종목 뉴스 알림'));
-check('Page contains 관심종목 지정가 알림', content.includes('관심종목 지정가 알림'));
-check('Page contains 최대 5 (target-price alert max)', content.includes('최대 5'));
 check('Page contains 이벤트/혜택 알림', content.includes('이벤트/혜택 알림'));
 check('Page contains 공지사항 알림', content.includes('공지사항 알림'));
 log('');
 
-// --- Legal and support links ---
+// --- Watchlist news alert search/save shell (Phase 3AX) ---
+log('Watchlist news alert search/save shell:');
+check('Page contains 관심종목 뉴스 알림', content.includes('관심종목 뉴스 알림'));
+check('Page contains 관심종목 검색 (search label)', content.includes('관심종목 검색'));
+check('Page contains 종목명 또는 종목코드 (input helper)', content.includes('종목명 또는 종목코드'));
+check('Page contains 관심종목 저장 (save action)', content.includes('관심종목 저장'));
+check('Page contains 저장된 관심종목 (saved list heading)', content.includes('저장된 관심종목'));
+check('Page contains 최대 5 (max count)', content.includes('최대 5'));
+log('');
+
+// --- Price alert on/off toggle (Phase 3AX) ---
+log('Target-price alert on/off toggle:');
+check('Page contains 관심종목 지정가 알림', content.includes('관심종목 지정가 알림'));
+check('Page contains 알림 사용 (on/off toggle label)', content.includes('알림 사용'));
+check('Target-price alert UI-only notice present', content.includes('저장 기능은 준비 중입니다.'));
+log('');
+
+// --- Legal and support ---
 log('Legal and support links:');
 check('Page contains 개인정보처리방침', content.includes('개인정보처리방침'));
 check('Page contains 이용약관', content.includes('이용약관'));
@@ -121,7 +136,7 @@ check('Page contains 회원탈퇴', content.includes('회원탈퇴'));
 check('Exact withdrawal confirmation message present', content.includes(REQUIRED_WITHDRAWAL_MSG));
 check('Page contains 확인', content.includes('확인'));
 check('Page contains 취소', content.includes('취소'));
-check('Non-destructive prepared message present', content.includes(REQUIRED_NOTICE_MSG));
+check('Non-destructive withdrawal notice present', content.includes(REQUIRED_NOTICE_MSG));
 log('');
 
 // --- Safety: forbidden patterns ---
@@ -163,6 +178,18 @@ const kisFound = KIS_PATTERNS.filter((p) => content.includes(p));
 check(
   `No KIS references in mypage (checked: ${KIS_PATTERNS.length})`,
   kisFound.length === 0,
+);
+
+const quoteApiFound = QUOTE_API_PATTERNS.filter((p) => content.includes(p));
+check(
+  `No quote API endpoint in mypage (checked: ${QUOTE_API_PATTERNS.length})`,
+  quoteApiFound.length === 0,
+);
+
+const newsApiFound = NEWS_API_PATTERNS.filter((p) => content.includes(p));
+check(
+  `No news API URL in mypage (checked: ${NEWS_API_PATTERNS.length})`,
+  newsApiFound.length === 0,
 );
 log('');
 
