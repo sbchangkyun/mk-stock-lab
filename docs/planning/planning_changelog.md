@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AQ - 2026-06-23
+
+### Owner-Run Preview Deployment Plan — Disabled Market Quote Card (Planned)
+
+- Created `docs/planning/phase_3aq_owner_run_preview_deployment_disabled_card_plan_v0.1.md`.
+- **Status**: planned.
+- **Execution mode**: Documentation-only owner-run deployment procedure. No deployment, Vercel CLI, env mutation, HTTP request, or implementation change performed by Claude Code.
+- **Target**: Owner-run Vercel Preview deployment only. Production deployment remains blocked.
+- **Feature flag**: `KIS_ENABLE_MARKET_QUOTE_CARD` must remain absent or non-`"true"` for the first Preview deployment. The Market quote card will render only its compact disabled message — no script, no quote network request.
+- **Active quote lookup**: Remains blocked in Phase 3AQ. Enabling the card in Preview requires a separate explicit owner approval in a later phase.
+- **Decision basis**: Phase 3AP (`docs/planning/phase_3ap_preview_deployment_decision_v0.1.md`).
+- **Owner pre-deployment checklist**: Verify `KIS_ENABLE_MARKET_QUOTE_CARD` absent/non-true, `KIS_ACCOUNT_NO` absent, Production env unchanged, no page expansion, existing Preview vars intact.
+- **Owner deployment trigger options**: git push, owner-run empty commit, or Vercel dashboard redeploy. Claude Code must not trigger deployment.
+- **Owner browser checklist**: Market page loads, disabled card visible, no auto-fetch, dashboard intact, Home/Chart AI/Portfolio/Lab unchanged, no raw KIS fields/tokens/errors visible.
+- **Sanitized evidence format**: Owner should report using boolean/status format defined in document section 7. No actual Preview URLs, symbols, prices, secrets, or raw values.
+- **Production KIS**: Remains blocked. `VERCEL_ENV=production` guard unchanged.
+- **Expansion**: Home, Chart AI, Portfolio, Lab, AI analysis, portfolio integration, account/order/trading/balance/holdings/WebSocket features remain out of scope and unapproved.
+- No source code, scripts, `package.json`, styles, API logic, KIS guard, Supabase logic, Vercel config, deployment, live KIS call, live Supabase query/write, SQL, HTTP request, env mutation, or `KIS_ENABLE_MARKET_QUOTE_CARD` enablement changed in this planning task.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field value, raw error, or stack trace was recorded.
+
 ## Phase 3AP - 2026-06-23
 
 ### Preview Deployment Decision (Decided)
