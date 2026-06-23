@@ -1,5 +1,24 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AM - 2026-06-23
+
+### Minimal UI Live Quote Integration Plan (Planned)
+
+- Created `docs/planning/phase_3am_minimal_ui_live_quote_integration_plan_v0.1.md`.
+- **Status**: planned — documentation-only. No implementation or live execution in this phase.
+- **Follows**: Phase 3AL conditionally opened gate for a minimal UI live quote integration planning phase.
+- **Recommended first UI surface**: Market page only (`src/components/MarketShell.astro`). Non-targets for first implementation: Home, Chart AI, Portfolio, Lab, Heatmap. Reasoning: Market page has the closest quote-data context, limits impact, and avoids conflating live quote display with AI analysis, portfolio, or account features.
+- **Proposed placement**: A compact Live Quote Snapshot section inserted between the existing `<header class="page-header market-page-header">` and `<section class="market-dashboard">` in `MarketShell.astro`. No ad rail is present on the Market page; the Home page rail is unaffected.
+- **Data contract**: Future implementation must use only the existing normalized `/api/market/quote` endpoint contract (`QuoteSnapshot` fields only; no raw KIS fields, no direct KIS or Supabase browser calls).
+- **UX states defined**: idle, loading, fresh, cache-fresh, stale-fallback, unavailable, validation error, disabled/kill-switch.
+- **Feature flag**: Recommended `KIS_ENABLE_MARKET_QUOTE_CARD` Astro SSR environment variable; default absent/false (card not rendered).
+- **Direct UI implementation**: Remains blocked in this phase. Phase 3AN implementation requires a separate explicit owner approval after this plan is reviewed.
+- **Production KIS**: Remains blocked by `VERCEL_ENV=production` hard block. No Production endpoint validation performed.
+- **Account/order/trading/balance/holdings/WebSocket**: Remain entirely out of scope in all current and planned phases.
+- **Acceptance criteria for Phase 3AN**: Build passes; all five check scripts pass; UI limited to Market page; feature disabled by default; all 8 UX states implemented; error states sanitized; no raw KIS fields or tokens visible; owner browser review checklist completed.
+- No source code, scripts, `package.json`, API logic, KIS guard, Supabase logic, or Vercel configuration changed in this planning task.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field, raw error, or stack trace was recorded.
+
 ## Phase 3AL - 2026-06-23
 
 ### Validation Sufficiency and UI Integration Gate Decision (Decided)
