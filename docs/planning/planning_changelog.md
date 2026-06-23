@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AT - 2026-06-23
+
+### Account Navigation, My Page, Footer Legal Links Roadmap (Planned)
+
+- Created `docs/planning/phase_3at_account_mypage_footer_roadmap_v0.1.md`.
+- **Status**: planned.
+- **Execution mode**: Documentation-only roadmap. No source code, styles, API logic, auth logic, database, or Vercel configuration changed.
+- **Header requirement**: Add `마이페이지` button to logged-in top-right controls. Recommended order: Today: 000 → theme toggle → 마이페이지 → 로그아웃. Button visible only in signed-in state; routes to `/mypage`.
+- **My Page MVP proposal**: lightweight shell with account summary, service preferences, data summary, legal/support links, and danger zone (회원탈퇴 confirmation UI, no actual deletion).
+- **Account deletion UX**: Required confirmation message: "정말 회원 탈퇴하시겠습니까? 회원탈퇴하면 등록/활동 정보가 모두 삭제됩니다." Choices: 확인 / 취소. Staged rollout: UI only first → policy decision → backend only after explicit owner approval.
+- **Footer requirement**: Remove YouTube. Left: `© 2026 MK Stock Lab ver1.0`. Right: 개인정보처리방침 | 이용약관 | 제휴문의.
+- **Partnership link**: `https://forms.gle/WAVSxaotdes6T5yJA` — external Google Form, opens in new tab with `rel="noopener noreferrer"`.
+- **Privacy/Terms**: Content not yet provided. Do not fabricate legal text. Create placeholder pages until owner provides final content.
+- **Roadmap**: Phase 3AU (header/footer shell) → Phase 3AV (My Page shell) → Phase 3AW (account deletion policy decision, explicit owner approval required).
+- No implementation, source changes, API changes, auth changes, deployment, live calls, or `.env*` reads occurred in this planning task.
+
 ## Phase 3AS - 2026-06-23
 
 ### Market Live Quote Card UX Polish + Static Validation Hardening (Implemented)
