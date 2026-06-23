@@ -2213,6 +2213,7 @@ body.modal-open {
   background: var(--primary);
   color: #ffffff;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -2280,7 +2281,6 @@ body.modal-open {
   font-size: 12px;
   font-weight: 800;
   color: var(--primary);
-  text-transform: uppercase;
 }
 
 .mqc-result-label--stale {
@@ -2290,7 +2290,7 @@ body.modal-open {
 .mqc-result-time {
   color: var(--text-muted);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .mqc-result-price-row {

@@ -29,6 +29,18 @@ const SUPABASE_PATTERNS = [
   '.supabase.',
 ];
 
+const VERCEL_API_PATTERNS = [
+  '.vercel.app',
+  '.vercel.com',
+  'api.vercel',
+];
+
+const SECRET_PATTERNS = [
+  'Bearer ',
+  'Authorization:',
+  'x-api-key:',
+];
+
 const log = (msg) => process.stdout.write(msg + '\n');
 
 let failures = 0;
@@ -76,6 +88,14 @@ log('API contract:');
 check('Component references /api/market/quote', cardContent.includes('/api/market/quote'));
 check('Component does not reference KIS external URL', !FORBIDDEN_URLS.some((u) => cardContent.includes(u)));
 check('Component does not reference Supabase URL for quote', !SUPABASE_PATTERNS.some((u) => cardContent.includes(u)));
+check('Component does not reference Vercel deployment API URL', !VERCEL_API_PATTERNS.some((u) => cardContent.includes(u)));
+
+const fetchMatches = (cardContent.match(/fetch\(['"`][^'"`]+['"`]/g) || []);
+const validFetches = fetchMatches.filter((m) => m.includes('/api/market/quote'));
+check(
+  'All fetch string-literal calls target /api/market/quote only',
+  fetchMatches.length === 0 || (fetchMatches.length > 0 && fetchMatches.length === validFetches.length),
+);
 log('');
 
 // --- No hardcoded defaults ---
@@ -92,10 +112,22 @@ check('Disabled state present (market-quote-card--disabled)', cardContent.includ
 check('Idle state present (data-mqc-idle)', cardContent.includes('data-mqc-idle'));
 check('Loading state present (data-mqc-loading)', cardContent.includes('data-mqc-loading'));
 check('Validation error state present (data-mqc-validation-error)', cardContent.includes('data-mqc-validation-error'));
-check('Result/fresh state present (mqc-result)', cardContent.includes('data-mqc-result'));
+check('Result/fresh state present (data-mqc-result)', cardContent.includes('data-mqc-result'));
 check('Cache-fresh handling present (cache-fresh)', cardContent.includes('cache-fresh'));
 check('Stale fallback handling present (cache-stale-provider-failed)', cardContent.includes('cache-stale-provider-failed'));
 check('Unavailable state present (data-mqc-unavailable)', cardContent.includes('data-mqc-unavailable'));
+log('');
+
+// --- User-triggered interaction (no auto-fetch on page load) ---
+log('User-triggered interaction:');
+check("Submit event listener present (addEventListener('submit')", cardContent.includes("addEventListener('submit'"));
+check("Click event listener present (addEventListener('click')", cardContent.includes("addEventListener('click'"));
+log('');
+
+// --- Browser storage hygiene ---
+log('Browser storage hygiene:');
+check('No localStorage use in component', !cardContent.includes('localStorage'));
+check('No sessionStorage use in component', !cardContent.includes('sessionStorage'));
 log('');
 
 // --- Console hygiene ---
@@ -114,6 +146,15 @@ check(
 if (presentKisFields.length > 0) {
   log(`  Found forbidden fields: ${presentKisFields.length} (names suppressed)`);
 }
+log('');
+
+// --- Secret/token patterns absent ---
+log('Secret/token patterns absent:');
+const presentSecretPatterns = SECRET_PATTERNS.filter((p) => cardContent.includes(p));
+check(
+  `No secret/token header patterns in component (checked: ${SECRET_PATTERNS.length})`,
+  presentSecretPatterns.length === 0,
+);
 log('');
 
 // --- Feature flag default ---

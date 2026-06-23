@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AS - 2026-06-23
+
+### Market Live Quote Card UX Polish + Static Validation Hardening (Implemented)
+
+- Created `docs/planning/phase_3as_market_live_quote_card_ux_polish_result_v0.1.md`.
+- Modified `src/components/MarketLiveQuoteCard.astro` — UX and accessibility improvements: eyebrow updated to `시세 조회` (avoids "Live" overclaim); `aria-live="polite"` + `role="status"` added to unavailable state; `aria-label` added to retry and new-search buttons; hint text reordered; disabled note copy simplified; timestamp order corrected to `${timeStr} 기준`; TypeScript parameter types added to all script functions (fixes 14 pre-existing implicit `any` errors).
+- Modified `src/styles/style.css` — `.mqc-submit` explicit `font-size: 14px`; `.mqc-result-label` `text-transform: uppercase` removed; `.mqc-result-time` `font-weight` reduced from 700 to 400.
+- Modified `scripts/check_market_quote_card_static_contract.mjs` — extended from 23 to **32 checks**: added Vercel API URL absence, fetch target exclusivity regex, `localStorage`/`sessionStorage` absence, user-triggered event listener presence, secret/token pattern absence.
+- **Validation results**: `check:market-quote-card` 32/32 passed; `check:kis-error-fallback` 40/40 passed; `npm run build` clean; `git diff --check` passed.
+- **Scope**: Market page only. Feature flag default unchanged (disabled). No auto-fetch on page load. All 8 UX states preserved.
+- No API/KIS/Supabase/Vercel/deployment/migration changes. No live network calls. No `KIS_ENABLE_MARKET_QUOTE_CARD` enablement. No other page integration.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field value, raw error, or stack trace recorded.
+
 ## Phase 3AQ - 2026-06-23
 
 ### Owner-Run Preview Deployment Plan — Disabled Market Quote Card (Planned)
