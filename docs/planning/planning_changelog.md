@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AW - 2026-06-23
+
+### My Page Account/Notification Shell Revision + Legal Footer Fix (Implemented)
+
+- Created `docs/planning/phase_3aw_mypage_notification_footer_fix_result_v0.1.md`.
+- **Footer layout fix** (`src/styles/style.css`): Added `min-height: 100vh; display: flex; flex-direction: column;` to `body` and `flex: 1 0 auto;` to `.site-main`. Fixes abnormal footer positioning on short pages like /privacy and /terms. Footer now anchors to the viewport bottom.
+- **Account summary revisions** (`src/pages/mypage.astro`): Email now populated from `supabase.auth.getSession()` if available; 로그인 방식 set to "Google 로그인"; 계정 상태 row removed; 마지막 접속 일시 row added (from `user.last_sign_in_at`); 구독 상태 row added (defaults to "구독 안함").
+- **Service section streamlined**: Removed 기본 시작 페이지, 기본 시장, 화면 테마, 시세 카드 표시 설정; added 공지사항 and 이벤트/혜택.
+- **Data section streamlined**: Removed 최근 활동 and 데이터 관리; kept 포트폴리오 and 관심 종목.
+- **Notification settings section added** (알림 설정): 내 텔레그램 연동 (placeholder, 준비 중), 관심종목 뉴스 알림 toggle, 내 포트 종목 뉴스 알림 toggle, 관심종목 지정가 알림 block (최대 5개, UI-only add form, 저장 기능은 준비 중), 이벤트/혜택 알림 toggle, 공지사항 알림 toggle. No persistence, no backend, no Telegram API.
+- **Logout redirect** (`src/components/Header.astro`): Added `window.location.assign('/')` after sign-out. Logout now redirects to Home across all pages.
+- **CSS additions**: Notification section styles (`.mp-notif-row`, `.mp-notif-block`, `.mp-toggle`, `.mp-toggle-input`, `.mp-toggle-track`, `.mp-add-btn`, `.mp-alert-*`).
+- **Static validators updated**: `check_mypage_shell_static_contract.mjs` rewritten to 40 checks (Phase 3AW spec). `check_header_footer_shell_static_contract.mjs` extended to 26 checks (added logout redirect check).
+- Validation: `check:mypage-shell` 40/40 PASS; `check:header-footer-shell` 26/26 PASS; `check:market-quote-card` 32/32 PASS; `npm run build` Complete (3.32s); `git diff --check` no errors.
+- No backend deletion, no notification persistence, no Telegram integration, no Supabase mutation, no API/KIS/Vercel/deployment changes, no live calls, no secrets recorded.
+
 ## Phase 3AV - 2026-06-23
 
 ### My Page MVP Shell (Implemented)

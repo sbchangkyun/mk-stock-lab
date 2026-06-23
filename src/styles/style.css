@@ -36,6 +36,9 @@ body.dark-mode {
 body {
   margin: 0;
   min-width: 1080px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
   color: var(--text);
   font-family: Pretendard, Inter, Arial, "Malgun Gothic", sans-serif;
@@ -283,6 +286,7 @@ body.dark-mode .primary-nav {
 }
 
 .site-main {
+  flex: 1 0 auto;
   width: min(calc(100% - 2 * var(--page-gutter-x)), var(--page-max-width));
   max-width: none;
   margin: 0 auto;
@@ -2586,5 +2590,147 @@ body.modal-open {
 .mp-withdrawal-notice {
   margin-top: 12px;
   font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* --- My Page Notification Section --- */
+
+.mp-notif-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.mp-notif-row:last-child {
+  border-bottom: none;
+}
+
+.mp-notif-block {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.mp-notif-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.mp-notif-desc {
+  margin: 4px 0 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.mp-toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.mp-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.mp-toggle-track {
+  display: inline-block;
+  width: 38px;
+  height: 22px;
+  background: var(--border);
+  border-radius: 11px;
+  position: relative;
+  transition: background 0.18s ease;
+}
+
+.mp-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: left 0.18s ease;
+}
+
+.mp-toggle-input:checked + .mp-toggle-track {
+  background: var(--primary);
+}
+
+.mp-toggle-input:checked + .mp-toggle-track::after {
+  left: 19px;
+}
+
+.mp-toggle-input:focus-visible + .mp-toggle-track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.mp-add-btn {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.mp-alert-form {
+  margin-top: 12px;
+}
+
+.mp-alert-form-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mp-alert-input {
+  flex: 1 1 120px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.mp-alert-save-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mp-alert-notice {
+  margin: 8px 0 0;
+  font-size: 13px;
   color: var(--text-muted);
 }

@@ -1,5 +1,5 @@
 /**
- * Static structural validation for the My Page MVP shell.
+ * Static structural validation for the My Page shell (Phase 3AW revision).
  * No network calls. No .env file reads. Exits non-zero on any failure.
  */
 
@@ -26,6 +26,11 @@ const CONSOLE_PATTERNS = ['console.log', 'console.error'];
 const ENV_PATTERNS = ['process.env.', 'import.meta.env.'];
 const KIS_PATTERNS = ['koreainvestment.com', 'KIS_'];
 
+// Strings that must be ABSENT (removed from the page in Phase 3AW)
+const REMOVED_SERVICE_ROWS = ['기본 시작 페이지', '기본 시장', '화면 테마', '시세 카드 표시 설정'];
+const REMOVED_ACCOUNT_ROWS = ['계정 상태'];
+const REMOVED_DATA_ROWS = ['최근 활동', '데이터 관리'];
+
 const log = (msg) => process.stdout.write(msg + '\n');
 
 let failures = 0;
@@ -36,7 +41,7 @@ const check = (label, pass) => {
   if (!pass) failures++;
 };
 
-log('=== My Page Shell Static Contract Check ===');
+log('=== My Page Shell Static Contract Check (Phase 3AW) ===');
 log('');
 
 // --- File existence ---
@@ -52,13 +57,53 @@ if (!mypageExists) {
 
 const content = readFileSync(MYPAGE_PATH, 'utf8');
 
-// --- Required headings and labels ---
-log('Required section headings:');
+// --- Required headings ---
+log('Required headings and labels:');
 check('Page contains 마이페이지', content.includes('마이페이지'));
 check('Page contains 내 계정', content.includes('내 계정'));
-check('Page contains 서비스 이용 설정', content.includes('서비스 이용 설정'));
+check('Page contains 이메일', content.includes('이메일'));
+log('');
+
+// --- Account summary revisions ---
+log('Account summary revisions:');
+check('Page contains Google 로그인', content.includes('Google 로그인'));
+check('계정 상태 row removed', !REMOVED_ACCOUNT_ROWS.some((r) => content.includes(r)));
+check('Page contains 마지막 접속 일시', content.includes('마지막 접속 일시'));
+check('Page contains 구독 상태', content.includes('구독 상태'));
+check('Page contains 구독 안함', content.includes('구독 안함'));
+log('');
+
+// --- Service section revisions ---
+log('Service section revisions:');
+const removedServiceFound = REMOVED_SERVICE_ROWS.filter((r) => content.includes(r));
+check(
+  `Removed service rows absent (checked: ${REMOVED_SERVICE_ROWS.length}: ${REMOVED_SERVICE_ROWS.join(', ')})`,
+  removedServiceFound.length === 0,
+);
+check('Page contains 공지사항 (service section)', content.includes('공지사항'));
+check('Page contains 이벤트/혜택 (service section)', content.includes('이벤트/혜택'));
+log('');
+
+// --- Data section revisions ---
+log('Data section revisions:');
 check('Page contains 내 데이터', content.includes('내 데이터'));
-check('Page contains 회원탈퇴', content.includes('회원탈퇴'));
+const removedDataFound = REMOVED_DATA_ROWS.filter((r) => content.includes(r));
+check(
+  `Removed data rows absent (checked: ${REMOVED_DATA_ROWS.length}: ${REMOVED_DATA_ROWS.join(', ')})`,
+  removedDataFound.length === 0,
+);
+log('');
+
+// --- Notification section ---
+log('Notification settings section:');
+check('Page contains 알림 설정', content.includes('알림 설정'));
+check('Page contains 내 텔레그램 연동', content.includes('내 텔레그램 연동'));
+check('Page contains 관심종목 뉴스 알림', content.includes('관심종목 뉴스 알림'));
+check('Page contains 내 포트 종목 뉴스 알림', content.includes('내 포트 종목 뉴스 알림'));
+check('Page contains 관심종목 지정가 알림', content.includes('관심종목 지정가 알림'));
+check('Page contains 최대 5 (target-price alert max)', content.includes('최대 5'));
+check('Page contains 이벤트/혜택 알림', content.includes('이벤트/혜택 알림'));
+check('Page contains 공지사항 알림', content.includes('공지사항 알림'));
 log('');
 
 // --- Legal and support links ---
@@ -72,6 +117,7 @@ log('');
 
 // --- Withdrawal UI ---
 log('Withdrawal UI:');
+check('Page contains 회원탈퇴', content.includes('회원탈퇴'));
 check('Exact withdrawal confirmation message present', content.includes(REQUIRED_WITHDRAWAL_MSG));
 check('Page contains 확인', content.includes('확인'));
 check('Page contains 취소', content.includes('취소'));
@@ -81,17 +127,17 @@ log('');
 // --- Safety: forbidden patterns ---
 log('Safety — forbidden patterns:');
 check('No fetch() call in mypage', !FORBIDDEN_FETCH_PATTERN.test(content));
-check('No Supabase import in mypage', !SUPABASE_IMPORT_PATTERN.test(content));
+check('No @supabase package import in mypage', !SUPABASE_IMPORT_PATTERN.test(content));
 
 const deletionFound = DELETION_PATTERNS.filter((p) => content.includes(p));
 check(
-  `No deletion patterns in mypage (checked: ${DELETION_PATTERNS.length})`,
+  `No destructive deletion patterns (checked: ${DELETION_PATTERNS.length})`,
   deletionFound.length === 0,
 );
 
 const authMutationFound = AUTH_MUTATION_PATTERNS.filter((p) => content.includes(p));
 check(
-  `No auth mutation patterns in mypage (checked: ${AUTH_MUTATION_PATTERNS.length})`,
+  `No auth mutation patterns (checked: ${AUTH_MUTATION_PATTERNS.length})`,
   authMutationFound.length === 0,
 );
 

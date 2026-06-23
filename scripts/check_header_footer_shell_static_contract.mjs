@@ -134,6 +134,10 @@ check(
 );
 check('No KIS external URL in header/footer', !headerFooterCombined.includes('koreainvestment.com'));
 check('No Supabase URL in header/footer', !headerFooterCombined.includes('supabase.co'));
+check(
+  'Logout handler redirects to Home after sign-out',
+  headerContent.includes("window.location.assign('/')") || headerContent.includes('window.location.assign("/")'),
+);
 log('');
 
 // --- Summary ---
