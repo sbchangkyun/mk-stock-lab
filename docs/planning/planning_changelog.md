@@ -1,5 +1,24 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AN - 2026-06-23
+
+### Minimal Market Page Live Quote Card Implementation (Implemented)
+
+- Created `src/components/MarketLiveQuoteCard.astro` — the Market page Live Quote Snapshot card. Supports `enabled: boolean` prop. When disabled, renders a compact "시세 조회를 사용할 수 없습니다." section; no script runs, no network request is made. When enabled, renders the full interactive card with all 8 UX states (disabled, idle, validation error, loading, fresh, cache-fresh, stale fallback, unavailable).
+- Modified `src/components/MarketShell.astro` — added `MarketLiveQuoteCard` import, `isMarketQuoteCardEnabled` feature flag constant (reads `import.meta.env.KIS_ENABLE_MARKET_QUOTE_CARD`), and inserted `<MarketLiveQuoteCard enabled={isMarketQuoteCardEnabled} />` between the page header and the market dashboard section.
+- Modified `src/styles/style.css` — added `.market-quote-card`, `.market-quote-card--disabled`, `.mqc-*` classes (new rules only; no existing rules modified).
+- Created `scripts/check_market_quote_card_static_contract.mjs` — 25-check static validation script (no network, no `.env` reads).
+- Modified `package.json` — added `"check:market-quote-card": "node scripts/check_market_quote_card_static_contract.mjs"`.
+- Created `docs/planning/phase_3an_minimal_market_live_quote_card_result_v0.1.md`.
+- **Status**: implemented — awaiting owner browser review (Phase 3AO).
+- **Validation results**: `check:market-quote-card` 25/25 passed; `check:kis-error-fallback` 40/40 passed; `npm run build` clean; `git diff --check` passed.
+- **Feature flag**: `KIS_ENABLE_MARKET_QUOTE_CARD` (Astro SSR env var, default disabled). Card not rendered when flag is absent or not `'true'`.
+- **Critical rule**: No auto-fetch on page load. A network request to `/api/market/quote` is only issued after the user enters a valid 6-digit symbol and explicitly submits the form.
+- **Sanitization**: No raw KIS fields, no raw errors, no stack traces, no secrets, no tokens, no hardcoded actual stock symbol, no hardcoded actual price, no console.log/console.error calls in the component.
+- **Scope**: Market page only. Home, Chart AI, Portfolio, Lab, and Heatmap remain disconnected from live quote data.
+- **Production KIS**: Remains blocked by `VERCEL_ENV=production` hard block. No Production endpoint validation performed.
+- No actual symbol, price value, Preview URL, bypass secret, secret, token, raw KIS field, raw error, or stack trace was recorded.
+
 ## Phase 3AM - 2026-06-23
 
 ### Minimal UI Live Quote Integration Plan (Planned)
