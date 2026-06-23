@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AU - 2026-06-23
+
+### Header and Footer UI Shell Implementation (Implemented)
+
+- Created `docs/planning/phase_3au_header_footer_ui_shell_result_v0.1.md`.
+- Modified `src/components/Header.astro` — added `마이페이지` anchor (`#mypage-btn`, `href="/mypage"`, starts hidden) between 로그인 and 로그아웃 in `.header-actions`. Updated `updateAuthButtons` to show/hide `mypageBtn` in `signed_in` and `signed_out`/`unavailable` branches respectively. Element order when signed-in: Today: 000 → theme toggle → 마이페이지 → 로그아웃.
+- Modified `src/components/Footer.astro` — removed YouTube link; updated copyright to `© 2026 MK Stock Lab ver1.0`; added `<nav class="site-footer-links">` with 개인정보처리방침 (`/privacy`), 이용약관 (`/terms`), 제휴문의 (`https://forms.gle/WAVSxaotdes6T5yJA`, `rel="noopener noreferrer"`).
+- Modified `src/styles/style.css` — `.site-footer` layout changed to `space-between`; added `.site-footer-copy`, `.site-footer-links`, `.site-footer-links a`, `.site-footer-links a:hover`, `a.header-button` rules.
+- Created `src/pages/privacy.astro` — placeholder, `개인정보처리방침 내용은 준비 중입니다.`, no fabricated legal text.
+- Created `src/pages/terms.astro` — placeholder, `이용약관 내용은 준비 중입니다.`, no fabricated legal text.
+- Created `src/pages/mypage.astro` — placeholder, `마이페이지 기능은 준비 중입니다.`, no deletion or auth logic.
+- Created `scripts/check_header_footer_shell_static_contract.mjs` — 25 checks across file existence, header My Page entry, footer content, placeholder page safety, and safety boundaries. All 25 PASS. Exit 0.
+- Modified `package.json` — added `check:header-footer-shell` script.
+- Build: `npm run build` complete (3.38s). `git diff --check` no errors.
+- No KIS, Supabase, Vercel, SQL, live HTTP, or `.env*` access. No account deletion, trading, or auth mutation logic added.
+
 ## Phase 3AT - 2026-06-23
 
 ### Account Navigation, My Page, Footer Legal Links Roadmap (Planned)

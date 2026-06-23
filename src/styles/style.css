@@ -822,14 +822,45 @@ h2 {
 }
 
 .site-footer {
-  height: 34px;
+  min-height: 34px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px var(--page-gutter-x);
   color: var(--text-muted);
   font-size: 12px;
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.site-footer-copy {
+  white-space: nowrap;
+}
+
+.site-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.site-footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.site-footer-links a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a.header-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 .section-stack {

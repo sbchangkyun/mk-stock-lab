@@ -21,6 +21,7 @@ import AuthModal from './Auth/AuthModal.astro';
       </svg>
     </button>
     <button class="header-button" id="open-login-btn" type="button">로그인</button>
+    <a class="header-button secondary hidden" id="mypage-btn" href="/mypage">마이페이지</a>
     <button class="header-button secondary hidden" id="logout-btn" type="button">로그아웃</button>
   </div>
 </header>
@@ -79,12 +80,14 @@ import AuthModal from './Auth/AuthModal.astro';
   const updateAuthButtons = (status: HeaderAuthState) => {
     const loginButton = document.getElementById('open-login-btn');
     const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
+    const mypageBtn = document.getElementById('mypage-btn') as HTMLAnchorElement | null;
     if (!loginButton || !logoutButton) return;
 
     if (status === 'signed_in') {
       writeAuthUiHint(status);
       loginButton.classList.add('hidden');
       loginButton.removeAttribute('disabled');
+      mypageBtn?.classList.remove('hidden');
       logoutButton.classList.remove('hidden');
       dispatchHeaderAuthState(status);
       return;
@@ -94,6 +97,7 @@ import AuthModal from './Auth/AuthModal.astro';
     loginButton.textContent = status === 'unavailable' ? '설정 필요' : '로그인';
     loginButton.removeAttribute('disabled');
     loginButton.classList.remove('hidden');
+    mypageBtn?.classList.add('hidden');
     logoutButton.classList.add('hidden');
     dispatchHeaderAuthState(status);
   };
