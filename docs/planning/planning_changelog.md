@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BA - 2026-06-24
+
+### Fixture-backed News API Route Skeleton (Implemented)
+
+- Created `src/pages/api/news/market-feed.ts` — Astro SSR API route for `GET /api/news/market-feed`.
+- Created `src/lib/news/gnewsMarketFeedResponse.mjs` — no-network response builder utility with exports: `sanitizeMarketNewsArticle`, `buildMarketNewsHomeResponse`, `buildMarketNewsListResponse`, `buildMarketNewsErrorResponse`, `VALID_MODES`, `VALID_CATEGORIES`.
+- Created `scripts/check_gnews_news_api_route_static_contract.mjs` — static API route contract checker. **35/35 PASS**.
+- Created `scripts/check_gnews_news_api_route_response.mjs` — no-network response-level checker (imports helper directly, not the TypeScript route). **61/61 PASS**.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added 7 Phase 3BA artifact checks. **52/52 PASS**.
+- Added `check:gnews-news-api-route` and `check:gnews-news-api-response` scripts to `package.json`.
+- **Route modes**: `mode=home` (top-6 articles, category/source balanced) and `mode=list` (paginated, `page`, optional `category`).
+- **Public article shape**: 9 fields (`id`, `title`, `description`, `url`, `imageUrl`, `sourceName`, `publishedAt`, `category`, `relevanceScore`). All 18 internal storage fields excluded.
+- **Sanitized errors**: `invalid_mode` (400), `invalid_category` (400), `method_not_allowed` (405). No stack traces in responses.
+- **Validation results**: `check:gnews-news-policy` 52/52 PASS; `check:gnews-news-engine` 57/57 PASS; `check:gnews-news-api-route` 35/35 PASS; `check:gnews-news-api-response` 61/61 PASS; `npm run build` success.
+- **No live GNews/API key/DB/Supabase/Home/deployment/.env changes.** Route is fixture-backed, `source: "fixture"`, `liveEnabled: false`.
+
 ## Phase 3AZ - 2026-06-24
 
 ### No-network GNews Policy Validator Implementation (Implemented)

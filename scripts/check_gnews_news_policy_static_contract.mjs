@@ -248,7 +248,7 @@ check(
   typeof pkg3az.scripts?.['check:gnews-news-engine'] === 'string',
 );
 
-check('No /api/news live route added (src/pages/api/news/ must not exist)', !existsSync(NEWS_API_ROUTE_PATH));
+check('API route directory exists (src/pages/api/news/) - created in Phase 3BA', existsSync(NEWS_API_ROUTE_PATH));
 
 if (existsSync(POLICY_UTILITY_PATH)) {
   const utilContent = readFileSync(POLICY_UTILITY_PATH, 'utf8');
@@ -260,6 +260,39 @@ if (existsSync(POLICY_UTILITY_PATH)) {
     'Policy utility does not read GNEWS_API_KEY from env',
     !(/import\.meta\.env\.(?:PUBLIC_)?GNEWS_API_KEY/.test(utilContent)) &&
     !(/process\.env\.(?:PUBLIC_)?GNEWS_API_KEY/.test(utilContent)),
+  );
+}
+log('');
+
+// --- Phase 3BA artifact checks ---
+log('Phase 3BA artifacts:');
+const RESULT_DOC_3BA_PATH = join(root, 'docs', 'planning', 'phase_3ba_fixture_backed_news_api_route_result_v0.1.md');
+const API_ROUTE_FILE_PATH = join(root, 'src', 'pages', 'api', 'news', 'market-feed.ts');
+const API_ROUTE_CHECKER_PATH = join(root, 'scripts', 'check_gnews_news_api_route_static_contract.mjs');
+const NEWS_PAGE_PATH = join(root, 'src', 'pages', 'news');
+
+check('Phase 3BA result doc exists', existsSync(RESULT_DOC_3BA_PATH));
+check('API route file exists (src/pages/api/news/market-feed.ts)', existsSync(API_ROUTE_FILE_PATH));
+check('API route checker exists (scripts/check_gnews_news_api_route_static_contract.mjs)', existsSync(API_ROUTE_CHECKER_PATH));
+
+let pkg3ba = {};
+try { pkg3ba = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-news-api-route',
+  typeof pkg3ba.scripts?.['check:gnews-news-api-route'] === 'string',
+);
+
+check('No /news page created (src/pages/news/ must not exist)', !existsSync(NEWS_PAGE_PATH));
+
+if (existsSync(API_ROUTE_FILE_PATH)) {
+  const routeContent = readFileSync(API_ROUTE_FILE_PATH, 'utf8');
+  const routeActualFetch =
+    /(?:await|=\s*|return\s+)fetch\s*\(/.test(routeContent) ||
+    /\bfetch\s*\(\s*['"`]https?:/.test(routeContent);
+  check('API route makes no actual fetch call', !routeActualFetch);
+  check(
+    'API route does not use GNEWS_API_KEY',
+    !(/GNEWS_API_KEY/.test(routeContent)),
   );
 }
 log('');
