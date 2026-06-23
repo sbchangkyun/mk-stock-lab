@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AV - 2026-06-23
+
+### My Page MVP Shell (Implemented)
+
+- Created `docs/planning/phase_3av_mypage_mvp_shell_result_v0.1.md`.
+- Modified `src/pages/mypage.astro` — replaced placeholder page with five-section MVP shell: 내 계정 (account summary, all placeholders), 서비스 이용 설정 (4 preference rows, all "향후 제공 예정"), 내 데이터 (4 data rows, all "준비 중"), 법적 고지 및 지원 (개인정보처리방침/이용약관/제휴문의 links), 계정 관리 (danger zone with 회원탈퇴 confirmation UI).
+- 회원탈퇴 confirmation UI: clicking shows inline panel with exact required message "정말 회원 탈퇴하시겠습니까? 회원탈퇴하면 등록/활동 정보가 모두 삭제됩니다." with 확인 and 취소 choices. 확인 shows "회원탈퇴 기능은 준비 중입니다." — no deletion, no API call, no auth mutation. 취소 closes panel, no action.
+- No actual deletion, no backend deletion, no auth/session change, no Supabase mutation, no API route change.
+- Modified `src/styles/style.css` — added My Page shell CSS: `.mp-sections`, `.mp-section-title`, `.mp-info-list`, `.mp-info-row`, `.mp-placeholder`, `.mp-pref-list`, `.mp-pref-row`, `.mp-pref-label`, `.mp-badge`, `.mp-link-list`, `.mp-danger-zone`, `.mp-danger-title`, `.mp-danger-desc`, `.mp-danger-btn`, `.mp-withdrawal-confirm`, `.mp-withdrawal-message`, `.mp-withdrawal-actions`, `.mp-confirm-btn`, `.mp-withdrawal-notice`.
+- Created `scripts/check_mypage_shell_static_contract.mjs` — 23 checks: file existence, required section headings, legal/support links, withdrawal UI, safety (no fetch, no Supabase, no deletion, no auth mutation, no localStorage, no console calls, no env reads, no KIS). All 23 PASS. Exit 0.
+- Modified `package.json` — added `check:mypage-shell` script.
+- Validation: `check:mypage-shell` 23/23 PASS; `check:header-footer-shell` 25/25 PASS; `check:market-quote-card` 32/32 PASS; `npm run build` Complete (3.11s); `git diff --check` no errors.
+- No KIS, Supabase, Vercel, SQL, live HTTP, or `.env*` access. No account deletion, trading, or auth mutation logic. No secrets recorded.
+
 ## Phase 3AU - 2026-06-23
 
 ### Header and Footer UI Shell Implementation (Implemented)

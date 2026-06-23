@@ -2401,3 +2401,190 @@ body.modal-open {
   font-size: 12px;
   font-weight: 700;
 }
+
+/* --- My Page Shell --- */
+
+.mp-sections {
+  display: grid;
+  gap: 16px;
+  max-width: 680px;
+}
+
+.mp-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mp-info-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.mp-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.mp-info-row:last-child {
+  border-bottom: none;
+}
+
+.mp-info-row dt {
+  color: var(--text-muted);
+  font-weight: 600;
+  min-width: 100px;
+}
+
+.mp-info-row dd {
+  margin: 0;
+  text-align: right;
+}
+
+.mp-placeholder {
+  color: var(--text-muted);
+}
+
+.mp-pref-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mp-pref-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.mp-pref-row:last-child {
+  border-bottom: none;
+}
+
+.mp-pref-label {
+  font-weight: 500;
+}
+
+.mp-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.mp-link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mp-link-list li {
+  border-bottom: 1px solid var(--border);
+}
+
+.mp-link-list li:last-child {
+  border-bottom: none;
+}
+
+.mp-link-list a {
+  display: block;
+  padding: 10px 0;
+  font-size: 14px;
+  color: var(--primary);
+}
+
+.mp-link-list a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mp-danger-zone {
+  border-color: var(--negative);
+}
+
+.mp-danger-title {
+  color: var(--negative);
+}
+
+.mp-danger-desc {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.mp-danger-btn {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--negative);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--negative);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mp-danger-btn:focus-visible {
+  outline: 2px solid var(--negative);
+  outline-offset: 2px;
+}
+
+.mp-withdrawal-confirm {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.mp-withdrawal-message {
+  margin-bottom: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.mp-withdrawal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mp-confirm-btn {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--negative);
+  border-radius: 6px;
+  background: var(--negative);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mp-confirm-btn:focus-visible {
+  outline: 2px solid var(--negative);
+  outline-offset: 2px;
+}
+
+.mp-withdrawal-notice {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--text-muted);
+}

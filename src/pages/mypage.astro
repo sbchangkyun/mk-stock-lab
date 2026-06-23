@@ -7,7 +7,139 @@ import Layout from '../layouts/Layout.astro';
     <div>
       <p class="eyebrow">My Page</p>
       <h1>마이페이지</h1>
-      <p class="lead">마이페이지 기능은 준비 중입니다.</p>
+      <p class="lead">계정 정보와 서비스 이용 설정을 확인하는 공간입니다.</p>
     </div>
   </header>
+
+  <div class="mp-sections">
+
+    <!-- A. Account Summary -->
+    <section class="panel mp-section" aria-labelledby="mp-account-heading">
+      <h2 id="mp-account-heading" class="mp-section-title">내 계정</h2>
+      <dl class="mp-info-list">
+        <div class="mp-info-row">
+          <dt>이메일</dt>
+          <dd class="mp-placeholder">로그인된 사용자</dd>
+        </div>
+        <div class="mp-info-row">
+          <dt>로그인 방식</dt>
+          <dd class="mp-placeholder">준비 중</dd>
+        </div>
+        <div class="mp-info-row">
+          <dt>가입일</dt>
+          <dd class="mp-placeholder">확인 예정</dd>
+        </div>
+        <div class="mp-info-row">
+          <dt>계정 상태</dt>
+          <dd class="mp-placeholder">활성</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- B. Service Preferences -->
+    <section class="panel mp-section" aria-labelledby="mp-prefs-heading">
+      <h2 id="mp-prefs-heading" class="mp-section-title">서비스 이용 설정</h2>
+      <ul class="mp-pref-list">
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">기본 시작 페이지</span>
+          <span class="mp-badge">향후 제공 예정</span>
+        </li>
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">기본 시장</span>
+          <span class="mp-badge">향후 제공 예정</span>
+        </li>
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">화면 테마</span>
+          <span class="mp-badge">향후 제공 예정</span>
+        </li>
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">시세 카드 표시 설정</span>
+          <span class="mp-badge">향후 제공 예정</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- C. My Data Summary -->
+    <section class="panel mp-section" aria-labelledby="mp-data-heading">
+      <h2 id="mp-data-heading" class="mp-section-title">내 데이터</h2>
+      <ul class="mp-pref-list">
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">포트폴리오</span>
+          <span class="mp-badge">준비 중</span>
+        </li>
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">관심 종목</span>
+          <span class="mp-badge">준비 중</span>
+        </li>
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">최근 활동</span>
+          <span class="mp-badge">준비 중</span>
+        </li>
+        <li class="mp-pref-row">
+          <span class="mp-pref-label">데이터 관리</span>
+          <span class="mp-badge">준비 중</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- D. Legal and Support -->
+    <section class="panel mp-section" aria-labelledby="mp-legal-heading">
+      <h2 id="mp-legal-heading" class="mp-section-title">법적 고지 및 지원</h2>
+      <ul class="mp-link-list">
+        <li><a href="/privacy">개인정보처리방침</a></li>
+        <li><a href="/terms">이용약관</a></li>
+        <li>
+          <a href="https://forms.gle/WAVSxaotdes6T5yJA" target="_blank" rel="noopener noreferrer">제휴문의</a>
+        </li>
+      </ul>
+    </section>
+
+    <!-- E. Danger Zone -->
+    <section class="panel mp-section mp-danger-zone" aria-labelledby="mp-danger-heading">
+      <h2 id="mp-danger-heading" class="mp-section-title mp-danger-title">계정 관리</h2>
+      <p class="mp-danger-desc">계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
+      <div class="mp-withdrawal-area">
+        <button class="mp-danger-btn" type="button" id="mpWithdrawalBtn">회원탈퇴</button>
+        <div class="mp-withdrawal-confirm hidden" id="mpWithdrawalConfirm" role="alertdialog"
+          aria-modal="true" aria-labelledby="mpWithdrawalConfirmMsg">
+          <p class="mp-withdrawal-message" id="mpWithdrawalConfirmMsg">정말 회원 탈퇴하시겠습니까? 회원탈퇴하면 등록/활동 정보가 모두 삭제됩니다.</p>
+          <div class="mp-withdrawal-actions">
+            <button class="mp-confirm-btn" type="button" id="mpWithdrawalOk">확인</button>
+            <button class="header-button secondary" type="button" id="mpWithdrawalCancel">취소</button>
+          </div>
+        </div>
+        <p class="mp-withdrawal-notice hidden" id="mpWithdrawalNotice" role="status" aria-live="polite">회원탈퇴 기능은 준비 중입니다.</p>
+      </div>
+    </section>
+
+  </div>
 </Layout>
+
+<script>
+  const setupMyPage = () => {
+    const withdrawalBtn = document.getElementById('mpWithdrawalBtn') as HTMLButtonElement | null;
+    const confirmPanel = document.getElementById('mpWithdrawalConfirm') as HTMLElement | null;
+    const okBtn = document.getElementById('mpWithdrawalOk') as HTMLButtonElement | null;
+    const cancelBtn = document.getElementById('mpWithdrawalCancel') as HTMLButtonElement | null;
+    const noticeEl = document.getElementById('mpWithdrawalNotice') as HTMLElement | null;
+
+    withdrawalBtn?.addEventListener('click', () => {
+      confirmPanel?.classList.remove('hidden');
+      noticeEl?.classList.add('hidden');
+      okBtn?.focus();
+    });
+
+    cancelBtn?.addEventListener('click', () => {
+      confirmPanel?.classList.add('hidden');
+      withdrawalBtn?.focus();
+    });
+
+    okBtn?.addEventListener('click', () => {
+      confirmPanel?.classList.add('hidden');
+      noticeEl?.classList.remove('hidden');
+    });
+  };
+
+  document.addEventListener('astro:page-load', setupMyPage);
+  setupMyPage();
+</script>
