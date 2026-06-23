@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3AY - 2026-06-23
+
+### GNews News Store Policy + No-network Schema/Fixture Design (Planned)
+
+- Created `docs/planning/phase_3ay_gnews_news_store_policy_fixture_design_v0.1.md`.
+- Created `docs/schemas/gnews_market_news_schema_v0.1.md` (TypeScript-style interface definitions for `MarketNewsArticle`, `ArticleCategory`, `ArchiveReason`, `QueryDefinition`, `PaginationRequest/Response`, `HomeFeedResponse`, `PruneDecision`, `IngestionResult`).
+- Created `src/data/fixtures/gnews_market_news_fixture_v0.1.json` (26 synthetic articles, all URLs under `*.example.test`; covers all 6 categories; includes exact-URL duplicate pair [fixture-019/020], near-duplicate title pair [fixture-003/004], expired article [fixture-018, `archiveReason: "expired"`], low-score article [fixture-009, `relevanceScore: 22`], and missing-image article [fixture-012, `imageUrl: null`]).
+- Created `scripts/check_gnews_news_policy_static_contract.mjs` (44 checks: file existence, policy parameter phrases in planning doc, 6 category names, 6 Korean query terms 코인/환율/유가/금리/비트코인/ETF, 3 security policy phrases, schema field names, fixture structure/metadata, URL domain safety, 6 category coverage, 5 scenario coverage, 3 forbidden pattern checks).
+- Added `check:gnews-news-policy` script to `package.json`.
+- **Policy decision**: Active article cap: 100. Page size: 10. Maximum list pages: 10. Home exposure: 6. Retention: 14 days. Refresh: 2 hours. Budget: 72 requests/day. Prune batch size: 20.
+- **Security policy**: `GNEWS_API_KEY` server-only preferred; `PUBLIC_GNEWS_API_KEY` may be used in server-side code as compatibility fallback only; client code must never read it; no key value recorded anywhere.
+- **No runtime changes**: No API route, no DB, no Supabase, no Home integration, no deployment.
+
 ## Phase 3AX - 2026-06-23
 
 ### Notification Favorite Stock Shell + About Footer Link + Home Ad Slot Expansion (Implemented)
