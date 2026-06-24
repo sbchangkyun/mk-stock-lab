@@ -19,6 +19,7 @@
     "check:gnews-news-policy": "node scripts/check_gnews_news_policy_static_contract.mjs",
     "check:gnews-news-engine": "node scripts/check_gnews_news_policy_engine.mjs",
     "check:gnews-news-api-route": "node scripts/check_gnews_news_api_route_static_contract.mjs",
+    "check:gnews-news-route-source-selector": "node scripts/check_gnews_news_route_source_selector.mjs",
     "check:gnews-news-api-response": "node scripts/check_gnews_news_api_route_response.mjs",
     "check:gnews-live-adapter-design": "node scripts/check_gnews_live_fetch_adapter_design_static_contract.mjs",
     "check:gnews-live-adapter-static": "node scripts/check_gnews_live_fetch_adapter_static_contract.mjs",

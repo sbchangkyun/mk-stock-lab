@@ -3,10 +3,19 @@ import type { APIRoute } from 'astro';
 import {
   buildMarketNewsHomeResponse,
   buildMarketNewsListResponse,
+  buildMarketNewsHomeResponseFromArticles,
+  buildMarketNewsListResponseFromArticles,
   buildMarketNewsErrorResponse,
   VALID_MODES,
   VALID_CATEGORIES,
 } from '../../../lib/news/gnewsMarketFeedResponse.mjs';
+// @ts-ignore
+import {
+  parseNewsSourceParam,
+  validateNewsSource,
+  resolveMarketNewsFeedSource,
+  VALID_NEWS_SOURCES,
+} from '../../../lib/news/gnewsMarketFeedSourceSelector.mjs';
 import fixture from '../../../data/fixtures/gnews_market_news_fixture_v0.1.json';
 
 export const prerender = false;
@@ -26,10 +35,11 @@ const safeParseInt = (value: string | null, fallback: number): number => {
   return Number.isFinite(n) ? n : fallback;
 };
 
-export const GET: APIRoute = ({ url }) => {
+export const GET: APIRoute = async ({ url }) => {
   const params = url.searchParams;
   const mode = params.get('mode') ?? 'home';
   const rawCategory = params.get('category');
+  const rawSource = params.get('source');
 
   if (!(VALID_MODES as string[]).includes(mode)) {
     const err = buildMarketNewsErrorResponse(400, 'invalid_mode');
@@ -41,12 +51,42 @@ export const GET: APIRoute = ({ url }) => {
     return jsonResponse(err.body, err.status);
   }
 
-  if (mode === 'home') {
-    return jsonResponse(buildMarketNewsHomeResponse(fixture));
+  const requestedSource = parseNewsSourceParam(rawSource);
+  const sourceCheck = validateNewsSource(requestedSource);
+  if (!sourceCheck.ok) {
+    const err = buildMarketNewsErrorResponse(400, 'invalid_source');
+    return jsonResponse(err.body, err.status);
   }
 
   const page = Math.max(1, safeParseInt(params.get('page'), 1));
-  return jsonResponse(buildMarketNewsListResponse(fixture, { page, category: rawCategory }));
+
+  // Fixture path: default, no env reads, no live calls
+  if (requestedSource === 'fixture') {
+    if (mode === 'home') return jsonResponse(buildMarketNewsHomeResponse(fixture));
+    return jsonResponse(buildMarketNewsListResponse(fixture, { page, category: rawCategory }));
+  }
+
+  // auto / live path — orchestrator handles gate evaluation, live fetch, fixture fallback
+  const feedResult = await resolveMarketNewsFeedSource({
+    requestedSource,
+    fetchFn: globalThis.fetch,
+    // @ts-ignore
+    env: import.meta.env,
+    maxThemes: 2,
+  });
+
+  if (feedResult.useLiveArticles && Array.isArray(feedResult.liveArticles)) {
+    if (mode === 'home') {
+      return jsonResponse(buildMarketNewsHomeResponseFromArticles(feedResult.liveArticles, feedResult.meta));
+    }
+    return jsonResponse(
+      buildMarketNewsListResponseFromArticles(feedResult.liveArticles, { page, category: rawCategory }, feedResult.meta),
+    );
+  }
+
+  // Fixture fallback (gate failed, or live returned empty/error)
+  if (mode === 'home') return jsonResponse(buildMarketNewsHomeResponse(fixture, feedResult.meta));
+  return jsonResponse(buildMarketNewsListResponse(fixture, { page, category: rawCategory }, feedResult.meta));
 };
 
 export const ALL: APIRoute = () =>

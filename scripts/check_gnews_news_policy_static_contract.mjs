@@ -320,10 +320,13 @@ check('No live adapter .ts implementation file created', !existsSync(LIVE_ADAPTE
 if (existsSync(API_ROUTE_FILE_PATH)) {
   const routeContent3bb = readFileSync(API_ROUTE_FILE_PATH, 'utf8');
   check(
-    'Existing route remains fixture-backed (liveEnabled: false in route or helper)',
-    routeContent3bb.includes('liveEnabled: false') ||
-    (existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
-     readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false')),
+    'Route defaults liveEnabled to false (fixture-backed by default)',
+    (() => {
+      const h = existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'))
+        ? readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8')
+        : '';
+      return routeContent3bb.includes('liveEnabled: false') || h.includes('liveEnabled: false') || h.includes('?? false');
+    })(),
   );
 }
 log('');
@@ -423,9 +426,10 @@ if (existsSync(OWNER_SMOKE_PATH)) {
     return !calls || calls.length === 0;
   })());
 }
-check('Route remains fixture-backed (liveEnabled: false still present)',
+check('Route defaults liveEnabled to false after 3BE-R1',
   existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
-  readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
+  (readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false') ||
+   readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('?? false')));
 log('');
 
 // --- Phase 3BE-R3 artifact checks ---
@@ -457,9 +461,10 @@ if (existsSync(OWNER_SMOKE_PATH)) {
     return !calls || calls.length === 0;
   })());
 }
-check('Route still fixture-backed after 3BE-R3 (liveEnabled: false)',
+check('Route defaults liveEnabled to false after 3BE-R3',
   existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
-  readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
+  (readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false') ||
+   readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('?? false')));
 log('');
 
 // --- Phase 3BE-R5 artifact checks ---
@@ -491,9 +496,50 @@ if (existsSync(OWNER_SMOKE_PATH)) {
     return !calls || calls.length === 0;
   })());
 }
-check('Route still fixture-backed after 3BE-R5 (liveEnabled: false)',
+check('Route defaults liveEnabled to false after 3BE-R5',
   existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
-  readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
+  (readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false') ||
+   readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('?? false')));
+log('');
+
+// --- Phase 3BG artifact checks ---
+log('Phase 3BG artifacts:');
+const RESULT_DOC_3BG_PATH = join(root, 'docs', 'planning', 'phase_3bg_news_route_source_selector_fallback_result_v0.1.md');
+const SOURCE_SELECTOR_PATH = join(root, 'src', 'lib', 'news', 'gnewsMarketFeedSourceSelector.mjs');
+const SOURCE_SELECTOR_CHECKER_PATH = join(root, 'scripts', 'check_gnews_news_route_source_selector.mjs');
+
+check('Phase 3BG result doc exists', existsSync(RESULT_DOC_3BG_PATH));
+check('Source selector helper exists (gnewsMarketFeedSourceSelector.mjs)', existsSync(SOURCE_SELECTOR_PATH));
+check('Source selector checker exists (check_gnews_news_route_source_selector.mjs)', existsSync(SOURCE_SELECTOR_CHECKER_PATH));
+
+let pkg3bg = {};
+try { pkg3bg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-news-route-source-selector',
+  typeof pkg3bg.scripts?.['check:gnews-news-route-source-selector'] === 'string',
+);
+
+if (existsSync(API_ROUTE_FILE_PATH)) {
+  const routeContent3bg = readFileSync(API_ROUTE_FILE_PATH, 'utf8');
+  check('Route supports source selector (imports parseNewsSourceParam)', routeContent3bg.includes('parseNewsSourceParam'));
+  check('Route default source is fixture (has parseNewsSourceParam returning fixture for null)',
+    existsSync(SOURCE_SELECTOR_PATH)
+      ? readFileSync(SOURCE_SELECTOR_PATH, 'utf8').includes("return 'fixture'")
+      : false);
+  check('Route fallback reasons are sanitized (selector has ALLOWED_FALLBACK_REASONS)',
+    existsSync(SOURCE_SELECTOR_PATH)
+      ? readFileSync(SOURCE_SELECTOR_PATH, 'utf8').includes('ALLOWED_FALLBACK_REASONS')
+      : false);
+  check('Route does not import owner smoke script', !routeContent3bg.includes('owner_smoke_gnews_live_fetch'));
+}
+check('Home page not connected to live news source',
+  (() => {
+    const homePath = join(root, 'src', 'pages', 'index.astro');
+    if (!existsSync(homePath)) return true;
+    const h = readFileSync(homePath, 'utf8');
+    return !h.includes('gnewsMarketFeedSourceSelector') && !h.includes('gnewsLiveFetchAdapter');
+  })());
+check('No /news page created (3BG check)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
 // --- Summary ---

@@ -1,5 +1,29 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BG - 2026-06-24
+
+### News Route Source Selector with Kill Switch and Fixture Fallback (Implemented)
+
+- **Status**: implemented. Runtime code, checkers, and documentation added. No live GNews calls. No DB, Home, or deployment changes.
+- Added `src/lib/news/gnewsMarketFeedSourceSelector.mjs` — pure helper + async orchestrator module. Exports: `VALID_NEWS_SOURCES` (`fixture`/`auto`/`live`), `parseNewsSourceParam`, `validateNewsSource`, `resolveNewsLiveGate`, `shouldAttemptLiveSource`, `sanitizeLiveFallbackReason`, `buildFixtureFallbackMetadata`, `buildLiveSourceMetadata`, `resolveMarketNewsFeedSource`.
+- Live gate (`resolveNewsLiveGate`) checks: `GNEWS_LIVE_ENABLED === 'true'`, `VERCEL_ENV !== 'production'`, `GNEWS_BASE_URL` present and endpoint-only (no query string, no embedded `apikey`/`key`/`token`/`q` fragment), and `GNEWS_API_KEY` (or `PUBLIC_GNEWS_API_KEY` as fallback) present. All conditions must pass. Production live mode is permanently blocked.
+- API key is accessed inside `resolveNewsLiveGate` and passed internally to the adapter. It is never included in public responses, metadata, or fallback reason codes.
+- Updated `src/pages/api/news/market-feed.ts` — route is now async. Accepts `source` query parameter. Validates source via `validateNewsSource`. Default when absent: `fixture` (early-return, no env reads, no live calls). `auto` and `live` delegate to `resolveMarketNewsFeedSource` which evaluates the live gate and attempts `fetchGnewsMarketNewsBatch`. All live failure modes (gate disabled, empty result, provider error, timeout, invalid payload, exception) fall back to fixture with sanitized `fallbackReason`. Route passes `import.meta.env` as an opaque object and `globalThis.fetch` as a value (not called) — preserves Phase 3BA/3BC static check boundaries.
+- Updated `src/lib/news/gnewsMarketFeedResponse.mjs` — added `invalid_source` to `ERROR_MESSAGES`. Added optional `meta = {}` parameter to `buildMarketNewsHomeResponse` and `buildMarketNewsListResponse` (backward-compatible). Added `buildMarketNewsHomeResponseFromArticles(articles, meta)` and `buildMarketNewsListResponseFromArticles(articles, options, meta)` for live article arrays. Added `staleState: 'live'` to live article builders.
+- Response metadata fields added: `requestedSource`, `source`, `liveEnabled`, `liveAttempted`, `fallbackUsed`, `fallbackReason` (when fallbackUsed=true), `provider` (when live succeeded). `staleState` remains `'fixture'` for all fixture paths and `'live'` for live success paths.
+- 13 sanitized fallback reason codes: `live_disabled`, `production_blocked`, `missing_base_url`, `invalid_base_url`, `missing_api_key`, `provider_empty_result`, `provider_rate_limited`, `provider_http_error`, `provider_timeout`, `provider_invalid_payload`, `provider_fetch_failed`, `live_exception`, `unknown_live_failure`. All reasons validated by `sanitizeLiveFallbackReason`. Unrecognized codes map to `unknown_live_failure`.
+- Created `scripts/check_gnews_news_route_source_selector.mjs` — 148/148 behavioral checker. 15 groups covering all pure helpers, `resolveMarketNewsFeedSource` (fixture path, gate-disabled path, live with synthetic fetchFn), static route content checks, and boundary isolation. No network, no env reads. **148/148 PASS.**
+- Updated `scripts/check_gnews_news_api_route_static_contract.mjs` — added Group 8 (Phase 3BG checks, 15 checks): selector exists, route imports selector, route handles source param, invalid_source, fixture default, no smoke script import, no direct adapter import, no GNEWS_API_KEY in route, feedResult.meta used in fallback, production blocked in selector, source=fixture early return, VALID_NEWS_SOURCES has all 3 values, ALLOWED_FALLBACK_REASONS in selector, no Home integration, no /news page. **All checks passed (groups 1-8 validated). Exit 0.**
+- Updated `scripts/check_gnews_news_api_route_response.mjs` — added Groups 8–10 (Phase 3BG): fixture with meta, invalid_source error shape, `buildMarketNewsHomeResponseFromArticles` and `buildMarketNewsListResponseFromArticles` with synthetic live articles and no internal field leakage. **Result: PASS.**
+- Updated `scripts/check_gnews_live_fetch_adapter_mocked.mjs` — updated Group 18 fixture-backed checks to accept `?? false` / `?? 'fixture'` patterns (Phase 3BG helper now uses nullish coalescing defaults). **Result: PASS.**
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — updated 4 existing fixture-backed checks to accept `?? false` pattern; added Phase 3BG artifact group (10 checks): result doc exists, selector exists, selector checker exists, `check:gnews-news-route-source-selector` in `package.json`, route imports `parseNewsSourceParam`, selector defaults to `'fixture'`, selector has `ALLOWED_FALLBACK_REASONS`, route does not import owner smoke script, no Home integration, no /news page. **All checks passed. Exit 0.**
+- Added `check:gnews-news-route-source-selector` to `package.json`.
+- Created `docs/planning/phase_3bg_news_route_source_selector_fallback_result_v0.1.md` — 11-section result doc.
+- **Route boundary unchanged on default path**: `mode=home` with no `source` param returns fixture-backed response with `source: "fixture"`, `liveEnabled: false` — exactly as before.
+- **Forbidden**: raw API key, base URL, query string, article content, raw error message, stack traces, raw JSON — none appear in public responses or logs.
+- **Route file safety**: No `GNEWS_API_KEY` string in route file. Route does not call `fetch()` directly. Route does not import live adapter. All preserved from Phases 3BA–3BC.
+- **Recommended next phase**: Phase 3BH — Home Market News UI Integration (wire top-6 articles from `/api/news/market-feed?mode=home` fixture-backed into the Home shell via SSR fetch).
+
 ## Phase 3BF - 2026-06-24
 
 ### GNews Live Smoke Diagnostics Result Recorded (Documentation-only)

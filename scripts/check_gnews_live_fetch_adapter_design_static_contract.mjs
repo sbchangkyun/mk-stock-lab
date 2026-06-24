@@ -295,9 +295,9 @@ check(
 if (existsSync(ROUTE_PATH)) {
   const routeContent = readFileSync(ROUTE_PATH, 'utf8');
   check(
-    'Existing route still has liveEnabled: false',
+    'Existing route defaults liveEnabled to false (helper uses false or ?? false)',
     routeContent.includes('liveEnabled: false') ||
-    (existsSync(HELPER_PATH) && readFileSync(HELPER_PATH, 'utf8').includes('liveEnabled: false')),
+    (existsSync(HELPER_PATH) && (readFileSync(HELPER_PATH, 'utf8').includes('liveEnabled: false') || readFileSync(HELPER_PATH, 'utf8').includes('?? false'))),
   );
   const routeActualFetch =
     /(?:await|=\s*|return\s+)fetch\s*\(/.test(routeContent) ||

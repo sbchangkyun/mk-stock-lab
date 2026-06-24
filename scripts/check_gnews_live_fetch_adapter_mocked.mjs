@@ -497,14 +497,21 @@ log('--- Group 18: Route boundary confirmation ---');
 if (existsSync(ROUTE_PATH)) {
   const routeContent = readFileSync(ROUTE_PATH, 'utf8');
   check('Existing route does not import live adapter', !routeContent.includes('gnewsLiveFetchAdapter'));
-  check('Existing route still has liveEnabled: false',
-    routeContent.includes('liveEnabled: false') ||
-    (existsSync(HELPER_PATH) && readFileSync(HELPER_PATH, 'utf8').includes('liveEnabled: false')),
+  check('Existing route still defaults liveEnabled to false (helper uses false or ?? false)',
+    (() => {
+      const helperRaw = existsSync(HELPER_PATH) ? readFileSync(HELPER_PATH, 'utf8') : '';
+      return routeContent.includes('liveEnabled: false') ||
+        helperRaw.includes('liveEnabled: false') ||
+        helperRaw.includes('?? false');
+    })(),
   );
-  check("Existing route still returns source: 'fixture'",
-    routeContent.includes("source: 'fixture'") || routeContent.includes('source: "fixture"') ||
-    (existsSync(HELPER_PATH) &&
-      (readFileSync(HELPER_PATH, 'utf8').includes("source: 'fixture'") || readFileSync(HELPER_PATH, 'utf8').includes('source: "fixture"'))),
+  check("Existing route still defaults source to 'fixture' (helper uses 'fixture' or ?? 'fixture')",
+    (() => {
+      const helperRaw = existsSync(HELPER_PATH) ? readFileSync(HELPER_PATH, 'utf8') : '';
+      return routeContent.includes("source: 'fixture'") || routeContent.includes('source: "fixture"') ||
+        helperRaw.includes("source: 'fixture'") || helperRaw.includes("source: \"fixture\"") ||
+        helperRaw.includes("?? 'fixture'") || helperRaw.includes('?? "fixture"');
+    })(),
   );
 } else {
   ['Existing route does not import live adapter',

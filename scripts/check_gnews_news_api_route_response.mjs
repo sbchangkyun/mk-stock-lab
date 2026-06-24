@@ -12,6 +12,8 @@ import { fileURLToPath } from 'url';
 import {
   buildMarketNewsHomeResponse,
   buildMarketNewsListResponse,
+  buildMarketNewsHomeResponseFromArticles,
+  buildMarketNewsListResponseFromArticles,
   buildMarketNewsErrorResponse,
   sanitizeMarketNewsArticle,
   VALID_MODES,
@@ -27,11 +29,13 @@ const fixture = JSON.parse(readFileSync(FIXTURE_PATH, 'utf8'));
 const log = (msg) => process.stdout.write(msg + '\n');
 
 let failures = 0;
+let passes = 0;
 
 const check = (label, pass) => {
   const status = pass ? 'PASS' : 'FAIL';
   log(`  [${status}] ${label}`);
-  if (!pass) failures++;
+  if (pass) passes++;
+  else failures++;
 };
 
 log('=== GNews News API Route Response Check (Phase 3BA) ===');
@@ -159,11 +163,146 @@ check(
 log('');
 
 // ---------------------------------------------------------------------------
+// Group 8 (Phase 3BG): Fixture default with source metadata
+// ---------------------------------------------------------------------------
+log('--- Group 8 (Phase 3BG): Fixture source with optional meta ---');
+
+// fixture default: no meta → same shape as before
+const homeRespNoMeta = buildMarketNewsHomeResponse(fixture);
+check('Fixture default (no meta): source=fixture', homeRespNoMeta.source === 'fixture');
+check('Fixture default (no meta): liveEnabled=false', homeRespNoMeta.liveEnabled === false);
+check('Fixture default (no meta): no requestedSource field', homeRespNoMeta.requestedSource === undefined);
+
+// fixture with meta (auto/live gate disabled fallback)
+const disabledMeta = {
+  requestedSource: 'auto',
+  source: 'fixture',
+  liveEnabled: true,
+  liveAttempted: false,
+  fallbackUsed: true,
+  fallbackReason: 'live_disabled',
+};
+const homeRespWithMeta = buildMarketNewsHomeResponse(fixture, disabledMeta);
+check('Fixture with auto-fallback meta: source=fixture', homeRespWithMeta.source === 'fixture');
+check('Fixture with auto-fallback meta: liveEnabled=true', homeRespWithMeta.liveEnabled === true);
+check('Fixture with auto-fallback meta: requestedSource=auto', homeRespWithMeta.requestedSource === 'auto');
+check('Fixture with auto-fallback meta: fallbackUsed=true', homeRespWithMeta.fallbackUsed === true);
+check('Fixture with auto-fallback meta: fallbackReason=live_disabled', homeRespWithMeta.fallbackReason === 'live_disabled');
+check('Fixture with auto-fallback meta: liveAttempted=false', homeRespWithMeta.liveAttempted === false);
+check('Fixture with fallback meta has no apiKey, URL, or queryString',
+  (() => {
+    const s = JSON.stringify(homeRespWithMeta);
+    return !s.includes('apiKey') && !s.includes('queryString') && !s.includes('gnews.io');
+  })());
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 9 (Phase 3BG): invalid_source error response
+// ---------------------------------------------------------------------------
+log('--- Group 9 (Phase 3BG): invalid_source error ---');
+
+const srcErr = buildMarketNewsErrorResponse(400, 'invalid_source');
+check('invalid_source error status is 400', srcErr.status === 400);
+check('invalid_source error body ok is false', srcErr.body.ok === false);
+check('invalid_source error code is "invalid_source"', srcErr.body.error?.code === 'invalid_source');
+check('invalid_source error message is a non-empty string',
+  typeof srcErr.body.error?.message === 'string' && srcErr.body.error.message.length > 0);
+check('invalid_source error body has no .stack', !JSON.stringify(srcErr.body).includes('stack'));
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 10 (Phase 3BG): Live article response builders
+// ---------------------------------------------------------------------------
+log('--- Group 10 (Phase 3BG): buildMarketNewsHomeResponseFromArticles ---');
+
+check('buildMarketNewsHomeResponseFromArticles is a function',
+  typeof buildMarketNewsHomeResponseFromArticles === 'function');
+check('buildMarketNewsListResponseFromArticles is a function',
+  typeof buildMarketNewsListResponseFromArticles === 'function');
+
+// Create synthetic live articles (with all required internal fields for selectHomeArticles)
+const syntheticLiveArticles = ['MARKET_STOCKS', 'FX', 'MACRO_POLICY'].map((cat, i) => ({
+  id: `live-${i}`,
+  title: `Live Article ${i}`,
+  description: `Desc ${i}`,
+  url: `https://source.example.test/article/${i}`,
+  canonicalUrlHash: `hash${i}`,
+  titleHash: `thash${i}`,
+  imageUrl: null,
+  sourceName: `Source${i}`,
+  sourceUrl: `https://source.example.test`,
+  publishedAt: `2026-06-24T0${i}:00:00Z`,
+  fetchedAt: `2026-06-24T0${i}:00:00Z`,
+  category: cat,
+  queryKey: cat.toLowerCase(),
+  language: 'ko',
+  country: 'kr',
+  relevanceScore: 70 - i * 5,
+  scoreReasons: ['has_title'],
+  duplicateGroupId: null,
+  isDuplicate: false,
+  isActive: true,
+  archivedAt: null,
+  archiveReason: 'none',
+  provider: 'gnews',
+  providerArticleId: null,
+  rawProviderStored: false,
+}));
+
+const liveMeta = {
+  requestedSource: 'live',
+  source: 'gnews_live',
+  liveEnabled: true,
+  liveAttempted: true,
+  fallbackUsed: false,
+  provider: 'gnews',
+};
+
+const liveHomeResp = buildMarketNewsHomeResponseFromArticles(syntheticLiveArticles, liveMeta);
+check('Live home response: ok=true', liveHomeResp.ok === true);
+check('Live home response: mode=home', liveHomeResp.mode === 'home');
+check('Live home response: source=gnews_live', liveHomeResp.source === 'gnews_live');
+check('Live home response: liveEnabled=true', liveHomeResp.liveEnabled === true);
+check('Live home response: liveAttempted=true', liveHomeResp.liveAttempted === true);
+check('Live home response: fallbackUsed=false', liveHomeResp.fallbackUsed === false);
+check('Live home response: provider=gnews', liveHomeResp.provider === 'gnews');
+check('Live home response: requestedSource=live', liveHomeResp.requestedSource === 'live');
+check('Live home response: articles is array', Array.isArray(liveHomeResp.articles));
+check('Live home response: staleState=live', liveHomeResp.staleState === 'live');
+check('Live home response: articles use public shape only (no canonicalUrlHash)',
+  liveHomeResp.articles.every((a) => !('canonicalUrlHash' in a)));
+check('Live home response: articles use public shape only (no isDuplicate)',
+  liveHomeResp.articles.every((a) => !('isDuplicate' in a)));
+check('Live home response: lastRefreshedAt is a non-null string',
+  typeof liveHomeResp.lastRefreshedAt === 'string' && liveHomeResp.lastRefreshedAt.length > 0);
+
+const liveListResp = buildMarketNewsListResponseFromArticles(syntheticLiveArticles, { page: 1 }, liveMeta);
+check('Live list response: ok=true', liveListResp.ok === true);
+check('Live list response: mode=list', liveListResp.mode === 'list');
+check('Live list response: source=gnews_live', liveListResp.source === 'gnews_live');
+check('Live list response: liveEnabled=true', liveListResp.liveEnabled === true);
+check('Live list response: has pagination', typeof liveListResp.pagination === 'object');
+check('Live list response: articles use public shape only', liveListResp.articles.every((a) => !('canonicalUrlHash' in a)));
+
+// No sensitive fields in responses
+check('Live home response has no apiKey or queryString in output',
+  (() => {
+    const s = JSON.stringify(liveHomeResp);
+    return !s.includes('apiKey') && !s.includes('queryString') && !s.includes('rawProviderStored');
+  })());
+check('Live list response has no apiKey or queryString in output',
+  (() => {
+    const s = JSON.stringify(liveListResp);
+    return !s.includes('apiKey') && !s.includes('queryString') && !s.includes('rawProviderStored');
+  })());
+log('');
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
-const totalChecks = 9 + 9 + 11 + 2 + 3 + 7 + (EXPECTED_PUBLIC_FIELDS.length + FORBIDDEN_INTERNAL_FIELDS.length + 2);
-log('=== Phase 3BA Response Check — Summary ===');
-log(`Checks passed: ${totalChecks - failures}/${totalChecks}`);
+log('=== Phase 3BG Response Check — Summary ===');
+const totalChecks = passes + failures;
+log(`Checks passed: ${passes}/${totalChecks}`);
 log(`Home selected count: ${homeResp.count}`);
 log(`Home categories: ${[...new Set(homeResp.articles.map((a) => a.category))].join(', ')}`);
 log(`List page 1 article count: ${listResp1.articles.length} / totalActive: ${listResp1.pagination?.totalActive}`);

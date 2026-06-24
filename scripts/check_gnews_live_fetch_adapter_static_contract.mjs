@@ -187,14 +187,19 @@ log('--- Group 11: Route boundary isolation ---');
 if (existsSync(ROUTE_PATH)) {
   const routeContent = readFileSync(ROUTE_PATH, 'utf8');
   check(
-    'Existing route still returns liveEnabled: false',
+    'Existing route defaults liveEnabled to false (helper uses false or ?? false)',
     routeContent.includes('liveEnabled: false') ||
-    (existsSync(HELPER_PATH) && readFileSync(HELPER_PATH, 'utf8').includes('liveEnabled: false')),
+    (existsSync(HELPER_PATH) && (readFileSync(HELPER_PATH, 'utf8').includes('liveEnabled: false') || readFileSync(HELPER_PATH, 'utf8').includes('?? false'))),
   );
   check(
-    "Existing route still returns source: 'fixture'",
+    "Existing route defaults source to 'fixture' (helper uses 'fixture' or ?? 'fixture')",
     routeContent.includes("source: 'fixture'") || routeContent.includes('source: "fixture"') ||
-    (existsSync(HELPER_PATH) && (readFileSync(HELPER_PATH, 'utf8').includes("source: 'fixture'") || readFileSync(HELPER_PATH, 'utf8').includes('source: "fixture"'))),
+    (existsSync(HELPER_PATH) && (
+      readFileSync(HELPER_PATH, 'utf8').includes("source: 'fixture'") ||
+      readFileSync(HELPER_PATH, 'utf8').includes('source: "fixture"') ||
+      readFileSync(HELPER_PATH, 'utf8').includes("?? 'fixture'") ||
+      readFileSync(HELPER_PATH, 'utf8').includes('?? "fixture"')
+    )),
   );
   check(
     'Existing route does not import live adapter',

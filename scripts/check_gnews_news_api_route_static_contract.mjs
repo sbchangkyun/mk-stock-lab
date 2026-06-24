@@ -107,8 +107,10 @@ if (helperExists) {
     'Helper exports buildMarketNewsErrorResponse',
     helperContent.includes('buildMarketNewsErrorResponse'),
   );
-  check("Helper response includes source: 'fixture'", helperContent.includes("source: 'fixture'"));
-  check('Helper response includes liveEnabled: false', helperContent.includes('liveEnabled: false'));
+  check("Helper response defaults source to 'fixture'",
+    helperContent.includes("source: 'fixture'") || helperContent.includes("?? 'fixture'"));
+  check('Helper response defaults liveEnabled to false',
+    helperContent.includes('liveEnabled: false') || helperContent.includes('?? false'));
   check(
     'Helper imports from gnewsNewsPolicy.mjs',
     helperContent.includes('gnewsNewsPolicy.mjs'),
@@ -283,11 +285,57 @@ check(
 log('');
 
 // ---------------------------------------------------------------------------
+// Group 8: Phase 3BG — source selector integration
+// ---------------------------------------------------------------------------
+log('--- Group 8: Phase 3BG source selector integration ---');
+
+const SELECTOR_MJS_PATH = join(root, 'src', 'lib', 'news', 'gnewsMarketFeedSourceSelector.mjs');
+const routeContentBG = routeExists ? readFileSync(ROUTE_PATH, 'utf8') : '';
+
+check('Source selector module exists (gnewsMarketFeedSourceSelector.mjs)', existsSync(SELECTOR_MJS_PATH));
+check('Route imports source selector helper', routeContentBG.includes('gnewsMarketFeedSourceSelector'));
+check('Route supports source query parameter', routeContentBG.includes('parseNewsSourceParam'));
+check('Route handles invalid_source error code', routeContentBG.includes('invalid_source'));
+check('Route default source remains fixture (parseNewsSourceParam returns fixture for null)',
+  existsSync(SELECTOR_MJS_PATH)
+    ? readFileSync(SELECTOR_MJS_PATH, 'utf8').includes("return 'fixture'")
+    : false);
+check('Route does not import owner smoke script',
+  !routeContentBG.includes('owner_smoke_gnews_live_fetch'));
+check('Route does not import live adapter directly (adapter accessed via selector)',
+  !routeContentBG.includes('gnewsLiveFetchAdapter'));
+check('Route does not expose GNEWS_API_KEY directly', !(/GNEWS_API_KEY/.test(routeContentBG)));
+check('Route has fixture fallback for live failure (uses buildMarketNewsHomeResponse with meta)',
+  routeContentBG.includes('feedResult.meta'));
+check('Route keeps production live blocked (production check is inside selector/gate, not route)',
+  existsSync(SELECTOR_MJS_PATH)
+    ? readFileSync(SELECTOR_MJS_PATH, 'utf8').includes('production_blocked')
+    : false);
+check('Route source=fixture path does not call live fetch (requestedSource === fixture early return)',
+  routeContentBG.includes("requestedSource === 'fixture'") || routeContentBG.includes('requestedSource === "fixture"'));
+check('Selector exports VALID_NEWS_SOURCES containing fixture/auto/live',
+  existsSync(SELECTOR_MJS_PATH) && (() => {
+    const sel = readFileSync(SELECTOR_MJS_PATH, 'utf8');
+    return sel.includes("'fixture'") && sel.includes("'auto'") && sel.includes("'live'");
+  })());
+check('Selector has sanitized fallback reason allowlist', existsSync(SELECTOR_MJS_PATH)
+  ? readFileSync(SELECTOR_MJS_PATH, 'utf8').includes('ALLOWED_FALLBACK_REASONS')
+  : false);
+check('No Home integration (home page does not import selector or live adapter)',
+  (() => {
+    if (!existsSync(HOME_PAGE_PATH)) return true;
+    const h = readFileSync(HOME_PAGE_PATH, 'utf8');
+    return !h.includes('gnewsMarketFeedSourceSelector') && !h.includes('gnewsLiveFetchAdapter');
+  })());
+check('No /news page created', !existsSync(NEWS_PAGE_PATH));
+log('');
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
 log('=== Result ===');
 if (failures === 0) {
-  log(`All checks passed (${35 - failures} groups validated). Exit 0.`);
+  log(`All checks passed (groups 1-8 validated). Exit 0.`);
   process.exitCode = 0;
 } else {
   log(`${failures} check(s) failed. Exit 1.`);
