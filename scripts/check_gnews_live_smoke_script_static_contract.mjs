@@ -253,6 +253,46 @@ if (!smokeExists) {
     smoke.includes('export function runDryRun') || smoke.includes('export const runDryRun'),
   );
   log('');
+
+  // ---------------------------------------------------------------------------
+  // Group 14: Phase 3BE-R1 — theme selection and base URL guard
+  // ---------------------------------------------------------------------------
+  log('--- Group 14: Phase 3BE-R1 theme selection and base URL guard ---');
+  check('Smoke script supports --theme flag', smoke.includes('--theme='));
+  check('Smoke script exports SMOKE_ALLOWED_THEME_KEYS', smoke.includes('SMOKE_ALLOWED_THEME_KEYS'));
+  check('Smoke script allowlist contains all 6 valid queryKeys',
+    smoke.includes('market_stocks') && smoke.includes('macro_policy') && smoke.includes('fx') &&
+    smoke.includes('oil_commodities') && smoke.includes('crypto_digital_assets') && smoke.includes('personal_finance'));
+  check('Smoke script defines invalid_theme reason code', smoke.includes('invalid_theme'));
+  check('Smoke script exports parseThemeArg helper',
+    smoke.includes('export function parseThemeArg') || smoke.includes('export const parseThemeArg'));
+  check('Smoke script exports selectSmokeThemeDefinitions helper', smoke.includes('selectSmokeThemeDefinitions'));
+  check('Smoke script exports validateEndpointOnlyBaseUrl helper',
+    smoke.includes('export function validateEndpointOnlyBaseUrl') || smoke.includes('export const validateEndpointOnlyBaseUrl'));
+  check('Smoke script defines invalid_base_url reason code', smoke.includes('invalid_base_url'));
+  check('Smoke script validates endpoint-only baseUrl (uses validateEndpointOnlyBaseUrl in live guard)',
+    smoke.includes('validateEndpointOnlyBaseUrl'));
+  check('Smoke script rejects query strings in GNEWS_BASE_URL (checks search or query param presence)',
+    smoke.includes('.search') || smoke.includes('parsed.search') || smoke.includes('url.search'));
+  check('Smoke script rejects embedded apikey/key/token/q fragments in base URL',
+    smoke.includes('apikey=') && (smoke.includes('key=') || smoke.includes('token=')));
+  check('Smoke script does not log queryString in any logStep call',
+    (() => {
+      const calls = smoke.match(/logStep\s*\([^)]*queryString[^)]*\)/g);
+      return !calls || calls.length === 0;
+    })());
+  check('Smoke script does not log guard.baseUrl in any logStep call',
+    (() => {
+      const calls = smoke.match(/logStep\s*\([^)]*guard\.baseUrl[^)]*\)/g);
+      return !calls || calls.length === 0;
+    })());
+  check('Smoke script does not log raw q parameter values (no logStep with q=... value)',
+    (() => {
+      // Check for logStep calls containing a literal q= key-value pattern
+      const calls = smoke.match(/logStep\s*\([^)]*,\s*['"`]q=[^)]*\)/g);
+      return !calls || calls.length === 0;
+    })());
+  log('');
 }
 
 // ---------------------------------------------------------------------------

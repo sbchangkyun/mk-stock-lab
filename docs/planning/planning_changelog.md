@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BE-R1 - 2026-06-24
+
+### GNews Live Smoke Theme Selection Patch (Implemented)
+
+- Patched `scripts/owner_smoke_gnews_live_fetch.mjs` — added `--theme=<queryKey>` option with allowlist validation (6 valid keys: `market_stocks`, `macro_policy`, `fx`, `oil_commodities`, `crypto_digital_assets`, `personal_finance`). Added `GNEWS_BASE_URL` endpoint-only guard rejecting query strings and embedded key/token/q fragments. Exports 4 new pure helpers: `SMOKE_ALLOWED_THEME_KEYS`, `parseThemeArg`, `selectSmokeThemeDefinitions`, `validateEndpointOnlyBaseUrl`. Theme validation now runs before env reads so invalid `--theme` fails without touching API key. Added `invalid_theme` and `invalid_base_url` sanitized reason codes.
+- Created `scripts/check_gnews_live_smoke_theme_selection.mjs` — behavioral theme-selection checker. Imports pure helpers from smoke script, imports `GNEWS_QUERY_DEFINITIONS` from adapter. No network, no env reads. **62/62 PASS.**
+- Updated `scripts/check_gnews_live_smoke_script_static_contract.mjs` — added Group 14 with 15 Phase 3BE-R1 checks: `--theme` support, `SMOKE_ALLOWED_THEME_KEYS`, 6 valid queryKeys present, `invalid_theme`, exported helpers, `validateEndpointOnlyBaseUrl`, `invalid_base_url`, query string rejection, embedded apikey/key/token rejection, no queryString in logStep calls, no guard.baseUrl in logStep calls. **All checks passed (Group 14 added). Exit 0.**
+- Updated `scripts/check_gnews_live_smoke_script_dry_run.mjs` — added 2 extra forbidden-output checks: no `queryString` keyword in dry-run output, no Korean `OR`-joined query string patterns. **29/29 PASS.**
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added Phase 3BE-R1 artifact group (8 checks): result doc exists, theme selection checker exists, `check:gnews-live-smoke-theme-selection` in `package.json`, smoke supports `--theme`, `invalid_theme` and `invalid_base_url` present, no queryString in logStep, route still fixture-backed. **All checks passed. Exit 0.**
+- Created `docs/planning/phase_3be_r1_gnews_live_smoke_theme_selection_patch_result_v0.1.md` — 13-section result doc with Phase 3BE observation summary, implementation summary, theme selection behavior, base URL guard rules, dry-run validation, validation results, route boundary, safety boundaries, remaining limitations, and confirmed non-actions.
+- Added `check:gnews-live-smoke-theme-selection` to `package.json`.
+- **Security note**: During Phase 3BE, a GNews API key was accidentally pasted into chat. It is treated as compromised. Owner must rotate it outside Claude Code. The key value is not recorded anywhere in docs, code, tests, or commit messages.
+- **No live GNews call was made**: dry-run and behavioral (no-network) validation only.
+- **Route remains unchanged**: `src/pages/api/news/market-feed.ts` untouched. `source: "fixture"`, `liveEnabled: false`. No adapter import, no smoke import.
+- **No live calls, no DB/Supabase/Home/deployment changes, no migration files.**
+- **Validation**: `check:gnews-news-policy` all passed; `check:gnews-news-engine` 57/57; `check:gnews-news-api-route` 35 groups; `check:gnews-news-api-response` 61/61; `check:gnews-live-adapter-design` all passed; `check:gnews-live-adapter-static` all passed; `check:gnews-live-adapter-mocked` 148/148; `check:gnews-live-smoke-script` all passed (Group 14 added); `check:gnews-live-smoke-dry-run` 29/29; `check:gnews-live-smoke-theme-selection` 62/62; `smoke:gnews-live:dry` PASS.
+- **Recommended next phase**: 3BE-R2 — Owner rotates API key, sets endpoint-only `GNEWS_BASE_URL`, and re-runs live smoke with `--theme=macro_policy` or `--theme=fx`. Returns only sanitized count/category summary.
+
 ## Phase 3BD - 2026-06-24
 
 ### Owner-Run GNews Live Smoke Script (Implemented)

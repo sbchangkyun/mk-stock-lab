@@ -193,6 +193,19 @@ const FORBIDDEN_CHECKS = [
 for (const { label, pattern } of FORBIDDEN_CHECKS) {
   check(label, !pattern.test(allOutput));
 }
+
+// Phase 3BE-R1 additional forbidden content checks
+check(
+  'Dry-run output does not contain queryString keyword',
+  !allOutput.includes('queryString'),
+);
+check(
+  'Dry-run output does not contain Korean query string characters that indicate query leakage',
+  // Korean characters in category labels are safe (uppercase ASCII), but the Korean
+  // query strings (e.g. '증시 OR 주식') must never appear in dry-run output.
+  // We check for OR-separated Korean phrases as a proxy for leaked queryStrings.
+  !/[가-힣]+\s+OR\s+[가-힣]+/.test(allOutput),
+);
 log('');
 
 // ---------------------------------------------------------------------------

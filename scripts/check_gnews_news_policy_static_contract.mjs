@@ -398,6 +398,36 @@ if (existsSync(OWNER_SMOKE_PATH)) {
 }
 log('');
 
+// --- Phase 3BE-R1 artifact checks ---
+log('Phase 3BE-R1 artifacts:');
+const RESULT_DOC_3BE_R1_PATH = join(root, 'docs', 'planning', 'phase_3be_r1_gnews_live_smoke_theme_selection_patch_result_v0.1.md');
+const THEME_SELECTION_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_smoke_theme_selection.mjs');
+
+check('Phase 3BE-R1 result doc exists', existsSync(RESULT_DOC_3BE_R1_PATH));
+check('Phase 3BE-R1 theme selection checker exists', existsSync(THEME_SELECTION_CHECKER_PATH));
+
+let pkg3ber1 = {};
+try { pkg3ber1 = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-live-smoke-theme-selection',
+  typeof pkg3ber1.scripts?.['check:gnews-live-smoke-theme-selection'] === 'string',
+);
+
+if (existsSync(OWNER_SMOKE_PATH)) {
+  const smokeContent3ber1 = readFileSync(OWNER_SMOKE_PATH, 'utf8');
+  check('Smoke script supports --theme option', smokeContent3ber1.includes('--theme='));
+  check('Smoke script includes invalid_theme reason code', smokeContent3ber1.includes('invalid_theme'));
+  check('Smoke script includes invalid_base_url reason code', smokeContent3ber1.includes('invalid_base_url'));
+  check('Smoke script does not log queryString values', (() => {
+    const calls = smokeContent3ber1.match(/logStep\s*\([^)]*queryString[^)]*\)/g);
+    return !calls || calls.length === 0;
+  })());
+}
+check('Route remains fixture-backed (liveEnabled: false still present)',
+  existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
+  readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {
