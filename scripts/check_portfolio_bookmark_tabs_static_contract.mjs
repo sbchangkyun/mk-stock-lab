@@ -248,8 +248,11 @@ log('--- Group 10: Non-goals not implemented ---');
 check('No drag-and-drop library reference (dragstart event)',
   !portfolioContent.includes('dragstart') && !portfolioContent.includes('dragover'));
 check('No drag-and-drop library import',
-  !portfolioContent.includes('sortable') && !portfolioContent.includes('draggable') &&
-  !portfolioContent.includes('SortableJS'));
+  !portfolioContent.includes('SortableJS') &&
+  !portfolioContent.toLowerCase().includes('import.*sortable') &&
+  !portfolioContent.includes("from 'sortable") &&
+  !portfolioContent.includes('from "sortable') &&
+  !portfolioContent.includes('draggable="true"'));
 check('No new localStorage tab-order key added',
   !portfolioContent.includes('portfolioTabOrder') &&
   !portfolioContent.includes('portfolio-tab-order'));

@@ -826,6 +826,73 @@ check('HomePortfolioPanel not modified by 3BQ',
 check('No /news page created (3BQ boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
+// ---------------------------------------------------------------------------
+// Phase 3BR artifact group — Portfolio Holdings Category Header & Sort UX
+// ---------------------------------------------------------------------------
+log('--- Phase 3BR: Portfolio Holdings Category Header & Sort UX ---');
+
+const PORTFOLIO_PAGE_3BR = join(root, 'src', 'pages', 'portfolio.astro');
+const RESULT_DOC_3BR = join(root, 'docs', 'planning', 'phase_3br_portfolio_holdings_category_header_sort_ux_result_v0.1.md');
+const HOLDINGS_CHECKER_3BR = join(root, 'scripts', 'check_portfolio_holdings_category_header_static_contract.mjs');
+const CSS_PATH_3BR = join(root, 'src', 'styles', 'style.css');
+
+check('Phase 3BR result doc exists', existsSync(RESULT_DOC_3BR));
+check('Holdings category header checker exists (3BR)', existsSync(HOLDINGS_CHECKER_3BR));
+
+let pkg3br = {};
+try { pkg3br = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check('package.json has check:portfolio-holdings-header script (3BR)',
+  typeof pkg3br.scripts?.['check:portfolio-holdings-header'] === 'string');
+
+if (existsSync(PORTFOLIO_PAGE_3BR)) {
+  const port3br = readFileSync(PORTFOLIO_PAGE_3BR, 'utf8');
+  check('Category header marker (positions-category-header) exists (3BR)',
+    port3br.includes('positions-category-header'));
+  check('카테고리 label present (3BR)', port3br.includes('카테고리'));
+  check('All required category labels present (종목, 비중, 평가금, 수익률, 예상 연배당금)',
+    port3br.includes('>종목<') && port3br.includes('>비중<') &&
+    port3br.includes('>평가금<') && port3br.includes('>수익률<') &&
+    port3br.includes('예상 연배당금'));
+  check('Sort arrow controls present (sort-arrow-button)',
+    port3br.includes('sort-arrow-button'));
+  check('Vertical arrow stack present (sort-arrow-stack)',
+    port3br.includes('sort-arrow-stack'));
+  check('Weight sort key present (weight-desc)',
+    port3br.includes('weight-desc'));
+  check('Profit sort key present (profit-desc)',
+    port3br.includes('profit-desc'));
+  check('Dividend sort keys present (dividend-yield-desc)',
+    port3br.includes('dividend-yield-desc'));
+  check('No live KIS calls added in 3BR', !port3br.includes('oauth2/tokenP'));
+  check('No live GNews calls added in 3BR', !port3br.includes('gnews.io'));
+  check('Old 정렬 sort toolbar removed (3BR)', !port3br.includes('<p class="eyebrow">정렬</p>'));
+} else {
+  ['Category header marker', '카테고리 label', 'Required category labels', 'Sort arrow controls',
+    'Vertical arrow stack', 'Weight sort key', 'Profit sort key', 'Dividend sort keys',
+    'No live KIS', 'No live GNews', 'Old 정렬 removed'].forEach((label) => {
+    check(label, false);
+  });
+}
+
+if (existsSync(CSS_PATH_3BR)) {
+  const css3br = readFileSync(CSS_PATH_3BR, 'utf8');
+  check('CSS .positions-category-header defined (3BR)', css3br.includes('.positions-category-header'));
+  check('CSS .sort-arrow-button defined (3BR)', css3br.includes('.sort-arrow-button'));
+  check('CSS .positions-list-wrap has overflow-x: auto (3BR)',
+    css3br.includes('overflow-x: auto') && css3br.includes('.positions-list-wrap'));
+} else {
+  check('CSS .positions-category-header', false);
+  check('CSS .sort-arrow-button', false);
+  check('CSS overflow-x on list-wrap', false);
+}
+
+check('HomePortfolioPanel not modified by 3BR',
+  existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('HomeMarketNews not modified by 3BR',
+  existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+check('No /news page created (3BR boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

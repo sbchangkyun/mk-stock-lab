@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BR - 2026-06-25
+
+### Portfolio Holdings Category Header & Sort UX (Implemented)
+
+- **Status**: implemented. Holdings "정렬" sort toolbar replaced by "카테고리" column header. `src/pages/portfolio.astro` and `src/styles/style.css` updated. No API routes, Supabase schema, deployment, Home, or GNews changes.
+- **Old toolbar removed**: `.positions-toolbar` HTML block (eyebrow "정렬", explanatory text, 4-button `.sort-controls` div) removed entirely.
+- **Category header added**: `.positions-category-header` with eyebrow "카테고리" and `.positions-category-grid` — 13-cell row (avatar spacer, 11 data columns, actions spacer).
+- **Category labels in order**: 종목 · 비중 · 수량 · 평단가 · 현재가 · 평가금 · 수익률 · 수익금 · 배당률 · 예상 연배당금 · 배당주기.
+- **Sortable columns**: 비중, 평가금, 수익률, 수익금, 배당률, 예상 연배당금 — each has ▲▼ `.sort-arrow-button` elements with `aria-label` in a `.sort-arrow-stack`.
+- **New sort keys**: `weight-desc/asc`, `valuation-desc/asc`, `return-desc/asc`, `profit-desc/asc`, `dividend-yield-desc/asc`, `annual-dividend-desc/asc`. `getSortedPositions` updated to use `lastIndexOf('-')` for compound key parsing.
+- **Weight computation**: "비중" uses `buyPrice × quantity / totalCostBasis × 100` — cost-basis weight from stored purchase data, not live market valuation. Label is non-misleading.
+- **Unavailable values**: 현재가, 평가금, 수익률, 수익금 show "연동 예정"; 배당률, 예상 연배당금, 배당주기 show "데이터 대기". No fabricated values.
+- **Position card expanded**: from 8 columns (`avatar + identity + 5 metrics + actions`) to 13 columns (`avatar + identity + 10 metrics + actions`). Row metric labels removed (header provides them).
+- **Responsive layout**: `.positions-list-wrap { overflow-x: auto }` — both header and cards scroll together. `min-width: 960px` on category grid, list, and position cards. Old 4-column mobile grid collapse removed.
+- Created `scripts/check_portfolio_holdings_category_header_static_contract.mjs` — 90-check static checker.
+- Updated `scripts/check_portfolio_bookmark_tabs_static_contract.mjs` — tightened drag-drop import check to not false-fail on `positions-category-cell--sortable`.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BR artifact group appended.
+- Created `docs/planning/phase_3br_portfolio_holdings_category_header_sort_ux_result_v0.1.md`.
+- All validators pass. Build passes.
+- No live KIS, GNews, Supabase writes, deployment, or /news page.
+- **Recommended next phase**: Phase 3BS — Portfolio Owner Browser Review Round 2.
+
 ## Phase 3BQ - 2026-06-25
 
 ### Portfolio Bookmark Tabs Owner Review Fixes (Implemented)
