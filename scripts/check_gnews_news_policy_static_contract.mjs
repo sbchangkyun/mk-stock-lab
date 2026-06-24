@@ -360,6 +360,44 @@ if (existsSync(LIVE_ADAPTER_MJS_PATH)) {
 }
 log('');
 
+// --- Phase 3BD artifact checks ---
+log('Phase 3BD artifacts:');
+const OWNER_SMOKE_PATH = join(root, 'scripts', 'owner_smoke_gnews_live_fetch.mjs');
+const SMOKE_STATIC_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_smoke_script_static_contract.mjs');
+const SMOKE_DRY_RUN_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_smoke_script_dry_run.mjs');
+
+check('Phase 3BD owner smoke script exists', existsSync(OWNER_SMOKE_PATH));
+check('Phase 3BD static smoke checker exists', existsSync(SMOKE_STATIC_CHECKER_PATH));
+check('Phase 3BD dry-run smoke checker exists', existsSync(SMOKE_DRY_RUN_CHECKER_PATH));
+
+let pkg3bd = {};
+try { pkg3bd = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes smoke:gnews-live:dry',
+  typeof pkg3bd.scripts?.['smoke:gnews-live:dry'] === 'string',
+);
+check(
+  'package.json includes check:gnews-live-smoke-script',
+  typeof pkg3bd.scripts?.['check:gnews-live-smoke-script'] === 'string',
+);
+check(
+  'package.json includes check:gnews-live-smoke-dry-run',
+  typeof pkg3bd.scripts?.['check:gnews-live-smoke-dry-run'] === 'string',
+);
+
+if (existsSync(OWNER_SMOKE_PATH)) {
+  const smokeContent = readFileSync(OWNER_SMOKE_PATH, 'utf8');
+  check('Smoke script imports from gnewsLiveFetchAdapter.mjs', smokeContent.includes('gnewsLiveFetchAdapter.mjs'));
+  check('Smoke script does not import dotenv', !smokeContent.includes("from 'dotenv'") && !smokeContent.includes('dotenv/config'));
+  check('Smoke script does not import @supabase', !smokeContent.includes('@supabase'));
+  check('Smoke script does not import the route',
+    !(/from\s+['"].*market-feed/.test(smokeContent)) &&
+    !(/import\s+.*from.*market-feed/.test(smokeContent)) &&
+    !smokeContent.includes('gnewsMarketFeedResponse'));
+  check('Route file does not import owner smoke script', !(existsSync(API_ROUTE_FILE_PATH) && readFileSync(API_ROUTE_FILE_PATH, 'utf8').includes('owner_smoke_gnews_live_fetch')));
+}
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

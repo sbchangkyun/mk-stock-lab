@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BD - 2026-06-24
+
+### Owner-Run GNews Live Smoke Script (Implemented)
+
+- Created `scripts/owner_smoke_gnews_live_fetch.mjs` — owner-run GNews live smoke script. Defaults to dry-run mode (no network, no env reads). Live mode requires `--execute-live`, `--confirm-owner-approved`, `GNEWS_LIVE_ENABLED=true`, `GNEWS_BASE_URL`, and API key (`GNEWS_API_KEY` preferred, `PUBLIC_GNEWS_API_KEY` server-side fallback). Production blocked via `VERCEL_ENV=production` guard.
+- Created `scripts/check_gnews_live_smoke_script_static_contract.mjs` — static smoke script checker. Validates CLI guards, env var guards, output sanitizer, no-forbidden-imports, no-file-writes, adapter imports, route boundary. **All 53 checks passed. Exit 0.**
+- Created `scripts/check_gnews_live_smoke_script_dry_run.mjs` — behavioral dry-run checker. Imports `runDryRun` export, monkey-patches `globalThis.fetch` to block network, captures output, verifies required content and no forbidden content. **27/27 PASS.**
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added Phase 3BD artifact group (11 checks). **All checks passed. Exit 0.**
+- Added `check:gnews-live-smoke-script`, `check:gnews-live-smoke-dry-run`, `smoke:gnews-live:dry` to `package.json`. `smoke:gnews-live:dry` always passes `--dry-run` — no live script registered.
+- **Live guard conditions**: `--execute-live` flag + `--confirm-owner-approved` flag + `GNEWS_LIVE_ENABLED=true` + `GNEWS_BASE_URL` present + API key present + `maxThemes <= 2` + `VERCEL_ENV != production`.
+- **Max 2 live requests/themes per run**: `maxThemes` clamped to `[1, 2]` via `MAX_THEMES_CAP = 2`. Matches adapter `MAX_THEMES_PER_SMOKE: 2`.
+- **Sanitized output only**: live mode prints counts and category enum values only — no article URLs, titles, descriptions, raw JSON, API key values, or stack traces. `safeLog` guard blocks forbidden patterns before any output.
+- **Dry-run validation only performed in this phase**: no live smoke executed, no live GNews call, no network, no env reads, no API key usage.
+- **Route remains unchanged**: `src/pages/api/news/market-feed.ts` untouched. `source: "fixture"`, `liveEnabled: false`. Route does not import live adapter or smoke script.
+- **No live calls, no DB/Supabase/Home/deployment changes, no migration files.**
+- **Validation**: `check:gnews-news-policy` all passed; `check:gnews-news-engine` 57/57; `check:gnews-news-api-route` 35 groups; `check:gnews-news-api-response` 61/61; `check:gnews-live-adapter-design` all passed; `check:gnews-live-adapter-static` all passed; `check:gnews-live-adapter-mocked` 148/148; `check:gnews-live-smoke-script` all passed; `check:gnews-live-smoke-dry-run` 27/27; `smoke:gnews-live:dry` PASS.
+- **Recommended next phase**: 3BE — Owner manually executes GNews live smoke and provides only the sanitized count/category summary.
+
 ## Phase 3BC - 2026-06-24
 
 ### GNews Live Adapter Skeleton with Mocked Fetch (Implemented)
