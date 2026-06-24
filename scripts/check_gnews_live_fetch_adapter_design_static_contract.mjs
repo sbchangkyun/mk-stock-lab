@@ -280,8 +280,8 @@ if (!docExists) {
 log('--- Group 12: No premature live implementation ---');
 
 check(
-  'No live adapter .mjs file created (gnewsLiveFetchAdapter.mjs must not exist)',
-  !existsSync(LIVE_ADAPTER_PATH),
+  'Phase 3BC live adapter .mjs skeleton exists (gnewsLiveFetchAdapter.mjs)',
+  existsSync(LIVE_ADAPTER_PATH),
 );
 check(
   'No live adapter .ts file created (gnewsLiveFetchAdapter.ts must not exist)',

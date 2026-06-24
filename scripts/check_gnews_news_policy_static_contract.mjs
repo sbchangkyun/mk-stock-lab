@@ -314,7 +314,7 @@ check(
   typeof pkg3bb.scripts?.['check:gnews-live-adapter-design'] === 'string',
 );
 
-check('No live adapter .mjs implementation file created', !existsSync(LIVE_ADAPTER_MJS_PATH));
+check('Phase 3BC live adapter .mjs skeleton exists (gnewsLiveFetchAdapter.mjs)', existsSync(LIVE_ADAPTER_MJS_PATH));
 check('No live adapter .ts implementation file created', !existsSync(LIVE_ADAPTER_TS_PATH));
 
 if (existsSync(API_ROUTE_FILE_PATH)) {
@@ -325,6 +325,38 @@ if (existsSync(API_ROUTE_FILE_PATH)) {
     (existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
      readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false')),
   );
+}
+log('');
+
+// --- Phase 3BC artifact checks ---
+log('Phase 3BC artifacts:');
+const LIVE_ADAPTER_STATIC_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_fetch_adapter_static_contract.mjs');
+const LIVE_ADAPTER_MOCKED_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_fetch_adapter_mocked.mjs');
+const MOCK_FIXTURE_PATH_3BC = join(root, 'src', 'data', 'fixtures', 'gnews_live_adapter_mock_response_v0.1.json');
+
+check('Phase 3BC adapter skeleton file exists', existsSync(LIVE_ADAPTER_MJS_PATH));
+check('Phase 3BC static adapter checker exists', existsSync(LIVE_ADAPTER_STATIC_CHECKER_PATH));
+check('Phase 3BC mocked adapter checker exists', existsSync(LIVE_ADAPTER_MOCKED_CHECKER_PATH));
+check('Phase 3BC mock fixture exists', existsSync(MOCK_FIXTURE_PATH_3BC));
+
+let pkg3bc = {};
+try { pkg3bc = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-live-adapter-static',
+  typeof pkg3bc.scripts?.['check:gnews-live-adapter-static'] === 'string',
+);
+check(
+  'package.json includes check:gnews-live-adapter-mocked',
+  typeof pkg3bc.scripts?.['check:gnews-live-adapter-mocked'] === 'string',
+);
+
+if (existsSync(LIVE_ADAPTER_MJS_PATH)) {
+  const adapterContent3bc = readFileSync(LIVE_ADAPTER_MJS_PATH, 'utf8');
+  check('Adapter does not read process.env', !adapterContent3bc.includes('process.env'));
+  check('Adapter does not read import.meta.env', !adapterContent3bc.includes('import.meta.env'));
+  check('Adapter does not reference GNEWS_API_KEY literal', !adapterContent3bc.includes('GNEWS_API_KEY'));
+  check('Adapter forces rawProviderStored: false', adapterContent3bc.includes('rawProviderStored: false'));
+  check('Route file does not import live adapter', !(existsSync(API_ROUTE_FILE_PATH) && readFileSync(API_ROUTE_FILE_PATH, 'utf8').includes('gnewsLiveFetchAdapter')));
 }
 log('');
 

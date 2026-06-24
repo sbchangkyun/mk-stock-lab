@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BC - 2026-06-24
+
+### GNews Live Adapter Skeleton with Mocked Fetch (Implemented)
+
+- Created `src/lib/news/gnewsLiveFetchAdapter.mjs` — no-network GNews live fetch adapter skeleton. All HTTP calls go through an injected `fetchFn`; no global `fetch` is called. No env reads; `apiKey` and `baseUrl` are function arguments only.
+- Created `src/data/fixtures/gnews_live_adapter_mock_response_v0.1.json` — synthetic GNews-provider-like mock response fixture. 12 articles across 4 categories (MARKET_STOCKS, FX, MACRO_POLICY, CRYPTO_DIGITAL_ASSETS). All content fictional, all URLs under `example.test` domains.
+- Created `scripts/check_gnews_live_fetch_adapter_static_contract.mjs` — static adapter checker. Validates exports, security boundaries, route isolation. **All checks passed. Exit 0.**
+- Created `scripts/check_gnews_live_fetch_adapter_mocked.mjs` — no-network mocked adapter checker. **148/148 PASS**. 18 groups: URL builder, error cases, HTTP error codes, invalid payload, timeout, article normalization, SHA-256 hashes, edge cases, batch normalization, partial failure, result summarization, forbidden patterns, route boundary.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added Phase 3BC artifact group. **69/69 PASS**.
+- Updated `scripts/check_gnews_live_fetch_adapter_design_static_contract.mjs` — updated Group 12 "no adapter" guard to "adapter skeleton exists". **All checks passed. Exit 0.**
+- Added `check:gnews-live-adapter-static` and `check:gnews-live-adapter-mocked` scripts to `package.json`.
+- **Adapter exports**: `GNEWS_ADAPTER_POLICY`, `GNEWS_QUERY_DEFINITIONS`, `buildGnewsSearchUrl`, `fetchGnewsTheme`, `fetchGnewsMarketNewsBatch`, `normalizeGnewsArticle`, `normalizeGnewsBatch`, `sanitizeGnewsAdapterError`, `summarizeGnewsLiveFetchResult`.
+- **No-network design**: fetchFn injection required; no global `fetch`; no env reads; no live endpoint hardcoded; tests use `https://api.example.test` and a non-secret synthetic placeholder key.
+- **Normalization**: raw provider article → MarketNewsArticle-compatible shape. `canonicalUrlHash` and `titleHash` via SHA-256 (`node:crypto`). Tracking params (utm_*, fbclid, gclid, _ga, ref) stripped before URL hashing. `rawProviderStored: false` enforced.
+- **Error handling**: 11 sanitized error codes. No stack traces, raw errors, API keys, or full URLs exposed.
+- **Route remains unchanged**: `src/pages/api/news/market-feed.ts` untouched. Route still returns `source: "fixture"`, `liveEnabled: false`. No live adapter import in route or helper.
+- **No live calls, no env reads, no API key usage, no DB/Supabase/Home/deployment changes.**
+- **Validation**: `check:gnews-news-policy` 69/69; `check:gnews-news-engine` 57/57; `check:gnews-news-api-route` 35/35; `check:gnews-news-api-response` 61/61; `check:gnews-live-adapter-design` all passed; `check:gnews-live-adapter-static` all passed; `check:gnews-live-adapter-mocked` 148/148; `npm run build` success (4.09s).
+- **Recommended next phase**: 3BD — Owner-run GNews live smoke script (max 2 requests, sanitized output, explicit owner approval required).
+
 ## Phase 3BB - 2026-06-24
 
 ### GNews Live Fetch Adapter Design + Kill-switch Contract (Designed)

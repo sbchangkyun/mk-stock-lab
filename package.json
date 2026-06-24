@@ -21,6 +21,8 @@
     "check:gnews-news-api-route": "node scripts/check_gnews_news_api_route_static_contract.mjs",
     "check:gnews-news-api-response": "node scripts/check_gnews_news_api_route_response.mjs",
     "check:gnews-live-adapter-design": "node scripts/check_gnews_live_fetch_adapter_design_static_contract.mjs",
+    "check:gnews-live-adapter-static": "node scripts/check_gnews_live_fetch_adapter_static_contract.mjs",
+    "check:gnews-live-adapter-mocked": "node scripts/check_gnews_live_fetch_adapter_mocked.mjs",
     "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
     "smoke:persistent-quote-cache-live:dry": "node scripts/owner_smoke_persistent_quote_cache_live.mjs",
     "smoke:kis-quote-live:dry": "node scripts/owner_smoke_kis_quote_live.mjs",
