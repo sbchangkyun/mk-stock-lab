@@ -1,5 +1,31 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BK - 2026-06-24
+
+### Portfolio Experience Redesign Plan & State Contract (Planned)
+
+- **Status**: planned. Documentation-only phase. No runtime, API, DB, Supabase, or deployment changes.
+- **Roadmap shift**: Portfolio experience redesign is prioritized over the optional /news paginated list page (Phase 3BI). Phase 3BI is deferred.
+- Created `docs/planning/phase_3bk_portfolio_experience_redesign_plan_state_contract_v0.1.md` — 15-section planning document including:
+  - Current implementation observations (Home, Portfolio page, data source, auth flow, valuation status).
+  - Home portfolio status panel plan: 3-state design (`signed_out`, `signed_in_empty`, `signed_in_with_portfolio`) to replace the static Market Coverage card.
+  - Recommended UI copy for each Home state (Korean).
+  - Portfolio page redesign plan: remove status chips, expand full-width dashboard, move refresh to page header, remove permanent sidebar, convert portfolio selection to bookmark tabs.
+  - Bookmark tab UX contract: aggregate tab pinned left, user tabs reorderable with `‹ name ›` hover arrows, add tab pinned right; mobile long-press reorder; client-memory persistence first.
+  - Refresh button semantics: `reload_portfolio_data` (re-call `/api/portfolio/*`) in Phase 3BM; live KIS refresh is a future placeholder, not approved.
+  - Data and auth dependency analysis: auth is client-side only; portfolio presence requires API call; no live market data required for Phase 3BL.
+  - Portfolio creation UI recommendation: modal (differentiates from position slide-over).
+  - 6 open owner decisions listed.
+  - Implementation phase split: 3BL (Home panel), 3BM (layout refactor), 3BN (bookmark tabs), 3BO (browser review), 3BI deferred.
+- Created `docs/schemas/portfolio_experience_state_contract_v0.1.md` — TypeScript-style state types:
+  - `PortfolioHomeState` (loading / signed_out / signed_in_empty / signed_in_with_portfolio / error)
+  - `PortfolioPageCoarseState` (5 states)
+  - `PortfolioSummary` (with per-field status: implemented / placeholder / future)
+  - `PortfolioRecord`, `HoldingSummary`, `BookmarkTab`, `RefreshIntent`
+  - Field status table mapping each field to its implementation phase.
+- No runtime implementation in Phase 3BK.
+- **Recommended next phase**: Phase 3BL — Home Portfolio Status Panel.
+
 ## Phase 3BJ - 2026-06-24
 
 ### Home Market News Owner Browser Review & UI Polish (Implemented)
