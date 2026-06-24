@@ -77,8 +77,8 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 3: Aggregate tab pinned left ---');
 
-check('전체 포트폴리오 aggregate tab label present',
-  portfolioContent.includes('전체 포트폴리오'));
+check('전체 aggregate tab label present (Phase 3BQ: shortened from 전체 포트폴리오)',
+  portfolioContent.includes("'전체'") || portfolioContent.includes('"전체"'));
 check('aggregatePortfolioId used as aggregate tab data-id',
   portfolioContent.includes('aggregatePortfolioId'));
 check('__all_portfolios__ constant still present',
@@ -98,17 +98,22 @@ check('Aggregate default selection preserved (state.selectedPortfolioId = aggreg
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 4: Add tab (pinned right)
+// Group 4: Add tab (Phase 3BQ: inline in tab list, JS-rendered)
 // ---------------------------------------------------------------------------
-log('--- Group 4: Add tab pinned right ---');
+log('--- Group 4: Add tab inline in tab list (Phase 3BQ) ---');
 
-check('Add tab (portfolio-manage-toggle) still present by id',
+check('Add tab (portfolio-manage-toggle) present as JS-rendered button (Phase 3BQ)',
+  portfolioContent.includes("addBtn.id = 'portfolio-manage-toggle'") ||
+  portfolioContent.includes('addBtn.id = "portfolio-manage-toggle"') ||
   portfolioContent.includes('id="portfolio-manage-toggle"'));
 check('Add tab has portfolio-bookmark-tab--add class',
   portfolioContent.includes('portfolio-bookmark-tab--add'));
 check('Add tab opens/reveals manage panel (openManagePanel call)',
   portfolioContent.includes('openManagePanel'));
 check('Add tab has aria-controls pointing to manage panel',
+  portfolioContent.includes("'aria-controls', 'portfolio-manage-panel'") ||
+  portfolioContent.includes('"aria-controls", "portfolio-manage-panel"') ||
+  portfolioContent.includes("'portfolio-manage-panel'") ||
   portfolioContent.includes('aria-controls="portfolio-manage-panel"') ||
   portfolioContent.includes("aria-controls='portfolio-manage-panel'"));
 check('portfolio-manage-panel still in DOM (add tab target)',
@@ -321,9 +326,64 @@ globalThis.fetch = originalFetch;
 log('');
 
 // ---------------------------------------------------------------------------
+// Group 14: Phase 3BQ — owner review fixes
+// ---------------------------------------------------------------------------
+log('--- Group 14: Phase 3BQ owner review fixes ---');
+
+check('Refresh button inline with h1 (portfolio-h1-row)',
+  portfolioContent.includes('portfolio-h1-row') || portfolioContent.includes("class=\"portfolio-h1-row\""));
+check('CSS .portfolio-h1-row defined',
+  cssContent.includes('.portfolio-h1-row'));
+check('Aggregate tab label shortened to 전체',
+  portfolioContent.includes("'전체'") || portfolioContent.includes('"전체"'));
+check('Aggregate tab label textContent is NOT 전체 포트폴리오 (old tab label removed)',
+  !portfolioContent.includes("aggregateTab.textContent = '전체 포트폴리오'") &&
+  !portfolioContent.includes('aggregateTab.textContent = "전체 포트폴리오"'));
+check('Floating mini toolbar element created (portfolio-tab-floating-actions)',
+  portfolioContent.includes('portfolio-tab-floating-actions'));
+check('portfolio-tab-main element created for tab main row',
+  portfolioContent.includes('portfolio-tab-main'));
+check('CSS .portfolio-tab-floating-actions defined',
+  cssContent.includes('.portfolio-tab-floating-actions'));
+check('CSS .portfolio-tab-main defined',
+  cssContent.includes('.portfolio-tab-main'));
+check('CSS floating actions hidden by default (opacity: 0)',
+  cssContent.includes('.portfolio-tab-floating-actions') &&
+  (() => {
+    const idx = cssContent.indexOf('.portfolio-tab-floating-actions');
+    const block = cssContent.slice(idx, idx + 300);
+    return block.includes('opacity: 0');
+  })());
+check('CSS floating actions shown on hover/focus-within',
+  cssContent.includes('.portfolio-tab-item:hover .portfolio-tab-floating-actions') ||
+  cssContent.includes('.portfolio-tab-item:focus-within .portfolio-tab-floating-actions'));
+check('CSS overflow-y: hidden on bookmark tabs (no vertical scrollbar)',
+  cssContent.includes('.portfolio-bookmark-tabs') &&
+  cssContent.includes('overflow-y: hidden'));
+check('CSS portfolio-tab-list align-items: flex-end (aggregate/add align to bottom)',
+  cssContent.includes('align-items: flex-end'));
+check('CSS .portfolio-bookmark-tab--add has no margin-left: auto (inline, not pinned right)',
+  (() => {
+    const addIdx = cssContent.indexOf('.portfolio-bookmark-tab--add');
+    if (addIdx === -1) return false;
+    const blockEnd = cssContent.indexOf('}', addIdx);
+    const block = cssContent.slice(addIdx, blockEnd);
+    return !block.includes('margin-left: auto');
+  })());
+check('toggle-manage-panel action handled in #portfolio-list click delegation',
+  portfolioContent.includes("'toggle-manage-panel'") || portfolioContent.includes('"toggle-manage-panel"'));
+check('Static portfolio-manage-toggle button removed from HTML',
+  !portfolioContent.includes('<button class="portfolio-bookmark-tab portfolio-bookmark-tab--add" id="portfolio-manage-toggle"'));
+check('Dead standalone portfolio-manage-toggle addEventListener removed',
+  !portfolioContent.includes("getElement<HTMLButtonElement>('portfolio-manage-toggle')?.addEventListener"));
+check('Phase 3BQ result doc exists',
+  existsSync(join(root, 'docs', 'planning', 'phase_3bq_portfolio_bookmark_tabs_owner_review_fixes_result_v0.1.md')));
+log('');
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
-log('=== Phase 3BN Portfolio Bookmark Tabs Static Contract — Summary ===');
+log('=== Phase 3BN / 3BQ Portfolio Bookmark Tabs Static Contract — Summary ===');
 const total = passes + failures;
 log(`Checks passed: ${passes}/${total}`);
 log('');

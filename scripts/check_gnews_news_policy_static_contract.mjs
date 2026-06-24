@@ -769,6 +769,63 @@ check('Portfolio page (3BN) not modified by 3BP',
 check('No /news page created (3BP boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
+// ---------------------------------------------------------------------------
+// Phase 3BQ artifact group — Portfolio Bookmark Tabs Owner Review Fixes
+// ---------------------------------------------------------------------------
+log('--- Phase 3BQ: Portfolio Bookmark Tabs Owner Review Fixes ---');
+
+const PORTFOLIO_PAGE_3BQ = join(root, 'src', 'pages', 'portfolio.astro');
+const RESULT_DOC_3BQ = join(root, 'docs', 'planning', 'phase_3bq_portfolio_bookmark_tabs_owner_review_fixes_result_v0.1.md');
+const BM_CHECKER_3BQ = join(root, 'scripts', 'check_portfolio_bookmark_tabs_static_contract.mjs');
+const CSS_PATH_3BQ = join(root, 'src', 'styles', 'style.css');
+
+check('Phase 3BQ result doc exists', existsSync(RESULT_DOC_3BQ));
+check('Bookmark tabs static checker exists (updated for 3BQ)', existsSync(BM_CHECKER_3BQ));
+
+if (existsSync(PORTFOLIO_PAGE_3BQ)) {
+  const port3bq = readFileSync(PORTFOLIO_PAGE_3BQ, 'utf8');
+  check('Refresh button inline with h1 (portfolio-h1-row class)',
+    port3bq.includes('portfolio-h1-row'));
+  check('Aggregate tab label shortened to 전체',
+    port3bq.includes("'전체'") || port3bq.includes('"전체"'));
+  check('Floating mini toolbar (portfolio-tab-floating-actions) created',
+    port3bq.includes('portfolio-tab-floating-actions'));
+  check('Add tab rendered inline in JS (addBtn.id = portfolio-manage-toggle)',
+    port3bq.includes("addBtn.id = 'portfolio-manage-toggle'") ||
+    port3bq.includes('addBtn.id = "portfolio-manage-toggle"'));
+  check('toggle-manage-panel action handled in #portfolio-list delegation',
+    port3bq.includes("'toggle-manage-panel'") || port3bq.includes('"toggle-manage-panel"'));
+  check('Static portfolio-manage-toggle button removed from HTML',
+    !port3bq.includes('<button class="portfolio-bookmark-tab portfolio-bookmark-tab--add" id="portfolio-manage-toggle"'));
+  check('No live KIS calls added in 3BQ', !port3bq.includes('oauth2/tokenP'));
+  check('No live GNews calls added in 3BQ', !port3bq.includes('gnews.io'));
+} else {
+  ['Refresh inline with h1', 'Aggregate tab label 전체', 'Floating toolbar',
+    'Add tab inline', 'toggle-manage-panel delegation', 'Static button removed',
+    'No live KIS', 'No live GNews'].forEach((label) => {
+    check(label, false);
+  });
+}
+
+if (existsSync(CSS_PATH_3BQ)) {
+  const css3bq = readFileSync(CSS_PATH_3BQ, 'utf8');
+  check('CSS .portfolio-h1-row defined (3BQ)',
+    css3bq.includes('.portfolio-h1-row'));
+  check('CSS .portfolio-tab-floating-actions defined (3BQ)',
+    css3bq.includes('.portfolio-tab-floating-actions'));
+  check('CSS overflow-y: hidden on .portfolio-bookmark-tabs (3BQ)',
+    css3bq.includes('.portfolio-bookmark-tabs') && css3bq.includes('overflow-y: hidden'));
+} else {
+  check('CSS .portfolio-h1-row', false);
+  check('CSS .portfolio-tab-floating-actions', false);
+  check('CSS overflow-y: hidden', false);
+}
+
+check('HomePortfolioPanel not modified by 3BQ',
+  existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('No /news page created (3BQ boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

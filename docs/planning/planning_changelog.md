@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BQ - 2026-06-25
+
+### Portfolio Bookmark Tabs Owner Review Fixes (Implemented)
+
+- **Status**: implemented. Seven owner-review fixes applied to `src/pages/portfolio.astro` and `src/styles/style.css`. No API routes, Supabase schema, deployment, or `HomePortfolioPanel.astro` changes.
+- **Refresh button inline with h1**: `.portfolio-title-row` changed from `display: flex; justify-content: space-between` to a plain block. Added `.portfolio-h1-row { display: flex; align-items: center; gap: 8px }` wrapping `<h1>` and the refresh `<button>` together. Refresh icon now appears immediately right of the heading.
+- **Aggregate tab label shortened**: `aggregateTab.textContent` changed from `'전체 포트폴리오'` to `'전체'`. Detail panel title unchanged.
+- **Floating mini toolbar for edit/delete**: `.portfolio-tab-item` changed to `flex-direction: column`. New `.portfolio-tab-floating-actions` span (height: 24px, opacity: 0 by default) sits above new `.portfolio-tab-main` span. Toolbar revealed on hover/focus-within via CSS; no horizontal space reserved when hidden.
+- **Vertical scrollbar removed**: `.portfolio-bookmark-tabs { overflow-y: visible }` changed to `overflow-y: hidden`. Root cause: browsers normalize `overflow-x: auto` + `overflow-y: visible` to both `auto`.
+- **Tab list bottom alignment**: `.portfolio-tab-list { align-items: flex-end }` — aggregate and add tabs (single row) align to the bottom of user tab items (two rows with floating toolbar).
+- **Inline `+ 추가` tab**: Static `<button id="portfolio-manage-toggle">` removed from HTML. `renderPortfolios()` now creates `addBtn` as the last child of `#portfolio-list` with `id="portfolio-manage-toggle"` and `data-action="toggle-manage-panel"`. `.portfolio-bookmark-tab--add` strips `margin-left: auto` and `border-left`.
+- **Click delegation updated**: `toggle-manage-panel` case added at the top of `#portfolio-list` click delegation (before `if (!id) return`). Dead standalone `portfolio-manage-toggle` event listener removed.
+- Updated `scripts/check_portfolio_bookmark_tabs_static_contract.mjs` — Group 3 and 4 updated for new label and JS-rendered add tab; Group 14 added (18 Phase 3BQ checks); total 105 checks.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BQ artifact group appended.
+- Created `docs/planning/phase_3bq_portfolio_bookmark_tabs_owner_review_fixes_result_v0.1.md` — result doc.
+- All validators passed. Build passed.
+- No live KIS, GNews, Supabase writes, deployment, or /news page.
+
 ## Phase 3BP - 2026-06-25
 
 ### Home Portfolio Panel Owner Review Fixes (Implemented)

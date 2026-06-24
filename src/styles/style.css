@@ -890,11 +890,13 @@ a.header-button {
 }
 
 .portfolio-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
   margin-bottom: 8px;
+}
+
+.portfolio-h1-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .portfolio-refresh-btn:focus,
@@ -980,7 +982,7 @@ a.header-button {
   display: flex;
   align-items: stretch;
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -988,7 +990,7 @@ a.header-button {
 .portfolio-tab-list {
   display: flex;
   flex-wrap: nowrap;
-  align-items: stretch;
+  align-items: flex-end;
   flex: 1;
   min-width: 0;
 }
@@ -1033,8 +1035,6 @@ a.header-button {
 }
 
 .portfolio-bookmark-tab--add {
-  margin-left: auto;
-  border-left: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -1044,6 +1044,30 @@ a.header-button {
 
 .portfolio-tab-item {
   display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.portfolio-tab-floating-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+  white-space: nowrap;
+}
+
+.portfolio-tab-item:hover .portfolio-tab-floating-actions,
+.portfolio-tab-item:focus-within .portfolio-tab-floating-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.portfolio-tab-main {
+  display: flex;
   align-items: center;
 }
 
@@ -1095,20 +1119,13 @@ a.header-button {
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.12s;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .portfolio-tab-inline-action:focus-visible {
-  opacity: 1;
   outline: 2px solid var(--primary);
   outline-offset: 1px;
-}
-
-.portfolio-tab-item:hover .portfolio-tab-inline-action,
-.portfolio-tab-item:focus-within .portfolio-tab-inline-action {
-  opacity: 1;
 }
 
 .portfolio-tab-inline-action:hover {
@@ -1129,8 +1146,9 @@ a.header-button {
   .portfolio-tab-reorder-btn:disabled {
     opacity: 0.3;
   }
-  .portfolio-tab-inline-action {
+  .portfolio-tab-floating-actions {
     opacity: 1;
+    pointer-events: auto;
   }
 }
 
