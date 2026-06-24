@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BF - 2026-06-24
+
+### GNews Live Smoke Diagnostics Result Recorded (Documentation-only)
+
+- **Status**: recorded. Documentation-only phase — no runtime code, checkers, scripts, routes, or configuration were changed.
+- Owner-run live smoke with `--diagnostics=sanitized` was performed outside Claude Code. Claude Code made no live GNews calls.
+- **Themes tested** (simple profile, sanitized diagnostics): `fx`, `market_stocks`, `crypto_digital_assets`, `oil_commodities`.
+- All four themes returned HTTP 2xx, JSON parse OK, `articlesPresent=true`, `articlesIsArray=true`, `articlesLength=0`, `provider_empty_result`.
+- Three themes (`market_stocks`, `crypto_digital_assets`, `oil_commodities`) included `articlesRemovedFromResponse` as a top-level key — a structural signal of active provider-side article removal behavior, not a route or adapter failure.
+- **Live GNews retrieval is not marked as passed.** All tested themes across both `policy` and `simple` query profiles returned `provider_empty_result`.
+- **Decision**: Do not block the project on live GNews success. Proceed with fixture/fallback-first architecture. Keep live GNews disabled by default. Treat provider compatibility as a later isolated phase.
+- **Route boundary unchanged**: `src/pages/api/news/market-feed.ts` untouched. `source: "fixture"`, `liveEnabled: false`. `gnewsLiveFetchAdapter.mjs` not modified.
+- No route, Home UI, DB, Supabase, checker, package script, or deployment changes.
+- Previously exposed GNews API key remains treated as compromised. Key value not recorded. Owner must rotate outside Claude Code.
+- **Recommended next phase**: Phase 3BG — News Route Source Selector with Kill Switch and Fixture Fallback.
+- Created `docs/planning/phase_3bf_gnews_live_smoke_diagnostics_result_v0.1.md` — 10-section result record.
+
 ## Phase 3BE-R5 - 2026-06-24
 
 ### GNews Live Smoke Sanitized Provider Diagnostics Patch (Implemented)
