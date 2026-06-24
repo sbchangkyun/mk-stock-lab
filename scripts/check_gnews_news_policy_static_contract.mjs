@@ -462,6 +462,40 @@ check('Route still fixture-backed after 3BE-R3 (liveEnabled: false)',
   readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
 log('');
 
+// --- Phase 3BE-R5 artifact checks ---
+log('Phase 3BE-R5 artifacts:');
+const RESULT_DOC_3BE_R5_PATH = join(root, 'docs', 'planning', 'phase_3be_r5_sanitized_provider_diagnostics_patch_result_v0.1.md');
+const PROVIDER_DIAG_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_smoke_provider_diagnostics.mjs');
+
+check('Phase 3BE-R5 result doc exists', existsSync(RESULT_DOC_3BE_R5_PATH));
+check('Phase 3BE-R5 provider diagnostics checker exists', existsSync(PROVIDER_DIAG_CHECKER_PATH));
+
+let pkg3ber5 = {};
+try { pkg3ber5 = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-live-smoke-provider-diagnostics',
+  typeof pkg3ber5.scripts?.['check:gnews-live-smoke-provider-diagnostics'] === 'string',
+);
+
+if (existsSync(OWNER_SMOKE_PATH)) {
+  const smokeContent3ber5 = readFileSync(OWNER_SMOKE_PATH, 'utf8');
+  check('Smoke script supports --diagnostics option', smokeContent3ber5.includes('--diagnostics='));
+  check('Smoke script includes invalid_diagnostics_mode reason code', smokeContent3ber5.includes('invalid_diagnostics_mode'));
+  check('Smoke script includes provider-diagnostics output step', smokeContent3ber5.includes('provider-diagnostics'));
+  check('Smoke script exports diagnostics helpers',
+    smokeContent3ber5.includes('parseDiagnosticsArg') &&
+    smokeContent3ber5.includes('validateDiagnosticsMode') &&
+    smokeContent3ber5.includes('createSanitizedDiagnosticsFetch'));
+  check('Smoke script does not log request URL in diagnostics', (() => {
+    const calls = smokeContent3ber5.match(/logStep\s*\([^)]*guard\.baseUrl[^)]*\)/g);
+    return !calls || calls.length === 0;
+  })());
+}
+check('Route still fixture-backed after 3BE-R5 (liveEnabled: false)',
+  existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
+  readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

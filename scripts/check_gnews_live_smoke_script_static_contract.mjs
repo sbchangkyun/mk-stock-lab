@@ -328,6 +328,49 @@ if (!smokeExists) {
   check('Smoke script applies query profile to effective definitions before fetch',
     smoke.includes('applySmokeQueryProfile') && smoke.includes('effectiveDefinitions'));
   log('');
+
+  // ---------------------------------------------------------------------------
+  // Group 16: Phase 3BE-R5 — sanitized provider diagnostics
+  // ---------------------------------------------------------------------------
+  log('--- Group 16: Phase 3BE-R5 sanitized provider diagnostics ---');
+  check('Smoke script supports --diagnostics flag', smoke.includes('--diagnostics='));
+  check('Smoke script defines allowed diagnostics modes off and sanitized',
+    smoke.includes("'off'") && smoke.includes("'sanitized'"));
+  check('Smoke script has invalid_diagnostics_mode reason code', smoke.includes('invalid_diagnostics_mode'));
+  check('Smoke script exports parseDiagnosticsArg helper',
+    smoke.includes('export function parseDiagnosticsArg') || smoke.includes('export const parseDiagnosticsArg'));
+  check('Smoke script exports validateDiagnosticsMode helper',
+    smoke.includes('export function validateDiagnosticsMode') || smoke.includes('export const validateDiagnosticsMode'));
+  check('Smoke script exports summarizeProviderPayloadShape helper',
+    smoke.includes('export function summarizeProviderPayloadShape') || smoke.includes('export const summarizeProviderPayloadShape'));
+  check('Smoke script exports summarizeProviderTextShape helper',
+    smoke.includes('export function summarizeProviderTextShape') || smoke.includes('export const summarizeProviderTextShape'));
+  check('Smoke script exports createSanitizedDiagnosticsFetch helper',
+    smoke.includes('export function createSanitizedDiagnosticsFetch') || smoke.includes('export const createSanitizedDiagnosticsFetch'));
+  check('Smoke script uses response.clone for safe body inspection in diagnostics wrapper',
+    smoke.includes('response.clone') || smoke.includes('.clone()'));
+  check('Smoke script outputs provider-diagnostics step', smoke.includes('provider-diagnostics'));
+  check('Smoke script validates diagnostics mode before env reads (validateDiagnosticsMode before checkLiveGuards)',
+    (() => {
+      const diagCheckIdx = smoke.indexOf('validateDiagnosticsMode');
+      const guardCallIdx = smoke.indexOf('checkLiveGuards()');
+      return diagCheckIdx > -1 && guardCallIdx > -1 && diagCheckIdx < guardCallIdx;
+    })());
+  check('Smoke script wraps fetch with createSanitizedDiagnosticsFetch when diagnostics=sanitized',
+    smoke.includes('createSanitizedDiagnosticsFetch') && smoke.includes('activeFetchFn'));
+  check('Smoke script does not log raw JSON in any logStep call (no JSON.stringify in logStep args)',
+    (() => {
+      const calls = smoke.match(/logStep\s*\([^)]*JSON\.stringify[^)]*\)/g);
+      return !calls || calls.length === 0;
+    })());
+  check('Smoke script does not log guard.apiKey in any logStep call',
+    (() => {
+      const calls = smoke.match(/logStep\s*\([^)]*guard\.apiKey[^)]*\)/g);
+      return !calls || calls.length === 0;
+    })());
+  check('Smoke script diagnostics wrapper returns original response (not clone)',
+    smoke.includes('return response') && smoke.includes('clone'));
+  log('');
 }
 
 // ---------------------------------------------------------------------------

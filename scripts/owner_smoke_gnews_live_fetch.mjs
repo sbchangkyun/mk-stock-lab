@@ -12,6 +12,11 @@
  *   simple profile applies smoke-only short query terms instead of policy query strings.
  *   Definitions are cloned; imported GNEWS_QUERY_DEFINITIONS are never mutated.
  *
+ * Phase 3BE-R5 additions:
+ *   --diagnostics=<mode> enables sanitized provider response shape diagnostics: off (default) or sanitized.
+ *   sanitized mode wraps the fetch call, reads a response clone, and emits structural metadata only.
+ *   No request URL, API key, article content, raw JSON, or stack trace is ever printed.
+ *
  * IMPORTANT: Do not run with --execute-live without explicit owner approval and env configuration.
  * Claude Code must not execute the live branch. The smoke:gnews-live:dry package script is safe.
  *
@@ -19,6 +24,7 @@
  *   Dry-run (safe, always):  node scripts/owner_smoke_gnews_live_fetch.mjs --dry-run
  *   Live with theme:         node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --theme=fx
  *   Live with simple:        node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --theme=fx --query-profile=simple
+ *   Live with diagnostics:   node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --theme=fx --query-profile=simple --diagnostics=sanitized
  *   Live multi-theme:        node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --max-themes=2
  */
 
@@ -182,6 +188,146 @@ export function validateEndpointOnlyBaseUrl(value) {
   return { ok: true };
 }
 
+/** Allowlist of valid --diagnostics mode values. */
+export const SMOKE_ALLOWED_DIAGNOSTICS_MODES = new Set(['off', 'sanitized']);
+
+/**
+ * Extracts --diagnostics=<value> from the arg list.
+ * Returns the value if present and non-empty, otherwise 'off' (the default).
+ */
+export function parseDiagnosticsArg(argList) {
+  const arg = argList.find((a) => a.startsWith('--diagnostics='));
+  if (!arg) return 'off';
+  const val = arg.replace('--diagnostics=', '');
+  return val.length > 0 ? val : 'off';
+}
+
+/**
+ * Validates a diagnostics mode against the allowlist.
+ * Returns { ok: true } or { ok: false, code: 'invalid_diagnostics_mode' }.
+ */
+export function validateDiagnosticsMode(mode) {
+  if (!mode || !SMOKE_ALLOWED_DIAGNOSTICS_MODES.has(mode)) {
+    return { ok: false, code: 'invalid_diagnostics_mode' };
+  }
+  return { ok: true };
+}
+
+// Top-level key names to suppress from diagnostics output (article-level field names).
+const FORBIDDEN_DIAGNOSTIC_KEY_NAMES = new Set([
+  'title', 'url', 'description', 'content', 'source', 'image', 'imageurl', 'image_url',
+  'link', 'body', 'text', 'html',
+]);
+
+/**
+ * Summarizes the structural shape of a parsed JSON provider payload.
+ * Returns structural metadata only — never includes field values, nested content, or article data.
+ * Suppresses forbidden top-level key names (article-level fields) and counts them separately.
+ */
+export function summarizeProviderPayloadShape(payload) {
+  if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) {
+    return {
+      ok: false,
+      topLevelKeyCount: 0,
+      topLevelKeys: '',
+      articlesPresent: false,
+      articlesIsArray: false,
+      articlesLength: 'unknown',
+      totalArticlesPresent: false,
+      totalArticlesType: 'absent',
+      errorFieldPresent: false,
+      messageFieldPresent: false,
+    };
+  }
+
+  const rawKeys = Object.keys(payload);
+  const allowedKeys = [];
+  let forbiddenTopLevelKeyCount = 0;
+
+  for (const key of rawKeys.slice(0, 12)) {
+    const lower = key.toLowerCase();
+    const clean = key.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (FORBIDDEN_DIAGNOSTIC_KEY_NAMES.has(lower)) {
+      forbiddenTopLevelKeyCount++;
+    } else if (clean.length > 0) {
+      allowedKeys.push(clean);
+    }
+  }
+
+  const articlesPresent = 'articles' in payload;
+  const articles = payload.articles;
+  const articlesIsArray = Array.isArray(articles);
+  const articlesLength = articlesIsArray ? articles.length : 'unknown';
+
+  const totalArticlesPresent = 'totalArticles' in payload;
+  const totalArticlesRaw = payload.totalArticles;
+  let totalArticlesType = 'absent';
+  if (totalArticlesPresent) {
+    if (typeof totalArticlesRaw === 'number') totalArticlesType = 'number';
+    else if (typeof totalArticlesRaw === 'string') totalArticlesType = 'string';
+    else totalArticlesType = 'unknown';
+  }
+
+  const errorFieldPresent = 'errors' in payload || 'error' in payload;
+  const messageFieldPresent = 'message' in payload;
+
+  const result = {
+    ok: true,
+    topLevelKeyCount: rawKeys.length,
+    topLevelKeys: allowedKeys.join(','),
+    articlesPresent,
+    articlesIsArray,
+    articlesLength,
+    totalArticlesPresent,
+    totalArticlesType,
+    errorFieldPresent,
+    messageFieldPresent,
+  };
+  if (forbiddenTopLevelKeyCount > 0) {
+    result.forbiddenTopLevelKeyCount = forbiddenTopLevelKeyCount;
+  }
+  return result;
+}
+
+/**
+ * Summarizes the structural shape of a raw provider response text body.
+ * Attempts JSON parse and delegates to summarizeProviderPayloadShape.
+ * Never returns the raw text body or any field values.
+ */
+export function summarizeProviderTextShape(text, contentType) {
+  const contentTypeStr = typeof contentType === 'string' ? contentType : '';
+  const contentTypeJson =
+    contentTypeStr.includes('application/json') ||
+    (typeof text === 'string' && text.trimStart().startsWith('{'));
+
+  let jsonParseOk = false;
+  let shape = {
+    topLevelKeyCount: 0,
+    topLevelKeys: '',
+    articlesPresent: false,
+    articlesIsArray: false,
+    articlesLength: 'unknown',
+    totalArticlesPresent: false,
+    totalArticlesType: 'absent',
+    errorFieldPresent: false,
+    messageFieldPresent: false,
+  };
+
+  try {
+    const parsed = JSON.parse(text);
+    jsonParseOk = true;
+    const s = summarizeProviderPayloadShape(parsed);
+    if (s.ok !== false) {
+      const { ok: _ok, ...rest } = s;
+      shape = rest;
+    }
+  } catch {
+    jsonParseOk = false;
+  }
+
+  return { bodyReadable: true, contentTypeJson, jsonParseOk, ...shape };
+}
+
 // ---------------------------------------------------------------------------
 // Sanitized output helpers
 // ---------------------------------------------------------------------------
@@ -208,6 +354,73 @@ const makeLogStep = (out) => (step, status, extra = {}) => {
   parts.push('sanitized=true');
   safeLog(parts.join(' '), out);
 };
+
+/**
+ * Wraps an injected fetchFn to capture sanitized structural diagnostics from the response.
+ * Reads a response clone for shape inspection — never consumes the original response body.
+ * Emits only structural metadata: never logs request args, URLs, API keys, or article content.
+ * Returns the original response so the adapter can consume it normally.
+ */
+export function createSanitizedDiagnosticsFetch(fetchFn, out = defaultOut) {
+  const logStep = makeLogStep(out);
+
+  return async function sanitizedDiagnosticsFetch(...fetchArgs) {
+    const response = await fetchFn(...fetchArgs);
+
+    // Inspect response metadata — never reference fetchArgs (may contain URL, auth headers)
+    let httpStatus;
+    try { httpStatus = response?.status; } catch { /* ignore */ }
+    const httpStatusClass =
+      typeof httpStatus === 'number' ? `${Math.floor(httpStatus / 100)}xx` : 'unknown';
+    const httpOk =
+      typeof response?.ok === 'boolean' ? String(response.ok) : 'unknown';
+
+    let contentTypeRaw = '';
+    try { contentTypeRaw = response?.headers?.get?.('content-type') ?? ''; } catch { /* ignore */ }
+    const contentTypeJson = contentTypeRaw.includes('application/json');
+
+    const diagBase = {
+      diagnostics: 'sanitized',
+      httpStatusClass,
+      httpOk,
+      contentTypeJson: String(contentTypeJson),
+    };
+
+    let diagExtra = {};
+    try {
+      if (typeof response?.clone === 'function') {
+        const clone = response.clone();
+        const text = await clone.text();
+        const shape = summarizeProviderTextShape(text, contentTypeRaw);
+        diagExtra = {
+          bodyReadable: String(shape.bodyReadable ?? true),
+          jsonParseOk: String(shape.jsonParseOk ?? false),
+          topLevelKeyCount: String(shape.topLevelKeyCount ?? 0),
+          topLevelKeys: String(shape.topLevelKeys ?? ''),
+          articlesPresent: String(shape.articlesPresent ?? false),
+          articlesIsArray: String(shape.articlesIsArray ?? false),
+          articlesLength: String(shape.articlesLength ?? 'unknown'),
+          totalArticlesPresent: String(shape.totalArticlesPresent ?? false),
+          totalArticlesType: String(shape.totalArticlesType ?? 'absent'),
+          errorFieldPresent: String(shape.errorFieldPresent ?? false),
+          messageFieldPresent: String(shape.messageFieldPresent ?? false),
+        };
+        if (shape.forbiddenTopLevelKeyCount != null) {
+          diagExtra.forbiddenTopLevelKeyCount = String(shape.forbiddenTopLevelKeyCount);
+        }
+      } else {
+        diagExtra = { bodyReadable: 'false', diagnosticsErrorCode: 'clone_unavailable' };
+      }
+    } catch {
+      diagExtra = { bodyReadable: 'false', diagnosticsErrorCode: 'body_read_failed' };
+    }
+
+    logStep('provider-diagnostics', 'reported', { ...diagBase, ...diagExtra });
+
+    // Return original response — never the clone — so adapter can consume the body normally
+    return response;
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Dry-run: no network, no env reads, no API key access.
@@ -307,7 +520,16 @@ const main = async () => {
     return;
   }
 
-  // Step 2: Env guard — reads env vars only after theme and query profile are confirmed valid
+  // Step 1c: Diagnostics mode validation — pure, no env reads, fails before key access if invalid
+  const rawDiagnosticsMode = parseDiagnosticsArg(args);
+  const diagnosticsCheck = validateDiagnosticsMode(rawDiagnosticsMode);
+  if (!diagnosticsCheck.ok) {
+    logStep('guard-check', 'failed', { code: diagnosticsCheck.code });
+    process.exitCode = 1;
+    return;
+  }
+
+  // Step 2: Env guard — reads env vars only after theme, query profile, and diagnostics are confirmed valid
   const guard = checkLiveGuards();
   if (!guard.ok) {
     logStep('guard-check', 'failed', { code: guard.code });
@@ -337,17 +559,25 @@ const main = async () => {
   // Log query profile — profile name only, never the actual query strings
   logStep('query-profile', 'confirmed', { queryProfile: rawQueryProfile });
 
+  // Log diagnostics mode — mode name only, never request or response content
+  logStep('diagnostics-mode', 'confirmed', { diagnostics: rawDiagnosticsMode });
+
+  // Set up fetch function: wrap with sanitized diagnostics capture if mode is sanitized
+  const activeFetchFn = rawDiagnosticsMode === 'sanitized'
+    ? createSanitizedDiagnosticsFetch(globalThis.fetch, defaultOut)
+    : globalThis.fetch;
+
   logStep('live-fetch', 'started', { maxThemes: String(effectiveMaxThemes) });
 
   try {
     const nowIso = new Date().toISOString();
 
-    // Live fetch: uses globalThis.fetch, injected via fetchFn parameter.
+    // Live fetch: uses activeFetchFn (wrapped or plain globalThis.fetch).
     // baseUrl and apiKey are passed as arguments — never logged.
     const batchResult = await fetchGnewsMarketNewsBatch(
       effectiveDefinitions,
       {
-        fetchFn: globalThis.fetch,
+        fetchFn: activeFetchFn,
         baseUrl: guard.baseUrl,
         apiKey: guard.apiKey,
         maxThemes: effectiveMaxThemes,

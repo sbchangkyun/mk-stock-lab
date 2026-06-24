@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BE-R5 - 2026-06-24
+
+### GNews Live Smoke Sanitized Provider Diagnostics Patch (Implemented)
+
+- Patched `scripts/owner_smoke_gnews_live_fetch.mjs` — added `--diagnostics=<mode>` option with allowlist validation (2 valid modes: `off`, `sanitized`). Default is `off`. When `sanitized`, fetch is wrapped with `createSanitizedDiagnosticsFetch` which reads a `response.clone().text()` copy, extracts structural metadata only (HTTP status class, JSON parse success, top-level key count, sanitized key names, articles array presence/length, totalArticles type, error/message flags), and emits a `provider-diagnostics` log line. The original response is returned unchanged so the adapter can still read the body. Diagnostics mode validated before env reads. Added `invalid_diagnostics_mode` sanitized reason code. New exports: `SMOKE_ALLOWED_DIAGNOSTICS_MODES`, `parseDiagnosticsArg`, `validateDiagnosticsMode`, `summarizeProviderPayloadShape`, `summarizeProviderTextShape`, `createSanitizedDiagnosticsFetch`.
+- Created `scripts/check_gnews_live_smoke_provider_diagnostics.mjs` — behavioral provider-diagnostics checker. Tests all 5 new pure helpers and the diagnostics wrapper with synthetic fetch functions. No network, no env reads. **77/77 PASS.**
+- Updated `scripts/check_gnews_live_smoke_script_static_contract.mjs` — added Group 16 with 15 Phase 3BE-R5 checks: `--diagnostics` support, `off`/`sanitized` modes, `invalid_diagnostics_mode`, all 5 new exports, `response.clone` usage, `provider-diagnostics` step, validation before env reads, `createSanitizedDiagnosticsFetch` wrapping, no raw JSON in logStep, no apiKey in logStep, original response returned. **All checks passed (Group 16 added). Exit 0.**
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added Phase 3BE-R5 artifact group (8 checks): result doc exists, provider diagnostics checker exists, `check:gnews-live-smoke-provider-diagnostics` in `package.json`, smoke supports `--diagnostics`, `invalid_diagnostics_mode` present, `provider-diagnostics` output step, diagnostics exports, route still fixture-backed. **All checks passed. Exit 0.**
+- Created `docs/planning/phase_3be_r5_sanitized_provider_diagnostics_patch_result_v0.1.md` — 14-section result doc.
+- Added `check:gnews-live-smoke-provider-diagnostics` to `package.json`.
+- **Forbidden diagnostics output**: request URL, API key values, article content (title/url/description/content), raw JSON body, error message values, stack traces, query strings. Key names (`title`, `url`, `description`, `content`, `source`, `image`, `imageurl`, `image_url`, `link`, `body`, `text`, `html`) suppressed from `topLevelKeys` and counted in `forbiddenTopLevelKeyCount`.
+- **Security note**: A previously exposed GNews API key remains treated as compromised — not recorded anywhere. Owner must rotate before any live retry. No request URL is ever logged by the diagnostics wrapper.
+- **No live GNews call was made**: dry-run and behavioral (no-network) validation only. `runDryRun` unchanged.
+- **Route remains unchanged**: `src/pages/api/news/market-feed.ts` untouched. `source: "fixture"`, `liveEnabled: false`. `gnewsLiveFetchAdapter.mjs` not modified.
+- **No live calls, no DB/Supabase/Home/deployment changes, no migration files.**
+- **Validation**: `check:gnews-news-policy` all passed; `check:gnews-live-smoke-script` all passed (Group 16 added); `check:gnews-live-smoke-dry-run` 29/29; `check:gnews-live-smoke-theme-selection` 79/79; `check:gnews-live-smoke-query-profile` 66/66; `check:gnews-live-smoke-provider-diagnostics` 77/77; `smoke:gnews-live:dry` PASS.
+- **Recommended next phase**: 3BE-R6 — Owner rotates API key, sets endpoint-only `GNEWS_BASE_URL`, and re-runs live smoke with `--execute-live --confirm-owner-approved --theme=fx --query-profile=simple --diagnostics=sanitized`. Returns only the sanitized gnews3bd output lines including the `provider-diagnostics` step.
+
 ## Phase 3BE-R3 - 2026-06-24
 
 ### GNews Live Smoke Query Simplification Patch (Implemented)
