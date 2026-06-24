@@ -297,6 +297,37 @@ if (existsSync(API_ROUTE_FILE_PATH)) {
 }
 log('');
 
+// --- Phase 3BB artifact checks ---
+log('Phase 3BB artifacts:');
+const DESIGN_DOC_3BB_PATH = join(root, 'docs', 'planning', 'phase_3bb_gnews_live_fetch_adapter_design_v0.1.md');
+const LIVE_ADAPTER_DESIGN_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_fetch_adapter_design_static_contract.mjs');
+const LIVE_ADAPTER_MJS_PATH = join(root, 'src', 'lib', 'news', 'gnewsLiveFetchAdapter.mjs');
+const LIVE_ADAPTER_TS_PATH = join(root, 'src', 'lib', 'news', 'gnewsLiveFetchAdapter.ts');
+
+check('Phase 3BB design doc exists', existsSync(DESIGN_DOC_3BB_PATH));
+check('Live adapter design checker exists', existsSync(LIVE_ADAPTER_DESIGN_CHECKER_PATH));
+
+let pkg3bb = {};
+try { pkg3bb = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-live-adapter-design',
+  typeof pkg3bb.scripts?.['check:gnews-live-adapter-design'] === 'string',
+);
+
+check('No live adapter .mjs implementation file created', !existsSync(LIVE_ADAPTER_MJS_PATH));
+check('No live adapter .ts implementation file created', !existsSync(LIVE_ADAPTER_TS_PATH));
+
+if (existsSync(API_ROUTE_FILE_PATH)) {
+  const routeContent3bb = readFileSync(API_ROUTE_FILE_PATH, 'utf8');
+  check(
+    'Existing route remains fixture-backed (liveEnabled: false in route or helper)',
+    routeContent3bb.includes('liveEnabled: false') ||
+    (existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
+     readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false')),
+  );
+}
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

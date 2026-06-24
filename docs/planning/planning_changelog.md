@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BB - 2026-06-24
+
+### GNews Live Fetch Adapter Design + Kill-switch Contract (Designed)
+
+- Created `docs/planning/phase_3bb_gnews_live_fetch_adapter_design_v0.1.md` — 17-section design document defining the future live fetch adapter architecture and safety contract.
+- Created `scripts/check_gnews_live_fetch_adapter_design_static_contract.mjs` — static design checker. **62/62 PASS**.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added 6 Phase 3BB artifact checks. **58/58 PASS** (policy + 3AZ + 3BA + 3BB).
+- Added `check:gnews-live-adapter-design` script to `package.json`.
+- **Design only**: No live adapter (`gnewsLiveFetchAdapter.mjs`) was created. No API route behavior was changed. No env vars were read. No DB/Supabase/Home/deployment changes.
+- **Future adapter design**: `src/lib/news/gnewsLiveFetchAdapter.mjs` (path only, not created). Functions: `buildGnewsSearchUrl`, `fetchGnewsTheme`, `fetchGnewsMarketNewsBatch`, `normalizeGnewsArticle`, `normalizeGnewsBatch`, `sanitizeGnewsAdapterError`, `summarizeGnewsLiveFetchResult`.
+- **Environment variable policy**: `GNEWS_API_KEY` is the server-only preferred variable. `PUBLIC_GNEWS_API_KEY` is a server-side compatibility fallback only; **browser/client code must never use `import.meta.env.PUBLIC_GNEWS_API_KEY`**. Future implementation must migrate to `GNEWS_API_KEY` exclusively.
+- **Kill-switch**: `GNEWS_LIVE_ENABLED` — default disabled. Only `"true"` enables live mode. Production live mode blocked until a future explicit production-readiness phase (`VERCEL_ENV=production` guard).
+- **Query themes**: 6 (MARKET_STOCKS, MACRO_POLICY, FX, OIL_COMMODITIES, CRYPTO_DIGITAL_ASSETS, PERSONAL_FINANCE). Korean terms: 코인, 환율, 유가, 금리, 비트코인, ETF. 2-hour refresh. 72 requests/day. 28 requests/day headroom.
+- **Failure/fallback**: missing key → fixture fallback; 429 → stale/fixture; 5xx → fixture; timeout → fixture; empty result → partial; partial failure → `staleState: "partial"`. Raw provider errors never exposed.
+- **Owner-run smoke plan**: `scripts/owner_smoke_gnews_live_fetch.mjs` / `smoke:gnews-live:dry`. Max **2 requests per run**. Sanitized counts and category labels only; article URLs, titles, descriptions, API key values, raw JSON must not be printed.
+- **Validation**: `check:gnews-news-policy` 58/58; `check:gnews-news-engine` 57/57; `check:gnews-news-api-route` 35/35; `check:gnews-news-api-response` 61/61; `check:gnews-live-adapter-design` 62/62; `npm run build` success.
+
 ## Phase 3BA - 2026-06-24
 
 ### Fixture-backed News API Route Skeleton (Implemented)
