@@ -2794,10 +2794,12 @@ body.modal-open {
 }
 
 .hpp-cta {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-top: 20px;
-  text-align: center;
   text-decoration: none;
+  min-height: 42px;
 }
 
 .hpp-cta:focus,
@@ -2866,6 +2868,121 @@ body.modal-open {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 2px 8px;
+}
+
+/* State 0: resolving skeleton */
+
+.hpp-resolving-skeleton {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.hpp-skeleton-line {
+  height: 12px;
+  background: var(--surface-muted);
+  border-radius: 6px;
+  width: 85%;
+  animation: hpp-shimmer 1.5s ease-in-out infinite;
+}
+
+.hpp-skeleton-line--wide {
+  width: 100%;
+}
+
+.hpp-skeleton-line--narrow {
+  width: 60%;
+}
+
+@keyframes hpp-shimmer {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.35; }
+}
+
+/* State C: donut chart */
+
+.hpp-donut-section {
+  margin: 12px 0 8px;
+}
+
+.hpp-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hpp-donut {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--border);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.3s ease;
+}
+
+.hpp-donut-hole {
+  position: absolute;
+  inset: 19px;
+  background: var(--surface);
+  border-radius: 50%;
+}
+
+.hpp-donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+}
+
+.hpp-donut-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text);
+  min-width: 0;
+}
+
+.hpp-donut-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hpp-donut-legend-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hpp-donut-legend-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.hpp-donut-basis {
+  margin: 6px 0 0;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.hpp-donut-placeholder {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.hpp-stat-row--count {
+  flex-direction: row;
+  align-items: baseline;
 }
 
 /* --- My Page Shell --- */

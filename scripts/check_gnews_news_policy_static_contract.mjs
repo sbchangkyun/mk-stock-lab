@@ -712,6 +712,63 @@ check('HomePortfolioPanel still present (3BN boundary)', existsSync(join(root, '
 check('HomeMarketNews still present (3BN boundary)', existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
 log('');
 
+// ---------------------------------------------------------------------------
+// Phase 3BP artifact group — Home Portfolio Panel Owner Review Fixes
+// ---------------------------------------------------------------------------
+log('--- Phase 3BP: Home Portfolio Panel Owner Review Fixes ---');
+
+const HPP_COMPONENT_3BP = join(root, 'src', 'components', 'HomePortfolioPanel.astro');
+const RESULT_DOC_3BP = join(root, 'docs', 'planning', 'phase_3bp_home_portfolio_panel_owner_review_fixes_result_v0.1.md');
+const HPP_CHECKER_3BP = join(root, 'scripts', 'check_home_portfolio_panel_static_contract.mjs');
+const CSS_PATH_3BP = join(root, 'src', 'styles', 'style.css');
+
+check('Phase 3BP result doc exists', existsSync(RESULT_DOC_3BP));
+check('HPP static checker exists (updated for 3BP)', existsSync(HPP_CHECKER_3BP));
+
+if (existsSync(HPP_COMPONENT_3BP)) {
+  const hpp3bp = readFileSync(HPP_COMPONENT_3BP, 'utf8');
+  check('Resolving state added (hpp-resolving) as anti-flicker default',
+    hpp3bp.includes('id="hpp-resolving"') || hpp3bp.includes("id='hpp-resolving'"));
+  check('data-hpp-default on resolving state (not signed_out)',
+    hpp3bp.includes('hpp-resolving') && hpp3bp.includes('data-hpp-default'));
+  check('Donut chart element added to State C',
+    hpp3bp.includes('hpp-donut'));
+  check('PortfolioPosition type imported for cost-basis chart',
+    hpp3bp.includes('PortfolioPosition'));
+  check('portfolioApi.listPositions used for donut data',
+    hpp3bp.includes('listPositions'));
+  check('No live KIS calls added in HPP (3BP)',
+    !hpp3bp.includes('oauth2/tokenP') && !hpp3bp.includes('koreainvestment'));
+  check('No live GNews calls added in HPP (3BP)',
+    !hpp3bp.includes('gnews.io') && !hpp3bp.includes('GNEWS_API_KEY'));
+  check('No claim of 평가금액 (live valuation) in 3BP',
+    !hpp3bp.includes('평가금액'));
+} else {
+  ['Resolving state', 'data-hpp-default on resolving', 'Donut chart element',
+    'PortfolioPosition import', 'listPositions used', 'No live KIS', 'No live GNews', 'No 평가금액'].forEach((label) => {
+    check(label, false);
+  });
+}
+
+if (existsSync(CSS_PATH_3BP)) {
+  const css3bp = readFileSync(CSS_PATH_3BP, 'utf8');
+  check('CSS .hpp-cta uses flex (CTA vertical centering fix)',
+    css3bp.includes('.hpp-cta') && (css3bp.includes('display: flex') || css3bp.includes('display:flex')));
+  check('CSS donut chart styles added (.hpp-donut)',
+    css3bp.includes('.hpp-donut'));
+  check('CSS skeleton styles added (.hpp-resolving-skeleton)',
+    css3bp.includes('.hpp-resolving-skeleton'));
+} else {
+  check('CSS .hpp-cta flex fix', false);
+  check('CSS donut styles', false);
+  check('CSS skeleton styles', false);
+}
+
+check('Portfolio page (3BN) not modified by 3BP',
+  existsSync(join(root, 'src', 'pages', 'portfolio.astro')));
+check('No /news page created (3BP boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

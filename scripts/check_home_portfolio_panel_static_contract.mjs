@@ -16,6 +16,7 @@ const CSS_PATH = join(root, 'src', 'styles', 'style.css');
 const HOME_MARKET_NEWS_PATH = join(root, 'src', 'components', 'HomeMarketNews.astro');
 const NEWS_PAGE_PATH = join(root, 'src', 'pages', 'news');
 const RESULT_DOC_PATH = join(root, 'docs', 'planning', 'phase_3bl_home_portfolio_status_panel_result_v0.1.md');
+const RESULT_DOC_3BP_PATH = join(root, 'docs', 'planning', 'phase_3bp_home_portfolio_panel_owner_review_fixes_result_v0.1.md');
 const PACKAGE_JSON_PATH = join(root, 'package.json');
 
 const log = (msg) => process.stdout.write(msg + '\n');
@@ -29,7 +30,7 @@ const check = (label, pass) => {
   else failures++;
 };
 
-log('=== Home Portfolio Panel Static Contract Check (Phase 3BL) ===');
+log('=== Home Portfolio Panel Static Contract Check (Phase 3BL / 3BP) ===');
 log('');
 
 // ---------------------------------------------------------------------------
@@ -72,14 +73,23 @@ log('--- Group 3: Component state structure ---');
 
 const panelContent = existsSync(PANEL_COMPONENT_PATH) ? readFileSync(PANEL_COMPONENT_PATH, 'utf8') : '';
 
+check('Component contains resolving state element (Phase 3BP)',
+  panelContent.includes('id="hpp-resolving"') || panelContent.includes("id='hpp-resolving'"));
 check('Component contains signed_out state element', panelContent.includes('id="hpp-signed-out"') || panelContent.includes("id='hpp-signed-out'"));
 check('Component contains signed_in_empty state element', panelContent.includes('id="hpp-signed-in-empty"') || panelContent.includes("id='hpp-signed-in-empty'"));
 check('Component contains signed_in_with_portfolio state element',
   panelContent.includes('id="hpp-signed-in-portfolio"') || panelContent.includes("id='hpp-signed-in-portfolio'"));
-check('Component marks signed_out state as SSR default (data-hpp-default)',
+check('Component marks resolving as SSR default (data-hpp-default on hpp-resolving)',
   panelContent.includes('data-hpp-default'));
+check('signed_out is NOT the SSR-visible default (anti-flicker)',
+  !panelContent.includes('id="hpp-signed-out" data-hpp-default') &&
+  !panelContent.includes("id='hpp-signed-out' data-hpp-default") &&
+  !(panelContent.includes('id="hpp-signed-out"') && panelContent.includes('data-hpp-default="true"') &&
+    panelContent.indexOf('id="hpp-resolving"') > panelContent.indexOf('data-hpp-default="true"')));
 check('signed_in_empty and signed_in_with_portfolio are hidden by default',
   panelContent.includes('id="hpp-signed-in-empty"') && panelContent.includes('class="hpp-state hidden"'));
+check('HPP_STATE_IDS includes hpp-resolving',
+  panelContent.includes("'hpp-resolving'") || panelContent.includes('"hpp-resolving"'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -207,10 +217,20 @@ check('CSS includes .hpp-state', cssContent.includes('.hpp-state'));
 check('CSS includes .hpp-steps', cssContent.includes('.hpp-steps'));
 check('CSS includes .hpp-step-next (emphasized step)', cssContent.includes('.hpp-step-next'));
 check('CSS includes .hpp-cta', cssContent.includes('.hpp-cta'));
+check('CSS .hpp-cta uses flex display for vertical centering (Phase 3BP)',
+  cssContent.includes('.hpp-cta') &&
+  (cssContent.includes('display: flex') || cssContent.includes('display:flex')) &&
+  cssContent.includes('align-items: center') &&
+  cssContent.includes('justify-content: center'));
+check('CSS .hpp-cta does not use block display without centering',
+  !(cssContent.match(/\.hpp-cta\s*\{[^}]*display:\s*block/)));
 check('CSS includes focus style for .hpp-cta',
   cssContent.includes('.hpp-cta:focus') || cssContent.includes('.hpp-cta:focus-visible'));
 check('CSS includes .hpp-summary', cssContent.includes('.hpp-summary'));
 check('CSS includes .hpp-portfolio-names', cssContent.includes('.hpp-portfolio-names'));
+check('CSS includes resolving skeleton styles (Phase 3BP)', cssContent.includes('.hpp-resolving-skeleton'));
+check('CSS includes donut chart styles (Phase 3BP)', cssContent.includes('.hpp-donut'));
+check('CSS includes donut legend styles (Phase 3BP)', cssContent.includes('.hpp-donut-legend'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -220,6 +240,7 @@ log('--- Group 10: Boundary isolation ---');
 
 check('No /news page created', !existsSync(NEWS_PAGE_PATH));
 check('Phase 3BL result doc exists', existsSync(RESULT_DOC_PATH));
+check('Phase 3BP result doc exists', existsSync(RESULT_DOC_3BP_PATH));
 check('Portfolio page not referenced in Home component imports',
   !homeContent.includes("from '../pages/portfolio'") &&
   !homeContent.includes("from './portfolio'"));
@@ -232,9 +253,45 @@ check('No external ad scripts in combined content',
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 11: Network safety guard
+// Group 11: Phase 3BP — anti-flicker, donut chart, CTA alignment
 // ---------------------------------------------------------------------------
-log('--- Group 11: Checker network safety ---');
+log('--- Group 11: Phase 3BP checks ---');
+
+check('Component imports PortfolioPosition type',
+  panelContent.includes('PortfolioPosition'));
+check('Component defines CHART_COLORS array',
+  panelContent.includes('CHART_COLORS'));
+check('Component includes renderDonutChart function',
+  panelContent.includes('renderDonutChart'));
+check('Component includes loadDonutChart function',
+  panelContent.includes('loadDonutChart'));
+check('Component calls portfolioApi.listPositions for chart data',
+  panelContent.includes('portfolioApi.listPositions'));
+check('Donut chart element exists in State C markup',
+  panelContent.includes('id="hpp-donut"') || panelContent.includes("id='hpp-donut'"));
+check('Donut legend element exists in State C markup',
+  panelContent.includes('id="hpp-donut-legend"') || panelContent.includes("id='hpp-donut-legend'"));
+check('Donut placeholder element exists',
+  panelContent.includes('id="hpp-donut-placeholder"') || panelContent.includes("id='hpp-donut-placeholder'"));
+check('Donut basis copy present (등록 금액 기준)',
+  panelContent.includes('등록 금액 기준'));
+check('Resolving skeleton markup present',
+  panelContent.includes('hpp-resolving-skeleton'));
+check('Component does not claim 실시간 or live on donut chart',
+  !panelContent.includes('실시간') && !panelContent.includes('>live<'));
+check('Non-401 error falls back to signed_in_empty (not signed_out)',
+  panelContent.includes('switchHppState(\'hpp-signed-in-empty\')') ||
+  panelContent.includes('switchHppState("hpp-signed-in-empty")'));
+check('State C CTA text is 포트폴리오 보기',
+  panelContent.includes('포트폴리오 보기'));
+check('State A CTA text is 포트폴리오 시작하기',
+  panelContent.includes('포트폴리오 시작하기'));
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 12: Network safety guard
+// ---------------------------------------------------------------------------
+log('--- Group 12: Checker network safety ---');
 
 const originalFetch = globalThis.fetch;
 let checkerMadeFetch = false;
@@ -252,7 +309,7 @@ log('');
 // ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
-log('=== Phase 3BL Home Portfolio Panel Static Contract — Summary ===');
+log('=== Phase 3BL / 3BP Home Portfolio Panel Static Contract — Summary ===');
 const totalChecks = passes + failures;
 log(`Checks passed: ${passes}/${totalChecks}`);
 log('');

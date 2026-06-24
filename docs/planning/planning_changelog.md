@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BP - 2026-06-25
+
+### Home Portfolio Panel Owner Review Fixes (Implemented)
+
+- **Status**: implemented. Three owner-review fixes applied to `HomePortfolioPanel.astro` and `style.css`. No portfolio page, API route, Supabase schema, or deployment changes.
+- **CTA vertical centering fix**: `.hpp-cta` changed from `display: block; text-align: center` to `display: flex; align-items: center; justify-content: center; min-height: 42px`. The `display: block` override was suppressing `.button-link`'s flex centering, causing text in the CTA buttons ("포트폴리오 시작하기" and "포트폴리오 보기") to appear top-aligned rather than vertically centered.
+- **Anti-flicker resolving state**: Added new `#hpp-resolving` state as the SSR-visible default (replacing `#hpp-signed-out` as the initial visible state). `data-hpp-default="true"` moved to `hpp-resolving`. `#hpp-signed-out` now starts hidden and is only shown after client confirms the user is signed out. `HPP_STATE_IDS` expanded to 4 entries. Non-401 API errors (network failures, 503) now fall back to `hpp-signed-in-empty` rather than `hpp-signed-out`.
+- **MY PORTFOLIO donut chart**: CSS conic-gradient account allocation chart added to State C (`signed_in_with_portfolio`). No external library. Data basis: `portfolioApi.listPositions()` per portfolio → `sum(quantity × buyPrice)` per portfolio (registered purchase price, not live market value). Copy: "등록 금액 기준 계좌 비중". Up to 4 portfolios shown individually; extra portfolios grouped as "기타". Zero-data fallback: gray placeholder circle + "보유 종목 입력 후 비중이 표시됩니다." Chart loads non-blocking (after state switch via `void loadDonutChart(portfolios)`).
+- Updated `scripts/check_home_portfolio_panel_static_contract.mjs` — expanded from 61 to 84 checks across 12 groups. New checks: resolving state, anti-flicker, CTA flex alignment, donut markup, donut functions, PortfolioPosition import, 3BP result doc.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BP artifact group appended.
+- Created `docs/planning/phase_3bp_home_portfolio_panel_owner_review_fixes_result_v0.1.md` — result doc.
+- All validators passed. Build passed.
+- No live KIS, GNews, Supabase writes, deployment, or /news page.
+- **Recommended next phase**: Phase 3BO — Portfolio Owner Browser Review.
+
 ## Phase 3BN - 2026-06-24
 
 ### Portfolio Bookmark Tabs & Reorder UX (Implemented)
