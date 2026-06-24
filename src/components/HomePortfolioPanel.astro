@@ -1,0 +1,163 @@
+---
+// HomePortfolioPanel.astro
+// Home hero right panel — portfolio-aware status panel.
+// SSR renders signed_out as the visible default.
+// A client script detects auth and portfolio state to switch states progressively.
+// No live KIS, GNews, or external fetch. No Supabase writes.
+---
+
+<div class="panel home-portfolio-panel" id="home-portfolio-panel" aria-label="포트폴리오 현황">
+
+  {/* State A: signed_out — default visible */}
+  <div class="hpp-state" id="hpp-signed-out" data-hpp-default="true">
+    <p class="eyebrow">PORTFOLIO START</p>
+    <h2 class="hpp-title">포트폴리오 관리를<br>시작해보세요</h2>
+    <p class="hpp-lead">계정을 만들고 보유 종목을 입력하면 자산 구성과 수익률을 한눈에 확인할 수 있습니다.</p>
+    <ol class="hpp-steps" aria-label="시작 단계">
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">01</span>
+        <span>무료 계정으로 시작</span>
+      </li>
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">02</span>
+        <span>포트폴리오 만들기</span>
+      </li>
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">03</span>
+        <span>보유 종목 입력</span>
+      </li>
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">04</span>
+        <span>투자 현황 확인</span>
+      </li>
+    </ol>
+    <a class="button-link hpp-cta" href="/portfolio">포트폴리오 시작하기</a>
+  </div>
+
+  {/* State B: signed_in_empty — hidden until client confirms signed-in + no portfolio */}
+  <div class="hpp-state hidden" id="hpp-signed-in-empty">
+    <p class="eyebrow">NEXT STEP</p>
+    <h2 class="hpp-title">첫 포트폴리오를<br>만들어보세요</h2>
+    <p class="hpp-lead">계정 준비가 완료되었습니다. 이제 보유 종목을 추가해 투자 현황을 확인할 수 있습니다.</p>
+    <ol class="hpp-steps" aria-label="시작 단계">
+      <li class="hpp-step hpp-step-done">
+        <span class="hpp-step-num" aria-hidden="true">01</span>
+        <span>로그인 완료</span>
+      </li>
+      <li class="hpp-step hpp-step-next" aria-current="step">
+        <span class="hpp-step-num" aria-hidden="true">02</span>
+        <span>포트폴리오 만들기</span>
+        <span class="hpp-next-badge" aria-label="다음 단계">다음 단계</span>
+      </li>
+      <li class="hpp-step hpp-step-future">
+        <span class="hpp-step-num" aria-hidden="true">03</span>
+        <span>보유 종목 추가</span>
+      </li>
+      <li class="hpp-step hpp-step-future">
+        <span class="hpp-step-num" aria-hidden="true">04</span>
+        <span>분석 확인</span>
+      </li>
+    </ol>
+    <a class="button-link hpp-cta" href="/portfolio">포트폴리오 만들기</a>
+  </div>
+
+  {/* State C: signed_in_with_portfolio — hidden until client confirms portfolios exist */}
+  <div class="hpp-state hidden" id="hpp-signed-in-portfolio">
+    <p class="eyebrow">MY PORTFOLIO</p>
+    <h2 class="hpp-title">내 포트폴리오 요약</h2>
+    <div class="hpp-summary">
+      <div class="hpp-stat-row">
+        <span class="hpp-stat-label">포트폴리오</span>
+        <strong class="hpp-stat-value"><span id="hpp-portfolio-count">—</span>개</strong>
+      </div>
+      <div class="hpp-stat-row">
+        <span class="hpp-stat-label">분석 현황</span>
+        <span class="hpp-stat-placeholder">포트폴리오 페이지에서 보유 종목과 수익률을 확인하세요.</span>
+      </div>
+    </div>
+    <div class="hpp-portfolio-names" id="hpp-portfolio-names" aria-label="등록된 포트폴리오"></div>
+    <a class="button-link hpp-cta" href="/portfolio">포트폴리오 보기</a>
+  </div>
+
+</div>
+
+<script>
+  import { isSupabaseConfigured } from '../lib/supabase';
+  import { portfolioApi, PortfolioApiError, type Portfolio } from '../lib/portfolioClient';
+
+  const HPP_STATE_IDS = ['hpp-signed-out', 'hpp-signed-in-empty', 'hpp-signed-in-portfolio'] as const;
+
+  const switchHppState = (activeId: typeof HPP_STATE_IDS[number]) => {
+    HPP_STATE_IDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden', id !== activeId);
+    });
+  };
+
+  const escapeHtml = (text: string) =>
+    text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c));
+
+  const updatePortfolioDisplay = (portfolios: Portfolio[]) => {
+    const countEl = document.getElementById('hpp-portfolio-count');
+    if (countEl) countEl.textContent = String(portfolios.length);
+
+    const namesEl = document.getElementById('hpp-portfolio-names');
+    if (namesEl) {
+      namesEl.innerHTML = '';
+      portfolios.slice(0, 4).forEach((p) => {
+        const tag = document.createElement('span');
+        tag.className = 'hpp-portfolio-tag';
+        tag.textContent = escapeHtml(p.name);
+        namesEl.appendChild(tag);
+      });
+    }
+
+    switchHppState('hpp-signed-in-portfolio');
+  };
+
+  const detectAndRenderPortfolioState = async () => {
+    if (!isSupabaseConfigured()) {
+      switchHppState('hpp-signed-out');
+      return;
+    }
+
+    try {
+      const portfolios = await portfolioApi.listPortfolios();
+      if (portfolios.length === 0) {
+        switchHppState('hpp-signed-in-empty');
+      } else {
+        updatePortfolioDisplay(portfolios);
+      }
+    } catch (err) {
+      // 401: not signed in → signed_out (default, already showing)
+      // 503: Supabase not configured → signed_out
+      // Any other error → signed_out (safe fallback)
+      if (err instanceof PortfolioApiError && err.status === 401) {
+        switchHppState('hpp-signed-out');
+      } else {
+        switchHppState('hpp-signed-out');
+      }
+    }
+  };
+
+  const initHomePortfolioPanel = async () => {
+    const marker = window as Window & { mkHppInit?: boolean };
+    if (marker.mkHppInit) return;
+    marker.mkHppInit = true;
+
+    await detectAndRenderPortfolioState();
+  };
+
+  // Respond to auth state changes emitted by Header
+  window.addEventListener('mk:auth-state', (event) => {
+    const detail = (event as CustomEvent<{ status: string }>).detail;
+    if (detail?.status === 'signed_out') {
+      switchHppState('hpp-signed-out');
+    } else if (detail?.status === 'signed_in') {
+      void detectAndRenderPortfolioState();
+    }
+  });
+
+  document.addEventListener('astro:page-load', () => { void initHomePortfolioPanel(); });
+  void initHomePortfolioPanel();
+</script>

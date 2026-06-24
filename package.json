@@ -16,6 +16,7 @@
     "check:header-footer-shell": "node scripts/check_header_footer_shell_static_contract.mjs",
     "check:mypage-shell": "node scripts/check_mypage_shell_static_contract.mjs",
     "check:home-ad-slots": "node scripts/check_home_ad_slots_static_contract.mjs",
+    "check:home-portfolio-panel": "node scripts/check_home_portfolio_panel_static_contract.mjs",
     "check:home-market-news": "node scripts/check_home_market_news_static_contract.mjs",
     "check:gnews-news-policy": "node scripts/check_gnews_news_policy_static_contract.mjs",
     "check:gnews-news-engine": "node scripts/check_gnews_news_policy_engine.mjs",

@@ -1,5 +1,24 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BL - 2026-06-24
+
+### Home Portfolio Status Panel (Implemented)
+
+- **Status**: implemented. Runtime change: replaced static Market Coverage card with a 3-state portfolio-aware panel on the Home hero section. No API routes, Supabase schemas, or deployment changes.
+- Created `src/components/HomePortfolioPanel.astro` — three-state panel:
+  - **State A (`signed_out`)**: SSR-visible default. 4-step onboarding guide (무료 계정으로 시작 → 포트폴리오 만들기 → 보유 종목 입력 → 투자 현황 확인). CTA: 포트폴리오 시작하기 → `/portfolio`.
+  - **State B (`signed_in_empty`)**: Hidden until `portfolioApi.listPortfolios()` returns `[]`. 4-step guide with step 01 (로그인 완료) de-emphasized and step 02 highlighted as "다음 단계". CTA: 포트폴리오 만들기.
+  - **State C (`signed_in_with_portfolio`)**: Hidden until API returns portfolios. Portfolio count + name tags (up to 4). No 평가금액 / live KIS data. CTA: 포트폴리오 보기.
+  - Client script: listens for `mk:auth-state` events from Header.astro, runs `portfolioApi.listPortfolios()`, and toggles the visible state. `isSupabaseConfigured()` guard; `window.mkHppInit` idempotency guard. All error paths fall back to State A.
+- Updated `src/pages/index.astro` — removed `<aside class="panel market-panel">` (Market Coverage), added `import HomePortfolioPanel` and `<HomePortfolioPanel />`. HomeMarketNews unchanged.
+- Updated `src/styles/style.css` — added `.home-portfolio-panel` and all `.hpp-*` CSS classes under a new `/* --- Home Portfolio Panel --- */` section. Key styles: step list layout, `.hpp-step-next` accent (left border + soft background), `.hpp-next-badge`, `.hpp-cta` focus-visible, State C metrics rows, portfolio name tags.
+- Created `scripts/check_home_portfolio_panel_static_contract.mjs` — 11-group checker, no network, no .env reads. Validates file existence, home integration, component state structure, Korean UI copy per state, live isolation, auth/data isolation, CSS classes, boundary isolation, and checker network safety.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BL artifact group appended (result doc, component, checker, package script, home imports panel, market coverage removed, HomeMarketNews still present, no /news page).
+- Updated `package.json` — added `"check:home-portfolio-panel"` script.
+- Created `docs/planning/phase_3bl_home_portfolio_status_panel_result_v0.1.md` — 10-section result doc.
+- All validators passed. Build passed.
+- **Recommended next phase**: Phase 3BM — Portfolio Page Layout Refactor (remove status chips, expand full-width dashboard, move refresh button to page header).
+
 ## Phase 3BK - 2026-06-24
 
 ### Portfolio Experience Redesign Plan & State Contract (Planned)

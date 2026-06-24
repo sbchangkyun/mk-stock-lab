@@ -1,17 +1,19 @@
 ---
 import HomeRailAd from '../components/HomeRailAd.astro';
 import HomeMarketNews from '../components/HomeMarketNews.astro';
+import HomePortfolioPanel from '../components/HomePortfolioPanel.astro';
 import Layout from '../layouts/Layout.astro';
 
 // SSR fetch: /api/news/market-feed?mode=home (no source param — uses fixture default)
-let newsArticles: Record<string, unknown>[] = [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let newsArticles: any[] = [];
 try {
   const newsUrl = new URL('/api/news/market-feed?mode=home', Astro.url);
   const res = await fetch(newsUrl);
   if (res.ok) {
     const data = await res.json() as Record<string, unknown>;
     if (Array.isArray(data?.articles)) {
-      newsArticles = (data.articles as Record<string, unknown>[]).slice(0, 6);
+      newsArticles = data.articles.slice(0, 6);
     }
   }
 } catch {
@@ -36,16 +38,7 @@ try {
       </div>
     </div>
 
-    <aside class="panel market-panel">
-      <p class="eyebrow">Market Coverage</p>
-      <h2>핵심 커버리지</h2>
-      <div class="metric-list">
-        <div class="metric-row"><span>국내 주식</span><strong>KOSPI / KOSDAQ</strong></div>
-        <div class="metric-row"><span>미국 주식</span><strong>NYSE / Nasdaq</strong></div>
-        <div class="metric-row"><span>ETF</span><strong>한국 / 미국 상장</strong></div>
-        <div class="metric-row"><span>가상자산</span><strong class="neutral">주요 기능에서 제외</strong></div>
-      </div>
-    </aside>
+    <HomePortfolioPanel />
   </section>
 
   <section class="grid-4">

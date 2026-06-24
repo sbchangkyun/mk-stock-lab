@@ -608,6 +608,31 @@ if (existsSync(HOME_PAGE_3BJ)) {
 check('No /news page exists (3BJ boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
+// --- Phase 3BL artifact checks ---
+log('Phase 3BL artifacts:');
+const RESULT_DOC_3BL_PATH = join(root, 'docs', 'planning', 'phase_3bl_home_portfolio_status_panel_result_v0.1.md');
+const HPP_COMPONENT_PATH = join(root, 'src', 'components', 'HomePortfolioPanel.astro');
+const HPP_CHECKER_PATH = join(root, 'scripts', 'check_home_portfolio_panel_static_contract.mjs');
+const INDEX_PATH_3BL = join(root, 'src', 'pages', 'index.astro');
+
+check('Phase 3BL result doc exists', existsSync(RESULT_DOC_3BL_PATH));
+check('HomePortfolioPanel component exists', existsSync(HPP_COMPONENT_PATH));
+check('HomePortfolioPanel static checker exists', existsSync(HPP_CHECKER_PATH));
+
+let pkg3bl = {};
+try { pkg3bl = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check('package.json includes check:home-portfolio-panel',
+  typeof pkg3bl.scripts?.['check:home-portfolio-panel'] === 'string');
+
+if (existsSync(INDEX_PATH_3BL)) {
+  const home3bl = readFileSync(INDEX_PATH_3BL, 'utf8');
+  check('Home imports HomePortfolioPanel (3BL)', home3bl.includes('HomePortfolioPanel'));
+  check('Home still imports HomeMarketNews (3BL boundary)', home3bl.includes('HomeMarketNews'));
+  check('Market Coverage static panel removed from Home (3BL)', !home3bl.includes('Market Coverage') && !home3bl.includes('market-panel'));
+}
+check('No /news page created (3BL boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {
