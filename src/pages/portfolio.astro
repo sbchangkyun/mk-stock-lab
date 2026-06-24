@@ -5,21 +5,26 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="포트폴리오 | MK Stock Lab" activePath="/portfolio">
   <header class="page-header">
     <div>
-      <p class="eyebrow">포트폴리오</p>
-      <h1>내 투자 포트폴리오</h1>
+      <div class="portfolio-title-row">
+        <div>
+          <p class="eyebrow">포트폴리오</p>
+          <h1>내 투자 포트폴리오</h1>
+        </div>
+        <button class="icon-button refresh-icon-button portfolio-refresh-btn" id="portfolio-refresh" type="button"
+                aria-label="현재 포트폴리오 다시 계산" title="현재 포트폴리오 다시 계산">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 11a8 8 0 1 0-2.34 5.66"></path>
+            <path d="M20 5v6h-6"></path>
+          </svg>
+        </button>
+      </div>
       <p class="lead">국내와 미국 주식, ETF 보유 종목을 간단히 관리합니다. 시세 평가, 성과 분석, 시장 데이터 갱신은 이후 단계에서 연결합니다.</p>
     </div>
   </header>
 
-  <section class="portfolio-status-bar" id="portfolio-readiness" data-state="checking">
-    <div class="portfolio-status-items" aria-label="포트폴리오 상태">
-      <span class="status-pill" data-status-key="login"><i aria-hidden="true"></i><span>로그인</span><strong id="portfolio-login-status">대기 중</strong></span>
-      <span class="status-pill" data-status-key="profile"><i aria-hidden="true"></i><span>프로필</span><strong id="portfolio-profile-status">대기 중</strong></span>
-      <span class="status-pill" data-status-key="api"><i aria-hidden="true"></i><span>API</span><strong id="portfolio-api-status">대기 중</strong></span>
-      <span class="status-pill neutral"><i aria-hidden="true"></i><span>평가</span><strong>준비 중</strong></span>
-    </div>
-    <p id="portfolio-readiness-copy">로그인과 프로필 준비가 완료되면 포트폴리오 데이터를 불러옵니다.</p>
-  </section>
+  <div class="portfolio-loading-state" id="portfolio-readiness" data-state="checking">
+    <p class="portfolio-loading-copy" id="portfolio-readiness-copy">포트폴리오 데이터를 불러오는 중입니다.</p>
+  </div>
 
   <section class="portfolio-lock-state hidden" id="portfolio-lock-state" aria-live="polite">
     <div class="lock-visual" aria-hidden="true">🔐</div>
@@ -32,44 +37,17 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <section class="portfolio-mvp hidden" id="portfolio-mvp">
-    <aside class="portfolio-sidebar panel">
-      <div class="portfolio-panel-header">
-        <div>
-          <p class="eyebrow">포트폴리오</p>
-          <h2>내 포트폴리오</h2>
-        </div>
-        <button class="icon-button refresh-icon-button" id="portfolio-refresh" type="button" aria-label="새로고침" title="새로고침">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 11a8 8 0 1 0-2.34 5.66"></path>
-            <path d="M20 5v6h-6"></path>
-          </svg>
-        </button>
-      </div>
 
-      <form class="compact-form" id="portfolio-form">
-        <input type="hidden" id="portfolio-id" />
-        <label>
-          이름
-          <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="계좌 이름" />
-        </label>
-        <label>
-          기준 통화
-          <select id="portfolio-base-currency" name="baseCurrency">
-            <option value="KRW">KRW</option>
-            <option value="USD">USD</option>
-          </select>
-        </label>
-        <div class="form-actions">
-          <button class="primary-action" id="portfolio-submit" type="submit">포트폴리오 만들기</button>
-          <button class="text-button hidden" id="portfolio-cancel-edit" type="button">수정 취소</button>
-        </div>
-      </form>
-
+    <div class="portfolio-selector-bar">
       <div class="empty-state hidden" id="portfolio-empty">아직 등록된 포트폴리오가 없습니다.</div>
       <div class="portfolio-list" id="portfolio-list" aria-live="polite"></div>
-    </aside>
+      <button class="text-button portfolio-manage-toggle" id="portfolio-manage-toggle"
+              type="button" aria-expanded="false" aria-controls="portfolio-manage-panel">
+        + 포트폴리오 관리
+      </button>
+    </div>
 
-    <section class="portfolio-detail panel">
+    <section class="portfolio-detail portfolio-dashboard panel">
       <div class="portfolio-panel-header">
         <div>
           <p class="eyebrow">보유 종목</p>
@@ -102,6 +80,36 @@ import Layout from '../layouts/Layout.astro';
         <div class="positions-list" id="positions-list"></div>
       </div>
     </section>
+
+    <div class="portfolio-manage-panel hidden" id="portfolio-manage-panel">
+      <div class="portfolio-manage-inner panel">
+        <div class="portfolio-panel-header">
+          <div>
+            <p class="eyebrow">포트폴리오</p>
+            <h3 class="portfolio-manage-title">포트폴리오 관리</h3>
+          </div>
+        </div>
+        <form class="compact-form" id="portfolio-form">
+          <input type="hidden" id="portfolio-id" />
+          <label>
+            이름
+            <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="계좌 이름" />
+          </label>
+          <label>
+            기준 통화
+            <select id="portfolio-base-currency" name="baseCurrency">
+              <option value="KRW">KRW</option>
+              <option value="USD">USD</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button class="primary-action" id="portfolio-submit" type="submit">포트폴리오 만들기</button>
+            <button class="text-button hidden" id="portfolio-cancel-edit" type="button">수정 취소</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </section>
 
   <div class="position-sheet" id="position-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="position-sheet-title">
@@ -341,7 +349,7 @@ import Layout from '../layouts/Layout.astro';
         name: tickerLikePattern.test(normalized) ? '' : normalized,
       };
     };
-    const inferMarket = (securityInput: string, currency: 'KRW' | 'USD') => {
+    const inferMarket = (securityInput: string, currency: 'KRW' | 'USD'): 'KR' | 'US' => {
       const normalized = securityInput.trim();
       if (krCodePattern.test(normalized)) return 'KR';
       if (tickerLikePattern.test(normalized) && /[A-Za-z]/.test(normalized)) return 'US';
@@ -623,6 +631,17 @@ import Layout from '../layouts/Layout.astro';
       positionSheetCloseTimer = window.setTimeout(finishClose, positionSheetMotionMs);
     };
 
+    const openManagePanel = () => {
+      const panel = getElement<HTMLDivElement>('portfolio-manage-panel');
+      const toggle = getElement<HTMLButtonElement>('portfolio-manage-toggle');
+      if (!panel || !panel.classList.contains('hidden')) return;
+      panel.classList.remove('hidden');
+      if (toggle) {
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.textContent = '관리 닫기';
+      }
+    };
+
     const renderPortfolios = () => {
       const list = getElement<HTMLDivElement>('portfolio-list');
       const empty = getElement<HTMLDivElement>('portfolio-empty');
@@ -630,6 +649,8 @@ import Layout from '../layouts/Layout.astro';
 
       empty.classList.toggle('hidden', state.portfolios.length > 0);
       list.innerHTML = '';
+
+      if (state.portfolios.length === 0) openManagePanel();
 
       if (state.portfolios.length > 0) {
         const aggregateItem = document.createElement('article');
@@ -861,6 +882,16 @@ import Layout from '../layouts/Layout.astro';
       void loadPortfolioMvp();
     });
 
+    getElement<HTMLButtonElement>('portfolio-manage-toggle')?.addEventListener('click', () => {
+      const panel = getElement<HTMLDivElement>('portfolio-manage-panel');
+      const toggle = getElement<HTMLButtonElement>('portfolio-manage-toggle');
+      if (!panel || !toggle) return;
+      const opening = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !opening);
+      toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+      toggle.textContent = opening ? '관리 닫기' : '+ 포트폴리오 관리';
+    });
+
     getElement<HTMLButtonElement>('portfolio-cancel-edit')?.addEventListener('click', resetPortfolioForm);
     getElement<HTMLButtonElement>('position-cancel-edit')?.addEventListener('click', closePositionSheet);
     getElement<HTMLButtonElement>('open-position-sheet')?.addEventListener('click', () => {
@@ -977,6 +1008,7 @@ import Layout from '../layouts/Layout.astro';
         getElement<HTMLSelectElement>('portfolio-base-currency')!.value = portfolio.baseCurrency;
         getElement<HTMLButtonElement>('portfolio-submit')!.textContent = '포트폴리오 수정';
         getElement<HTMLButtonElement>('portfolio-cancel-edit')?.classList.remove('hidden');
+        openManagePanel();
       }
 
       if (target.dataset.action === 'delete-portfolio') {

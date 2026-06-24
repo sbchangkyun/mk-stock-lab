@@ -1,5 +1,26 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BM - 2026-06-24
+
+### Portfolio Page Layout Refactor (Implemented)
+
+- **Status**: implemented. Portfolio page refactored to remove debug status chips, expand the dashboard to full width, and relocate portfolio management to a collapsible section. No API routes, Supabase schemas, or deployment changes.
+- Removed debug/development status bar (`portfolio-status-bar`) with four visible pills: 로그인됨, 프로필 준비 완료, API 사용 가능, 평가 준비 중. Replaced with a minimal `portfolio-loading-state` div (hidden when `[data-state="ready"]`). All JS state machine IDs (`portfolio-readiness`, `portfolio-readiness-copy`) preserved.
+- Added refresh icon button to page header (right side of "내 투자 포트폴리오" heading) in a new `.portfolio-title-row` layout. `aria-label="현재 포트폴리오 다시 계산"`, `title="현재 포트폴리오 다시 계산"`. Connected to existing `loadPortfolioMvp()` — no live KIS call, no real-time data claim.
+- Aggregate 전체 포트폴리오 view remains the default. Default selection logic (`state.selectedPortfolioId = aggregatePortfolioId`) unchanged.
+- Removed permanent `<aside class="portfolio-sidebar panel">` (360px left column). Portfolio `<section class="portfolio-mvp">` changed from `grid (360px + 1fr)` to `flex-direction: column`.
+- Added `.portfolio-selector-bar` (horizontal flex row above dashboard) containing `#portfolio-list` + `#portfolio-empty` + "포트폴리오 관리" toggle button.
+- Added `.portfolio-manage-panel` (hidden by default, collapsible) below dashboard — contains all portfolio creation/edit form elements (`portfolio-form`, `portfolio-id`, `portfolio-name`, etc.). Auto-opens when no portfolios exist; auto-opens when edit action is triggered.
+- Main dashboard `<section class="portfolio-detail portfolio-dashboard panel">` now occupies full available width.
+- Created `scripts/check_portfolio_layout_refactor_static_contract.mjs` — 12-group static checker, 73/73 PASS.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BM artifact group appended.
+- Updated `package.json` — added `check:portfolio-layout` script.
+- Created `docs/planning/phase_3bm_portfolio_page_layout_refactor_result_v0.1.md` — result doc.
+- Bookmark tabs, tab reorder, + tab, creation modal, and tab persistence deferred to Phase 3BN.
+- No API route changes. No Supabase/KIS/GNews/deployment changes. Home unchanged. No /news page.
+- All validators passed. Build passed.
+- **Recommended next phase**: Phase 3BN — Portfolio Bookmark Tabs & Reorder UX.
+
 ## Phase 3BL - 2026-06-24
 
 ### Home Portfolio Status Panel (Implemented)

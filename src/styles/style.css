@@ -889,74 +889,34 @@ a.header-button {
   border-radius: 8px;
 }
 
-.portfolio-status-bar {
+.portfolio-title-row {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  margin-top: -4px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: 0 8px 24px rgba(20, 36, 64, 0.05);
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
 }
 
-.portfolio-status-bar p {
-  flex: 1;
+.portfolio-refresh-btn:focus,
+.portfolio-refresh-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.portfolio-loading-state {
+  margin-bottom: 4px;
+}
+
+.portfolio-loading-state[data-state="ready"],
+.portfolio-loading-state[data-state="checking"] {
+  display: none;
+}
+
+.portfolio-loading-copy {
   margin: 0;
+  padding: 8px 0;
   color: var(--text-muted);
   font-size: 13px;
-}
-
-.portfolio-status-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 28px;
-  padding: 0 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--text-muted);
-  background: var(--surface-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.status-pill i {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--neutral);
-}
-
-.status-pill strong {
-  color: var(--text);
-  font-weight: 800;
-}
-
-.portfolio-status-bar[data-state="ready"] .status-pill:not(.neutral) i,
-.portfolio-status-bar[data-state="profile_ready"] .status-pill[data-status-key="login"] i,
-.portfolio-status-bar[data-state="profile_ready"] .status-pill[data-status-key="profile"] i,
-.portfolio-status-bar[data-state="api_pending"] .status-pill[data-status-key="login"] i,
-.portfolio-status-bar[data-state="api_pending"] .status-pill[data-status-key="profile"] i,
-.portfolio-status-bar[data-state="signed_in"] .status-pill[data-status-key="login"] i,
-.portfolio-status-bar[data-state="profile_pending"] .status-pill[data-status-key="login"] i {
-  background: var(--positive);
-}
-
-.portfolio-status-bar[data-state="signed_out"] .status-pill[data-status-key="login"] i,
-.portfolio-status-bar[data-state="profile_failed"] .status-pill[data-status-key="profile"] i,
-.portfolio-status-bar[data-state="public_config_missing"] .status-pill i,
-.portfolio-status-bar[data-state="profile_config_missing"] .status-pill[data-status-key="profile"] i,
-.portfolio-status-bar[data-state="portfolio_config_missing"] .status-pill[data-status-key="api"] i {
-  background: var(--negative);
 }
 
 .portfolio-lock-state {
@@ -992,19 +952,80 @@ a.header-button {
 }
 
 .portfolio-mvp {
-  display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-top: 20px;
 }
 
 .portfolio-detail {
   min-width: 0;
+  width: 100%;
+}
+
+.portfolio-dashboard {
+  width: 100%;
 }
 
 .portfolio-mvp.hidden {
   display: none;
+}
+
+.portfolio-selector-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.portfolio-selector-bar .portfolio-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.portfolio-selector-bar .portfolio-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 260px;
+  flex: 0 1 auto;
+}
+
+.portfolio-manage-toggle {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.portfolio-manage-toggle:hover {
+  color: var(--primary);
+}
+
+.portfolio-manage-toggle:focus,
+.portfolio-manage-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.portfolio-manage-panel {
+  width: 100%;
+}
+
+.portfolio-manage-inner {
+  padding: 20px;
+  max-width: 480px;
+}
+
+.portfolio-manage-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0;
 }
 
 .portfolio-panel-header {
@@ -2108,11 +2129,6 @@ body.modal-open {
 
   .form-field-wide {
     grid-column: span 2;
-  }
-
-  .portfolio-status-bar {
-    align-items: flex-start;
-    flex-direction: column;
   }
 
   .positions-toolbar {

@@ -633,6 +633,48 @@ if (existsSync(INDEX_PATH_3BL)) {
 check('No /news page created (3BL boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
+// --- Phase 3BM artifact checks ---
+log('Phase 3BM artifacts:');
+const RESULT_DOC_3BM_PATH = join(root, 'docs', 'planning', 'phase_3bm_portfolio_page_layout_refactor_result_v0.1.md');
+const PORTFOLIO_LAYOUT_CHECKER_PATH = join(root, 'scripts', 'check_portfolio_layout_refactor_static_contract.mjs');
+const PORTFOLIO_PAGE_3BM_PATH = join(root, 'src', 'pages', 'portfolio.astro');
+
+check('Phase 3BM result doc exists', existsSync(RESULT_DOC_3BM_PATH));
+check('Portfolio layout checker exists', existsSync(PORTFOLIO_LAYOUT_CHECKER_PATH));
+
+let pkg3bm = {};
+try { pkg3bm = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check('package.json includes check:portfolio-layout',
+  typeof pkg3bm.scripts?.['check:portfolio-layout'] === 'string');
+
+if (existsSync(PORTFOLIO_PAGE_3BM_PATH)) {
+  const portfolio3bm = readFileSync(PORTFOLIO_PAGE_3BM_PATH, 'utf8');
+  check('Portfolio page still exists (3BM)', true);
+  check('Debug status chips removed (no portfolio-status-bar in portfolio page)',
+    !portfolio3bm.includes('portfolio-status-bar'));
+  check('Debug status chips removed (no status-pill in portfolio page)',
+    !portfolio3bm.includes('status-pill'));
+  check('Refresh control exists in portfolio page (portfolio-refresh)',
+    portfolio3bm.includes('id="portfolio-refresh"'));
+  check('Refresh aria-label is non-live copy (현재 포트폴리오 다시 계산)',
+    portfolio3bm.includes('현재 포트폴리오 다시 계산'));
+  check('Bookmark reorder not implemented (no move-tab action)',
+    !portfolio3bm.includes('move-tab'));
+  check('No bookmark-tab class added', !portfolio3bm.includes('bookmark-tab'));
+} else {
+  check('Portfolio page still exists (3BM)', false);
+  check('Debug status chips removed', false);
+  check('Debug status chips removed (status-pill)', false);
+  check('Refresh control exists', false);
+  check('Refresh aria-label non-live', false);
+  check('Bookmark reorder not implemented', false);
+  check('No bookmark-tab class added', false);
+}
+check('No /news page created (3BM boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+check('HomePortfolioPanel still present (3BM boundary)', existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('HomeMarketNews still present (3BM boundary)', existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {
