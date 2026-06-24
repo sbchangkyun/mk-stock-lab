@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BJ - 2026-06-24
+
+### Home Market News Owner Browser Review & UI Polish (Implemented)
+
+- **Status**: implemented. Targeted CSS polish and validator hardening only. No behavioral, data-contract, or route changes.
+- Updated `src/styles/style.css` — targeted polish to Home Market News section:
+  - Increased `.home-news-section` margin-top (28px → 32px) and `.home-news-header` margin-bottom (18px → 20px) for better visual separation.
+  - Increased `.home-news-card` internal gap (8px → 10px) for more breathing room between meta / headline / description rows.
+  - Added `.home-news-card:hover` box-shadow elevation (in addition to existing border-color change); updated `transition` to include `box-shadow`.
+  - **Added `.home-news-card:focus, .home-news-card:focus-visible`** — `outline: 2px solid var(--primary); outline-offset: 2px` for keyboard navigation accessibility (was missing in Phase 3BH).
+  - Increased `.home-news-headline` line-height (1.45 → 1.5) for better Korean text readability.
+  - Increased `.home-news-source-name` max-width (100px → 120px) to accommodate longer source names.
+  - Increased `.home-news-empty` vertical padding (24px → 28px 24px).
+- Updated `scripts/check_home_market_news_static_contract.mjs` — added Group 13 (Phase 3BJ, 8 new checks): section title `시장 뉴스` rendered, category badge element, source name element, date element, no `/news` link in component, CSS hover style, CSS focus-visible style, CSS transition. **Total: 57/57 PASS** (was 49/49).
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added Phase 3BJ artifact group (10 checks): result doc exists, checker still exists, CSS focus-visible and hover styles, Home route/source/adapter/smoke boundaries unchanged, no /news page.
+- Created `docs/planning/phase_3bj_home_market_news_owner_review_ui_polish_result_v0.1.md` — 10-section result doc with owner browser review checklist (25 items covering layout, card content, interaction, empty state, and negative checks).
+- No API route changes. No component structure changes. No page additions. No Supabase / KIS / deployment changes.
+- Live GNews provider compatibility remains unresolved. Fixture-first data contract unchanged.
+- **Recommended next phase**: Phase 3BK — News list route with `mode=list` pagination, or Phase 3BI (optional public `/news` list page backed by fixture).
+
 ## Phase 3BH - 2026-06-24
 
 ### Home Market News UI Integration (Implemented)

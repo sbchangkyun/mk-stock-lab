@@ -28,7 +28,7 @@ const check = (label, pass) => {
   else failures++;
 };
 
-log('=== Home Market News Static Contract Check (Phase 3BH) ===');
+log('=== Home Market News Static Contract Check (Phase 3BH/3BJ) ===');
 log('');
 
 // ---------------------------------------------------------------------------
@@ -215,6 +215,34 @@ check('No external HTTP URL in home files (no gnews.io)',
 log('');
 
 // ---------------------------------------------------------------------------
+// Group 13 (Phase 3BJ): Polish — section title, badge element, focus/hover styles, no /news link
+// ---------------------------------------------------------------------------
+log('--- Group 13 (Phase 3BJ): UI polish and accessibility ---');
+
+// Section title present in template
+const componentTemplateOnly = componentContent.replace(/^---[\s\S]*?---/, '');
+check('Component renders section title (시장 뉴스)',
+  componentTemplateOnly.includes('시장 뉴스'));
+check('Component renders category badge element (home-news-badge)',
+  componentTemplateOnly.includes('home-news-badge'));
+check('Component renders source name element (home-news-source-name)',
+  componentTemplateOnly.includes('home-news-source-name'));
+check('Component renders date element (home-news-date)',
+  componentTemplateOnly.includes('home-news-date'));
+
+// No /news link in component (page doesn't exist)
+check('Component does not link to /news (no /news page exists)',
+  !componentTemplateOnly.includes('href="/news"') && !componentTemplateOnly.includes("href='/news'"));
+
+// CSS focus/hover styles
+check('CSS has focus/hover style for news card (home-news-card:hover)',
+  cssContent.includes('.home-news-card:hover'));
+check('CSS has focus-visible style for news card (keyboard accessibility)',
+  cssContent.includes('.home-news-card:focus') || cssContent.includes('.home-news-card:focus-visible'));
+check('CSS has transition on news card', cssContent.includes('.home-news-card') && cssContent.includes('transition'));
+log('');
+
+// ---------------------------------------------------------------------------
 // Group 12: Network guard
 // ---------------------------------------------------------------------------
 log('--- Group 12: Checker network safety ---');
@@ -235,7 +263,7 @@ log('');
 // ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
-log('=== Phase 3BH Home Market News Static Contract — Summary ===');
+log('=== Phase 3BH/3BJ Home Market News Static Contract — Summary ===');
 const totalChecks = passes + failures;
 log(`Checks passed: ${passes}/${totalChecks}`);
 log('');

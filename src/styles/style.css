@@ -2409,11 +2409,11 @@ body.modal-open {
 /* --- Home Market News Section --- */
 
 .home-news-section {
-  margin-top: 28px;
+  margin-top: 32px;
 }
 
 .home-news-header {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .home-news-header .eyebrow {
@@ -2440,18 +2440,28 @@ body.modal-open {
 
 .home-news-card {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   padding: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
   box-shadow: var(--shadow);
   color: var(--text);
-  transition: border-color 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
   align-content: start;
 }
 
 .home-news-card:hover {
+  border-color: rgba(15, 79, 216, 0.4);
+  box-shadow: 0 16px 40px rgba(20, 36, 64, 0.11);
+}
+
+.home-news-card:focus,
+.home-news-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
   border-color: rgba(15, 79, 216, 0.4);
 }
 
@@ -2482,7 +2492,7 @@ body.modal-open {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100px;
+  max-width: 120px;
 }
 
 .home-news-date {
@@ -2497,7 +2507,7 @@ body.modal-open {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.5;
   color: var(--text);
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -2517,7 +2527,7 @@ body.modal-open {
 }
 
 .home-news-empty {
-  padding: 24px;
+  padding: 28px 24px;
   border: 1px dashed var(--border);
   border-radius: 8px;
   background: var(--surface-muted);

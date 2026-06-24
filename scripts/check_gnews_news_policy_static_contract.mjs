@@ -579,6 +579,35 @@ check('Route default unchanged (fixture-default preserved)',
   })());
 log('');
 
+// --- Phase 3BJ artifact checks ---
+log('Phase 3BJ artifacts:');
+const RESULT_DOC_3BJ_PATH = join(root, 'docs', 'planning', 'phase_3bj_home_market_news_owner_review_ui_polish_result_v0.1.md');
+const HOME_NEWS_CHECKER_3BJ_PATH = join(root, 'scripts', 'check_home_market_news_static_contract.mjs');
+const CSS_PATH_3BJ = join(root, 'src', 'styles', 'style.css');
+
+check('Phase 3BJ result doc exists', existsSync(RESULT_DOC_3BJ_PATH));
+check('Home market news checker still exists', existsSync(HOME_NEWS_CHECKER_3BJ_PATH));
+
+if (existsSync(CSS_PATH_3BJ)) {
+  const css3bj = readFileSync(CSS_PATH_3BJ, 'utf8');
+  check('CSS has focus-visible style for news card (3BJ accessibility polish)',
+    css3bj.includes('.home-news-card:focus') || css3bj.includes('.home-news-card:focus-visible'));
+  check('CSS has hover style for news card (3BJ polish)',
+    css3bj.includes('.home-news-card:hover'));
+}
+
+const HOME_PAGE_3BJ = join(root, 'src', 'pages', 'index.astro');
+if (existsSync(HOME_PAGE_3BJ)) {
+  const home3bj = readFileSync(HOME_PAGE_3BJ, 'utf8');
+  check('Home still uses mode=home route (3BJ check)', home3bj.includes('/api/news/market-feed?mode=home'));
+  check('Home still omits source=auto (3BJ check)', !home3bj.includes('source=auto'));
+  check('Home still omits source=live (3BJ check)', !home3bj.includes('source=live'));
+  check('Home still does not import live adapter (3BJ check)', !home3bj.includes('gnewsLiveFetchAdapter'));
+  check('Home still does not import owner smoke script (3BJ check)', !home3bj.includes('owner_smoke_gnews_live_fetch'));
+}
+check('No /news page exists (3BJ boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {
