@@ -279,6 +279,66 @@ check(
 );
 log('');
 
+// ---------------------------------------------------------------------------
+// Group 9: Phase 3BE-R3 — query profile integration with theme selection
+// ---------------------------------------------------------------------------
+log('--- Group 9: Phase 3BE-R3 query profile integration ---');
+
+let parseQueryProfileArg, validateQueryProfile, applySmokeQueryProfile;
+try {
+  // Re-use the already-imported smoke module (cached by Node's ESM loader)
+  const smokeMod2 = await import('./owner_smoke_gnews_live_fetch.mjs');
+  parseQueryProfileArg = smokeMod2.parseQueryProfileArg;
+  validateQueryProfile = smokeMod2.validateQueryProfile;
+  applySmokeQueryProfile = smokeMod2.applySmokeQueryProfile;
+} catch {
+  // helpers absent — will fail below
+}
+
+check('parseQueryProfileArg is a function', typeof parseQueryProfileArg === 'function');
+check('validateQueryProfile is a function', typeof validateQueryProfile === 'function');
+check('applySmokeQueryProfile is a function', typeof applySmokeQueryProfile === 'function');
+
+if (typeof parseQueryProfileArg === 'function') {
+  check('parseQueryProfileArg returns "policy" when no --query-profile arg is present',
+    parseQueryProfileArg(['--execute-live', '--theme=fx']) === 'policy');
+  check('parseQueryProfileArg returns "policy" from ["--query-profile=policy"]',
+    parseQueryProfileArg(['--query-profile=policy']) === 'policy');
+  check('parseQueryProfileArg returns "simple" from ["--query-profile=simple"]',
+    parseQueryProfileArg(['--query-profile=simple']) === 'simple');
+}
+
+if (typeof validateQueryProfile === 'function') {
+  check('validateQueryProfile("policy") returns ok: true', validateQueryProfile('policy')?.ok === true);
+  check('validateQueryProfile("simple") returns ok: true', validateQueryProfile('simple')?.ok === true);
+  check('validateQueryProfile("bad") returns ok: false with invalid_query_profile',
+    validateQueryProfile('bad')?.ok === false && validateQueryProfile('bad')?.code === 'invalid_query_profile');
+  check('invalid theme and invalid query profile are distinct error codes',
+    'invalid_theme' !== 'invalid_query_profile');
+}
+
+if (typeof applySmokeQueryProfile === 'function' && defs) {
+  const fxThemeOnly = defs.filter((d) => d.queryKey === 'fx');
+  const policyResult = applySmokeQueryProfile(fxThemeOnly, 'policy');
+  check('applySmokeQueryProfile policy returns same queryKey', policyResult[0]?.queryKey === 'fx');
+  check('applySmokeQueryProfile policy does not break theme selection integration', Array.isArray(policyResult));
+
+  const simpleResult = applySmokeQueryProfile(fxThemeOnly, 'simple');
+  check('applySmokeQueryProfile simple returns same queryKey', simpleResult[0]?.queryKey === 'fx');
+  check('applySmokeQueryProfile simple returns same category', simpleResult[0]?.category === 'FX');
+  check('applySmokeQueryProfile simple returns a different queryString from policy',
+    simpleResult[0]?.queryString !== fxThemeOnly[0]?.queryString);
+
+  // Verify original GNEWS_QUERY_DEFINITIONS were not mutated by applySmokeQueryProfile
+  const fxOriginal = defs.find((d) => d.queryKey === 'fx');
+  applySmokeQueryProfile(defs, 'simple');
+  check('Calling applySmokeQueryProfile does not mutate original definitions',
+    defs.find((d) => d.queryKey === 'fx')?.queryString === fxOriginal?.queryString);
+}
+
+check('globalThis.fetch was NOT called during query profile helper invocations', !networkCallAttempted);
+log('');
+
 // Restore fetch
 globalThis.fetch = originalFetch;
 

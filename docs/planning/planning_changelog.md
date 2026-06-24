@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BE-R3 - 2026-06-24
+
+### GNews Live Smoke Query Simplification Patch (Implemented)
+
+- Patched `scripts/owner_smoke_gnews_live_fetch.mjs` — added `--query-profile=<profile>` option with allowlist validation (2 valid profiles: `policy`, `simple`). Default is `policy`. `simple` applies smoke-only short Korean query terms from `SMOKE_QUERY_PROFILE_SIMPLE_MAP` instead of the OR-heavy policy query strings. Definitions are shallow-cloned — imported `GNEWS_QUERY_DEFINITIONS` from `gnewsLiveFetchAdapter.mjs` are never mutated. Query profile validated before env reads. Added `invalid_query_profile` sanitized reason code. New exports: `SMOKE_QUERY_PROFILE_SIMPLE_MAP`, `SMOKE_ALLOWED_QUERY_PROFILES`, `parseQueryProfileArg`, `validateQueryProfile`, `applySmokeQueryProfile`.
+- Created `scripts/check_gnews_live_smoke_query_profile.mjs` — behavioral query-profile checker. Tests all 3 new pure helpers and integration with `selectSmokeThemeDefinitions`. No network, no env reads. **66/66 PASS.**
+- Updated `scripts/check_gnews_live_smoke_script_static_contract.mjs` — added Group 15 with 12 Phase 3BE-R3 checks: `--query-profile` support, `policy`/`simple` profiles, `invalid_query_profile`, all 3 new exports, simple map presence, all 6 smoke query terms, definition cloning, profile validation before guards, no queryString in query-profile logStep, `effectiveDefinitions` usage. **All checks passed (Group 15 added). Exit 0.**
+- Updated `scripts/check_gnews_live_smoke_theme_selection.mjs` — added Group 9 with 17 Phase 3BE-R3 integration checks: query profile helpers importable, `parseQueryProfileArg` defaults, `validateQueryProfile` valid/invalid, `applySmokeQueryProfile` with theme integration, original definitions not mutated. **79/79 PASS.**
+- Updated `scripts/check_gnews_live_smoke_script_dry_run.mjs` — no changes needed; existing 29 checks still pass (dry-run does not exercise query profile path). **29/29 PASS.**
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added Phase 3BE-R3 artifact group (8 checks): result doc exists, query profile checker exists, `check:gnews-live-smoke-query-profile` in `package.json`, smoke supports `--query-profile`, `invalid_query_profile` present, simple map present, all 6 smoke query terms, route still fixture-backed. **All checks passed. Exit 0.**
+- Created `docs/planning/phase_3be_r3_gnews_live_smoke_query_simplification_patch_result_v0.1.md` — 13-section result doc.
+- Added `check:gnews-live-smoke-query-profile` to `package.json`.
+- **Simple profile map** (smoke-only, not the Phase 3AY production policy): `market_stocks` → `주식`, `macro_policy` → `금리`, `fx` → `환율`, `oil_commodities` → `유가`, `crypto_digital_assets` → `비트코인`, `personal_finance` → `재테크`.
+- **Security note**: A previously exposed GNews API key remains treated as compromised — not recorded anywhere. Owner must rotate before any live retry.
+- **No live GNews call was made**: dry-run and behavioral (no-network) validation only. `runDryRun` unchanged.
+- **Route remains unchanged**: `src/pages/api/news/market-feed.ts` untouched. `source: "fixture"`, `liveEnabled: false`. `gnewsLiveFetchAdapter.mjs` not modified.
+- **No live calls, no DB/Supabase/Home/deployment changes, no migration files.**
+- **Validation**: `check:gnews-news-policy` all passed; `check:gnews-news-engine` 57/57; `check:gnews-news-api-route` 35 groups; `check:gnews-news-api-response` 61/61; `check:gnews-live-adapter-design` all passed; `check:gnews-live-adapter-static` all passed; `check:gnews-live-adapter-mocked` 148/148; `check:gnews-live-smoke-script` all passed (Group 15 added); `check:gnews-live-smoke-dry-run` 29/29; `check:gnews-live-smoke-theme-selection` 79/79 (Group 9 added); `check:gnews-live-smoke-query-profile` 66/66; `smoke:gnews-live:dry` PASS.
+- **Recommended next phase**: 3BE-R4 — Owner rotates API key, sets endpoint-only `GNEWS_BASE_URL`, and re-runs live smoke with `--theme=macro_policy --query-profile=simple` or `--theme=fx --query-profile=simple`. Returns only sanitized count/category summary.
+
 ## Phase 3BE-R1 - 2026-06-24
 
 ### GNews Live Smoke Theme Selection Patch (Implemented)

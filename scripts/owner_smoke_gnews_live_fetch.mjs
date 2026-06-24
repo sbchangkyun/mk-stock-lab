@@ -1,5 +1,5 @@
 /**
- * Owner-run GNews live smoke script (Phase 3BD, patched in Phase 3BE-R1).
+ * Owner-run GNews live smoke script (Phase 3BD, patched in Phase 3BE-R1, Phase 3BE-R3).
  * Default mode: dry-run. No network, no env reads, no API key access in dry-run mode.
  * Live mode: requires --execute-live AND --confirm-owner-approved AND all env guard conditions.
  *
@@ -7,13 +7,19 @@
  *   --theme=<queryKey> selects a single GNews query theme for the live run.
  *   GNEWS_BASE_URL is validated as endpoint-only (no query string, no embedded key).
  *
+ * Phase 3BE-R3 additions:
+ *   --query-profile=<profile> selects a query profile: policy (default) or simple.
+ *   simple profile applies smoke-only short query terms instead of policy query strings.
+ *   Definitions are cloned; imported GNEWS_QUERY_DEFINITIONS are never mutated.
+ *
  * IMPORTANT: Do not run with --execute-live without explicit owner approval and env configuration.
  * Claude Code must not execute the live branch. The smoke:gnews-live:dry package script is safe.
  *
  * Usage:
  *   Dry-run (safe, always):  node scripts/owner_smoke_gnews_live_fetch.mjs --dry-run
- *   Live with theme:  node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --theme=fx
- *   Live multi-theme: node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --max-themes=2
+ *   Live with theme:         node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --theme=fx
+ *   Live with simple:        node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --theme=fx --query-profile=simple
+ *   Live multi-theme:        node scripts/owner_smoke_gnews_live_fetch.mjs --execute-live --confirm-owner-approved --max-themes=2
  */
 
 import {
@@ -89,6 +95,62 @@ export function selectSmokeThemeDefinitions(definitions, { themeKey = null, maxT
     return { ok: false, code: 'invalid_theme' };
   }
   return { ok: true, definitions: [matched] };
+}
+
+/**
+ * Smoke-only simplified query profile map.
+ * For owner smoke validation only — not the Phase 3AY production ingestion policy.
+ * Does not replace GNEWS_QUERY_DEFINITIONS in gnewsLiveFetchAdapter.mjs.
+ */
+export const SMOKE_QUERY_PROFILE_SIMPLE_MAP = {
+  market_stocks: '주식',
+  macro_policy: '금리',
+  fx: '환율',
+  oil_commodities: '유가',
+  crypto_digital_assets: '비트코인',
+  personal_finance: '재테크',
+};
+
+/** Allowlist of valid --query-profile values. */
+export const SMOKE_ALLOWED_QUERY_PROFILES = new Set(['policy', 'simple']);
+
+/**
+ * Extracts --query-profile=<value> from the arg list.
+ * Returns the value if present and non-empty, otherwise 'policy' (the default).
+ */
+export function parseQueryProfileArg(argList) {
+  const arg = argList.find((a) => a.startsWith('--query-profile='));
+  if (!arg) return 'policy';
+  const val = arg.replace('--query-profile=', '');
+  return val.length > 0 ? val : 'policy';
+}
+
+/**
+ * Validates a query profile against the allowlist.
+ * Returns { ok: true } or { ok: false, code: 'invalid_query_profile' }.
+ */
+export function validateQueryProfile(profile) {
+  if (!profile || !SMOKE_ALLOWED_QUERY_PROFILES.has(profile)) {
+    return { ok: false, code: 'invalid_query_profile' };
+  }
+  return { ok: true };
+}
+
+/**
+ * Applies the smoke query profile to selected definitions.
+ * Returns shallow clones — never mutates the imported GNEWS_QUERY_DEFINITIONS.
+ * - 'policy': clones definitions with queryString unchanged.
+ * - 'simple': clones definitions with queryString replaced by smoke-only short query.
+ * Never prints or returns the queryString in caller-visible summary fields.
+ */
+export function applySmokeQueryProfile(definitions, profile) {
+  if (profile === 'simple') {
+    return definitions.map((def) => ({
+      ...def,
+      queryString: SMOKE_QUERY_PROFILE_SIMPLE_MAP[def.queryKey] ?? def.queryString,
+    }));
+  }
+  return definitions.map((def) => ({ ...def }));
 }
 
 /**
@@ -236,7 +298,16 @@ const main = async () => {
     return;
   }
 
-  // Step 2: Env guard — reads env vars only after theme is confirmed valid
+  // Step 1b: Query profile validation — pure, no env reads, fails before key access if invalid
+  const rawQueryProfile = parseQueryProfileArg(args);
+  const queryProfileCheck = validateQueryProfile(rawQueryProfile);
+  if (!queryProfileCheck.ok) {
+    logStep('guard-check', 'failed', { code: queryProfileCheck.code });
+    process.exitCode = 1;
+    return;
+  }
+
+  // Step 2: Env guard — reads env vars only after theme and query profile are confirmed valid
   const guard = checkLiveGuards();
   if (!guard.ok) {
     logStep('guard-check', 'failed', { code: guard.code });
@@ -260,6 +331,12 @@ const main = async () => {
   }
   logStep('theme-selection', 'confirmed', themeExtra);
 
+  // Apply smoke query profile — clones definitions, never mutates imported GNEWS_QUERY_DEFINITIONS
+  const effectiveDefinitions = applySmokeQueryProfile(selectedDefinitions, rawQueryProfile);
+
+  // Log query profile — profile name only, never the actual query strings
+  logStep('query-profile', 'confirmed', { queryProfile: rawQueryProfile });
+
   logStep('live-fetch', 'started', { maxThemes: String(effectiveMaxThemes) });
 
   try {
@@ -268,7 +345,7 @@ const main = async () => {
     // Live fetch: uses globalThis.fetch, injected via fetchFn parameter.
     // baseUrl and apiKey are passed as arguments — never logged.
     const batchResult = await fetchGnewsMarketNewsBatch(
-      selectedDefinitions,
+      effectiveDefinitions,
       {
         fetchFn: globalThis.fetch,
         baseUrl: guard.baseUrl,

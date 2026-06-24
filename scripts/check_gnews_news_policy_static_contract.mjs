@@ -428,6 +428,40 @@ check('Route remains fixture-backed (liveEnabled: false still present)',
   readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
 log('');
 
+// --- Phase 3BE-R3 artifact checks ---
+log('Phase 3BE-R3 artifacts:');
+const RESULT_DOC_3BE_R3_PATH = join(root, 'docs', 'planning', 'phase_3be_r3_gnews_live_smoke_query_simplification_patch_result_v0.1.md');
+const QUERY_PROFILE_CHECKER_PATH = join(root, 'scripts', 'check_gnews_live_smoke_query_profile.mjs');
+
+check('Phase 3BE-R3 result doc exists', existsSync(RESULT_DOC_3BE_R3_PATH));
+check('Phase 3BE-R3 query profile checker exists', existsSync(QUERY_PROFILE_CHECKER_PATH));
+
+let pkg3ber3 = {};
+try { pkg3ber3 = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check(
+  'package.json includes check:gnews-live-smoke-query-profile',
+  typeof pkg3ber3.scripts?.['check:gnews-live-smoke-query-profile'] === 'string',
+);
+
+if (existsSync(OWNER_SMOKE_PATH)) {
+  const smokeContent3ber3 = readFileSync(OWNER_SMOKE_PATH, 'utf8');
+  check('Smoke script supports --query-profile option', smokeContent3ber3.includes('--query-profile='));
+  check('Smoke script includes invalid_query_profile reason code', smokeContent3ber3.includes('invalid_query_profile'));
+  check('Smoke script includes smoke-only simple query map', smokeContent3ber3.includes('SMOKE_QUERY_PROFILE_SIMPLE_MAP'));
+  check('Smoke script includes all 6 simple profile smoke query terms',
+    smokeContent3ber3.includes('주식') && smokeContent3ber3.includes('금리') &&
+    smokeContent3ber3.includes('환율') && smokeContent3ber3.includes('유가') &&
+    smokeContent3ber3.includes('비트코인') && smokeContent3ber3.includes('재테크'));
+  check('Smoke script does not log queryString values (3BE-R3 check)', (() => {
+    const calls = smokeContent3ber3.match(/logStep\s*\([^)]*queryString[^)]*\)/g);
+    return !calls || calls.length === 0;
+  })());
+}
+check('Route still fixture-backed after 3BE-R3 (liveEnabled: false)',
+  existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs')) &&
+  readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8').includes('liveEnabled: false'));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

@@ -293,6 +293,41 @@ if (!smokeExists) {
       return !calls || calls.length === 0;
     })());
   log('');
+
+  // ---------------------------------------------------------------------------
+  // Group 15: Phase 3BE-R3 — query profile selector
+  // ---------------------------------------------------------------------------
+  log('--- Group 15: Phase 3BE-R3 query profile selector ---');
+  check('Smoke script supports --query-profile flag', smoke.includes('--query-profile='));
+  check('Smoke script defines allowed profiles policy and simple',
+    smoke.includes("'policy'") && smoke.includes("'simple'"));
+  check('Smoke script has invalid_query_profile reason code', smoke.includes('invalid_query_profile'));
+  check('Smoke script exports parseQueryProfileArg helper',
+    smoke.includes('export function parseQueryProfileArg') || smoke.includes('export const parseQueryProfileArg'));
+  check('Smoke script exports validateQueryProfile helper',
+    smoke.includes('export function validateQueryProfile') || smoke.includes('export const validateQueryProfile'));
+  check('Smoke script exports applySmokeQueryProfile helper',
+    smoke.includes('export function applySmokeQueryProfile') || smoke.includes('export const applySmokeQueryProfile'));
+  check('Smoke script defines SMOKE_QUERY_PROFILE_SIMPLE_MAP', smoke.includes('SMOKE_QUERY_PROFILE_SIMPLE_MAP'));
+  check('Smoke script simple map includes all 6 smoke query terms',
+    smoke.includes('주식') && smoke.includes('금리') && smoke.includes('환율') &&
+    smoke.includes('유가') && smoke.includes('비트코인') && smoke.includes('재테크'));
+  check('Smoke script clones definitions in applySmokeQueryProfile (spread or map)',
+    smoke.includes('...def') || (smoke.includes('.map(') && smoke.includes('queryString:')));
+  check('Smoke script validates query profile before env reads (validateQueryProfile before checkLiveGuards)',
+    (() => {
+      const profileCheckIdx = smoke.indexOf('validateQueryProfile');
+      const guardCallIdx = smoke.indexOf('checkLiveGuards()');
+      return profileCheckIdx > -1 && guardCallIdx > -1 && profileCheckIdx < guardCallIdx;
+    })());
+  check('Smoke script does not log queryString value in query-profile logStep',
+    (() => {
+      const calls = smoke.match(/logStep\s*\([^)]*query-profile[^)]*\)/g) ?? [];
+      return calls.every((call) => !call.includes('queryString'));
+    })());
+  check('Smoke script applies query profile to effective definitions before fetch',
+    smoke.includes('applySmokeQueryProfile') && smoke.includes('effectiveDefinitions'));
+  log('');
 }
 
 // ---------------------------------------------------------------------------
