@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BN - 2026-06-24
+
+### Portfolio Bookmark Tabs & Reorder UX (Implemented)
+
+- **Status**: implemented. Portfolio selector bar converted to bookmark-style tabs with pinned aggregate (left) and add (right) tabs and reorderable user portfolio tabs in between. No API routes, Supabase schemas, or deployment changes.
+- Aggregate tab "전체 포트폴리오" pinned at the far left. Always the default active view on initial load. Cannot be reordered.
+- Add tab ("+ 추가") pinned at the far right. Clicking it reveals the existing Phase 3BM collapsible manage panel. No modal or slide-over introduced.
+- User-created portfolio tabs appear between the two pinned tabs. Rendered via `renderPortfolios()` using `document.createElement` (no innerHTML on user data).
+- Desktop hover/focus: reorder arrow buttons (`‹` / `›`) appear around the portfolio name, as per "‹ OO계좌 ›" design intent. Arrows are `<button>` elements with `aria-label`. Inline edit/delete buttons also revealed on hover/focus.
+- Mobile/touch (hover: none media query): reorder arrows and edit/delete buttons always visible, wider tap targets. No long-press, no drag-and-drop.
+- One-slot movement per click. Boundary rules: first user tab left-arrow disabled, last user tab right-arrow disabled. Aggregate and add tabs cannot move. Active selection preserved after reorder.
+- Tab order persistence: client memory only for Phase 3BN. No localStorage key written. No backend orderIndex call. Order resets on page reload.
+- Created `scripts/check_portfolio_bookmark_tabs_static_contract.mjs` — 13-group static checker, 88/88 PASS.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BN artifact group appended; Phase 3BM future-block checks updated to reflect intentional Phase 3BN tab introduction.
+- Updated `package.json` — added `check:portfolio-bookmark-tabs` script.
+- Created `docs/planning/phase_3bn_portfolio_bookmark_tabs_reorder_ux_result_v0.1.md` — result doc.
+- No drag-and-drop, no new creation modal, no DB/Supabase/KIS/GNews/deployment changes. Home unchanged. No /news page.
+- All validators passed. Build passed.
+- **Recommended next phase**: Phase 3BO — Portfolio Owner Browser Review.
+
 ## Phase 3BM - 2026-06-24
 
 ### Portfolio Page Layout Refactor (Implemented)

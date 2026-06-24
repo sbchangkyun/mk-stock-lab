@@ -658,21 +658,58 @@ if (existsSync(PORTFOLIO_PAGE_3BM_PATH)) {
     portfolio3bm.includes('id="portfolio-refresh"'));
   check('Refresh aria-label is non-live copy (현재 포트폴리오 다시 계산)',
     portfolio3bm.includes('현재 포트폴리오 다시 계산'));
-  check('Bookmark reorder not implemented (no move-tab action)',
-    !portfolio3bm.includes('move-tab'));
-  check('No bookmark-tab class added', !portfolio3bm.includes('bookmark-tab'));
 } else {
   check('Portfolio page still exists (3BM)', false);
   check('Debug status chips removed', false);
   check('Debug status chips removed (status-pill)', false);
   check('Refresh control exists', false);
   check('Refresh aria-label non-live', false);
-  check('Bookmark reorder not implemented', false);
-  check('No bookmark-tab class added', false);
 }
 check('No /news page created (3BM boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 check('HomePortfolioPanel still present (3BM boundary)', existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
 check('HomeMarketNews still present (3BM boundary)', existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+log('');
+
+// --- Phase 3BN artifact checks ---
+log('Phase 3BN artifacts:');
+const RESULT_DOC_3BN_PATH = join(root, 'docs', 'planning', 'phase_3bn_portfolio_bookmark_tabs_reorder_ux_result_v0.1.md');
+const BOOKMARK_CHECKER_PATH = join(root, 'scripts', 'check_portfolio_bookmark_tabs_static_contract.mjs');
+const PORTFOLIO_PAGE_3BN_PATH = join(root, 'src', 'pages', 'portfolio.astro');
+
+check('Phase 3BN result doc exists', existsSync(RESULT_DOC_3BN_PATH));
+check('Portfolio bookmark tabs checker exists', existsSync(BOOKMARK_CHECKER_PATH));
+
+let pkg3bn = {};
+try { pkg3bn = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check('package.json includes check:portfolio-bookmark-tabs',
+  typeof pkg3bn.scripts?.['check:portfolio-bookmark-tabs'] === 'string');
+
+if (existsSync(PORTFOLIO_PAGE_3BN_PATH)) {
+  const portfolio3bn = readFileSync(PORTFOLIO_PAGE_3BN_PATH, 'utf8');
+  check('Aggregate tab (전체 포트폴리오) exists in portfolio page (3BN)',
+    portfolio3bn.includes('전체 포트폴리오'));
+  check('Add tab (portfolio-bookmark-tab--add) exists in portfolio page (3BN)',
+    portfolio3bn.includes('portfolio-bookmark-tab--add'));
+  check('Reorder controls exist (portfolio-tab-reorder-btn)',
+    portfolio3bn.includes('portfolio-tab-reorder-btn'));
+  check('No drag-and-drop library added (no dragstart event)',
+    !portfolio3bn.includes('dragstart') && !portfolio3bn.includes('dragover'));
+  check('No new localStorage tab-order key added',
+    !portfolio3bn.includes('portfolioTabOrder') && !portfolio3bn.includes('portfolio-tab-order'));
+  check('No GNews live behavior added in portfolio page',
+    !portfolio3bn.includes('gnews.io') && !portfolio3bn.includes('GNEWS_API_KEY'));
+} else {
+  check('Portfolio page still exists (3BN)', false);
+  check('Aggregate tab exists', false);
+  check('Add tab exists', false);
+  check('Reorder controls exist', false);
+  check('No drag-and-drop added', false);
+  check('No localStorage tab-order key', false);
+  check('No GNews live behavior', false);
+}
+check('No /news page created (3BN boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+check('HomePortfolioPanel still present (3BN boundary)', existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('HomeMarketNews still present (3BN boundary)', existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
 log('');
 
 // --- Summary ---

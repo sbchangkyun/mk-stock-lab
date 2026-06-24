@@ -972,26 +972,166 @@ a.header-button {
 }
 
 .portfolio-selector-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  min-height: 40px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 4px;
 }
 
-.portfolio-selector-bar .portfolio-list {
+.portfolio-bookmark-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 0;
+  align-items: stretch;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
-.portfolio-selector-bar .portfolio-item {
+.portfolio-tab-list {
   display: flex;
-  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  flex: 1;
   min-width: 0;
-  max-width: 260px;
-  flex: 0 1 auto;
+}
+
+.portfolio-bookmark-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+
+.portfolio-bookmark-tab:hover {
+  color: var(--primary);
+}
+
+.portfolio-bookmark-tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  border-radius: 4px 4px 0 0;
+}
+
+.portfolio-bookmark-tab--active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 700;
+}
+
+.portfolio-bookmark-tab--aggregate {
+  font-weight: 700;
+}
+
+.portfolio-bookmark-tab--add {
+  margin-left: auto;
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.portfolio-bookmark-tab--add:hover {
+  background: rgba(15, 79, 216, 0.06);
+}
+
+.portfolio-tab-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.portfolio-tab-reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 36px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--primary);
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s;
+  flex-shrink: 0;
+}
+
+.portfolio-tab-reorder-btn:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.portfolio-tab-reorder-btn:disabled {
+  cursor: not-allowed;
+}
+
+.portfolio-tab-item:hover .portfolio-tab-reorder-btn,
+.portfolio-tab-item:focus-within .portfolio-tab-reorder-btn {
+  opacity: 1;
+}
+
+.portfolio-tab-item:hover .portfolio-tab-reorder-btn:disabled,
+.portfolio-tab-item:focus-within .portfolio-tab-reorder-btn:disabled {
+  opacity: 0.3;
+}
+
+.portfolio-tab-inline-action {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s;
+  flex-shrink: 0;
+}
+
+.portfolio-tab-inline-action:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.portfolio-tab-item:hover .portfolio-tab-inline-action,
+.portfolio-tab-item:focus-within .portfolio-tab-inline-action {
+  opacity: 1;
+}
+
+.portfolio-tab-inline-action:hover {
+  color: var(--primary);
+  background: rgba(15, 79, 216, 0.08);
+}
+
+.portfolio-tab-inline-action.danger:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+@media (hover: none) {
+  .portfolio-tab-reorder-btn {
+    opacity: 1;
+    width: 28px;
+  }
+  .portfolio-tab-reorder-btn:disabled {
+    opacity: 0.3;
+  }
+  .portfolio-tab-inline-action {
+    opacity: 1;
+  }
 }
 
 .portfolio-manage-toggle {
@@ -1000,17 +1140,6 @@ a.header-button {
   font-weight: 800;
   color: var(--text-muted);
   white-space: nowrap;
-}
-
-.portfolio-manage-toggle:hover {
-  color: var(--primary);
-}
-
-.portfolio-manage-toggle:focus,
-.portfolio-manage-toggle:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-  border-radius: 4px;
 }
 
 .portfolio-manage-panel {
