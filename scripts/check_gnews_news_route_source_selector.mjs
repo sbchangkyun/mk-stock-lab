@@ -451,11 +451,13 @@ if (existsSync(HOME_PAGE_PATH)) {
   const homeContent = readFileSync(HOME_PAGE_PATH, 'utf8');
   check('Home page does not import source selector', !homeContent.includes('gnewsMarketFeedSourceSelector'));
   check('Home page does not import live adapter', !homeContent.includes('gnewsLiveFetchAdapter'));
-  check('Home page does not import market-feed route', !homeContent.includes('market-feed'));
+  check('Home page connects to market-feed via SSR fetch only (not direct import)',
+    // Phase 3BH: Home SSR-fetches /api/news/market-feed?mode=home — allowed.
+    !homeContent.includes("from '../api/news/market-feed'"));
 } else {
   check('Home page does not import source selector', true);
   check('Home page does not import live adapter', true);
-  check('Home page does not import market-feed route', true);
+  check('Home page connects to market-feed via SSR fetch only (not direct import)', true);
 }
 log('');
 

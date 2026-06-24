@@ -269,11 +269,14 @@ check(
 if (existsSync(HOME_PAGE_PATH)) {
   const homeContent = readFileSync(HOME_PAGE_PATH, 'utf8');
   check(
-    'Home page does not import market-feed route',
-    !homeContent.includes('market-feed'),
+    'Home page connects to market-feed via SSR fetch only (not direct import)',
+    // Phase 3BH: Home SSR-fetches /api/news/market-feed?mode=home — allowed.
+    // Check it does NOT import the route file or live adapter directly.
+    !homeContent.includes("from '../api/news/market-feed'") &&
+    !homeContent.includes('gnewsLiveFetchAdapter'),
   );
 } else {
-  check('Home page does not import market-feed route', true);
+  check('Home page connects to market-feed via SSR fetch only (not direct import)', true);
 }
 
 check(

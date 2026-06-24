@@ -1,0 +1,78 @@
+---
+interface Article {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  imageUrl: string | null;
+  sourceName: string;
+  publishedAt: string;
+  category: string;
+  relevanceScore: number;
+}
+
+interface Props {
+  articles?: Article[];
+}
+
+const { articles = [] } = Astro.props;
+const displayArticles = articles.slice(0, 6);
+
+const CATEGORY_LABELS: Record<string, string> = {
+  MARKET_STOCKS: '국내 주식',
+  FX: '환율',
+  MACRO_POLICY: '거시/정책',
+  OIL_COMMODITIES: '원자재',
+  CRYPTO_DIGITAL_ASSETS: '가상자산',
+  PERSONAL_FINANCE: '재테크',
+  GLOBAL_INDICES: '글로벌 지수',
+};
+
+function formatPublishedDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  } catch {
+    return '';
+  }
+}
+---
+
+<section class="home-news-section" aria-label="시장 뉴스">
+  <div class="home-news-header">
+    <p class="eyebrow">MARKET NEWS</p>
+    <h2 class="home-news-title-h2">시장 뉴스</h2>
+    <p class="home-news-lead">오늘 시장을 움직이는 주요 이슈를 한눈에 확인하세요.</p>
+  </div>
+
+  {displayArticles.length === 0 ? (
+    <div class="home-news-empty">
+      <p>표시할 시장 뉴스가 없습니다.</p>
+    </div>
+  ) : (
+    <div class="home-news-grid">
+      {displayArticles.map((article) => (
+        <a
+          class="home-news-card"
+          href={article.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={article.title}
+        >
+          <div class="home-news-card-meta">
+            <span class="home-news-badge">
+              {CATEGORY_LABELS[article.category] ?? article.category}
+            </span>
+            <span class="home-news-source-name">{article.sourceName}</span>
+            <time class="home-news-date" datetime={article.publishedAt}>
+              {formatPublishedDate(article.publishedAt)}
+            </time>
+          </div>
+          <p class="home-news-headline">{article.title}</p>
+          {article.description && (
+            <p class="home-news-desc">{article.description}</p>
+          )}
+        </a>
+      ))}
+    </div>
+  )}
+</section>

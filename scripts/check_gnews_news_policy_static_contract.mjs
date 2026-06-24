@@ -542,6 +542,43 @@ check('Home page not connected to live news source',
 check('No /news page created (3BG check)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
+// --- Phase 3BH artifact checks ---
+log('Phase 3BH artifacts:');
+const RESULT_DOC_3BH_PATH = join(root, 'docs', 'planning', 'phase_3bh_home_market_news_ui_integration_result_v0.1.md');
+const HOME_NEWS_CHECKER_PATH = join(root, 'scripts', 'check_home_market_news_static_contract.mjs');
+const HOME_NEWS_COMPONENT_PATH = join(root, 'src', 'components', 'HomeMarketNews.astro');
+const HOME_PAGE_PATH_3BH = join(root, 'src', 'pages', 'index.astro');
+
+check('Phase 3BH result doc exists', existsSync(RESULT_DOC_3BH_PATH));
+check('Home market news checker exists (check_home_market_news_static_contract.mjs)', existsSync(HOME_NEWS_CHECKER_PATH));
+check('HomeMarketNews component exists (src/components/HomeMarketNews.astro)', existsSync(HOME_NEWS_COMPONENT_PATH));
+
+let pkg3bh = {};
+try { pkg3bh = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check('package.json includes check:home-market-news',
+  typeof pkg3bh.scripts?.['check:home-market-news'] === 'string');
+
+if (existsSync(HOME_PAGE_PATH_3BH)) {
+  const homeContent3bh = readFileSync(HOME_PAGE_PATH_3BH, 'utf8');
+  check('Home uses mode=home route (/api/news/market-feed?mode=home)',
+    homeContent3bh.includes('/api/news/market-feed?mode=home'));
+  check('Home does not pass source=auto', !homeContent3bh.includes('source=auto'));
+  check('Home does not pass source=live', !homeContent3bh.includes('source=live'));
+  check('Home does not import live adapter directly',
+    !homeContent3bh.includes('gnewsLiveFetchAdapter'));
+  check('Home does not import owner smoke script',
+    !homeContent3bh.includes('owner_smoke_gnews_live_fetch'));
+}
+check('No /news page exists (3BH boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+check('Route default unchanged (fixture-default preserved)',
+  (() => {
+    const h = existsSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'))
+      ? readFileSync(join(root, 'src', 'lib', 'news', 'gnewsMarketFeedResponse.mjs'), 'utf8')
+      : '';
+    return h.includes('liveEnabled: false') || h.includes('?? false');
+  })());
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

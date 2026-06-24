@@ -1,5 +1,28 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BH - 2026-06-24
+
+### Home Market News UI Integration (Implemented)
+
+- **Status**: implemented. Home page now renders top-6 market news article cards. No live GNews call. No DB, Supabase, or deployment changes.
+- Home page (`src/pages/index.astro`) SSR-fetches `/api/news/market-feed?mode=home` during request handling. No `source` parameter is passed — route uses fixture default (`source=fixture`, `liveEnabled=false`).
+- Fetch is server-side only (`await fetch(new URL('/api/news/market-feed?mode=home', Astro.url))`). No client-side news fetch was added.
+- Created `src/components/HomeMarketNews.astro` — renders section title, up to 6 article cards (category badge, source name, date, title, description), and an empty fallback state ("표시할 시장 뉴스가 없습니다.") if fetch fails or returns no articles.
+- UI copy: section title `시장 뉴스`, lead `오늘 시장을 움직이는 주요 이슈를 한눈에 확인하세요.`. No "실시간" or "live" claims.
+- Only approved public article fields rendered: `title`, `description`, `url`, `sourceName`, `publishedAt`, `category`. No internal fields (`canonicalUrlHash`, `titleHash`, `isDuplicate`, etc.).
+- Category badge mapped to Korean display names (국내 주식, 환율, 거시/정책, 원자재, 가상자산, 재테크).
+- Added responsive news grid styles to `src/styles/style.css`: 3-col desktop, 2-col 980px, 1-col 640px.
+- Created `scripts/check_home_market_news_static_contract.mjs` — 49-check no-network static contract checker. **49/49 PASS.**
+- Updated prior boundary checkers (`check_gnews_news_api_route_static_contract.mjs`, `check_gnews_news_route_source_selector.mjs`, `check_gnews_live_fetch_adapter_design_static_contract.mjs`) — relaxed stale "Home does not call market-feed route" checks to reflect Phase 3BH intentional SSR connection (now checks that Home does not *import* the route directly, only SSR-fetches it).
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — added Phase 3BH artifact group (11 checks): result doc exists, checker exists, component exists, package script, Home uses `mode=home`, no `source=auto/live`, no live adapter import, no smoke script import, no /news page, route default unchanged.
+- Added `check:home-market-news` to `package.json`.
+- No Home connection to live GNews adapter. No GNews env vars read from Home. No owner smoke script imported.
+- **Route boundary unchanged**: `/api/news/market-feed` route not modified. Default source remains fixture.
+- No /news page created. No DB/Supabase/KIS/Vercel/deployment changes.
+- Live GNews provider compatibility remains unresolved. Home uses fixture/fallback-first data.
+- Created `docs/planning/phase_3bh_home_market_news_ui_integration_result_v0.1.md` — 10-section result doc.
+- **Recommended next phase**: Phase 3BI — Optional `/news` paginated list page using `mode=list` and default fixture source.
+
 ## Phase 3BG - 2026-06-24
 
 ### News Route Source Selector with Kill Switch and Fixture Fallback (Implemented)

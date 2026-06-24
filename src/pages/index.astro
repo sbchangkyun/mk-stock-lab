@@ -1,6 +1,22 @@
 ---
 import HomeRailAd from '../components/HomeRailAd.astro';
+import HomeMarketNews from '../components/HomeMarketNews.astro';
 import Layout from '../layouts/Layout.astro';
+
+// SSR fetch: /api/news/market-feed?mode=home (no source param — uses fixture default)
+let newsArticles: Record<string, unknown>[] = [];
+try {
+  const newsUrl = new URL('/api/news/market-feed?mode=home', Astro.url);
+  const res = await fetch(newsUrl);
+  if (res.ok) {
+    const data = await res.json() as Record<string, unknown>;
+    if (Array.isArray(data?.articles)) {
+      newsArticles = (data.articles as Record<string, unknown>[]).slice(0, 6);
+    }
+  }
+} catch {
+  // SSR fetch failed — HomeMarketNews renders empty fallback state
+}
 ---
 
 <Layout title="MK Stock Lab | 투자 데이터 플랫폼" activePath="/" pageClass="home-page">
@@ -50,6 +66,9 @@ import Layout from '../layouts/Layout.astro';
       <p>로그인 후 보유 종목, 메모, 배분 관리를 시작하는 개인 포트폴리오 작업 공간입니다.</p>
     </a>
   </section>
+
+  <HomeMarketNews articles={newsArticles} />
+
     </div>
 
     <div class="home-sidebar-column" aria-label="Home advertising sidebar">

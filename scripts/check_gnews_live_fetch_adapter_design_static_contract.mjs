@@ -332,12 +332,13 @@ if (existsSync(HOME_PAGE_PATH)) {
     !homeContent.includes('gnewsLiveFetchAdapter'),
   );
   check(
-    'Home page does not directly call market-feed route',
-    !homeContent.includes('/api/news/market-feed'),
+    'Home page connects to market-feed via SSR fetch only (not direct import)',
+    // Phase 3BH: Home SSR-fetches /api/news/market-feed?mode=home — allowed.
+    !homeContent.includes("from '../api/news/market-feed'"),
   );
 } else {
   check('Home page does not import live adapter', true);
-  check('Home page does not directly call market-feed route', true);
+  check('Home page connects to market-feed via SSR fetch only (not direct import)', true);
 }
 
 const hasGnewsMigration = existsSync(SUPABASE_MIGRATIONS_PATH) &&
