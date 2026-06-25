@@ -1001,8 +1001,8 @@ check('No GNews live behavior added by 3BU',
     const plan3bu = existsSync(PLAN_DOC_3BU) ? readFileSync(PLAN_DOC_3BU, 'utf8') : '';
     return !plan3bu.includes('gnews.io') && plan3bu.includes('documentation-only');
   })());
-check('No runtime valuation route added in 3BU',
-  !existsSync(VALUATION_ROUTE) && !existsSync(VALUATION_ROUTE_JS));
+check('Valuation route (when present) is fixture-only — no live provider (3BU boundary)',
+  !existsSync(VALUATION_ROUTE) || !readFileSync(VALUATION_ROUTE, 'utf8').includes('source=live'));
 log('');
 
 // ─── Phase 3BV artifact group ────────────────────────────────────────────────
@@ -1025,12 +1025,49 @@ check('package script check:kis-quote-adapter-mocked exists',
 check('buildPortfolioValuationFromQuotes exported in portfolioValuation.ts (3BV)',
   existsSync(PORTFOLIO_VALUATION_3BV) &&
   readFileSync(PORTFOLIO_VALUATION_3BV, 'utf8').includes('export const buildPortfolioValuationFromQuotes'));
-check('No /api/portfolio/valuation route added by 3BV',
-  !existsSync(VALUATION_ROUTE_3BV) && !existsSync(VALUATION_ROUTE_3BV_JS));
+check('Valuation route (when present) is fixture-only — no live source in route (3BV boundary)',
+  !existsSync(VALUATION_ROUTE_3BV) ||
+  !readFileSync(VALUATION_ROUTE_3BV, 'utf8').includes('source=live'));
 check('No /news page created (3BV boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 check('HomePortfolioPanel still present (3BV boundary)',
   existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
 check('HomeMarketNews still present (3BV boundary)',
+  existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+log('');
+
+// ─── Phase 3BW artifact group ────────────────────────────────────────────────
+log('--- Phase 3BW: Portfolio Valuation API Route with Fixture/Mocked Quotes ---');
+
+const RESULT_DOC_3BW = join(root, 'docs', 'planning', 'phase_3bw_portfolio_valuation_api_route_fixture_result_v0.1.md');
+const VALUATION_ROUTE_3BW = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.ts');
+const FIXTURE_RESOLVER_3BW = join(root, 'src', 'lib', 'server', 'portfolioValuationFixture.ts');
+const API_CHECKER_3BW = join(root, 'scripts', 'check_portfolio_valuation_api_route_fixture_contract.mjs');
+
+check('Phase 3BW result doc exists', existsSync(RESULT_DOC_3BW));
+check('Phase 3BW valuation route file exists', existsSync(VALUATION_ROUTE_3BW));
+check('Phase 3BW fixture resolver exists', existsSync(FIXTURE_RESOLVER_3BW));
+check('Phase 3BW API route checker exists', existsSync(API_CHECKER_3BW));
+check('package script check:portfolio-valuation-api exists (3BW)',
+  (() => {
+    let p = {};
+    try { p = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+    return typeof p.scripts?.['check:portfolio-valuation-api'] === 'string';
+  })());
+check('Phase 3BW route is fixture-only (no live/auto source)',
+  existsSync(VALUATION_ROUTE_3BW) && (() => {
+    const c = readFileSync(VALUATION_ROUTE_3BW, 'utf8');
+    return c.includes("'fixture'") && !c.includes('source=live') && !c.includes('source=auto');
+  })());
+check('Phase 3BW route has no live KIS import',
+  existsSync(VALUATION_ROUTE_3BW) && !readFileSync(VALUATION_ROUTE_3BW, 'utf8').includes('getKisDomesticQuote'));
+check('Phase 3BW route has no fetch call',
+  existsSync(VALUATION_ROUTE_3BW) && !(/\bfetch\s*\(/.test(readFileSync(VALUATION_ROUTE_3BW, 'utf8'))));
+check('No live GNews behavior added in 3BW route',
+  existsSync(VALUATION_ROUTE_3BW) && !readFileSync(VALUATION_ROUTE_3BW, 'utf8').includes('gnews'));
+check('No /news page created (3BW boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+check('HomePortfolioPanel still present (3BW boundary)',
+  existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('HomeMarketNews still present (3BW boundary)',
   existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
 log('');
 

@@ -232,8 +232,8 @@ const valuationRouteFile = join(root, 'src', 'pages', 'api', 'portfolio', 'valua
 const valuationRouteFile2 = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.js');
 const migrationsDir = join(root, 'supabase', 'migrations');
 
-check('No /api/portfolio/valuation route file added',
-  !existsSync(valuationRouteFile) && !existsSync(valuationRouteFile2));
+check('Valuation route (when present) is fixture-only — no live provider (3BU boundary)',
+  !existsSync(valuationRouteFile) || !readFileSync(valuationRouteFile, 'utf8').includes('source=live'));
 check('Planning doc confirms no DB migration files added',
   planContent.toLowerCase().includes('no db') ||
   planContent.includes('DB / Supabase') ||
@@ -262,15 +262,45 @@ check('package.json has check:kis-quote-adapter-mocked script (3BV)',
 check('portfolioValuation.ts has buildPortfolioValuationFromQuotes export (3BV)',
   existsSync(PORTFOLIO_VALUATION_TS) &&
   readFileSync(PORTFOLIO_VALUATION_TS, 'utf8').includes('export const buildPortfolioValuationFromQuotes'));
-check('No /api/portfolio/valuation route added by 3BV',
-  !existsSync(VALUATION_ROUTE_3BV) && !existsSync(VALUATION_ROUTE_3BV_JS));
+check('Valuation route (when present) is fixture-only — no live source (3BV boundary)',
+  !existsSync(VALUATION_ROUTE_3BV) ||
+  !readFileSync(VALUATION_ROUTE_3BV, 'utf8').includes('source=live'));
 check('No /news page created (3BV boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 12: Checker network safety
+// Group 12: Phase 3BW artifact checks
 // ---------------------------------------------------------------------------
-log('--- Group 12: Checker network safety ---');
+log('--- Group 12: Phase 3BW artifact checks ---');
+
+const RESULT_DOC_3BW = join(root, 'docs', 'planning', 'phase_3bw_portfolio_valuation_api_route_fixture_result_v0.1.md');
+const API_CHECKER_3BW = join(root, 'scripts', 'check_portfolio_valuation_api_route_fixture_contract.mjs');
+const VALUATION_ROUTE_3BW = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.ts');
+const FIXTURE_RESOLVER_3BW = join(root, 'src', 'lib', 'server', 'portfolioValuationFixture.ts');
+
+check('Phase 3BW result doc exists', existsSync(RESULT_DOC_3BW));
+check('Phase 3BW API route checker exists', existsSync(API_CHECKER_3BW));
+check('Phase 3BW valuation route file exists', existsSync(VALUATION_ROUTE_3BW));
+check('Phase 3BW fixture resolver exists', existsSync(FIXTURE_RESOLVER_3BW));
+check('package.json has check:portfolio-valuation-api script (3BW)',
+  (() => {
+    let p = {};
+    try { p = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+    return typeof p.scripts?.['check:portfolio-valuation-api'] === 'string';
+  })());
+check('Phase 3BW route is fixture-only (no live source)',
+  existsSync(VALUATION_ROUTE_3BW) && (() => {
+    const c = readFileSync(VALUATION_ROUTE_3BW, 'utf8');
+    return c.includes("'fixture'") && !c.includes('source=live') && !c.includes('source=auto');
+  })());
+check('Phase 3BW route has no fetch call',
+  existsSync(VALUATION_ROUTE_3BW) && !(/\bfetch\s*\(/.test(readFileSync(VALUATION_ROUTE_3BW, 'utf8'))));
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 13: Checker network safety
+// ---------------------------------------------------------------------------
+log('--- Group 13: Checker network safety ---');
 
 const originalFetch = globalThis.fetch;
 let checkerMadeFetch = false;

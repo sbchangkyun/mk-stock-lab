@@ -523,7 +523,8 @@ log('');
 // ── Group 12: Safety boundaries ───────────────────────────────────────────────
 log('--- Group 12: Safety boundaries ---');
 
-check('No /api/portfolio/valuation route file added', !existsSync(VALUATION_ROUTE_TS) && !existsSync(VALUATION_ROUTE_JS));
+check('Valuation route (when present) is fixture-only — no live source (3BV boundary)',
+  !existsSync(VALUATION_ROUTE_TS) || !readFileSync(VALUATION_ROUTE_TS, 'utf8').includes('source=live'));
 check('No /news page directory created', !existsSync(NEWS_PAGE_DIR));
 check('portfolio.astro not modified by 3BV (no 3BV marker)',
   (() => {
@@ -560,6 +561,22 @@ check('Checker does not read .env files',
       !src.includes("from '" + dotEnvPkg) &&
       !src.includes('require(' + "'" + dotEnvPkg);
   })());
+log('');
+
+// ── Phase 3BW artifact checks ────────────────────────────────────────────────
+const VALUATION_ROUTE_3BW = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.ts');
+const FIXTURE_RESOLVER_3BW = join(root, 'src', 'lib', 'server', 'portfolioValuationFixture.ts');
+
+check('Phase 3BW: valuation route file exists', existsSync(VALUATION_ROUTE_3BW));
+check('Phase 3BW: fixture resolver exists', existsSync(FIXTURE_RESOLVER_3BW));
+check('Phase 3BW: route imports buildPortfolioValuationFromQuotes',
+  existsSync(VALUATION_ROUTE_3BW) && readFileSync(VALUATION_ROUTE_3BW, 'utf8').includes('buildPortfolioValuationFromQuotes'));
+check('Phase 3BW: route has no live KIS import (no getKisDomesticQuote)',
+  existsSync(VALUATION_ROUTE_3BW) && !readFileSync(VALUATION_ROUTE_3BW, 'utf8').includes('getKisDomesticQuote'));
+check('Phase 3BW: route has no fetch call',
+  existsSync(VALUATION_ROUTE_3BW) && !(/\bfetch\s*\(/.test(readFileSync(VALUATION_ROUTE_3BW, 'utf8'))));
+check('Phase 3BW: route has no env reads',
+  existsSync(VALUATION_ROUTE_3BW) && !readFileSync(VALUATION_ROUTE_3BW, 'utf8').includes('process.env') && !readFileSync(VALUATION_ROUTE_3BW, 'utf8').includes('import.meta.env'));
 log('');
 
 // ── Forbidden output scan ─────────────────────────────────────────────────────

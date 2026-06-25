@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BW - 2026-06-25
+
+### Portfolio Valuation API Route with Fixture/Mocked Quotes (Implemented)
+
+- **Status**: implemented. No live KIS/GNews calls, no external HTTP, no API route consuming live data, no DB/Supabase, no UI runtime changes, no deployment.
+- **New route**: `POST /api/portfolio/valuation` — fixture-only valuation API. Source defaults to `fixture`; any other source (`live`, `auto`) returns HTTP 400 `UNSUPPORTED_SOURCE`. GET returns 405.
+- **Route uses `buildPortfolioValuationFromQuotes`**: server helper from Phase 3BV computes costBasis, currentPrice, marketValue, unrealizedPnl, unrealizedPnlPct per position; aggregate totalMarketValue/totalUnrealizedPnl when all positions have quotes and share baseCurrency.
+- **Synthetic fixture resolver**: `src/lib/server/portfolioValuationFixture.ts` — 4 synthetic KR quote entries (005930, 000660, 035420, 069500). Calls `assertServerRuntime`. No fetch, no env reads, no live KIS import. 035420 is intentionally `stale-but-usable` to test fallback state propagation.
+- **Request validation**: portfolioId, baseCurrency, positions array (capped at 100), per-position symbol/market/assetType/buyPrice/quantity/currency; all bad inputs → HTTP 400 `VALIDATION_FAILED`.
+- **Public safety**: providerMeta absent from all responses; rawProviderStored: false; liveAttempted: false; no stck_prpr/rt_cd/prdy_vrss/access_token/appkey; sanitized INTERNAL_ERROR (message: "Portfolio valuation failed safely."); no stack traces.
+- **Missing quote behavior**: symbol absent from fixture → null quote; costBasis still computed; currentPrice/marketValue/unrealizedPnl/unrealizedPnlPct all null; staleState unavailable.
+- **Mixed-currency policy**: KRW + USD positions → totalMarketValue null (FX not implemented, no fabrication). US positions receive null quotes (no US fixture); appear in missingQuoteSymbols and unsupportedSymbols.
+- Created `scripts/check_portfolio_valuation_api_route_fixture_contract.mjs` — no-network checker (Groups 1-13, file/static/behavioral/safety checks).
+- Updated `scripts/check_kis_quote_adapter_mocked_contract.mjs` — Phase 3BW artifact checks added.
+- Updated `scripts/check_kis_valuation_pre_design_static_contract.mjs` — Phase 3BW artifact checks added.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BW artifact checks added.
+- Created `docs/planning/phase_3bw_portfolio_valuation_api_route_fixture_result_v0.1.md`.
+- Added `check:portfolio-valuation-api` to `package.json`.
+- All validators pass. Build passes.
+- **Portfolio UI not yet connected**: `portfolio.astro` still calls `buildPortfolioValuationReadiness` (placeholder path). Phase 3BX will wire it.
+- **Recommended next phase**: Phase 3BX — Portfolio UI Valuation Mapping with Fixture API Data.
+
 ## Phase 3BV - 2026-06-25
 
 ### KIS Quote Adapter Contract & Mocked Provider Tests (Implemented)
