@@ -4315,3 +4315,390 @@ p.lab-roadmap-note {
   color: var(--text-muted);
   line-height: 1.55;
 }
+
+/* ============================================================
+   Phase 3DF-HF1 — Lab Return Matrix Redesign
+   ============================================================ */
+
+/* Page header hero note */
+.lab-hero-note {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-top: 12px;
+}
+
+/* Section containers */
+.lab-section {
+  display: grid;
+  gap: 20px;
+}
+
+.lab-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lab-section-header-text {
+  display: grid;
+  gap: 6px;
+}
+
+.lab-section-header-text h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+p.lab-section-copy {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  max-width: 56ch;
+}
+
+.lab-matrix-note-badge {
+  display: inline-block;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+/* Legend chips row */
+.lab-matrix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Base chip — used in legend and summary table */
+.lab-matrix-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  background: var(--cell-bg, var(--surface-muted));
+  color: var(--cell-fg, var(--text));
+}
+
+/* Matrix card wrapper */
+.lab-matrix-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* Horizontal scroll container */
+.lab-matrix-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Main ranking table */
+.lab-return-matrix {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 700px;
+  font-size: 12px;
+}
+
+.lab-return-matrix thead tr {
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.lab-return-matrix th {
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.lab-return-matrix th:first-child,
+.lab-return-matrix td:first-child {
+  text-align: center;
+  background: var(--surface-muted);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+
+.lab-return-matrix tr + tr {
+  border-top: 1px solid var(--border);
+}
+
+.lab-return-matrix td {
+  padding: 4px;
+  vertical-align: middle;
+}
+
+/* Rank label cell */
+.lab-rank-cell {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  padding: 6px 10px !important;
+  min-width: 44px;
+}
+
+/* Return data cell (colored block) */
+.lab-return-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  min-width: 80px;
+  text-align: center;
+  background: var(--cell-bg, var(--surface-muted));
+  color: var(--cell-fg, var(--text));
+}
+
+.lab-return-cell-label {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.lab-return-cell-value {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.lab-return-cell-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* Data note below matrix */
+p.lab-matrix-data-note {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface-muted);
+  line-height: 1.5;
+}
+
+/* Summary block */
+.lab-matrix-summary-block {
+  display: grid;
+  gap: 10px;
+}
+
+.lab-matrix-summary-heading {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Summary table */
+.lab-summary-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.lab-summary-table thead tr {
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.lab-summary-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.lab-summary-table th:not(:first-child),
+.lab-summary-table td:not(:first-child) {
+  text-align: right;
+}
+
+.lab-summary-table tr + tr {
+  border-top: 1px solid var(--border);
+}
+
+.lab-summary-table td {
+  padding: 8px 12px;
+  vertical-align: middle;
+}
+
+.lab-summary-cell {
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.lab-summary-cell--best {
+  color: #16a34a;
+}
+
+.lab-summary-cell--worst {
+  color: #dc2626;
+}
+
+/* Future modules section (demoted) */
+.lab-future-modules {
+  display: grid;
+  gap: 12px;
+}
+
+.lab-future-heading {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+p.lab-future-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.lab-future-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.lab-future-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: var(--surface);
+  display: grid;
+  gap: 8px;
+}
+
+.lab-future-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lab-future-card-header .eyebrow {
+  margin: 0;
+}
+
+.lab-future-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.lab-future-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+p.lab-future-copy {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Category color tokens — asset classes */
+.lab-return-cell--bitcoin    { --cell-bg: #92400E; --cell-fg: #fff; }
+.lab-return-cell--nasdaq100  { --cell-bg: #5B21B6; --cell-fg: #fff; }
+.lab-return-cell--sp500      { --cell-bg: #1D4ED8; --cell-fg: #fff; }
+.lab-return-cell--kospi      { --cell-bg: #0E7490; --cell-fg: #fff; }
+.lab-return-cell--world      { --cell-bg: #0F766E; --cell-fg: #fff; }
+.lab-return-cell--em         { --cell-bg: #15803D; --cell-fg: #fff; }
+.lab-return-cell--reits      { --cell-bg: #C2410C; --cell-fg: #fff; }
+.lab-return-cell--bond       { --cell-bg: #475569; --cell-fg: #fff; }
+.lab-return-cell--hiyield    { --cell-bg: #B45309; --cell-fg: #fff; }
+.lab-return-cell--shortgov   { --cell-bg: #64748B; --cell-fg: #fff; }
+.lab-return-cell--gold       { --cell-bg: #A16207; --cell-fg: #fff; }
+.lab-return-cell--exus       { --cell-bg: #3730A3; --cell-fg: #fff; }
+
+/* Category color tokens — S&P 500 sectors */
+.lab-return-cell--technology    { --cell-bg: #1D4ED8; --cell-fg: #fff; }
+.lab-return-cell--communication { --cell-bg: #5B21B6; --cell-fg: #fff; }
+.lab-return-cell--healthcare    { --cell-bg: #15803D; --cell-fg: #fff; }
+.lab-return-cell--financials    { --cell-bg: #1E40AF; --cell-fg: #fff; }
+.lab-return-cell--industrials   { --cell-bg: #0E7490; --cell-fg: #fff; }
+.lab-return-cell--consumer_disc { --cell-bg: #C2410C; --cell-fg: #fff; }
+.lab-return-cell--consumer_stap { --cell-bg: #0F766E; --cell-fg: #fff; }
+.lab-return-cell--energy        { --cell-bg: #92400E; --cell-fg: #fff; }
+.lab-return-cell--materials     { --cell-bg: #3F6212; --cell-fg: #fff; }
+.lab-return-cell--utilities     { --cell-bg: #6B21A8; --cell-fg: #fff; }
+.lab-return-cell--realestate    { --cell-bg: #991B1B; --cell-fg: #fff; }
+.lab-return-cell--spx           { --cell-bg: #334155; --cell-fg: #fff; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .lab-section-header {
+    flex-direction: column;
+  }
+
+  .lab-return-cell {
+    min-width: 68px;
+    padding: 6px 6px;
+  }
+
+  .lab-return-cell-label {
+    font-size: 9px;
+  }
+
+  .lab-return-cell-value {
+    font-size: 11px;
+  }
+}

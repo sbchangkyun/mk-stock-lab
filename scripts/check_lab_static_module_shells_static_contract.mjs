@@ -75,16 +75,20 @@ check('Page contains lead copy explaining research hub or data connection',
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 3: Four required modules
+// Group 3: Four required module concepts (matrix-first design accepted)
 // ---------------------------------------------------------------------------
-log('--- Group 3: Four required module titles ---');
+// Updated for Phase 3DF-HF1: matrix-first redesign. Module concepts can now
+// appear as matrix section titles (rendered from fixture) or future module cards.
+// Use pageOrFixture so dynamically rendered titles from JSON are found.
+log('--- Group 3: Four required module concepts ---');
 
-check('Page contains 국회의원 보유 주식', page.includes('국회의원 보유 주식'));
-check('Page contains 국민연금 보유 현황', page.includes('국민연금 보유 현황'));
-check('Page contains S&P 500 섹터', page.includes('S&P 500 섹터'));
-check('Page contains 자산군 수익률', page.includes('자산군 수익률'));
-check('Page contains lab-module-grid class', page.includes('lab-module-grid'));
-check('Page contains lab-module-card class', page.includes('lab-module-card'));
+check('Page or fixture contains 국회의원 보유 주식', pageOrFixture.includes('국회의원 보유 주식'));
+check('Page or fixture contains 국민연금 보유 현황', pageOrFixture.includes('국민연금 보유 현황'));
+check('Page or fixture contains S&P 500 섹터', pageOrFixture.includes('S&P 500 섹터') || pageOrFixture.includes('S&P 500 섹터별 수익률'));
+check('Page or fixture contains 자산군 수익률', pageOrFixture.includes('자산군 수익률'));
+check('Page contains lab-shell class (main content wrapper)', page.includes('lab-shell'));
+check('Page has future module or matrix structure (lab-future or lab-matrix or lab-module)',
+  page.includes('lab-future') || page.includes('lab-matrix') || page.includes('lab-module'));
 
 log('');
 
@@ -103,53 +107,60 @@ check('Page contains "연동 전" or "데이터 연동 전" label',
   page.includes('데이터 연동 전') || page.includes('연동 전'));
 check('Page or fixture contains "연동 예정" label',
   pageOrFixture.includes('연동 예정'));
-check('Page contains lab-module-badge class for status badges',
-  page.includes('lab-module-badge'));
+check('Page contains badge class for status labels (lab-module-badge or lab-future-badge)',
+  page.includes('lab-module-badge') || page.includes('lab-future-badge'));
 
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 5: Preview section
+// Group 5: Data preview / matrix section
 // ---------------------------------------------------------------------------
-log('--- Group 5: Preview section ---');
+// Updated for Phase 3DF-HF1: old card-based preview section replaced by
+// matrix visualization. Accept matrix-first layout. Sector/asset samples
+// may now appear only in fixture data (rendered server-side from matrix JSON).
+log('--- Group 5: Data preview / matrix section ---');
 
-// Sector and asset row names are rendered from fixture JSON via {row.name},
-// so check the fixture text for these values (they are present in the rendered output).
-check('Page contains lab-preview-section class', page.includes('lab-preview-section'));
-check('Page contains "예시 데이터 미리보기" or preview heading',
-  page.includes('예시 데이터 미리보기') || page.includes('미리보기'));
-check('Preview section renders Technology sector sample (from fixture)',
+// Category names are in fixture JSON files — use pageOrFixture to find them.
+check('Page or fixture contains Technology sector reference',
   pageOrFixture.includes('Technology'));
-check('Preview section renders Healthcare sector sample (from fixture)',
+check('Page or fixture contains Healthcare sector reference',
   pageOrFixture.includes('Healthcare'));
-check('Preview section renders Financials sector sample (from fixture)',
+check('Page or fixture contains Financials sector reference',
   pageOrFixture.includes('Financials'));
-check('Preview section renders Bonds asset sample (from fixture)',
+check('Page or fixture contains Bonds asset reference',
   pageOrFixture.includes('Bonds'));
-check('Preview section renders Gold asset sample (from fixture)',
+check('Page or fixture contains Gold asset reference',
   pageOrFixture.includes('Gold'));
-check('Page contains lab-preview-grid class', page.includes('lab-preview-grid'));
-check('Page contains "정적 표시값" label in preview',
-  page.includes('정적 표시값'));
+check('Page contains 예시 데이터 label (example data indicator)',
+  page.includes('예시 데이터'));
+check('Page or fixture contains 정적 표시값 or 예시 데이터 (static value label)',
+  pageOrFixture.includes('정적 표시값') || page.includes('예시 데이터'));
+check('Page has a data visualization or preview structure (matrix or preview class)',
+  page.includes('lab-matrix') || page.includes('lab-preview') || page.includes('LabReturnMatrix'));
+check('Page uses matrix component or scroll container (lab-matrix-scroll in component, or LabReturnMatrix import)',
+  page.includes('lab-matrix-scroll') || page.includes('LabReturnMatrix') || pageOrFixture.includes('lab-matrix-scroll'));
 
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 6: Roadmap / connection plan panel
+// Group 6: Future modules / connection plan
 // ---------------------------------------------------------------------------
-log('--- Group 6: Roadmap/connection plan ---');
+// Updated for Phase 3DF-HF1: old roadmap panel replaced by a future modules
+// section. Accept any mention of future/planned data integration.
+log('--- Group 6: Future modules / connection plan ---');
 
-check('Page contains lab-roadmap-panel class', page.includes('lab-roadmap-panel'));
-check('Page contains "데이터 연동 계획" or "공개 데이터 연동" heading',
-  page.includes('데이터 연동 계획') || page.includes('공개 데이터 연동'));
-check('Roadmap references 국회의원 보유 주식 module',
-  page.includes('국회의원') && page.includes('모듈'));
-check('Roadmap references 국민연금 보유 현황 module',
-  page.includes('국민연금') && page.includes('모듈'));
-check('Roadmap references S&P 500 섹터 module',
-  page.includes('S&P 500') && page.includes('모듈'));
-check('Roadmap references 자산군 수익률 module',
-  page.includes('자산군') && page.includes('모듈'));
+check('Page contains future modules or disclaimer section referencing data integration',
+  page.includes('lab-future-modules') || page.includes('lab-roadmap-panel') || page.includes('연동 예정'));
+check('Page or fixture references 국회의원 module concept',
+  pageOrFixture.includes('국회의원') && (pageOrFixture.includes('모듈') || page.includes('congress-stocks')));
+check('Page or fixture references 국민연금 module concept',
+  pageOrFixture.includes('국민연금') && (pageOrFixture.includes('모듈') || page.includes('nps-holdings')));
+check('Page or fixture references S&P 500 섹터 concept',
+  pageOrFixture.includes('S&P 500') && (pageOrFixture.includes('섹터') || pageOrFixture.includes('sp500')));
+check('Page or fixture references 자산군 수익률 concept',
+  pageOrFixture.includes('자산군') && pageOrFixture.includes('수익률'));
+check('Page contains data policy or disclaimer (lab-disclaimer or 데이터 정책)',
+  page.includes('lab-disclaimer') || page.includes('데이터 정책'));
 
 log('');
 

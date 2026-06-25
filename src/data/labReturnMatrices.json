@@ -1,0 +1,362 @@
+{
+  "assetMatrix": {
+    "title": "자산군 수익률 비교",
+    "description": "자산배분 관점에서 주요 자산군의 연도별 예시 수익률 순위를 비교합니다. 연도별 1위부터 12위까지 순위 변동 흐름을 확인할 수 있습니다.",
+    "note": "예시 데이터입니다. 실제 수익률이 아니며 데이터 연동 전 화면입니다. 투자 판단에 사용할 수 없습니다.",
+    "years": ["YTD", "2025", "2024", "2023", "2022", "2021", "2020"],
+    "categories": [
+      { "id": "sp500",      "label": "S&P500",      "colorClass": "sp500" },
+      { "id": "nasdaq100",  "label": "나스닥100",    "colorClass": "nasdaq100" },
+      { "id": "kospi",      "label": "코스피",       "colorClass": "kospi" },
+      { "id": "world",      "label": "전세계",       "colorClass": "world" },
+      { "id": "em",         "label": "신흥국",       "colorClass": "em" },
+      { "id": "reits",      "label": "리츠",         "colorClass": "reits" },
+      { "id": "bond",       "label": "종합채권",     "colorClass": "bond" },
+      { "id": "hiyield",    "label": "하이일드채권", "colorClass": "hiyield" },
+      { "id": "shortgov",   "label": "단기국채",     "colorClass": "shortgov" },
+      { "id": "gold",       "label": "금",           "colorClass": "gold" },
+      { "id": "bitcoin",    "label": "비트코인",     "colorClass": "bitcoin" },
+      { "id": "exus",       "label": "미국외글로벌", "colorClass": "exus" }
+    ],
+    "rankings": [
+      {
+        "rank": 1,
+        "cells": [
+          { "year": "YTD",  "categoryId": "bitcoin",  "label": "비트코인",     "return": "+52.3%" },
+          { "year": "2025", "categoryId": "gold",      "label": "금",           "return": "+28.4%" },
+          { "year": "2024", "categoryId": "bitcoin",   "label": "비트코인",     "return": "+108.2%" },
+          { "year": "2023", "categoryId": "bitcoin",   "label": "비트코인",     "return": "+86.4%" },
+          { "year": "2022", "categoryId": "shortgov",  "label": "단기국채",     "return": "+2.1%" },
+          { "year": "2021", "categoryId": "bitcoin",   "label": "비트코인",     "return": "+64.3%" },
+          { "year": "2020", "categoryId": "bitcoin",   "label": "비트코인",     "return": "+302.4%" }
+        ]
+      },
+      {
+        "rank": 2,
+        "cells": [
+          { "year": "YTD",  "categoryId": "nasdaq100", "label": "나스닥100",    "return": "+24.1%" },
+          { "year": "2025", "categoryId": "bitcoin",   "label": "비트코인",     "return": "+22.7%" },
+          { "year": "2024", "categoryId": "nasdaq100", "label": "나스닥100",    "return": "+35.8%" },
+          { "year": "2023", "categoryId": "nasdaq100", "label": "나스닥100",    "return": "+54.2%" },
+          { "year": "2022", "categoryId": "gold",      "label": "금",           "return": "-1.3%" },
+          { "year": "2021", "categoryId": "reits",     "label": "리츠",         "return": "+36.2%" },
+          { "year": "2020", "categoryId": "nasdaq100", "label": "나스닥100",    "return": "+48.6%" }
+        ]
+      },
+      {
+        "rank": 3,
+        "cells": [
+          { "year": "YTD",  "categoryId": "sp500",     "label": "S&P500",       "return": "+18.6%" },
+          { "year": "2025", "categoryId": "sp500",     "label": "S&P500",       "return": "+16.3%" },
+          { "year": "2024", "categoryId": "sp500",     "label": "S&P500",       "return": "+24.2%" },
+          { "year": "2023", "categoryId": "em",        "label": "신흥국",       "return": "+18.6%" },
+          { "year": "2022", "categoryId": "hiyield",   "label": "하이일드채권", "return": "-4.6%" },
+          { "year": "2021", "categoryId": "sp500",     "label": "S&P500",       "return": "+28.8%" },
+          { "year": "2020", "categoryId": "world",     "label": "전세계",       "return": "+34.2%" }
+        ]
+      },
+      {
+        "rank": 4,
+        "cells": [
+          { "year": "YTD",  "categoryId": "gold",      "label": "금",           "return": "+15.2%" },
+          { "year": "2025", "categoryId": "nasdaq100", "label": "나스닥100",    "return": "+14.1%" },
+          { "year": "2024", "categoryId": "world",     "label": "전세계",       "return": "+16.9%" },
+          { "year": "2023", "categoryId": "sp500",     "label": "S&P500",       "return": "+17.8%" },
+          { "year": "2022", "categoryId": "em",        "label": "신흥국",       "return": "-8.7%" },
+          { "year": "2021", "categoryId": "nasdaq100", "label": "나스닥100",    "return": "+27.4%" },
+          { "year": "2020", "categoryId": "gold",      "label": "금",           "return": "+28.7%" }
+        ]
+      },
+      {
+        "rank": 5,
+        "cells": [
+          { "year": "YTD",  "categoryId": "em",        "label": "신흥국",       "return": "+9.4%" },
+          { "year": "2025", "categoryId": "reits",     "label": "리츠",         "return": "+9.2%" },
+          { "year": "2024", "categoryId": "hiyield",   "label": "하이일드채권", "return": "+8.7%" },
+          { "year": "2023", "categoryId": "world",     "label": "전세계",       "return": "+16.4%" },
+          { "year": "2022", "categoryId": "exus",      "label": "미국외글로벌", "return": "-9.4%" },
+          { "year": "2021", "categoryId": "hiyield",   "label": "하이일드채권", "return": "+12.1%" },
+          { "year": "2020", "categoryId": "sp500",     "label": "S&P500",       "return": "+22.3%" }
+        ]
+      },
+      {
+        "rank": 6,
+        "cells": [
+          { "year": "YTD",  "categoryId": "world",     "label": "전세계",       "return": "+8.1%" },
+          { "year": "2025", "categoryId": "world",     "label": "전세계",       "return": "+7.5%" },
+          { "year": "2024", "categoryId": "em",        "label": "신흥국",       "return": "+7.4%" },
+          { "year": "2023", "categoryId": "kospi",     "label": "코스피",       "return": "+12.3%" },
+          { "year": "2022", "categoryId": "bond",      "label": "종합채권",     "return": "-13.1%" },
+          { "year": "2021", "categoryId": "world",     "label": "전세계",       "return": "+11.4%" },
+          { "year": "2020", "categoryId": "kospi",     "label": "코스피",       "return": "+18.1%" }
+        ]
+      },
+      {
+        "rank": 7,
+        "cells": [
+          { "year": "YTD",  "categoryId": "kospi",     "label": "코스피",       "return": "+7.3%" },
+          { "year": "2025", "categoryId": "em",        "label": "신흥국",       "return": "+5.1%" },
+          { "year": "2024", "categoryId": "gold",      "label": "금",           "return": "+6.1%" },
+          { "year": "2023", "categoryId": "exus",      "label": "미국외글로벌", "return": "+8.7%" },
+          { "year": "2022", "categoryId": "kospi",     "label": "코스피",       "return": "-16.4%" },
+          { "year": "2021", "categoryId": "em",        "label": "신흥국",       "return": "+9.7%" },
+          { "year": "2020", "categoryId": "em",        "label": "신흥국",       "return": "+14.8%" }
+        ]
+      },
+      {
+        "rank": 8,
+        "cells": [
+          { "year": "YTD",  "categoryId": "exus",      "label": "미국외글로벌", "return": "+5.2%" },
+          { "year": "2025", "categoryId": "kospi",     "label": "코스피",       "return": "+3.6%" },
+          { "year": "2024", "categoryId": "exus",      "label": "미국외글로벌", "return": "+4.3%" },
+          { "year": "2023", "categoryId": "hiyield",   "label": "하이일드채권", "return": "+7.3%" },
+          { "year": "2022", "categoryId": "world",     "label": "전세계",       "return": "-18.8%" },
+          { "year": "2021", "categoryId": "exus",      "label": "미국외글로벌", "return": "+8.2%" },
+          { "year": "2020", "categoryId": "bond",      "label": "종합채권",     "return": "+7.6%" }
+        ]
+      },
+      {
+        "rank": 9,
+        "cells": [
+          { "year": "YTD",  "categoryId": "reits",     "label": "리츠",         "return": "+3.1%" },
+          { "year": "2025", "categoryId": "exus",      "label": "미국외글로벌", "return": "+2.3%" },
+          { "year": "2024", "categoryId": "reits",     "label": "리츠",         "return": "+3.8%" },
+          { "year": "2023", "categoryId": "reits",     "label": "리츠",         "return": "+5.1%" },
+          { "year": "2022", "categoryId": "sp500",     "label": "S&P500",       "return": "-22.7%" },
+          { "year": "2021", "categoryId": "gold",      "label": "금",           "return": "+1.4%" },
+          { "year": "2020", "categoryId": "hiyield",   "label": "하이일드채권", "return": "+1.4%" }
+        ]
+      },
+      {
+        "rank": 10,
+        "cells": [
+          { "year": "YTD",  "categoryId": "hiyield",   "label": "하이일드채권", "return": "+2.4%" },
+          { "year": "2025", "categoryId": "hiyield",   "label": "하이일드채권", "return": "+1.1%" },
+          { "year": "2024", "categoryId": "bond",      "label": "종합채권",     "return": "+2.4%" },
+          { "year": "2023", "categoryId": "gold",      "label": "금",           "return": "+4.2%" },
+          { "year": "2022", "categoryId": "reits",     "label": "리츠",         "return": "-26.1%" },
+          { "year": "2021", "categoryId": "shortgov",  "label": "단기국채",     "return": "+0.4%" },
+          { "year": "2020", "categoryId": "exus",      "label": "미국외글로벌", "return": "+0.8%" }
+        ]
+      },
+      {
+        "rank": 11,
+        "cells": [
+          { "year": "YTD",  "categoryId": "bond",      "label": "종합채권",     "return": "+0.6%" },
+          { "year": "2025", "categoryId": "bond",      "label": "종합채권",     "return": "+0.4%" },
+          { "year": "2024", "categoryId": "kospi",     "label": "코스피",       "return": "-1.2%" },
+          { "year": "2023", "categoryId": "shortgov",  "label": "단기국채",     "return": "+2.8%" },
+          { "year": "2022", "categoryId": "nasdaq100", "label": "나스닥100",    "return": "-33.1%" },
+          { "year": "2021", "categoryId": "bond",      "label": "종합채권",     "return": "-1.7%" },
+          { "year": "2020", "categoryId": "reits",     "label": "리츠",         "return": "-6.4%" }
+        ]
+      },
+      {
+        "rank": 12,
+        "cells": [
+          { "year": "YTD",  "categoryId": "shortgov",  "label": "단기국채",     "return": "-1.2%" },
+          { "year": "2025", "categoryId": "shortgov",  "label": "단기국채",     "return": "-1.8%" },
+          { "year": "2024", "categoryId": "shortgov",  "label": "단기국채",     "return": "+1.9%" },
+          { "year": "2023", "categoryId": "bond",      "label": "종합채권",     "return": "-1.2%" },
+          { "year": "2022", "categoryId": "bitcoin",   "label": "비트코인",     "return": "-65.2%" },
+          { "year": "2021", "categoryId": "kospi",     "label": "코스피",       "return": "-2.3%" },
+          { "year": "2020", "categoryId": "shortgov",  "label": "단기국채",     "return": "-0.1%" }
+        ]
+      }
+    ],
+    "summary": [
+      { "categoryId": "bitcoin",   "label": "비트코인",     "average": "+91.4%",  "best": "+302.4%", "worst": "-65.2%" },
+      { "categoryId": "nasdaq100", "label": "나스닥100",    "average": "+21.6%",  "best": "+54.2%",  "worst": "-33.1%" },
+      { "categoryId": "sp500",     "label": "S&P500",       "average": "+16.8%",  "best": "+24.2%",  "worst": "-22.7%" },
+      { "categoryId": "gold",      "label": "금",           "average": "+12.8%",  "best": "+28.7%",  "worst": "-1.3%" },
+      { "categoryId": "world",     "label": "전세계",       "average": "+12.4%",  "best": "+34.2%",  "worst": "-18.8%" },
+      { "categoryId": "reits",     "label": "리츠",         "average": "+6.4%",   "best": "+36.2%",  "worst": "-26.1%" },
+      { "categoryId": "em",        "label": "신흥국",       "average": "+7.6%",   "best": "+18.6%",  "worst": "-8.7%" },
+      { "categoryId": "kospi",     "label": "코스피",       "average": "+4.8%",   "best": "+18.1%",  "worst": "-16.4%" },
+      { "categoryId": "exus",      "label": "미국외글로벌", "average": "+3.6%",   "best": "+8.7%",   "worst": "-9.4%" },
+      { "categoryId": "hiyield",   "label": "하이일드채권", "average": "+3.6%",   "best": "+12.1%",  "worst": "-4.6%" },
+      { "categoryId": "bond",      "label": "종합채권",     "average": "-0.3%",   "best": "+7.6%",   "worst": "-13.1%" },
+      { "categoryId": "shortgov",  "label": "단기국채",     "average": "+0.3%",   "best": "+2.8%",   "worst": "-1.8%" }
+    ]
+  },
+  "sectorMatrix": {
+    "title": "S&P 500 섹터별 수익률",
+    "description": "섹터 로테이션 흐름을 파악하기 위한 연도별 예시 순위표입니다. 각 섹터가 연도별로 어떤 순위에 위치했는지 확인합니다.",
+    "note": "예시 데이터입니다. 실제 S&P 500 섹터 수익률이 아니며 데이터 연동 전 화면입니다. 투자 판단에 사용할 수 없습니다.",
+    "years": ["YTD", "2025", "2024", "2023", "2022", "2021", "2020"],
+    "categories": [
+      { "id": "technology",    "label": "IT",        "colorClass": "technology" },
+      { "id": "communication", "label": "통신서비스", "colorClass": "communication" },
+      { "id": "healthcare",    "label": "헬스케어",  "colorClass": "healthcare" },
+      { "id": "financials",    "label": "금융",      "colorClass": "financials" },
+      { "id": "industrials",   "label": "산업재",    "colorClass": "industrials" },
+      { "id": "consumer_disc", "label": "경기소비재","colorClass": "consumer_disc" },
+      { "id": "consumer_stap", "label": "필수소비재","colorClass": "consumer_stap" },
+      { "id": "energy",        "label": "에너지",    "colorClass": "energy" },
+      { "id": "materials",     "label": "소재",      "colorClass": "materials" },
+      { "id": "utilities",     "label": "유틸리티",  "colorClass": "utilities" },
+      { "id": "realestate",    "label": "부동산",    "colorClass": "realestate" },
+      { "id": "spx",           "label": "S&P 500",   "colorClass": "spx" }
+    ],
+    "rankings": [
+      {
+        "rank": 1,
+        "cells": [
+          { "year": "YTD",  "categoryId": "technology",    "label": "IT",        "return": "+28.4%" },
+          { "year": "2025", "categoryId": "communication", "label": "통신서비스", "return": "+34.2%" },
+          { "year": "2024", "categoryId": "technology",    "label": "IT",        "return": "+42.8%" },
+          { "year": "2023", "categoryId": "technology",    "label": "IT",        "return": "+56.4%" },
+          { "year": "2022", "categoryId": "energy",        "label": "에너지",    "return": "+59.4%" },
+          { "year": "2021", "categoryId": "energy",        "label": "에너지",    "return": "+54.6%" },
+          { "year": "2020", "categoryId": "technology",    "label": "IT",        "return": "+44.8%" }
+        ]
+      },
+      {
+        "rank": 2,
+        "cells": [
+          { "year": "YTD",  "categoryId": "communication", "label": "통신서비스", "return": "+22.1%" },
+          { "year": "2025", "categoryId": "technology",    "label": "IT",        "return": "+28.6%" },
+          { "year": "2024", "categoryId": "communication", "label": "통신서비스", "return": "+38.4%" },
+          { "year": "2023", "categoryId": "communication", "label": "통신서비스", "return": "+54.2%" },
+          { "year": "2022", "categoryId": "utilities",     "label": "유틸리티",  "return": "+2.4%" },
+          { "year": "2021", "categoryId": "realestate",    "label": "부동산",    "return": "+36.2%" },
+          { "year": "2020", "categoryId": "consumer_disc", "label": "경기소비재", "return": "+36.4%" }
+        ]
+      },
+      {
+        "rank": 3,
+        "cells": [
+          { "year": "YTD",  "categoryId": "financials",    "label": "금융",      "return": "+18.7%" },
+          { "year": "2025", "categoryId": "consumer_disc", "label": "경기소비재","return": "+22.4%" },
+          { "year": "2024", "categoryId": "consumer_disc", "label": "경기소비재","return": "+26.1%" },
+          { "year": "2023", "categoryId": "consumer_disc", "label": "경기소비재","return": "+42.1%" },
+          { "year": "2022", "categoryId": "consumer_stap", "label": "필수소비재","return": "-0.6%" },
+          { "year": "2021", "categoryId": "financials",    "label": "금융",      "return": "+34.8%" },
+          { "year": "2020", "categoryId": "communication", "label": "통신서비스", "return": "+32.8%" }
+        ]
+      },
+      {
+        "rank": 4,
+        "cells": [
+          { "year": "YTD",  "categoryId": "industrials",   "label": "산업재",    "return": "+14.3%" },
+          { "year": "2025", "categoryId": "spx",           "label": "S&P 500",   "return": "+16.3%" },
+          { "year": "2024", "categoryId": "spx",           "label": "S&P 500",   "return": "+24.2%" },
+          { "year": "2023", "categoryId": "industrials",   "label": "산업재",    "return": "+18.4%" },
+          { "year": "2022", "categoryId": "healthcare",    "label": "헬스케어",  "return": "-4.2%" },
+          { "year": "2021", "categoryId": "technology",    "label": "IT",        "return": "+32.4%" },
+          { "year": "2020", "categoryId": "spx",           "label": "S&P 500",   "return": "+22.3%" }
+        ]
+      },
+      {
+        "rank": 5,
+        "cells": [
+          { "year": "YTD",  "categoryId": "energy",        "label": "에너지",    "return": "+11.2%" },
+          { "year": "2025", "categoryId": "financials",    "label": "금융",      "return": "+15.1%" },
+          { "year": "2024", "categoryId": "financials",    "label": "금융",      "return": "+22.4%" },
+          { "year": "2023", "categoryId": "spx",           "label": "S&P 500",   "return": "+17.8%" },
+          { "year": "2022", "categoryId": "industrials",   "label": "산업재",    "return": "-8.6%" },
+          { "year": "2021", "categoryId": "spx",           "label": "S&P 500",   "return": "+28.8%" },
+          { "year": "2020", "categoryId": "healthcare",    "label": "헬스케어",  "return": "+18.4%" }
+        ]
+      },
+      {
+        "rank": 6,
+        "cells": [
+          { "year": "YTD",  "categoryId": "spx",           "label": "S&P 500",   "return": "+9.6%" },
+          { "year": "2025", "categoryId": "industrials",   "label": "산업재",    "return": "+12.4%" },
+          { "year": "2024", "categoryId": "industrials",   "label": "산업재",    "return": "+18.7%" },
+          { "year": "2023", "categoryId": "financials",    "label": "금융",      "return": "+12.4%" },
+          { "year": "2022", "categoryId": "materials",     "label": "소재",      "return": "-12.4%" },
+          { "year": "2021", "categoryId": "industrials",   "label": "산업재",    "return": "+24.1%" },
+          { "year": "2020", "categoryId": "industrials",   "label": "산업재",    "return": "+12.4%" }
+        ]
+      },
+      {
+        "rank": 7,
+        "cells": [
+          { "year": "YTD",  "categoryId": "consumer_disc", "label": "경기소비재","return": "+8.4%" },
+          { "year": "2025", "categoryId": "healthcare",    "label": "헬스케어",  "return": "+8.6%" },
+          { "year": "2024", "categoryId": "healthcare",    "label": "헬스케어",  "return": "+6.4%" },
+          { "year": "2023", "categoryId": "consumer_stap", "label": "필수소비재","return": "+4.2%" },
+          { "year": "2022", "categoryId": "financials",    "label": "금융",      "return": "-18.4%" },
+          { "year": "2021", "categoryId": "materials",     "label": "소재",      "return": "+22.4%" },
+          { "year": "2020", "categoryId": "materials",     "label": "소재",      "return": "+8.6%" }
+        ]
+      },
+      {
+        "rank": 8,
+        "cells": [
+          { "year": "YTD",  "categoryId": "materials",     "label": "소재",      "return": "+6.2%" },
+          { "year": "2025", "categoryId": "materials",     "label": "소재",      "return": "+6.4%" },
+          { "year": "2024", "categoryId": "materials",     "label": "소재",      "return": "+4.2%" },
+          { "year": "2023", "categoryId": "materials",     "label": "소재",      "return": "+2.8%" },
+          { "year": "2022", "categoryId": "spx",           "label": "S&P 500",   "return": "-22.7%" },
+          { "year": "2021", "categoryId": "consumer_disc", "label": "경기소비재","return": "+18.4%" },
+          { "year": "2020", "categoryId": "consumer_stap", "label": "필수소비재","return": "+4.2%" }
+        ]
+      },
+      {
+        "rank": 9,
+        "cells": [
+          { "year": "YTD",  "categoryId": "healthcare",    "label": "헬스케어",  "return": "+4.8%" },
+          { "year": "2025", "categoryId": "utilities",     "label": "유틸리티",  "return": "+3.2%" },
+          { "year": "2024", "categoryId": "utilities",     "label": "유틸리티",  "return": "+3.1%" },
+          { "year": "2023", "categoryId": "energy",        "label": "에너지",    "return": "-2.4%" },
+          { "year": "2022", "categoryId": "consumer_disc", "label": "경기소비재","return": "-38.4%" },
+          { "year": "2021", "categoryId": "communication", "label": "통신서비스", "return": "+16.2%" },
+          { "year": "2020", "categoryId": "utilities",     "label": "유틸리티",  "return": "+2.4%" }
+        ]
+      },
+      {
+        "rank": 10,
+        "cells": [
+          { "year": "YTD",  "categoryId": "consumer_stap", "label": "필수소비재","return": "+2.4%" },
+          { "year": "2025", "categoryId": "consumer_stap", "label": "필수소비재","return": "+2.8%" },
+          { "year": "2024", "categoryId": "energy",        "label": "에너지",    "return": "+2.8%" },
+          { "year": "2023", "categoryId": "utilities",     "label": "유틸리티",  "return": "-8.4%" },
+          { "year": "2022", "categoryId": "realestate",    "label": "부동산",    "return": "-32.1%" },
+          { "year": "2021", "categoryId": "healthcare",    "label": "헬스케어",  "return": "+12.4%" },
+          { "year": "2020", "categoryId": "financials",    "label": "금융",      "return": "-2.4%" }
+        ]
+      },
+      {
+        "rank": 11,
+        "cells": [
+          { "year": "YTD",  "categoryId": "utilities",     "label": "유틸리티",  "return": "+1.2%" },
+          { "year": "2025", "categoryId": "energy",        "label": "에너지",    "return": "-2.4%" },
+          { "year": "2024", "categoryId": "consumer_stap", "label": "필수소비재","return": "+1.4%" },
+          { "year": "2023", "categoryId": "realestate",    "label": "부동산",    "return": "-12.1%" },
+          { "year": "2022", "categoryId": "communication", "label": "통신서비스", "return": "-42.8%" },
+          { "year": "2021", "categoryId": "consumer_stap", "label": "필수소비재","return": "+8.6%" },
+          { "year": "2020", "categoryId": "realestate",    "label": "부동산",    "return": "-6.2%" }
+        ]
+      },
+      {
+        "rank": 12,
+        "cells": [
+          { "year": "YTD",  "categoryId": "realestate",    "label": "부동산",    "return": "-2.4%" },
+          { "year": "2025", "categoryId": "realestate",    "label": "부동산",    "return": "-6.1%" },
+          { "year": "2024", "categoryId": "realestate",    "label": "부동산",    "return": "-4.2%" },
+          { "year": "2023", "categoryId": "healthcare",    "label": "헬스케어",  "return": "-14.4%" },
+          { "year": "2022", "categoryId": "technology",    "label": "IT",        "return": "-46.8%" },
+          { "year": "2021", "categoryId": "utilities",     "label": "유틸리티",  "return": "+4.2%" },
+          { "year": "2020", "categoryId": "energy",        "label": "에너지",    "return": "-34.8%" }
+        ]
+      }
+    ],
+    "summary": [
+      { "categoryId": "technology",    "label": "IT",        "average": "+28.6%",  "best": "+56.4%",  "worst": "-46.8%" },
+      { "categoryId": "communication", "label": "통신서비스", "average": "+22.2%",  "best": "+54.2%",  "worst": "-42.8%" },
+      { "categoryId": "consumer_disc", "label": "경기소비재","average": "+11.8%",  "best": "+42.1%",  "worst": "-38.4%" },
+      { "categoryId": "energy",        "label": "에너지",    "average": "+11.4%",  "best": "+59.4%",  "worst": "-34.8%" },
+      { "categoryId": "financials",    "label": "금융",      "average": "+10.6%",  "best": "+34.8%",  "worst": "-18.4%" },
+      { "categoryId": "spx",           "label": "S&P 500",   "average": "+13.2%",  "best": "+28.8%",  "worst": "-22.7%" },
+      { "categoryId": "industrials",   "label": "산업재",    "average": "+10.4%",  "best": "+24.1%",  "worst": "-8.6%" },
+      { "categoryId": "materials",     "label": "소재",      "average": "+6.4%",   "best": "+22.4%",  "worst": "-12.4%" },
+      { "categoryId": "realestate",    "label": "부동산",    "average": "-1.2%",   "best": "+36.2%",  "worst": "-32.1%" },
+      { "categoryId": "healthcare",    "label": "헬스케어",  "average": "+6.2%",   "best": "+18.4%",  "worst": "-14.4%" },
+      { "categoryId": "consumer_stap", "label": "필수소비재","average": "+3.4%",   "best": "+8.6%",   "worst": "-0.6%" },
+      { "categoryId": "utilities",     "label": "유틸리티",  "average": "+0.6%",   "best": "+4.2%",   "worst": "-8.4%" }
+    ]
+  }
+}

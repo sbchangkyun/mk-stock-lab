@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DF-HF1 - 2026-06-26
+
+### Lab Return Matrix Redesign (Implemented)
+
+- **Status**: implemented. Owner review of Phase 3DF found the card-grid layout did not match the intended research visualization direction. Lab was redesigned as a matrix-first page.
+- **Owner review finding**: 4-card module grid felt like a placeholder; S&P 500 섹터 and 자산군 수익률 sections showed simple label rows, not a meaningful data visualization. Desired reference direction is a matrix-first, data-dense research visualization similar to ETF-style research pages.
+- **Matrix-first redesign**: two large return ranking matrices (자산군 수익률 비교, S&P 500 섹터별 수익률) are now the primary page content. Each matrix has legend chips, colored ranking table with horizontal scroll, and a summary table.
+- **Asset matrix**: 12 categories, 7 year columns (YTD + 2025-2020), 12 rank rows, 12 summary rows.
+- **Sector matrix**: 12 categories (11 GICS sectors + S&P 500 benchmark), 7 year columns, 12 rank rows, 12 summary rows.
+- **Category color system**: each category has a stable CSS color class (e.g. `.lab-return-cell--bitcoin`, `.lab-return-cell--technology`). Color identifies the category, not positive/negative performance.
+- **Fixture data**: `src/data/labReturnMatrices.json` — all values are example data, not real historical returns. Notes field on both matrices: "예시 데이터입니다. 실제 수익률이 아니며 데이터 연동 전 화면입니다."
+- **Design source policy**: reference pages used for layout intent only. No data scraped, no third-party branding or watermark included.
+- **Future modules demoted**: 국회의원 보유 주식 and 국민연금 보유 현황 appear as small future module cards (연동 예정) below the matrices, not as primary hero cards.
+- **Old checker updated**: `check_lab_static_module_shells_static_contract.mjs` updated to accept matrix-first design (Group 3, 5, 6 relaxed). Still 82/82.
+- **No backend changes**: no KIS/GNews/AI provider, no Supabase, no DB migration, no API routes, no live data, no deployment.
+- **Focused validation**: check:lab-return-matrix PASS (110/110), check:lab-static-modules PASS (82/82), build PASS.
+- **Recommended next phase**: Phase 3DG Market Page Fixture Chart Enhancement.
+
 ## Phase 3DF - 2026-06-26
 
 ### Lab Static Module Shells (Implemented)

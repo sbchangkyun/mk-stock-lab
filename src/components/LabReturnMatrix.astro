@@ -1,0 +1,127 @@
+---
+interface MatrixCategory {
+  id: string;
+  label: string;
+  colorClass: string;
+}
+
+interface MatrixCell {
+  year: string;
+  categoryId: string;
+  label: string;
+  return: string;
+}
+
+interface MatrixRankRow {
+  rank: number;
+  cells: MatrixCell[];
+}
+
+interface MatrixSummaryRow {
+  categoryId: string;
+  label: string;
+  average: string;
+  best: string;
+  worst: string;
+}
+
+interface MatrixData {
+  title: string;
+  description: string;
+  note: string;
+  years: string[];
+  categories: MatrixCategory[];
+  rankings: MatrixRankRow[];
+  summary: MatrixSummaryRow[];
+}
+
+interface Props {
+  data: MatrixData;
+  sectionId: string;
+}
+
+const { data, sectionId } = Astro.props;
+---
+
+<section class="lab-section" aria-labelledby={sectionId}>
+  <header class="lab-section-header">
+    <div class="lab-section-header-text">
+      <h2 id={sectionId}>{data.title}</h2>
+      <p class="lab-section-copy">{data.description}</p>
+    </div>
+    <span class="lab-matrix-note-badge">예시 데이터 · 연동 전</span>
+  </header>
+
+  <!-- Category legend chips -->
+  <div class="lab-matrix-legend" aria-label="범례">
+    {data.categories.map((cat) => (
+      <span class={`lab-matrix-chip lab-return-cell--${cat.colorClass}`}>{cat.label}</span>
+    ))}
+  </div>
+
+  <!-- Ranking matrix -->
+  <div class="lab-matrix-card">
+    <div class="lab-matrix-scroll" role="region" aria-label={`${data.title} 순위 매트릭스`}>
+      <table class="lab-return-matrix">
+        <thead>
+          <tr>
+            <th class="lab-rank-cell">순위</th>
+            {data.years.map((year) => (
+              <th>{year}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.rankings.map((row) => (
+            <tr>
+              <td class="lab-rank-cell">{row.rank}위</td>
+              {data.years.map((year) => {
+                const cell = row.cells.find((c) => c.year === year);
+                return cell ? (
+                  <td>
+                    <div class={`lab-return-cell lab-return-cell--${cell.categoryId}`}>
+                      <span class="lab-return-cell-label">{cell.label}</span>
+                      <span class="lab-return-cell-value">{cell.return}</span>
+                    </div>
+                  </td>
+                ) : (
+                  <td class="lab-return-cell-empty">—</td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="lab-matrix-data-note">{data.note}</p>
+  </div>
+
+  <!-- Summary table -->
+  <div class="lab-matrix-summary-block">
+    <h3 class="lab-matrix-summary-heading">구분별 예시 수익률 요약</h3>
+    <div class="lab-matrix-scroll">
+      <table class="lab-summary-table">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>예시 평균</th>
+            <th>예시 최고</th>
+            <th>예시 최저</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.summary.map((row) => (
+            <tr>
+              <td>
+                <span class={`lab-matrix-chip lab-return-cell--${row.categoryId}`}>{row.label}</span>
+              </td>
+              <td class="lab-summary-cell">{row.average}</td>
+              <td class="lab-summary-cell lab-summary-cell--best">{row.best}</td>
+              <td class="lab-summary-cell lab-summary-cell--worst">{row.worst}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
