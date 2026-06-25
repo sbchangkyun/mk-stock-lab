@@ -89,12 +89,14 @@ check('Page contains 공지사항', content.includes('공지사항'));
 check('Page contains 이벤트/혜택', content.includes('이벤트/혜택'));
 log('');
 
-// --- Data section ---
-log('Data section:');
-check('Page contains 내 데이터', content.includes('내 데이터'));
+// --- Data section (Phase 3CD: 내 데이터 card removed) ---
+log('Data section (Phase 3CD removal):');
+check('내 데이터 card is absent (Phase 3CD removal)', !content.includes('내 데이터'));
+check('포트폴리오 placeholder row absent from data card (Phase 3CD removal)', !content.includes('포트폴리오'));
+check('관심 종목 placeholder row absent from data card (Phase 3CD removal)', !content.includes('관심 종목'));
 const removedDataFound = REMOVED_DATA_ROWS.filter((r) => content.includes(r));
 check(
-  `Removed data rows absent (checked: ${REMOVED_DATA_ROWS.length})`,
+  `Previously removed data rows still absent (checked: ${REMOVED_DATA_ROWS.length})`,
   removedDataFound.length === 0,
 );
 log('');

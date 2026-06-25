@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CD - 2026-06-26
+
+### MyPage MVP Completion (Implemented)
+
+- **Status**: implemented. Targeted MyPage cleanup — removes unnecessary placeholder card at owner's request.
+- **Removed**: `내 데이터` card (포트폴리오 and 관심 종목 rows, both `향후 제공 예정`). Owner judged this card unnecessary for the MVP; portfolio/interest features are better represented by actual feature pages and the notification section.
+- **Preserved**: `내 계정` account card (email, login method, last access, subscription), login method resolver (identities/app_metadata, no hard-coded Google label), `알림 설정` notification section, `법적 고지 및 지원` legal links, `계정 관리` / 회원탈퇴 placeholder, master-only `운영 배너 관리` admin rail.
+- **No backend changes**: no DB migration, no Supabase schema/storage, no API routes, no notification backend, no account deletion backend, no live KIS/GNews/external HTTP, no deployment.
+- **Focused validation**: check:mypage-mvp PASS (79/79), check:mypage-shell PASS, check:password-reset-flow PASS, check:home-rail-banner-settings PASS, build PASS.
+- **Recommended next phase**: Phase 3DE Chart AI UX Skeleton Enhancement or Phase 3DE Lab static module shells.
+
 ## Phase 3CC - 2026-06-26
 
 ### Security Metadata Coverage Expansion (Implemented)

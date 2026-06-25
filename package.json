@@ -20,6 +20,7 @@
     "check:market-quote-card": "node scripts/check_market_quote_card_static_contract.mjs",
     "check:header-footer-shell": "node scripts/check_header_footer_shell_static_contract.mjs",
     "check:mypage-shell": "node scripts/check_mypage_shell_static_contract.mjs",
+    "check:mypage-mvp": "node scripts/check_mypage_mvp_completion_static_contract.mjs",
     "check:home-ad-slots": "node scripts/check_home_ad_slots_static_contract.mjs",
     "check:kis-valuation-design": "node scripts/check_kis_valuation_pre_design_static_contract.mjs",
     "check:kis-quote-adapter-mocked": "node scripts/check_kis_quote_adapter_mocked_contract.mjs",
