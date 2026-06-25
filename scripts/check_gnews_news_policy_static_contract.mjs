@@ -893,6 +893,86 @@ check('HomeMarketNews not modified by 3BR',
 check('No /news page created (3BR boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
+// ---------------------------------------------------------------------------
+// Phase 3BS artifact group — Home Portfolio Card & Portfolio Create Sheet
+// ---------------------------------------------------------------------------
+log('--- Phase 3BS: Home Portfolio Card & Portfolio Create Sheet ---');
+
+const RESULT_DOC_3BS = join(root, 'docs', 'planning', 'phase_3bs_home_portfolio_card_create_sheet_owner_fixes_result_v0.1.md');
+const CREATE_SHEET_CHECKER_3BS = join(root, 'scripts', 'check_portfolio_create_sheet_static_contract.mjs');
+const HPP_COMPONENT_3BS = join(root, 'src', 'components', 'HomePortfolioPanel.astro');
+const PORTFOLIO_PAGE_3BS = join(root, 'src', 'pages', 'portfolio.astro');
+const CSS_PATH_3BS = join(root, 'src', 'styles', 'style.css');
+
+check('Phase 3BS result doc exists', existsSync(RESULT_DOC_3BS));
+check('Portfolio create sheet checker exists (3BS)', existsSync(CREATE_SHEET_CHECKER_3BS));
+
+let pkg3bs = {};
+try { pkg3bs = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+check('package.json has check:portfolio-create-sheet script (3BS)',
+  typeof pkg3bs.scripts?.['check:portfolio-create-sheet'] === 'string');
+
+if (existsSync(HPP_COMPONENT_3BS)) {
+  const hpp3bs = readFileSync(HPP_COMPONENT_3BS, 'utf8');
+  check('HomePortfolioPanel has hpp-card-header (3BS top-right meta)',
+    hpp3bs.includes('hpp-card-header'));
+  check('HomePortfolioPanel hpp-card-meta present (3BS)',
+    hpp3bs.includes('hpp-card-meta'));
+  check('포트폴리오 meta label present in hpp (3BS)',
+    hpp3bs.includes('hpp-meta-label') && hpp3bs.includes('포트폴리오'));
+  check('No 개 계좌 wording (3BS)',
+    !hpp3bs.includes('개 계좌'));
+  check('No live KIS/GNews added by 3BS in hpp',
+    !hpp3bs.includes('KIS_APP_KEY') && !hpp3bs.includes('gnews.io'));
+} else {
+  ['hpp-card-header', 'hpp-card-meta', '포트폴리오 meta', 'No 개 계좌', 'No live data'].forEach((label) => {
+    check(label, false);
+  });
+}
+
+if (existsSync(PORTFOLIO_PAGE_3BS)) {
+  const port3bs = readFileSync(PORTFOLIO_PAGE_3BS, 'utf8');
+  check('portfolio-sheet exists (3BS)', port3bs.includes('id="portfolio-sheet"'));
+  check('portfolio-sheet has role=dialog (3BS)', port3bs.includes('role="dialog"'));
+  check('portfolio-sheet-title exists (3BS)', port3bs.includes('id="portfolio-sheet-title"'));
+  check('portfolio-sheet-close exists (3BS)', port3bs.includes('id="portfolio-sheet-close"'));
+  check('portfolio-sheet-backdrop exists (3BS)', port3bs.includes('id="portfolio-sheet-backdrop"'));
+  check('Old inline portfolio-manage-panel removed (3BS)',
+    !port3bs.includes('<div class="portfolio-manage-panel'));
+  check('openPortfolioSheet function present (3BS)', port3bs.includes('openPortfolioSheet'));
+  check('closePortfolioSheet function present (3BS)', port3bs.includes('closePortfolioSheet'));
+  check('No live KIS calls added (3BS)', !port3bs.includes('oauth2/tokenP'));
+  check('No live GNews calls added (3BS)', !port3bs.includes('gnews.io'));
+} else {
+  ['portfolio-sheet', 'role=dialog', 'sheet-title', 'sheet-close', 'sheet-backdrop',
+    'No inline panel', 'openPortfolioSheet', 'closePortfolioSheet',
+    'No KIS', 'No GNews'].forEach((label) => {
+    check(label, false);
+  });
+}
+
+if (existsSync(CSS_PATH_3BS)) {
+  const css3bs = readFileSync(CSS_PATH_3BS, 'utf8');
+  check('CSS .portfolio-sheet defined (3BS)', css3bs.includes('.portfolio-sheet {'));
+  check('CSS .hpp-card-header defined (3BS)', css3bs.includes('.hpp-card-header'));
+  check('CSS .hpp-donut enlarged beyond 76px (3BS)',
+    (() => {
+      const idx = css3bs.indexOf('.hpp-donut {');
+      const block = css3bs.slice(idx, idx + 200);
+      const match = block.match(/width:\s*(\d+)px/);
+      return match ? parseInt(match[1], 10) > 76 : false;
+    })());
+} else {
+  check('CSS .portfolio-sheet', false);
+  check('CSS .hpp-card-header', false);
+  check('CSS .hpp-donut enlarged', false);
+}
+
+check('HomeMarketNews not modified by 3BS',
+  existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+check('No /news page created (3BS boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

@@ -136,8 +136,8 @@ check('CSS portfolio-dashboard class defined',
   cssContent.includes('.portfolio-dashboard'));
 check('portfolio-selector-bar added for portfolio selection',
   portfolioContent.includes('portfolio-selector-bar'));
-check('portfolio-manage-panel added for collapsible management',
-  portfolioContent.includes('portfolio-manage-panel'));
+check('portfolio-sheet added (replaced inline portfolio-manage-panel, Phase 3BS)',
+  portfolioContent.includes('portfolio-sheet'));
 check('portfolio-list still present in DOM for renderPortfolios()',
   portfolioContent.includes('id="portfolio-list"'));
 check('portfolio-empty still present in DOM',
@@ -260,8 +260,8 @@ check('CSS portfolio-loading-copy defined',
   cssContent.includes('.portfolio-loading-copy'));
 check('CSS portfolio-selector-bar defined',
   cssContent.includes('.portfolio-selector-bar'));
-check('CSS portfolio-manage-panel defined or inline',
-  cssContent.includes('.portfolio-manage-panel') || portfolioContent.includes('portfolio-manage-panel'));
+check('CSS portfolio-sheet defined (replaced inline portfolio-manage-panel, Phase 3BS)',
+  cssContent.includes('.portfolio-sheet'));
 check('CSS portfolio-manage-toggle defined',
   cssContent.includes('.portfolio-manage-toggle'));
 check('CSS portfolio-refresh-btn focus style defined',

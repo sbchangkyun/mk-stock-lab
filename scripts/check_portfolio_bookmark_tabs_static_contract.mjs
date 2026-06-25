@@ -108,16 +108,16 @@ check('Add tab (portfolio-manage-toggle) present as JS-rendered button (Phase 3B
   portfolioContent.includes('id="portfolio-manage-toggle"'));
 check('Add tab has portfolio-bookmark-tab--add class',
   portfolioContent.includes('portfolio-bookmark-tab--add'));
-check('Add tab opens/reveals manage panel (openManagePanel call)',
-  portfolioContent.includes('openManagePanel'));
-check('Add tab has aria-controls pointing to manage panel',
-  portfolioContent.includes("'aria-controls', 'portfolio-manage-panel'") ||
-  portfolioContent.includes('"aria-controls", "portfolio-manage-panel"') ||
-  portfolioContent.includes("'portfolio-manage-panel'") ||
-  portfolioContent.includes('aria-controls="portfolio-manage-panel"') ||
-  portfolioContent.includes("aria-controls='portfolio-manage-panel'"));
-check('portfolio-manage-panel still in DOM (add tab target)',
-  portfolioContent.includes('id="portfolio-manage-panel"'));
+check('Add tab opens portfolio sheet (openPortfolioSheet call, Phase 3BS)',
+  portfolioContent.includes('openPortfolioSheet'));
+check('Add tab has aria-controls pointing to portfolio sheet',
+  portfolioContent.includes("'aria-controls', 'portfolio-sheet'") ||
+  portfolioContent.includes('"aria-controls", "portfolio-sheet"') ||
+  portfolioContent.includes("'portfolio-sheet'") ||
+  portfolioContent.includes('aria-controls="portfolio-sheet"') ||
+  portfolioContent.includes("aria-controls='portfolio-sheet'"));
+check('portfolio-sheet in DOM (add tab target, Phase 3BS)',
+  portfolioContent.includes('id="portfolio-sheet"'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -284,8 +284,8 @@ check('Refresh button from 3BM still present',
   portfolioContent.includes('id="portfolio-refresh"'));
 check('Refresh button accessible label preserved',
   portfolioContent.includes('현재 포트폴리오 다시 계산'));
-check('portfolio-manage-panel (collapsible, from 3BM) still present',
-  portfolioContent.includes('id="portfolio-manage-panel"'));
+check('portfolio-sheet present (replaced portfolio-manage-panel, Phase 3BS)',
+  portfolioContent.includes('id="portfolio-sheet"'));
 check('portfolio-detail dashboard class still present',
   portfolioContent.includes('portfolio-detail') && portfolioContent.includes('portfolio-dashboard'));
 check('Portfolio form elements in DOM (portfolio-form)',

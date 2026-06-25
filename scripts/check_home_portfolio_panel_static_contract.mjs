@@ -17,6 +17,7 @@ const HOME_MARKET_NEWS_PATH = join(root, 'src', 'components', 'HomeMarketNews.as
 const NEWS_PAGE_PATH = join(root, 'src', 'pages', 'news');
 const RESULT_DOC_PATH = join(root, 'docs', 'planning', 'phase_3bl_home_portfolio_status_panel_result_v0.1.md');
 const RESULT_DOC_3BP_PATH = join(root, 'docs', 'planning', 'phase_3bp_home_portfolio_panel_owner_review_fixes_result_v0.1.md');
+const RESULT_DOC_3BS_PATH = join(root, 'docs', 'planning', 'phase_3bs_home_portfolio_card_create_sheet_owner_fixes_result_v0.1.md');
 const PACKAGE_JSON_PATH = join(root, 'package.json');
 
 const log = (msg) => process.stdout.write(msg + '\n');
@@ -226,7 +227,7 @@ check('CSS .hpp-cta does not use block display without centering',
   !(cssContent.match(/\.hpp-cta\s*\{[^}]*display:\s*block/)));
 check('CSS includes focus style for .hpp-cta',
   cssContent.includes('.hpp-cta:focus') || cssContent.includes('.hpp-cta:focus-visible'));
-check('CSS includes .hpp-summary', cssContent.includes('.hpp-summary'));
+check('CSS includes .hpp-card-header (Phase 3BS top-right meta layout)', cssContent.includes('.hpp-card-header'));
 check('CSS includes .hpp-portfolio-names', cssContent.includes('.hpp-portfolio-names'));
 check('CSS includes resolving skeleton styles (Phase 3BP)', cssContent.includes('.hpp-resolving-skeleton'));
 check('CSS includes donut chart styles (Phase 3BP)', cssContent.includes('.hpp-donut'));
@@ -289,9 +290,62 @@ check('State A CTA text is 포트폴리오 시작하기',
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 12: Network safety guard
+// Group 12: Phase 3BS — Home Portfolio Card & Portfolio Create Sheet
 // ---------------------------------------------------------------------------
-log('--- Group 12: Checker network safety ---');
+log('--- Group 12: Phase 3BS checks ---');
+
+check('Phase 3BS result doc exists', existsSync(RESULT_DOC_3BS_PATH));
+check('MY PORTFOLIO top-right meta block present (hpp-card-header)',
+  panelContent.includes('hpp-card-header'));
+check('hpp-card-meta present (meta value container)',
+  panelContent.includes('hpp-card-meta'));
+check('Meta label text includes 포트폴리오 and does not use 개 계좌',
+  panelContent.includes('포트폴리오') && !panelContent.includes('개 계좌'));
+check('Meta value uses 개 suffix with hpp-portfolio-count span',
+  panelContent.includes('hpp-portfolio-count') && panelContent.includes('개</strong>'));
+check('CSS .hpp-card-header defined for top-right layout',
+  cssContent.includes('.hpp-card-header'));
+check('CSS .hpp-card-meta defined',
+  cssContent.includes('.hpp-card-meta'));
+check('CSS .hpp-meta-label defined',
+  cssContent.includes('.hpp-meta-label'));
+check('CSS .hpp-meta-value defined',
+  cssContent.includes('.hpp-meta-value'));
+check('Donut chart is larger — .hpp-donut width updated beyond 76px',
+  (() => {
+    const idx = cssContent.indexOf('.hpp-donut {');
+    const block = cssContent.slice(idx, idx + 200);
+    const match = block.match(/width:\s*(\d+)px/);
+    return match ? parseInt(match[1], 10) > 76 : false;
+  })());
+check('Donut hole inset proportionally updated',
+  (() => {
+    const idx = cssContent.indexOf('.hpp-donut-hole {');
+    const block = cssContent.slice(idx, idx + 150);
+    const match = block.match(/inset:\s*(\d+)px/);
+    return match ? parseInt(match[1], 10) > 19 : false;
+  })());
+check('Donut is still conic-gradient based (renderDonutChart uses conic-gradient)',
+  panelContent.includes('conic-gradient'));
+check('Allocation basis copy present (등록 금액 기준)',
+  panelContent.includes('등록 금액 기준'));
+check('Anti-flicker resolving state remains (hpp-resolving)',
+  panelContent.includes('id="hpp-resolving"') || panelContent.includes("id='hpp-resolving'"));
+check('signed_out not SSR-visible as default (hidden class present)',
+  panelContent.includes('id="hpp-signed-out"') &&
+  (panelContent.includes('class="hpp-state hidden"') || panelContent.includes("class='hpp-state hidden'")));
+check('CTA flex centering preserved (.hpp-cta display flex)',
+  cssContent.includes('.hpp-cta') && cssContent.includes('display: flex'));
+check('No live/real-time/실시간 valuation claim added',
+  !panelContent.includes('실시간') && !panelContent.includes('>live<'));
+check('No chart library imported (conic-gradient only)',
+  !panelContent.includes('Chart.js') && !panelContent.includes('d3.js') && !panelContent.includes("from 'recharts'"));
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 13: Network safety guard
+// ---------------------------------------------------------------------------
+log('--- Group 13: Checker network safety ---');
 
 const originalFetch = globalThis.fetch;
 let checkerMadeFetch = false;
@@ -309,7 +363,7 @@ log('');
 // ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
-log('=== Phase 3BL / 3BP Home Portfolio Panel Static Contract — Summary ===');
+log('=== Phase 3BL / 3BP / 3BS Home Portfolio Panel Static Contract — Summary ===');
 const totalChecks = passes + failures;
 log(`Checks passed: ${passes}/${totalChecks}`);
 log('');

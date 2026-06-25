@@ -1,5 +1,31 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BS - 2026-06-25
+
+### Home Portfolio Card & Portfolio Create Sheet Owner Fixes (Implemented)
+
+- **Status**: implemented. Home MY PORTFOLIO card visual hierarchy updated; inline portfolio registration box replaced with bottom slide sheet. `HomePortfolioPanel.astro`, `portfolio.astro`, and `style.css` updated. No API routes, Supabase schema, DB migrations, KIS/GNews live calls, or deployment changes.
+- **Donut chart enlarged**: `.hpp-donut` width/height changed from `76px` to `120px`. Donut-hole inset updated from `19px` to `30px` to maintain proportions.
+- **Donut chart moved higher**: `.hpp-donut-section` top margin reduced from `12px` to `4px`. Old `.hpp-summary` stat row block (which appeared above the donut) removed entirely.
+- **"포트폴리오 / N개" meta moved to top-right**: New `.hpp-card-header { display: flex; justify-content: space-between }` wraps eyebrow+title (left) and `.hpp-card-meta` (right). Meta label = "포트폴리오", meta value = "N개". Not "N개 계좌".
+- **Allocation basis copy preserved**: "등록 금액 기준 계좌 비중" retained. Cost-basis formula `buyPrice × quantity` unchanged. No live valuation claim.
+- **Anti-flicker state preserved**: `#hpp-resolving` with `data-hpp-default="true"` remains SSR-visible default. `signed_out` remains hidden at SSR time.
+- **Old inline portfolio registration box removed**: `<div class="portfolio-manage-panel hidden">` and its inner `.portfolio-manage-inner.panel` block removed from normal page flow entirely.
+- **+추가 now opens portfolio sheet**: New `portfolio-sheet` dialog (role=dialog, aria-modal=true) replaces the inline panel. Mirrors `position-sheet` structure and animation.
+- **Portfolio sheet UX**: close via X button, backdrop click, or ESC key. Focus moves to name input on open. `aria-hidden` and `aria-expanded` managed. Slide-from-bottom transition (260ms cubic-bezier).
+- **Form fields preserved**: `portfolio-form`, `portfolio-id`, `portfolio-name`, `portfolio-base-currency`, `portfolio-submit`, `portfolio-cancel-edit` IDs unchanged. One form in DOM.
+- **Auto-open on empty state removed**: Previously `openManagePanel()` was called automatically when no portfolios existed. Sheet auto-open removed — user clicks `+추가` explicitly.
+- **Edit mode supported**: Floating tab toolbar "수정" action populates form, sets submit label to "포트폴리오 수정", opens sheet. Sheet title updates to "포트폴리오 수정".
+- Created `scripts/check_portfolio_create_sheet_static_contract.mjs` — 79-check static checker.
+- Updated `scripts/check_home_portfolio_panel_static_contract.mjs` — added Phase 3BS group (18 checks → 102 total).
+- Updated `scripts/check_portfolio_bookmark_tabs_static_contract.mjs` — updated add tab target to portfolio-sheet.
+- Updated `scripts/check_portfolio_layout_refactor_static_contract.mjs` — updated stale portfolio-manage-panel references.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BS artifact group added.
+- Created `docs/planning/phase_3bs_home_portfolio_card_create_sheet_owner_fixes_result_v0.1.md`.
+- All validators pass. Build passes.
+- No live KIS, GNews, Supabase writes, deployment, DB migrations, or /news page.
+- **Recommended next phase**: Phase 3BT — Portfolio Owner Browser Review Round 3.
+
 ## Phase 3BR - 2026-06-25
 
 ### Portfolio Holdings Category Header & Sort UX (Implemented)
