@@ -123,6 +123,33 @@ check('At least one KR code entry (6 digits) exists',
 log('');
 
 // ---------------------------------------------------------------------------
+// Group 4B: Phase 3CC — expanded metadata coverage
+// ---------------------------------------------------------------------------
+log('--- Group 4B: Phase 3CC metadata coverage ---');
+
+const KR_FIXTURE_SYMBOLS = ['005930', '000660', '035420', '069500'];
+const US_TEST_SYMBOLS = ['AAPL', 'KO'];
+
+for (const sym of KR_FIXTURE_SYMBOLS) {
+  check(`KR fixture symbol ${sym} covered in securityLogos.json`,
+    Object.prototype.hasOwnProperty.call(logos, sym));
+}
+for (const sym of US_TEST_SYMBOLS) {
+  check(`US test symbol ${sym} covered in securityLogos.json`,
+    Object.prototype.hasOwnProperty.call(logos, sym));
+}
+check('005930 uses Korean local display name (삼성전자)',
+  logos['005930']?.name === '삼성전자');
+check('000660 uses Korean local display name (SK하이닉스)',
+  logos['000660']?.name === 'SK하이닉스');
+check('No runtime resolver rewrite required (resolveSecurityMetadata still reads logoMappings)',
+  portfolioContent.includes('resolveSecurityMetadata') &&
+  portfolioContent.includes('logoMappings'));
+check('Unsupported fallback (티커 직접 입력) still present for unknown symbols',
+  portfolioContent.includes('티커 직접 입력'));
+log('');
+
+// ---------------------------------------------------------------------------
 // Group 5: Display label helpers use resolver
 // ---------------------------------------------------------------------------
 log('--- Group 5: Display label helpers ---');

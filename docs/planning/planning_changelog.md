@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CC - 2026-06-26
+
+### Security Metadata Coverage Expansion (Implemented)
+
+- **Status**: implemented. Data-only expansion of local security metadata with no runtime changes, no live API calls, no DB changes, no deployment.
+- **Coverage expanded**: `src/data/securityLogos.json` now covers 11 symbols (up from 2). Added 4 KR fixture valuation symbols (005930 삼성전자, 000660 SK하이닉스, 035420 NAVER, 069500 KODEX 200) and 7 US test symbols (AAPL Apple, KO Coca-Cola already existed, NVDA NVIDIA, MSFT Microsoft, TSLA Tesla, SPY SPDR S&P 500 ETF, QQQ Invesco QQQ).
+- **Naming policy**: KR entries use local Korean display names; US entries use concise English names. These are local-only display metadata, not live KIS official data. KIS official names may override later.
+- **Schema preserved**: existing `{ name, symbol, country, logoUrl? }` shape unchanged. No incompatible fields (market, type, assetType, provider) introduced.
+- **Runtime unchanged**: `portfolio.astro` resolver, `chart-ai.astro`, all other runtime files untouched.
+- **Focused validation**: check:security-metadata-coverage PASS, check:portfolio-ticker-display-name PASS, build PASS.
+- **Recommended next phase**: Phase 3CD MyPage MVP Completion or Phase 3CD Chart AI UX Skeleton Enhancement.
+
 ## Phase 3CB-HF1 - 2026-06-26
 
 ### Global Page Spacing, Home Section Order, and MyPage Admin Rail Width Polish (Implemented)
