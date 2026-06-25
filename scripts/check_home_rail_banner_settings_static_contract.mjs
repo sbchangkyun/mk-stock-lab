@@ -25,6 +25,7 @@ const PACKAGE_JSON = join(root, 'package.json');
 const CHANGELOG = join(root, 'docs', 'planning', 'planning_changelog.md');
 const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3ca_home_rail_banner_url_settings_mvp_result_v0.1.md');
 const HF2_RESULT_DOC = join(root, 'docs', 'planning', 'phase_3ca_hf2_mypage_banner_admin_ux_active_slot_filter_result_v0.1.md');
+const HF3_RESULT_DOC = join(root, 'docs', 'planning', 'phase_3ca_hf3_mypage_admin_rail_no_sample_flash_result_v0.1.md');
 
 const log = (msg) => process.stdout.write(msg + '\n');
 let failures = 0;
@@ -61,10 +62,13 @@ check('package.json has check:home-rail-banner-settings script',
   typeof pkg.scripts?.['check:home-rail-banner-settings'] === 'string');
 check('Result doc exists', existsSync(RESULT_DOC));
 check('HF2 result doc exists', existsSync(HF2_RESULT_DOC));
+check('HF3 result doc exists', existsSync(HF3_RESULT_DOC));
 check('planning_changelog.md has Phase 3CA entry',
   existsSync(CHANGELOG) && readFileSync(CHANGELOG, 'utf8').includes('3CA'));
 check('planning_changelog.md has Phase 3CA-HF2 entry',
   existsSync(CHANGELOG) && readFileSync(CHANGELOG, 'utf8').includes('3CA-HF2'));
+check('planning_changelog.md has Phase 3CA-HF3 entry',
+  existsSync(CHANGELOG) && readFileSync(CHANGELOG, 'utf8').includes('3CA-HF3'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -135,8 +139,15 @@ log('--- Group 4: HomeRailAd managed banner support ---');
 
 if (railExists) {
   const rail = readFileSync(RAIL_PATH, 'utf8');
-  check('Rail still imports homeAdBanners.json (static fallback preserved)',
-    rail.includes('homeAdBanners'));
+  // Phase 3CA-HF3: sample banners must NOT be SSR-rendered (no-sample-flash policy)
+  check('HomeRailAd does not SSR-render sample banner images (HF3 no-sample-flash policy)',
+    !rail.includes('homeAdBanners') || !rail.includes('.map('));
+  check('HomeRailAd has data-managed-rail-pending attribute for deferred reveal (HF3)',
+    rail.includes('data-managed-rail-pending'));
+  check('HomeRailAd starts hidden with inline display:none until managed banners load (HF3)',
+    rail.includes('style="display:none"') || rail.includes("style='display:none'"));
+  check('HomeRailAd reveals rail only when active managed banners exist (HF3)',
+    rail.includes('style.display'));
   check('Rail imports siteSettingsClient (managed banners)',
     rail.includes('siteSettingsClient'));
   check('Rail imports isSupabaseConfigured guard', rail.includes('isSupabaseConfigured'));

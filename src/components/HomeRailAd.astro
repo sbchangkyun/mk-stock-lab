@@ -1,40 +1,24 @@
 ---
-import homeAdBanners from '../data/homeAdBanners.json';
-
-const activeBanners = homeAdBanners
-  .filter((banner) => banner.isActive)
-  .sort((a, b) => a.displayOrder - b.displayOrder);
-
-const hasMultipleBanners = activeBanners.length > 1;
+// No SSR sample banner rendering — rail is hidden until managed banners load client-side
 ---
 
-{
-  activeBanners.length > 0 && (
-    <aside
-      class:list={['home-rail-ad', { 'is-carousel': hasMultipleBanners }]}
-      data-home-rail-ad
-      data-count={activeBanners.length}
-      aria-label="Home sample banner rail"
-    >
-      <div class="home-rail-viewport">
-        <div class="home-rail-track">
-          {activeBanners.map((banner) => (
-            <a class="home-rail-card" href={banner.href} aria-label={banner.alt}>
-              <img src={banner.imageSrc} alt={banner.alt} width="160" height="600" loading="lazy" />
-            </a>
-          ))}
-        </div>
-      </div>
-    </aside>
-  )
-}
+<!-- Rail starts hidden; client script reveals only if active managed banners exist -->
+<aside
+  class="home-rail-ad"
+  data-home-rail-ad
+  data-managed-rail-pending
+  aria-label="Home banner rail"
+  style="display:none"
+>
+  <div class="home-rail-viewport">
+    <div class="home-rail-track"></div>
+  </div>
+</aside>
 
 <script>
   import { getHomeRailBanners } from '../lib/siteSettingsClient';
   import { isSupabaseConfigured } from '../lib/supabase';
 
-  // Set up carousel rotation for a rail element.
-  // Stores the interval ID on the element so loadManagedBanners can cancel it.
   const setupRailCarousel = (rail: HTMLElement) => {
     const track = rail.querySelector<HTMLElement>('.home-rail-track');
     const cards = rail.querySelectorAll<HTMLElement>('.home-rail-card');
@@ -75,25 +59,22 @@ const hasMultipleBanners = activeBanners.length > 1;
     startCarousel();
   };
 
-  const initRail = () => {
-    document.querySelectorAll<HTMLElement>('[data-home-rail-ad]').forEach(setupRailCarousel);
-  };
-
   const loadManagedBanners = async () => {
     if (!isSupabaseConfigured()) return;
     const banners = await getHomeRailBanners();
-    // Only render banners that are active, have a non-empty imageUrl, and a valid https? scheme.
     const active = (banners ?? []).filter(
       (b) => b.active && b.imageUrl.trim() && /^https?:\/\//i.test(b.imageUrl.trim())
     );
-    if (active.length === 0) return;
 
     const rail = document.querySelector<HTMLElement>('[data-home-rail-ad]');
     if (!rail) return;
     const track = rail.querySelector<HTMLElement>('.home-rail-track');
     if (!track) return;
 
-    // Tear down any existing carousel before replacing content
+    // Mark loading as settled (remove pending state)
+    rail.removeAttribute('data-managed-rail-pending');
+
+    // Cancel any existing carousel (re-navigation with view transitions may reuse DOM)
     if ((rail as any)._railIntervalId !== undefined) {
       window.clearInterval((rail as any)._railIntervalId as number);
       delete (rail as any)._railIntervalId;
@@ -102,7 +83,11 @@ const hasMultipleBanners = activeBanners.length > 1;
     track.style.transform = '';
     track.style.transitionDuration = '';
 
-    // Replace track content with active managed banners only (no blank slots)
+    if (active.length === 0) {
+      // No active managed banners — keep rail hidden, never show sample banners
+      return;
+    }
+
     track.innerHTML = '';
     for (const b of active) {
       const safeAlt = (b.alt || 'MK Stock Lab 배너').slice(0, 120);
@@ -133,7 +118,6 @@ const hasMultipleBanners = activeBanners.length > 1;
       track.appendChild(card);
     }
 
-    // Update rail state based on active count
     if (active.length >= 2) {
       rail.classList.add('is-carousel');
     } else {
@@ -142,16 +126,14 @@ const hasMultipleBanners = activeBanners.length > 1;
     rail.dataset.count = String(active.length);
     rail.setAttribute('aria-label', 'Home banner rail');
 
-    // Re-initialize carousel rotation for the managed banners
+    // Reveal rail — remove inline display:none, let CSS media query control visibility
+    rail.style.display = '';
+
     if (active.length >= 2) {
       setupRailCarousel(rail);
     }
   };
 
-  document.addEventListener('astro:page-load', () => {
-    initRail();
-    void loadManagedBanners();
-  });
-  initRail();
+  document.addEventListener('astro:page-load', () => { void loadManagedBanners(); });
   void loadManagedBanners();
 </script>

@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CA-HF3 - 2026-06-25
+
+### MyPage Admin Rail Placement and No Sample Banner Flash Hotfix (Implemented)
+
+- **Status**: implemented. Owner browser review after Phase 3CA-HF2 found two blocking issues.
+- **Owner review issues**: (1) `운영 배너 관리` card placed inside the same `mp-top-area` grid as `내 계정` (both sharing the 680px `mp-sections` max-width), which compressed the account card. (2) Sample Banner 01/02/03 SVG images flashed briefly before managed banner images loaded — real operation must never show sample banners.
+- **MyPage layout fix**: Removed `mp-top-area` wrapper approach. Moved `운영 배너 관리` section outside `mp-sections` into a sibling `<aside class="mp-admin-rail">`. Wrapped the whole page in `<div class="mp-page-layout" id="mpPageLayout">`. Default: `display: block`, admin rail hidden via CSS. When master admin is confirmed by JS, `mp-page-layout--admin-visible` class is added: two-column grid (`minmax(0, 680px)` account + `340px` admin rail, `gap: 24px`) on screens ≥ 1100px; single-column stacked below 1100px. `내 계정` section restored to its pre-HF2 width (680px max). Non-admin users see no empty right column.
+- **No sample banner flash fix**: Removed SSR rendering of `homeAdBanners.json` sample banners entirely from `HomeRailAd.astro`. Component now renders an empty track with `style="display:none"` and `data-managed-rail-pending` attribute. Client script loads managed banners from Supabase; reveals rail (via `style.display = ''`) only if active valid managed banners exist. If none: rail stays hidden — sample banners never shown. Carousel teardown logic preserved for SPA re-navigation. Active filter unchanged: `active && imageUrl.trim() && /^https?:\/\//i.test(imageUrl)`.
+- **Accordion, preview, save, password-reset**: all preserved, no regression.
+- **No DB/schema/API/live/deployment changes**.
+- **Focused validation**: check:home-rail-banner-settings PASS, check:home-ad-slots PASS, check:mypage-shell PASS, check:password-reset-flow PASS, build PASS.
+
 ## Phase 3CA-HF2 - 2026-06-25
 
 ### MyPage Banner Admin UX and Active Slot Filtering Hotfix (Implemented)

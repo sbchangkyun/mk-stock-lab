@@ -3534,21 +3534,39 @@ body.modal-open {
   color: var(--text-muted);
 }
 
-/* ---- Phase 3CA-HF2: MyPage top-area responsive layout ---- */
-.mp-top-area {
-  display: contents;
+/* ---- Phase 3CA-HF3: MyPage page-level admin rail layout ---- */
+
+/* Default: mp-sections flows normally (max-width: 680px, left-aligned) */
+.mp-page-layout {
+  display: block;
 }
 
-.mp-top-area--active {
+/* Admin rail hidden by CSS until JS adds mp-page-layout--admin-visible */
+.mp-admin-rail {
+  display: none;
+}
+
+/* Two-column grid on desktop: account (≤680px) left, admin rail (≤340px) right */
+.mp-page-layout--admin-visible {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  grid-template-columns: minmax(0, 680px) 340px;
+  gap: 24px;
   align-items: start;
 }
 
-@media (min-width: 1024px) {
-  .mp-top-area--active {
-    grid-template-columns: minmax(0, 1fr) 340px;
+.mp-page-layout--admin-visible .mp-admin-rail {
+  display: block;
+}
+
+/* Stack vertically on viewports where the two-column grid would overflow */
+@media (max-width: 1099px) {
+  .mp-page-layout--admin-visible {
+    display: block;
+  }
+
+  .mp-page-layout--admin-visible .mp-admin-rail {
+    margin-top: 16px;
+    max-width: 680px;
   }
 }
 

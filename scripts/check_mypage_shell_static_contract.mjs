@@ -214,9 +214,10 @@ check('siteSettingsClient imported in mypage script', content.includes('siteSett
 check('isCurrentUserSiteAdmin gating call present', content.includes('isCurrentUserSiteAdmin'));
 log('');
 
-// --- Phase 3CA-HF2: MyPage admin UX ---
-log('Phase 3CA-HF2 admin UX:');
-check('mp-top-area wrapper present for desktop layout', content.includes('mp-top-area'));
+// --- Phase 3CA-HF2 / HF3: MyPage admin UX ---
+log('Phase 3CA-HF2/HF3 admin UX:');
+check('mp-page-layout wrapper present for desktop admin layout (HF3)', content.includes('mp-page-layout'));
+check('mp-admin-rail element present for right-side admin placement (HF3)', content.includes('mp-admin-rail'));
 check('Banner admin accordion toggle button present', content.includes('mpBannerAccordionToggle'));
 check('Accordion toggle has aria-expanded attribute', content.includes('aria-expanded'));
 check('Accordion toggle has aria-controls attribute', content.includes('aria-controls'));
@@ -226,8 +227,8 @@ check('Accordion defaults collapsed (body hidden)',
 check('Active banner count summary element present', content.includes('mpBannerAccordionSummary'));
 check('Accordion opens on save error (setAccordion called in showMsg)',
   content.includes('setAccordion') && content.includes('showMsg'));
-check('mp-top-area--active class added when admin panel revealed',
-  content.includes('mp-top-area--active'));
+check('mp-page-layout--admin-visible class activated when admin panel revealed (HF3)',
+  content.includes('mp-page-layout--admin-visible'));
 check('Login method uses provider identities (no static HTML Google label)',
   !/<dd[^>]*>Google 로그인<\/dd>/i.test(content));
 log('');

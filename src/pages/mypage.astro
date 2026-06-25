@@ -11,10 +11,11 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </header>
 
-  <div class="mp-sections">
+  <!-- Page-level grid: left main column + right admin rail (admin rail only visible for master users) -->
+  <div class="mp-page-layout" id="mpPageLayout">
 
-    <!-- Top area: account section + master admin rail (side-by-side on desktop for admins) -->
-    <div class="mp-top-area">
+    <!-- Left: main MyPage sections (preserved 680px max-width) -->
+    <div class="mp-sections">
 
       <!-- A. Account Summary -->
       <section class="panel mp-section" aria-labelledby="mp-account-heading">
@@ -43,7 +44,164 @@ import Layout from '../layouts/Layout.astro';
         </dl>
       </section>
 
-      <!-- G. Master Admin: Home Rail Banner Settings (desktop-right, hidden for non-admins) -->
+      <!-- B. Service section (공지사항, 이벤트/혜택 only) -->
+      <section class="panel mp-section" aria-labelledby="mp-prefs-heading">
+        <h2 id="mp-prefs-heading" class="mp-section-title">서비스 이용 설정</h2>
+        <ul class="mp-pref-list">
+          <li class="mp-pref-row">
+            <span class="mp-pref-label">공지사항</span>
+            <span class="mp-badge">준비 중</span>
+          </li>
+          <li class="mp-pref-row">
+            <span class="mp-pref-label">이벤트/혜택</span>
+            <span class="mp-badge">향후 제공 예정</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- C. My Data (포트폴리오, 관심 종목 only) -->
+      <section class="panel mp-section" aria-labelledby="mp-data-heading">
+        <h2 id="mp-data-heading" class="mp-section-title">내 데이터</h2>
+        <ul class="mp-pref-list">
+          <li class="mp-pref-row">
+            <span class="mp-pref-label">포트폴리오</span>
+            <span class="mp-badge">향후 제공 예정</span>
+          </li>
+          <li class="mp-pref-row">
+            <span class="mp-pref-label">관심 종목</span>
+            <span class="mp-badge">향후 제공 예정</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- D. Notification Settings -->
+      <section class="panel mp-section" aria-labelledby="mp-notif-heading">
+        <h2 id="mp-notif-heading" class="mp-section-title">알림 설정</h2>
+
+        <!-- Telegram placeholder -->
+        <div class="mp-notif-row">
+          <div>
+            <p class="mp-pref-label">내 텔레그램 연동</p>
+            <p class="mp-notif-desc">텔레그램 알림을 받으려면 봇 연동이 필요합니다.</p>
+          </div>
+          <span class="mp-badge">준비 중</span>
+        </div>
+
+        <!-- 관심종목 뉴스 알림 — search/save shell (in-memory only) -->
+        <div class="mp-notif-block">
+          <div class="mp-notif-block-header">
+            <span class="mp-pref-label" id="lbl-watchlist-news">관심종목 뉴스 알림</span>
+            <label class="mp-toggle">
+              <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-watchlist-news" />
+              <span class="mp-toggle-track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <p class="mp-notif-desc">관심종목 뉴스 알림을 받을 종목을 추가하세요. 최대 5개까지 등록할 수 있습니다.</p>
+          <p class="mp-watchlist-search-label">관심종목 검색</p>
+          <div class="mp-watchlist-search-row">
+            <input class="mp-watchlist-input" type="text" id="mpWatchlistInput"
+              placeholder="종목명 또는 종목코드를 입력하세요." aria-label="관심종목 검색"
+              maxlength="20" autocomplete="off" />
+            <button class="mp-watchlist-add-btn" type="button" id="mpWatchlistAddBtn">관심종목 저장</button>
+          </div>
+          <p class="mp-watchlist-section-label hidden" id="mpWatchlistHeader">저장된 관심종목</p>
+          <ul class="mp-watchlist-list hidden" id="mpWatchlistList" aria-live="polite" aria-label="저장된 관심종목 목록"></ul>
+          <p class="mp-watchlist-empty" id="mpWatchlistEmpty">등록된 관심종목이 없습니다.</p>
+          <p class="mp-alert-notice hidden" id="mpWatchlistNotice" role="status" aria-live="polite">실제 뉴스 알림 저장 기능은 준비 중입니다.</p>
+        </div>
+
+        <!-- 내 포트 종목 뉴스 알림 -->
+        <div class="mp-notif-row">
+          <span class="mp-pref-label" id="lbl-portfolio-news">내 포트 종목 뉴스 알림</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-portfolio-news" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <!-- 관심종목 지정가 알림 — with on/off toggle -->
+        <div class="mp-notif-block">
+          <div class="mp-notif-block-header">
+            <span class="mp-pref-label">관심종목 지정가 알림</span>
+            <span class="mp-badge">최대 5개</span>
+          </div>
+          <div class="mp-notif-inner-row">
+            <span class="mp-pref-label" id="lbl-price-alert-toggle">알림 사용</span>
+            <label class="mp-toggle">
+              <input type="checkbox" class="mp-toggle-input" id="mpPriceAlertToggle" aria-labelledby="lbl-price-alert-toggle" />
+              <span class="mp-toggle-track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <div class="mp-notif-body mp-notif-body--disabled" id="mpPriceAlertBody">
+            <p class="mp-notif-desc">지정가 알림은 최대 5개까지 준비할 수 있습니다.</p>
+            <button class="mp-add-btn" type="button" id="mpAddAlertBtn">+ 추가</button>
+            <div class="mp-alert-form hidden" id="mpAlertForm">
+              <div class="mp-alert-form-row">
+                <input class="mp-alert-input" type="text" inputmode="numeric" maxlength="6"
+                  placeholder="종목코드 6자리" aria-label="종목코드" autocomplete="off" />
+                <input class="mp-alert-input" type="text" inputmode="decimal"
+                  placeholder="지정가" aria-label="지정가" autocomplete="off" />
+                <button class="mp-alert-save-btn" type="button" id="mpAlertSaveBtn">저장</button>
+              </div>
+              <p class="mp-alert-notice hidden" id="mpAlertNotice" role="status" aria-live="polite">저장 기능은 준비 중입니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 이벤트/혜택 알림 -->
+        <div class="mp-notif-row">
+          <span class="mp-pref-label" id="lbl-event-notif">이벤트/혜택 알림</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-event-notif" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <!-- 공지사항 알림 -->
+        <div class="mp-notif-row">
+          <span class="mp-pref-label" id="lbl-announce-notif">공지사항 알림</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-announce-notif" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- E. Legal and Support -->
+      <section class="panel mp-section" aria-labelledby="mp-legal-heading">
+        <h2 id="mp-legal-heading" class="mp-section-title">법적 고지 및 지원</h2>
+        <ul class="mp-link-list">
+          <li><a href="/privacy">개인정보처리방침</a></li>
+          <li><a href="/terms">이용약관</a></li>
+          <li>
+            <a href="https://forms.gle/WAVSxaotdes6T5yJA" target="_blank" rel="noopener noreferrer">제휴문의</a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- F. Danger Zone -->
+      <section class="panel mp-section mp-danger-zone" aria-labelledby="mp-danger-heading">
+        <h2 id="mp-danger-heading" class="mp-section-title mp-danger-title">계정 관리</h2>
+        <p class="mp-danger-desc">계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
+        <div class="mp-withdrawal-area">
+          <button class="mp-danger-btn" type="button" id="mpWithdrawalBtn">회원탈퇴</button>
+          <div class="mp-withdrawal-confirm hidden" id="mpWithdrawalConfirm" role="alertdialog"
+            aria-modal="true" aria-labelledby="mpWithdrawalConfirmMsg">
+            <p class="mp-withdrawal-message" id="mpWithdrawalConfirmMsg">정말 회원 탈퇴하시겠습니까? 회원탈퇴하면 등록/활동 정보가 모두 삭제됩니다.</p>
+            <div class="mp-withdrawal-actions">
+              <button class="mp-confirm-btn" type="button" id="mpWithdrawalOk">확인</button>
+              <button class="header-button secondary" type="button" id="mpWithdrawalCancel">취소</button>
+            </div>
+          </div>
+          <p class="mp-withdrawal-notice hidden" id="mpWithdrawalNotice" role="status" aria-live="polite">회원탈퇴 기능은 준비 중입니다.</p>
+        </div>
+      </section>
+
+    </div><!-- /mp-sections -->
+
+    <!-- Right: master admin rail (hidden by CSS until mp-page-layout--admin-visible is added by JS) -->
+    <aside class="mp-admin-rail" aria-label="배너 관리 패널">
+      <!-- G. Master Admin: Home Rail Banner Settings (hidden until admin confirmed) -->
       <section class="panel mp-section mp-banner-admin" id="mpBannerAdminPanel"
         aria-labelledby="mp-banner-admin-heading" hidden>
         <div class="mp-banner-accordion-header">
@@ -130,163 +288,9 @@ import Layout from '../layouts/Layout.astro';
           </div>
         </div><!-- /mpBannerAccordionBody -->
       </section>
+    </aside><!-- /mp-admin-rail -->
 
-    </div><!-- /mp-top-area -->
-
-    <!-- B. Service section (공지사항, 이벤트/혜택 only) -->
-    <section class="panel mp-section" aria-labelledby="mp-prefs-heading">
-      <h2 id="mp-prefs-heading" class="mp-section-title">서비스 이용 설정</h2>
-      <ul class="mp-pref-list">
-        <li class="mp-pref-row">
-          <span class="mp-pref-label">공지사항</span>
-          <span class="mp-badge">준비 중</span>
-        </li>
-        <li class="mp-pref-row">
-          <span class="mp-pref-label">이벤트/혜택</span>
-          <span class="mp-badge">향후 제공 예정</span>
-        </li>
-      </ul>
-    </section>
-
-    <!-- C. My Data (포트폴리오, 관심 종목 only) -->
-    <section class="panel mp-section" aria-labelledby="mp-data-heading">
-      <h2 id="mp-data-heading" class="mp-section-title">내 데이터</h2>
-      <ul class="mp-pref-list">
-        <li class="mp-pref-row">
-          <span class="mp-pref-label">포트폴리오</span>
-          <span class="mp-badge">향후 제공 예정</span>
-        </li>
-        <li class="mp-pref-row">
-          <span class="mp-pref-label">관심 종목</span>
-          <span class="mp-badge">향후 제공 예정</span>
-        </li>
-      </ul>
-    </section>
-
-    <!-- D. Notification Settings -->
-    <section class="panel mp-section" aria-labelledby="mp-notif-heading">
-      <h2 id="mp-notif-heading" class="mp-section-title">알림 설정</h2>
-
-      <!-- Telegram placeholder -->
-      <div class="mp-notif-row">
-        <div>
-          <p class="mp-pref-label">내 텔레그램 연동</p>
-          <p class="mp-notif-desc">텔레그램 알림을 받으려면 봇 연동이 필요합니다.</p>
-        </div>
-        <span class="mp-badge">준비 중</span>
-      </div>
-
-      <!-- 관심종목 뉴스 알림 — search/save shell (in-memory only) -->
-      <div class="mp-notif-block">
-        <div class="mp-notif-block-header">
-          <span class="mp-pref-label" id="lbl-watchlist-news">관심종목 뉴스 알림</span>
-          <label class="mp-toggle">
-            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-watchlist-news" />
-            <span class="mp-toggle-track" aria-hidden="true"></span>
-          </label>
-        </div>
-        <p class="mp-notif-desc">관심종목 뉴스 알림을 받을 종목을 추가하세요. 최대 5개까지 등록할 수 있습니다.</p>
-        <p class="mp-watchlist-search-label">관심종목 검색</p>
-        <div class="mp-watchlist-search-row">
-          <input class="mp-watchlist-input" type="text" id="mpWatchlistInput"
-            placeholder="종목명 또는 종목코드를 입력하세요." aria-label="관심종목 검색"
-            maxlength="20" autocomplete="off" />
-          <button class="mp-watchlist-add-btn" type="button" id="mpWatchlistAddBtn">관심종목 저장</button>
-        </div>
-        <p class="mp-watchlist-section-label hidden" id="mpWatchlistHeader">저장된 관심종목</p>
-        <ul class="mp-watchlist-list hidden" id="mpWatchlistList" aria-live="polite" aria-label="저장된 관심종목 목록"></ul>
-        <p class="mp-watchlist-empty" id="mpWatchlistEmpty">등록된 관심종목이 없습니다.</p>
-        <p class="mp-alert-notice hidden" id="mpWatchlistNotice" role="status" aria-live="polite">실제 뉴스 알림 저장 기능은 준비 중입니다.</p>
-      </div>
-
-      <!-- 내 포트 종목 뉴스 알림 -->
-      <div class="mp-notif-row">
-        <span class="mp-pref-label" id="lbl-portfolio-news">내 포트 종목 뉴스 알림</span>
-        <label class="mp-toggle">
-          <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-portfolio-news" />
-          <span class="mp-toggle-track" aria-hidden="true"></span>
-        </label>
-      </div>
-
-      <!-- 관심종목 지정가 알림 — with on/off toggle -->
-      <div class="mp-notif-block">
-        <div class="mp-notif-block-header">
-          <span class="mp-pref-label">관심종목 지정가 알림</span>
-          <span class="mp-badge">최대 5개</span>
-        </div>
-        <div class="mp-notif-inner-row">
-          <span class="mp-pref-label" id="lbl-price-alert-toggle">알림 사용</span>
-          <label class="mp-toggle">
-            <input type="checkbox" class="mp-toggle-input" id="mpPriceAlertToggle" aria-labelledby="lbl-price-alert-toggle" />
-            <span class="mp-toggle-track" aria-hidden="true"></span>
-          </label>
-        </div>
-        <div class="mp-notif-body mp-notif-body--disabled" id="mpPriceAlertBody">
-          <p class="mp-notif-desc">지정가 알림은 최대 5개까지 준비할 수 있습니다.</p>
-          <button class="mp-add-btn" type="button" id="mpAddAlertBtn">+ 추가</button>
-          <div class="mp-alert-form hidden" id="mpAlertForm">
-            <div class="mp-alert-form-row">
-              <input class="mp-alert-input" type="text" inputmode="numeric" maxlength="6"
-                placeholder="종목코드 6자리" aria-label="종목코드" autocomplete="off" />
-              <input class="mp-alert-input" type="text" inputmode="decimal"
-                placeholder="지정가" aria-label="지정가" autocomplete="off" />
-              <button class="mp-alert-save-btn" type="button" id="mpAlertSaveBtn">저장</button>
-            </div>
-            <p class="mp-alert-notice hidden" id="mpAlertNotice" role="status" aria-live="polite">저장 기능은 준비 중입니다.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 이벤트/혜택 알림 -->
-      <div class="mp-notif-row">
-        <span class="mp-pref-label" id="lbl-event-notif">이벤트/혜택 알림</span>
-        <label class="mp-toggle">
-          <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-event-notif" />
-          <span class="mp-toggle-track" aria-hidden="true"></span>
-        </label>
-      </div>
-
-      <!-- 공지사항 알림 -->
-      <div class="mp-notif-row">
-        <span class="mp-pref-label" id="lbl-announce-notif">공지사항 알림</span>
-        <label class="mp-toggle">
-          <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-announce-notif" />
-          <span class="mp-toggle-track" aria-hidden="true"></span>
-        </label>
-      </div>
-    </section>
-
-    <!-- E. Legal and Support -->
-    <section class="panel mp-section" aria-labelledby="mp-legal-heading">
-      <h2 id="mp-legal-heading" class="mp-section-title">법적 고지 및 지원</h2>
-      <ul class="mp-link-list">
-        <li><a href="/privacy">개인정보처리방침</a></li>
-        <li><a href="/terms">이용약관</a></li>
-        <li>
-          <a href="https://forms.gle/WAVSxaotdes6T5yJA" target="_blank" rel="noopener noreferrer">제휴문의</a>
-        </li>
-      </ul>
-    </section>
-
-    <!-- F. Danger Zone -->
-    <section class="panel mp-section mp-danger-zone" aria-labelledby="mp-danger-heading">
-      <h2 id="mp-danger-heading" class="mp-section-title mp-danger-title">계정 관리</h2>
-      <p class="mp-danger-desc">계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
-      <div class="mp-withdrawal-area">
-        <button class="mp-danger-btn" type="button" id="mpWithdrawalBtn">회원탈퇴</button>
-        <div class="mp-withdrawal-confirm hidden" id="mpWithdrawalConfirm" role="alertdialog"
-          aria-modal="true" aria-labelledby="mpWithdrawalConfirmMsg">
-          <p class="mp-withdrawal-message" id="mpWithdrawalConfirmMsg">정말 회원 탈퇴하시겠습니까? 회원탈퇴하면 등록/활동 정보가 모두 삭제됩니다.</p>
-          <div class="mp-withdrawal-actions">
-            <button class="mp-confirm-btn" type="button" id="mpWithdrawalOk">확인</button>
-            <button class="header-button secondary" type="button" id="mpWithdrawalCancel">취소</button>
-          </div>
-        </div>
-        <p class="mp-withdrawal-notice hidden" id="mpWithdrawalNotice" role="status" aria-live="polite">회원탈퇴 기능은 준비 중입니다.</p>
-      </div>
-    </section>
-
-  </div>
+  </div><!-- /mp-page-layout -->
 </Layout>
 
 <script>
@@ -452,11 +456,12 @@ import Layout from '../layouts/Layout.astro';
     const isAdmin = await isCurrentUserSiteAdmin();
     if (!isAdmin) return;
 
+    // Reveal admin section
     panel.removeAttribute('hidden');
 
-    // Activate the side-by-side layout for admin users
-    const topArea = panel.closest('.mp-top-area') as HTMLElement | null;
-    topArea?.classList.add('mp-top-area--active');
+    // Activate page-level two-column grid (account left, admin rail right on desktop)
+    const pageLayout = panel.closest('.mp-page-layout') as HTMLElement | null;
+    pageLayout?.classList.add('mp-page-layout--admin-visible');
 
     // --- Accordion ---
     const accordionToggle = document.getElementById('mpBannerAccordionToggle') as HTMLButtonElement | null;

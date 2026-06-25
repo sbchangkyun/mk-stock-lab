@@ -112,7 +112,9 @@ log('HomeRailAd safety:');
 if (existsSync(RAIL_COMPONENT_PATH)) {
   const railContent = readFileSync(RAIL_COMPONENT_PATH, 'utf8');
 
-  check('Rail imports homeAdBanners.json', railContent.includes('homeAdBanners'));
+  // Phase 3CA-HF3: sample banners must not be rendered as SSR operational content
+  check('HomeRailAd does not render sample banners as SSR fallback (HF3 no-sample-flash policy)',
+    !railContent.includes('homeAdBanners') || !railContent.includes('.map('));
 
   const adNetworkFound = AD_NETWORK_PATTERNS.filter((p) => railContent.includes(p));
   check(
@@ -167,8 +169,8 @@ if (existsSync(RAIL_COMPONENT_PATH)) {
     railHF2.includes('_railIntervalId') && railHF2.includes('clearInterval'));
   check('Track transform reset before replacing content',
     railHF2.includes("track.style.transform = ''"));
-  check('Static fallback preserved (homeAdBanners still imported)',
-    railHF2.includes('homeAdBanners'));
+  check('Sample banners not used as operational SSR fallback (HF3 no-sample-flash policy)',
+    !railHF2.includes('homeAdBanners') || !railHF2.includes('.map('));
   check('No raw setInterval added for polling beyond carousel rotation',
     (railHF2.match(/setInterval/g) || []).length <= 1);
 }
