@@ -253,9 +253,11 @@ check('No drag-and-drop library import',
   !portfolioContent.includes("from 'sortable") &&
   !portfolioContent.includes('from "sortable') &&
   !portfolioContent.includes('draggable="true"'));
-check('No new localStorage tab-order key added',
-  !portfolioContent.includes('portfolioTabOrder') &&
-  !portfolioContent.includes('portfolio-tab-order'));
+check('Tab order localStorage key is the controlled namespaced key (3BW-HF1 expectation)',
+  portfolioContent.includes("'mk-stock-lab:portfolio-tab-order") ||
+  portfolioContent.includes('"mk-stock-lab:portfolio-tab-order'));
+check('No uncontrolled ad-hoc localStorage keys for tab order',
+  !portfolioContent.includes('portfolioTabOrder'));
 check('No new modal/slide-over creation UI (no modal class)',
   !portfolioContent.includes('class="modal') && !portfolioContent.includes("class='modal") &&
   !portfolioContent.includes('class="slide-over') && !portfolioContent.includes("class='slide-over"));
@@ -381,6 +383,47 @@ check('Dead standalone portfolio-manage-toggle addEventListener removed',
   !portfolioContent.includes("getElement<HTMLButtonElement>('portfolio-manage-toggle')?.addEventListener"));
 check('Phase 3BQ result doc exists',
   existsSync(join(root, 'docs', 'planning', 'phase_3bq_portfolio_bookmark_tabs_owner_review_fixes_result_v0.1.md')));
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 15: Phase 3BW-HF1 tab order persistence checks
+// ---------------------------------------------------------------------------
+log('--- Group 15: Phase 3BW-HF1 tab order persistence ---');
+
+const HF1_RESULT_DOC = join(root, 'docs', 'planning', 'phase_3bw_hf1_portfolio_bookmark_tab_order_local_persistence_result_v0.1.md');
+
+check('Tab order localStorage key exists in portfolio page',
+  portfolioContent.includes('mk-stock-lab:portfolio-tab-order'));
+check('readTabOrderFromStorage function defined',
+  portfolioContent.includes('readTabOrderFromStorage'));
+check('saveTabOrderToStorage function defined',
+  portfolioContent.includes('saveTabOrderToStorage'));
+check('Stored order contains portfolio IDs only (JSON.stringify of ids array)',
+  portfolioContent.includes('JSON.stringify(ids)'));
+check('Reorder persists to localStorage (saveTabOrderToStorage after reorder)',
+  portfolioContent.includes('saveTabOrderToStorage(state.portfolioOrder)'));
+check('Delete path reconciles via loadPortfolios (delete calls loadPortfolios)',
+  portfolioContent.includes('deletePortfolio') && portfolioContent.includes('await loadPortfolios()'));
+check('Create path reconciles and appends via loadPortfolios',
+  portfolioContent.includes('createPortfolio') && portfolioContent.includes('await loadPortfolios()'));
+check('Edit path preserves order via loadPortfolios (name change does not reset order)',
+  portfolioContent.includes('updatePortfolio') && portfolioContent.includes('await loadPortfolios()'));
+check('Aggregate id excluded from persisted order (guard present)',
+  portfolioContent.includes('isAggregatePortfolioId(id)'));
+check('Add tab excluded from persisted order (add tab is separate button)',
+  portfolioContent.includes('portfolio-bookmark-tab--add') &&
+  !portfolioContent.includes("portfolioOrder.push('portfolio-manage"));
+check('No Supabase orderIndex added',
+  !portfolioContent.includes('orderIndex'));
+check('No backend API call for tab order persistence',
+  !portfolioContent.includes('portfolioApi.setOrder') &&
+  !portfolioContent.includes('portfolioApi.updateTabOrder'));
+check('No new server-side tab order API route',
+  !existsSync(join(root, 'src', 'pages', 'api', 'portfolio', 'tab-order.ts')) &&
+  !existsSync(join(root, 'src', 'pages', 'api', 'portfolio', 'tab-order.js')));
+check('Phase 3BW-HF1 result doc exists', existsSync(HF1_RESULT_DOC));
+check('package script check:portfolio-tab-order-persistence exists',
+  typeof pkg.scripts?.['check:portfolio-tab-order-persistence'] === 'string');
 log('');
 
 // ---------------------------------------------------------------------------

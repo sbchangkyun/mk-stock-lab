@@ -1,5 +1,30 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BW-HF1 - 2026-06-25
+
+### Portfolio Bookmark Tab Order Local Persistence Hotfix (Implemented)
+
+- **Status**: implemented. No live KIS/GNews calls, no external HTTP, no API route added, no DB/Supabase schema changes, no deployment. Runtime UI change only: portfolio.astro localStorage tab order persistence.
+- **Problem**: Phase 3BN implemented client-memory-only tab order (no persistence). After Phase 3BW, owner browser review found that left/right tab movement implied save behavior but order reset on page refresh or navigation — a critical UX regression.
+- **Fix**: Persist user portfolio tab IDs to `localStorage` under key `mk-stock-lab:portfolio-tab-order:v1` after each left/right reorder click. Restore and reconcile saved order when portfolios load.
+- **Storage**: portfolio IDs only — no names, positions, prices, quantities, memo, valuation data, API responses, tokens, or secrets.
+- **Read/restore timing**: `loadPortfolios()` reads from localStorage on every call; uses saved order as base for reconciliation.
+- **Write timing**: `saveTabOrderToStorage` called immediately after reorder swap, and after reconciliation in `loadPortfolios`.
+- **Reconciliation**: removes IDs no longer in portfolio list; appends newly created portfolios at end; preserves saved order for existing IDs.
+- **Create**: new portfolio appended at end of user tabs via `loadPortfolios` reconciliation after `createPortfolio`.
+- **Delete**: deleted ID filtered out of saved order via `loadPortfolios` reconciliation after `deletePortfolio`.
+- **Edit/rename**: does not affect IDs; order preserved automatically.
+- **Pinned tabs**: aggregate tab `전체` always first (never in portfolioOrder); `+추가` always last (separate button, never in portfolioOrder).
+- **Error handling**: all localStorage ops wrapped in try/catch; invalid JSON → `removeItem` + empty array fallback; quota/security error → fail silently, in-memory order preserved.
+- **No server persistence**: browser-local only; no Supabase orderIndex; no DB schema; no backend API route.
+- Created `scripts/check_portfolio_tab_order_persistence_static_contract.mjs` — new no-network checker.
+- Updated `scripts/check_portfolio_bookmark_tabs_static_contract.mjs` — replaced stale 3BN "no localStorage" check with controlled-key expectation; added Group 15 persistence checks.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BW-HF1 artifact group added.
+- Created `docs/planning/phase_3bw_hf1_portfolio_bookmark_tab_order_local_persistence_result_v0.1.md`.
+- Added `check:portfolio-tab-order-persistence` to `package.json`.
+- All validators pass. Build passes.
+- **Recommended next phase**: Phase 3BX — Portfolio UI Valuation Mapping with Fixture API Data.
+
 ## Phase 3BW - 2026-06-25
 
 ### Portfolio Valuation API Route with Fixture/Mocked Quotes (Implemented)

@@ -361,6 +361,31 @@ import Layout from '../layouts/Layout.astro';
     const aggregatePortfolioId = '__all_portfolios__';
     let positionSheetCloseTimer: number | null = null;
 
+    const TAB_ORDER_STORAGE_KEY = 'mk-stock-lab:portfolio-tab-order:v1';
+
+    const readTabOrderFromStorage = (): string[] => {
+      try {
+        const raw = localStorage.getItem(TAB_ORDER_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed: unknown = JSON.parse(raw);
+        if (!Array.isArray(parsed) || !parsed.every((item) => typeof item === 'string')) {
+          localStorage.removeItem(TAB_ORDER_STORAGE_KEY);
+          return [];
+        }
+        return parsed as string[];
+      } catch {
+        return [];
+      }
+    };
+
+    const saveTabOrderToStorage = (ids: string[]): void => {
+      try {
+        localStorage.setItem(TAB_ORDER_STORAGE_KEY, JSON.stringify(ids));
+      } catch {
+        // localStorage unavailable or quota exceeded; in-memory order is preserved
+      }
+    };
+
     const getElement = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
     const selectedPortfolio = () => state.portfolios.find((portfolio) => portfolio.id === state.selectedPortfolioId) ?? null;
     const isAggregatePortfolioId = (id: string | null | undefined) => id === aggregatePortfolioId;
@@ -970,10 +995,13 @@ import Layout from '../layouts/Layout.astro';
       state.positionsByPortfolioId = Object.fromEntries(
         Object.entries(state.positionsByPortfolioId).filter(([id]) => knownIds.has(id)),
       );
+      const savedOrder = readTabOrderFromStorage();
+      const baseOrder = savedOrder.length > 0 ? savedOrder : state.portfolioOrder;
       state.portfolioOrder = [
-        ...state.portfolioOrder.filter((id) => knownIds.has(id)),
-        ...state.portfolios.map((portfolio) => portfolio.id).filter((id) => !state.portfolioOrder.includes(id)),
+        ...baseOrder.filter((id) => knownIds.has(id)),
+        ...state.portfolios.map((portfolio) => portfolio.id).filter((id) => !baseOrder.includes(id)),
       ];
+      saveTabOrderToStorage(state.portfolioOrder);
       if (state.portfolios.length === 0) {
         state.selectedPortfolioId = null;
       } else if (
@@ -1164,6 +1192,7 @@ import Layout from '../layouts/Layout.astro';
         if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return;
         [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
         state.portfolioOrder = ordered;
+        saveTabOrderToStorage(state.portfolioOrder);
         renderPortfolios();
       }
 

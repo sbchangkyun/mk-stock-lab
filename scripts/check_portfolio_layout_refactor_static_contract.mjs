@@ -198,9 +198,9 @@ check('Bookmark tab reorder arrows not implemented (data-action="move-tab" absen
   !portfolioContent.includes("data-action='move-tab'"));
 check('+ bookmark tab add button not implemented as bookmark-tab-add',
   !portfolioContent.includes('bookmark-tab-add'));
-check('Tab persistence localStorage key not added',
+check('Tab persistence uses controlled namespaced key only (3BW-HF1 adds mk-stock-lab:portfolio-tab-order)',
   !portfolioContent.includes('portfolioTabOrder') &&
-  !portfolioContent.includes('portfolio-tab-order'));
+  (!portfolioContent.includes('portfolio-tab-order') || portfolioContent.includes('mk-stock-lab:portfolio-tab-order')));
 check('No bookmark-tab HTML class present',
   !portfolioContent.includes('class="bookmark-tab') &&
   !portfolioContent.includes("class='bookmark-tab"));

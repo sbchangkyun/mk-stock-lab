@@ -694,8 +694,9 @@ if (existsSync(PORTFOLIO_PAGE_3BN_PATH)) {
     portfolio3bn.includes('portfolio-tab-reorder-btn'));
   check('No drag-and-drop library added (no dragstart event)',
     !portfolio3bn.includes('dragstart') && !portfolio3bn.includes('dragover'));
-  check('No new localStorage tab-order key added',
-    !portfolio3bn.includes('portfolioTabOrder') && !portfolio3bn.includes('portfolio-tab-order'));
+  check('Tab order localStorage key is controlled and namespaced (3BW-HF1 adds mk-stock-lab:portfolio-tab-order)',
+    !portfolio3bn.includes('portfolioTabOrder') &&
+    (!portfolio3bn.includes('portfolio-tab-order') || portfolio3bn.includes('mk-stock-lab:portfolio-tab-order')));
   check('No GNews live behavior added in portfolio page',
     !portfolio3bn.includes('gnews.io') && !portfolio3bn.includes('GNEWS_API_KEY'));
 } else {
@@ -1069,6 +1070,41 @@ check('HomePortfolioPanel still present (3BW boundary)',
   existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
 check('HomeMarketNews still present (3BW boundary)',
   existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+log('');
+
+// ─── Phase 3BW-HF1 artifact group ────────────────────────────────────────────
+log('--- Phase 3BW-HF1: Portfolio Bookmark Tab Order Local Persistence ---');
+
+const RESULT_DOC_3BWHF1 = join(root, 'docs', 'planning', 'phase_3bw_hf1_portfolio_bookmark_tab_order_local_persistence_result_v0.1.md');
+const TAB_ORDER_CHECKER = join(root, 'scripts', 'check_portfolio_tab_order_persistence_static_contract.mjs');
+const PORTFOLIO_PAGE_HF1 = join(root, 'src', 'pages', 'portfolio.astro');
+const VALUATION_ROUTE_HF1 = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.ts');
+
+check('Phase 3BW-HF1 result doc exists', existsSync(RESULT_DOC_3BWHF1));
+check('Tab order persistence checker exists', existsSync(TAB_ORDER_CHECKER));
+check('package script check:portfolio-tab-order-persistence exists',
+  (() => {
+    let p = {};
+    try { p = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+    return typeof p.scripts?.['check:portfolio-tab-order-persistence'] === 'string';
+  })());
+check('No /news page created (3BW-HF1 boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+check('HomePortfolioPanel still present (3BW-HF1 boundary)',
+  existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('HomeMarketNews still present (3BW-HF1 boundary)',
+  existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+check('No live GNews behavior added in portfolio page (3BW-HF1)',
+  !existsSync(PORTFOLIO_PAGE_HF1) ||
+  !readFileSync(PORTFOLIO_PAGE_HF1, 'utf8').includes('gnews.io'));
+check('Valuation route unchanged by 3BW-HF1 (still fixture-only)',
+  !existsSync(VALUATION_ROUTE_HF1) ||
+  !readFileSync(VALUATION_ROUTE_HF1, 'utf8').includes('source=live'));
+check('No new API route added for tab order (3BW-HF1)',
+  !existsSync(join(root, 'src', 'pages', 'api', 'portfolio', 'tab-order.ts')) &&
+  !existsSync(join(root, 'src', 'pages', 'api', 'portfolio', 'tab-order.js')));
+check('No backend orderIndex added in portfolio page (3BW-HF1)',
+  !existsSync(PORTFOLIO_PAGE_HF1) ||
+  !readFileSync(PORTFOLIO_PAGE_HF1, 'utf8').includes('orderIndex'));
 log('');
 
 // --- Summary ---
