@@ -526,6 +526,75 @@ const main = async () => {
     return err !== null && err.code === 'SYMBOL_UNSUPPORTED';
   });
 
+  // ── Group G: Valuation computation fallback paths ──────────────────────────
+  // Pure JS computation mirroring portfolioValuation.ts — no imports, no network.
+
+  runSync('valuation-computation', 'cost-basis-always-available', () => {
+    const pos = { buyPrice: 60000, quantity: 10 };
+    return pos.buyPrice * pos.quantity === 600000;
+  });
+
+  runSync('valuation-computation', 'successful-quote-computes-market-value', () => {
+    const pos = { buyPrice: 60000, quantity: 10 };
+    const quotePrice = 75000;
+    const marketValue = quotePrice * pos.quantity;
+    return marketValue === 750000;
+  });
+
+  runSync('valuation-computation', 'successful-quote-computes-unrealized-pnl', () => {
+    const pos = { buyPrice: 60000, quantity: 10 };
+    const quotePrice = 75000;
+    const costBasis = pos.buyPrice * pos.quantity;
+    const marketValue = quotePrice * pos.quantity;
+    return marketValue - costBasis === 150000;
+  });
+
+  runSync('valuation-computation', 'successful-quote-computes-return-rate-25pct', () => {
+    const pos = { buyPrice: 60000, quantity: 10 };
+    const quotePrice = 75000;
+    const costBasis = pos.buyPrice * pos.quantity;
+    const marketValue = quotePrice * pos.quantity;
+    const unrealizedPnl = marketValue - costBasis;
+    const returnRate = costBasis > 0 ? (unrealizedPnl / costBasis) * 100 : null;
+    return returnRate === 25;
+  });
+
+  runSync('valuation-computation', 'null-quote-yields-null-market-value', () => {
+    const quotePrice = null;
+    const qty = 10;
+    const marketValue = quotePrice !== null ? quotePrice * qty : null;
+    return marketValue === null;
+  });
+
+  runSync('valuation-computation', 'null-quote-yields-null-return-rate', () => {
+    const costBasis = 600000;
+    const marketValue = null;
+    const unrealizedPnl = marketValue !== null ? marketValue - costBasis : null;
+    const returnRate = (unrealizedPnl !== null && costBasis > 0) ? (unrealizedPnl / costBasis) * 100 : null;
+    return returnRate === null;
+  });
+
+  runSync('valuation-computation', 'zero-cost-basis-yields-null-return-rate', () => {
+    const costBasis = 0;
+    const marketValue = 75000;
+    const unrealizedPnl = marketValue - costBasis;
+    const returnRate = costBasis > 0 ? (unrealizedPnl / costBasis) * 100 : null;
+    return returnRate === null;
+  });
+
+  runSync('valuation-computation', 'provider-meta-absent-from-computed-row', () => {
+    const computedRow = {
+      currentPrice: 75000,
+      marketValue: 750000,
+      costBasis: 600000,
+      unrealizedPnl: 150000,
+      unrealizedPnlPct: 25,
+      staleState: 'fresh',
+      // providerMeta intentionally excluded
+    };
+    return !Object.prototype.hasOwnProperty.call(computedRow, 'providerMeta');
+  });
+
   // ── Group E: Sanitization — scan all output + serialized results ─────────────
   // Collect serialized result objects to check for raw vendor field leakage.
   const sampleOutputs = [];

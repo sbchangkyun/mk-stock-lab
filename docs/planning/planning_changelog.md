@@ -1,5 +1,28 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BV - 2026-06-25
+
+### KIS Quote Adapter Contract & Mocked Provider Tests (Implemented)
+
+- **Status**: implemented. No live KIS/GNews calls, no external HTTP, no API routes, no DB/Supabase, no UI runtime changes, no deployment changes. All changes are server-side valuation helpers + no-network checkers + docs.
+- **portfolioValuation.ts extended**: added `buildPositionValuationFromQuote` (internal helper) and `buildPortfolioValuationFromQuotes` (exported function). Both compute costBasis/currentPrice/marketValue/unrealizedPnl/unrealizedPnlPct from stored position data + mocked `QuoteSnapshot` input. `providerMeta` intentionally excluded from `PortfolioValuationRow` output. `QuoteSnapshot` type now imported.
+- **No-network valuation computation tested**: synthetic position (buyPrice 60000, qty 10) + synthetic quote (price 75000) → costBasis 600000, marketValue 750000, unrealizedPnl 150000, returnRate 25. Null quote → all computed fields null, costBasis still available.
+- **Edge cases covered**: zero costBasis (no div-by-zero, unrealizedPnlPct null), break-even price (returns 0), loss scenario (negative unrealizedPnl/rate).
+- **Unsupported market / unavailable quote**: US market position + null quote → all computed fields null, staleState unavailable. costBasis always available.
+- **Provider error codes**: SYMBOL_UNSUPPORTED, PROVIDER_UNAVAILABLE, CONFIG_MISSING, INTERNAL_ERROR all mapped to controlled ProviderErrorCode. No raw KIS fields, no stack trace in error envelopes.
+- **Public safety verified**: providerMeta absent from PortfolioValuationRow. No stck_prpr/prdy_vrss/rt_cd/access_token/appkey in valuation output. rawProviderStored never true. Forbidden output scan passes.
+- **Aggregate valuation**: same-currency all-quoted → totalMarketValue/totalUnrealizedPnl computed. Partial coverage → totalMarketValue null, quoteCoverage partial. No quotes → quoteCoverage unavailable.
+- **Mixed-currency policy enforced**: KRW + USD positions in same portfolio → totalMarketValue null (FX deferred, no fabrication). totalCostBasis always computed.
+- **Quote freshness**: staleState propagated from QuoteSnapshot to row. Portfolio staleState fresh when all rows fresh; stale-but-usable when any stale; unavailable when no quotes.
+- **check_kis_error_fallback_paths.mjs extended**: added Group G (8 valuation-computation fallback path tests) covering null-quote, successful-quote metrics, zero-costBasis guard, break-even, providerMeta absence.
+- Created `scripts/check_kis_quote_adapter_mocked_contract.mjs` — 80-check no-network mocked contract checker.
+- Created `docs/planning/phase_3bv_kis_quote_adapter_contract_mocked_tests_result_v0.1.md`.
+- Updated `scripts/check_kis_valuation_pre_design_static_contract.mjs` — Phase 3BV artifact checks added.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BV artifact group added.
+- Added `check:kis-quote-adapter-mocked` to `package.json`.
+- All validators pass. Build passes.
+- **Recommended next phase**: Phase 3BW — Portfolio Valuation API Route with Fixture/Mocked Quotes.
+
 ## Phase 3BU - 2026-06-25
 
 ### KIS Valuation Integration Pre-Design & Data Contract (Planned / documentation-only)

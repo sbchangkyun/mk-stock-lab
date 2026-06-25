@@ -241,9 +241,36 @@ check('Planning doc confirms no DB migration files added',
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 11: Checker network safety
+// Group 11: Phase 3BV artifact checks
 // ---------------------------------------------------------------------------
-log('--- Group 11: Checker network safety ---');
+log('--- Group 11: Phase 3BV artifact checks ---');
+
+const RESULT_DOC_3BV = join(root, 'docs', 'planning', 'phase_3bv_kis_quote_adapter_contract_mocked_tests_result_v0.1.md');
+const MOCKED_CHECKER_3BV = join(root, 'scripts', 'check_kis_quote_adapter_mocked_contract.mjs');
+const VALUATION_ROUTE_3BV = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.ts');
+const VALUATION_ROUTE_3BV_JS = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.js');
+const PORTFOLIO_VALUATION_TS = join(root, 'src', 'lib', 'server', 'portfolioValuation.ts');
+
+check('Phase 3BV result doc exists', existsSync(RESULT_DOC_3BV));
+check('Phase 3BV mocked checker exists (check_kis_quote_adapter_mocked_contract.mjs)', existsSync(MOCKED_CHECKER_3BV));
+check('package.json has check:kis-quote-adapter-mocked script (3BV)',
+  (() => {
+    let p = {};
+    try { p = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+    return typeof p.scripts?.['check:kis-quote-adapter-mocked'] === 'string';
+  })());
+check('portfolioValuation.ts has buildPortfolioValuationFromQuotes export (3BV)',
+  existsSync(PORTFOLIO_VALUATION_TS) &&
+  readFileSync(PORTFOLIO_VALUATION_TS, 'utf8').includes('export const buildPortfolioValuationFromQuotes'));
+check('No /api/portfolio/valuation route added by 3BV',
+  !existsSync(VALUATION_ROUTE_3BV) && !existsSync(VALUATION_ROUTE_3BV_JS));
+check('No /news page created (3BV boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 12: Checker network safety
+// ---------------------------------------------------------------------------
+log('--- Group 12: Checker network safety ---');
 
 const originalFetch = globalThis.fetch;
 let checkerMadeFetch = false;

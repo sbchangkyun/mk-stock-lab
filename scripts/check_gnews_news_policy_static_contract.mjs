@@ -1005,6 +1005,35 @@ check('No runtime valuation route added in 3BU',
   !existsSync(VALUATION_ROUTE) && !existsSync(VALUATION_ROUTE_JS));
 log('');
 
+// ─── Phase 3BV artifact group ────────────────────────────────────────────────
+log('--- Phase 3BV: KIS Quote Adapter Contract & Mocked Provider Tests ---');
+
+const RESULT_DOC_3BV = join(root, 'docs', 'planning', 'phase_3bv_kis_quote_adapter_contract_mocked_tests_result_v0.1.md');
+const MOCKED_CHECKER_3BV = join(root, 'scripts', 'check_kis_quote_adapter_mocked_contract.mjs');
+const VALUATION_ROUTE_3BV = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.ts');
+const VALUATION_ROUTE_3BV_JS = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.js');
+const PORTFOLIO_VALUATION_3BV = join(root, 'src', 'lib', 'server', 'portfolioValuation.ts');
+
+check('Phase 3BV result doc exists', existsSync(RESULT_DOC_3BV));
+check('Phase 3BV mocked checker exists', existsSync(MOCKED_CHECKER_3BV));
+check('package script check:kis-quote-adapter-mocked exists',
+  (() => {
+    let p = {};
+    try { p = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+    return typeof p.scripts?.['check:kis-quote-adapter-mocked'] === 'string';
+  })());
+check('buildPortfolioValuationFromQuotes exported in portfolioValuation.ts (3BV)',
+  existsSync(PORTFOLIO_VALUATION_3BV) &&
+  readFileSync(PORTFOLIO_VALUATION_3BV, 'utf8').includes('export const buildPortfolioValuationFromQuotes'));
+check('No /api/portfolio/valuation route added by 3BV',
+  !existsSync(VALUATION_ROUTE_3BV) && !existsSync(VALUATION_ROUTE_3BV_JS));
+check('No /news page created (3BV boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+check('HomePortfolioPanel still present (3BV boundary)',
+  existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('HomeMarketNews still present (3BV boundary)',
+  existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {
