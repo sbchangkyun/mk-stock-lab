@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BZ - 2026-06-25
+
+### Fast Roadmap Reprioritization and Lightweight Execution Plan (Planned / Execution-Ready)
+
+- **Status**: planned / execution-ready. Planning-only phase. No runtime UI changes. No API route changes. No DB/Supabase changes. No live KIS/GNews. No external HTTP. No Vercel Preview. No deployment.
+- **Purpose**: reprioritize the remaining roadmap for speed, low server load, and focused validation after Phase 3BY-HF1 completed the portfolio fixture valuation UX cycle.
+- **Server-load policy defined**: no polling, no cron, no background refresh, no repeated live checks, no full historical smoke suite by default, no live provider call unless explicitly enabled, prefer static/fixture-first.
+- **Focused validation policy defined**: each phase category (planning, Portfolio UI, Home, Chart AI, Market, Lab, MyPage, KIS/FX planning/smoke, API/server, deployment) has its own bounded checker scope. Running all historical checks for a phase that touches only one domain is explicitly prohibited.
+- **Reprioritized roadmap phases**:
+  - **3CA** — Security Metadata Coverage Expansion (local JSON, no code change)
+  - **3CB** — Home Index Cards Fixture Data
+  - **3CC** — MyPage MVP Completion
+  - **3CD** — Chart AI UX Skeleton Enhancement
+  - **3CE** — Lab Menu Static Module Shells (congress stocks, NPS, S&P 500 sectors, asset-class returns)
+  - **3CF** — Market Page Fixture Chart Enhancement
+  - **3CG** — Server-side Portfolio Tab Order Preference Plan (planning)
+  - **3CH** — KIS + FX Preview Smoke Plan (planning)
+  - **3CI** — KIS + FX Preview Smoke Execution (owner-run, controlled)
+  - **3CJ** — Live Quote Contract (source=live, no UI default enablement)
+  - **3CK** — FX Conversion Contract
+  - **3CL** — Lightweight Quote Cache Design
+  - **3CM** — Cached/Live Portfolio Valuation UI Mode
+  - **3CN–3CS** — Dividends, Chart AI engine, Market live charts, Lab data, Production QA
+- **Owner preparation checklist included**: KIS credentials, FX source decision, Vercel Preview env readiness, Supabase schema approval, Home card priorities, Chart AI output format, Lab module priority, dividend decision.
+- **KIS/FX policy confirmed**: KR + US in scope; FX included; source=live first; source=auto deferred; live failure = unavailable/stale-safe (not fixture fallback); Vercel Preview smoke in Phase 3CI only; prefer "조회 시점 기준" / "최근 조회 기준" wording over "실시간".
+- **Focused validation**: check:project-lightweight-roadmap 27/27 PASS. Build skipped (planning-only phase, no runtime files touched — build state unchanged from 239c738).
+- **Recommended next phase**: Phase 3CA (Security Metadata Coverage Expansion — short, data-only) then Phase 3CB (Home Index Cards Fixture Data).
+
 ## Phase 3BY-HF1 - 2026-06-25
 
 ### Portfolio Ticker Display Name Resolver Hotfix (Implemented)

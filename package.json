@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "postbuild": "node scripts/repair-vercel-output.mjs",
+    "check:project-lightweight-roadmap": "node scripts/check_project_lightweight_roadmap_static_contract.mjs",
     "check:provider-boundaries": "node scripts/check_server_only_provider_boundaries.mjs",
     "check:kis-runtime-guard": "node scripts/check_kis_runtime_guard_policy.mjs",
     "check:kis-error-fallback": "node scripts/check_kis_error_fallback_paths.mjs",
