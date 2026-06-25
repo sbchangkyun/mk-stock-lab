@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CA-HF1 - 2026-06-25
+
+### Password Reset Flow Hotfix (Implemented)
+
+- **Status**: implemented. Urgent hotfix. Runtime UI change: AuthModal + new `/reset-password` page + CSS. No API route changes. No DB/Supabase schema changes. No migration. No live KIS/GNews. No external HTTP. No deployment.
+- **Urgency**: master banner admin account (`kkamagi707@naver.com`) password forgotten. Password reset needed before Home rail banner admin panel (Phase 3CA) could be tested.
+- **Login UI**: added `비밀번호를 잊으셨나요?` button to login form (hidden in signup mode). Clicking opens a reset panel inside the existing auth modal. Pre-fills email from login form. Back button returns to login mode.
+- **Reset email request**: calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' })`. Always shows generic success message regardless of whether email exists (prevents email enumeration). Configuration error shows safe generic failure message.
+- **`/reset-password` page**: new `src/pages/reset-password.astro`. 4-state UI: checking → invalid/expired | form | success. Detects `PASSWORD_RECOVERY` event via `supabase.auth.onAuthStateChange`; shows invalid state after 2.5-second timeout if no recovery event. Password form validates length ≥ 8 and confirmation match before calling `supabase.auth.updateUser({ password })`. Signs out after success. No service_role. No admin API. No raw errors in UI.
+- **Redirect URL prerequisites**: owner has already added `http://localhost:4321/reset-password` and `https://mkstocklab.vercel.app/reset-password` to Supabase Auth. Preview domain redirect URLs may need separate entries.
+- **Focused validation**: check:password-reset-flow 55/55 PASS, check:header-footer-shell PASS, build PASS.
+- **Manual owner checklist**: open login → click reset link → enter email → check inbox → click email link → enter new password → log in with new password → confirm 운영 배너 관리 panel visible.
+
 ## Phase 3CA - 2026-06-25
 
 ### Home Rail Banner URL Settings MVP (Implemented)

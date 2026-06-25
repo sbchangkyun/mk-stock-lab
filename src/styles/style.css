@@ -3631,3 +3631,106 @@ body.modal-open {
   color: #991b1b;
   background: #fee2e2;
 }
+
+/* ---- Phase 3CA-HF1: password reset modal panel ---- */
+.auth-reset-link {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  padding: 0;
+}
+
+.auth-reset-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-reset-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.auth-reset-success {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(17, 138, 79, 0.3);
+  border-radius: 8px;
+  background: rgba(17, 138, 79, 0.08);
+  color: var(--positive);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ---- Phase 3CA-HF1: /reset-password page ---- */
+.reset-pw-wrap {
+  max-width: 440px;
+  margin: 0 auto 2rem;
+}
+
+.reset-pw-panel {
+  padding: 24px;
+}
+
+.reset-pw-form {
+  display: grid;
+  gap: 14px;
+}
+
+.reset-pw-field {
+  display: grid;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.reset-pw-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.reset-pw-field input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.reset-pw-status {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.reset-pw-status--ok {
+  color: var(--positive);
+  font-weight: 700;
+}
+
+.reset-pw-status--err {
+  color: var(--negative);
+  font-weight: 700;
+}
+
+.reset-pw-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.reset-pw-back-link {
+  text-align: center;
+  margin: 0 auto 2rem;
+  font-size: 13px;
+}
+
+.reset-pw-back-link a {
+  color: var(--primary);
+}

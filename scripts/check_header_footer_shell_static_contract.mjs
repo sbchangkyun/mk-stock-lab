@@ -174,6 +174,16 @@ check(
 );
 log('');
 
+// --- Phase 3CA-HF1: password reset no-regression ---
+log('Phase 3CA-HF1 password reset no-regression:');
+const AUTH_MODAL_PATH = join(root, 'src', 'components', 'Auth', 'AuthModal.astro');
+const RESET_PAGE_PATH = join(root, 'src', 'pages', 'reset-password.astro');
+check('AuthModal.astro exists', existsSync(AUTH_MODAL_PATH));
+check('AuthModal has 비밀번호를 잊으셨나요? entry point',
+  existsSync(AUTH_MODAL_PATH) && readFileSync(AUTH_MODAL_PATH, 'utf8').includes('비밀번호를 잊으셨나요?'));
+check('reset-password.astro page exists', existsSync(RESET_PAGE_PATH));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

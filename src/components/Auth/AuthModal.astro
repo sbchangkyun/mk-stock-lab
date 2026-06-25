@@ -39,9 +39,24 @@ import GoogleLogin from './GoogleLogin.astro';
       </label>
       <p class="auth-error hidden" id="auth-error" role="alert"></p>
       <button class="primary-action" type="submit" id="auth-submit">로그인</button>
+      <button class="text-button auth-reset-link" type="button" id="show-reset-panel">비밀번호를 잊으셨나요?</button>
     </form>
 
-    <p class="modal-note">
+    <div class="auth-reset-panel hidden" id="auth-reset-panel" aria-label="비밀번호 재설정">
+      <p class="auth-reset-desc">등록하신 이메일 주소로 비밀번호 재설정 링크를 보내드립니다.</p>
+      <form class="auth-form" id="auth-reset-form">
+        <label>
+          이메일
+          <input id="auth-reset-email" type="email" autocomplete="email" placeholder="name@example.com" />
+        </label>
+        <p class="auth-error hidden" id="auth-reset-error" role="alert"></p>
+        <p class="auth-reset-success hidden" id="auth-reset-success" role="status"></p>
+        <button class="primary-action" type="submit" id="auth-reset-submit">비밀번호 재설정 메일 보내기</button>
+        <button class="text-button" type="button" id="auth-reset-back">로그인으로 돌아가기</button>
+      </form>
+    </div>
+
+    <p class="modal-note" id="auth-modal-note">
       <span id="auth-mode-copy">계정이 없으신가요?</span>
       <button class="text-button" id="toggle-auth-mode" type="button">회원가입</button>
     </p>
@@ -66,12 +81,33 @@ import GoogleLogin from './GoogleLogin.astro';
   const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null;
   const passwordConfirmInput = document.getElementById('auth-password-confirm') as HTMLInputElement | null;
   const errorMessage = document.getElementById('auth-error');
+  const showResetLink = document.getElementById('show-reset-panel') as HTMLButtonElement | null;
+  const resetPanel = document.getElementById('auth-reset-panel') as HTMLElement | null;
+  const resetForm = document.getElementById('auth-reset-form') as HTMLFormElement | null;
+  const resetEmailInput = document.getElementById('auth-reset-email') as HTMLInputElement | null;
+  const resetErrorEl = document.getElementById('auth-reset-error') as HTMLElement | null;
+  const resetSuccessEl = document.getElementById('auth-reset-success') as HTMLElement | null;
+  const resetSubmitBtn = document.getElementById('auth-reset-submit') as HTMLButtonElement | null;
+  const resetBackBtn = document.getElementById('auth-reset-back') as HTMLButtonElement | null;
+  const modalNote = document.getElementById('auth-modal-note') as HTMLElement | null;
   let signupMode = false;
 
   const setError = (message: string) => {
     if (!errorMessage) return;
     errorMessage.textContent = message;
     errorMessage.classList.toggle('hidden', !message);
+  };
+
+  const setResetError = (msg: string) => {
+    if (!resetErrorEl) return;
+    resetErrorEl.textContent = msg;
+    resetErrorEl.classList.toggle('hidden', !msg);
+  };
+
+  const setResetSuccess = (msg: string) => {
+    if (!resetSuccessEl) return;
+    resetSuccessEl.textContent = msg;
+    resetSuccessEl.classList.toggle('hidden', !msg);
   };
 
   const setMode = (nextMode: boolean) => {
@@ -85,7 +121,27 @@ import GoogleLogin from './GoogleLogin.astro';
     if (nicknameInput) nicknameInput.required = signupMode;
     if (passwordConfirmInput) passwordConfirmInput.required = signupMode;
     if (passwordInput) passwordInput.autocomplete = signupMode ? 'new-password' : 'current-password';
+    showResetLink?.classList.toggle('hidden', signupMode);
     setError('');
+  };
+
+  const showReset = () => {
+    if (resetEmailInput && emailInput?.value) {
+      resetEmailInput.value = emailInput.value;
+    }
+    setResetError('');
+    setResetSuccess('');
+    form?.classList.add('hidden');
+    showResetLink?.classList.add('hidden');
+    modalNote?.classList.add('hidden');
+    resetPanel?.classList.remove('hidden');
+  };
+
+  const hideReset = () => {
+    resetPanel?.classList.add('hidden');
+    form?.classList.remove('hidden');
+    modalNote?.classList.remove('hidden');
+    showResetLink?.classList.toggle('hidden', signupMode);
   };
 
   const closeModal = () => {
@@ -96,6 +152,7 @@ import GoogleLogin from './GoogleLogin.astro';
 
   const openModal = () => {
     setMode(false);
+    hideReset();
     modal?.classList.remove('hidden');
   };
 
@@ -105,6 +162,39 @@ import GoogleLogin from './GoogleLogin.astro';
     if (event.target === modal) closeModal();
   });
   toggleButton?.addEventListener('click', () => setMode(!signupMode));
+  showResetLink?.addEventListener('click', showReset);
+  resetBackBtn?.addEventListener('click', hideReset);
+
+  resetForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    setResetError('');
+    setResetSuccess('');
+
+    if (!isSupabaseConfigured()) {
+      setResetError('재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) {
+      setResetError('재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    const email = resetEmailInput?.value.trim() ?? '';
+    if (!email || !email.includes('@')) {
+      setResetError('유효한 이메일 주소를 입력해 주세요.');
+      return;
+    }
+
+    if (resetSubmitBtn) resetSubmitBtn.setAttribute('disabled', 'true');
+
+    const redirectTo = `${window.location.origin}/reset-password`;
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+    if (resetSubmitBtn) resetSubmitBtn.removeAttribute('disabled');
+    setResetSuccess('입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다. 메일함을 확인해 주세요.');
+  });
 
   const validateSignup = () => {
     const nickname = nicknameInput?.value.trim() ?? '';
