@@ -140,6 +140,19 @@ if (existsSync(RAIL_COMPONENT_PATH)) {
 }
 log('');
 
+// --- Phase 3CA: configured banner support in rail component ---
+log('Phase 3CA configured banner support:');
+if (existsSync(RAIL_COMPONENT_PATH)) {
+  const railContent3CA = readFileSync(RAIL_COMPONENT_PATH, 'utf8');
+  check('Rail imports siteSettingsClient (managed banner support)',
+    railContent3CA.includes('siteSettingsClient'));
+  check('Managed banners use noopener noreferrer link attribute',
+    railContent3CA.includes('noopener noreferrer'));
+  check('No click tracking in managed banner loader',
+    !railContent3CA.includes('clickCount') && !railContent3CA.includes('impression'));
+}
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

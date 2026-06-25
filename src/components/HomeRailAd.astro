@@ -29,6 +29,59 @@ const hasMultipleBanners = activeBanners.length > 1;
   )
 }
 
+<script>
+  import { getHomeRailBanners } from '../lib/siteSettingsClient';
+  import { isSupabaseConfigured } from '../lib/supabase';
+
+  const loadManagedBanners = async () => {
+    if (!isSupabaseConfigured()) return;
+    const banners = await getHomeRailBanners();
+    const active = banners?.filter((b) => b.active && b.imageUrl) ?? [];
+    if (active.length === 0) return;
+
+    const rail = document.querySelector<HTMLElement>('[data-home-rail-ad]');
+    if (!rail) return;
+    const track = rail.querySelector<HTMLElement>('.home-rail-track');
+    if (!track) return;
+
+    track.innerHTML = '';
+    for (const b of active) {
+      const safeAlt = (b.alt || 'MK Stock Lab 배너').slice(0, 120);
+      let card: HTMLElement;
+      if (b.linkUrl && /^https?:\/\//i.test(b.linkUrl)) {
+        const a = document.createElement('a');
+        a.href = b.linkUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'home-rail-card';
+        a.setAttribute('aria-label', safeAlt);
+        card = a;
+      } else {
+        const div = document.createElement('div');
+        div.className = 'home-rail-card';
+        div.setAttribute('role', 'img');
+        div.setAttribute('aria-label', safeAlt);
+        card = div;
+      }
+      const img = document.createElement('img');
+      img.src = b.imageUrl;
+      img.alt = safeAlt;
+      img.width = 160;
+      img.height = 600;
+      img.loading = 'lazy';
+      card.appendChild(img);
+      track.appendChild(card);
+    }
+
+    rail.classList.remove('is-carousel');
+    rail.dataset.count = String(active.length);
+    rail.setAttribute('aria-label', 'Home banner rail');
+  };
+
+  document.addEventListener('astro:page-load', () => { void loadManagedBanners(); });
+  void loadManagedBanners();
+</script>
+
 {
   activeBanners.length > 0 && (
     <script>

@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CA - 2026-06-25
+
+### Home Rail Banner URL Settings MVP (Implemented)
+
+- **Status**: implemented. Runtime change: HomeRailAd.astro (managed banner loader), mypage.astro (admin panel), siteSettingsClient.ts (new library), style.css (banner admin CSS). New Supabase migration (owner-applied). No live KIS/GNews. No image upload. No click tracking. No polling. No deployment.
+- **Purpose**: urgent advertising inquiry arrived. Owner needs to quickly test custom banner URLs in the Home right-side rail without a separate admin page. MVP scope: URL-first banner configuration via MyPage, Supabase-backed settings, static JSON fallback.
+- **Migration**: `supabase/migrations/20260625_site_admins_and_settings.sql` — creates `site_admins` (master role, user_id PK), `site_settings` (key/value JSONB), `is_site_admin()` security-definer function. RLS: public may read `home_rail_banners`; only master admins may write. Owner inserts own `user_id` manually to gain access.
+- **siteSettingsClient.ts** (new): `HomeRailBanner` type (`slot: 1|2|3`, `imageUrl`, `linkUrl`, `alt`, `active`). `getHomeRailBanners()`, `saveHomeRailBanners()`, `isCurrentUserSiteAdmin()`. URL validation blocks `javascript:`, `data:`, `file:`, requires `http/https`. Alt max 120 chars. No setInterval, no polling, no raw fetch.
+- **HomeRailAd.astro**: added client script that reads managed banners from Supabase on page load. If active configured banners exist (with imageUrl set), replaces the static sample rail content. Static sample banners remain as SSR fallback. Managed banner links use `target="_blank" rel="noopener noreferrer"`. No new setInterval. No click tracking.
+- **mypage.astro**: added Section G `운영 배너 관리` panel — hidden by default, revealed only for master admins after `isCurrentUserSiteAdmin()` check. Three banner slots with imageUrl/linkUrl/alt/active inputs. 저장 (validate + save) and 다시 불러오기 (reload from DB) buttons. Live image preview on URL input. Korean error messages on validation failure. No file upload, no setInterval.
+- **Safety**: no raw `fetch()` in component files; no `@supabase` direct imports in mypage; no `auth.signOut/updateUser/signUp`; no `console.log/error`; no `localStorage/sessionStorage`; no KIS/GNews; no Supabase Storage.
+- **Focused validation**: check:home-rail-banner-settings PASS, check:home-ad-slots PASS, check:mypage-shell PASS, build PASS.
+
 ## Phase 3BZ - 2026-06-25
 
 ### Fast Roadmap Reprioritization and Lightweight Execution Plan (Planned / Execution-Ready)

@@ -193,6 +193,23 @@ check(
 );
 log('');
 
+// --- Phase 3CA: master admin banner panel ---
+log('Phase 3CA master banner panel:');
+check('운영 배너 관리 panel heading present', content.includes('운영 배너 관리'));
+check('Banner admin panel has id mpBannerAdminPanel', content.includes('mpBannerAdminPanel'));
+check('Banner admin panel defaults to hidden attribute',
+  content.includes('id="mpBannerAdminPanel"') && content.includes('hidden'));
+check('imageUrl inputs present (all 3 slots)',
+  content.includes('mpBannerImageUrl1') && content.includes('mpBannerImageUrl2') && content.includes('mpBannerImageUrl3'));
+check('linkUrl inputs present (all 3 slots)',
+  content.includes('mpBannerLinkUrl1') && content.includes('mpBannerLinkUrl2') && content.includes('mpBannerLinkUrl3'));
+check('저장 button present', content.includes('mpBannerSaveBtn') && content.includes('저장'));
+check('다시 불러오기 button present', content.includes('다시 불러오기'));
+check('No file upload input in panel', !content.includes('type="file"'));
+check('siteSettingsClient imported in mypage script', content.includes('siteSettingsClient'));
+check('isCurrentUserSiteAdmin gating call present', content.includes('isCurrentUserSiteAdmin'));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {
