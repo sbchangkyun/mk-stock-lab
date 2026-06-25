@@ -415,6 +415,12 @@ import Layout from '../layouts/Layout.astro';
     const tickerLikePattern = /^[A-Za-z0-9.-]{1,16}$/;
     const krCodePattern = /^\d{6}$/;
     const normalizeLogoKey = (value: string | null | undefined) => String(value || '').trim().toUpperCase();
+    const resolveSecurityMetadata = (input: string | null | undefined) => {
+      const key = normalizeLogoKey(input);
+      return key ? (logoMappings[key] ?? null) : null;
+    };
+    const resolveDisplayNameForSymbol = (symbol: string, fallbackName?: string | null) =>
+      resolveSecurityMetadata(symbol)?.name || fallbackName || '';
     const toInternalSymbol = (value: string) => {
       const normalized = value.trim();
       if (tickerLikePattern.test(normalized)) return normalized.toUpperCase();
@@ -423,9 +429,10 @@ import Layout from '../layouts/Layout.astro';
     const toPositionIdentity = (value: string) => {
       const normalized = value.trim();
       const symbol = toInternalSymbol(normalized);
+      const mapped = resolveSecurityMetadata(symbol);
       return {
-        symbol,
-        name: tickerLikePattern.test(normalized) ? '' : normalized,
+        symbol: mapped?.symbol || symbol,
+        name: mapped?.name || (tickerLikePattern.test(normalized) ? '' : normalized),
       };
     };
     const inferMarket = (securityInput: string, currency: 'KRW' | 'USD'): 'KR' | 'US' => {
@@ -464,10 +471,19 @@ import Layout from '../layouts/Layout.astro';
       if (/^[A-Za-z0-9.-]+$/.test(label)) return label.slice(0, 3).toUpperCase();
       return label.slice(0, 2);
     };
-    const getPositionPrimaryLabel = (position: PortfolioPosition) => position.name || position.symbol || '종목명 미입력';
+    const getPositionPrimaryLabel = (position: PortfolioPosition) => {
+      if (position.name) return position.name;
+      const mapped = resolveSecurityMetadata(position.symbol);
+      if (mapped?.name) return mapped.name;
+      return position.symbol || '종목명 미입력';
+    };
     const getPositionSecondaryLabel = (position: PortfolioPosition) => {
       if (position.name && position.symbol && position.name !== position.symbol) return position.symbol;
-      if (!position.name && position.symbol) return '티커 직접 입력';
+      if (!position.name && position.symbol) {
+        const mapped = resolveSecurityMetadata(position.symbol);
+        if (mapped?.name) return position.symbol;
+        return '티커 직접 입력';
+      }
       return '티커 미확인';
     };
     const formatLocalAmount = (currency: 'KRW' | 'USD', amount: number) =>

@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BY-HF1 - 2026-06-25
+
+### Portfolio Ticker Display Name Resolver Hotfix (Implemented)
+
+- **Status**: implemented. Runtime UI change: portfolio.astro display-name resolution only. No API route changes. No DB/Supabase changes. No live KIS/GNews. No external HTTP. No deployment.
+- **Owner review finding**: Phase 3BY visual review found that entering known KR ticker codes (005930, etc.) displayed the raw ticker as the primary label instead of the company/ETF name. Secondary label showed `티커 직접 입력` even for tickers with local metadata.
+- **Fix**: added `resolveSecurityMetadata` and `resolveDisplayNameForSymbol` helpers in portfolio.astro using the already-imported `securityLogoMap` from `securityLogos.json`. No external API, no server call, no async lookup.
+- **toPositionIdentity updated**: known ticker input now resolves `name = mapped.name` and `symbol = mapped.symbol || symbol` at creation time.
+- **getPositionPrimaryLabel updated**: falls back to local metadata lookup for existing saved rows with empty name — no DB migration required.
+- **getPositionSecondaryLabel updated**: shows `position.symbol` as secondary when mapping exists; preserves `티커 직접 입력` for unknown tickers.
+- **getChartAiHref unchanged**: already uses `getPositionPrimaryLabel` which now returns resolved name automatically.
+- **Coverage**: limited to entries in `securityLogos.json` (currently 2 entries: 005930/Samsung Electronics, KO/Coca-Cola). Expanding coverage requires only adding JSON entries.
+- **Focused validation**: check:portfolio-ticker-display-name 63/63 PASS, check:portfolio-owner-review-prep 50/50 PASS, check:portfolio-ui-valuation-fixture 71/71 PASS, check:portfolio-tab-order-persistence 61/61 PASS, check:portfolio-valuation-api 124/124 PASS, build PASS.
+- **Next phase**: Phase 3BZ — Fast Roadmap Reprioritization and Lightweight Execution Plan (if owner review passes).
+
 ## Phase 3BY - 2026-06-25
 
 ### Portfolio UI Valuation Owner Browser Review Prep (Review-ready)

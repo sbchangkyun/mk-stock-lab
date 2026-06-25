@@ -187,6 +187,27 @@ globalThis.fetch = origFetch;
 log('');
 
 // ---------------------------------------------------------------------------
+// Group 9: Phase 3BY-HF1 ticker display name resolver (no-regression)
+// ---------------------------------------------------------------------------
+log('--- Group 9: Phase 3BY-HF1 ticker display name resolver ---');
+
+const TICKER_CHECKER = join(root, 'scripts', 'check_portfolio_ticker_display_name_resolver_static_contract.mjs');
+check('Ticker display name resolver checker exists', existsSync(TICKER_CHECKER));
+check('package.json has check:portfolio-ticker-display-name script',
+  typeof pkg.scripts?.['check:portfolio-ticker-display-name'] === 'string');
+check('portfolio.astro includes resolveSecurityMetadata (local resolver)',
+  portfolioContent.includes('resolveSecurityMetadata'));
+check('portfolio.astro includes resolveDisplayNameForSymbol helper',
+  portfolioContent.includes('resolveDisplayNameForSymbol'));
+check('3BX valuation mapping loadValuation remains intact',
+  portfolioContent.includes('const loadValuation = async'));
+check('source: fixture remains present, no live provider added',
+  (portfolioContent.includes("source: 'fixture'") || portfolioContent.includes('source: "fixture"')) &&
+  !portfolioContent.includes("source: 'live'") &&
+  !portfolioContent.includes("source: 'auto'"));
+log('');
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
 log('=== Phase 3BY Portfolio UI Valuation Owner Review Prep — Summary ===');
