@@ -3534,6 +3534,66 @@ body.modal-open {
   color: var(--text-muted);
 }
 
+/* ---- Phase 3CA-HF2: MyPage top-area responsive layout ---- */
+.mp-top-area {
+  display: contents;
+}
+
+.mp-top-area--active {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .mp-top-area--active {
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+}
+
+/* ---- Phase 3CA-HF2: banner admin accordion ---- */
+.mp-banner-accordion-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mp-banner-accordion-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mp-banner-accordion-summary {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.mp-banner-accordion-toggle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+
+.mp-banner-accordion-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.mp-banner-accordion-body {
+  margin-top: 12px;
+}
+
 /* ---- Phase 3CA: master banner admin panel ---- */
 .mp-banner-admin {}
 

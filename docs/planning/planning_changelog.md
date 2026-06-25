@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CA-HF2 - 2026-06-25
+
+### MyPage Banner Admin UX and Active Slot Filtering Hotfix (Implemented)
+
+- **Status**: implemented. Owner browser review of Phase 3CA found four issues requiring a targeted hotfix.
+- **Owner review issues**: (1) `로그인 방식` showed `Google 로그인` even for email/password login; (2) `운영 배너 관리` appeared at bottom of MyPage instead of to the right of `내 계정`; (3) Banner admin panel was too tall with no way to collapse; (4) Inactive/empty banner slots produced blank white rotation in the Home right rail.
+- **Login method fix**: Removed hardcoded `Google 로그인` from HTML. Now resolved dynamically in JS from `user.identities` array (most reliable) with `user.app_metadata.provider` fallback. Shows `이메일 로그인`, `Google 로그인`, `이메일 + Google`, or `확인 불가`. No email domain inference. No raw user data in UI.
+- **Layout fix**: Wrapped `내 계정` section and `운영 배너 관리` section in a `<div class="mp-top-area">`. Default `display: contents` (transparent for non-admins). When master admin panel is revealed, JS adds `mp-top-area--active` class: `1fr` column on mobile, `1fr 340px` side-by-side on desktop (≥ 1024px).
+- **Accordion**: Added `mp-banner-accordion-header` with title, active-banner count summary (`활성 배너 N개`), and `펼치기`/`접기` toggle button with `aria-expanded` and `aria-controls`. Body defaults `hidden`. Opens automatically on save error.
+- **Active slot filtering**: Root cause was SSR carousel initialized with 3 static banners before `loadManagedBanners` ran async. Old interval kept translating track with stale DOM references, hiding single managed banner off-screen. Fix: `setupRailCarousel` stores interval on `rail._railIntervalId`; `loadManagedBanners` cancels old interval, resets `data-ready` and transform, replaces content with only `active && imageUrl.trim() && /^https?:\/\//i.test(url)` filtered banners, then re-initializes carousel only if >= 2 active. Static fallback preserved when no active valid banners. No blank slots possible.
+- **No DB/schema/API/live/deployment changes**.
+- **Focused validation**: check:home-rail-banner-settings PASS, check:home-ad-slots PASS, check:mypage-shell PASS, check:password-reset-flow PASS, build PASS.
+
 ## Phase 3CA-HF1 - 2026-06-25
 
 ### Password Reset Flow Hotfix (Implemented)

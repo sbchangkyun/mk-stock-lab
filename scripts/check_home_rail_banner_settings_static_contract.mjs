@@ -24,6 +24,7 @@ const STYLE_PATH = join(root, 'src', 'styles', 'style.css');
 const PACKAGE_JSON = join(root, 'package.json');
 const CHANGELOG = join(root, 'docs', 'planning', 'planning_changelog.md');
 const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3ca_home_rail_banner_url_settings_mvp_result_v0.1.md');
+const HF2_RESULT_DOC = join(root, 'docs', 'planning', 'phase_3ca_hf2_mypage_banner_admin_ux_active_slot_filter_result_v0.1.md');
 
 const log = (msg) => process.stdout.write(msg + '\n');
 let failures = 0;
@@ -59,8 +60,11 @@ try { pkg = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')); } catch {}
 check('package.json has check:home-rail-banner-settings script',
   typeof pkg.scripts?.['check:home-rail-banner-settings'] === 'string');
 check('Result doc exists', existsSync(RESULT_DOC));
+check('HF2 result doc exists', existsSync(HF2_RESULT_DOC));
 check('planning_changelog.md has Phase 3CA entry',
   existsSync(CHANGELOG) && readFileSync(CHANGELOG, 'utf8').includes('3CA'));
+check('planning_changelog.md has Phase 3CA-HF2 entry',
+  existsSync(CHANGELOG) && readFileSync(CHANGELOG, 'utf8').includes('3CA-HF2'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -147,6 +151,21 @@ if (railExists) {
     (rail.match(/setInterval/g) || []).length <= 1);
   check('No raw fetch() in rail component', !(/\bfetch\s*\(/.test(rail)));
   check('No external ad network in rail', !['doubleclick.net', 'googletagmanager.com', 'googlesyndication.com'].some((p) => rail.includes(p)));
+  // Phase 3CA-HF2: active slot filter and carousel teardown
+  check('Active filter uses .trim() on imageUrl (no whitespace-only URLs)',
+    rail.includes('imageUrl.trim()') || rail.includes('.trim()'));
+  check('Active filter validates https? scheme on imageUrl',
+    rail.includes('https?') && rail.includes('imageUrl'));
+  check('Managed banner loader cancels old carousel interval before replacing',
+    rail.includes('_railIntervalId') && (rail.includes('clearInterval') || rail.includes('clearInterval')));
+  check('Managed banner loader resets track transform before replacing',
+    rail.includes("track.style.transform = ''") || rail.includes('track.style.transform=""'));
+  check('Managed banner loader re-initializes carousel for multiple managed banners',
+    rail.includes('setupRailCarousel') || rail.includes('active.length >= 2'));
+  check('No blank managed slot (filter requires active + valid imageUrl)',
+    rail.includes('active.length === 0') || rail.includes('active.length == 0'));
+  check('No setInterval added outside carousel setup',
+    (rail.match(/setInterval/g) || []).length <= 1);
 } else {
   check('HomeRailAd.astro readable', false);
 }

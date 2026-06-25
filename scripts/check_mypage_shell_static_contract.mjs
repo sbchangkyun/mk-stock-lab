@@ -67,7 +67,11 @@ log('');
 
 // --- Account summary ---
 log('Account summary:');
-check('Page contains Google 로그인', content.includes('Google 로그인'));
+check('mpLoginMethod id present for dynamic login label', content.includes('mpLoginMethod'));
+check('Google 로그인 label defined as string (used dynamically)', content.includes('Google 로그인'));
+check('이메일 로그인 label defined (email/password provider)', content.includes('이메일 로그인'));
+check('Login method resolved from user.identities array', content.includes('identities'));
+check('Login method falls back to app_metadata.provider', content.includes('app_metadata'));
 check('계정 상태 row removed', !REMOVED_ACCOUNT_ROWS.some((r) => content.includes(r)));
 check('Page contains 마지막 접속 일시', content.includes('마지막 접속 일시'));
 check('Page contains 구독 상태', content.includes('구독 상태'));
@@ -208,6 +212,24 @@ check('다시 불러오기 button present', content.includes('다시 불러오�
 check('No file upload input in panel', !content.includes('type="file"'));
 check('siteSettingsClient imported in mypage script', content.includes('siteSettingsClient'));
 check('isCurrentUserSiteAdmin gating call present', content.includes('isCurrentUserSiteAdmin'));
+log('');
+
+// --- Phase 3CA-HF2: MyPage admin UX ---
+log('Phase 3CA-HF2 admin UX:');
+check('mp-top-area wrapper present for desktop layout', content.includes('mp-top-area'));
+check('Banner admin accordion toggle button present', content.includes('mpBannerAccordionToggle'));
+check('Accordion toggle has aria-expanded attribute', content.includes('aria-expanded'));
+check('Accordion toggle has aria-controls attribute', content.includes('aria-controls'));
+check('Accordion body has id mpBannerAccordionBody', content.includes('mpBannerAccordionBody'));
+check('Accordion defaults collapsed (body hidden)',
+  content.includes('mpBannerAccordionBody') && content.includes('"mpBannerAccordionBody"'));
+check('Active banner count summary element present', content.includes('mpBannerAccordionSummary'));
+check('Accordion opens on save error (setAccordion called in showMsg)',
+  content.includes('setAccordion') && content.includes('showMsg'));
+check('mp-top-area--active class added when admin panel revealed',
+  content.includes('mp-top-area--active'));
+check('Login method uses provider identities (no static HTML Google label)',
+  !/<dd[^>]*>Google 로그인<\/dd>/i.test(content));
 log('');
 
 // --- Summary ---

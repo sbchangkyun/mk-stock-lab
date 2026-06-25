@@ -153,6 +153,27 @@ if (existsSync(RAIL_COMPONENT_PATH)) {
 }
 log('');
 
+// --- Phase 3CA-HF2: active slot filtering ---
+log('Phase 3CA-HF2 active slot filtering:');
+if (existsSync(RAIL_COMPONENT_PATH)) {
+  const railHF2 = readFileSync(RAIL_COMPONENT_PATH, 'utf8');
+  check('Filter uses .trim() to exclude whitespace-only imageUrl',
+    railHF2.includes('imageUrl.trim()') || railHF2.includes('.trim()'));
+  check('Filter validates https? scheme on imageUrl',
+    railHF2.includes('https?') && railHF2.includes('imageUrl'));
+  check('Empty active slots excluded (filter checks imageUrl validity)',
+    railHF2.includes('active.length === 0') || railHF2.includes("if (active.length === 0)"));
+  check('Old carousel torn down before managed content (clearInterval on _railIntervalId)',
+    railHF2.includes('_railIntervalId') && railHF2.includes('clearInterval'));
+  check('Track transform reset before replacing content',
+    railHF2.includes("track.style.transform = ''"));
+  check('Static fallback preserved (homeAdBanners still imported)',
+    railHF2.includes('homeAdBanners'));
+  check('No raw setInterval added for polling beyond carousel rotation',
+    (railHF2.match(/setInterval/g) || []).length <= 1);
+}
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {
