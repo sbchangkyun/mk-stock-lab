@@ -3534,6 +3534,89 @@ body.modal-open {
   color: var(--text-muted);
 }
 
+/* ---- Phase 3CB: Home index snapshot cards ---- */
+
+.index-snapshot-section {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.index-snapshot-section h2 {
+  margin-bottom: 4px;
+}
+
+.index-snapshot-desc {
+  margin-top: 4px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.index-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.index-card {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.index-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.index-card-caption {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.index-card-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 8px;
+  letter-spacing: -0.5px;
+}
+
+.index-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  gap: 4px;
+}
+
+.index-card-change {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.index-card--up .index-card-change {
+  color: var(--positive);
+}
+
+.index-card--down .index-card-change {
+  color: var(--negative);
+}
+
+.index-card--flat .index-card-change {
+  color: var(--neutral);
+}
+
+.index-card-as-of {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 /* ---- Phase 3CA-HF3: MyPage page-level admin rail layout ---- */
 
 /* Default: mp-sections flows normally (max-width: 680px, left-aligned) */
@@ -3546,10 +3629,11 @@ body.modal-open {
   display: none;
 }
 
-/* Two-column grid on desktop: account (≤680px) left, admin rail (≤340px) right */
+/* Two-column grid on desktop: account (≤680px) left, admin rail (420px) right */
+/* Admin rail widened from 340px to 420px in Phase 3CB carry-over polish */
 .mp-page-layout--admin-visible {
   display: grid;
-  grid-template-columns: minmax(0, 680px) 340px;
+  grid-template-columns: minmax(0, 680px) 420px;
   gap: 24px;
   align-items: start;
 }
@@ -3558,8 +3642,8 @@ body.modal-open {
   display: block;
 }
 
-/* Stack vertically on viewports where the two-column grid would overflow */
-@media (max-width: 1099px) {
+/* Stack vertically below 1200px so the account card stays at full 680px on desktop */
+@media (max-width: 1199px) {
   .mp-page-layout--admin-visible {
     display: block;
   }

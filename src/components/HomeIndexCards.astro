@@ -1,0 +1,22 @@
+---
+import homeIndexCards from '../data/homeIndexCards.json';
+---
+
+<section class="index-snapshot-section" aria-labelledby="index-snapshot-heading">
+  <p class="eyebrow">MARKET SNAPSHOT</p>
+  <h2 id="index-snapshot-heading">주요 지수 한눈에 보기</h2>
+  <p class="index-snapshot-desc">예시 데이터 기준입니다. 실제 시세 연동은 이후 단계에서 진행됩니다.</p>
+  <div class="index-card-grid">
+    {homeIndexCards.map((item) => (
+      <div class={`index-card index-card--${item.direction}`}>
+        <div class="index-card-label">{item.label}</div>
+        <div class="index-card-caption">{item.caption}</div>
+        <div class="index-card-value">{item.value}</div>
+        <div class="index-card-footer">
+          <span class="index-card-change">{item.change}</span>
+          <span class="index-card-as-of">{item.asOfLabel}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>

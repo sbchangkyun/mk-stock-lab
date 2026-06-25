@@ -1,0 +1,101 @@
+[
+  {
+    "id": "sp500",
+    "label": "S&P 500",
+    "caption": "미국 대형주",
+    "value": "5,834",
+    "change": "+0.65%",
+    "direction": "up",
+    "category": "index",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "nasdaq100",
+    "label": "Nasdaq 100",
+    "caption": "성장주 지수",
+    "value": "20,421",
+    "change": "+1.21%",
+    "direction": "up",
+    "category": "index",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "dowjones",
+    "label": "Dow Jones",
+    "caption": "우량주 지수",
+    "value": "43,155",
+    "change": "-0.12%",
+    "direction": "down",
+    "category": "index",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "kospi",
+    "label": "KOSPI",
+    "caption": "국내 대표 시장",
+    "value": "2,512",
+    "change": "+0.03%",
+    "direction": "flat",
+    "category": "index",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "kosdaq",
+    "label": "KOSDAQ",
+    "caption": "국내 성장 시장",
+    "value": "721",
+    "change": "+0.47%",
+    "direction": "up",
+    "category": "index",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "usdkrw",
+    "label": "USD/KRW",
+    "caption": "원/달러 환율",
+    "value": "1,382",
+    "change": "-0.23%",
+    "direction": "down",
+    "category": "fx",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "dxy",
+    "label": "Dollar Index",
+    "caption": "달러 흐름",
+    "value": "104.30",
+    "change": "-0.31%",
+    "direction": "down",
+    "category": "fx",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "gold",
+    "label": "Gold",
+    "caption": "안전자산 (USD/oz)",
+    "value": "2,658",
+    "change": "+0.88%",
+    "direction": "up",
+    "category": "commodity",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  },
+  {
+    "id": "wti",
+    "label": "WTI Oil",
+    "caption": "에너지 기준가 (USD/bbl)",
+    "value": "72.45",
+    "change": "-1.44%",
+    "direction": "down",
+    "category": "commodity",
+    "asOfLabel": "예시 데이터",
+    "note": "연동 전 표시값입니다"
+  }
+]

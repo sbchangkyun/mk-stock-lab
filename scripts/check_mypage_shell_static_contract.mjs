@@ -231,6 +231,8 @@ check('mp-page-layout--admin-visible class activated when admin panel revealed (
   content.includes('mp-page-layout--admin-visible'));
 check('Login method uses provider identities (no static HTML Google label)',
   !/<dd[^>]*>Google 로그인<\/dd>/i.test(content));
+check('mp-top-area not reintroduced (HF3 independence preserved)',
+  !content.includes('mp-top-area'));
 log('');
 
 // --- Summary ---

@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CB - 2026-06-25
+
+### Home Index Cards Fixture Data (Implemented)
+
+- **Status**: implemented. Adds a MARKET SNAPSHOT section to the Home page using local fixture/static data. No live data, no server load increase.
+- **Home index cards**: 9 fixture cards added between the hero section and feature cards on the Home page: S&P 500, Nasdaq 100, Dow Jones, KOSPI, KOSDAQ, USD/KRW, Dollar Index, Gold, WTI Oil. Each card shows label, caption, sample value, direction-colored change %, and `예시 데이터` label. No realtime claim. No KIS/GNews/external HTTP.
+- **Fixture data source**: new `src/data/homeIndexCards.json` with `asOfLabel: "예시 데이터"` and `note: "연동 전 표시값입니다"` on all entries. Direction classes (up/down/flat) drive color coding. Component (`HomeIndexCards.astro`) is purely SSR — no client-side fetch, no polling, no Supabase.
+- **Server-load policy**: local JSON only. Zero additional API calls. Zero polling. Zero cron/timers. Values will be replaced by live KIS/FX data in a future integration phase.
+- **MyPage admin rail width polish (carry-over from 3CA-HF3)**: admin rail widened from 340px to 420px with breakpoint adjusted to 1200px. `내 계정` card remains at full 680px on typical desktop (1440px+). Non-admin users see no change.
+- **Home rail no-regression**: no sample banner flash regression. `HomeRailAd` still starts hidden and reveals only on active managed banners. No sample SVGs in SSR output.
+- **Focused validation**: check:home-index-cards PASS, check:home-rail-banner-settings PASS, check:home-ad-slots PASS, check:mypage-shell PASS, build PASS.
+- **Recommended next phase**: Phase 3CC Security Metadata Coverage Expansion (short safe pass) or Phase 3CC MyPage MVP Completion (visible account page progress).
+
 ## Phase 3CA-HF3 - 2026-06-25
 
 ### MyPage Admin Rail Placement and No Sample Banner Flash Hotfix (Implemented)
