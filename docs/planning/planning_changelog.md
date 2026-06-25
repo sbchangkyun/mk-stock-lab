@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DE - 2026-06-26
+
+### Chart AI UX Skeleton Enhancement (Implemented)
+
+- **Status**: implemented. Full rewrite of `/chart-ai` page as a convincing local-only analysis workflow — no AI provider, no live data, no KIS/GNews/external HTTP, no API route changes, no DB changes.
+- **Page structure**: improved page hierarchy (h1 "차트 분석 준비 화면"), analysis control panel (symbol input + 4 sample buttons + run button), chart snapshot placeholder (existing bar skeleton + "연동 전 화면" badge), 5 result analysis cards (추세 요약 / 모멘텀 / 변동성 / 지지·저항 / 리스크 체크), template/fallback states, investment disclaimer panel.
+- **Fixture analysis data**: new `src/data/chartAiDemoAnalysis.json` with 4 demo symbols (005930 삼성전자, 035420 NAVER, AAPL Apple, NVDA NVIDIA). Every entry labelled `예시 데이터`; no live/realtime/KIS/AI claim; no buy/sell recommendation.
+- **Interaction**: clicking sample buttons or typing a ticker + run immediately updates all result cards with fixture data. Known symbols without fixture → "분석 템플릿 준비 중". Unknown symbols → fallback state. No localStorage, no fetch, no server call.
+- **Removed from previous version**: `analyzeChartAi` server call, `/api/chart-ai/analyze` reference, URL search-param pre-fill, usage-limit status panel.
+- **securityLogos.json**: unchanged. KNOWN_SYMBOLS in script covers remaining registered symbols (MSFT, KO, TSLA, SPY, QQQ, etc.) for display name fallback.
+- **Focused validation**: check:chart-ai-ux-skeleton PASS (82/82), build PASS.
+- **Recommended next phase**: Phase 3DF Lab Static Module Shells or Phase 3DF Market Page Fixture Chart Enhancement.
+
 ## Phase 3CD - 2026-06-26
 
 ### MyPage MVP Completion (Implemented)

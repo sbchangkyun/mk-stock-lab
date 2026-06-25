@@ -3896,3 +3896,219 @@ body.modal-open {
 .reset-pw-back-link a {
   color: var(--primary);
 }
+
+/* --- Chart AI UX Skeleton (Phase 3DE) --- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.chart-ai-shell {
+  display: grid;
+  gap: 20px;
+}
+
+.chart-ai-control-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.chart-ai-symbol-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.chart-ai-run-btn {
+  min-height: 42px;
+  white-space: nowrap;
+  border: 0;
+  cursor: pointer;
+}
+
+.chart-ai-sample-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-ai-sample-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.chart-ai-sample-btn {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chart-ai-sample-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.chart-ai-local-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.chart-ai-local-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chart-ai-snapshot {
+  display: grid;
+  gap: 12px;
+}
+
+.chart-ai-snapshot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chart-ai-snapshot-header h2 {
+  margin: 4px 0 0;
+  font-size: 16px;
+}
+
+.chart-ai-snapshot-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chart-ai-snapshot-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.chart-ai-result-section {
+  display: grid;
+  gap: 14px;
+}
+
+.chart-ai-result-section h2 {
+  margin: 0;
+}
+
+.chart-ai-result-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.chart-ai-result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.chart-ai-result-card {
+  display: grid;
+  gap: 8px;
+}
+
+.chart-ai-result-card--risk {
+  grid-column: 1 / -1;
+  background: rgba(204, 141, 28, 0.04);
+  border-color: rgba(204, 141, 28, 0.2);
+}
+
+.chart-ai-card-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+p.chart-ai-card-value {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.chart-ai-support-list {
+  margin: 0;
+}
+
+.chart-ai-template-state {
+  display: grid;
+  gap: 8px;
+}
+
+.chart-ai-disclaimer {
+  background: var(--surface-muted);
+}
+
+.chart-ai-disclaimer-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.chart-ai-disclaimer-list li {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+@media (max-width: 980px) {
+  .chart-ai-result-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-ai-symbol-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-ai-result-grid {
+    grid-template-columns: 1fr;
+  }
+}

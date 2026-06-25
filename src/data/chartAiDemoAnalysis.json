@@ -1,0 +1,58 @@
+[
+  {
+    "symbol": "005930",
+    "name": "삼성전자",
+    "market": "KR",
+    "profile": "국내 대형 기술주 예시",
+    "timeframe": "일봉 예시",
+    "trend": "상승 전환을 시도하는 구간으로 가정한 예시 분석입니다.",
+    "momentum": "단기 모멘텀은 중립에서 개선되는 흐름으로 표시합니다.",
+    "volatility": "변동성은 보통 수준으로 가정합니다.",
+    "support": "예시 지지 구간",
+    "resistance": "예시 저항 구간",
+    "risk": "거래량 확인 전까지 추세 신뢰도는 제한적입니다.",
+    "disclaimer": "예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다."
+  },
+  {
+    "symbol": "035420",
+    "name": "NAVER",
+    "market": "KR",
+    "profile": "국내 인터넷 대형주 예시",
+    "timeframe": "일봉 예시",
+    "trend": "횡보 후 반등을 모색하는 구간으로 가정한 예시 분석입니다.",
+    "momentum": "단기 모멘텀은 하락에서 중립으로 전환 중인 흐름으로 표시합니다.",
+    "volatility": "변동성은 평균 수준으로 가정합니다.",
+    "support": "예시 지지 구간",
+    "resistance": "예시 저항 구간",
+    "risk": "이동평균선 수렴 여부를 추가 확인하는 예시 항목입니다.",
+    "disclaimer": "예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다."
+  },
+  {
+    "symbol": "AAPL",
+    "name": "Apple",
+    "market": "US",
+    "profile": "미국 대형 기술주 예시",
+    "timeframe": "Daily example",
+    "trend": "Assumed uptrend continuation for demo purposes. Not a real analysis.",
+    "momentum": "Short-term momentum assumed neutral-to-positive for demo display.",
+    "volatility": "Volatility assumed moderate for this demo entry.",
+    "support": "Example support zone",
+    "resistance": "Example resistance zone",
+    "risk": "Demo entry: volume confirmation not yet simulated.",
+    "disclaimer": "예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다."
+  },
+  {
+    "symbol": "NVDA",
+    "name": "NVIDIA",
+    "market": "US",
+    "profile": "미국 반도체 대형주 예시",
+    "timeframe": "Daily example",
+    "trend": "Assumed high-momentum trend scenario for demo purposes. Not a real analysis.",
+    "momentum": "Short-term momentum assumed elevated for demo display.",
+    "volatility": "Volatility assumed above average for this demo entry.",
+    "support": "Example support zone",
+    "resistance": "Example resistance zone",
+    "risk": "Demo entry: elevated volatility scenario — position sizing consideration shown.",
+    "disclaimer": "예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다."
+  }
+]
