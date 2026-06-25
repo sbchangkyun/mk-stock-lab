@@ -24,6 +24,7 @@ const STYLE_PATH = join(root, 'src', 'styles', 'style.css');
 const MYPAGE_PATH = join(root, 'src', 'pages', 'mypage.astro');
 const PACKAGE_JSON = join(root, 'package.json');
 const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3cb_home_index_cards_fixture_data_result_v0.1.md');
+const RESULT_DOC_HF1 = join(root, 'docs', 'planning', 'phase_3cb_hf1_global_spacing_home_order_admin_width_result_v0.1.md');
 
 const REQUIRED_IDS = ['sp500', 'nasdaq100', 'dowjones', 'kospi', 'kosdaq', 'usdkrw', 'dxy', 'gold', 'wti'];
 const REQUIRED_LABELS = ['S&P 500', 'Nasdaq 100', 'Dow Jones', 'KOSPI', 'KOSDAQ', 'USD/KRW', 'Dollar Index', 'Gold', 'WTI Oil'];
@@ -58,7 +59,8 @@ check('HomeIndexCards.astro component exists', existsSync(COMPONENT_PATH));
 check('index.astro (Home page) exists', existsSync(HOME_PAGE_PATH));
 check('HomeRailAd.astro exists (for no-regression check)', existsSync(RAIL_PATH));
 check('style.css exists', existsSync(STYLE_PATH));
-check('Result doc exists', existsSync(RESULT_DOC));
+check('Result doc exists (Phase 3CB)', existsSync(RESULT_DOC));
+check('Result doc exists (Phase 3CB-HF1)', existsSync(RESULT_DOC_HF1));
 
 let pkg = {};
 try { pkg = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')); } catch {}
@@ -127,6 +129,15 @@ if (existsSync(HOME_PAGE_PATH)) {
   check('Home page still imports HomeRailAd', home.includes('HomeRailAd'));
   check('Home page still renders HomeMarketNews', home.includes('HomeMarketNews'));
   check('Home page still renders HomePortfolioPanel', home.includes('HomePortfolioPanel'));
+
+  // Phase 3CB-HF1: section order — Hero → Feature Cards → MARKET SNAPSHOT → MARKET NEWS
+  const grid4Idx = home.indexOf('grid-4');
+  const indexCardsIdx = home.indexOf('<HomeIndexCards');
+  const marketNewsIdx = home.indexOf('<HomeMarketNews');
+  check('Feature card grid (grid-4) appears before HomeIndexCards in Home page (HF1 order)',
+    grid4Idx >= 0 && indexCardsIdx >= 0 && grid4Idx < indexCardsIdx);
+  check('HomeIndexCards appears before HomeMarketNews in Home page (HF1 order)',
+    indexCardsIdx >= 0 && marketNewsIdx >= 0 && indexCardsIdx < marketNewsIdx);
 } else {
   check('index.astro readable', false);
 }
@@ -189,11 +200,20 @@ if (existsSync(STYLE_PATH)) {
   check('.index-card-value class defined', css.includes('.index-card-value'));
   check('.index-card-change class defined', css.includes('.index-card-change'));
 
-  // MyPage admin rail polish carry-over
+  // MyPage admin rail polish carry-over (HF1: widened to 480px)
   check('mp-page-layout--admin-visible still defined (no regression)', css.includes('mp-page-layout--admin-visible'));
   check('mp-admin-rail still defined (no regression)', css.includes('.mp-admin-rail'));
-  check('Admin rail widened to 420px in Phase 3CB carry-over', css.includes('420px'));
+  check('Admin rail widened to 480px in Phase 3CB-HF1 carry-over', css.includes('480px'));
   check('mp-top-area--active not reintroduced', !css.includes('.mp-top-area--active'));
+
+  // Phase 3CB-HF1: global spacing improved
+  check('Global page gutter uses updated spacing (5vw for more breathing room)', css.includes('5vw'));
+  check('Page gutter clamp minimum raised to 32px', css.includes('clamp(32px'));
+
+  // Phase 3CB-HF1: home rail banner dimensions must remain unchanged
+  check('Home rail ad width remains 160px (unchanged)', css.includes('.home-rail-ad') && css.includes('width: 160px'));
+  check('Home rail viewport height remains 600px (unchanged)', css.includes('height: 600px'));
+  check('Home rail card width remains 160px (unchanged)', css.includes('.home-rail-card') && css.includes('width: 160px'));
 } else {
   check('style.css readable', false);
 }
@@ -252,13 +272,13 @@ log('');
 // ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
-log('=== Phase 3CB Home Index Cards — Summary ===');
+log('=== Phase 3CB / 3CB-HF1 Home Index Cards — Summary ===');
 const total = passes + failures;
 log(`Checks passed: ${passes}/${total}`);
 log('');
 
 if (failures === 0) {
-  log('Result: PASS — Phase 3CB home index cards fixture ready');
+  log('Result: PASS — Phase 3CB/3CB-HF1 home index cards fixture ready');
   process.exitCode = 0;
 } else {
   log(`Result: FAIL (${failures} failure(s))`);

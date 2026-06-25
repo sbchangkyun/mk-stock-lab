@@ -2,7 +2,7 @@
 
 :root {
   --page-max-width: 1500px;
-  --page-gutter-x: clamp(24px, 4vw, 72px);
+  --page-gutter-x: clamp(32px, 5vw, 96px);
   --bg: #f5f7fb;
   --surface: #ffffff;
   --surface-muted: #eef3fb;
@@ -3629,11 +3629,11 @@ body.modal-open {
   display: none;
 }
 
-/* Two-column grid on desktop: account (≤680px) left, admin rail (420px) right */
-/* Admin rail widened from 340px to 420px in Phase 3CB carry-over polish */
+/* Two-column grid on desktop: account (≤680px) left, admin rail (480px) right */
+/* Admin rail widened from 340px → 420px (3CB) → 480px (3CB-HF1) */
 .mp-page-layout--admin-visible {
   display: grid;
-  grid-template-columns: minmax(0, 680px) 420px;
+  grid-template-columns: minmax(0, 680px) 480px;
   gap: 24px;
   align-items: start;
 }
@@ -3642,8 +3642,8 @@ body.modal-open {
   display: block;
 }
 
-/* Stack vertically below 1200px so the account card stays at full 680px on desktop */
-@media (max-width: 1199px) {
+/* Stack vertically below 1300px so the account card stays at full 680px on desktop */
+@media (max-width: 1299px) {
   .mp-page-layout--admin-visible {
     display: block;
   }

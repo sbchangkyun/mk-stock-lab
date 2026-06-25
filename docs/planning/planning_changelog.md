@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CB-HF1 - 2026-06-26
+
+### Global Page Spacing, Home Section Order, and MyPage Admin Rail Width Polish (Implemented)
+
+- **Status**: implemented. Targeted UI polish hotfix after Phase 3CB owner review.
+- **Global spacing**: `--page-gutter-x` changed from `clamp(24px, 4vw, 72px)` to `clamp(32px, 5vw, 96px)`. At 1440px desktop: +14px per side (72px vs 57.6px), giving 25% more horizontal breathing room. Minimum gutter raised from 24px to 32px on narrow viewports. Home rail banner dimensions (160px × 600px) unchanged.
+- **Home section order**: moved `<HomeIndexCards />` from between the hero and feature-card grid to after the feature-card grid. New order: Hero → Feature Cards (grid-4) → MARKET SNAPSHOT → MARKET NEWS. Matches intended reading flow.
+- **MyPage admin rail width**: widened from `420px` to `480px` in `mp-page-layout--admin-visible` grid. Breakpoint adjusted from `max-width: 1199px` to `max-width: 1299px` to safely accommodate the wider rail alongside the 680px account card column. On 1440px desktop: account = 680px (full), admin = 480px, both fit within 1296px site-main with 112px buffer. Below 1300px: single-column stack; account = 680px. Non-admin users: no change.
+- **Checker updates**: added section ordering checks (grid-4 before HomeIndexCards, HomeIndexCards before HomeMarketNews), spacing variable checks (5vw, clamp(32px)), home rail dimension guards, HF1 result doc check; updated admin rail check from 420px to 480px.
+- **No DB/schema/API/live/deployment changes**.
+- **Focused validation**: check:home-index-cards PASS, check:home-rail-banner-settings PASS, check:home-ad-slots PASS, check:mypage-shell PASS, build PASS.
+
 ## Phase 3CB - 2026-06-25
 
 ### Home Index Cards Fixture Data (Implemented)
