@@ -18,6 +18,7 @@
     "check:home-ad-slots": "node scripts/check_home_ad_slots_static_contract.mjs",
     "check:kis-valuation-design": "node scripts/check_kis_valuation_pre_design_static_contract.mjs",
     "check:kis-quote-adapter-mocked": "node scripts/check_kis_quote_adapter_mocked_contract.mjs",
+    "check:portfolio-owner-review-prep": "node scripts/check_portfolio_owner_review_prep_static_contract.mjs",
     "check:portfolio-valuation-api": "node scripts/check_portfolio_valuation_api_route_fixture_contract.mjs",
     "check:portfolio-ui-valuation-fixture": "node scripts/check_portfolio_ui_valuation_fixture_mapping_static_contract.mjs",
     "check:portfolio-tab-order-persistence": "node scripts/check_portfolio_tab_order_persistence_static_contract.mjs",

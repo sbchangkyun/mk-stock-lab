@@ -1,5 +1,31 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BY - 2026-06-25
+
+### Portfolio UI Valuation Owner Browser Review Prep (Review-ready)
+
+- **Status**: review-ready. No runtime UI changes. No API route changes. No DB/Supabase changes. No live KIS/GNews calls. No external HTTP. No Vercel Preview call. No deployment.
+- **Objective**: Prepare owner browser review for the Phase 3BX fixture valuation UI mapping without adding new implementation. Confirm no unintended drift occurred. Provide focused automated validation and owner manual visual checklist.
+- **Runtime changes**: none — all artifacts are checker, result doc, and changelog only.
+- **New checker**: `scripts/check_portfolio_owner_review_prep_static_contract.mjs` — 44/44 PASS. No-network static validator covering 3BX fixture mapping integrity, 3BW-HF1 tab persistence, safety boundaries, live provider isolation, environment isolation.
+- **Focused validation set** (intentional scope — not full historical suite):
+  - `check:portfolio-owner-review-prep` 44/44 PASS
+  - `check:portfolio-ui-valuation-fixture` 71/71 PASS
+  - `check:portfolio-tab-order-persistence` 61/61 PASS
+  - `check:portfolio-bookmark-tabs` 121/121 PASS
+  - `check:portfolio-holdings-header` 90/90 PASS
+  - `check:portfolio-valuation-api` 124/124 PASS
+  - `npm run build` PASS
+  - `git diff --check` clean
+- **Broad smoke tests intentionally skipped**: GNews live/dry-run, KIS live/dry-run, Home/Chart AI/Lab/MyPage suite — Phase 3BY touches none of those domains. Skipping preserves project speed on basic server plan.
+- **Server-load policy**: no polling, no setInterval, no cron, no repeated smoke checks, no live API, no background refresh, no Vercel Preview call, no deployment.
+- **Boundary confirmed**: 3BX fixture UI mapping preserved, 3BW fixture route preserved, 3BW-HF1 tab persistence preserved, no live KIS/GNews, no external HTTP, no DB/migration/Supabase schema, no Home/Chart AI/Lab/MyPage scope, no /news page.
+- **Owner browser review**: pending — owner must visually confirm fixture valuation display (현재가/평가금/수익률/수익금 for symbols 005930/000660/035420/069500), 연동 예정 fallback for unsupported symbols, 데이터 대기 for dividend columns, sort by valuation/return/profit, fixture disclosure copy, and tab order persistence.
+- **Recommended next phases**:
+  1. Phase 3BZ — Fast Roadmap Reprioritization and Lightweight Execution Plan (if owner review passes)
+  2. Phase 3CA — Server-side Portfolio Tab Order Preference (lightweight Supabase column)
+  3. Phase 3CB — KIS/FX Preview Smoke Planning with minimized check scope
+
 ## Phase 3BX - 2026-06-25
 
 ### Portfolio UI Valuation Mapping with Fixture API (Implemented)
