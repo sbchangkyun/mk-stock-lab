@@ -1,30 +1,99 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import labData from '../data/labStaticModules.json';
 
-const labCards = [
-  { title: '국회의원 보유 주식', href: '/lab/congress-stocks', phase: 'Phase 8', description: '국회의원 재산 공개 기반 주식 보유 현황 리서치 화면입니다.' },
-  { title: '국민연금 포트폴리오', href: '/lab/nps-portfolio', phase: 'Phase 8', description: '국민연금 보유 종목 리서치 화면입니다.' },
-  { title: 'S&P 500 섹터', href: '/lab/sp500-sectors', phase: 'Phase 6', description: '연간 섹터 수익률 비교 화면입니다.' },
-  { title: '자산군 수익률', href: '/lab/asset-class-returns', phase: 'Phase 6', description: '여러 자산군의 연간 수익률 비교 화면입니다.' },
-];
+const { modules, sectorSamples, assetSamples } = labData;
 ---
 
 <Layout title="Lab | MK Stock Lab" activePath="/lab">
   <header class="page-header">
     <div>
       <p class="eyebrow">Lab</p>
-      <h1>공개 투자 데이터 Lab</h1>
-      <p class="lead">Lab 페이지는 데이터 표, 차트, 방법론, FAQ, 관련 카드가 포함된 공개 콘텐츠 형식으로 확장됩니다.</p>
+      <h1>리서치 Lab</h1>
+      <p class="lead">공개 시장 데이터와 공시 정보를 활용한 리서치 모듈을 단계적으로 준비하는 섹션입니다. 현재 화면은 모듈 구조와 예시 데이터로 구성되어 있으며, 실제 데이터 연동은 이후 단계에서 진행합니다.</p>
     </div>
   </header>
 
-  <section class="grid-4">
-    {labCards.map((card) => (
-      <a class="route-card" href={card.href}>
-        <p class="eyebrow">{card.phase}</p>
-        <h2>{card.title}</h2>
-        <p>{card.description}</p>
-      </a>
-    ))}
-  </section>
+  <div class="lab-shell">
+
+    <!-- Research module cards -->
+    <section aria-labelledby="lab-modules-heading">
+      <h2 id="lab-modules-heading" class="lab-section-heading">리서치 모듈</h2>
+      <div class="lab-module-grid">
+        {modules.map((mod) => (
+          <div class="panel lab-module-card">
+            <div class="lab-module-card-header">
+              <p class="eyebrow">{mod.category}</p>
+              <span class="lab-module-badge">{mod.status}</span>
+            </div>
+            <h3 class="lab-module-title">{mod.title}</h3>
+            <p class="lab-module-desc">{mod.description}</p>
+            <p class="lab-module-scope">{mod.scope}</p>
+            <ul class="lab-module-preview" aria-label="모듈 포함 항목">
+              {mod.preview.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Static preview section -->
+    <section class="lab-preview-section" aria-labelledby="lab-preview-heading">
+      <div class="lab-preview-section-header">
+        <h2 id="lab-preview-heading" class="lab-section-heading">예시 데이터 미리보기</h2>
+        <span class="lab-module-badge">정적 표시값 · 연동 전</span>
+      </div>
+      <div class="lab-preview-grid">
+        <div class="panel lab-preview-table">
+          <h3>S&P 500 섹터</h3>
+          <p class="lab-preview-note">정적 표시값 · 연동 전 화면입니다.</p>
+          <ul class="lab-preview-rows">
+            {sectorSamples.map((row) => (
+              <li class="lab-preview-row">
+                <span class="lab-preview-row-name">{row.name}</span>
+                <span class="lab-preview-row-value">{row.sampleWeight}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="panel lab-preview-table">
+          <h3>자산군 수익률</h3>
+          <p class="lab-preview-note">정적 표시값 · 연동 전 화면입니다.</p>
+          <ul class="lab-preview-rows">
+            {assetSamples.map((row) => (
+              <li class="lab-preview-row">
+                <span class="lab-preview-row-name">{row.name}</span>
+                <span class="lab-preview-row-value">{row.sampleReturn}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Roadmap / connection plan panel -->
+    <section class="panel lab-roadmap-panel" aria-labelledby="lab-roadmap-heading">
+      <p class="eyebrow">데이터 연동 계획</p>
+      <h2 id="lab-roadmap-heading">공개 데이터 연동 후보</h2>
+      <p class="lab-roadmap-note">아래 데이터 소스는 향후 연동 예정이지만 시점은 확정되지 않았으며, 서비스 상황에 따라 변경될 수 있습니다.</p>
+      <ul class="lab-roadmap-list">
+        <li>국회의원 재산 공개 데이터 → 국회의원 보유 주식 모듈</li>
+        <li>국민연금 공시 데이터 → 국민연금 보유 현황 모듈</li>
+        <li>지수 구성 데이터 → S&P 500 섹터 모듈</li>
+        <li>자산군 시세 데이터 → 자산군 수익률 모듈</li>
+      </ul>
+    </section>
+
+    <!-- Disclaimer / data policy -->
+    <aside class="panel lab-disclaimer" aria-label="데이터 정책">
+      <p class="eyebrow">데이터 정책</p>
+      <ul class="lab-disclaimer-list">
+        <li>이 화면의 모든 수치는 <strong>예시 데이터</strong>입니다. 실제 시장 데이터 및 공시 데이터와 무관합니다.</li>
+        <li>실제 투자 판단에 사용할 수 없습니다.</li>
+        <li>특정 종목의 매수 또는 매도를 권고하지 않습니다.</li>
+        <li>리서치 모듈은 공개 데이터 연동 후 실제 정보를 제공할 예정입니다.</li>
+      </ul>
+    </aside>
+
+  </div>
 </Layout>

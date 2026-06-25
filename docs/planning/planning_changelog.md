@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DF - 2026-06-26
+
+### Lab Static Module Shells (Implemented)
+
+- **Status**: implemented. Lab page rewritten as a static research hub shell — no live data, no API routes, no DB changes, no external HTTP.
+- **Page structure**: improved h1 "리서치 Lab", 2×2 module grid (4 cards), static preview tables (S&P 500 섹터 + 자산군 수익률), roadmap/connection plan panel, data policy disclaimer.
+- **Four research modules**: 국회의원 보유 주식 (정적 모듈 준비), 국민연금 보유 현황 (리서치 모듈), S&P 500 섹터 (예시 데이터), 자산군 수익률 (예시 데이터).
+- **Fixture data**: new `src/data/labStaticModules.json` with modules array (4 entries), sectorSamples (5 rows: Technology/Healthcare/Financials/Industrials/Consumer Discretionary), assetSamples (5 rows: US Equities/Korean Equities/Bonds/Gold/USD-KRW). All values labeled "예시 비중" / "예시 수익률" / "정적 표시값" — no numeric values, no live claims.
+- **Old route cards removed**: previous lab.astro linked to /lab/congress-stocks etc. (non-existent sub-pages). Replaced with self-contained static hub.
+- **No JS required**: pure SSR with frontmatter JSON import. No client-side script, no fetch, no Supabase, no setInterval.
+- **No backend changes**: no KIS/GNews/AI provider, no Supabase, no DB migration, no API routes, no deployment.
+- **Focused validation**: check:lab-static-modules PASS (82/82), build PASS.
+- **Recommended next phase**: Phase 3DG Market Page Fixture Chart Enhancement or Phase 3DG KIS + FX Preview Smoke Plan.
+
 ## Phase 3DE - 2026-06-26
 
 ### Chart AI UX Skeleton Enhancement (Implemented)

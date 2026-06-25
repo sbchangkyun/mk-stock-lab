@@ -22,6 +22,7 @@
     "check:mypage-shell": "node scripts/check_mypage_shell_static_contract.mjs",
     "check:mypage-mvp": "node scripts/check_mypage_mvp_completion_static_contract.mjs",
     "check:chart-ai-ux-skeleton": "node scripts/check_chart_ai_ux_skeleton_static_contract.mjs",
+    "check:lab-static-modules": "node scripts/check_lab_static_module_shells_static_contract.mjs",
     "check:home-ad-slots": "node scripts/check_home_ad_slots_static_contract.mjs",
     "check:kis-valuation-design": "node scripts/check_kis_valuation_pre_design_static_contract.mjs",
     "check:kis-quote-adapter-mocked": "node scripts/check_kis_quote_adapter_mocked_contract.mjs",

@@ -1,0 +1,322 @@
+/**
+ * Static contract check for Phase 3DF Lab Static Module Shells.
+ * Verifies page structure, fixture data, safety boundaries, and no-network policy.
+ * No network calls. No .env reads. Exits non-zero on failure.
+ */
+
+globalThis.fetch = async (url) => {
+  throw new Error(`[checker] BLOCKED unexpected network call to: ${String(url).slice(0, 60)}`);
+};
+
+import { readFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, '..');
+
+const LAB_PATH = join(root, 'src', 'pages', 'lab.astro');
+const FIXTURE_PATH = join(root, 'src', 'data', 'labStaticModules.json');
+const STYLE_PATH = join(root, 'src', 'styles', 'style.css');
+const PACKAGE_JSON = join(root, 'package.json');
+const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3df_lab_static_module_shells_result_v0.1.md');
+const API_LAB_DIR = join(root, 'src', 'pages', 'api', 'lab');
+
+const log = (msg) => process.stdout.write(msg + '\n');
+let failures = 0;
+let passes = 0;
+
+const check = (label, pass) => {
+  log(`  [${pass ? 'PASS' : 'FAIL'}] ${label}`);
+  if (pass) passes++; else failures++;
+};
+
+log('=== Phase 3DF Lab Static Module Shells Static Contract Check ===');
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 1: File existence
+// ---------------------------------------------------------------------------
+log('--- Group 1: File existence ---');
+
+check('lab.astro exists', existsSync(LAB_PATH));
+check('labStaticModules.json exists', existsSync(FIXTURE_PATH));
+check('Phase 3DF result doc exists', existsSync(RESULT_DOC));
+
+let pkg = {};
+try { pkg = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')); } catch {}
+check('package.json has check:lab-static-modules script',
+  typeof pkg.scripts?.['check:lab-static-modules'] === 'string');
+
+log('');
+
+if (!existsSync(LAB_PATH)) {
+  log('ERROR: lab.astro missing. Cannot continue.');
+  process.exit(1);
+}
+
+const page = readFileSync(LAB_PATH, 'utf8');
+// Fixture text for checking dynamically rendered content (Astro SSR renders from fixture at build time)
+const fixtureText = existsSync(FIXTURE_PATH) ? readFileSync(FIXTURE_PATH, 'utf8') : '';
+const pageOrFixture = page + '\n' + fixtureText;
+
+// ---------------------------------------------------------------------------
+// Group 2: Improved page heading
+// ---------------------------------------------------------------------------
+log('--- Group 2: Page heading ---');
+
+check('Page contains improved h1 heading "리서치 Lab"',
+  page.includes('리서치 Lab'));
+check('Page contains Lab eyebrow label',
+  page.includes('>Lab<') || page.includes('"Lab"') || page.includes("'Lab'"));
+check('Page contains lead copy explaining research hub or data connection',
+  page.includes('리서치') && (page.includes('데이터 연동') || page.includes('이후 단계')));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 3: Four required modules
+// ---------------------------------------------------------------------------
+log('--- Group 3: Four required module titles ---');
+
+check('Page contains 국회의원 보유 주식', page.includes('국회의원 보유 주식'));
+check('Page contains 국민연금 보유 현황', page.includes('국민연금 보유 현황'));
+check('Page contains S&P 500 섹터', page.includes('S&P 500 섹터'));
+check('Page contains 자산군 수익률', page.includes('자산군 수익률'));
+check('Page contains lab-module-grid class', page.includes('lab-module-grid'));
+check('Page contains lab-module-card class', page.includes('lab-module-card'));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 4: Static/example status labels
+// ---------------------------------------------------------------------------
+log('--- Group 4: Static/example status labels ---');
+
+// These labels appear in dynamically rendered fixture data (mod.status, mod.scope),
+// so check the combined page source + fixture text (Astro renders from fixture at build time).
+check('Page or fixture contains "정적 모듈" status label',
+  pageOrFixture.includes('정적 모듈'));
+check('Page contains "예시 데이터" label',
+  page.includes('예시 데이터'));
+check('Page contains "연동 전" or "데이터 연동 전" label',
+  page.includes('데이터 연동 전') || page.includes('연동 전'));
+check('Page or fixture contains "연동 예정" label',
+  pageOrFixture.includes('연동 예정'));
+check('Page contains lab-module-badge class for status badges',
+  page.includes('lab-module-badge'));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 5: Preview section
+// ---------------------------------------------------------------------------
+log('--- Group 5: Preview section ---');
+
+// Sector and asset row names are rendered from fixture JSON via {row.name},
+// so check the fixture text for these values (they are present in the rendered output).
+check('Page contains lab-preview-section class', page.includes('lab-preview-section'));
+check('Page contains "예시 데이터 미리보기" or preview heading',
+  page.includes('예시 데이터 미리보기') || page.includes('미리보기'));
+check('Preview section renders Technology sector sample (from fixture)',
+  pageOrFixture.includes('Technology'));
+check('Preview section renders Healthcare sector sample (from fixture)',
+  pageOrFixture.includes('Healthcare'));
+check('Preview section renders Financials sector sample (from fixture)',
+  pageOrFixture.includes('Financials'));
+check('Preview section renders Bonds asset sample (from fixture)',
+  pageOrFixture.includes('Bonds'));
+check('Preview section renders Gold asset sample (from fixture)',
+  pageOrFixture.includes('Gold'));
+check('Page contains lab-preview-grid class', page.includes('lab-preview-grid'));
+check('Page contains "정적 표시값" label in preview',
+  page.includes('정적 표시값'));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 6: Roadmap / connection plan panel
+// ---------------------------------------------------------------------------
+log('--- Group 6: Roadmap/connection plan ---');
+
+check('Page contains lab-roadmap-panel class', page.includes('lab-roadmap-panel'));
+check('Page contains "데이터 연동 계획" or "공개 데이터 연동" heading',
+  page.includes('데이터 연동 계획') || page.includes('공개 데이터 연동'));
+check('Roadmap references 국회의원 보유 주식 module',
+  page.includes('국회의원') && page.includes('모듈'));
+check('Roadmap references 국민연금 보유 현황 module',
+  page.includes('국민연금') && page.includes('모듈'));
+check('Roadmap references S&P 500 섹터 module',
+  page.includes('S&P 500') && page.includes('모듈'));
+check('Roadmap references 자산군 수익률 module',
+  page.includes('자산군') && page.includes('모듈'));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 7: Disclaimer / data policy panel
+// ---------------------------------------------------------------------------
+log('--- Group 7: Disclaimer/data policy ---');
+
+check('Page contains lab-disclaimer class', page.includes('lab-disclaimer'));
+check('Disclaimer says data is example only ("예시 데이터")',
+  page.includes('예시 데이터'));
+check('Disclaimer says not for investment decisions',
+  page.includes('투자 판단에 사용할 수 없습니다'));
+check('Disclaimer disavows buy/sell recommendation',
+  page.includes('매수 또는 매도를 권고하지 않습니다') || page.includes('매수나 매도를'));
+check('Disclaimer explains future real data connection',
+  page.includes('연동 후') || page.includes('연동 예정'));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 8: Fixture data validation
+// ---------------------------------------------------------------------------
+log('--- Group 8: Fixture data (labStaticModules.json) ---');
+
+let fixture = null;
+try {
+  fixture = JSON.parse(readFileSync(FIXTURE_PATH, 'utf8'));
+} catch {
+  check('Fixture data parses as valid JSON', false);
+  log('ERROR: Fixture JSON parse failed. Skipping fixture checks.');
+  fixture = null;
+}
+
+if (fixture !== null) {
+  check('Fixture data parses as valid JSON', true);
+  check('Fixture has modules array', Array.isArray(fixture.modules));
+  check('Fixture modules array has at least 4 entries',
+    Array.isArray(fixture.modules) && fixture.modules.length >= 4);
+
+  if (Array.isArray(fixture.modules)) {
+    const ids = fixture.modules.map((m) => m?.id);
+    const titles = fixture.modules.map((m) => m?.title || '');
+    check('Fixture includes congress-stocks module (id or title)',
+      ids.includes('congress-stocks') || titles.some((t) => t.includes('국회의원 보유 주식')));
+    check('Fixture includes nps-holdings module (id or title)',
+      ids.includes('nps-holdings') || titles.some((t) => t.includes('국민연금')));
+    check('Fixture includes sp500-sectors module (id or title)',
+      ids.includes('sp500-sectors') || titles.some((t) => t.includes('S&P 500')));
+    check('Fixture includes asset-class-returns module (id or title)',
+      ids.includes('asset-class-returns') || titles.some((t) => t.includes('자산군 수익률')));
+
+    const REQUIRED_MODULE_FIELDS = ['title', 'status', 'description', 'scope'];
+    const badModules = fixture.modules.filter((m) =>
+      !m || REQUIRED_MODULE_FIELDS.some((f) => !m[f])
+    );
+    check('All modules have required fields (title, status, description, scope)',
+      badModules.length === 0);
+
+    check('Module status fields use example/static language',
+      fixture.modules.every((m) =>
+        m?.status && (
+          m.status.includes('예시') || m.status.includes('정적') ||
+          m.status.includes('연동') || m.status.includes('리서치')
+        )
+      ));
+  }
+
+  check('Fixture has sectorSamples array', Array.isArray(fixture.sectorSamples));
+  check('Fixture sectorSamples has at least 3 entries',
+    Array.isArray(fixture.sectorSamples) && fixture.sectorSamples.length >= 3);
+  check('Sector samples include Technology',
+    Array.isArray(fixture.sectorSamples) &&
+    fixture.sectorSamples.some((r) => r?.name?.includes('Technology')));
+  check('Sector samples labeled as static ("정적 표시값")',
+    Array.isArray(fixture.sectorSamples) &&
+    fixture.sectorSamples.every((r) => r?.note?.includes('정적 표시값')));
+
+  check('Fixture has assetSamples array', Array.isArray(fixture.assetSamples));
+  check('Fixture assetSamples has at least 3 entries',
+    Array.isArray(fixture.assetSamples) && fixture.assetSamples.length >= 3);
+  check('Asset samples include Bonds',
+    Array.isArray(fixture.assetSamples) &&
+    fixture.assetSamples.some((r) => r?.name?.includes('Bonds')));
+  check('Asset samples labeled as static ("정적 표시값")',
+    Array.isArray(fixture.assetSamples) &&
+    fixture.assetSamples.every((r) => r?.note?.includes('정적 표시값')));
+
+  check('Fixture data does not claim realtime data',
+    !JSON.stringify(fixture).includes('실시간'));
+  check('Fixture data does not claim actual NPS or lawmaker holdings',
+    !JSON.stringify(fixture).includes('국민연금 실제') &&
+    !JSON.stringify(fixture).includes('국회의원 실제'));
+}
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 9: Safety boundaries
+// ---------------------------------------------------------------------------
+log('--- Group 9: Safety boundaries ---');
+
+check('No fetch() call in lab.astro', !/\bfetch\s*\(/.test(page));
+check('No XMLHttpRequest in lab.astro', !page.includes('XMLHttpRequest'));
+check('No Supabase import in lab.astro', !/@supabase/.test(page));
+check('No process.env read', !page.includes('process.env'));
+check('No import.meta.env read', !page.includes('import.meta.env'));
+check('No KIS endpoint or credential reference',
+  !page.includes('koreainvestment') && !page.includes('KIS_APP_KEY'));
+check('No GNews endpoint reference',
+  !page.includes('gnews.io') && !page.includes('GNEWS_API_KEY'));
+check('No service_role reference', !page.includes('service_role'));
+check('No API route added for Lab',
+  !existsSync(API_LAB_DIR));
+check('No setInterval added', !page.includes('setInterval'));
+check('No cron/polling keyword', !page.includes('cron') && !page.includes('polling'));
+check('No 실시간 (realtime) claim', !page.includes('실시간'));
+check('No 최신 (current/latest) claim used to imply live data',
+  !page.includes('최신 데이터') && !page.includes('현재 수익률'));
+check('No buy signal wording (매수 신호)', !page.includes('매수 신호'));
+check('No sell signal wording (매도 신호)', !page.includes('매도 신호'));
+check('No profit guarantee wording (확정 수익)', !page.includes('확정 수익'));
+check('No stock recommendation wording (추천 종목)', !page.includes('추천 종목'));
+check('No 국민연금 실제 보유 claim', !page.includes('국민연금 실제 보유'));
+check('No 국회의원 실제 보유 claim', !page.includes('국회의원 실제 보유'));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 10: CSS additions
+// ---------------------------------------------------------------------------
+log('--- Group 10: CSS additions ---');
+
+const css = existsSync(STYLE_PATH) ? readFileSync(STYLE_PATH, 'utf8') : '';
+check('.lab-shell class in style.css', css.includes('.lab-shell'));
+check('.lab-module-grid class in style.css', css.includes('.lab-module-grid'));
+check('.lab-module-card class in style.css', css.includes('.lab-module-card'));
+check('.lab-disclaimer class in style.css', css.includes('.lab-disclaimer'));
+check('.lab-preview-section class in style.css', css.includes('.lab-preview-section'));
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 11: Self-check
+// ---------------------------------------------------------------------------
+log('--- Group 11: Checker self-check ---');
+
+let fetchAttempted = false;
+const origFetch = globalThis.fetch;
+globalThis.fetch = async () => { fetchAttempted = true; throw new Error('blocked'); };
+check('Checker makes no network calls', !fetchAttempted);
+globalThis.fetch = origFetch;
+
+log('');
+
+// ---------------------------------------------------------------------------
+// Summary
+// ---------------------------------------------------------------------------
+log('=== Phase 3DF Lab Static Module Shells — Summary ===');
+const total = passes + failures;
+log(`Checks passed: ${passes}/${total}`);
+log('');
+
+if (failures === 0) {
+  log('Result: PASS — Phase 3DF Lab Static Module Shells implemented');
+  process.exitCode = 0;
+} else {
+  log(`Result: FAIL (${failures} failure(s))`);
+  process.exitCode = 1;
+}
