@@ -49,6 +49,7 @@ import Layout from '../layouts/Layout.astro';
           <p class="eyebrow">보유 종목</p>
           <h2 id="selected-portfolio-title">포트폴리오를 선택하세요</h2>
           <p id="selected-portfolio-meta">포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.</p>
+          <p class="valuation-status-copy" id="valuation-status-copy" hidden></p>
         </div>
         <div class="portfolio-panel-actions">
           <div class="segmented-control" id="currency-display-toggle" aria-label="통화 표시 기준">
@@ -229,6 +230,13 @@ import Layout from '../layouts/Layout.astro';
       sourcePortfolioNames?: string[];
       sourcePositionIds?: string[];
     };
+    type ValuationStatus = 'idle' | 'loading' | 'ready' | 'partial' | 'error';
+    type PositionValuation = {
+      currentPrice: number | null;
+      marketValue: number | null;
+      unrealizedPnl: number | null;
+      unrealizedPnlPct: number | null;
+    };
     type AppState = {
       portfolios: Portfolio[];
       positions: DisplayPortfolioPosition[];
@@ -238,6 +246,9 @@ import Layout from '../layouts/Layout.astro';
       positionSort: 'none' | 'weight-asc' | 'weight-desc' | 'valuation-asc' | 'valuation-desc' | 'return-asc' | 'return-desc' | 'profit-asc' | 'profit-desc' | 'dividend-yield-asc' | 'dividend-yield-desc' | 'annual-dividend-asc' | 'annual-dividend-desc';
       currencyDisplayMode: 'local' | 'krw';
       loading: boolean;
+      positionValuations: Record<string, PositionValuation>;
+      valuationStatus: ValuationStatus;
+      valuationMessage: string | null;
     };
 
     const state: AppState = {
@@ -249,6 +260,9 @@ import Layout from '../layouts/Layout.astro';
       positionSort: 'none',
       currencyDisplayMode: 'local',
       loading: false,
+      positionValuations: {},
+      valuationStatus: 'idle',
+      valuationMessage: null,
     };
 
     const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; api: string; showLogin: boolean; showApp: boolean }> = {
@@ -482,12 +496,97 @@ import Layout from '../layouts/Layout.astro';
       }
       return { primary: '데이터 대기', secondary: '' };
     };
+    const getPositionValuation = (position: DisplayPortfolioPosition): PositionValuation | null => {
+      const key = position.id || `${position.market}:${position.symbol}`;
+      return state.positionValuations[key] ?? null;
+    };
+    const loadValuation = async (portfolioId: string, positions: DisplayPortfolioPosition[]) => {
+      state.positionValuations = {};
+      state.valuationStatus = 'idle';
+      state.valuationMessage = null;
+      const validPositions = positions.filter(
+        (pos) =>
+          pos.symbol &&
+          (pos.market === 'KR' || pos.market === 'US') &&
+          (pos.assetType === 'stock' || pos.assetType === 'etf') &&
+          Number.isFinite(pos.buyPrice) && pos.buyPrice >= 0 &&
+          Number.isFinite(pos.quantity) && pos.quantity > 0 &&
+          (pos.currency === 'KRW' || pos.currency === 'USD'),
+      );
+      if (validPositions.length === 0) return;
+      state.valuationStatus = 'loading';
+      const isAggregate = isAggregatePortfolioId(portfolioId);
+      const matchedPortfolio = isAggregate ? null : state.portfolios.find((p) => p.id === portfolioId) ?? null;
+      const baseCurrency: 'KRW' | 'USD' = matchedPortfolio?.baseCurrency ?? 'KRW';
+      const requestPositions = validPositions.map((pos) => ({
+        symbol: pos.symbol,
+        market: pos.market as 'KR' | 'US',
+        assetType: (pos.assetType || 'stock') as 'stock' | 'etf',
+        buyPrice: pos.buyPrice,
+        quantity: pos.quantity,
+        currency: pos.currency,
+        ...(pos.name ? { name: pos.name } : {}),
+        ...(pos.id ? { id: pos.id } : {}),
+      }));
+      try {
+        const response = await fetch('/api/portfolio/valuation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
+            baseCurrency,
+            source: 'fixture',
+            positions: requestPositions,
+          }),
+        });
+        if (!response.ok) {
+          state.valuationStatus = 'error';
+          state.valuationMessage = '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+          renderPositions();
+          return;
+        }
+        const data: unknown = await response.json();
+        const respOk = (data as Record<string, unknown> | null)?.ok;
+        const valuationObj = ((data as Record<string, unknown> | null)?.data as Record<string, unknown> | null)
+          ?.valuation as Record<string, unknown> | null;
+        const rowsArr = valuationObj?.rows;
+        if (!respOk || !Array.isArray(rowsArr)) {
+          state.valuationStatus = 'error';
+          state.valuationMessage = '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+          renderPositions();
+          return;
+        }
+        const newValuations: Record<string, PositionValuation> = {};
+        for (const row of rowsArr as Array<Record<string, unknown>>) {
+          const key = typeof row.positionId === 'string' ? row.positionId : `${row.market}:${row.symbol}`;
+          newValuations[key] = {
+            currentPrice: typeof row.currentPrice === 'number' ? row.currentPrice : null,
+            marketValue: typeof row.marketValue === 'number' ? row.marketValue : null,
+            unrealizedPnl: typeof row.unrealizedPnl === 'number' ? row.unrealizedPnl : null,
+            unrealizedPnlPct: typeof row.unrealizedPnlPct === 'number' ? row.unrealizedPnlPct : null,
+          };
+        }
+        state.positionValuations = newValuations;
+        const hasAny = Object.values(newValuations).some((v) => v.currentPrice !== null);
+        const allHave = rowsArr.length > 0 && Object.values(newValuations).every((v) => v.currentPrice !== null);
+        state.valuationStatus = allHave ? 'ready' : hasAny ? 'partial' : 'idle';
+        state.valuationMessage = 'Fixture 기준 평가값입니다. 실시간 시세가 아닙니다.';
+      } catch {
+        state.valuationStatus = 'error';
+        state.valuationMessage = '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+      }
+      renderPositions();
+    };
     type PositionSortKind = 'weight' | 'valuation' | 'return' | 'profit' | 'dividend-yield' | 'annual-dividend';
-    const getPositionSortValue = (position: PortfolioPosition, kind: PositionSortKind): number | null => {
+    const getPositionSortValue = (position: DisplayPortfolioPosition, kind: PositionSortKind): number | null => {
       if (kind === 'weight') {
         const costBasis = position.buyPrice * position.quantity;
         return Number.isFinite(costBasis) && costBasis > 0 ? costBasis : null;
       }
+      const posVal = getPositionValuation(position);
+      if (kind === 'valuation') return posVal?.marketValue ?? null;
+      if (kind === 'return') return posVal?.unrealizedPnlPct ?? null;
+      if (kind === 'profit') return posVal?.unrealizedPnl ?? null;
       return null;
     };
     const getOrderedPortfolios = () => {
@@ -629,6 +728,9 @@ import Layout from '../layouts/Layout.astro';
       state.selectedPortfolioId = null;
       state.portfolioOrder = [];
       state.loading = false;
+      state.positionValuations = {};
+      state.valuationStatus = 'idle';
+      state.valuationMessage = null;
       resetPortfolioForm();
       closePositionSheet();
       renderAll();
@@ -885,6 +987,20 @@ import Layout from '../layouts/Layout.astro';
       empty.classList.toggle('hidden', state.positions.length > 0);
       wrap.classList.toggle('hidden', state.positions.length === 0);
 
+      const statusCopyEl = getElement<HTMLParagraphElement>('valuation-status-copy');
+      if (statusCopyEl) {
+        if (state.valuationStatus === 'loading') {
+          statusCopyEl.hidden = false;
+          statusCopyEl.textContent = 'Fixture 기준 평가값을 불러오는 중입니다.';
+        } else if (state.valuationMessage) {
+          statusCopyEl.hidden = false;
+          statusCopyEl.textContent = state.valuationMessage;
+        } else {
+          statusCopyEl.hidden = true;
+          statusCopyEl.textContent = '';
+        }
+      }
+
       const sortedPositions = getSortedPositions();
       const totalCostBasis = sortedPositions.reduce((sum, p) => {
         const cb = p.buyPrice * p.quantity;
@@ -899,11 +1015,23 @@ import Layout from '../layouts/Layout.astro';
         const secondaryLabel = getPositionSecondaryLabel(position);
         const sourceText = getPositionSourceText(position);
         const buyPrice = formatBuyPrice(position);
-        const valuation = getValuationPlaceholder(aggregateSelected ? null : portfolio, position);
+        const posVal = getPositionValuation(position);
         const cb = position.buyPrice * position.quantity;
         const weightPct = (totalCostBasis > 0 && Number.isFinite(cb) && cb > 0)
           ? `${(cb / totalCostBasis * 100).toFixed(1)}%`
           : '데이터 대기';
+        const currentPriceDisplay = posVal?.currentPrice != null
+          ? formatLocalAmount(position.currency, posVal.currentPrice)
+          : null;
+        const marketValueDisplay = posVal?.marketValue != null
+          ? formatLocalAmount(position.currency, posVal.marketValue)
+          : null;
+        const pnlPctDisplay = posVal?.unrealizedPnlPct != null
+          ? `${posVal.unrealizedPnlPct > 0 ? '+' : ''}${posVal.unrealizedPnlPct.toFixed(2)}%`
+          : null;
+        const pnlDisplay = posVal?.unrealizedPnl != null
+          ? `${posVal.unrealizedPnl > 0 ? '+' : ''}${formatLocalAmount(position.currency, posVal.unrealizedPnl)}`
+          : null;
         item.className = `position-card${aggregateSelected ? ' aggregate-position' : ''}`;
         item.innerHTML = `
           <div class="security-avatar-wrap">
@@ -931,17 +1059,16 @@ import Layout from '../layouts/Layout.astro';
             ${buyPrice.secondary ? `<small>${escapeHtml(buyPrice.secondary)}</small>` : ''}
           </div>
           <div class="position-metric">
-            <strong class="metric-placeholder">연동 예정</strong>
+            <strong class="${currentPriceDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(currentPriceDisplay ?? '연동 예정')}</strong>
           </div>
           <div class="position-metric">
-            <strong class="metric-placeholder">${escapeHtml(valuation.primary)}</strong>
-            ${valuation.secondary ? `<small>${escapeHtml(valuation.secondary)}</small>` : ''}
+            <strong class="${marketValueDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(marketValueDisplay ?? '연동 예정')}</strong>
           </div>
           <div class="position-metric">
-            <strong class="metric-placeholder">연동 예정</strong>
+            <strong class="${pnlPctDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlPctDisplay ?? '연동 예정')}</strong>
           </div>
           <div class="position-metric">
-            <strong class="metric-placeholder">연동 예정</strong>
+            <strong class="${pnlDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlDisplay ?? '연동 예정')}</strong>
           </div>
           <div class="position-metric">
             <strong class="metric-placeholder">데이터 대기</strong>
@@ -980,6 +1107,7 @@ import Layout from '../layouts/Layout.astro';
         await loadAllPortfolioPositions(force);
         state.positions = getAggregatePositions();
         renderPositions();
+        await loadValuation(portfolioId, state.positions);
         return;
       }
 
@@ -987,6 +1115,7 @@ import Layout from '../layouts/Layout.astro';
       state.positionsByPortfolioId[portfolioId] = positions;
       state.positions = positions;
       renderPositions();
+      await loadValuation(portfolioId, state.positions);
     };
 
     const loadPortfolios = async () => {

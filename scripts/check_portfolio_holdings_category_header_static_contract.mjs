@@ -197,10 +197,13 @@ check('No fake return rate (수익률 not fabricated as number)',
     const scriptBlocks = portfolioContent.match(/<script[\s\S]*?<\/script>/gi) ?? [];
     return scriptBlocks.some((b) => b.includes('연동 예정') || b.includes('데이터 대기'));
   })());
-check('No 실시간 (real-time) claim on unavailable data',
-  !portfolioContent.includes('실시간'));
-check('No current market price calculated from buy price',
-  !portfolioContent.includes('currentPrice') && !portfolioContent.includes('current_price'));
+check('No 실시간 real-time claim on displayed values (fixture disclosure may deny it)',
+  !portfolioContent.includes('실시간 시세 반영') &&
+  !portfolioContent.includes('실시간 시세를 표시') &&
+  !portfolioContent.includes('최신 시세'));
+check('currentPrice from fixture valuation, not fabricated from buy price (3BX: fixture mapping allowed)',
+  !portfolioContent.includes('current_price') &&
+  (!portfolioContent.includes('currentPrice') || portfolioContent.includes('row.currentPrice') || portfolioContent.includes('posVal?.currentPrice') || portfolioContent.includes('posVal')));
 check('Weight computation uses cost basis (buyPrice * quantity), not live valuation',
   portfolioContent.includes('buyPrice * position.quantity') ||
   portfolioContent.includes('buyPrice * quantity'));

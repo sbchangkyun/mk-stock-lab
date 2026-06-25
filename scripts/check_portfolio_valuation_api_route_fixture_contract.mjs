@@ -530,6 +530,34 @@ check('Checker does not read .env files',
   })());
 log('');
 
+// ── Group 14: Phase 3BX artifact checks ──────────────────────────────────────
+log('--- Group 14: Phase 3BX artifact checks (UI wired to fixture route) ---');
+
+const RESULT_DOC_3BX = join(root, 'docs', 'planning', 'phase_3bx_portfolio_ui_valuation_mapping_fixture_result_v0.1.md');
+const portfolioAstroContent3BX = existsSync(PORTFOLIO_ASTRO) ? readFileSync(PORTFOLIO_ASTRO, 'utf8') : '';
+
+check('Phase 3BX result doc exists',
+  existsSync(RESULT_DOC_3BX));
+check('check:portfolio-ui-valuation-fixture script in package.json',
+  typeof pkg?.scripts?.['check:portfolio-ui-valuation-fixture'] === 'string');
+check('portfolio.astro now calls /api/portfolio/valuation (3BX wires UI)',
+  portfolioAstroContent3BX.includes('/api/portfolio/valuation'));
+check('portfolio.astro uses loadValuation function (3BX)',
+  portfolioAstroContent3BX.includes('loadValuation'));
+check('portfolio.astro maps currentPrice from valuation response (3BX)',
+  portfolioAstroContent3BX.includes('currentPrice'));
+check('portfolio.astro maps marketValue from valuation response (3BX)',
+  portfolioAstroContent3BX.includes('marketValue'));
+check('portfolio.astro maps unrealizedPnl from valuation response (3BX)',
+  portfolioAstroContent3BX.includes('unrealizedPnl'));
+check('portfolio.astro maps unrealizedPnlPct from valuation response (3BX)',
+  portfolioAstroContent3BX.includes('unrealizedPnlPct'));
+check('Valuation route still present (3BX does not remove it)',
+  existsSync(ROUTE));
+check('buildPortfolioValuationFromQuotes still exported (3BX does not break 3BV/3BW)',
+  pvContent.includes('export const buildPortfolioValuationFromQuotes'));
+log('');
+
 // ── Summary ───────────────────────────────────────────────────────────────────
 log('=== Phase 3BW Portfolio Valuation API Route Fixture Contract — Summary ===');
 const total = passes + failures;

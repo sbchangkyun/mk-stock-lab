@@ -1107,6 +1107,41 @@ check('No backend orderIndex added in portfolio page (3BW-HF1)',
   !readFileSync(PORTFOLIO_PAGE_HF1, 'utf8').includes('orderIndex'));
 log('');
 
+// ---------------------------------------------------------------------------
+// Phase 3BX artifact group — Portfolio UI Valuation Mapping with Fixture
+// ---------------------------------------------------------------------------
+log('--- Phase 3BX artifact group ---');
+
+const PORTFOLIO_PAGE_3BX = join(root, 'src', 'pages', 'portfolio.astro');
+const portfolioContent3BX = existsSync(PORTFOLIO_PAGE_3BX) ? readFileSync(PORTFOLIO_PAGE_3BX, 'utf8') : '';
+
+check('Phase 3BX result doc exists',
+  existsSync(join(root, 'docs', 'planning', 'phase_3bx_portfolio_ui_valuation_mapping_fixture_result_v0.1.md')));
+check('check:portfolio-ui-valuation-fixture script added (3BX)',
+  (() => {
+    let p = {};
+    try { p = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+    return typeof p.scripts?.['check:portfolio-ui-valuation-fixture'] === 'string';
+  })());
+check('portfolio.astro calls /api/portfolio/valuation (3BX wires UI to fixture)',
+  portfolioContent3BX.includes('/api/portfolio/valuation'));
+check('portfolio.astro uses loadValuation function (3BX)',
+  portfolioContent3BX.includes('loadValuation'));
+check('portfolio.astro maps currentPrice from fixture response (3BX)',
+  portfolioContent3BX.includes('currentPrice'));
+check('portfolio.astro uses fixture source only — no live source added (3BX)',
+  !portfolioContent3BX.includes("source: 'live'") && !portfolioContent3BX.includes('source=live'));
+check('No live GNews behavior added in portfolio page (3BX)',
+  !portfolioContent3BX.includes('gnews.io'));
+check('No live KIS credentials read in portfolio page (3BX)',
+  !portfolioContent3BX.includes('KIS_APP_KEY') && !portfolioContent3BX.includes('KIS_APP_SECRET'));
+check('Tab order persistence key still controlled namespaced (3BX no-regression)',
+  !portfolioContent3BX.includes('portfolioTabOrder') &&
+  (!portfolioContent3BX.includes('portfolio-tab-order') || portfolioContent3BX.includes('mk-stock-lab:portfolio-tab-order')));
+check('/news page still not created (3BX boundary)',
+  !existsSync(join(root, 'src', 'pages', 'news')));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

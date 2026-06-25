@@ -229,6 +229,31 @@ globalThis.fetch = originalFetch;
 log('');
 
 // ---------------------------------------------------------------------------
+// Group 16: Phase 3BX no-regression for tab order persistence
+// ---------------------------------------------------------------------------
+log('--- Group 16: Phase 3BX no-regression (tab order persistence unchanged) ---');
+
+check('3BX: TAB_ORDER_STORAGE_KEY still present (3BW-HF1 not broken)',
+  portfolioContent.includes('TAB_ORDER_STORAGE_KEY'));
+check('3BX: readTabOrderFromStorage still present',
+  portfolioContent.includes('readTabOrderFromStorage'));
+check('3BX: saveTabOrderToStorage still present',
+  portfolioContent.includes('saveTabOrderToStorage'));
+check('3BX: loadPortfolios still calls readTabOrderFromStorage',
+  (() => {
+    const idx = portfolioContent.indexOf('const loadPortfolios = async');
+    if (idx === -1) return false;
+    const fn = portfolioContent.slice(idx, idx + 500);
+    return fn.includes('readTabOrderFromStorage');
+  })());
+check('3BX: reorder handler still calls saveTabOrderToStorage',
+  portfolioContent.includes('saveTabOrderToStorage(state.portfolioOrder)'));
+check('3BX: loadValuation additions do not add uncontrolled localStorage keys',
+  !portfolioContent.includes('localStorage.setItem') ||
+  portfolioContent.includes("localStorage.setItem(TAB_ORDER_STORAGE_KEY"));
+log('');
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
 log('=== Phase 3BW-HF1 Portfolio Tab Order Persistence Static Contract — Summary ===');

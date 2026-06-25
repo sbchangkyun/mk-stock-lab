@@ -1,5 +1,30 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BX - 2026-06-25
+
+### Portfolio UI Valuation Mapping with Fixture API (Implemented)
+
+- **Status**: implemented. No live KIS/GNews calls, no external HTTP, no API route added, no DB/Supabase schema changes, no deployment. Runtime UI change: portfolio.astro wired to POST /api/portfolio/valuation.
+- **Objective**: Wire the Portfolio holdings table to the fixture-only valuation route added in Phase 3BW so that KR fixture symbols show currentPrice, marketValue, unrealizedPnl, unrealizedPnlPct. US positions and unknown symbols remain 연동 예정. Dividend columns remain 데이터 대기.
+- **New AppState fields**: `positionValuations: Record<string, PositionValuation>`, `valuationStatus: ValuationStatus`, `valuationMessage: string | null`.
+- **New types**: `ValuationStatus` union, `PositionValuation` interface.
+- **New helpers**: `getPositionValuation(position)` — lookup by `position.id` or `market:symbol`; `loadValuation(portfolioId, positions)` — posts to `/api/portfolio/valuation` with `source: fixture`, maps response rows into state.
+- **Column changes**: 현재가, 평가금, 수익률, 수익금 cells now show fixture values when available; fall back to 연동 예정 for null results. 배당률/예상 연배당금/배당주기 remain 데이터 대기 (unchanged).
+- **Sort update**: `getPositionSortValue` now handles 'valuation' (marketValue), 'return' (unrealizedPnlPct), 'profit' (unrealizedPnl) kinds using `getPositionValuation`.
+- **Render flow**: `loadPositions` renders positions immediately (연동 예정 for valuation fields), then awaits `loadValuation` which re-renders once fixture response arrives.
+- **Fixture disclosure**: `#valuation-status-copy` paragraph element shows loading/error/fixture disclosure copy. Fixture copy: "Fixture 기준 평가값입니다. 실시간 시세가 아닙니다."
+- **Key strategy**: pass `id` field with each position so route returns `positionId = position.id`; aggregate positions use synthetic `aggregate-KR--005930` IDs (same ID used as lookup key).
+- **Tab order persistence preserved**: 3BW-HF1 localStorage logic unchanged; no new localStorage keys added.
+- Created `scripts/check_portfolio_ui_valuation_fixture_mapping_static_contract.mjs` — new no-network checker.
+- Updated `scripts/check_portfolio_holdings_category_header_static_contract.mjs` — fixed two stale Group 8 checks (실시간 and currentPrice) to allow fixture mapping.
+- Updated `scripts/check_portfolio_valuation_api_route_fixture_contract.mjs` — added Group 14 for 3BX artifact checks.
+- Updated `scripts/check_portfolio_tab_order_persistence_static_contract.mjs` — added Group 16 no-regression checks.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BX artifact group added.
+- Created `docs/planning/phase_3bx_portfolio_ui_valuation_mapping_fixture_result_v0.1.md`.
+- Added `check:portfolio-ui-valuation-fixture` to `package.json`.
+- All validators pass. Build passes.
+- **Recommended next phase**: Phase 3BY — Owner Browser Review.
+
 ## Phase 3BW-HF1 - 2026-06-25
 
 ### Portfolio Bookmark Tab Order Local Persistence Hotfix (Implemented)

@@ -19,6 +19,7 @@
     "check:kis-valuation-design": "node scripts/check_kis_valuation_pre_design_static_contract.mjs",
     "check:kis-quote-adapter-mocked": "node scripts/check_kis_quote_adapter_mocked_contract.mjs",
     "check:portfolio-valuation-api": "node scripts/check_portfolio_valuation_api_route_fixture_contract.mjs",
+    "check:portfolio-ui-valuation-fixture": "node scripts/check_portfolio_ui_valuation_fixture_mapping_static_contract.mjs",
     "check:portfolio-tab-order-persistence": "node scripts/check_portfolio_tab_order_persistence_static_contract.mjs",
     "check:portfolio-holdings-header": "node scripts/check_portfolio_holdings_category_header_static_contract.mjs",
     "check:portfolio-create-sheet": "node scripts/check_portfolio_create_sheet_static_contract.mjs",

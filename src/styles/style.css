@@ -1176,6 +1176,13 @@ a.header-button {
   min-width: 0;
 }
 
+.valuation-status-copy {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
 .compact-form,
 .position-form {
   display: grid;
