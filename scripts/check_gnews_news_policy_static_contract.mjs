@@ -973,6 +973,38 @@ check('HomeMarketNews not modified by 3BS',
 check('No /news page created (3BS boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
 log('');
 
+// ─── Phase 3BU artifact group ────────────────────────────────────────────────
+log('--- Phase 3BU: KIS Valuation Pre-Design artifacts ---');
+
+const PLAN_DOC_3BU = join(root, 'docs', 'planning', 'phase_3bu_kis_valuation_integration_pre_design_v0.1.md');
+const SCHEMA_DOC_3BU = join(root, 'docs', 'schemas', 'portfolio_valuation_state_contract_v0.1.md');
+const CHECKER_3BU = join(root, 'scripts', 'check_kis_valuation_pre_design_static_contract.mjs');
+const VALUATION_ROUTE = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.ts');
+const VALUATION_ROUTE_JS = join(root, 'src', 'pages', 'api', 'portfolio', 'valuation.js');
+
+check('Phase 3BU planning doc exists', existsSync(PLAN_DOC_3BU));
+check('Portfolio valuation schema doc exists', existsSync(SCHEMA_DOC_3BU));
+check('KIS valuation design checker exists', existsSync(CHECKER_3BU));
+check('package script check:kis-valuation-design exists',
+  (() => {
+    let p = {};
+    try { p = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')); } catch {}
+    return typeof p.scripts?.['check:kis-valuation-design'] === 'string';
+  })());
+check('No /news page exists (3BU boundary)', !existsSync(join(root, 'src', 'pages', 'news')));
+check('HomePortfolioPanel still present (3BU boundary)',
+  existsSync(join(root, 'src', 'components', 'HomePortfolioPanel.astro')));
+check('HomeMarketNews still present (3BU boundary)',
+  existsSync(join(root, 'src', 'components', 'HomeMarketNews.astro')));
+check('No GNews live behavior added by 3BU',
+  (() => {
+    const plan3bu = existsSync(PLAN_DOC_3BU) ? readFileSync(PLAN_DOC_3BU, 'utf8') : '';
+    return !plan3bu.includes('gnews.io') && plan3bu.includes('documentation-only');
+  })());
+check('No runtime valuation route added in 3BU',
+  !existsSync(VALUATION_ROUTE) && !existsSync(VALUATION_ROUTE_JS));
+log('');
+
 // --- Summary ---
 log('=== Result ===');
 if (failures === 0) {

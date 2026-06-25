@@ -1,5 +1,30 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3BU - 2026-06-25
+
+### KIS Valuation Integration Pre-Design & Data Contract (Planned / documentation-only)
+
+- **Status**: planned / documentation-only. No runtime, API route, DB, Supabase schema, KIS live call, GNews live call, or deployment changes. All deliverables are planning docs, a schema contract doc, a static checker, and a package script.
+- **Valuation data contracts defined**: `QuoteInput`, `QuoteSnapshot`, `PositionValuation`, `PortfolioValuationSummary`, `QuoteFreshnessState`, `ValuationErrorCode`, `CurrencyDisplayMode`, `ValuationSource`, `ValuationCoverage`. TypeScript-style interfaces in `docs/schemas/portfolio_valuation_state_contract_v0.1.md`.
+- **Existing skeleton documented**: `portfolioValuation.ts` already has `buildPortfolioValuationReadiness` returning placeholder rows with `currentPrice: null`. Schema doc maps from this existing type to the richer public-form `QuoteSnapshot`.
+- **UI column mapping defined**: 현재가 → `currentPrice`, 평가금 → `marketValue`, 수익률 → `returnRate`, 수익금 → `unrealizedProfit`. Fallback = 연동 예정. Dividend columns remain 데이터 대기 (deferred).
+- **비중 policy**: Cost-basis weight remains default. Market-value weight becomes active only when `quoteCoverage === 'all'` and FX is resolved.
+- **Server-only KIS provider boundary documented**: `assertServerRuntime` on all public functions. `sanitizeUnknownError` on all provider catch blocks. Raw KIS fields must never appear in public API response. `rawProviderStored: false` invariant in every `QuoteSnapshot`.
+- **FX policy defined**: Do not mix KRW and USD values without FX conversion. If FX unavailable, show local per-currency values; never fabricate exchange rates. FX provider deferred.
+- **Cache strategy proposed**: Provider+market+symbol+assetType+quoteDateBucket cache key. TTL: 30-60s fresh (market open), 2-5m stale-but-usable, market-closed = previous close. Backend decision deferred.
+- **Refresh button future behavior defined**: Three modes: local recalculation, cached quote refresh, live provider refresh. Label must reflect actual behavior; do not use "실시간" until live data is confirmed.
+- **Error and freshness policy defined**: 11-value `QuoteFreshnessState` enum with Korean UI copy for each. Per-position unavailable preferred over full-portfolio failure.
+- **Security checklist**: credentials, response sanitization, runtime guard, static checker coverage, owner approval gate all documented.
+- **Sorting policy**: Null values always sort to bottom. Never assign synthetic 0 for unknown metrics.
+- **Open decisions listed**: KIS scope, KR vs. KR+US, refresh policy, Supabase cache approval, TTL, FX inclusion, aggregate scope, unsupported ticker UX.
+- Created `docs/planning/phase_3bu_kis_valuation_integration_pre_design_v0.1.md`.
+- Created `docs/schemas/portfolio_valuation_state_contract_v0.1.md`.
+- Created `scripts/check_kis_valuation_pre_design_static_contract.mjs`.
+- Updated `scripts/check_gnews_news_policy_static_contract.mjs` — Phase 3BU artifact group added.
+- Added `check:kis-valuation-design` to `package.json`.
+- No live KIS/GNews, no external HTTP, no Supabase writes, no DB migrations, no API routes, no deployment, no /news page.
+- **Recommended next phase**: Phase 3BV — KIS Quote Adapter Contract & Mocked Provider Tests.
+
 ## Phase 3BS - 2026-06-25
 
 ### Home Portfolio Card & Portfolio Create Sheet Owner Fixes (Implemented)

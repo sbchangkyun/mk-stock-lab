@@ -16,6 +16,7 @@
     "check:header-footer-shell": "node scripts/check_header_footer_shell_static_contract.mjs",
     "check:mypage-shell": "node scripts/check_mypage_shell_static_contract.mjs",
     "check:home-ad-slots": "node scripts/check_home_ad_slots_static_contract.mjs",
+    "check:kis-valuation-design": "node scripts/check_kis_valuation_pre_design_static_contract.mjs",
     "check:portfolio-holdings-header": "node scripts/check_portfolio_holdings_category_header_static_contract.mjs",
     "check:portfolio-create-sheet": "node scripts/check_portfolio_create_sheet_static_contract.mjs",
     "check:portfolio-bookmark-tabs": "node scripts/check_portfolio_bookmark_tabs_static_contract.mjs",
