@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DI - 2026-06-27
+
+### Production Deployment: Home Sparkline + Lab Matrix Image Export (Deployed)
+
+- **Status**: deployed to `https://mkstocklab.vercel.app`.
+- **Deployed content**: Phase 3CB-HF2 (Home sparklines, commit 9f26a29) + Phase 3DI (Lab image export, new commit).
+- **Lab image export**: "이미지로 저장" camera icon button added above the matrix on `/lab/asset-class-returns` and `/lab/sp500-sectors`. Reuses existing `exportCardImage.ts` utility (already used by Market Treemap). Export captures the `[data-exportable-card]` wrapper containing the matrix; button excluded from capture via `[data-card-actions]` filter. Filenames: `asset-class-returns-YYYYMMDD.png`, `sp500-sectors-YYYYMMDD.png`.
+- **No new library**: reuses `html-to-image` already in the project.
+- **Hover highlight preserved**: existing desktop cross-year hover highlight unaffected.
+- **No live/API/DB/provider changes**: no KIS, GNews, AI, Supabase, DB migration, API route, external HTTP.
+- **Focused validation**: check:lab-matrix-image-export 64/64 PASS, check:home-index-sparkline 66/66 PASS, check:home-index-cards 73/73 PASS, check:lab-return-matrix 114/114 PASS, check:lab-route-split 104/104 PASS, build PASS.
+- **Known limitation carried forward**: Lab matrix mobile tap highlight non-critical, revisit in Phase 3DJ.
+- **Recommended next phase**: Phase 3DJ — Mobile Baseline Usability Pass, or KIS + FX Preview Smoke Plan.
+
 ## Phase 3CB-HF2 - 2026-06-26
 
 ### Home Market Snapshot Mini Sparkline Cards (Implemented)

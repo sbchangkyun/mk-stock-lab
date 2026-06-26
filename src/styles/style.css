@@ -5449,3 +5449,25 @@ p.lab-static-preview-card-desc {
     transition: opacity 0.1s ease, box-shadow 0.1s ease;
   }
 }
+
+/* ---- Phase 3DI: Lab matrix image export header ---- */
+
+.lab-matrix-export-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.lab-matrix-export-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lab-matrix-export-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}

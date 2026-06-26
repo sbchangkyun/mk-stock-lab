@@ -4,6 +4,9 @@ import LabReturnMatrix from '../../components/LabReturnMatrix.astro';
 import matrices from '../../data/labReturnMatrices.json';
 
 const { sectorMatrix } = matrices;
+
+const cameraPath =
+  'M4 7.5h3l1.3-2h7.4l1.3 2h3a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-1.8a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4Z';
 ---
 
 <Layout title="S&P 500 섹터별 수익률 | MK Stock Lab" activePath="/lab">
@@ -19,7 +22,25 @@ const { sectorMatrix } = matrices;
       <span class="lab-detail-badge">예시 데이터 · 데이터 연동 전</span>
     </header>
 
-    <LabReturnMatrix data={sectorMatrix} sectionId="sector-matrix-section" />
+    <div class="lab-matrix-export-card" id="lab-sector-matrix-card" data-exportable-card>
+      <div class="lab-matrix-export-header">
+        <span class="lab-matrix-export-label">S&amp;P 500 섹터별 수익률 · 예시 데이터</span>
+        <div class="lab-matrix-export-actions" data-card-actions>
+          <button
+            class="chart-export-button"
+            type="button"
+            data-export-card
+            data-export-target="lab-sector-matrix-card"
+            data-export-filename="sp500-sectors"
+            aria-label="이미지로 저장"
+            title="이미지로 저장"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={cameraPath} /></svg>
+          </button>
+        </div>
+      </div>
+      <LabReturnMatrix data={sectorMatrix} sectionId="sector-matrix-section" />
+    </div>
 
     <aside class="lab-data-policy" aria-label="데이터 정책">
       <p class="eyebrow">데이터 정책</p>
@@ -52,3 +73,9 @@ const { sectorMatrix } = matrices;
     </section>
   </div>
 </Layout>
+
+<script>
+  import { setupCardImageExport } from '../../lib/exportCardImage';
+  document.addEventListener('astro:page-load', setupCardImageExport);
+  setupCardImageExport();
+</script>
