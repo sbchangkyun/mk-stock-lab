@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DI-HF1 - 2026-06-27
+
+### Lab Matrix Image Export Capture Scope Hotfix (Deployed)
+
+- **Status**: deployed to `https://mkstocklab.vercel.app`.
+- **Root cause**: Phase 3DI `data-exportable-card` was on outer `.lab-matrix-export-card` wrapper, so export PNG captured entire page section (heading, legend, hints, summary table, data policy, related links).
+- **Fix**: moved capture boundary to inner `.lab-matrix-card` via a new optional `captureId?: string` prop on `LabReturnMatrix.astro`. When `captureId` is provided, the component sets `id={captureId}` and `data-exportable-card` on the `.lab-matrix-card` div only.
+- **Asset page**: `captureId="asset-class-returns-matrix-capture"`, button `data-export-target` updated to match, outer `data-exportable-card` removed.
+- **Sector page**: `captureId="sp500-sectors-matrix-capture"`, same change pattern.
+- **Captured element now contains only**: `lab-return-matrix` table (순위 + 12 rows) + `lab-matrix-data-note`.
+- **Not captured**: page header, legend chips, interaction hint, summary table, data policy, related links, camera button.
+- **No new library**: no API/DB/KIS/GNews/AI/Supabase changes.
+- **Focused validation**: check:lab-matrix-image-export 80/80 PASS, check:lab-return-matrix 114/114 PASS, build PASS.
+- **Recommended next phase**: Phase 3DJ — Mobile Baseline Usability Pass, or KIS + FX Preview Smoke Plan.
+
 ## Phase 3DI - 2026-06-27
 
 ### Production Deployment: Home Sparkline + Lab Matrix Image Export (Deployed)

@@ -22,7 +22,7 @@ const cameraPath =
       <span class="lab-detail-badge">예시 데이터 · 데이터 연동 전</span>
     </header>
 
-    <div class="lab-matrix-export-card" id="lab-sector-matrix-card" data-exportable-card>
+    <div class="lab-matrix-export-card">
       <div class="lab-matrix-export-header">
         <span class="lab-matrix-export-label">S&amp;P 500 섹터별 수익률 · 예시 데이터</span>
         <div class="lab-matrix-export-actions" data-card-actions>
@@ -30,7 +30,7 @@ const cameraPath =
             class="chart-export-button"
             type="button"
             data-export-card
-            data-export-target="lab-sector-matrix-card"
+            data-export-target="sp500-sectors-matrix-capture"
             data-export-filename="sp500-sectors"
             aria-label="이미지로 저장"
             title="이미지로 저장"
@@ -39,7 +39,11 @@ const cameraPath =
           </button>
         </div>
       </div>
-      <LabReturnMatrix data={sectorMatrix} sectionId="sector-matrix-section" />
+      <LabReturnMatrix
+        data={sectorMatrix}
+        sectionId="sector-matrix-section"
+        captureId="sp500-sectors-matrix-capture"
+      />
     </div>
 
     <aside class="lab-data-policy" aria-label="데이터 정책">

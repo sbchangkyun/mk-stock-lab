@@ -38,9 +38,10 @@ interface MatrixData {
 interface Props {
   data: MatrixData;
   sectionId: string;
+  captureId?: string;
 }
 
-const { data, sectionId } = Astro.props;
+const { data, sectionId, captureId } = Astro.props;
 ---
 
 <section class="lab-section" aria-labelledby={sectionId} data-lab-return-matrix-root>
@@ -65,7 +66,7 @@ const { data, sectionId } = Astro.props;
   <p class="lab-matrix-interaction-hint">셀 또는 범례에 마우스를 올리거나 탭하면 같은 항목의 연도별 위치가 강조됩니다.</p>
 
   <!-- Ranking matrix -->
-  <div class="lab-matrix-card">
+  <div class="lab-matrix-card" id={captureId} data-exportable-card={captureId ? true : undefined}>
     <div class="lab-matrix-scroll" role="region" aria-label={`${data.title} 순위 매트릭스`}>
       <table class="lab-return-matrix">
         <thead>
