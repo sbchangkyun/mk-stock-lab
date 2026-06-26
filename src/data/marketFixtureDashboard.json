@@ -1,0 +1,116 @@
+{
+  "summaryCards": [
+    {
+      "id": "kospi",
+      "label": "KOSPI",
+      "category": "국내 주식",
+      "value": "2,847.50",
+      "change": "+0.84%",
+      "direction": "up",
+      "status": "예시 데이터"
+    },
+    {
+      "id": "kosdaq",
+      "label": "KOSDAQ",
+      "category": "국내 주식",
+      "value": "842.35",
+      "change": "-0.31%",
+      "direction": "down",
+      "status": "예시 데이터"
+    },
+    {
+      "id": "sp500",
+      "label": "S&P 500",
+      "category": "미국 주식",
+      "value": "5,243.18",
+      "change": "+0.62%",
+      "direction": "up",
+      "status": "예시 데이터"
+    },
+    {
+      "id": "nasdaq100",
+      "label": "Nasdaq 100",
+      "category": "미국 주식",
+      "value": "18,562.40",
+      "change": "+1.42%",
+      "direction": "up",
+      "status": "예시 데이터"
+    },
+    {
+      "id": "usdkrw",
+      "label": "USD/KRW",
+      "category": "환율",
+      "value": "1,352.10",
+      "change": "-0.22%",
+      "direction": "down",
+      "status": "예시 데이터"
+    },
+    {
+      "id": "gold",
+      "label": "Gold",
+      "category": "원자재",
+      "value": "2,347.80",
+      "change": "+0.48%",
+      "direction": "up",
+      "status": "예시 데이터"
+    }
+  ],
+  "trendChart": {
+    "title": "주요 지수 예시 흐름",
+    "description": "연동 전 화면에서 표시하는 지수 흐름 예시입니다.",
+    "labels": ["D-6", "D-5", "D-4", "D-3", "D-2", "D-1", "Today"],
+    "series": [
+      {
+        "id": "kospi",
+        "label": "KOSPI",
+        "values": [100, 100.8, 101.4, 100.9, 102.1, 102.6, 104.1]
+      },
+      {
+        "id": "sp500",
+        "label": "S&P 500",
+        "values": [100, 101.2, 100.6, 102.4, 103.0, 103.8, 105.6]
+      },
+      {
+        "id": "nasdaq100",
+        "label": "Nasdaq 100",
+        "values": [100, 102.0, 101.4, 103.6, 104.8, 105.2, 107.4]
+      }
+    ],
+    "note": "예시 데이터입니다. 실제 시장 수치가 아닙니다."
+  },
+  "comparison": {
+    "title": "자산별 예시 등락률",
+    "description": "주요 자산군의 예시 등락률을 비교합니다.",
+    "items": [
+      { "id": "nasdaq100", "label": "Nasdaq 100", "change": 1.42, "direction": "up" },
+      { "id": "sp500",     "label": "S&P 500",    "change": 0.84, "direction": "up" },
+      { "id": "kospi",     "label": "KOSPI",       "change": 0.62, "direction": "up" },
+      { "id": "gold",      "label": "Gold",         "change": 0.48, "direction": "up" },
+      { "id": "kosdaq",    "label": "KOSDAQ",      "change": -0.31, "direction": "down" },
+      { "id": "usdkrw",   "label": "USD/KRW",     "change": -0.22, "direction": "down" }
+    ],
+    "note": "예시 등락률입니다. 실제 수치가 아닙니다."
+  },
+  "watchPoints": [
+    {
+      "title": "금리/환율",
+      "body": "환율과 금리 변화는 위험자산 선호 방향에 영향을 줄 수 있습니다.",
+      "status": "리서치 메모"
+    },
+    {
+      "title": "위험자산 선호",
+      "body": "글로벌 유동성 흐름에 따라 성장주·신흥국 자산 선호가 달라질 수 있습니다.",
+      "status": "리서치 메모"
+    },
+    {
+      "title": "변동성",
+      "body": "단기 변동성 지표는 시장 심리와 옵션 포지션 변화를 함께 고려합니다.",
+      "status": "리서치 메모"
+    },
+    {
+      "title": "원자재",
+      "body": "에너지·금속 가격은 인플레이션 전망과 공급 이슈에 민감하게 반응합니다.",
+      "status": "리서치 메모"
+    }
+  ]
+}

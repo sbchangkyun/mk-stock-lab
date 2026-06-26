@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DG - 2026-06-26
+
+### Market Page Fixture Chart Enhancement (Implemented)
+
+- **Status**: implemented. Market page enhanced with a fixture-based analytics dashboard below the existing treemap/scatter visualization.
+- **New sections**: 6 market summary cards (KOSPI, KOSDAQ, S&P 500, Nasdaq 100, USD/KRW, Gold), SSR SVG line chart (3 series over 7 periods), CSS horizontal comparison bars (6 assets), 4 watch point memo cards (금리/환율, 위험자산 선호, 변동성, 원자재), data policy disclaimer.
+- **Fixture data**: `src/data/marketFixtureDashboard.json` — all values are example/static, not current market data. Normalized to base-100 for the trend chart.
+- **Chart implementation**: SSR SVG `<polyline>` with points computed server-side in Astro frontmatter. No Chart.js, no canvas, no client-side JS, no charting runtime.
+- **New component**: `src/components/MarketFixtureDashboard.astro` — purely static SSR, no fetch, no Supabase, no KIS, no GNews, no polling.
+- **Data labeling**: all values labeled `예시 데이터` · `데이터 연동 전`. No 실시간, 현재 시세, 매수, 매도, 추천 종목 wording.
+- **No live/API/DB/provider changes**: no KIS, GNews, AI provider, Supabase, DB migration, API routes, external HTTP, or deployment.
+- **New checker**: `check:market-fixture-chart` (76/76 PASS).
+- **Focused validation**: check:market-fixture-chart PASS (76/76), build PASS.
+- **No production deployment**: phase is local-only until owner confirms browser review passes.
+- **Next phase**: Phase 3DH — Production Deployment for Market Update (after owner browser review), or Phase 3DH — KIS + FX Preview Smoke Plan.
+
 ## Phase 3DF-HF3 - 2026-06-26
 
 ### Production Domain Consolidation (Implemented and Deployed)
