@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DH - 2026-06-26
+
+### Production Deployment for Market and Lab UX Updates (Deployed)
+
+- **Status**: deployed to `https://mkstocklab.vercel.app`.
+- **Deployed commits**: Phase 3DG (Market fixture dashboard, commit 1b94029) and Phase 3DF-HF4 (Lab matrix desktop hover highlight, commit da2676e).
+- **Canonical production URL**: `https://mkstocklab.vercel.app`.
+- **Runtime/API/DB/provider changes**: none — deployment phase only.
+- **Focused validation**: check:market-fixture-chart 76/76 PASS, check:lab-matrix-hover 57/57 PASS, check:lab-return-matrix 114/114 PASS, check:production-domain 33/33 PASS, build PASS, git diff --check PASS.
+- **Known limitation**: Mobile/touch Lab matrix highlight did not work in owner review. Owner accepted as non-critical. Desktop hover highlight is the primary accepted behavior. Revisit in Phase 3DI — Mobile Baseline Usability Pass.
+- **Owner review before deploy**: Market local review passed. Lab desktop hover passed. Lab mobile tap did not work, accepted as non-critical.
+- **Cleanup recommendation**: Owner can archive/delete temporary `mk-stock-lab.vercel.app` Vercel project after confirming canonical production works.
+- **Recommended next phase**: Phase 3DI — Mobile Baseline Usability Pass (stabilize mobile UX before live data work), or KIS + FX Preview Smoke Plan if owner prefers live data integration first.
+
 ## Phase 3DF-HF4 - 2026-06-26
 
 ### Lab Matrix Cross-Year Hover Highlight (Implemented)
