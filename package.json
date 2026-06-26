@@ -24,6 +24,7 @@
     "check:mypage-mvp": "node scripts/check_mypage_mvp_completion_static_contract.mjs",
     "check:chart-ai-ux-skeleton": "node scripts/check_chart_ai_ux_skeleton_static_contract.mjs",
     "check:production-domain": "node scripts/check_production_domain_consolidation_static_contract.mjs",
+    "check:lab-matrix-hover": "node scripts/check_lab_matrix_cross_year_hover_static_contract.mjs",
     "check:lab-static-modules": "node scripts/check_lab_static_module_shells_static_contract.mjs",
     "check:lab-return-matrix": "node scripts/check_lab_return_matrix_redesign_static_contract.mjs",
     "check:lab-route-split": "node scripts/check_lab_route_split_static_contract.mjs",

@@ -43,7 +43,7 @@ interface Props {
 const { data, sectionId } = Astro.props;
 ---
 
-<section class="lab-section" aria-labelledby={sectionId}>
+<section class="lab-section" aria-labelledby={sectionId} data-lab-return-matrix-root>
   <header class="lab-section-header">
     <div class="lab-section-header-text">
       <h2 id={sectionId}>{data.title}</h2>
@@ -55,9 +55,14 @@ const { data, sectionId } = Astro.props;
   <!-- Category legend chips -->
   <div class="lab-matrix-legend" aria-label="범례">
     {data.categories.map((cat) => (
-      <span class={`lab-matrix-chip lab-return-cell--${cat.colorClass}`}>{cat.label}</span>
+      <span
+        class={`lab-matrix-chip lab-return-cell--${cat.colorClass}`}
+        data-lab-category-chip
+        data-lab-category-id={cat.id}
+      >{cat.label}</span>
     ))}
   </div>
+  <p class="lab-matrix-interaction-hint">셀 또는 범례에 마우스를 올리거나 탭하면 같은 항목의 연도별 위치가 강조됩니다.</p>
 
   <!-- Ranking matrix -->
   <div class="lab-matrix-card">
@@ -79,7 +84,11 @@ const { data, sectionId } = Astro.props;
                 const cell = row.cells.find((c) => c.year === year);
                 return cell ? (
                   <td>
-                    <div class={`lab-return-cell lab-return-cell--${cell.categoryId}`}>
+                    <div
+                      class={`lab-return-cell lab-return-cell--${cell.categoryId}`}
+                      data-lab-matrix-cell
+                      data-lab-category-id={cell.categoryId}
+                    >
                       <span class="lab-return-cell-label">{cell.label}</span>
                       <span class="lab-return-cell-value">{cell.return}</span>
                     </div>
@@ -113,7 +122,11 @@ const { data, sectionId } = Astro.props;
           {data.summary.map((row) => (
             <tr>
               <td>
-                <span class={`lab-matrix-chip lab-return-cell--${row.categoryId}`}>{row.label}</span>
+                <span
+                  class={`lab-matrix-chip lab-return-cell--${row.categoryId}`}
+                  data-lab-category-chip
+                  data-lab-category-id={row.categoryId}
+                >{row.label}</span>
               </td>
               <td class="lab-summary-cell">{row.average}</td>
               <td class="lab-summary-cell lab-summary-cell--best">{row.best}</td>
@@ -125,3 +138,84 @@ const { data, sectionId } = Astro.props;
     </div>
   </div>
 </section>
+
+<script>
+  (function () {
+    'use strict';
+
+    const applyHighlight = (root: Element, categoryId: string) => {
+      root.classList.add('lab-matrix-has-active');
+      root.querySelectorAll<HTMLElement>('[data-lab-category-id]').forEach((el) => {
+        const match = el.dataset.labCategoryId === categoryId;
+        el.classList.toggle('is-highlighted', match);
+        el.classList.toggle('is-dimmed', !match);
+      });
+    };
+
+    const clearHighlight = (root: Element) => {
+      root.classList.remove('lab-matrix-has-active');
+      root.querySelectorAll('[data-lab-category-id]').forEach((el) => {
+        el.classList.remove('is-highlighted', 'is-dimmed');
+      });
+    };
+
+    const setupMatrix = (root: Element) => {
+      let pinned: string | null = null;
+      let lastHovered: string | null = null;
+
+      root.addEventListener('pointerover', (e) => {
+        const target = (e.target as Element).closest('[data-lab-category-id]');
+        if (!target || !root.contains(target)) return;
+        const id = (target as HTMLElement).dataset.labCategoryId;
+        if (!id || id === lastHovered) return;
+        lastHovered = id;
+        applyHighlight(root, id);
+      });
+
+      root.addEventListener('pointerleave', () => {
+        lastHovered = null;
+        if (pinned) {
+          applyHighlight(root, pinned);
+        } else {
+          clearHighlight(root);
+        }
+      });
+
+      root.addEventListener('click', (e) => {
+        const target = (e.target as Element).closest('[data-lab-category-id]');
+        if (!target) {
+          pinned = null;
+          clearHighlight(root);
+          return;
+        }
+        const id = (target as HTMLElement).dataset.labCategoryId;
+        if (!id) return;
+        if (pinned === id) {
+          pinned = null;
+          clearHighlight(root);
+        } else {
+          pinned = id;
+          applyHighlight(root, id);
+        }
+      });
+
+      root.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Escape') {
+          pinned = null;
+          clearHighlight(root);
+        }
+      });
+    };
+
+    const init = () => {
+      document.querySelectorAll('[data-lab-return-matrix-root]').forEach((root) => {
+        if ((root as HTMLElement).dataset.labMatrixReady === 'true') return;
+        (root as HTMLElement).dataset.labMatrixReady = 'true';
+        setupMatrix(root);
+      });
+    };
+
+    document.addEventListener('astro:page-load', init);
+    init();
+  }());
+</script>

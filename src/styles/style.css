@@ -5367,3 +5367,47 @@ p.lab-static-preview-card-desc {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Phase 3DF-HF4: Lab Matrix Cross-Year Hover Highlight ===== */
+
+[data-lab-matrix-cell],
+[data-lab-category-chip] {
+  cursor: pointer;
+}
+
+.lab-matrix-interaction-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 4px 0 8px;
+}
+
+/* Dimmed state — applied to all non-matching elements when a category is active */
+[data-lab-return-matrix-root].lab-matrix-has-active .lab-return-cell.is-dimmed {
+  opacity: 0.3;
+}
+
+/* Highlighted state — matching cells stand out with a visible ring */
+[data-lab-return-matrix-root].lab-matrix-has-active .lab-return-cell.is-highlighted {
+  opacity: 1;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 0 2.5px #fff, 0 0 0 5px var(--cell-bg, currentColor);
+}
+
+/* Dimmed legend chips */
+[data-lab-return-matrix-root].lab-matrix-has-active .lab-matrix-chip.is-dimmed {
+  opacity: 0.3;
+}
+
+/* Highlighted legend chips */
+[data-lab-return-matrix-root].lab-matrix-has-active .lab-matrix-chip.is-highlighted {
+  box-shadow: 0 0 0 2px #fff inset, 0 0 0 3px var(--cell-bg, currentColor);
+}
+
+/* Transitions only when reduced-motion is not requested */
+@media (prefers-reduced-motion: no-preference) {
+  [data-lab-return-matrix-root] .lab-return-cell,
+  [data-lab-return-matrix-root] .lab-matrix-chip {
+    transition: opacity 0.1s ease, box-shadow 0.1s ease;
+  }
+}

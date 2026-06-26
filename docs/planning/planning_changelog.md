@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DF-HF4 - 2026-06-26
+
+### Lab Matrix Cross-Year Hover Highlight (Implemented)
+
+- **Status**: implemented. Same-category cross-year hover highlight added to Lab return matrix on `/lab/asset-class-returns` and `/lab/sp500-sectors`.
+- **Owner request**: when hovering/tapping a matrix cell, all same-category cells across all year columns should be highlighted; non-matching cells should dim.
+- **Desktop hover**: `pointerover` event delegation on matrix root — highlights all matching `data-lab-category-id` elements; `pointerleave` clears hover highlight (unless pinned).
+- **Click/tap fallback**: clicking a cell/chip toggles a pinned highlight for that category; clicking the same category again clears; clicking anywhere else in the root clears.
+- **Legend chip interaction**: both top-bar legend chips and summary table chips carry data attributes and participate in hover/click highlight — improves discoverability.
+- **Escape key clear**: `keydown` listener on root clears pinned state on Escape.
+- **Per-matrix scoping**: each `[data-lab-return-matrix-root]` section has its own independent `pinned`/`lastHovered` state — multiple matrices on a page operate independently.
+- **CSS**: `.is-highlighted` (white ring + colored outer ring), `.is-dimmed` (opacity 0.3), `cursor: pointer`, `prefers-reduced-motion` media query, scoped by `.lab-matrix-has-active`.
+- **Interaction hint**: `셀 또는 범례에 마우스를 올리거나 탭하면 같은 항목의 연도별 위치가 강조됩니다.` added below the legend.
+- **No data changes**: fixture JSON values and categories unchanged.
+- **No live/API/DB/provider changes**: no KIS, GNews, AI provider, Supabase, DB migration, API routes, external HTTP, setInterval, setTimeout, localStorage, canvas, or deployment.
+- **New checker**: `check:lab-matrix-hover` (57/57 PASS). Existing checker `check:lab-return-matrix` 114/114 PASS (no regressions).
+- **Next phase**: Phase 3DH — Production Deployment for Market and Lab UX Updates.
+
 ## Phase 3DG - 2026-06-26
 
 ### Market Page Fixture Chart Enhancement (Implemented)
