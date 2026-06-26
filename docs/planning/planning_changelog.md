@@ -1,5 +1,31 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DJ - 2026-06-27
+
+### Mobile Baseline Usability Pass (Implemented — awaiting owner review, NOT yet deployed)
+
+- **Status**: implemented and validated; owner must review before deploying.
+- **Goal**: make all main product routes usable on mobile without breaking the accepted desktop UI.
+- **Primary fix**: removed `min-width: 1080px` from the global `body` rule — this was the single blocker preventing any responsive CSS from having effect on mobile viewports.
+- **Responsive CSS added** (Phase 3DJ block at end of `style.css`):
+  - Page gutter reduction: `--page-gutter-x: clamp(14px, 4vw, 24px)` at ≤720px (was always 32px on mobile).
+  - Primary nav: `overflow-x: auto` on `.primary-nav` with `min-width: max-content` on `.nav-inner` at ≤720px — all 5 tabs stay in a single scrollable row.
+  - Header: `flex-wrap: wrap; min-height: 56px` at ≤720px; `.brand-text small` hidden (Korean subtitle).
+  - Ticker belt: `overflow-x: auto` at ≤900px (was `overflow: hidden` → clipping on mobile).
+  - Hero section: `grid-template-columns: 1fr` at ≤860px.
+  - Grid utilities: `.grid-3` → 2-col at ≤860px, 1-col at ≤560px; `.grid-4` → 2-col at ≤560px.
+  - Market snapshot (`.index-card-grid`): 2-col at ≤720px, 1-col at ≤400px.
+  - Lab module/preview grids: 1-col at ≤640px.
+  - Page header: stacks at ≤640px.
+  - H1 font size: `clamp(26px, 7vw, 44px)` at ≤720px.
+  - MyPage mp-sections: `max-width: 100%` at ≤720px.
+- **Lab matrix mobile tap fix** (`LabReturnMatrix.astro`): replaced `click` handler with `pointerdown` (record start position) + `pointerup` (movement threshold < 10px → set pin). `pointerup` fires BEFORE `pointerleave` on mobile, so the pin is set before `pointerleave` checks it — highlight persists correctly after tap.
+- **No new dependencies**: no new npm packages, no API routes, no DB changes, no KIS/GNews/AI/Supabase calls.
+- **All desktop layouts preserved**: existing breakpoints at 980px, 640px, 1299px unchanged.
+- **All data scroll containers preserved**: `lab-matrix-scroll`, `positions-list-wrap`, `table-wrap`, `portfolio-bookmark-tabs` all retain `overflow-x: auto`.
+- **Focused validation**: check:mobile-baseline 74/74 PASS, check:lab-matrix-image-export 80/80 PASS, build PASS.
+- **Recommended next phase**: deploy Phase 3DJ after owner review, then proceed to KIS + FX Preview Smoke Plan.
+
 ## Phase 3DI-HF1 - 2026-06-27
 
 ### Lab Matrix Image Export Capture Scope Hotfix (Deployed)

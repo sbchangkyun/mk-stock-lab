@@ -163,6 +163,8 @@ const { data, sectionId, captureId } = Astro.props;
     const setupMatrix = (root: Element) => {
       let pinned: string | null = null;
       let lastHovered: string | null = null;
+      let pdX = 0;
+      let pdY = 0;
 
       root.addEventListener('pointerover', (e) => {
         const target = (e.target as Element).closest('[data-lab-category-id]');
@@ -182,8 +184,16 @@ const { data, sectionId, captureId } = Astro.props;
         }
       });
 
-      root.addEventListener('click', (e) => {
-        const target = (e.target as Element).closest('[data-lab-category-id]');
+      root.addEventListener('pointerdown', (e) => {
+        const pe = e as PointerEvent;
+        pdX = pe.clientX;
+        pdY = pe.clientY;
+      });
+
+      root.addEventListener('pointerup', (e) => {
+        const pe = e as PointerEvent;
+        if (Math.abs(pe.clientX - pdX) > 10 || Math.abs(pe.clientY - pdY) > 10) return;
+        const target = (pe.target as Element | null)?.closest('[data-lab-category-id]');
         if (!target) {
           pinned = null;
           clearHighlight(root);

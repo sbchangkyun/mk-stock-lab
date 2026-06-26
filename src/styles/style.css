@@ -35,7 +35,6 @@ body.dark-mode {
 
 body {
   margin: 0;
-  min-width: 1080px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -5470,4 +5469,161 @@ p.lab-static-preview-card-desc {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
+}
+
+/* ============================================================
+   Phase 3DJ — Mobile Baseline Usability Pass
+   ============================================================ */
+
+/* 1. Mobile gutter — tighter on narrow viewports */
+@media (max-width: 720px) {
+  :root {
+    --page-gutter-x: clamp(14px, 4vw, 24px);
+  }
+}
+
+/* 2. Ticker belt — make horizontally scrollable instead of clipping */
+@media (max-width: 900px) {
+  .ticker-belt {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .ticker-belt::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 3. Site header — compact on mobile */
+@media (max-width: 720px) {
+  .site-header {
+    height: auto;
+    min-height: 56px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .brand-text small {
+    display: none;
+  }
+
+  .brand-text strong {
+    font-size: 16px;
+  }
+}
+
+/* 4. Primary nav — horizontal scroll on mobile instead of wrapping/clipping */
+@media (max-width: 720px) {
+  .primary-nav {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .primary-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-inner {
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+
+  .nav-link {
+    padding: 0 14px;
+    white-space: nowrap;
+  }
+}
+
+/* 5. Hero section — stack columns on mobile */
+@media (max-width: 860px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 6. H1 — scale down on mobile */
+@media (max-width: 720px) {
+  h1 {
+    font-size: clamp(26px, 7vw, 44px);
+  }
+}
+
+/* 7. Grid utilities — collapse on mobile */
+@media (max-width: 860px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 8. Home MARKET SNAPSHOT card grid — 2-col on mobile */
+@media (max-width: 720px) {
+  .index-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .index-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 9. Page-level header row — stack on narrow mobile */
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+/* 10. Lab module and preview grids — stack on mobile */
+@media (max-width: 640px) {
+  .lab-module-grid,
+  .lab-preview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 11. Lab matrix summary scroll — ensure overflow on mobile */
+@media (max-width: 720px) {
+  .lab-matrix-summary-block .lab-matrix-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 12. MyPage mp-sections — full width on mobile */
+@media (max-width: 720px) {
+  .mp-sections {
+    max-width: 100%;
+  }
+}
+
+/* 13. Market fixture SVG chart — constrain on mobile */
+@media (max-width: 640px) {
+  .market-chart-svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* 14. Lab export header — tighten on mobile */
+@media (max-width: 560px) {
+  .lab-matrix-export-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 }
