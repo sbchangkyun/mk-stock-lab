@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DF-HF3 - 2026-06-26
+
+### Production Domain Consolidation (Implemented and Deployed)
+
+- **Status**: implemented and deployed. Owner reported that `mkstocklab.vercel.app` still served old code after Phase 3DF-HF2 was deployed to the new `mk-stock-lab.vercel.app` URL.
+- **Root cause**: Phase 3DF-HF2 Vercel CLI created a new project (`mk-stock-lab`) instead of deploying to the existing `mkstocklab` project. Local `.vercel/project.json` was linked to the wrong project.
+- **Runtime code**: No hardcoded domain references found anywhere in `src/`. Auth uses `window.location.origin` (dynamic). All internal links use relative paths. No code changes required.
+- **Fix**: Relinked local directory to the existing `mkstocklab` Vercel project and redeployed production.
+- **Canonical production URL**: `https://mkstocklab.vercel.app` (restored).
+- **Temporary non-canonical URL**: `https://mk-stock-lab.vercel.app` — no longer canonical; owner should archive after visual confirmation.
+- **Supabase Auth checklist**: Site URL and redirect URLs should remain pointing to `mkstocklab.vercel.app`. Temporary domain redirect URLs can be removed after owner confirms cleanup.
+- **New checker**: `check:production-domain` verifies no temp domain in runtime source, auth uses dynamic origin, no regression in Lab pages.
+- **Focused validation**: check:production-domain PASS, check:lab-route-split PASS (104/104), check:lab-return-matrix PASS (114/114), build PASS.
+- **No live/API/DB/provider changes**: no KIS, GNews, AI provider, Supabase, DB migration, API routes, or polling added.
+- **Next phase**: Phase 3DG — Market Page Fixture Chart Enhancement (only after owner confirms canonical URL behavior).
+
 ## Phase 3DF-HF2 - 2026-06-26
 
 ### Lab Landing Route Split and Production Deployment (Implemented)
