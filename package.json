@@ -10,6 +10,7 @@
     "build": "astro build",
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:home-index-cards": "node scripts/check_home_index_cards_static_contract.mjs",
+    "check:home-index-sparkline": "node scripts/check_home_index_sparkline_static_contract.mjs",
     "check:security-metadata-coverage": "node scripts/check_security_metadata_coverage_static_contract.mjs",
     "check:password-reset-flow": "node scripts/check_password_reset_flow_static_contract.mjs",
     "check:home-rail-banner-settings": "node scripts/check_home_rail_banner_settings_static_contract.mjs",

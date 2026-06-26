@@ -8,7 +8,8 @@
     "direction": "up",
     "category": "index",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 100.4, 101.2, 100.8, 101.9, 102.5, 103.2]
   },
   {
     "id": "nasdaq100",
@@ -19,7 +20,8 @@
     "direction": "up",
     "category": "index",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 101.0, 102.4, 101.8, 103.2, 104.1, 105.4]
   },
   {
     "id": "dowjones",
@@ -30,7 +32,8 @@
     "direction": "down",
     "category": "index",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 100.2, 99.6, 100.0, 99.2, 99.4, 98.9]
   },
   {
     "id": "kospi",
@@ -41,7 +44,8 @@
     "direction": "flat",
     "category": "index",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 100.1, 99.8, 100.2, 100.0, 100.3, 100.1]
   },
   {
     "id": "kosdaq",
@@ -52,7 +56,8 @@
     "direction": "up",
     "category": "index",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 100.6, 101.0, 100.7, 101.5, 102.0, 102.8]
   },
   {
     "id": "usdkrw",
@@ -63,7 +68,8 @@
     "direction": "down",
     "category": "fx",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 100.1, 99.7, 99.4, 99.6, 99.0, 98.8]
   },
   {
     "id": "dxy",
@@ -74,7 +80,8 @@
     "direction": "down",
     "category": "fx",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 99.8, 99.4, 99.7, 99.2, 99.0, 98.7]
   },
   {
     "id": "gold",
@@ -85,7 +92,8 @@
     "direction": "up",
     "category": "commodity",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 100.8, 101.6, 101.2, 102.4, 103.0, 103.9]
   },
   {
     "id": "wti",
@@ -96,6 +104,7 @@
     "direction": "down",
     "category": "commodity",
     "asOfLabel": "예시 데이터",
-    "note": "연동 전 표시값입니다"
+    "note": "연동 전 표시값입니다",
+    "trend": [100, 99.2, 98.6, 99.0, 98.2, 97.5, 97.1]
   }
 ]

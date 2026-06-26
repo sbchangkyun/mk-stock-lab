@@ -3617,6 +3617,44 @@ body.modal-open {
   white-space: nowrap;
 }
 
+/* ---- Phase 3CB-HF2: Home index sparkline enhancement ---- */
+
+.index-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.index-card-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.index-card-sparkline {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  opacity: 0.85;
+}
+
+.index-card-sparkline-svg {
+  display: block;
+}
+
+.index-card-sparkline--up .index-card-sparkline-line {
+  stroke: var(--positive);
+}
+
+.index-card-sparkline--down .index-card-sparkline-line {
+  stroke: var(--negative);
+}
+
+.index-card-sparkline--flat .index-card-sparkline-line {
+  stroke: var(--neutral, #888);
+}
+
 /* ---- Phase 3CA-HF3: MyPage page-level admin rail layout ---- */
 
 /* Default: mp-sections flows normally (max-width: 680px, left-aligned) */

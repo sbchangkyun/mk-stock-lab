@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3CB-HF2 - 2026-06-26
+
+### Home Market Snapshot Mini Sparkline Cards (Implemented)
+
+- **Status**: implemented. Home MARKET SNAPSHOT cards now include compact SSR SVG mini sparklines.
+- **Owner request**: existing snapshot cards felt too plain (name + value + change only); owner requested compact mini line charts inside each card.
+- **Implementation**: static trend arrays (7 points each) added to all 9 fixture cards; SSR `computePoints` function in Astro frontmatter normalizes each trend and generates `<polyline>` points; sparkline rendered as `<svg viewBox="0 0 120 36">` with no client JS, no chart library, no canvas.
+- **Card layout**: `.index-card` extended to flex row; left column (`.index-card-main`) holds label/caption/value/change; right side (`.index-card-sparkline`) holds the SVG.
+- **Sparkline colors**: up → `var(--positive)`, down → `var(--negative)`, flat → `var(--neutral)`.
+- **Existing data preserved**: all 9 cards retain label, caption, value, change, `예시 데이터` label.
+- **No live/API/DB/provider/deployment changes**: no KIS, GNews, AI provider, Supabase, DB migration, API route, external HTTP, setInterval, setTimeout, localStorage, canvas, or deployment.
+- **New checker**: `check:home-index-sparkline` (66/66 PASS). Existing `check:home-index-cards` 73/73 PASS (no regressions). Build PASS.
+- **Recommended next phase**: Phase 3DI — Production Deployment for Home Sparkline Update, or Phase 3DI — Mobile Baseline Usability Pass.
+
 ## Phase 3DH - 2026-06-26
 
 ### Production Deployment for Market and Lab UX Updates (Deployed)
