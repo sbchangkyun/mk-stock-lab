@@ -24,6 +24,7 @@
     "check:chart-ai-ux-skeleton": "node scripts/check_chart_ai_ux_skeleton_static_contract.mjs",
     "check:lab-static-modules": "node scripts/check_lab_static_module_shells_static_contract.mjs",
     "check:lab-return-matrix": "node scripts/check_lab_return_matrix_redesign_static_contract.mjs",
+    "check:lab-route-split": "node scripts/check_lab_route_split_static_contract.mjs",
     "check:home-ad-slots": "node scripts/check_home_ad_slots_static_contract.mjs",
     "check:kis-valuation-design": "node scripts/check_kis_valuation_pre_design_static_contract.mjs",
     "check:kis-quote-adapter-mocked": "node scripts/check_kis_quote_adapter_mocked_contract.mjs",

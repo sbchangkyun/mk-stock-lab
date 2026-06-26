@@ -17,6 +17,8 @@ const root = join(__dirname, '..');
 
 const LAB_PATH = join(root, 'src', 'pages', 'lab.astro');
 const FIXTURE_PATH = join(root, 'src', 'data', 'labStaticModules.json');
+const ASSET_PATH = join(root, 'src', 'pages', 'lab', 'asset-class-returns.astro');
+const CONGRESS_PATH = join(root, 'src', 'pages', 'lab', 'congress-stocks.astro');
 const STYLE_PATH = join(root, 'src', 'styles', 'style.css');
 const PACKAGE_JSON = join(root, 'package.json');
 const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3df_lab_static_module_shells_result_v0.1.md');
@@ -59,18 +61,25 @@ const page = readFileSync(LAB_PATH, 'utf8');
 // Fixture text for checking dynamically rendered content (Astro SSR renders from fixture at build time)
 const fixtureText = existsSync(FIXTURE_PATH) ? readFileSync(FIXTURE_PATH, 'utf8') : '';
 const pageOrFixture = page + '\n' + fixtureText;
+// Detail pages for route-split checks (HF2: matrices moved off landing page)
+const assetPage = existsSync(ASSET_PATH) ? readFileSync(ASSET_PATH, 'utf8') : '';
+const congressPage = existsSync(CONGRESS_PATH) ? readFileSync(CONGRESS_PATH, 'utf8') : '';
+const allLabPages = page + '\n' + fixtureText + '\n' + assetPage + '\n' + congressPage;
 
 // ---------------------------------------------------------------------------
 // Group 2: Improved page heading
 // ---------------------------------------------------------------------------
 log('--- Group 2: Page heading ---');
 
-check('Page contains improved h1 heading "리서치 Lab"',
-  page.includes('리서치 Lab'));
+check('Page contains Lab heading (리서치 Lab or 실험실)',
+  page.includes('리서치 Lab') || page.includes('실험실'));
 check('Page contains Lab eyebrow label',
   page.includes('>Lab<') || page.includes('"Lab"') || page.includes("'Lab'"));
 check('Page contains lead copy explaining research hub or data connection',
-  page.includes('리서치') && (page.includes('데이터 연동') || page.includes('이후 단계')));
+  page.includes('리서치') && (
+    page.includes('데이터 연동') || page.includes('이후 단계') ||
+    page.includes('리서치 모듈') || page.includes('데이터 시각화')
+  ));
 
 log('');
 
@@ -86,9 +95,11 @@ check('Page or fixture contains 국회의원 보유 주식', pageOrFixture.inclu
 check('Page or fixture contains 국민연금 보유 현황', pageOrFixture.includes('국민연금 보유 현황'));
 check('Page or fixture contains S&P 500 섹터', pageOrFixture.includes('S&P 500 섹터') || pageOrFixture.includes('S&P 500 섹터별 수익률'));
 check('Page or fixture contains 자산군 수익률', pageOrFixture.includes('자산군 수익률'));
-check('Page contains lab-shell class (main content wrapper)', page.includes('lab-shell'));
-check('Page has future module or matrix structure (lab-future or lab-matrix or lab-module)',
-  page.includes('lab-future') || page.includes('lab-matrix') || page.includes('lab-module'));
+check('Page contains shell class (lab-shell, lab-landing-shell, or lab-card-grid)',
+  page.includes('lab-shell') || page.includes('lab-landing-shell') || page.includes('lab-card-grid'));
+check('Page has future module or card structure (lab-future, lab-matrix, lab-module, or lab-card)',
+  page.includes('lab-future') || page.includes('lab-matrix') ||
+  page.includes('lab-module') || page.includes('lab-card'));
 
 log('');
 
@@ -103,12 +114,14 @@ check('Page or fixture contains "정적 모듈" status label',
   pageOrFixture.includes('정적 모듈'));
 check('Page contains "예시 데이터" label',
   page.includes('예시 데이터'));
-check('Page contains "연동 전" or "데이터 연동 전" label',
-  page.includes('데이터 연동 전') || page.includes('연동 전'));
+check('Page or detail pages contain "연동 전" or "데이터 연동 전" or "연동 예정" label',
+  page.includes('데이터 연동 전') || page.includes('연동 전') ||
+  page.includes('연동 예정') || assetPage.includes('데이터 연동 전'));
 check('Page or fixture contains "연동 예정" label',
-  pageOrFixture.includes('연동 예정'));
-check('Page contains badge class for status labels (lab-module-badge or lab-future-badge)',
-  page.includes('lab-module-badge') || page.includes('lab-future-badge'));
+  pageOrFixture.includes('연동 예정') || page.includes('연동 예정'));
+check('Page contains badge class for status labels (lab-module-badge, lab-future-badge, or lab-card-badge)',
+  page.includes('lab-module-badge') || page.includes('lab-future-badge') ||
+  page.includes('lab-card-badge'));
 
 log('');
 
@@ -135,10 +148,11 @@ check('Page contains 예시 데이터 label (example data indicator)',
   page.includes('예시 데이터'));
 check('Page or fixture contains 정적 표시값 or 예시 데이터 (static value label)',
   pageOrFixture.includes('정적 표시값') || page.includes('예시 데이터'));
-check('Page has a data visualization or preview structure (matrix or preview class)',
-  page.includes('lab-matrix') || page.includes('lab-preview') || page.includes('LabReturnMatrix'));
-check('Page uses matrix component or scroll container (lab-matrix-scroll in component, or LabReturnMatrix import)',
-  page.includes('lab-matrix-scroll') || page.includes('LabReturnMatrix') || pageOrFixture.includes('lab-matrix-scroll'));
+check('Page has a data visualization or preview structure (matrix, preview, or card-preview class)',
+  page.includes('lab-matrix') || page.includes('lab-preview') ||
+  page.includes('LabReturnMatrix') || page.includes('lab-card-preview'));
+check('LabReturnMatrix component used on detail pages or in landing',
+  page.includes('LabReturnMatrix') || assetPage.includes('LabReturnMatrix'));
 
 log('');
 
@@ -159,8 +173,9 @@ check('Page or fixture references S&P 500 섹터 concept',
   pageOrFixture.includes('S&P 500') && (pageOrFixture.includes('섹터') || pageOrFixture.includes('sp500')));
 check('Page or fixture references 자산군 수익률 concept',
   pageOrFixture.includes('자산군') && pageOrFixture.includes('수익률'));
-check('Page contains data policy or disclaimer (lab-disclaimer or 데이터 정책)',
-  page.includes('lab-disclaimer') || page.includes('데이터 정책'));
+check('Landing or detail pages contain data policy (lab-disclaimer, lab-data-policy, or 데이터 정책)',
+  page.includes('lab-disclaimer') || page.includes('데이터 정책') ||
+  assetPage.includes('lab-data-policy') || assetPage.includes('데이터 정책'));
 
 log('');
 
@@ -169,15 +184,21 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 7: Disclaimer/data policy ---');
 
-check('Page contains lab-disclaimer class', page.includes('lab-disclaimer'));
+check('Landing or detail pages contain disclaimer/data-policy class',
+  page.includes('lab-disclaimer') || assetPage.includes('lab-data-policy') ||
+  congressPage.includes('lab-data-policy'));
 check('Disclaimer says data is example only ("예시 데이터")',
-  page.includes('예시 데이터'));
+  page.includes('예시 데이터') || assetPage.includes('예시 데이터'));
 check('Disclaimer says not for investment decisions',
-  page.includes('투자 판단에 사용할 수 없습니다'));
-check('Disclaimer disavows buy/sell recommendation',
-  page.includes('매수 또는 매도를 권고하지 않습니다') || page.includes('매수나 매도를'));
+  page.includes('투자 판단에 사용할 수 없습니다') ||
+  assetPage.includes('투자 판단에 사용할 수 없습니다'));
+check('Disclaimer disavows recommendations (buy/sell or automated)',
+  page.includes('매수 또는 매도를 권고하지 않습니다') || page.includes('매수나 매도를') ||
+  assetPage.includes('자동화된 투자 권고를 제공하지 않습니다') ||
+  congressPage.includes('자동화된 투자 권고를 제공하지 않습니다'));
 check('Disclaimer explains future real data connection',
-  page.includes('연동 후') || page.includes('연동 예정'));
+  page.includes('연동 후') || page.includes('연동 예정') ||
+  assetPage.includes('연동 후') || assetPage.includes('연동 예정'));
 
 log('');
 

@@ -3,29 +3,67 @@ import Layout from '../../layouts/Layout.astro';
 ---
 
 <Layout title="국회의원 보유 주식 | MK Stock Lab" activePath="/lab">
-  <p class="breadcrumb"><a href="/lab">Lab</a> / 국회의원 보유 주식</p>
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Phase 8 Lab 페이지</p>
-      <h1>국회의원 보유 주식 공개 화면</h1>
-      <p class="lead">국회의원 재산 공개 자료의 PDF 추출, 상장 종목 정규화, 비상장 종목 분리, 감사 필드는 Lab MVP 2 단계에서 추가합니다.</p>
-    </div>
-  </header>
+  <div class="lab-detail-shell">
+    <a href="/lab" class="lab-detail-backlink">← Lab</a>
 
-  <section class="section-stack">
-    <div class="panel">
-      <h2>콘텐츠 구조</h2>
-      <p>브레드크럼, 상단 광고, 제목, 데이터 기준일, 핵심 시각화, 요약 표, 방법론, FAQ, 관련 카드, 푸터로 구성합니다.</p>
-    </div>
-    <table class="data-table">
-      <thead>
-        <tr><th>항목</th><th>예정 값</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>공시일</td><td>2026-03-26</td></tr>
-        <tr><td>보고 기준일</td><td>2025-12-31</td></tr>
-        <tr><td>집계 기준</td><td>국회의원, 배우자, 직계 가족 보유 현황</td></tr>
-      </tbody>
-    </table>
-  </section>
+    <header class="lab-detail-header">
+      <div class="lab-detail-header-text">
+        <p class="eyebrow">공시 기반 리서치</p>
+        <h1>국회의원 보유 주식</h1>
+        <p class="lead">공개 재산 신고 데이터를 기반으로 보유 종목을 탐색하는 리서치 모듈 준비 화면입니다. 공개 데이터 연동 전이며 모든 내용은 구조 예시입니다.</p>
+      </div>
+      <span class="lab-detail-badge lab-detail-badge--pending">연동 예정</span>
+    </header>
+
+    <section class="lab-static-preview" aria-labelledby="congress-preview-heading">
+      <h2 id="congress-preview-heading" class="lab-static-preview-heading">리서치 모듈 준비 화면</h2>
+      <p class="lab-static-preview-note">아래 섹션은 모듈 구조 예시입니다. 실제 국회의원 이름, 보유 종목, 수량 데이터가 아닙니다.</p>
+      <div class="lab-static-preview-grid">
+        <div class="lab-static-preview-card">
+          <p class="eyebrow">보유 종목 분류</p>
+          <p class="lab-static-preview-card-desc">공시 기준으로 분류된 보유 종목 유형을 표시합니다. 상장 종목, 비상장 종목, 금융 상품 분류 예정.</p>
+          <span class="lab-static-tag">연동 후 제공</span>
+        </div>
+        <div class="lab-static-preview-card">
+          <p class="eyebrow">상위 보유 섹터</p>
+          <p class="lab-static-preview-card-desc">보유 종목의 섹터별 분포를 집계합니다. 기술, 금융, 산업재 등 섹터별 비중 시각화 예정.</p>
+          <span class="lab-static-tag">연동 후 제공</span>
+        </div>
+        <div class="lab-static-preview-card">
+          <p class="eyebrow">변동 이력</p>
+          <p class="lab-static-preview-card-desc">연도별 재산 공개 기준으로 보유 종목 변동 이력을 추적합니다. 신규 취득 및 처분 이력 예정.</p>
+          <span class="lab-static-tag">연동 후 제공</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="lab-data-policy" aria-label="데이터 정책">
+      <p class="eyebrow">데이터 정책</p>
+      <ul>
+        <li>이 화면은 <strong>리서치 모듈 준비 화면</strong>입니다. 실제 공시 데이터가 아닙니다.</li>
+        <li>공개 재산 신고 데이터 연동 전이며, 실제 국회의원 보유 종목이 표시되지 않습니다.</li>
+        <li>실제 투자 판단에 사용할 수 없습니다.</li>
+        <li>자동화된 투자 권고를 제공하지 않습니다.</li>
+      </ul>
+    </aside>
+
+    <section class="lab-detail-related" aria-labelledby="related-congress-heading">
+      <h2 id="related-congress-heading" class="lab-related-heading">다른 Lab 보기</h2>
+      <div class="lab-related-grid">
+        <a href="/lab/asset-class-returns" class="lab-related-card">
+          <span class="eyebrow">자산 배분 리서치</span>
+          <span class="lab-related-title">자산군 수익률 비교</span>
+        </a>
+        <a href="/lab/sp500-sectors" class="lab-related-card">
+          <span class="eyebrow">미국 시장 리서치</span>
+          <span class="lab-related-title">S&amp;P 500 섹터별 수익률</span>
+        </a>
+        <a href="/lab/nps-holdings" class="lab-related-card">
+          <span class="eyebrow">기관 투자자 리서치</span>
+          <span class="lab-related-title">국민연금 보유 현황</span>
+          <span class="lab-related-badge">연동 예정</span>
+        </a>
+      </div>
+    </section>
+  </div>
 </Layout>

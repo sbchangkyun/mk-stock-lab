@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DF-HF2 - 2026-06-26
+
+### Lab Landing Route Split and Production Deployment (Implemented)
+
+- **Status**: implemented. Owner accepted HF1 matrix UI but found route architecture wrong: `/lab` was rendering full matrices instead of being a card gallery landing page.
+- **Route split**: `/lab` rewritten as card gallery (실험실), four detail routes created: `/lab/asset-class-returns`, `/lab/sp500-sectors`, `/lab/congress-stocks`, `/lab/nps-holdings`.
+- **Landing page**: 4-card grid with CSS-only mini matrix preview for matrix cards, `연동 예정` shell for future module cards. No LabReturnMatrix rendered on landing.
+- **Detail pages (matrix)**: `asset-class-returns` and `sp500-sectors` render `LabReturnMatrix` component with back-link to `/lab`, data policy panel, and related Lab links section.
+- **Detail pages (future shells)**: `congress-stocks` and `nps-holdings` are static module shells with 3 placeholder preview cards each. No real lawmaker or NPS data.
+- **New route created**: `src/pages/lab/nps-holdings.astro` (the old `nps-portfolio.astro` remains untouched at its route).
+- **Disclaimer wording**: updated to `자동화된 투자 권고를 제공하지 않습니다.` on all detail pages (safer phrasing).
+- **Checker updates**: both old checkers updated to accept route-split architecture. New `check:lab-route-split` checker added (104 checks).
+- **Checker results**: check:lab-route-split PASS (104/104), check:lab-return-matrix PASS (114/114), check:lab-static-modules PASS (82/82).
+- **No backend changes**: no KIS/GNews/AI provider, no Supabase, no DB migration, no API routes, no live data.
+
 ## Phase 3DF-HF1 - 2026-06-26
 
 ### Lab Return Matrix Redesign (Implemented)

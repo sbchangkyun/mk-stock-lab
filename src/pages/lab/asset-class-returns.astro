@@ -1,40 +1,54 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import LabReturnMatrix from '../../components/LabReturnMatrix.astro';
+import matrices from '../../data/labReturnMatrices.json';
 
-const assets = [
-  ['S&P500', 'S&P 500 Index', 'SPY, VOO, IVV'],
-  ['Bitcoin', 'Bitcoin BTC', 'IBIT, FBTC'],
-  ['NASDAQ100', 'NASDAQ-100 Index', 'QQQ, QQQM'],
-  ['KOSPI', 'KOSPI Index', '226490'],
-  ['Gold', 'LBMA Gold Price PM', 'GLD, IAU, GLDM'],
-  ['글로벌 주식', 'FTSE Global All Cap Index', 'VT, ACWI'],
-  ['REITs', 'MSCI US REIT Index', 'VNQ, SCHH, IYR'],
-  ['미국 제외 글로벌', 'FTSE Global All Cap ex US Index', 'VXUS, IXUS'],
-  ['신흥국 주식', 'FTSE Emerging Markets Index', 'VWO, IEMG, EEM'],
-  ['하이일드 채권', 'Markit iBoxx USD Liquid High Yield', 'HYG, JNK'],
-  ['종합 채권', 'Bloomberg US Aggregate Bond Index', 'AGG, BND'],
-  ['단기 T-bills', 'ICE BofA 0-3M US Treasury Bill', 'BIL, SGOV, SHV'],
-];
+const { assetMatrix } = matrices;
 ---
 
-<Layout title="자산군 수익률 | MK Stock Lab" activePath="/lab">
-  <p class="breadcrumb"><a href="/lab">Lab</a> / 자산군 수익률</p>
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Phase 6 Lab 페이지</p>
-      <h1>자산군 수익률 비교</h1>
-      <p class="lead">Bitcoin은 이 교차 자산 수익률 비교에서만 다룹니다. 가상자산은 검색, Chart AI, 포트폴리오 기능에서는 제외됩니다.</p>
-    </div>
-  </header>
+<Layout title="자산군 수익률 비교 | MK Stock Lab" activePath="/lab">
+  <div class="lab-detail-shell">
+    <a href="/lab" class="lab-detail-backlink">← Lab</a>
 
-  <table class="data-table">
-    <thead>
-      <tr><th>자산군</th><th>추적 지수</th><th>대표 ETF</th></tr>
-    </thead>
-    <tbody>
-      {assets.map(([asset, index, etfs]) => (
-        <tr><td>{asset}</td><td>{index}</td><td>{etfs}</td></tr>
-      ))}
-    </tbody>
-  </table>
+    <header class="lab-detail-header">
+      <div class="lab-detail-header-text">
+        <p class="eyebrow">자산 배분 리서치</p>
+        <h1>자산군 수익률 비교</h1>
+        <p class="lead">{assetMatrix.description}</p>
+      </div>
+      <span class="lab-detail-badge">예시 데이터 · 데이터 연동 전</span>
+    </header>
+
+    <LabReturnMatrix data={assetMatrix} sectionId="asset-matrix-section" />
+
+    <aside class="lab-data-policy" aria-label="데이터 정책">
+      <p class="eyebrow">데이터 정책</p>
+      <ul>
+        <li>이 화면의 모든 수치는 <strong>예시 데이터</strong>입니다. 실제 시장 데이터와 무관합니다.</li>
+        <li>실제 투자 판단에 사용할 수 없습니다.</li>
+        <li>자동화된 투자 권고를 제공하지 않습니다.</li>
+        <li>데이터 연동 후에는 실제 정보로 교체될 예정입니다.</li>
+      </ul>
+    </aside>
+
+    <section class="lab-detail-related" aria-labelledby="related-asset-heading">
+      <h2 id="related-asset-heading" class="lab-related-heading">다른 Lab 보기</h2>
+      <div class="lab-related-grid">
+        <a href="/lab/sp500-sectors" class="lab-related-card">
+          <span class="eyebrow">미국 시장 리서치</span>
+          <span class="lab-related-title">S&amp;P 500 섹터별 수익률</span>
+        </a>
+        <a href="/lab/congress-stocks" class="lab-related-card">
+          <span class="eyebrow">공시 기반 리서치</span>
+          <span class="lab-related-title">국회의원 보유 주식</span>
+          <span class="lab-related-badge">연동 예정</span>
+        </a>
+        <a href="/lab/nps-holdings" class="lab-related-card">
+          <span class="eyebrow">기관 투자자 리서치</span>
+          <span class="lab-related-title">국민연금 보유 현황</span>
+          <span class="lab-related-badge">연동 예정</span>
+        </a>
+      </div>
+    </section>
+  </div>
 </Layout>

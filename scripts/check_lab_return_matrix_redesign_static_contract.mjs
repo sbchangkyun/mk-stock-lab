@@ -18,6 +18,8 @@ const root = join(__dirname, '..');
 const LAB_PAGE = join(root, 'src', 'pages', 'lab.astro');
 const LAB_COMPONENT = join(root, 'src', 'components', 'LabReturnMatrix.astro');
 const FIXTURE_PATH = join(root, 'src', 'data', 'labReturnMatrices.json');
+const ASSET_PAGE = join(root, 'src', 'pages', 'lab', 'asset-class-returns.astro');
+const SECTOR_PAGE = join(root, 'src', 'pages', 'lab', 'sp500-sectors.astro');
 const STYLE_PATH = join(root, 'src', 'styles', 'style.css');
 const PACKAGE_JSON = join(root, 'package.json');
 const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3df_hf1_lab_return_matrix_redesign_result_v0.1.md');
@@ -62,8 +64,10 @@ if (!existsSync(FIXTURE_PATH)) {
 }
 
 const page = readFileSync(LAB_PAGE, 'utf8');
+const assetPage = existsSync(ASSET_PAGE) ? readFileSync(ASSET_PAGE, 'utf8') : '';
+const sectorPage = existsSync(SECTOR_PAGE) ? readFileSync(SECTOR_PAGE, 'utf8') : '';
 const componentSrc = existsSync(LAB_COMPONENT) ? readFileSync(LAB_COMPONENT, 'utf8') : '';
-const pageAndComponent = page + '\n' + componentSrc;
+const pageAndComponent = page + '\n' + assetPage + '\n' + sectorPage + '\n' + componentSrc;
 const css = existsSync(STYLE_PATH) ? readFileSync(STYLE_PATH, 'utf8') : '';
 
 // ---------------------------------------------------------------------------
@@ -161,30 +165,37 @@ if (fixture !== null) {
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 3: Lab page information architecture
+// Group 3: Lab page information architecture (updated for route split in HF2)
 // ---------------------------------------------------------------------------
-log('--- Group 3: Lab page IA ---');
+log('--- Group 3: Lab page IA (route-split aware) ---');
 
-check('Page contains h1 "리서치 Lab"', page.includes('리서치 Lab'));
-check('Page imports LabReturnMatrix component',
-  page.includes('LabReturnMatrix'));
-check('Page imports labReturnMatrices fixture',
-  page.includes('labReturnMatrices'));
-check('Page renders assetMatrix before sectorMatrix (order check)',
-  (() => {
-    const assetPos = page.indexOf('assetMatrix');
-    const sectorPos = page.indexOf('sectorMatrix');
-    return assetPos !== -1 && sectorPos !== -1 && assetPos < sectorPos;
-  })());
-check('Page contains 자산군 수익률 비교 (from fixture or page)',
-  page.includes('자산군') || (fixture && fixture.assetMatrix?.title?.includes('자산군 수익률 비교')));
-check('Page contains S&P 500 섹터별 수익률 reference',
-  page.includes('S&P 500') || page.includes('섹터별 수익률') ||
+check('Landing page or detail pages have Lab heading (실험실 / 리서치 Lab)',
+  page.includes('실험실') || page.includes('리서치 Lab'));
+check('asset-class-returns page imports LabReturnMatrix component',
+  assetPage.includes('LabReturnMatrix'));
+check('sp500-sectors page imports LabReturnMatrix component',
+  sectorPage.includes('LabReturnMatrix'));
+check('asset-class-returns page imports labReturnMatrices fixture',
+  assetPage.includes('labReturnMatrices'));
+check('sp500-sectors page imports labReturnMatrices fixture',
+  sectorPage.includes('labReturnMatrices'));
+check('asset-class-returns page uses assetMatrix',
+  assetPage.includes('assetMatrix'));
+check('sp500-sectors page uses sectorMatrix',
+  sectorPage.includes('sectorMatrix'));
+check('Landing page or detail pages contain 자산군 수익률 비교',
+  page.includes('자산군 수익률 비교') || assetPage.includes('자산군 수익률 비교') ||
+  (fixture && fixture.assetMatrix?.title?.includes('자산군 수익률 비교')));
+check('Landing page or detail pages contain S&P 500 섹터별 수익률 reference',
+  page.includes('S&P 500 섹터별 수익률') || page.includes('S&amp;P 500 섹터별 수익률') ||
+  sectorPage.includes('S&P 500 섹터별 수익률') || sectorPage.includes('S&amp;P 500 섹터별 수익률') ||
   (fixture && fixture.sectorMatrix?.title?.includes('S&P 500 섹터별 수익률')));
-check('Page references 국회의원 보유 주식 (in future modules)',
+check('Landing page references 국회의원 보유 주식 (card link)',
   page.includes('국회의원 보유 주식') || page.includes('congress-stocks'));
-check('Page references 국민연금 보유 현황 (in future modules)',
+check('Landing page references 국민연금 보유 현황 (card link)',
   page.includes('국민연금 보유 현황') || page.includes('nps-holdings'));
+check('Landing page does NOT render full LabReturnMatrix (matrices on detail pages)',
+  !page.includes('LabReturnMatrix') && !page.includes('labReturnMatrices'));
 
 log('');
 
@@ -212,28 +223,36 @@ check('Component renders rank row label (위)',
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 5: Lab page elements
+// Group 5: Lab page elements (updated for route split in HF2)
 // ---------------------------------------------------------------------------
-log('--- Group 5: Lab page elements ---');
+log('--- Group 5: Lab page elements (route-split aware) ---');
 
-check('Page contains lab-shell class', page.includes('lab-shell'));
-check('Page contains legend chip reference (via LabReturnMatrix or direct)',
+check('Landing page has card-grid shell OR detail pages have lab-detail-shell',
+  page.includes('lab-landing-shell') || page.includes('lab-shell') ||
+  assetPage.includes('lab-detail-shell'));
+check('Legend chip reference in LabReturnMatrix component or detail pages',
   pageAndComponent.includes('lab-matrix-legend'));
-check('Page contains horizontal scroll wrapper reference',
+check('Horizontal scroll wrapper in LabReturnMatrix component or detail pages',
   pageAndComponent.includes('lab-matrix-scroll'));
-check('Page contains summary table reference',
+check('Summary table in LabReturnMatrix component or detail pages',
   pageAndComponent.includes('lab-summary-table'));
-check('Page contains future modules section',
+check('Landing page has future module cards or pending badges',
+  page.includes('lab-future') || page.includes('lab-card-badge--pending') ||
   page.includes('lab-future-modules') || page.includes('lab-future-card'));
-check('Page contains data policy disclaimer (lab-disclaimer)',
+check('Detail page has data policy panel (lab-data-policy or lab-disclaimer)',
+  assetPage.includes('lab-data-policy') || assetPage.includes('lab-disclaimer') ||
   page.includes('lab-disclaimer'));
-check('Page labels data as example (예시 데이터)', page.includes('예시 데이터'));
-check('Page contains 데이터 연동 전 or 연동 전',
-  page.includes('데이터 연동 전') || page.includes('연동 전'));
-check('Page says not for investment decisions',
+check('Landing page labels data as example (예시 데이터)', page.includes('예시 데이터'));
+check('Landing or detail pages contain 데이터 연동 전 or 연동 전 or 연동 예정',
+  page.includes('데이터 연동 전') || page.includes('연동 전') || page.includes('연동 예정') ||
+  assetPage.includes('데이터 연동 전'));
+check('Detail pages say not for investment decisions',
+  assetPage.includes('투자 판단에 사용할 수 없습니다') ||
   page.includes('투자 판단에 사용할 수 없습니다'));
-check('Page disavows buy/sell recommendation',
-  page.includes('매수 또는 매도를 권고하지 않습니다') || page.includes('매수나 매도를'));
+check('Detail pages disavow automated recommendations',
+  page.includes('매수 또는 매도를 권고하지 않습니다') || page.includes('매수나 매도를') ||
+  assetPage.includes('자동화된 투자 권고를 제공하지 않습니다') ||
+  assetPage.includes('매수 또는 매도를 권고하지 않습니다'));
 
 log('');
 
@@ -260,7 +279,7 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 7: Safety boundaries ---');
 
-const allSrc = page + '\n' + componentSrc;
+const allSrc = page + '\n' + assetPage + '\n' + sectorPage + '\n' + componentSrc;
 check('No fetch() call in lab.astro', !/\bfetch\s*\(/.test(page));
 check('No fetch() call in LabReturnMatrix.astro', !/\bfetch\s*\(/.test(componentSrc));
 check('No XMLHttpRequest in lab pages', !allSrc.includes('XMLHttpRequest'));
