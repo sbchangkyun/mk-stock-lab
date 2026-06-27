@@ -2,22 +2,21 @@
 
 ## Phase 3DN - 2026-06-27
 
-### Owner-Run KIS Single Quote Preview (Prepared — Owner execution pending)
+### Owner-Run KIS Single Quote Preview (Completed — owner live smoke PASS)
 
-- **Status**: Owner execution pending. No runtime changes. Claude Code did not run live KIS calls.
-- **Goal**: prepare documentation, owner report template, and static contract checker so the project owner can run `npm run smoke:kis-quote-live:dry` with real KIS credentials and guard env vars. Confirm KR domestic quote retrieval, sanitization, normalization, and mock cache validation.
-- **Test symbol**: `005930` (KR 6-digit domestic stock). Expected: staleState=fresh, currency=KRW.
-- **Owner action required**: run `npm run smoke:kis-quote-live:dry` locally with all 5 `PHASE_3Y_*` guard env vars + KIS credentials. Report only sanitized step labels — no tokens, no raw payloads, no account numbers.
-- **New deliverables**:
-  - `docs/planning/phase_3dn_owner_run_kis_single_quote_preview_result_v0.1.md` — result doc (status: Owner execution pending)
-  - `docs/planning/phase_3dn_owner_kis_single_quote_preview_report_template_v0.1.md` — safe reporting template
-  - `scripts/check_owner_run_kis_single_quote_preview_static_contract.mjs` — static checker
-  - `check:kis-single-quote-preview` package script
-- **Checker**: `check:kis-single-quote-preview` — 61/61 PASS. Groups: file existence, boundary wording, guard variables, test symbol/command, sanitization safety, result status, source policy, forbidden patterns.
+- **Status**: Completed — owner live smoke PASS. No runtime changes. Claude Code did not run live KIS calls.
+- **Goal**: confirm that a single KR domestic stock quote (`005930`) can be retrieved live, sanitized, normalized, and cached from a local owner terminal using real KIS credentials and guard env vars.
+- **Owner live smoke result**: PASS (two attempts — see below).
+- **Attempt 1**: FAIL at `smoke-identity-validation` (`SMOKE_IDENTITY_INVALID`) — `PHASE_3Y_SMOKE_MARKET` and `PHASE_3Y_SMOKE_SYMBOL` were not set. No KIS quote call reached. No secrets or raw payload shared.
+- **Attempt 2**: PASS after setting `PHASE_3Y_SMOKE_MARKET=KR` and `PHASE_3Y_SMOKE_SYMBOL=005930`. Live quote received, quote normalized, staleState=fresh, cache write/readback passed.
+- **Final result fields**: `mode=live-approved`, `liveKis=true`, `quoteNormalized=true`, `cacheValidated=true`, `sanitized=true`.
+- **staleState**: `fresh`. pricePresent: true. accountApiCalled: false (KIS_ACCOUNT_NO absent).
+- **No secrets, tokens, account numbers, raw payloads, or raw KIS field values were recorded.**
+- **Deliverables created**: result doc, owner report template, `check_owner_run_kis_single_quote_preview_static_contract.mjs` (61/61 PASS), `check:kis-single-quote-preview` package script.
 - **Preflight results**: check:kis-fx-mocked-adapter (119/119), check:kis-fx-preview-smoke-plan (52/52), check:kis-valuation-design (73/73), check:kis-quote-adapter-mocked (101/101), build — all PASS.
-- **No runtime changes**: no API routes, no UI, no DB, no provider code, no Supabase, no live calls by Claude Code.
-- **Source policy unchanged**: source=fixture remains the default. source=live still returns 400 UNSUPPORTED_SOURCE.
-- **Recommended next phase**: Phase 3DO — KR Quote Preview Expansion (if owner PASS); Phase 3DN-Retry if owner env issue; Phase 3DN-HF1 if sanitization bug detected.
+- **No runtime/API/DB/UI/deployment changes.** Source policy unchanged: source=fixture remains default, source=live returns 400 UNSUPPORTED_SOURCE.
+- **Claude Code did not run live KIS.** Owner ran manually from local terminal.
+- **Recommended next phase**: Phase 3DO — KR Quote Preview Expansion and Portfolio Live Preview API Plan.
 
 ## Phase 3DM - 2026-06-27
 
