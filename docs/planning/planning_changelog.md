@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DO-CLOSEOUT - 2026-06-27
+
+### KR Quote Expansion Results Closeout (Completed — all KR expansion targets PASS)
+
+- **Status**: Completed — all KR expansion targets PASS. No live KIS calls by Claude Code.
+- **Final results**: `005930` PASS, `000660` PASS, `069500` PASS after HF1 rerun.
+- **Attempt history**: `005930` passed on first expansion run; `000660` passed after retry; `069500` initially failed at `quote-fetch` with generic `QUOTE_FETCH_FAILED`, then Phase 3DO-HF1 added safe diagnostic classification, and `069500` passed on owner rerun.
+- **069500 (KR ETF)**: Live quote retrieval confirmed via KIS domestic endpoint. ETF codes use the same endpoint as KR stocks.
+- **All final successful outputs sanitized**: no secrets, no raw payloads, no account numbers, no raw KIS field values, no actual prices, no stack traces were recorded.
+- **No live KIS by Claude Code.** Owner manually executed `npm run smoke:kis-quote-live:dry` for all three symbols.
+- **No runtime changes**: no API routes, no UI, no DB, no Supabase, no deployment.
+- **Source policy unchanged**: `source=fixture` remains default. Public `source=live` remains disabled (400 `UNSUPPORTED_SOURCE`). `source=auto` remains deferred.
+- **New deliverables**: closeout result doc, static checker (`check:phase-3do-closeout`). Updated Phase 3DO and Phase 3DO-HF1 result docs to completed status.
+- **Recommended next phase**: Phase 3DP — Portfolio Live Preview API Contract Implementation.
+
 ## Phase 3DO-HF1 - 2026-06-27
 
 ### KIS Quote Fetch Failure Diagnostics (Implemented — owner diagnostic rerun pending)

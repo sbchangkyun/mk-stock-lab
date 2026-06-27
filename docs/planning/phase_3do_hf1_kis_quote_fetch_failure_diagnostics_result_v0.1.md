@@ -6,14 +6,14 @@
 |-------|-------|
 | Phase | 3DO-HF1 |
 | Type | KIS Quote Fetch Failure Diagnostics |
-| Status | **Implemented — owner diagnostic rerun pending** |
+| Status | **Completed — diagnostic rerun PASS** |
 | Latest prior commit | `bb34f9d` (docs: prepare kr quote preview expansion plan) |
 | Canonical production URL | `https://mkstocklab.vercel.app` |
 | Runtime UI changes | None |
 | API route changes | None |
 | DB / Supabase schema changes | None |
 | Live KIS calls by Claude Code | None |
-| Live KIS calls by owner | Pending rerun of `069500` |
+| Live KIS calls by owner | Completed — `069500` rerun PASS |
 | Live FX calls | None |
 | Live GNews calls | None |
 | AI provider calls | None |
@@ -127,7 +127,35 @@ Do NOT share:
 
 ---
 
-## 6. Validation Results
+## 6. Owner Rerun Result — `069500`
+
+After HF1 was applied, the owner reran only `069500` with `PHASE_3Y_SMOKE_MARKET=KR` and `PHASE_3Y_SMOKE_SYMBOL=069500`.
+
+| Field | Value |
+|-------|-------|
+| Symbol | `069500` |
+| Market | `KR` |
+| Type | KR ETF |
+| quote-fetch | PASS — `live-quote-received` |
+| quote-normalization | PASS |
+| staleState | `fresh` |
+| cache-write | PASS |
+| fresh-readback | PASS |
+| final-result | PASS |
+| liveKis | `true` |
+| quoteNormalized | `true` |
+| cacheValidated | `true` |
+| sanitized | `true` on all output lines |
+| secretsShared | false |
+| rawPayloadShared | false |
+| accountNumberShared | false |
+| rawKISFieldValuesShared | false |
+
+The rerun passed directly without triggering any of the new diagnostic codes. The HF1 diagnostic classification was not needed to identify a failure because the rerun succeeded. The classification remains in place for any future failures.
+
+---
+
+## 7. Validation Results
 
 | Command | Result |
 |---------|--------|
@@ -143,7 +171,7 @@ Do NOT share:
 
 ---
 
-## 7. Known Limitations
+## 8. Known Limitations
 
 - This hotfix does not fix ETF quote retrieval if `SYMBOL_UNSUPPORTED` is returned — that would require a separate KIS endpoint or symbol type decision.
 - If `069500` receives `SYMBOL_UNSUPPORTED`, it means the KIS domestic quote endpoint does not support this ETF code through the current API path, and a separate Phase 3DQ investigation is needed.
@@ -158,16 +186,12 @@ Do NOT share:
 
 ---
 
-## 8. Recommended Next Phase
+## 9. Recommended Next Phase
 
-Based on the diagnostic rerun result for `069500`:
+The `069500` rerun passed. Phase 3DO-CLOSEOUT has been completed, recording all three KR expansion symbol results.
 
-| Diagnostic code | Recommended next phase |
-|----------------|----------------------|
-| `PASS` | Phase 3DO-CLOSEOUT — Record KR Quote Expansion Results |
-| `SYMBOL_UNSUPPORTED` | Phase 3DQ — KR ETF Quote Support Decision |
-| `PROVIDER_RATE_LIMITED` | Phase 3DO-Retry — Owner Retry After Quota Cooldown (wait 60+ seconds) |
-| `PROVIDER_UNAVAILABLE` | Phase 3DO-Retry — Owner Retry After Provider Recovery |
-| `AUTH_REQUIRED` or `KIS_CONFIG_MISSING` | Owner env/config remediation, then retry |
-| `PROVIDER_RESPONSE_UNEXPECTED` | Investigate what provider code was mapped — may require Phase 3DO-HF2 |
-| `QUOTE_FETCH_FAILED_UNKNOWN` | Phase 3DO-HF2 — Safe Provider Error Shape Inspection |
+**Phase 3DP — Portfolio Live Preview API Contract Implementation**
+
+- All three KR expansion targets (two KR stocks, one KR ETF) confirmed via live owner smoke.
+- Proceed to implement `source=live` + `previewMode=owner` + `allowLiveQuotes=true` gate in `POST /api/portfolio/valuation`.
+- The HF1 diagnostic code policy remains in place for future use.

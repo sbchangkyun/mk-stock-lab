@@ -6,14 +6,14 @@
 |-------|-------|
 | Phase | 3DO |
 | Type | KR Quote Preview Expansion and Portfolio Live Preview API Plan |
-| Status | **Prepared — owner KR expansion execution pending** |
+| Status | **Completed — owner KR expansion PASS** |
 | Latest prior commit | `df42fe1` (docs: record owner kis single quote pass) |
 | Canonical production URL | `https://mkstocklab.vercel.app` |
 | Runtime UI changes | None |
 | API route changes | None |
 | DB / Supabase schema changes | None |
 | Live KIS calls by Claude Code | None |
-| Live KIS calls by owner | Pending |
+| Live KIS calls by owner | Completed — PASS |
 | Live FX calls | None |
 | Live GNews calls | None |
 | AI provider calls | None |
@@ -139,13 +139,35 @@ All three symbols are expected to pass. All are 6-digit KR domestic codes. If a 
 
 ## 6. Owner Results
 
-Owner has not yet executed the KR expansion smoke. Results will be recorded after the owner provides sanitized output using the report template at `docs/planning/phase_3do_owner_kr_quote_expansion_report_template_v0.1.md`.
+Owner executed the KR expansion smoke using `npm run smoke:kis-quote-live:dry`. All three target symbols reached live quote retrieval successfully in their final state.
 
-| Symbol | Status |
-|--------|--------|
-| `005930` | Pending |
-| `000660` | Pending |
-| `069500` | Pending |
+| Symbol | Type | Final Result | Notes |
+|--------|------|-------------|-------|
+| `005930` | KR stock | PASS | Regression live quote passed |
+| `000660` | KR stock | PASS | Passed after retry |
+| `069500` | KR ETF | PASS | Initially failed at quote-fetch before HF1; passed after HF1 rerun |
+
+All final successful runs emitted:
+- `quote-fetch status=passed note=live-quote-received`
+- `quote-normalization status=passed`
+- `staleState=fresh`
+- `cache-write status=passed`
+- `fresh-readback status=passed state=fresh`
+- `final-result status=passed`
+- `liveKis=true`
+- `quoteNormalized=true`
+- `cacheValidated=true`
+
+All shared output lines were sanitized. No secrets, raw payloads, account numbers, or raw KIS field values were shared.
+
+### Attempt History
+
+1. **Phase 3DN baseline:** `005930` single-symbol owner smoke passed.
+2. **Phase 3DO expansion — `005930`:** Passed.
+3. **Phase 3DO expansion — `000660`:** Initially failed at `quote-fetch`; passed on retry.
+4. **Phase 3DO expansion — `069500`:** Initially failed at `quote-fetch` with generic `QUOTE_FETCH_FAILED`.
+5. **Phase 3DO-HF1:** Added safe quote-fetch diagnostic classification (`classifyQuoteFetchFailure`). Claude Code did not run live KIS.
+6. **Phase 3DO-HF1 owner rerun — `069500`:** Passed. `live-quote-received`, `staleState=fresh`, `cacheValidated=true`.
 
 ---
 
@@ -236,8 +258,6 @@ Avoid using:
 
 ## 11. Known Limitations
 
-- KR ETF (`069500`) live smoke has not been executed yet in this phase.
-- `000660` live smoke has not been executed yet in this phase.
 - US quote endpoint is not implemented — US positions remain `SYMBOL_UNSUPPORTED`.
 - Real FX provider is not implemented — mixed-currency portfolio total remains `null` unless mocked adapter is used (not in live API path).
 - `POST /api/portfolio/valuation` source=fixture remains the default — the API still returns 400 for any other source value.
@@ -264,33 +284,13 @@ Avoid using:
 
 ## 13. Recommended Next Phase
 
-**If owner KR expansion result is not yet provided:**
+**Phase 3DP — Portfolio Live Preview API Contract Implementation**
 
-Phase 3DO-CLOSEOUT — Record KR Quote Expansion Results
+All three KR quote expansion symbols passed. The KIS domestic quote path is confirmed for KR stocks and KR ETFs. Proceed to implement the `source=live` + `previewMode=owner` + `allowLiveQuotes=true` preview gate in `POST /api/portfolio/valuation`:
 
-- Owner runs three symbols, shares only sanitized step output
-- Update result doc with per-symbol PASS/FAIL table
-
-**If all three symbols PASS:**
-
-Phase 3DP — Portfolio Live Preview API Contract Implementation
-
-- Add `source=live` + `previewMode=owner` preview gate to `POST /api/portfolio/valuation`
+- Add dual opt-in gate to the API route
 - Implement KR-only live quote resolution via existing `getQuoteSnapshot` orchestration
-- Return explicit stale/unavailable states
-- No fixture fallback
-- No `providerMeta` to client
-
-**If one or more symbols fail (owner environment issue):**
-
-Phase 3DO-Retry — Owner KR Quote Expansion Retry
-
-- Owner re-checks `PHASE_3Y_SMOKE_MARKET`, `PHASE_3Y_SMOKE_SYMBOL`, credentials, guard values
-- No code changes required
-
-**If failure suggests KIS script issue:**
-
-Phase 3DO-HF1 — KR Quote Smoke Script Expansion Fix
-
-- Inspect `scripts/owner_smoke_kis_quote_live.mjs` for the issue
-- Fix and re-verify with owner
+- Return explicit stale/unavailable states per position
+- No fixture fallback on live failure
+- No `providerMeta` exposed to client
+- Keep mixed-currency total null until real FX exists

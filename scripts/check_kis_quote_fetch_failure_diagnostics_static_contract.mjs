@@ -156,8 +156,8 @@ check('Result doc mentions 000660 PASS',
   /000660.*PASS|PASS.*000660/i.test(resultDoc));
 check('Result doc mentions 069500 FAIL at quote-fetch',
   /069500.*FAIL|069500.*quote-fetch/i.test(resultDoc));
-check('Result doc states owner diagnostic rerun pending',
-  /owner.*rerun.*pending|Implemented.*owner.*diagnostic.*rerun.*pending|rerun.*pending/i.test(resultDoc));
+check('Result doc states owner diagnostic rerun status (pending or completed)',
+  /rerun.*pending|Completed.*diagnostic.*rerun.*PASS|069500.*rerun.*PASS|Completed.*rerun/i.test(resultDoc));
 check('Result doc states Claude Code did not run live KIS',
   /Live KIS calls.*Claude Code.*None|Claude Code.*not.*run.*KIS/i.test(resultDoc));
 check('Result doc states no API route changes',
