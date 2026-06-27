@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DL - 2026-06-27
+
+### KIS + FX Preview Smoke Plan (Planned / Execution-ready)
+
+- **Status**: planned and execution-ready. No runtime changes. No live KIS or FX calls in this phase.
+- **Goal**: inspect existing KIS/quote/cache scaffolding and produce a concrete, staged plan for owner-controlled live quote preview before any live data reaches users.
+- **Codebase inspection findings**:
+  - KIS domestic (KR) quote adapter fully implemented (`kisClient.ts`) with runtime guard, token cache, sanitized error handling, and hard production block.
+  - In-memory quote cache exists: fresh TTL 15s, stale TTL 120s. Supabase persistent cache implemented but opt-in.
+  - Portfolio valuation layer (`portfolioValuation.ts`) ready for live quotes; `totalMarketValue=null` for mixed-currency (FX not implemented).
+  - Valuation API (`POST /api/portfolio/valuation`) supports only `source=fixture` today; `source=live` returns 400.
+  - Three owner-only smoke scripts exist with explicit guard env vars; not safe for Claude Code to run.
+  - US quote endpoint not yet implemented; FX provider not yet selected.
+- **Deliverables**: result doc, owner runbook, static checker (52/52 PASS), `check:kis-fx-preview-smoke-plan` package script.
+- **No runtime changes**: no API routes, no UI, no DB, no provider, no Supabase, no live calls.
+- **Recommended next phase**: Phase 3DM — KIS + FX Mocked Adapter Contract Hardening (or Owner-Run KIS Single Quote Preview if owner is ready to test with real credentials).
+
 ## Phase 3DK - 2026-06-27
 
 ### Production Deployment for Mobile UX Hotfixes (Deployed)

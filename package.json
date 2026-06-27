@@ -60,6 +60,7 @@
     "check:gnews-live-smoke-provider-diagnostics": "node scripts/check_gnews_live_smoke_provider_diagnostics.mjs",
     "check:mobile-ux-density-export": "node scripts/check_mobile_ux_density_export_consistency_static_contract.mjs",
     "check:mobile-snapshot-portfolio": "node scripts/check_mobile_snapshot_portfolio_usability_static_contract.mjs",
+    "check:kis-fx-preview-smoke-plan": "node scripts/check_kis_fx_preview_smoke_plan_static_contract.mjs",
     "smoke:gnews-live:dry": "node scripts/owner_smoke_gnews_live_fetch.mjs --dry-run",
     "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
     "smoke:persistent-quote-cache-live:dry": "node scripts/owner_smoke_persistent_quote_cache_live.mjs",
