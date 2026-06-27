@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DK - 2026-06-27
+
+### Production Deployment for Mobile UX Hotfixes (Deployed)
+
+- **Status**: deployed to production. No runtime code changes in this phase.
+- **Canonical production URL**: `https://mkstocklab.vercel.app`
+- **Deployed commits**:
+  - `a44a8d0` — Phase 3DJ: Mobile Baseline Usability Pass
+  - `adebaf9` — Phase 3DJ-HF1: Mobile UX Density and Export Consistency Hotfix
+  - `8e00cac` — Phase 3DJ-HF2: Mobile Snapshot and Portfolio Usability Hotfix
+- **Owner review**: Phase 3DJ-HF2 passed local/mobile owner review. Owner explicitly approved production deployment.
+- **Product changes deployed**: mobile global width blocker removed; header/nav baseline improvements; Home mobile density improved; Home MARKET SNAPSHOT 2-column at 390px; Portfolio KPI summary (총 자산 / 총 수익); Portfolio compact `$` / `₩` controls; `카테고리` label removed; Portfolio header/body alignment fix; full sortable column label tap; grouped column structure; Lab duplicate inner header removed; Lab matrix mobile tap highlight improved; desktop-size image export via `scrollWidth` + `data-export-width`.
+- **No runtime changes in Phase 3DK**: deployment-only phase.
+- **No live/API/DB/provider changes**: no KIS, no GNews, no AI, no Supabase, no SQL, no API routes, no DB migrations.
+- **Focused validation**: 9 checkers run, all passed (49+74+68+80+57+66+73+76+33 checks). Build and git diff --check clean.
+- **Recommended next phase**: Phase 3DL — KIS + FX Preview Smoke Plan (live data integration) or Phase 3DL — UI Architecture Refactor Plan (design system stabilization).
+
 ## Phase 3DJ-HF2 - 2026-06-27
 
 ### Mobile Snapshot and Portfolio Usability (Implemented — awaiting owner review, NOT yet deployed)
