@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DM - 2026-06-27
+
+### KIS + FX Mocked Adapter Contract Hardening (Implemented, awaiting owner review)
+
+- **Status**: implemented, awaiting owner review. No live calls. No deployment.
+- **Goal**: harden no-network mocked contracts for KIS quote, FX adapter, quote cache state transitions, and mixed-currency portfolio valuation before owner runs a live KIS single quote smoke.
+- **New file**: `src/lib/server/providers/fxMockAdapter.ts` — mocked FX adapter. `getMockedFxRate` (USD→KRW=1350), `convertCurrencyMocked`. source='mocked', staleState='sample'. No fetch, no env, no Supabase.
+- **Modified**: `src/lib/server/portfolioValuation.ts` — added `buildPortfolioValuationFromQuotesWithFx()`. Mixed-currency totalMarketValue computed when mocked FX provided; null when FX absent (never fabricated). staleState capped at stale-but-usable when mocked FX used.
+- **API route policy**: conservative — `source=live` continues to return 400 UNSUPPORTED_SOURCE. No route change. No UI change. No fixture fallback on live failure.
+- **Checker**: `check:kis-fx-mocked-adapter` — 119/119 PASS. Groups: file existence, safety boundary, FX mock contract, KIS validation/readiness, cache state transitions, portfolio valuation mocked-live, API route policy, documentation, forbidden patterns.
+- **KIS mocked contract**: 6 readiness guard states, 6 validation cases. US market → SYMBOL_UNSUPPORTED. No raw KIS fields in any output.
+- **Cache transitions**: fresh/stale-but-usable/expired state machine verified with synthetic timestamps. No real time, no sleeping.
+- **Portfolio valuation mocked-live**: KR-only totalMarketValue computed; mixed KRW+USD with mocked FX computes (USD × 1350 = KRW); mixed without FX = null; partial quote failure explicit; providerMeta never copied to rows.
+- **No runtime changes to UI, CSS, layout, or existing API contracts.**
+- **Recommended next phase**: Phase 3DN — Owner-Run KIS Single Quote Preview.
+
 ## Phase 3DL - 2026-06-27
 
 ### KIS + FX Preview Smoke Plan (Planned / Execution-ready)
