@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DP-OWNER-SMOKE - 2026-06-27
+
+### Owner Portfolio Live Preview API Smoke (Prepared — owner API smoke execution pending)
+
+- **Status**: Prepared — owner API smoke execution pending. No live KIS by Claude Code.
+- **Goal**: Provide a safe, owner-run local API smoke script for testing the Phase 3DP live preview contract at `POST /api/portfolio/valuation`.
+- **Owner smoke script**: `scripts/owner_smoke_portfolio_live_preview_api.mjs` — package command `smoke:portfolio-live-preview-api:owner`.
+- **Guard variables**: requires all five `PHASE_3DP_*` guards set to exact values; missing guards trigger dry-run only — no API call made.
+- **Local-only API target**: calls `http://127.0.0.1:4321/api/portfolio/valuation` only. Non-local URL overrides rejected before any fetch. URL never printed — logs use `target=local-api`.
+- **Request body**: fixed safe sample — `source: "live"`, `previewMode: "owner"`, `allowLiveQuotes: true`, `baseCurrency: "KRW"`, KR positions `005930`, `000660`, `069500`. Placeholder `buyPrice=1`, `quantity=1`. Full body not printed.
+- **Safe output only**: emits `phase3dp step=... status=... sanitized=true` lines. No prices, no market values, no raw response body, no `providerMeta`, no KIS fields, no tokens.
+- **Sanitizer**: `forbiddenOutputPattern` blocks any output line containing sensitive data. Blocked lines emit `SAFE_OUTPUT_BLOCKED`.
+- **No live KIS by Claude Code.** Owner must run the smoke manually after starting the local dev server.
+- **No runtime UI/API/DB/deployment changes in this phase.**
+- **No production deployment.**
+- **Recommended next phase**: If PASS → Phase 3DP-OWNER-SMOKE-CLOSEOUT; if API error → Phase 3DP-HF1; if server not running → Phase 3DP-Retry.
+
 ## Phase 3DP - 2026-06-27
 
 ### Portfolio Live Preview API Contract Implementation (Implemented — owner API smoke pending)
