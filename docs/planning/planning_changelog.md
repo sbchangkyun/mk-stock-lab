@@ -1,5 +1,24 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DN - 2026-06-27
+
+### Owner-Run KIS Single Quote Preview (Prepared — Owner execution pending)
+
+- **Status**: Owner execution pending. No runtime changes. Claude Code did not run live KIS calls.
+- **Goal**: prepare documentation, owner report template, and static contract checker so the project owner can run `npm run smoke:kis-quote-live:dry` with real KIS credentials and guard env vars. Confirm KR domestic quote retrieval, sanitization, normalization, and mock cache validation.
+- **Test symbol**: `005930` (KR 6-digit domestic stock). Expected: staleState=fresh, currency=KRW.
+- **Owner action required**: run `npm run smoke:kis-quote-live:dry` locally with all 5 `PHASE_3Y_*` guard env vars + KIS credentials. Report only sanitized step labels — no tokens, no raw payloads, no account numbers.
+- **New deliverables**:
+  - `docs/planning/phase_3dn_owner_run_kis_single_quote_preview_result_v0.1.md` — result doc (status: Owner execution pending)
+  - `docs/planning/phase_3dn_owner_kis_single_quote_preview_report_template_v0.1.md` — safe reporting template
+  - `scripts/check_owner_run_kis_single_quote_preview_static_contract.mjs` — static checker
+  - `check:kis-single-quote-preview` package script
+- **Checker**: `check:kis-single-quote-preview` — 61/61 PASS. Groups: file existence, boundary wording, guard variables, test symbol/command, sanitization safety, result status, source policy, forbidden patterns.
+- **Preflight results**: check:kis-fx-mocked-adapter (119/119), check:kis-fx-preview-smoke-plan (52/52), check:kis-valuation-design (73/73), check:kis-quote-adapter-mocked (101/101), build — all PASS.
+- **No runtime changes**: no API routes, no UI, no DB, no provider code, no Supabase, no live calls by Claude Code.
+- **Source policy unchanged**: source=fixture remains the default. source=live still returns 400 UNSUPPORTED_SOURCE.
+- **Recommended next phase**: Phase 3DO — KR Quote Preview Expansion (if owner PASS); Phase 3DN-Retry if owner env issue; Phase 3DN-HF1 if sanitization bug detected.
+
 ## Phase 3DM - 2026-06-27
 
 ### KIS + FX Mocked Adapter Contract Hardening (Implemented, awaiting owner review)
