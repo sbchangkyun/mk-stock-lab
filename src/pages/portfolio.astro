@@ -46,24 +46,26 @@ import Layout from '../layouts/Layout.astro';
     <section class="portfolio-detail portfolio-dashboard panel">
       <div class="portfolio-panel-header">
         <div>
-          <p class="eyebrow">보유 종목</p>
           <h2 id="selected-portfolio-title">포트폴리오를 선택하세요</h2>
           <p id="selected-portfolio-meta">포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.</p>
           <p class="valuation-status-copy" id="valuation-status-copy" hidden></p>
         </div>
         <div class="portfolio-panel-actions">
-          <div class="segmented-control" id="currency-display-toggle" aria-label="통화 표시 기준">
-            <button class="active" type="button" data-display-mode="local">달러 기준</button>
-            <button type="button" data-display-mode="krw">원화 기준</button>
-          </div>
           <button class="primary-action hidden" id="open-position-sheet" type="button">종목 추가</button>
+        </div>
+      </div>
+
+      <div class="portfolio-list-controls-bar">
+        <p class="eyebrow">카테고리</p>
+        <div class="segmented-control" id="currency-display-toggle" aria-label="통화 표시 기준">
+          <button class="active" type="button" data-display-mode="local" aria-label="달러 기준" title="달러 기준">$</button>
+          <button type="button" data-display-mode="krw" aria-label="원화 기준" title="원화 기준">₩</button>
         </div>
       </div>
 
       <div class="empty-state" id="positions-empty">포트폴리오를 선택하면 보유 종목을 관리할 수 있습니다.</div>
       <div class="positions-list-wrap hidden" id="positions-list-wrap">
-        <div class="positions-category-header" id="positions-category-header" aria-label="보유 종목 카테고리">
-          <p class="eyebrow">카테고리</p>
+        <div class="positions-category-header" id="positions-category-header">
           <div class="positions-category-grid" role="row">
             <div class="positions-category-cell positions-category-cell--avatar" aria-hidden="true"></div>
             <div class="positions-category-cell" role="columnheader">종목</div>
@@ -75,44 +77,46 @@ import Layout from '../layouts/Layout.astro';
               </span>
             </div>
             <div class="positions-category-cell" role="columnheader">수량</div>
-            <div class="positions-category-cell" role="columnheader">평단가</div>
-            <div class="positions-category-cell" role="columnheader">현재가</div>
-            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader">
-              <span>평가금</span>
-              <span class="sort-arrow-stack">
-                <button class="sort-arrow-button" type="button" data-sort="valuation-desc" aria-label="평가금 높은 순 정렬">▲</button>
-                <button class="sort-arrow-button" type="button" data-sort="valuation-asc" aria-label="평가금 낮은 순 정렬">▼</button>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+              <span class="col-group-top">평단가</span>
+              <span class="col-group-bottom">현재가</span>
+            </div>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+              <span class="col-group-top-sortable">
+                <span>평가금</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="valuation-desc" aria-label="평가금 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="valuation-asc" aria-label="평가금 낮은 순 정렬">▼</button>
+                </span>
+              </span>
+              <span class="col-group-bottom">원금</span>
+            </div>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+              <span class="col-group-top-sortable">
+                <span>수익률</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="return-desc" aria-label="수익률 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="return-asc" aria-label="수익률 낮은 순 정렬">▼</button>
+                </span>
+              </span>
+              <span class="col-group-bottom-sortable">
+                <span>수익금</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="profit-desc" aria-label="수익금 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="profit-asc" aria-label="수익금 낮은 순 정렬">▼</button>
+                </span>
               </span>
             </div>
-            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader">
-              <span>수익률</span>
-              <span class="sort-arrow-stack">
-                <button class="sort-arrow-button" type="button" data-sort="return-desc" aria-label="수익률 높은 순 정렬">▲</button>
-                <button class="sort-arrow-button" type="button" data-sort="return-asc" aria-label="수익률 낮은 순 정렬">▼</button>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+              <span class="col-group-top-sortable">
+                <span>배당률</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="dividend-yield-desc" aria-label="배당률 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="dividend-yield-asc" aria-label="배당률 낮은 순 정렬">▼</button>
+                </span>
               </span>
+              <span class="col-group-bottom">배당주기</span>
             </div>
-            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader">
-              <span>수익금</span>
-              <span class="sort-arrow-stack">
-                <button class="sort-arrow-button" type="button" data-sort="profit-desc" aria-label="수익금 높은 순 정렬">▲</button>
-                <button class="sort-arrow-button" type="button" data-sort="profit-asc" aria-label="수익금 낮은 순 정렬">▼</button>
-              </span>
-            </div>
-            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader">
-              <span>배당률</span>
-              <span class="sort-arrow-stack">
-                <button class="sort-arrow-button" type="button" data-sort="dividend-yield-desc" aria-label="배당률 높은 순 정렬">▲</button>
-                <button class="sort-arrow-button" type="button" data-sort="dividend-yield-asc" aria-label="배당률 낮은 순 정렬">▼</button>
-              </span>
-            </div>
-            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader">
-              <span>예상 연배당금</span>
-              <span class="sort-arrow-stack">
-                <button class="sort-arrow-button" type="button" data-sort="annual-dividend-desc" aria-label="예상 연배당금 높은 순 정렬">▲</button>
-                <button class="sort-arrow-button" type="button" data-sort="annual-dividend-asc" aria-label="예상 연배당금 낮은 순 정렬">▼</button>
-              </span>
-            </div>
-            <div class="positions-category-cell" role="columnheader">배당주기</div>
             <div class="positions-category-cell" aria-hidden="true"></div>
           </div>
         </div>
@@ -586,7 +590,7 @@ import Layout from '../layouts/Layout.astro';
         const hasAny = Object.values(newValuations).some((v) => v.currentPrice !== null);
         const allHave = rowsArr.length > 0 && Object.values(newValuations).every((v) => v.currentPrice !== null);
         state.valuationStatus = allHave ? 'ready' : hasAny ? 'partial' : 'idle';
-        state.valuationMessage = 'Fixture 기준 평가값입니다. 실시간 시세가 아닙니다.';
+        state.valuationMessage = null;
       } catch {
         state.valuationStatus = 'error';
         state.valuationMessage = '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
@@ -992,10 +996,8 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
 
-      title.textContent = aggregateSelected ? '전체 포트폴리오' : portfolio!.name;
-      meta.textContent = aggregateSelected
-        ? `${state.portfolios.length}개 포트폴리오의 보유 종목을 종목/시장 기준으로 합산합니다.`
-        : `기준 통화: ${portfolio!.baseCurrency}`;
+      title.textContent = aggregateSelected ? '' : portfolio!.name;
+      meta.textContent = '';
       openSheetButton.classList.toggle('hidden', aggregateSelected);
       if (aggregateSelected) closePositionSheet();
 
@@ -1070,30 +1072,21 @@ import Layout from '../layouts/Layout.astro';
           <div class="position-metric">
             <strong>${money.format(position.quantity)}</strong>
           </div>
-          <div class="position-metric">
-            <strong>${escapeHtml(buyPrice.primary)}</strong>
-            ${buyPrice.secondary ? `<small>${escapeHtml(buyPrice.secondary)}</small>` : ''}
+          <div class="position-metric position-metric--group">
+            <strong>${escapeHtml(formatLocalAmount(position.currency, position.buyPrice))}</strong>
+            <small class="${currentPriceDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(currentPriceDisplay ?? '연동 예정')}</small>
           </div>
-          <div class="position-metric">
-            <strong class="${currentPriceDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(currentPriceDisplay ?? '연동 예정')}</strong>
-          </div>
-          <div class="position-metric">
+          <div class="position-metric position-metric--group">
             <strong class="${marketValueDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(marketValueDisplay ?? '연동 예정')}</strong>
+            <small>${escapeHtml(formatLocalAmount(position.currency, position.buyPrice * position.quantity))}</small>
           </div>
-          <div class="position-metric">
+          <div class="position-metric position-metric--group">
             <strong class="${pnlPctDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlPctDisplay ?? '연동 예정')}</strong>
+            <small class="${pnlDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlDisplay ?? '연동 예정')}</small>
           </div>
-          <div class="position-metric">
-            <strong class="${pnlDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlDisplay ?? '연동 예정')}</strong>
-          </div>
-          <div class="position-metric">
+          <div class="position-metric position-metric--group">
             <strong class="metric-placeholder">데이터 대기</strong>
-          </div>
-          <div class="position-metric">
-            <strong class="metric-placeholder">데이터 대기</strong>
-          </div>
-          <div class="position-metric">
-            <strong class="metric-placeholder">데이터 대기</strong>
+            <small class="metric-placeholder">데이터 대기</small>
           </div>
           <div class="table-actions position-actions">
             ${aggregateSelected

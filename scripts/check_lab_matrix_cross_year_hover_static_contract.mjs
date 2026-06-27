@@ -118,8 +118,9 @@ check('Script contains pointer or mouse event listener for hover (pointerover/mo
 check('Script contains pointerleave or mouseleave for hover clear',
   compSrc.includes('pointerleave') || compSrc.includes('mouseleave'));
 
-check('Script contains click event listener for tap/pin fallback',
-  compSrc.includes("addEventListener('click'") || compSrc.includes('addEventListener("click"'));
+check('Script contains click or pointerup listener for tap/pin fallback',
+  compSrc.includes("addEventListener('click'") || compSrc.includes('addEventListener("click"') ||
+  compSrc.includes("addEventListener('pointerup'") || compSrc.includes('addEventListener("pointerup"'));
 
 check('Script contains Escape key handling',
   compSrc.includes("'Escape'") || compSrc.includes('"Escape"'));

@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DJ-HF1 - 2026-06-27
+
+### Mobile UX Density + Export Consistency (Implemented — awaiting owner review, NOT yet deployed)
+
+- **Status**: implemented and validated; owner must review before deploying. Hotfix on top of Phase 3DJ.
+- **Goal**: address owner review failure — "site feels like a desktop page squeezed into a narrow viewport." Deliver actual mobile-native density and make image export viewport-independent.
+- **A. Export consistency** (`exportCardImage.ts`): `exportCardAsPng` now uses `card.scrollWidth` + optional `requestedExportWidth` from `data-export-width` button attribute. Temporarily forces inline width/minWidth/overflow during capture, adds `.is-exporting-image` class, restores all in `finally`. Treemap buttons: `data-export-width="1200"`. Scatter + lab buttons: `data-export-width="800"`. Export PNG is now desktop-sized regardless of mobile viewport.
+- **B. Home mobile density**: 4 feature nav cards (`.home-feature-grid`) hidden at ≤860px — duplicate of the nav bar. Hero lead text clamped to 3 lines. News cards: summary hidden, title max 2 lines. Market Snapshot card padding tightened.
+- **C. Header compact**: auth buttons (`header-button`) reduced to `padding: 0 8px; font-size: 11px; min-height: 32px` at ≤720px.
+- **D. Chart AI + Market**: reduced lead copy to 2-line clamp; market charts overflow-x scrollable on mobile.
+- **E. Portfolio information density**:
+  - Removed "보유 종목" eyebrow from panel header.
+  - Removed "전체 포트폴리오" and "4개 포트폴리오의..." aggregate text from JS.
+  - Removed "Fixture 기준 평가값입니다" success message.
+  - Currency buttons compacted: `달러 기준` → `$` (aria-label="달러 기준"), `원화 기준` → `₩` (aria-label="원화 기준").
+  - New `portfolio-list-controls-bar` row (outside scroll): `카테고리` left, `$ / ₩` right — fixed, not scroll-dependent.
+  - Column restructure: 13 columns → 9 grouped columns (min-width 960px → 740px). Groups: 가격(평단가/현재가), 금액(평가금/원금), 수익(수익률/수익금), 배당(배당률/배당주기).
+  - Security names: `-webkit-line-clamp: 2` max 2 lines.
+- **F. Lab copy cleanup**: removed duplicate `<header class="lab-section-header">` (title + description + badge) from `LabReturnMatrix.astro` — page-level `lab-detail-header` already shows these. Removed `lab-matrix-export-label` text from both lab pages.
+- **No new dependencies**: no npm packages, no API routes, no DB changes, no KIS/GNews/AI/Supabase calls.
+- **Focused validation**: check:mobile-ux-density-export 68/68 PASS, check:mobile-baseline 74/74 PASS, check:lab-matrix-image-export 80/80 PASS, check:lab-matrix-hover 57/57 PASS (hover checker updated to accept pointerup), build PASS.
+
 ## Phase 3DJ - 2026-06-27
 
 ### Mobile Baseline Usability Pass (Implemented — awaiting owner review, NOT yet deployed)

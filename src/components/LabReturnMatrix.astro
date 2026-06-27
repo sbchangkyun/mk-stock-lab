@@ -44,15 +44,7 @@ interface Props {
 const { data, sectionId, captureId } = Astro.props;
 ---
 
-<section class="lab-section" aria-labelledby={sectionId} data-lab-return-matrix-root>
-  <header class="lab-section-header">
-    <div class="lab-section-header-text">
-      <h2 id={sectionId}>{data.title}</h2>
-      <p class="lab-section-copy">{data.description}</p>
-    </div>
-    <span class="lab-matrix-note-badge">예시 데이터 · 연동 전</span>
-  </header>
-
+<section class="lab-section" aria-label={data.title} data-lab-return-matrix-root>
   <!-- Category legend chips -->
   <div class="lab-matrix-legend" aria-label="범례">
     {data.categories.map((cat) => (
