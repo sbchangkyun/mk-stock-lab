@@ -6,15 +6,15 @@
 |-------|-------|
 | Phase | 3DP-OWNER-SMOKE |
 | Type | Owner Portfolio Live Preview API Smoke |
-| Status | **Prepared — owner API smoke execution pending** |
+| Status | **Completed — owner API smoke PASS** |
 | Latest prior commit | `c7859a5` (feat: add portfolio live preview api contract) |
 | Canonical production URL | `https://mkstocklab.vercel.app` |
 | Runtime UI changes | None |
 | API route changes | None in this phase |
 | DB / Supabase schema changes | None |
 | Live KIS calls by Claude Code | None |
-| Live KIS calls by owner | Pending |
-| Local API smoke by owner | Pending |
+| Live KIS calls by owner | Completed through local API smoke — PASS |
+| Local API smoke by owner | Completed — PASS |
 | Live FX calls | None |
 | Live GNews calls | None |
 | AI provider calls | None |
@@ -236,13 +236,78 @@ Then exits with non-zero code.
 | `npm run build` | PASS |
 | `git diff --check` | PASS |
 
-Owner API smoke: Pending.
+Owner API smoke: Completed — PASS (see §9 for final result and attempt history).
 
 ---
 
-## 9. Known Limitations
+## 9. Owner Smoke Result and Attempt History
 
-- Owner API smoke not yet executed — results are pending.
+### Final Result — Attempt 3 (PASS)
+
+| Field | Value |
+|-------|-------|
+| Endpoint | `POST /api/portfolio/valuation` |
+| Execution | Owner manual local run |
+| Local target label | `local-api` |
+| `source` | `live` |
+| `previewMode` | `owner` |
+| `baseCurrency` | `KRW` |
+| `positionCount` | `3` |
+| Symbols | `005930`, `000660`, `069500` |
+| HTTP status | `200` |
+| Response parse | passed |
+| Response contract | passed |
+| `quoteSource` | `live` |
+| `liveAttempted` | `true` |
+| `providerStored` | `false` |
+| Provider leakage check | passed |
+| `staleState` | `fresh` |
+| `rowCount` | `3` |
+| `missingQuoteCount` | `0` |
+| `unsupportedCount` | `0` |
+| `unavailableRows` | `0` |
+| `apiLivePreview` | `true` |
+| `contractValidated` | `true` |
+| Final result | passed |
+
+### Attempt History
+
+| Attempt | Target | Outcome | Notes |
+|---------|--------|---------|-------|
+| 1 | `127.0.0.1` (default) | `api-call` failed — `API_CALL_EXCEPTION` | Local API connection issue; no HTTP response reached |
+| 2 | `localhost:4321` | HTTP 200, contract passed, `staleState=unavailable`, `missingQuoteCount=3`, `unavailableRows=3` | KIS env vars not loaded before dev server start |
+| 3 | `localhost:4321` | HTTP 200, contract passed, `staleState=fresh`, `missingQuoteCount=0`, `unavailableRows=0` — **PASS** | Final result after local runtime correction |
+
+### Sanitized Final Output (Attempt 3)
+
+```text
+phase3dp step=guard-check status=passed mode=live-approved sanitized=true
+phase3dp step=runtime-check status=passed note=local-non-production-confirmed sanitized=true
+phase3dp step=local-api-target-check status=passed target=local-api sanitized=true
+phase3dp step=request-shape-check status=passed source=live previewMode=owner baseCurrency=KRW positionCount=3 symbols=005930,000660,069500 sanitized=true
+phase3dp step=api-call status=passed httpStatus=200 sanitized=true
+phase3dp step=response-parse status=passed sanitized=true
+phase3dp step=response-contract status=passed ok=true source=live previewMode=owner quoteSource=live liveAttempted=true providerStored=false sanitized=true
+phase3dp step=provider-leakage-check status=passed sanitized=true
+phase3dp step=safe-summary status=passed staleState=fresh rowCount=3 missingQuoteCount=0 unsupportedCount=0 unavailableRows=0 sanitized=true
+phase3dp step=final-result status=passed apiLivePreview=true contractValidated=true sanitized=true
+```
+
+### Safety Confirmation
+
+- No full response body was shared.
+- No actual prices were shared.
+- No valuation numeric fields (`currentPrice`, `marketValue`, `costBasis`, `unrealizedPnl`, `totalMarketValue`, `totalCostBasis`) were shared.
+- No raw KIS payload was shared.
+- `providerMeta` was not shared.
+- No tokens or secrets were shared.
+- No account numbers were shared.
+- No stack traces were shared.
+
+---
+
+## 10. Known Limitations
+
 - No production deployment was performed in this phase.
 - Production UI does not use live quotes.
 - No US quote support — US positions return 400 `UNSUPPORTED_SOURCE`.
@@ -255,20 +320,8 @@ Owner API smoke: Pending.
 
 ## 10. Recommended Next Phase
 
-**If owner smoke PASS:**
+**Phase 3DQ — UI Preview Mode Wiring Plan**
 
-> Phase 3DP-OWNER-SMOKE-CLOSEOUT — Record Owner Portfolio Live Preview API Smoke PASS
+Owner API smoke passed (Phase 3DP-OWNER-SMOKE-CLOSEOUT). The portfolio live preview API contract is locally validated. Next step is to plan how the portfolio UI can optionally display live valuation data in owner/developer mode.
 
-Record the safe summary lines from the owner smoke. Update this result doc status to `Completed`. Then proceed to Phase 3DQ — UI Preview Mode Wiring Plan.
-
-**If owner smoke returns a safe API error (e.g., gate failure or provider unavailable):**
-
-> Phase 3DP-HF1 — Portfolio Live Preview API Smoke Failure Fix
-
-Diagnose using the safe `code=` field from the failed step. Fix the gate or provider path. Do not share raw error messages.
-
-**If owner smoke fails because the local dev server is not running:**
-
-> Phase 3DP-Retry — Owner Local API Smoke Retry
-
-Ensure the dev server is running on port 4321 (`npm run dev`), then retry the smoke.
+Plan to use freshness labels (`조회 시점 기준`, `최근 조회 기준`, `데이터 일시 불가`, `연동 실패`) without exposing public live data.

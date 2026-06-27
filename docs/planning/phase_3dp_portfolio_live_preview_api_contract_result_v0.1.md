@@ -13,7 +13,7 @@
 | API route changes | Yes — guarded preview contract added to existing route |
 | DB / Supabase schema changes | None |
 | Live KIS calls by Claude Code | None |
-| Live KIS calls by owner | Pending — owner API smoke not yet run |
+| Live KIS calls by owner | Completed through local API smoke — PASS (Phase 3DP-OWNER-SMOKE-CLOSEOUT) |
 | Live FX calls | None |
 | Live GNews calls | None |
 | AI provider calls | None |

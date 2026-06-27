@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DP-OWNER-SMOKE-CLOSEOUT - 2026-06-27
+
+### Owner Portfolio Live Preview API Smoke Closeout (Completed — owner API smoke PASS)
+
+- **Status**: Completed — owner API smoke PASS. No live KIS by Claude Code.
+- **Owner smoke**: executed manually by owner; final run (Attempt 3) passed all contract checks.
+- **Final safe summary**: HTTP 200, `source=live`, `previewMode=owner`, `quoteSource=live`, `liveAttempted=true`, `providerStored=false`, `staleState=fresh`, `rowCount=3`, `missingQuoteCount=0`, `unsupportedCount=0`, `unavailableRows=0`, `apiLivePreview=true`, `contractValidated=true`.
+- **Provider leakage check**: passed — no KIS field names, tokens, or raw payload exposed.
+- **Attempt 1**: `API_CALL_EXCEPTION` — local API connection issue (127.0.0.1 target).
+- **Attempt 2**: HTTP 200, contract passed, `staleState=unavailable`, `missingQuoteCount=3`, `unavailableRows=3` — KIS env vars not loaded before dev server start.
+- **Attempt 3**: HTTP 200, contract passed, `staleState=fresh`, `missingQuoteCount=0`, `unavailableRows=0` — **PASS** after local runtime correction.
+- **No raw response body, prices, secrets, account numbers, or provider payloads recorded.** Only sanitized `phase3dp step=... sanitized=true` lines shared.
+- **No live API smoke by Claude Code.** Owner ran the smoke manually.
+- **No runtime UI/API/DB/deployment changes in this closeout phase.**
+- **No production deployment.**
+- **Recommended next phase**: Phase 3DQ — UI Preview Mode Wiring Plan.
+
 ## Phase 3DP-OWNER-SMOKE - 2026-06-27
 
 ### Owner Portfolio Live Preview API Smoke (Prepared — owner API smoke execution pending)

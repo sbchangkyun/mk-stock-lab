@@ -68,6 +68,7 @@
     "check:phase-3do-closeout": "node scripts/check_phase_3do_closeout_kr_quote_expansion_static_contract.mjs",
     "check:portfolio-live-preview-api": "node scripts/check_portfolio_live_preview_api_contract.mjs",
     "check:portfolio-live-preview-owner-smoke": "node scripts/check_portfolio_live_preview_owner_smoke_static_contract.mjs",
+    "check:portfolio-live-preview-owner-smoke-closeout": "node scripts/check_portfolio_live_preview_owner_smoke_closeout_static_contract.mjs",
     "smoke:portfolio-live-preview-api:owner": "node scripts/owner_smoke_portfolio_live_preview_api.mjs",
     "smoke:gnews-live:dry": "node scripts/owner_smoke_gnews_live_fetch.mjs --dry-run",
     "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
