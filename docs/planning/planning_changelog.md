@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DQ - 2026-06-27
+
+### Portfolio UI Preview Mode Wiring Plan (Planned — no runtime UI changes)
+
+- **Status**: Planned — implementation pending. No runtime UI changes in this phase.
+- **Goal**: Produce a detailed owner-only UI preview mode wiring plan covering gate logic, request mapping, response mapping, freshness labels, partial data rules, security requirements, and mobile UX for Phase 3DR.
+- **Background**: Built on Phase 3DP-OWNER-SMOKE-CLOSEOUT (HTTP 200, `staleState=fresh`, `rowCount=3`, `missingQuoteCount=0`, `unavailableRows=0` — all contract checks passed).
+- **Activation gate recommended**: local-only URL query parameter `?previewMode=owner` + hostname gate (`localhost` or `127.0.0.1`). No production visibility.
+- **Pre-validation required**: aggregate portfolio blocked; non-KRW portfolio blocked; US positions blocked; >10 positions blocked.
+- **Freshness labels**: `조회 시점 기준` (fresh), `최근 조회 기준` (stale-but-usable), `데이터 일시 불가` (unavailable), `연동 실패` (API failure). Label `실시간` / `실시간 시세` prohibited.
+- **KPI summary**: cost-basis fallback (`posVal?.marketValue ?? buyPrice * quantity`) must be suppressed for live-preview unavailable rows.
+- **Owner/developer-only mode**: not exposed in production UI; fixture path remains default in all environments.
+- **No live API calls by Claude Code.** No API route changes. No DB/Supabase changes. No production deployment.
+- **Recommended next phase**: Phase 3DR — Portfolio UI Preview Mode Implementation.
+
 ## Phase 3DP-OWNER-SMOKE-CLOSEOUT - 2026-06-27
 
 ### Owner Portfolio Live Preview API Smoke Closeout (Completed — owner API smoke PASS)
