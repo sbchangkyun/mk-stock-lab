@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DP - 2026-06-27
+
+### Portfolio Live Preview API Contract Implementation (Implemented — owner API smoke pending)
+
+- **Status**: Implemented — owner API live preview smoke pending. No live KIS by Claude Code.
+- **Goal**: Add a tightly gated KR-only live preview path to `POST /api/portfolio/valuation`. Fixture path is unchanged.
+- **Triple opt-in gate**: `source: "live"` + `previewMode: "owner"` + `allowLiveQuotes: true`. All three required; any missing → 400 `UNSUPPORTED_SOURCE`.
+- **Additional gates**: non-production runtime only; `KIS_ACCOUNT_NO` must be absent; `baseCurrency=KRW`; max 10 positions; KR-only (US → 400 `UNSUPPORTED_SOURCE`).
+- **Runtime guard**: `isLivePreviewGateReady()` added to `quotes.ts` — reads `VERCEL_ENV`, `NODE_ENV`, `KIS_ACCOUNT_NO` without exposing values; `valuation.ts` route calls this without reading `process.env` directly.
+- **Quote resolution**: `getQuoteSnapshot()` (existing orchestration — in-memory cache, stale fallback, provider errors). No fixture fallback on live failure. Unavailable rows remain unavailable.
+- **No provider leakage**: `providerMeta` stripped by `buildPortfolioValuationFromQuotes`. No raw KIS fields, no tokens, no URLs in any response.
+- **No UI changes.** No Supabase changes. No DB migrations. No production deployment.
+- **Source policy unchanged for public users**: `source=fixture` remains default. Public `source="live"` rejected. `source="auto"` deferred.
+- **New deliverables**: `check:portfolio-live-preview-api` (static + behavioral checker), Phase 3DP result doc.
+- **Recommended next phase**: Phase 3DP-OWNER-SMOKE — Owner Portfolio Live Preview API Smoke; then Phase 3DQ — UI Preview Mode Wiring Plan.
+
 ## Phase 3DO-CLOSEOUT - 2026-06-27
 
 ### KR Quote Expansion Results Closeout (Completed — all KR expansion targets PASS)

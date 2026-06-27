@@ -95,3 +95,25 @@ export const getQuoteSnapshot = async (
 };
 
 export const getQuoteSnapshotReadiness = getQuoteSnapshot;
+
+type LivePreviewGateResult =
+  | { allowed: true }
+  | { allowed: false; reason: 'production_runtime' | 'unknown_runtime' | 'account_env_present' };
+
+// Checks runtime and environment gates before allowing live portfolio preview API calls.
+// Mirrors the production detection in kisClient.ts classifyRuntime().
+// No live calls. Never exposes env values — returns a safe boolean result only.
+export const isLivePreviewGateReady = (): LivePreviewGateResult => {
+  assertServerRuntime(moduleName);
+  const vercelEnv = (process.env.VERCEL_ENV ?? '').trim().toLowerCase();
+  const nodeEnv = (process.env.NODE_ENV ?? '').trim().toLowerCase();
+  if (vercelEnv === 'production') return { allowed: false, reason: 'production_runtime' };
+  if (vercelEnv === '' && nodeEnv === 'production') return { allowed: false, reason: 'production_runtime' };
+  if (vercelEnv !== '' && vercelEnv !== 'preview' && vercelEnv !== 'development') {
+    return { allowed: false, reason: 'unknown_runtime' };
+  }
+  if ((process.env.KIS_ACCOUNT_NO ?? '').trim().length > 0) {
+    return { allowed: false, reason: 'account_env_present' };
+  }
+  return { allowed: true };
+};

@@ -1,14 +1,18 @@
 import type { APIRoute } from 'astro';
+import { getQuoteSnapshot, isLivePreviewGateReady } from '../../../lib/server/marketData/quotes';
 import { buildPortfolioValuationFromQuotes } from '../../../lib/server/portfolioValuation';
 import { resolveFixtureQuotes } from '../../../lib/server/portfolioValuationFixture';
-import type { PortfolioPositionInput } from '../../../lib/server/providers/types';
+import type { PortfolioPositionInput, QuoteSnapshot } from '../../../lib/server/providers/types';
 
 export const prerender = false;
+
+const LIVE_PREVIEW_MAX_POSITIONS = 10;
 
 type RouteErrorCode =
   | 'VALIDATION_FAILED'
   | 'METHOD_NOT_ALLOWED'
   | 'UNSUPPORTED_SOURCE'
+  | 'LIVE_PREVIEW_GATE_FAILED'
   | 'INTERNAL_ERROR';
 
 const errorResponse = (
@@ -44,8 +48,10 @@ const validatePosition = (p: unknown, index: number): string | null => {
 };
 
 // POST /api/portfolio/valuation
-// Accepts a portfolio position list and returns fixture-backed valuation.
-// No live KIS calls. No Supabase. No DB. Fixture quotes only.
+// Default: fixture-backed valuation (source=fixture or omitted). No live KIS. No Supabase.
+// Live preview: triple opt-in gate — source: "live" + previewMode: "owner" + allowLiveQuotes: true.
+// Public "live" source without all three gates → 400 UNSUPPORTED_SOURCE.
+// The "auto" source is deferred and not supported.
 export const POST: APIRoute = async ({ request }) => {
   try {
     let body: unknown;
@@ -70,11 +76,153 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const source = b.source ?? 'fixture';
+
+    // The "auto" source is deferred and not supported in this phase.
+    if (source === 'auto') {
+      return errorResponse(
+        400,
+        'UNSUPPORTED_SOURCE',
+        'The "auto" source is not supported. Only source=fixture is available by default.',
+      );
+    }
+
+    // Live preview path: requires all three gates before any provider call is attempted.
+    // Public "live" source without the full gate is rejected immediately.
+    if (source === 'live') {
+      const previewMode = b.previewMode;
+      const allowLiveQuotes = b.allowLiveQuotes;
+
+      if (previewMode !== 'owner' || allowLiveQuotes !== true) {
+        return errorResponse(
+          400,
+          'UNSUPPORTED_SOURCE',
+          'The "live" source requires previewMode="owner" and allowLiveQuotes=true. Live quotes are not publicly available.',
+        );
+      }
+
+      // Runtime and environment gate — checked before any KIS call.
+      // isLivePreviewGateReady reads VERCEL_ENV, NODE_ENV, and KIS_ACCOUNT_NO
+      // without exposing their values; returns a safe boolean result only.
+      const gate = isLivePreviewGateReady();
+      if (!gate.allowed) {
+        return errorResponse(
+          400,
+          'LIVE_PREVIEW_GATE_FAILED',
+          'Live portfolio preview is not allowed in the current runtime environment.',
+        );
+      }
+
+      // Phase 3DP: KRW only. FX conversion is not implemented.
+      if (b.baseCurrency !== 'KRW') {
+        return errorResponse(
+          400,
+          'LIVE_PREVIEW_GATE_FAILED',
+          'Live portfolio preview requires baseCurrency=KRW in this phase. Mixed-currency FX is not implemented.',
+        );
+      }
+
+      if (!Array.isArray(b.positions)) {
+        return errorResponse(400, 'VALIDATION_FAILED', 'positions: must be an array.');
+      }
+
+      const rawPositions = b.positions as unknown[];
+
+      // Max 10 positions for the initial live preview scope.
+      if (rawPositions.length > LIVE_PREVIEW_MAX_POSITIONS) {
+        return errorResponse(
+          400,
+          'LIVE_PREVIEW_GATE_FAILED',
+          `Live portfolio preview is limited to ${LIVE_PREVIEW_MAX_POSITIONS} positions per request.`,
+        );
+      }
+
+      for (let i = 0; i < rawPositions.length; i++) {
+        const err = validatePosition(rawPositions[i], i);
+        if (err) return errorResponse(400, 'VALIDATION_FAILED', err);
+      }
+
+      // KR-only scope guard: reject any non-KR positions before calling the quote provider.
+      // US symbol support is not implemented in this phase.
+      const hasNonKr = (rawPositions as Array<Record<string, unknown>>).some(
+        (p) => p.market !== 'KR',
+      );
+      if (hasNonKr) {
+        return errorResponse(
+          400,
+          'UNSUPPORTED_SOURCE',
+          'Live portfolio preview supports KR positions only. US positions are not supported in this phase.',
+        );
+      }
+
+      const portfolioId = (b.portfolioId as string).trim();
+      const baseCurrency = 'KRW' as const;
+
+      const positions = (rawPositions as Array<Record<string, unknown>>).map(
+        (p): PortfolioPositionInput & { id?: string } => ({
+          portfolioId,
+          market: 'KR',
+          symbol: (p.symbol as string).trim(),
+          name: typeof p.name === 'string' ? p.name : null,
+          assetType: p.assetType as 'stock' | 'etf',
+          quantity: p.quantity as number,
+          buyPrice: p.buyPrice as number,
+          buyDate: typeof p.buyDate === 'string' ? p.buyDate : null,
+          currency: 'KRW',
+          ...(typeof p.id === 'string' ? { id: p.id } : {}),
+        }),
+      );
+
+      // Resolve live KR quotes via the existing quote orchestration layer.
+      // getQuoteSnapshot handles in-memory caching, stale-but-usable fallback, and provider errors.
+      // providerMeta is never forwarded — buildPortfolioValuationFromQuotes uses only
+      // price, staleState, and asOf from each QuoteSnapshot; the meta field is stripped upstream.
+      const symbols = [...new Set(positions.map((p) => p.symbol))];
+      const quotesBySymbol: Record<string, QuoteSnapshot | null> = {};
+
+      for (const symbol of symbols) {
+        const result = await getQuoteSnapshot({ market: 'KR', symbol });
+        quotesBySymbol[symbol] = result.ok ? result.data : null;
+      }
+
+      const valuation = buildPortfolioValuationFromQuotes({
+        portfolioId,
+        baseCurrency,
+        positions,
+        quotesBySymbol,
+      });
+
+      const missingQuoteSymbols = symbols.filter((s) => quotesBySymbol[s] === null);
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          data: {
+            portfolioId,
+            baseCurrency,
+            source: 'live',
+            previewMode: 'owner',
+            valuation,
+            meta: {
+              quoteSource: 'live',
+              liveAttempted: true,
+              rawProviderStored: false,
+              generatedAt: new Date().toISOString(),
+              unsupportedSymbols: [],
+              missingQuoteSymbols,
+            },
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // ── Fixture path (default) ────────────────────────────────────────────────
+    // Accepts source=fixture or omitted source. No live KIS calls. No Supabase. No DB.
     if (source !== 'fixture') {
       return errorResponse(
         400,
         'UNSUPPORTED_SOURCE',
-        'Only source=fixture is supported. Live quote sources are not enabled.',
+        'Only source=fixture is supported. Live quote sources are not enabled for public use.',
       );
     }
 
@@ -92,7 +240,6 @@ export const POST: APIRoute = async ({ request }) => {
     const portfolioId = (b.portfolioId as string).trim();
     const baseCurrency = b.baseCurrency as 'KRW' | 'USD';
 
-    // Normalize positions: ensure required portfolioId on each position for the server helper.
     const positions = (b.positions as Array<Record<string, unknown>>).map(
       (p): PortfolioPositionInput & { id?: string } => ({
         portfolioId,
