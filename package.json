@@ -63,6 +63,7 @@
     "check:kis-fx-preview-smoke-plan": "node scripts/check_kis_fx_preview_smoke_plan_static_contract.mjs",
     "check:kis-fx-mocked-adapter": "node scripts/check_kis_fx_mocked_adapter_contract_static.mjs",
     "check:kis-single-quote-preview": "node scripts/check_owner_run_kis_single_quote_preview_static_contract.mjs",
+    "check:kr-quote-preview-plan": "node scripts/check_kr_quote_preview_expansion_portfolio_live_preview_plan_static_contract.mjs",
     "smoke:gnews-live:dry": "node scripts/owner_smoke_gnews_live_fetch.mjs --dry-run",
     "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
     "smoke:persistent-quote-cache-live:dry": "node scripts/owner_smoke_persistent_quote_cache_live.mjs",

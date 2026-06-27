@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DO - 2026-06-27
+
+### KR Quote Preview Expansion and Portfolio Live Preview API Plan (Prepared — owner KR expansion execution pending)
+
+- **Status**: Prepared — owner KR expansion execution pending. No runtime changes. Claude Code did not run live KIS calls.
+- **Goal**: expand owner-run live KIS quote smoke from one symbol (`005930`) to three KR symbols (`005930`, `000660`, `069500`), and create a design plan for a future Portfolio Live Preview API activation path.
+- **KR expansion target symbols**: `005930` (KR stock, regression), `000660` (KR stock), `069500` (KR ETF).
+- **Smoke identity env vars explicitly documented**: `PHASE_3Y_SMOKE_MARKET=KR`, `PHASE_3Y_SMOKE_SYMBOL=<target>` — addressing Phase 3DN setup gap.
+- **Portfolio Live Preview API plan created**: `docs/planning/phase_3do_portfolio_live_preview_api_plan_v0.1.md`. Recommends `source=live` + `previewMode=owner` dual-opt-in gate, KR-only initial scope, 10-position limit, no fixture fallback, no `providerMeta` exposure.
+- **UI freshness labels planned**: `조회 시점 기준` (fresh), `최근 조회 기준` (stale-but-usable), `데이터 일시 불가` (unavailable), `연동 실패` (connection failure). No runtime UI changes.
+- **New deliverables**: result doc (phase_3do_*), owner report template (one section per symbol), Portfolio Live Preview API plan, static checker (check:kr-quote-preview-plan), package script.
+- **Source policy unchanged**: source=fixture remains default. source=live remains 400 UNSUPPORTED_SOURCE. source=auto deferred.
+- **No runtime changes**: no API routes, no UI, no DB, no provider code, no Supabase, no live calls by Claude Code.
+- **Claude Code did not run live KIS.** Owner execution of three KR symbol smokes is pending.
+- **Recommended next phase**: Phase 3DO-CLOSEOUT — Record KR Quote Expansion Results (after owner runs all three symbols and shares sanitized output).
+
 ## Phase 3DN - 2026-06-27
 
 ### Owner-Run KIS Single Quote Preview (Completed — owner live smoke PASS)
