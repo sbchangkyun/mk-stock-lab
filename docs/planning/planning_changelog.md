@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DO-HF1 - 2026-06-27
+
+### KIS Quote Fetch Failure Diagnostics (Implemented — owner diagnostic rerun pending)
+
+- **Status**: Implemented — owner diagnostic rerun pending. No live KIS calls by Claude Code.
+- **Context**: Phase 3DO owner expansion found `005930` PASS, `000660` PASS, `069500` failed at `quote-fetch` with generic `code=QUOTE_FETCH_FAILED` — insufficient for diagnosis.
+- **Fix**: added `classifyQuoteFetchFailure(result)` helper in `scripts/owner_smoke_kis_quote_live.mjs`. Maps structured safe provider codes (`PROVIDER_RATE_LIMITED`, `PROVIDER_UNAVAILABLE`, `AUTH_REQUIRED`, `CONFIG_MISSING`, `SYMBOL_UNSUPPORTED`, etc.) to safe diagnostic output codes. Catch path now emits `QUOTE_FETCH_FAILED_UNKNOWN`. No raw messages, URLs, stack traces, or provider field names exposed.
+- **Diagnostic codes added**: `PROVIDER_RATE_LIMITED`, `PROVIDER_UNAVAILABLE`, `AUTH_REQUIRED`, `KIS_CONFIG_MISSING`, `SYMBOL_UNSUPPORTED`, `PROVIDER_RESPONSE_UNEXPECTED`, `QUOTE_FETCH_FAILED_UNKNOWN`.
+- **PASS and dry-run behavior unchanged.** Sanitizer (`logSafe`, `forbiddenOutputPattern`) unchanged.
+- **No runtime changes**: no API routes, no UI, no DB, no Supabase, no deployment.
+- **Owner report template updated** with HF1 diagnostic rerun section for `069500`.
+- **Claude Code did not run live KIS.** Owner should rerun only `069500` and share the specific safe `code=` value from the `quote-fetch` line.
+- **Recommended next phase**: depends on diagnostic code — PASS → 3DO-CLOSEOUT, SYMBOL_UNSUPPORTED → 3DQ, PROVIDER_RATE_LIMITED/UNAVAILABLE → 3DO-Retry, QUOTE_FETCH_FAILED_UNKNOWN → 3DO-HF2.
+
 ## Phase 3DO - 2026-06-27
 
 ### KR Quote Preview Expansion and Portfolio Live Preview API Plan (Prepared — owner KR expansion execution pending)

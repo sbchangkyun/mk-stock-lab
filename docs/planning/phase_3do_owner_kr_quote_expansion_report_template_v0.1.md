@@ -221,3 +221,78 @@ phase3y step=final-result               status=...   sanitized=true
 ```
 (optional — e.g. market hours, retry attempts, environment details without credential values)
 ```
+
+---
+
+## HF1 Diagnostic Rerun — Symbol `069500`
+
+*(Complete this section after Phase 3DO-HF1 is applied and you rerun only `069500`.)*
+
+**Phase 3DO-HF1 improves failure diagnostics.** If `069500` previously returned `code=QUOTE_FETCH_FAILED`, this rerun will now return a specific safe code.
+
+**IMPORTANT — what NOT to share in this section:**
+- Do NOT paste raw error messages, raw stack traces, or HTTP status text containing provider details.
+- Do NOT paste raw KIS JSON or any response body.
+- Do NOT paste token, account number, API key, or secret values.
+- Do NOT paste raw provider field names (`stck_`, `prdy_`, `rt_cd`, `acml_`, etc.).
+- Paste ONLY the single safe `code=<SPECIFIC_CODE>` label from the `quote-fetch` line.
+
+**Command run:**
+```powershell
+$env:PHASE_3Y_SMOKE_MARKET = "KR"
+$env:PHASE_3Y_SMOKE_SYMBOL = "069500"
+npm run smoke:kis-quote-live:dry
+```
+
+**Mode:**
+- [ ] Live mode (`mode=live-approved`)
+- [ ] Dry-run mode
+
+**Overall result:**
+- [ ] PASS
+- [ ] FAIL
+
+**Failed step (if FAIL):**
+```
+(e.g. step=quote-fetch status=failed)
+```
+
+**Safe diagnostic code (paste only the code= value from quote-fetch output line):**
+```
+(e.g. code=SYMBOL_UNSUPPORTED)
+```
+
+Allowed codes: `PROVIDER_RATE_LIMITED`, `PROVIDER_UNAVAILABLE`, `AUTH_REQUIRED`,
+`KIS_CONFIG_MISSING`, `SYMBOL_UNSUPPORTED`, `PROVIDER_RESPONSE_UNEXPECTED`, `QUOTE_FETCH_FAILED_UNKNOWN`
+
+**staleState (if available):**
+```
+(e.g. fresh — or not reached)
+```
+
+**pricePresent (if available):**
+- [ ] Yes
+- [ ] No
+- [ ] Not reached (failed before normalization)
+
+**sanitized=true on all lines:**
+- [ ] Yes
+- [ ] No — one or more lines lacked sanitized=true
+
+**SAFE_OUTPUT_BLOCKED emitted:**
+- [ ] Yes
+- [ ] No
+
+**Safety confirmation:**
+| Question | Answer (yes/no) |
+|----------|----------------|
+| Raw KIS token or access_token in output? | |
+| Account number or KIS_ACCOUNT_NO in output? | |
+| Raw KIS JSON payload in output? | |
+| Raw provider field names (stck_prpr, rt_cd) in output? | |
+| API key or secret in output? | |
+| Supabase URL or service role key in output? | |
+
+**rawPayloadShared:** no
+**secretsShared:** no
+**accountNumberShared:** no

@@ -196,6 +196,29 @@ const createCompiledRuntime = (live) => {
   };
 };
 
+// Maps a failed quote result to a safe diagnostic code for owner reporting.
+// Accepts the raw result object when ok=false. Never exposes raw messages,
+// provider URLs, request headers, stack traces, or provider field names.
+const classifyQuoteFetchFailure = (result) => {
+  if (!result || typeof result !== 'object' || result.ok !== false) {
+    return 'QUOTE_FETCH_FAILED_UNKNOWN';
+  }
+  const code = typeof result.code === 'string' ? result.code : '';
+  switch (code) {
+    case 'PROVIDER_RATE_LIMITED': return 'PROVIDER_RATE_LIMITED';
+    case 'PROVIDER_UNAVAILABLE':  return 'PROVIDER_UNAVAILABLE';
+    case 'AUTH_REQUIRED':         return 'AUTH_REQUIRED';
+    case 'CONFIG_MISSING':        return 'KIS_CONFIG_MISSING';
+    case 'SYMBOL_UNSUPPORTED':    return 'SYMBOL_UNSUPPORTED';
+    case 'VALIDATION_FAILED':     return 'PROVIDER_RESPONSE_UNEXPECTED';
+    case 'CACHE_MISS':            return 'PROVIDER_RESPONSE_UNEXPECTED';
+    case 'DATA_STALE':            return 'PROVIDER_RESPONSE_UNEXPECTED';
+    case 'INTERNAL_ERROR':        return 'QUOTE_FETCH_FAILED_UNKNOWN';
+    case 'NOT_IMPLEMENTED':       return 'QUOTE_FETCH_FAILED_UNKNOWN';
+    default:                      return 'QUOTE_FETCH_FAILED_UNKNOWN';
+  }
+};
+
 const runDryRunSimulations = () => {
   // Confirm live guards are absent in dry-run (expected).
   const guardMissing = !isLiveApproved();
@@ -336,12 +359,13 @@ const main = async () => {
       try {
         quoteResult = await provider.getKisQuoteSnapshot(identity);
       } catch {
-        logStep('quote-fetch', 'failed', { code: 'QUOTE_FETCH_FAILED' });
+        logStep('quote-fetch', 'failed', { code: 'QUOTE_FETCH_FAILED_UNKNOWN' });
         process.exitCode = 1;
         return;
       }
       if (!quoteResult.ok) {
-        logStep('quote-fetch', 'failed', { code: 'QUOTE_FETCH_FAILED' });
+        const diagCode = classifyQuoteFetchFailure(quoteResult);
+        logStep('quote-fetch', 'failed', { code: diagCode });
         process.exitCode = 1;
         return;
       }
