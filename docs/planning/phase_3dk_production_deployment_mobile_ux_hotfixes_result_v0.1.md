@@ -82,10 +82,11 @@ This production deployment includes:
 |-------|-------|
 | Deployment command | `npx vercel deploy --prod --yes` |
 | Runtime commit deployed | `8e00cac` (Phase 3DJ-HF2) |
-| Docs commit deployed | see git log after docs commit |
+| Docs commit deployed | `61c15ac` (chore: deploy mobile ux hotfixes) |
 | Production URL | `https://mkstocklab.vercel.app` |
-| Deployment status | Deployed |
-| Vercel deployment ID | see deployment output |
+| Deployment status | READY (production) |
+| Vercel deployment ID | `dpl_3ueXDVWMGazfpXPNVgneAi1e8VYZ` |
+| Post-deployment route checks | `/`, `/portfolio`, `/market`, `/lab`, `/lab/asset-class-returns`, `/lab/sp500-sectors`, `/chart-ai`, `/mypage` — all 200 OK |
 
 ---
 
