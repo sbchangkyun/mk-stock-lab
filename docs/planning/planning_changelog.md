@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DJ-HF2 - 2026-06-27
+
+### Mobile Snapshot and Portfolio Usability (Implemented — awaiting owner review, NOT yet deployed)
+
+- **Status**: implemented and validated; owner must review before deploying. Hotfix on top of Phase 3DJ-HF1.
+- **Goal**: address owner review failure on two areas — Home MARKET SNAPSHOT still 1-col at 390px; portfolio usability issues (카테고리 label, alignment, sort tap area, no KPI summary).
+- **A. Home MARKET SNAPSHOT 2-column fix**: root cause was `@media (max-width: 400px)` triggering at 390px. Fixed to `max-width: 340px`. Changed `repeat(2, 1fr)` → `repeat(2, minmax(0, 1fr))` to prevent cell overflow when sparkline SVG is 120px wide. Added `gap: 6px`. Added sparkline SVG shrink override (`64×22px`) and `index-card-value` font-size reduction at ≤720px.
+- **B. Portfolio control label cleanup**: removed `<p class="eyebrow">카테고리</p>` from `portfolio-list-controls-bar`. `$ / ₩` currency controls remain right-aligned outside scroll (`justify-content: flex-end`).
+- **C. Portfolio header alignment**: `positions-category-header` gained `padding: 0 14px 2px` to match position card padding. `positions-category-grid` min-width reduced 740px → 712px (border-box: 712 + 28px padding = 740px total).
+- **D. Full sortable label click**: added `data-sort-column="weight|valuation|return|dividend-yield"` to header cells. Extended click handler — cell click toggles `{col}-desc` first, then `{col}-asc`; `▲▼` arrow buttons still work for precise direction control. Added `cursor: pointer` + hover CSS for `[data-sort-column]`.
+- **E. Portfolio KPI summary block**: added `<div class="portfolio-kpi-summary">` inside `portfolio-panel-header`. Shows `총 자산` (total market value) and `총 수익` (total P&L + %). Computed from existing `getPositionValuation()` + `buyPrice × quantity` fallback. Hidden when no portfolio selected or no positions. No new API routes, no network calls.
+- **No new dependencies**: no npm packages, no API routes, no DB changes, no KIS/GNews/AI/Supabase calls.
+- **Focused validation**: check:mobile-snapshot-portfolio 49/49 PASS, check:mobile-baseline 74/74 PASS, check:mobile-ux-density-export 68/68 PASS, build PASS.
+
 ## Phase 3DJ-HF1 - 2026-06-27
 
 ### Mobile UX Density + Export Consistency (Implemented — awaiting owner review, NOT yet deployed)

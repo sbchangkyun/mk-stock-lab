@@ -45,10 +45,15 @@ import Layout from '../layouts/Layout.astro';
 
     <section class="portfolio-detail portfolio-dashboard panel">
       <div class="portfolio-panel-header">
-        <div>
+        <div class="portfolio-panel-info">
           <h2 id="selected-portfolio-title">포트폴리오를 선택하세요</h2>
           <p id="selected-portfolio-meta">포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.</p>
           <p class="valuation-status-copy" id="valuation-status-copy" hidden></p>
+          <div class="portfolio-kpi-summary hidden" id="portfolio-kpi-summary">
+            <p class="kpi-label">총 자산</p>
+            <p class="kpi-value">···</p>
+            <p class="kpi-profit neutral">···</p>
+          </div>
         </div>
         <div class="portfolio-panel-actions">
           <button class="primary-action hidden" id="open-position-sheet" type="button">종목 추가</button>
@@ -56,7 +61,6 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="portfolio-list-controls-bar">
-        <p class="eyebrow">카테고리</p>
         <div class="segmented-control" id="currency-display-toggle" aria-label="통화 표시 기준">
           <button class="active" type="button" data-display-mode="local" aria-label="달러 기준" title="달러 기준">$</button>
           <button type="button" data-display-mode="krw" aria-label="원화 기준" title="원화 기준">₩</button>
@@ -69,7 +73,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="positions-category-grid" role="row">
             <div class="positions-category-cell positions-category-cell--avatar" aria-hidden="true"></div>
             <div class="positions-category-cell" role="columnheader">종목</div>
-            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader">
+            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader" data-sort-column="weight" aria-label="비중 기준 정렬">
               <span>비중</span>
               <span class="sort-arrow-stack">
                 <button class="sort-arrow-button" type="button" data-sort="weight-desc" aria-label="비중 높은 순 정렬">▲</button>
@@ -81,7 +85,7 @@ import Layout from '../layouts/Layout.astro';
               <span class="col-group-top">평단가</span>
               <span class="col-group-bottom">현재가</span>
             </div>
-            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader" data-sort-column="valuation" aria-label="금액 기준 정렬">
               <span class="col-group-top-sortable">
                 <span>평가금</span>
                 <span class="sort-arrow-stack">
@@ -91,7 +95,7 @@ import Layout from '../layouts/Layout.astro';
               </span>
               <span class="col-group-bottom">원금</span>
             </div>
-            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader" data-sort-column="return" aria-label="수익 기준 정렬">
               <span class="col-group-top-sortable">
                 <span>수익률</span>
                 <span class="sort-arrow-stack">
@@ -107,7 +111,7 @@ import Layout from '../layouts/Layout.astro';
                 </span>
               </span>
             </div>
-            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader" data-sort-column="dividend-yield" aria-label="배당 기준 정렬">
               <span class="col-group-top-sortable">
                 <span>배당률</span>
                 <span class="sort-arrow-stack">
@@ -985,6 +989,8 @@ import Layout from '../layouts/Layout.astro';
 
       list.innerHTML = '';
 
+      const kpiEl = getElement<HTMLDivElement>('portfolio-kpi-summary');
+
       if (!portfolio && !aggregateSelected) {
         title.textContent = '포트폴리오를 선택하세요';
         meta.textContent = '포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.';
@@ -992,6 +998,7 @@ import Layout from '../layouts/Layout.astro';
         empty.textContent = '포트폴리오를 선택하면 보유 종목을 관리할 수 있습니다.';
         empty.classList.remove('hidden');
         wrap.classList.add('hidden');
+        if (kpiEl) kpiEl.classList.add('hidden');
         closePositionSheet();
         return;
       }
@@ -1097,6 +1104,33 @@ import Layout from '../layouts/Layout.astro';
         `;
         list.appendChild(item);
       });
+
+      // KPI summary block
+      if (kpiEl) {
+        if (sortedPositions.length === 0) {
+          kpiEl.classList.add('hidden');
+        } else {
+          const totalMarketValue = sortedPositions.reduce((sum, p) => {
+            const posVal = getPositionValuation(p);
+            const mv = posVal?.marketValue ?? (p.buyPrice * p.quantity);
+            return sum + (Number.isFinite(mv) ? mv : 0);
+          }, 0);
+          const kpiCurrency = ((aggregateSelected
+            ? sortedPositions[0]?.currency
+            : (portfolio!.baseCurrency || sortedPositions[0]?.currency)) ?? 'USD') as 'USD' | 'KRW';
+          const totalPnl = totalMarketValue - totalCostBasis;
+          const totalPnlPct = totalCostBasis > 0 ? (totalPnl / totalCostBasis) * 100 : 0;
+          const kpiValueEl = kpiEl.querySelector<HTMLElement>('.kpi-value');
+          const kpiProfitEl = kpiEl.querySelector<HTMLElement>('.kpi-profit');
+          if (kpiValueEl) kpiValueEl.textContent = formatLocalAmount(kpiCurrency, totalMarketValue);
+          if (kpiProfitEl) {
+            const sign = totalPnl >= 0 ? '+' : '';
+            kpiProfitEl.textContent = `${sign}${formatLocalAmount(kpiCurrency, totalPnl)}(${sign}${totalPnlPct.toFixed(2)}%) 총 수익`;
+            kpiProfitEl.className = `kpi-profit ${totalPnl > 0 ? 'positive' : totalPnl < 0 ? 'negative' : 'neutral'}`;
+          }
+          kpiEl.classList.remove('hidden');
+        }
+      }
     };
 
     const renderAll = () => {
@@ -1255,11 +1289,20 @@ import Layout from '../layouts/Layout.astro';
     });
 
     getElement<HTMLDivElement>('positions-list-wrap')?.addEventListener('click', (event) => {
-      const sortTarget = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-sort]');
-      if (!sortTarget) return;
-      const nextSort = sortTarget.dataset.sort as AppState['positionSort'] | undefined;
-      if (!nextSort) return;
-      state.positionSort = state.positionSort === nextSort ? 'none' : nextSort;
+      const sortButton = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-sort]');
+      if (sortButton) {
+        const nextSort = sortButton.dataset.sort as AppState['positionSort'] | undefined;
+        if (!nextSort) return;
+        state.positionSort = state.positionSort === nextSort ? 'none' : nextSort;
+      } else {
+        const sortableCell = (event.target as HTMLElement).closest<HTMLElement>('[data-sort-column]');
+        if (!sortableCell) return;
+        const col = sortableCell.dataset.sortColumn;
+        if (!col) return;
+        const descKey = `${col}-desc` as AppState['positionSort'];
+        const ascKey = `${col}-asc` as AppState['positionSort'];
+        state.positionSort = state.positionSort === descKey ? ascKey : descKey;
+      }
       getElement<HTMLDivElement>('positions-list-wrap')
         ?.querySelectorAll<HTMLButtonElement>('button[data-sort]')
         .forEach((button) => button.classList.toggle('active', state.positionSort === button.dataset.sort));

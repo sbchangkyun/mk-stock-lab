@@ -165,7 +165,9 @@ if (existsSync(CSS)) {
   check('index-card-grid collapses to 2-col on mobile',
     (() => {
       const mobileBlock = css.slice(css.indexOf('Phase 3DJ'));
-      return mobileBlock.includes('.index-card-grid') && mobileBlock.includes('repeat(2, 1fr)');
+      // Accept repeat(2, minmax(0, 1fr)) — HF2 uses minmax for cell compression
+      return mobileBlock.includes('.index-card-grid') &&
+        (mobileBlock.includes('repeat(2, 1fr)') || mobileBlock.includes('repeat(2, minmax(0, 1fr))'));
     })());
 
   check('Lab module grid collapses on mobile',

@@ -1977,7 +1977,7 @@ body.modal-open {
 }
 
 .positions-category-header {
-  padding: 0 0 2px;
+  padding: 0 14px 2px;
 }
 
 .positions-category-header .eyebrow {
@@ -1989,7 +1989,7 @@ body.modal-open {
   grid-template-columns: 44px minmax(0, 1.5fr) minmax(48px, 0.6fr) minmax(44px, 0.55fr) repeat(4, minmax(84px, 1fr)) minmax(66px, auto);
   gap: 8px;
   align-items: start;
-  min-width: 740px;
+  min-width: 712px;
 }
 
 .positions-category-cell {
@@ -5574,11 +5574,12 @@ p.lab-static-preview-card-desc {
 /* 8. Home MARKET SNAPSHOT card grid — 2-col on mobile */
 @media (max-width: 720px) {
   .index-card-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 340px) {
   .index-card-grid {
     grid-template-columns: 1fr;
   }
@@ -5788,4 +5789,78 @@ p.lab-static-preview-card-desc {
   .lab-matrix-interaction-hint {
     font-size: 11px;
   }
+}
+
+/* ============================================================
+   Phase 3DJ-HF2 — Mobile Snapshot and Portfolio Usability
+   ============================================================ */
+
+/* Home MARKET SNAPSHOT: shrink sparkline SVG on mobile so 2-col layout fits */
+@media (max-width: 720px) {
+  .index-card-sparkline-svg {
+    width: 64px;
+    height: 22px;
+  }
+
+  .index-card-value {
+    font-size: 14px;
+  }
+}
+
+/* Portfolio: KPI summary block */
+.portfolio-kpi-summary {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.kpi-profit {
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.kpi-profit.positive {
+  color: var(--positive);
+}
+
+.kpi-profit.negative {
+  color: var(--negative);
+}
+
+.kpi-profit.neutral {
+  color: var(--text-muted);
+}
+
+/* Portfolio: sortable column header — full cell is clickable */
+[data-sort-column] {
+  cursor: pointer;
+  user-select: none;
+}
+
+[data-sort-column]:hover {
+  color: var(--primary);
+}
+
+/* Portfolio: control bar — remove gap now that category label is gone */
+.portfolio-list-controls-bar {
+  justify-content: flex-end;
 }
