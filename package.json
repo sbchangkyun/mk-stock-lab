@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3ea-real-fx-adapter-mocked-first": "node scripts/check_phase_3ea_real_fx_adapter_mocked_first_contract.mjs",
     "check:phase-3dz-fx-provider-plan": "node scripts/check_phase_3dz_fx_provider_selection_plan_static_contract.mjs",
     "check:phase-3dy-kis-fx-live-data-plan": "node scripts/check_phase_3dy_kis_fx_live_data_continuation_plan_static_contract.mjs",
     "check:phase-3dx-ui-architecture-plan": "node scripts/check_phase_3dx_ui_architecture_stabilization_plan_static_contract.mjs",

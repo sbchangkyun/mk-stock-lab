@@ -232,14 +232,14 @@ check('Changelog records no deployment and no push',
 
 let runtimeChanges = [];
 try {
-  runtimeChanges = execFileSync('git', ['diff', '--name-only', '7d546f6', '--', 'src'], {
+  runtimeChanges = execFileSync('git', ['diff', '--name-only', '7d546f6..760f58c', '--', 'src'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().split(/\r?\n/).filter(Boolean);
 } catch {
   runtimeChanges = ['<git-diff-unavailable>'];
 }
-check('No runtime source files changed since 7d546f6', runtimeChanges.length === 0);
+check('No runtime source files changed during Phase 3DZ', runtimeChanges.length === 0);
 process.stdout.write('\n');
 
 process.stdout.write(`Total: ${passed + failed} | Passed: ${passed} | Failed: ${failed}\n`);

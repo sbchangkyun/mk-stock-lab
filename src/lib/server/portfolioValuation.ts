@@ -1,4 +1,5 @@
 import { assertServerRuntime } from './providers/serverOnly';
+import type { FxRateSnapshot } from './providers/fxTypes';
 import type {
   FallbackState,
   PortfolioPositionInput,
@@ -136,14 +137,10 @@ export const buildPortfolioValuationFromQuotes = (input: {
   };
 };
 
-// FX rate input accepted by buildPortfolioValuationFromQuotesWithFx.
-// Compatible with FxRateSnapshot from fxMockAdapter — source='mocked' signals
-// that staleState will be stale-but-usable rather than fresh.
-type FxRateInput = {
-  baseCurrency: 'KRW' | 'USD';
-  quoteCurrency: 'KRW' | 'USD';
+// Provider-neutral usable subset accepted by the valuation helper.
+// source='mocked' keeps the aggregate stale state conservative.
+type FxRateInput = Pick<FxRateSnapshot, 'baseCurrency' | 'quoteCurrency' | 'source'> & {
   rate: number;
-  source: string;
 };
 
 // Build portfolio valuation with optional FX rate for cross-currency aggregation.

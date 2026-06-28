@@ -1,99 +1,89 @@
+import {
+  buildIdentityFxSnapshot,
+  buildUnsupportedFxResult,
+  deriveInverseFxSnapshot,
+  isUsableFxRateSnapshot,
+  normalizeFxCurrency,
+  normalizeFxRateSnapshot,
+} from './fxAdapter';
 import { assertServerRuntime } from './serverOnly';
+import type {
+  FxRateResult,
+  FxRateSnapshot,
+  SupportedFxCurrency,
+} from './fxTypes';
+
+export type { FxRateResult, FxRateSnapshot, SupportedFxCurrency } from './fxTypes';
 
 const moduleName = 'providers/fxMockAdapter';
 
-export type SupportedFxCurrency = 'KRW' | 'USD';
-
-export type FxRateSnapshot = {
-  pair: string;
-  baseCurrency: SupportedFxCurrency;
-  quoteCurrency: SupportedFxCurrency;
-  rate: number;
-  asOf: string;
-  source: 'mocked';
-  staleState: 'sample';
-  provider: 'fx-mock';
-};
-
-export type FxRateResult =
-  | { ok: true; data: FxRateSnapshot; staleState: 'sample' }
-  | { ok: false; code: 'SYMBOL_UNSUPPORTED' | 'NOT_IMPLEMENTED'; message: string; provider: 'fx-mock'; staleState: 'unavailable' };
-
-// Fixed mocked USD/KRW rate — synthetic example, not a real or current rate.
-// For mocked/preview testing only. source='mocked', staleState='sample'.
-// Do not display as live, current, or real-time in any UI copy.
+// Fixed synthetic example for mocked/preview testing only.
+// It is not a live, current, or real-time FX rate.
 const MOCKED_USD_KRW_RATE = 1350;
 const MOCKED_RATE_AS_OF = '2026-01-01T00:00:00.000Z';
+const MOCKED_PROVIDER_CODE = 'fx-mock';
 
-export const getMockedFxRate = (
-  baseCurrency: SupportedFxCurrency,
-  quoteCurrency: SupportedFxCurrency,
-): FxRateResult => {
-  assertServerRuntime(moduleName);
-
-  if (baseCurrency === quoteCurrency) {
-    return {
-      ok: true,
-      data: {
-        pair: `${baseCurrency}/${quoteCurrency}`,
-        baseCurrency,
-        quoteCurrency,
-        rate: 1,
-        asOf: MOCKED_RATE_AS_OF,
-        source: 'mocked',
-        staleState: 'sample',
-        provider: 'fx-mock',
-      },
-      staleState: 'sample',
-    };
-  }
-
-  if (baseCurrency === 'USD' && quoteCurrency === 'KRW') {
-    return {
-      ok: true,
-      data: {
-        pair: 'USD/KRW',
-        baseCurrency: 'USD',
-        quoteCurrency: 'KRW',
-        rate: MOCKED_USD_KRW_RATE,
-        asOf: MOCKED_RATE_AS_OF,
-        source: 'mocked',
-        staleState: 'sample',
-        provider: 'fx-mock',
-      },
-      staleState: 'sample',
-    };
-  }
-
-  if (baseCurrency === 'KRW' && quoteCurrency === 'USD') {
-    return {
-      ok: true,
-      data: {
-        pair: 'KRW/USD',
-        baseCurrency: 'KRW',
-        quoteCurrency: 'USD',
-        rate: 1 / MOCKED_USD_KRW_RATE,
-        asOf: MOCKED_RATE_AS_OF,
-        source: 'mocked',
-        staleState: 'sample',
-        provider: 'fx-mock',
-      },
-      staleState: 'sample',
-    };
+const toMockedResult = (snapshot: FxRateSnapshot): FxRateResult => {
+  if (isUsableFxRateSnapshot(snapshot)) {
+    return { ok: true, data: snapshot, staleState: snapshot.staleState };
   }
 
   return {
     ok: false,
-    code: 'NOT_IMPLEMENTED',
-    message: 'FX pair not supported by mocked adapter.',
-    provider: 'fx-mock',
+    code: snapshot.errorCode ?? 'FX_RESPONSE_UNEXPECTED',
+    message: 'Mocked FX rate is unavailable.',
+    data: snapshot,
     staleState: 'unavailable',
+    providerCode: MOCKED_PROVIDER_CODE,
   };
 };
 
-// Convert an amount between two currencies using the mocked adapter.
-// Returns null if the pair is not supported.
-// source is always 'mocked' — never treat result as a current or real rate.
+export const getMockedFxRate = (
+  baseCurrency: SupportedFxCurrency | string,
+  quoteCurrency: SupportedFxCurrency | string,
+): FxRateResult => {
+  assertServerRuntime(moduleName);
+  const normalizedBase = normalizeFxCurrency(baseCurrency);
+  const normalizedQuote = normalizeFxCurrency(quoteCurrency);
+
+  if (!normalizedBase || !normalizedQuote) {
+    return buildUnsupportedFxResult(baseCurrency, quoteCurrency, MOCKED_PROVIDER_CODE);
+  }
+
+  const request = { baseCurrency: normalizedBase, quoteCurrency: normalizedQuote };
+
+  // Identity pairs are resolved locally before any provider-specific rate path.
+  if (normalizedBase === normalizedQuote) {
+    return toMockedResult(buildIdentityFxSnapshot(request, {
+      source: 'mocked',
+      staleState: 'sample',
+      asOf: MOCKED_RATE_AS_OF,
+      providerCode: MOCKED_PROVIDER_CODE,
+    }));
+  }
+
+  const usdKrw = normalizeFxRateSnapshot(
+    { baseCurrency: 'USD', quoteCurrency: 'KRW' },
+    {
+      rate: MOCKED_USD_KRW_RATE,
+      asOf: MOCKED_RATE_AS_OF,
+      source: 'mocked',
+      staleState: 'sample',
+      providerCode: MOCKED_PROVIDER_CODE,
+    },
+  );
+
+  if (normalizedBase === 'USD' && normalizedQuote === 'KRW') {
+    return toMockedResult(usdKrw);
+  }
+
+  if (normalizedBase === 'KRW' && normalizedQuote === 'USD') {
+    return toMockedResult(deriveInverseFxSnapshot(usdKrw));
+  }
+
+  return buildUnsupportedFxResult(normalizedBase, normalizedQuote, MOCKED_PROVIDER_CODE);
+};
+
 export const convertCurrencyMocked = (
   amount: number,
   fromCurrency: SupportedFxCurrency,

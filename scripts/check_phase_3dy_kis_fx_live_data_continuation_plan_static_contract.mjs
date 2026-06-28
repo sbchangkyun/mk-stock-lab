@@ -223,14 +223,14 @@ check('Plan records no remote push', plan.includes('No remote push was performed
 
 let runtimeChanges = [];
 try {
-  runtimeChanges = execFileSync('git', ['diff', '--name-only', '3436288', '--', 'src'], {
+  runtimeChanges = execFileSync('git', ['diff', '--name-only', '3436288..7d546f6', '--', 'src'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().split(/\r?\n/).filter(Boolean);
 } catch {
   runtimeChanges = ['<git-diff-unavailable>'];
 }
-check('No runtime source files changed since 3436288', runtimeChanges.length === 0);
+check('No runtime source files changed during Phase 3DY', runtimeChanges.length === 0);
 process.stdout.write('\n');
 
 process.stdout.write(`Total: ${passed + failed} | Passed: ${passed} | Failed: ${failed}\n`);

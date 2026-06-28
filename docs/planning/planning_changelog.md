@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EA - 2026-06-28
+
+### Real FX Adapter Mocked-First Implementation (Implemented - mocked-first FX foundation ready)
+
+- **Status**: Implemented - mocked-first FX adapter foundation ready. No live provider calls.
+- **Background**: Phase 3DZ defined provider-neutral FX contracts but did not select a real provider. This phase implements the provider-neutral type/helper foundation and mocked behavior without a live FX provider.
+- **Implemented scope**: FX types, normalized snapshot contract, safe error classification, identity pairs, USD/KRW mocked rate, derived KRW/USD, unsupported-pair unavailable behavior, and a no-network behavioral checker.
+- **Preserved policy**: public `source=fixture` remains default, public `source=live` remains disabled, `source=auto` remains deferred, and Portfolio UI/API public behavior remains unchanged.
+- **Safety**: no live KIS calls, no live FX calls, no provider SDK, no new dependency, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EA mocked-first contract 124/124 PASS, Phase 3DZ provider-plan contract 158/158 PASS, Phase 3DY continuation-plan contract 115/115 PASS, KIS/FX mocked adapter 119/119 PASS, Portfolio live preview API 110/110 PASS, production-domain contract 33/33 PASS, geometry guard dry-run PASS, build PASS, and `git diff --check` PASS. Supplemental whole-repo TypeScript validation remains blocked by the pre-existing out-of-scope `src/pages/api/news/market-feed.ts:72` `fetchFn` options-type mismatch.
+- **Recommended next phase**: Phase 3EB - Portfolio Mixed-Currency Owner Preview API.
+
 ## Phase 3DZ - 2026-06-28
 
 ### FX Provider Selection and Real FX Adapter Plan (Completed - provider plan ready)
