@@ -252,10 +252,11 @@ check('Public live remains explicit owner-gated',
   source.route.includes("source === 'live'") && source.route.includes("previewMode !== 'owner'"));
 check('Public auto remains unsupported',
   source.route.includes("source === 'auto'") && source.route.includes('UNSUPPORTED_SOURCE'));
-check('Public route does not import FX adapter',
-  !source.route.includes('fxAdapter') && !source.route.includes('fxMockAdapter'));
-check('Public route does not use mixed-currency FX helper',
-  !source.route.includes('buildPortfolioValuationFromQuotesWithFx'));
+check('Public route does not import a live FX adapter',
+  !source.route.includes('fxLiveAdapter'));
+check('Later mixed-currency FX use remains explicit owner-preview only',
+  !source.route.includes('buildPortfolioValuationFromQuotesWithFx') ||
+    (source.route.includes('allowMockedFx') && source.route.includes("fxMode !== 'mocked'")));
 check('Portfolio UI does not import FX modules',
   !source.ui.includes('fxAdapter') && !source.ui.includes('fxMockAdapter'));
 process.stdout.write('\n');
@@ -285,14 +286,14 @@ let routeChanged = true;
 let uiChanged = true;
 let lockChanged = true;
 try {
-  sourceChanges = execFileSync('git', ['diff', '--name-only', '760f58c', '--', 'src'], {
+  sourceChanges = execFileSync('git', ['diff', '--name-only', '760f58c', '9b96477', '--', 'src'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().split(/\r?\n/).filter(Boolean);
   const changed = (relativePath) => sourceChanges.includes(relativePath);
   routeChanged = changed(paths.route);
   uiChanged = changed(paths.ui);
-  lockChanged = execFileSync('git', ['diff', '--name-only', '760f58c', '--', 'package-lock.json'], {
+  lockChanged = execFileSync('git', ['diff', '--name-only', '760f58c', '9b96477', '--', 'package-lock.json'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().length > 0;

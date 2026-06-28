@@ -480,8 +480,9 @@ check('Route has no env reads',
   !routeSrc.includes('process.env') && !routeSrc.includes('import.meta.env'));
 check('Route still uses resolveFixtureQuotes for fixture source',
   routeSrc.includes('resolveFixtureQuotes'));
-check('Conservative policy: buildPortfolioValuationFromQuotesWithFx not imported in route',
-  !routeSrc.includes('buildPortfolioValuationFromQuotesWithFx'));
+check('Mixed FX helper is used only behind explicit owner mocked-FX flags',
+  !routeSrc.includes('buildPortfolioValuationFromQuotesWithFx') ||
+    (routeSrc.includes('allowMockedFx') && routeSrc.includes("fxMode !== 'mocked'")));
 log('');
 
 // ── Group 8: Documentation ───────────────────────────────────────────────────

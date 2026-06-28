@@ -137,10 +137,43 @@ export const buildPortfolioValuationFromQuotes = (input: {
   };
 };
 
-// Provider-neutral usable subset accepted by the valuation helper.
-// source='mocked' keeps the aggregate stale state conservative.
-type FxRateInput = Pick<FxRateSnapshot, 'baseCurrency' | 'quoteCurrency' | 'source'> & {
-  rate: number;
+// Provider-neutral snapshot accepted by the valuation helper. Invalid or
+// unavailable snapshots fail closed and never produce aggregate FX totals.
+type FxRateInput = FxRateSnapshot;
+type UsableFxRateInput = FxRateInput & { rate: number; asOf: string };
+
+const getUsableFxRateInput = (fxRate: FxRateInput | null | undefined): UsableFxRateInput | null => {
+  if (
+    !fxRate ||
+    typeof fxRate.rate !== 'number' ||
+    !Number.isFinite(fxRate.rate) ||
+    fxRate.rate <= 0 ||
+    typeof fxRate.asOf !== 'string' ||
+    !Number.isFinite(Date.parse(fxRate.asOf)) ||
+    fxRate.source === 'unavailable' ||
+    fxRate.staleState === 'unavailable' ||
+    fxRate.errorCode !== undefined
+  ) {
+    return null;
+  }
+
+  return fxRate as UsableFxRateInput;
+};
+
+const convertFxAmount = (
+  amount: number,
+  fromCurrency: 'KRW' | 'USD',
+  toCurrency: 'KRW' | 'USD',
+  fxRate: UsableFxRateInput,
+): number | null => {
+  if (fromCurrency === toCurrency) return amount;
+  if (fxRate.baseCurrency === fromCurrency && fxRate.quoteCurrency === toCurrency) {
+    return amount * fxRate.rate;
+  }
+  if (fxRate.baseCurrency === toCurrency && fxRate.quoteCurrency === fromCurrency) {
+    return amount / fxRate.rate;
+  }
+  return null;
 };
 
 // Build portfolio valuation with optional FX rate for cross-currency aggregation.
@@ -168,10 +201,11 @@ export const buildPortfolioValuationFromQuotesWithFx = (input: {
     ),
   );
 
-  const totalCostBasis = rows.reduce((sum, row) => sum + row.costBasis, 0);
+  let totalCostBasis = rows.reduce((sum, row) => sum + row.costBasis, 0);
   const quotedRows = rows.filter((row) => row.currentPrice !== null);
   const allQuoted = rows.length > 0 && quotedRows.length === rows.length;
   const allSameCurrency = rows.every((row) => row.valuationCurrency === input.baseCurrency);
+  const usableFxRate = getUsableFxRateInput(input.fxRate);
 
   let totalMarketValue: number | null = null;
   let totalUnrealizedPnl: number | null = null;
@@ -180,39 +214,47 @@ export const buildPortfolioValuationFromQuotesWithFx = (input: {
   if (allQuoted && allSameCurrency) {
     totalMarketValue = rows.reduce((sum, row) => sum + (row.marketValue ?? 0), 0);
     totalUnrealizedPnl = totalMarketValue - totalCostBasis;
-  } else if (allQuoted && !allSameCurrency && input.fxRate) {
+  } else if (!allSameCurrency && usableFxRate) {
     // Cross-currency aggregation: convert each row's marketValue to baseCurrency.
     // Conversion direction uses standard FX semantics:
     //   fxRate.baseCurrency/fxRate.quoteCurrency = fxRate.rate
     //   e.g., USD/KRW = 1350: 1 USD = 1350 KRW
     //   To convert USD → KRW: multiply by rate.
     //   To convert KRW → USD: divide by rate.
-    const fx = input.fxRate;
-    let total = 0;
-    let ok = true;
-    for (const row of rows) {
-      const mv = row.marketValue ?? 0;
-      const rowCurrency = row.valuationCurrency;
-      if (rowCurrency === input.baseCurrency) {
-        total += mv;
-      } else if (fx.baseCurrency === rowCurrency && fx.quoteCurrency === input.baseCurrency) {
+    const fx = usableFxRate;
+    const convertedCostBasis = rows.map((row) =>
+      convertFxAmount(row.costBasis, row.valuationCurrency, input.baseCurrency, fx),
+    );
+    if (convertedCostBasis.every((amount): amount is number => amount !== null)) {
+      totalCostBasis = convertedCostBasis.reduce((sum, amount) => sum + amount, 0);
+    }
+    if (allQuoted) {
+      let total = 0;
+      let ok = true;
+      for (const row of rows) {
+        const mv = row.marketValue ?? 0;
+        const rowCurrency = row.valuationCurrency;
+        if (rowCurrency === input.baseCurrency) {
+          total += mv;
+        } else if (fx.baseCurrency === rowCurrency && fx.quoteCurrency === input.baseCurrency) {
         // row currency is FX base → multiply to get FX quote (= portfolioBase)
         // e.g., row USD, portfolio KRW, rate USD/KRW=1350: USD × 1350 = KRW
-        total += mv * fx.rate;
-      } else if (fx.baseCurrency === input.baseCurrency && fx.quoteCurrency === rowCurrency) {
+          total += mv * fx.rate;
+        } else if (fx.baseCurrency === input.baseCurrency && fx.quoteCurrency === rowCurrency) {
         // row currency is FX quote → divide to get FX base (= portfolioBase)
         // e.g., row KRW, portfolio USD, rate USD/KRW=1350: KRW / 1350 = USD
-        if (fx.rate === 0) { ok = false; break; }
-        total += mv / fx.rate;
-      } else {
-        ok = false;
-        break;
+          if (fx.rate === 0) { ok = false; break; }
+          total += mv / fx.rate;
+        } else {
+          ok = false;
+          break;
+        }
       }
-    }
-    if (ok) {
-      totalMarketValue = total;
-      totalUnrealizedPnl = totalMarketValue - totalCostBasis;
-      fxConversionApplied = true;
+      if (ok) {
+        totalMarketValue = total;
+        totalUnrealizedPnl = totalMarketValue - totalCostBasis;
+        fxConversionApplied = true;
+      }
     }
   }
 
@@ -221,6 +263,8 @@ export const buildPortfolioValuationFromQuotesWithFx = (input: {
   const staleSummary: FallbackState =
     rows.length === 0
       ? 'unavailable'
+      : !allSameCurrency && !usableFxRate
+        ? 'unavailable'
       : allQuoted
         ? rows.every((r) => r.staleState === 'fresh') && !isMockedFx
           ? 'fresh'

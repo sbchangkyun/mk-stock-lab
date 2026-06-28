@@ -1,7 +1,11 @@
 import type { APIRoute } from 'astro';
 import { getQuoteSnapshot, isLivePreviewGateReady } from '../../../lib/server/marketData/quotes';
-import { buildPortfolioValuationFromQuotes } from '../../../lib/server/portfolioValuation';
+import {
+  buildPortfolioValuationFromQuotes,
+  buildPortfolioValuationFromQuotesWithFx,
+} from '../../../lib/server/portfolioValuation';
 import { resolveFixtureQuotes } from '../../../lib/server/portfolioValuationFixture';
+import { getMockedFxRate } from '../../../lib/server/providers/fxMockAdapter';
 import type { PortfolioPositionInput, QuoteSnapshot } from '../../../lib/server/providers/types';
 
 export const prerender = false;
@@ -141,36 +145,116 @@ export const POST: APIRoute = async ({ request }) => {
         if (err) return errorResponse(400, 'VALIDATION_FAILED', err);
       }
 
-      // KR-only scope guard: reject any non-KR positions before calling the quote provider.
-      // US symbol support is not implemented in this phase.
-      const hasNonKr = (rawPositions as Array<Record<string, unknown>>).some(
-        (p) => p.market !== 'KR',
+      const rawPositionRecords = rawPositions as Array<Record<string, unknown>>;
+      const hasMarketCurrencyMismatch = rawPositionRecords.some(
+        (p) => (p.market === 'KR' && p.currency !== 'KRW') || (p.market === 'US' && p.currency !== 'USD'),
       );
-      if (hasNonKr) {
+      if (hasMarketCurrencyMismatch) {
+        return errorResponse(
+          400,
+          'VALIDATION_FAILED',
+          'Live owner preview requires KR positions in KRW and US positions in USD.',
+        );
+      }
+      const hasNonKr = rawPositionRecords.some((p) => p.market !== 'KR');
+      const hasUsdCurrency = rawPositionRecords.some((p) => p.currency === 'USD');
+      const mixedCurrencyPreview = hasNonKr || hasUsdCurrency;
+
+      // Mixed-currency behavior is never inferred from source=live alone. Both
+      // explicit mocked-FX flags are required before any quote provider call.
+      if (
+        mixedCurrencyPreview &&
+        (b.allowMockedFx !== true || b.fxMode !== 'mocked')
+      ) {
         return errorResponse(
           400,
           'UNSUPPORTED_SOURCE',
-          'Live portfolio preview supports KR positions only. US positions are not supported in this phase.',
+          'Mixed-currency owner preview requires allowMockedFx=true and fxMode="mocked".',
         );
       }
 
       const portfolioId = (b.portfolioId as string).trim();
       const baseCurrency = 'KRW' as const;
 
-      const positions = (rawPositions as Array<Record<string, unknown>>).map(
+      const positions = rawPositionRecords.map(
         (p): PortfolioPositionInput & { id?: string } => ({
           portfolioId,
-          market: 'KR',
+          market: p.market as 'KR' | 'US',
           symbol: (p.symbol as string).trim(),
           name: typeof p.name === 'string' ? p.name : null,
           assetType: p.assetType as 'stock' | 'etf',
           quantity: p.quantity as number,
           buyPrice: p.buyPrice as number,
           buyDate: typeof p.buyDate === 'string' ? p.buyDate : null,
-          currency: 'KRW',
+          currency: p.currency as 'KRW' | 'USD',
           ...(typeof p.id === 'string' ? { id: p.id } : {}),
         }),
       );
+
+      if (mixedCurrencyPreview) {
+        // Phase 3EB resolves KR quotes only. USD positions never reach a quote
+        // provider and remain explicitly unavailable until a later owner phase.
+        const krSymbols = [
+          ...new Set(positions.filter((p) => p.market === 'KR').map((p) => p.symbol)),
+        ];
+        const usdSymbols = [
+          ...new Set(positions.filter((p) => p.market === 'US').map((p) => p.symbol)),
+        ];
+        const quotesBySymbol: Record<string, QuoteSnapshot | null> = {};
+
+        for (const position of positions) {
+          if (position.market === 'US') quotesBySymbol[position.symbol] = null;
+        }
+
+        for (const symbol of krSymbols) {
+          const result = await getQuoteSnapshot({ market: 'KR', symbol });
+          quotesBySymbol[symbol] = result.ok ? result.data : null;
+        }
+
+        const fxResult = getMockedFxRate('USD', 'KRW');
+        const fxSnapshot = fxResult.ok ? fxResult.data : null;
+        const valuation = buildPortfolioValuationFromQuotesWithFx({
+          portfolioId,
+          baseCurrency,
+          positions,
+          quotesBySymbol,
+          fxRate: fxSnapshot,
+        });
+        const allSymbols = [...new Set(positions.map((p) => p.symbol))];
+        const missingQuoteSymbols = allSymbols.filter((symbol) => quotesBySymbol[symbol] == null);
+
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            data: {
+              portfolioId,
+              baseCurrency,
+              source: 'live',
+              previewMode: 'owner',
+              valuation,
+              meta: {
+                previewKind: 'owner-preview',
+                mixedCurrencyPreview: true,
+                quoteSource: krSymbols.length > 0 ? 'live-kr-only' : 'unavailable',
+                liveAttempted: krSymbols.length > 0,
+                fxMode: 'mocked',
+                fxSource: fxSnapshot?.source ?? 'unavailable',
+                fxStaleState: fxSnapshot?.staleState ?? 'unavailable',
+                fxPair: 'USD/KRW',
+                fxRate: fxSnapshot?.rate ?? null,
+                fxAsOf: fxSnapshot?.asOf ?? null,
+                sampleFx: fxSnapshot?.source === 'mocked',
+                rawProviderStored: false,
+                generatedAt: new Date().toISOString(),
+                unsupportedSymbols: usdSymbols,
+                unsupportedCurrencySymbols: [],
+                missingQuoteSymbols,
+              },
+            },
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
 
       // Resolve live KR quotes via the existing quote orchestration layer.
       // getQuoteSnapshot handles in-memory caching, stale-but-usable fallback, and provider errors.

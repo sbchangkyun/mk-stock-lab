@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EB - 2026-06-28
+
+### Portfolio Mixed-Currency Owner Preview API (Implemented - mocked FX owner-preview API ready)
+
+- **Status**: Implemented - mocked FX mixed-currency owner-preview API ready. No live provider calls by Codex.
+- **Background**: Phase 3EA implemented provider-neutral FX types, helpers, and mocked FX behavior. This phase wires mocked FX into a strictly gated owner-preview Portfolio valuation API path without changing public Portfolio UI/API behavior.
+- **Implemented scope**: owner-preview mixed-currency gate, mocked FX integration, USD/KRW mocked rate, KRW/USD inverse, identity pairs, unsupported-currency fail-safe behavior, unavailable-row handling, and a no-network API contract checker.
+- **Preserved policy**: public `source=fixture` remains default, public `source=live` remains disabled, `source=auto` remains deferred, production live remains blocked, and Portfolio UI behavior remains unchanged.
+- **Safety**: no live KIS calls by Codex, no live FX calls, no real FX provider, no provider SDK, no new dependency, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EB mixed-currency owner-preview contract 92/92 PASS, Phase 3EA mocked-first FX contract 124/124 PASS, Phase 3DZ provider-plan contract 158/158 PASS, KIS/FX mocked adapter 119/119 PASS, Portfolio live-preview API 110/110 PASS, production-domain contract 33/33 PASS, geometry guard dry-run PASS, build PASS, and `git diff --check` PASS.
+- **Recommended next phase**: Phase 3EC - Owner-Run Mixed-Currency Preview Smoke.
+
 ## Phase 3EA - 2026-06-28
 
 ### Real FX Adapter Mocked-First Implementation (Implemented - mocked-first FX foundation ready)
