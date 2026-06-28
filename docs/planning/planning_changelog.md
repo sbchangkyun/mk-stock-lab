@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DU-OWNER-REVIEW-CLOSEOUT - 2026-06-28
+
+### Mobile Home Ad Banner Owner Review Closeout (Completed — owner review PASS)
+
+- **Status**: Completed — owner review PASS.
+- **Review result**: owner manually re-tested Phase 3DU and Phase 3DU-HF2. All review items passed.
+- **Accepted scope**: PC slots 1–5, mobile slots 1–5, URL-only MyPage admin workflow, mobile placement between `MY PORTFOLIO` and `MARKET SNAPSHOT`, responsive visibility through 859px, hidden at 860px+, PC rail regression at 1440px+, zero/one/multiple banner states, and 5000ms rotation behavior.
+- **HF2 re-test**: PC slot 2 link URL persistence PASS; PC slot 3 active checkbox persistence PASS; unchecked slot excluded from desktop rail PASS; PC/mobile slots 1–5 regression PASS; original settings restored PASS.
+- **Checkbox policy accepted**: checked slots are eligible for display when they have valid HTTP(S) image URLs; unchecked slots are excluded.
+- **Storage compatibility accepted**: legacy array-shaped and object-shaped banner settings remain supported, and saving either group preserves the other group.
+- **No runtime changes in this closeout. No API route changes. No DB/Supabase changes. No live calls. No production deployment.**
+- **Next phase**: Phase 3DV — Production Deployment for Mobile Home Ad Banner, only after explicit owner approval.
+
 ## Phase 3DU-HF2 - 2026-06-28
 
 ### PC Banner Admin Save Persistence Hotfix (Implemented — owner re-test pending)
