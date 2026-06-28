@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DV - 2026-06-28
+
+### Production Deployment for Mobile Home Ad Banner (Deployed)
+
+- **Status**: Deployed to production.
+- **Canonical production URL**: `https://mkstocklab.vercel.app`.
+- **Deployed baseline**: `ec41d41 docs: close out mobile home ad banner owner review`.
+- **Deployed scope**: Phase 3DU mobile Home ad banner implementation, Phase 3DU-HF2 PC banner admin persistence hotfix, and Phase 3DU owner review closeout.
+- **Accepted behavior deployed**: PC slots 1–5, mobile slots 1–5, URL-only MyPage admin workflow, mobile placement between `MY PORTFOLIO` and `MARKET SNAPSHOT`, responsive visibility through 859px, hidden at 860px+, PC rail at 1440px+, zero/one/multiple banner states, and 5000ms rotation.
+- **Vercel target**: existing canonical `mkstocklab` project. No new temporary project was created; the pre-existing non-canonical project was not used.
+- **Validation**: all pre-deploy static checks, production build, `git diff --check`, Vercel READY inspection, and public HTTP 200 checks for `/` and `/mypage` passed.
+- **No API route changes. No DB/Supabase schema changes. No SQL. No migration. No Supabase Storage upload. No Vercel environment changes.**
+- **Owner post-deploy check**: pending.
+
 ## Phase 3DU-OWNER-REVIEW-CLOSEOUT - 2026-06-28
 
 ### Mobile Home Ad Banner Owner Review Closeout (Completed — owner review PASS)

@@ -77,6 +77,7 @@
     "check:phase-3du-owner-review-prep": "node scripts/check_phase_3du_owner_review_prep_static_contract.mjs",
     "check:phase-3du-hf2-banner-admin-persistence": "node scripts/check_phase_3du_hf2_banner_admin_persistence_static_contract.mjs",
     "check:phase-3du-owner-review-closeout": "node scripts/check_phase_3du_owner_review_closeout_static_contract.mjs",
+    "check:phase-3dv-production-deployment": "node scripts/check_phase_3dv_production_deployment_static_contract.mjs",
     "smoke:portfolio-live-preview-api:owner": "node scripts/owner_smoke_portfolio_live_preview_api.mjs",
     "smoke:gnews-live:dry": "node scripts/owner_smoke_gnews_live_fetch.mjs --dry-run",
     "smoke:persistent-quote-cache": "node scripts/smoke_persistent_quote_cache_adapter.mjs",
