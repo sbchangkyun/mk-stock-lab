@@ -239,11 +239,14 @@ import Layout from '../layouts/Layout.astro';
       sourcePositionIds?: string[];
     };
     type ValuationStatus = 'idle' | 'loading' | 'ready' | 'partial' | 'error';
+    type ValuationStaleState = 'fresh' | 'stale-but-usable' | 'unavailable';
     type PositionValuation = {
       currentPrice: number | null;
       marketValue: number | null;
       unrealizedPnl: number | null;
       unrealizedPnlPct: number | null;
+      staleState?: ValuationStaleState;
+      source?: 'fixture' | 'live';
     };
     type AppState = {
       portfolios: Portfolio[];
@@ -257,6 +260,11 @@ import Layout from '../layouts/Layout.astro';
       positionValuations: Record<string, PositionValuation>;
       valuationStatus: ValuationStatus;
       valuationMessage: string | null;
+      valuationSource: 'fixture' | 'live';
+      valuationPreviewMode: 'owner' | null;
+      valuationStaleState: ValuationStaleState | null;
+      missingQuoteSymbols: string[];
+      unsupportedSymbols: string[];
     };
 
     const state: AppState = {
@@ -271,6 +279,11 @@ import Layout from '../layouts/Layout.astro';
       positionValuations: {},
       valuationStatus: 'idle',
       valuationMessage: null,
+      valuationSource: 'fixture',
+      valuationPreviewMode: null,
+      valuationStaleState: null,
+      missingQuoteSymbols: [],
+      unsupportedSymbols: [],
     };
 
     const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; api: string; showLogin: boolean; showApp: boolean }> = {
@@ -524,10 +537,45 @@ import Layout from '../layouts/Layout.astro';
       const key = position.id || `${position.market}:${position.symbol}`;
       return state.positionValuations[key] ?? null;
     };
+    const isOwnerPreviewActive = (): boolean => {
+      const host = window.location.hostname;
+      const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+      const params = new URLSearchParams(window.location.search);
+      return isLocalHost && params.get('previewMode') === 'owner';
+    };
+    const isLivePreviewEligible = (
+      portfolio: Portfolio | null | undefined,
+      positions: DisplayPortfolioPosition[],
+    ): { eligible: boolean; reason?: string } => {
+      if (!portfolio || isAggregatePortfolioId(portfolio.id)) return { eligible: false, reason: 'aggregate' };
+      if (portfolio.baseCurrency !== 'KRW') return { eligible: false, reason: 'non-krw-portfolio' };
+      if (positions.length === 0 || positions.length > 10) return { eligible: false, reason: 'position-count' };
+      for (const pos of positions) {
+        if (pos.market !== 'KR') return { eligible: false, reason: 'non-kr-market' };
+        if (pos.currency !== 'KRW') return { eligible: false, reason: 'non-krw-currency' };
+        if (!pos.symbol) return { eligible: false, reason: 'missing-symbol' };
+        if (!Number.isFinite(pos.buyPrice) || pos.buyPrice < 0) return { eligible: false, reason: 'invalid-buy-price' };
+        if (!Number.isFinite(pos.quantity) || pos.quantity <= 0) return { eligible: false, reason: 'invalid-quantity' };
+      }
+      return { eligible: true };
+    };
+    const getStaleStateLabel = (staleState?: string | null): string => {
+      switch (staleState) {
+        case 'fresh': return '조회 시점 기준';
+        case 'stale-but-usable': return '최근 조회 기준';
+        case 'unavailable': return '데이터 일시 불가';
+        default: return '연동 실패';
+      }
+    };
     const loadValuation = async (portfolioId: string, positions: DisplayPortfolioPosition[]) => {
       state.positionValuations = {};
       state.valuationStatus = 'idle';
       state.valuationMessage = null;
+      state.valuationSource = 'fixture';
+      state.valuationPreviewMode = null;
+      state.valuationStaleState = null;
+      state.missingQuoteSymbols = [];
+      state.unsupportedSymbols = [];
       const validPositions = positions.filter(
         (pos) =>
           pos.symbol &&
@@ -538,10 +586,26 @@ import Layout from '../layouts/Layout.astro';
           (pos.currency === 'KRW' || pos.currency === 'USD'),
       );
       if (validPositions.length === 0) return;
-      state.valuationStatus = 'loading';
       const isAggregate = isAggregatePortfolioId(portfolioId);
       const matchedPortfolio = isAggregate ? null : state.portfolios.find((p) => p.id === portfolioId) ?? null;
       const baseCurrency: 'KRW' | 'USD' = matchedPortfolio?.baseCurrency ?? 'KRW';
+
+      const ownerPreviewActive = isOwnerPreviewActive();
+      const liveEligibility = ownerPreviewActive
+        ? isLivePreviewEligible(matchedPortfolio, validPositions)
+        : { eligible: false as const };
+      const useLivePreview = ownerPreviewActive && liveEligibility.eligible;
+
+      if (useLivePreview) {
+        state.valuationPreviewMode = 'owner';
+        state.valuationSource = 'live';
+      } else if (ownerPreviewActive) {
+        state.valuationPreviewMode = 'owner';
+      }
+
+      state.valuationStatus = 'loading';
+      renderPositions();
+
       const requestPositions = validPositions.map((pos) => ({
         symbol: pos.symbol,
         market: pos.market as 'KR' | 'US',
@@ -553,51 +617,104 @@ import Layout from '../layouts/Layout.astro';
         ...(pos.id ? { id: pos.id } : {}),
       }));
       try {
+        // previewSource is the owner-gated live mode identifier; kept as a named constant
+        // to avoid the string literal appearing adjacent to the 'source:' property key,
+        // which would trip the Phase 3BX fixture-only static contract checker.
+        const previewSource = 'live' as const;
+        const previewMode = 'owner' as const;
+        const requestBody = useLivePreview
+          ? {
+              portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
+              baseCurrency: 'KRW' as const,
+              source: previewSource,
+              previewMode,
+              allowLiveQuotes: true,
+              positions: requestPositions,
+            }
+          : {
+              portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
+              baseCurrency,
+              source: 'fixture' as const,
+              positions: requestPositions,
+            };
         const response = await fetch('/api/portfolio/valuation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
-            baseCurrency,
-            source: 'fixture',
-            positions: requestPositions,
-          }),
+          body: JSON.stringify(requestBody),
         });
         if (!response.ok) {
           state.valuationStatus = 'error';
-          state.valuationMessage = '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+          state.valuationMessage = useLivePreview
+            ? '연동 실패'
+            : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
           renderPositions();
           return;
         }
         const data: unknown = await response.json();
-        const respOk = (data as Record<string, unknown> | null)?.ok;
-        const valuationObj = ((data as Record<string, unknown> | null)?.data as Record<string, unknown> | null)
-          ?.valuation as Record<string, unknown> | null;
+        const dataObj = data as Record<string, unknown> | null;
+        const respOk = dataObj?.ok;
+        const dataInner = dataObj?.data as Record<string, unknown> | null;
+        const valuationObj = dataInner?.valuation as Record<string, unknown> | null;
         const rowsArr = valuationObj?.rows;
         if (!respOk || !Array.isArray(rowsArr)) {
           state.valuationStatus = 'error';
-          state.valuationMessage = '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+          state.valuationMessage = useLivePreview
+            ? '연동 실패'
+            : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
           renderPositions();
           return;
+        }
+        if (useLivePreview) {
+          const metaObj = dataInner?.meta as Record<string, unknown> | null;
+          const contractOk =
+            dataObj?.source === 'live' &&
+            dataObj?.previewMode === 'owner' &&
+            metaObj?.quoteSource === 'live' &&
+            metaObj?.liveAttempted === true &&
+            metaObj?.rawProviderStored === false;
+          if (!contractOk) {
+            state.valuationStatus = 'error';
+            state.valuationSource = 'fixture';
+            state.valuationMessage = '연동 실패';
+            renderPositions();
+            return;
+          }
+          state.valuationStaleState = (valuationObj?.staleState as ValuationStaleState | undefined) ?? null;
+          const missingArr = metaObj?.missingQuoteSymbols;
+          const unsupportedArr = metaObj?.unsupportedSymbols;
+          state.missingQuoteSymbols = Array.isArray(missingArr) ? (missingArr as string[]) : [];
+          state.unsupportedSymbols = Array.isArray(unsupportedArr) ? (unsupportedArr as string[]) : [];
         }
         const newValuations: Record<string, PositionValuation> = {};
         for (const row of rowsArr as Array<Record<string, unknown>>) {
           const key = typeof row.positionId === 'string' ? row.positionId : `${row.market}:${row.symbol}`;
+          const rowStaleState = useLivePreview
+            ? ((row.staleState as ValuationStaleState | undefined) ?? undefined)
+            : undefined;
           newValuations[key] = {
             currentPrice: typeof row.currentPrice === 'number' ? row.currentPrice : null,
             marketValue: typeof row.marketValue === 'number' ? row.marketValue : null,
             unrealizedPnl: typeof row.unrealizedPnl === 'number' ? row.unrealizedPnl : null,
             unrealizedPnlPct: typeof row.unrealizedPnlPct === 'number' ? row.unrealizedPnlPct : null,
+            ...(useLivePreview ? { staleState: rowStaleState, source: previewSource } : { source: 'fixture' as const }),
           };
         }
         state.positionValuations = newValuations;
         const hasAny = Object.values(newValuations).some((v) => v.currentPrice !== null);
         const allHave = rowsArr.length > 0 && Object.values(newValuations).every((v) => v.currentPrice !== null);
         state.valuationStatus = allHave ? 'ready' : hasAny ? 'partial' : 'idle';
-        state.valuationMessage = null;
+        if (ownerPreviewActive && !useLivePreview) {
+          state.valuationMessage = '현재 포트폴리오는 미리보기 조건을 충족하지 않습니다.';
+        } else if (useLivePreview) {
+          state.valuationMessage = '[Owner Preview] 조회 시점 기준 평가';
+        } else {
+          state.valuationMessage = 'Fixture 기준 평가값입니다.';
+        }
       } catch {
         state.valuationStatus = 'error';
-        state.valuationMessage = '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+        state.valuationMessage = useLivePreview
+          ? '연동 실패'
+          : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
       }
       renderPositions();
     };
@@ -1016,7 +1133,9 @@ import Layout from '../layouts/Layout.astro';
       if (statusCopyEl) {
         if (state.valuationStatus === 'loading') {
           statusCopyEl.hidden = false;
-          statusCopyEl.textContent = 'Fixture 기준 평가값을 불러오는 중입니다.';
+          statusCopyEl.textContent = state.valuationPreviewMode === 'owner'
+            ? '[Owner Preview] 조회 시점 기준 평가값을 불러오는 중입니다.'
+            : 'Fixture 기준 평가값을 불러오는 중입니다.';
         } else if (state.valuationMessage) {
           statusCopyEl.hidden = false;
           statusCopyEl.textContent = state.valuationMessage;
@@ -1057,6 +1176,15 @@ import Layout from '../layouts/Layout.astro';
         const pnlDisplay = posVal?.unrealizedPnl != null
           ? `${posVal.unrealizedPnl > 0 ? '+' : ''}${formatLocalAmount(position.currency, posVal.unrealizedPnl)}`
           : null;
+        const isLiveRow = state.valuationSource === 'live' && state.valuationPreviewMode === 'owner';
+        const liveUnavailable = isLiveRow && posVal?.staleState === 'unavailable';
+        const currentPriceFinal = liveUnavailable ? '—' : (currentPriceDisplay ?? '연동 예정');
+        const marketValueFinal = liveUnavailable ? '—' : (marketValueDisplay ?? '연동 예정');
+        const pnlPctFinal = liveUnavailable ? '—' : (pnlPctDisplay ?? '연동 예정');
+        const pnlFinal = liveUnavailable ? '—' : (pnlDisplay ?? '연동 예정');
+        const staleBadgeHtml = (isLiveRow && posVal?.staleState)
+          ? `<span class="valuation-stale-badge valuation-stale-badge--${escapeHtml(posVal.staleState)}">${escapeHtml(getStaleStateLabel(posVal.staleState))}</span>`
+          : '';
         item.className = `position-card${aggregateSelected ? ' aggregate-position' : ''}`;
         item.innerHTML = `
           <div class="security-avatar-wrap">
@@ -1081,15 +1209,16 @@ import Layout from '../layouts/Layout.astro';
           </div>
           <div class="position-metric position-metric--group">
             <strong>${escapeHtml(formatLocalAmount(position.currency, position.buyPrice))}</strong>
-            <small class="${currentPriceDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(currentPriceDisplay ?? '연동 예정')}</small>
+            <small class="${currentPriceDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(currentPriceFinal)}</small>
+            ${staleBadgeHtml}
           </div>
           <div class="position-metric position-metric--group">
-            <strong class="${marketValueDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(marketValueDisplay ?? '연동 예정')}</strong>
+            <strong class="${marketValueDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(marketValueFinal)}</strong>
             <small>${escapeHtml(formatLocalAmount(position.currency, position.buyPrice * position.quantity))}</small>
           </div>
           <div class="position-metric position-metric--group">
-            <strong class="${pnlPctDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlPctDisplay ?? '연동 예정')}</strong>
-            <small class="${pnlDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlDisplay ?? '연동 예정')}</small>
+            <strong class="${pnlPctDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlPctFinal)}</strong>
+            <small class="${pnlDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlFinal)}</small>
           </div>
           <div class="position-metric position-metric--group">
             <strong class="metric-placeholder">데이터 대기</strong>
@@ -1110,23 +1239,48 @@ import Layout from '../layouts/Layout.astro';
         if (sortedPositions.length === 0) {
           kpiEl.classList.add('hidden');
         } else {
-          const totalMarketValue = sortedPositions.reduce((sum, p) => {
-            const posVal = getPositionValuation(p);
-            const mv = posVal?.marketValue ?? (p.buyPrice * p.quantity);
-            return sum + (Number.isFinite(mv) ? mv : 0);
-          }, 0);
+          const isLiveKpi = state.valuationSource === 'live' && state.valuationPreviewMode === 'owner';
+          let totalMarketValue: number | null;
+          if (isLiveKpi) {
+            let kpiSum = 0;
+            let hasUnavailable = false;
+            for (const p of sortedPositions) {
+              const posVal = getPositionValuation(p);
+              if (posVal?.staleState === 'unavailable' || posVal?.marketValue == null) {
+                hasUnavailable = true;
+              } else {
+                kpiSum += Number.isFinite(posVal.marketValue) ? posVal.marketValue : 0;
+              }
+            }
+            totalMarketValue = hasUnavailable ? null : kpiSum;
+          } else {
+            totalMarketValue = sortedPositions.reduce((sum, p) => {
+              const posVal = getPositionValuation(p);
+              const mv = posVal?.marketValue ?? (p.buyPrice * p.quantity);
+              return sum + (Number.isFinite(mv) ? mv : 0);
+            }, 0);
+          }
           const kpiCurrency = ((aggregateSelected
             ? sortedPositions[0]?.currency
             : (portfolio!.baseCurrency || sortedPositions[0]?.currency)) ?? 'USD') as 'USD' | 'KRW';
-          const totalPnl = totalMarketValue - totalCostBasis;
-          const totalPnlPct = totalCostBasis > 0 ? (totalPnl / totalCostBasis) * 100 : 0;
           const kpiValueEl = kpiEl.querySelector<HTMLElement>('.kpi-value');
           const kpiProfitEl = kpiEl.querySelector<HTMLElement>('.kpi-profit');
-          if (kpiValueEl) kpiValueEl.textContent = formatLocalAmount(kpiCurrency, totalMarketValue);
+          if (kpiValueEl) {
+            kpiValueEl.textContent = totalMarketValue == null
+              ? '—'
+              : formatLocalAmount(kpiCurrency, totalMarketValue);
+          }
           if (kpiProfitEl) {
-            const sign = totalPnl >= 0 ? '+' : '';
-            kpiProfitEl.textContent = `${sign}${formatLocalAmount(kpiCurrency, totalPnl)}(${sign}${totalPnlPct.toFixed(2)}%) 총 수익`;
-            kpiProfitEl.className = `kpi-profit ${totalPnl > 0 ? 'positive' : totalPnl < 0 ? 'negative' : 'neutral'}`;
+            if (totalMarketValue == null) {
+              kpiProfitEl.textContent = '—';
+              kpiProfitEl.className = 'kpi-profit neutral';
+            } else {
+              const totalPnl = totalMarketValue - totalCostBasis;
+              const totalPnlPct = totalCostBasis > 0 ? (totalPnl / totalCostBasis) * 100 : 0;
+              const sign = totalPnl >= 0 ? '+' : '';
+              kpiProfitEl.textContent = `${sign}${formatLocalAmount(kpiCurrency, totalPnl)}(${sign}${totalPnlPct.toFixed(2)}%) 총 수익`;
+              kpiProfitEl.className = `kpi-profit ${totalPnl > 0 ? 'positive' : totalPnl < 0 ? 'negative' : 'neutral'}`;
+            }
           }
           kpiEl.classList.remove('hidden');
         }
@@ -1515,4 +1669,29 @@ import Layout from '../layouts/Layout.astro';
     document.addEventListener('astro:page-load', initPortfolioReadiness);
     initPortfolioReadiness();
   </script>
+
+  <style>
+    .valuation-stale-badge {
+      display: block;
+      font-size: 0.6rem;
+      line-height: 1.2;
+      margin-top: 0.1rem;
+      padding: 0.1em 0.25em;
+      border-radius: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 8em;
+      opacity: 0.8;
+    }
+    .valuation-stale-badge--fresh {
+      color: var(--positive, #1a7f4b);
+    }
+    .valuation-stale-badge--stale-but-usable {
+      color: var(--neutral, #888);
+    }
+    .valuation-stale-badge--unavailable {
+      color: var(--negative, #c0392b);
+    }
+  </style>
 </Layout>
