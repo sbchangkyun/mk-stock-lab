@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DW-CLOSEOUT - 2026-06-28
+
+### Production Mobile Geometry Guard Closeout (Completed - guard ready)
+
+- **Status**: Completed - owner-run production mobile geometry guard ready and validated.
+- **Baseline**: `e0ac265 chore: add production mobile geometry guard`.
+- **Completed scope**: owner-run geometry guard script, static checker, result/runbook document, package commands, and changelog entry.
+- **Guard coverage**: public routes `/`, `/chart-ai`, `/market`, `/lab`, `/portfolio`, `/mypage`, plus the public login modal state; mobile viewports 390x844, 412x915, and 430x932.
+- **Accepted threshold**: document/body client and scroll widths must be less than or equal to `innerWidth + 2`.
+- **Validation**: closeout contract 59/59 PASS, static guard contract 58/58 PASS, dry-run PASS, production geometry 21/21 PASS, origin rejection tests PASS, Phase 3DV closeout 41/41 PASS, retry overflow contract 41/41 PASS, production-domain contract 33/33 PASS, build PASS, and `git diff --check` PASS.
+- **Usage policy**: future UI, layout, ad, iframe, table, chart, footer, nav, ticker, modal, and route-shell changes should run this guard before owner acceptance.
+- **Safety**: no runtime source changes, no deployment, no Vercel environment changes, no Supabase or database changes, no SQL, no migration, no screenshots, no cookies or storage reads, no text-content collection, and no push.
+- **Decision**: Phase 3DW is closed.
+
 ## Phase 3DW - 2026-06-28
 
 ### Production Mobile Geometry Guard (Implemented - owner-run guard ready)
