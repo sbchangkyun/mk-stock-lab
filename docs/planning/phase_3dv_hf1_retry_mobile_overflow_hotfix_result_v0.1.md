@@ -2,7 +2,9 @@
 
 ## 1. Status
 
-Implemented - deployment pending.
+Implemented and deployed - owner production re-check pending.
+
+Implementation commit: `9f7f4a1 fix: contain production mobile overflow`.
 
 ## 2. Background
 
@@ -43,14 +45,19 @@ Local HF1 review passed, but production still showed the mobile blank-area issue
 
 ## 6. Deployment
 
-- **Performed**: no - pending validation and implementation commit
-- **Commit**: pending
-- **Deployment URL**: pending
+- **Performed**: yes
+- **Commit**: `9f7f4a1 fix: contain production mobile overflow`
+- **Deployment URL**: `https://mkstocklab-ro7hfpfq4-sbchangkyun-2946s-projects.vercel.app`
 - **Canonical URL**: `https://mkstocklab.vercel.app`
-- **READY**: pending
-- **`/`**: pending
-- **`/mypage`**: pending
-- **Production mobile geometry**: pending
+- **READY**: yes
+- **`/`**: HTTP 200, zero redirects
+- **`/mypage`**: HTTP 200, zero redirects
+- **Production CSS asset**: `https://mkstocklab.vercel.app/_astro/Layout.BL4g4Qg5.css` contains both retry containment rules
+- **Production mobile geometry**: PASS (21/21 route/state/viewport combinations)
+- **390px**: layout, visual, document, body, footer wrapper, injected ad, and iframe widths all 390px; login modal 350px
+- **412px**: corresponding widths all 412px; login modal 372px
+- **430px**: corresponding widths all 430px; login modal 390px
+- **Documentation commit**: not included in the deployed artifact
 
 ## 7. Safety
 
