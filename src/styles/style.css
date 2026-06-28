@@ -910,6 +910,23 @@ h2 {
   justify-content: center;
 }
 
+/* Phase 3DV-HF1-Retry: the partner footer ad injects a fixed 728px iframe.
+   Keep that intrinsic width inside the ad region so it cannot widen the
+   mobile layout viewport or alter 100vw-based modal sizing. */
+.bottom-document-area,
+.bottom-ad-banner,
+.footer-ad-wrapper {
+  width: 100%;
+  min-width: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.footer-ad-wrapper > ins,
+.footer-ad-wrapper iframe {
+  max-width: 100% !important;
+}
+
 .footer-ad-close {
   top: 8px;
   right: 14px;

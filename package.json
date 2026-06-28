@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "check:phase-3dv-hf1-mobile-viewport": "node scripts/check_phase_3dv_hf1_mobile_viewport_static_contract.mjs",
+    "check:phase-3dv-hf1-retry-mobile-overflow": "node scripts/check_phase_3dv_hf1_retry_mobile_overflow_static_contract.mjs",
     "check:home-index-cards": "node scripts/check_home_index_cards_static_contract.mjs",
     "check:home-index-sparkline": "node scripts/check_home_index_sparkline_static_contract.mjs",
     "check:lab-matrix-image-export": "node scripts/check_lab_matrix_image_export_static_contract.mjs",

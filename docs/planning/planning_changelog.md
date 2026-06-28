@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DV-HF1-Retry - 2026-06-28
+
+### Production Mobile Overflow Hotfix (Implemented - deployment pending)
+
+- **Background**: Phase 3DV-HF1-DEPLOY-VERIFY confirmed canonical production was serving the HF1 artifact, but the owner still observed mobile right-side blank-area behavior.
+- **Diagnosis**: public, isolated mobile rendering at 390x844, 412x915, and 430x932 found that the footer partner ad injected a fixed 728px `ins`/iframe into an unconstrained centered `.footer-ad-wrapper`. This expanded the mobile layout/document widths to 559px, 570px, and 579px on every checked route and caused `100vw`-based login modal sizing to use the wrong layout width.
+- **Fix**: constrained `.bottom-document-area`, `.bottom-ad-banner`, and `.footer-ad-wrapper` to the viewport and capped the injected `ins`/iframe at the wrapper width. Candidate rendering restored document/body/layout widths to exactly 390px, 412px, and 430px across Home, Chart AI, Market, Lab, Portfolio, MyPage, and login modal states.
+- **Preserved behavior**: mobile Home banner through 859px, hidden at 860px+, PC rail at 1440px+, MyPage banner admin, top slide ad, and internal scroll behavior for ticker, nav, Portfolio holdings, and Lab matrices.
+- **Validation**: retry checker 41/41, HF1 viewport checker 47/47, mobile baseline checker 74/74, Phase 3DU checker 59/59, Phase 3DU-HF2 checker 43/43, Phase 3DV deployment checker 32/32, production-domain checker 33/33, build, and `git diff --check` passed.
+- **Deployment**: pending successful validation and the implementation commit.
+- **Owner production re-check**: pending.
+
 ## Phase 3DV-HF1-DEPLOY-VERIFY - 2026-06-28
 
 ### Production Deployment Alias and Asset Verification (Completed - Phase 3DV-HF1-Retry required)
