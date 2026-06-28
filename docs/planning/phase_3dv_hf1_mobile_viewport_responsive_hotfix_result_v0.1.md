@@ -2,9 +2,9 @@
 
 ## 1. Status
 
-Implemented - owner production re-check pending.
+Implemented and deployed - owner production re-check pending.
 
-Production deployment is pending successful validation and the implementation commit.
+Implementation commit: `b04a79d fix: restore mobile viewport responsiveness`.
 
 ## 2. Owner-Reported Issue
 
@@ -43,7 +43,20 @@ That combination allowed intrinsic-width content to influence the page-level wid
 - `npm run build`: PASS
 - `git diff --check`: PASS
 
-## 6. Safety
+## 6. Deployment
+
+- **Performed**: yes
+- **Deployed commit**: `b04a79d fix: restore mobile viewport responsiveness`
+- **Vercel project**: existing canonical `mkstocklab`
+- **Deployment URL**: `https://mkstocklab-h1huhdhxq-sbchangkyun-2946s-projects.vercel.app`
+- **Canonical alias**: `https://mkstocklab.vercel.app`
+- **Inspection status**: READY
+- **Canonical `/`**: HTTP 200
+- **Canonical `/mypage`**: HTTP 200
+- **Production viewport contract**: device width, initial scale, and `viewport-fit=cover` present; no zoom-blocking directive present
+- **New Vercel project created**: no
+
+## 7. Safety
 
 - No secrets were read or printed.
 - No live Supabase rows were inspected.
@@ -54,7 +67,7 @@ That combination allowed intrinsic-width content to influence the page-level wid
 - No logged-in browser automation was run.
 - No remote push was performed.
 
-## 7. Owner Re-check
+## 8. Owner Re-check
 
 After production deployment, the owner should verify:
 
