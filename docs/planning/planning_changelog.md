@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DZ - 2026-06-28
+
+### FX Provider Selection and Real FX Adapter Plan (Completed - provider plan ready)
+
+- **Status**: Completed - provider plan ready. No runtime source changes.
+- **Background**: Phase 3DY confirmed that KIS KR quote and Portfolio owner live preview paths are validated, while FX remains mocked, a real FX provider is not selected, public `source=live` remains disabled, and `source=auto` remains deferred.
+- **Plan scope**: current FX integration baseline, provider selection criteria, provider candidate categories, MVP currency-pair scope, provider-neutral FX interface, freshness/stale policy, error classification, caching/rate-limit policy, Portfolio valuation integration, security/secret handling, owner decisions, and Phase 3EA validation plan.
+- **MVP recommendation**: start with USD/KRW and KRW/USD, plus identity pairs, in owner preview only.
+- **Decision gate**: Phase 3EA should start only after the owner confirms provider category, paid-provider acceptability, MVP pair scope, freshness tolerance, and preview-only rollout policy.
+- **Validation**: Phase 3DZ provider-plan contract 158/158 PASS, Phase 3DY continuation-plan contract 115/115 PASS, Phase 3DX architecture contract 94/94 PASS, KIS/FX mocked adapter 119/119 PASS, Portfolio live preview API 110/110 PASS, production-domain contract 33/33 PASS, geometry guard dry-run PASS, build PASS, and `git diff --check` PASS.
+- **Deployment**: none.
+- **Push**: none.
+
 ## Phase 3DY - 2026-06-28
 
 ### KIS / FX Live Data Integration Continuation Plan (Completed - continuation plan ready)
