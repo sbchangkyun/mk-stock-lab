@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DY - 2026-06-28
+
+### KIS / FX Live Data Integration Continuation Plan (Completed - continuation plan ready)
+
+- **Status**: Completed - continuation plan ready. No runtime source changes.
+- **Background**: KIS KR quote owner smokes and Portfolio live preview owner smoke previously passed; Phase 3DX now provides UI architecture rules and Phase 3DW provides production mobile geometry guard coverage.
+- **Current state**: KR stock and KR ETF quote preview path validated; Portfolio owner live preview API validated; FX remains mocked; real FX provider is not selected; US quote endpoint is not implemented; public `source=live` remains disabled; `source=auto` remains deferred.
+- **Plan scope**: capability matrix, preserved contracts, gap analysis, recommended implementation path, Phase 3DZ scope proposal, owner decisions, safety model, UI architecture constraints, and future validation plan.
+- **Recommended next phase**: Phase 3DZ - FX Provider Selection and Real FX Adapter Plan.
+- **Validation**: Phase 3DY plan contract 115/115 PASS, Phase 3DX architecture contract 94/94 PASS, Portfolio live preview API 110/110 PASS, owner-smoke closeout 68/68 PASS, KIS/FX mocked adapter 119/119 PASS, production-domain contract 33/33 PASS, geometry guard dry-run PASS, build PASS, and `git diff --check` PASS.
+- **Deployment**: none.
+- **Push**: none.
+
 ## Phase 3DX - 2026-06-28
 
 ### UI Architecture Stabilization Plan (Completed - architecture plan ready)
