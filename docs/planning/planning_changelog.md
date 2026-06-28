@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DU-OWNER-REVIEW - 2026-06-28
+
+### Mobile Home Ad Banner Owner Review (Prepared — owner manual browser/admin review pending)
+
+- **Status**: Prepared — owner manual browser/admin review pending. No runtime source changes in this phase.
+- **Implementation baseline**: Phase 3DU completed at `06549cc feat: add mobile home ad banner slots`.
+- **Deliverables**: owner-only local review runbook, sanitized result template, and static documentation checker.
+- **Review scope**: MyPage admin gate and five-slot PC/mobile controls, URL-only saves and storage compatibility, mobile Home placement at 390px/430px/859px, hidden state at 860px+, 1440px+ PC rail regression, and 5000ms rotation states.
+- **Execution boundary**: Codex does not start the dev server or browser. The owner performs the review manually and reports only sanitized pass/fail fields.
+- **No runtime changes. No API route changes. No DB/Supabase changes. No live calls. No production deployment.**
+- **Next phase**: PASS → Phase 3DU-OWNER-REVIEW-CLOSEOUT; visual issue → Phase 3DU-HF1; storage/admin issue → Phase 3DU-HF2; deployment only after explicit owner approval → Phase 3DV.
+
 ## Phase 3DU - 2026-06-28
 
 ### Mobile Home Ad Banner Slot Implementation (Completed — safe local validation PASS)
