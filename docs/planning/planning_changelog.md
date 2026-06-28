@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DS-CLOSEOUT - 2026-06-27
+
+### Owner Browser Review Closeout (Completed — owner browser review PASS)
+
+- **Status**: Completed — owner browser review PASS. No runtime source changes in this closeout phase.
+- **Owner review**: PASS reported by owner for the Phase 3DR Portfolio owner preview UI.
+- **Accepted baseline**: owner local preview mode is accepted for local browser review use; fixture remains default; production UI does not use live quotes by default; `source=auto` remains deferred.
+- **Safety**: no raw API responses, prices, screenshots with values, secrets, account numbers, or provider payloads recorded.
+- **No live KIS/API calls by Claude Code.** Owner performed browser review manually.
+- **No local dev server or browser launched by Claude Code.**
+- **No API route changes. No DB/Supabase changes. No production deployment.**
+- **Known tracker**: `check:portfolio-holdings-header` remains a pre-existing `85/90` partial failure and is not blocking this closeout.
+- **New product request deferred**: mobile Home ad banner slot, using the existing PC 160×600 banner management pattern, with PC/mobile max count expanded to 5 and mobile banner placed between `MY PORTFOLIO` and `MARKET SNAPSHOT`.
+- **Recommended next phase**: Phase 3DT — Mobile Home Ad Banner Slot Implementation Plan.
+
 ## Phase 3DS - 2026-06-27
 
 ### Owner Local Browser Review of Portfolio Live Preview UI (Prepared — owner browser review pending)

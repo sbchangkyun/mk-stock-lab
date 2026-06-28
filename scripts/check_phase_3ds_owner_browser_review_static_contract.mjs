@@ -44,8 +44,9 @@ const reviewDoc  = readFile('docs/planning/phase_3ds_owner_local_browser_review_
 const changelog  = readFile('docs/planning/planning_changelog.md');
 const packageJson = readFile('package.json');
 
-// Extract only the Phase 3DS section of the changelog.
-const dsSectionStart = changelog.indexOf('## Phase 3DS');
+// Extract only the Phase 3DS section (not 3DS-CLOSEOUT) of the changelog.
+// Use '## Phase 3DS -' to avoid matching '## Phase 3DS-CLOSEOUT'.
+const dsSectionStart = changelog.indexOf('## Phase 3DS -');
 const dsSectionEnd   = changelog.indexOf('\n## Phase ', dsSectionStart + 1);
 const dsSection =
   dsSectionStart === -1
@@ -71,7 +72,9 @@ console.log('\n=== Group 2: Metadata and Baseline ===');
 
 check('Doc includes Phase 3DS',                  reviewDoc.includes('Phase 3DS'));
 check('Doc includes Owner Local Browser Review', /Owner Local Browser Review/i.test(reviewDoc));
-check('Doc includes prepared status',            reviewDoc.includes('Prepared — owner browser review pending'));
+check('Doc includes prepared or completed status',
+  reviewDoc.includes('Prepared — owner browser review pending') ||
+  reviewDoc.includes('Completed — owner browser review PASS'));
 check('Doc references commit adee857',           reviewDoc.includes('adee857'));
 check('Doc references src/pages/portfolio.astro', reviewDoc.includes('src/pages/portfolio.astro'));
 check('Doc references isOwnerPreviewActive',     reviewDoc.includes('isOwnerPreviewActive'));
