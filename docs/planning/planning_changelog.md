@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DW - 2026-06-28
+
+### Production Mobile Geometry Guard (Implemented - owner-run guard ready)
+
+- **Background**: Phase 3DV is closed. The prior production mobile blank-area issue was caused by a fixed 728x70 footer partner ad injected into `.footer-ad-wrapper`.
+- **Goal**: add a reusable owner-run production mobile geometry guard to detect document/body width overflow on public routes before future UI changes are accepted.
+- **Guard scope**: public routes `/`, `/chart-ai`, `/market`, `/lab`, `/portfolio`, `/mypage`, plus the public login modal state; mobile viewports 390x844, 412x915, and 430x932.
+- **Safety**: no login, no cookies or browser-storage reads, no screenshots, no page-text collection, no request/response body logging, and an explicit guard variable is required for production checks.
+- **Deliverables**: dependency-free owner-run geometry script with a browser-unavailable console fallback, package commands, static checker, and result/runbook document.
+- **Validation**: static guard contract PASS (58/58), dry-run PASS, public production geometry PASS (21/21), prior closeout PASS (41/41), retry overflow contract PASS (41/41), production-domain contract PASS (33/33), build PASS, and `git diff --check` PASS.
+- **Deployment**: none.
+- **Push**: none.
+
 ## Phase 3DV-CLOSEOUT - 2026-06-28
 
 ### Mobile Home Banner Production Deployment Closeout (Completed - production owner re-check PASS)
