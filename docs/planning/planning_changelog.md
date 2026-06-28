@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DT - 2026-06-27
+
+### Mobile Home Ad Banner Slot Implementation Plan (Planned — implementation pending)
+
+- **Status**: Planned — implementation pending. No runtime source changes in this phase.
+- **Goal**: Inspect the existing PC `160×600` Home right-side banner system and plan a mobile-only Home banner slot using the same management pattern.
+- **Owner request**: add a mobile Home banner between `MY PORTFOLIO` and `MARKET SNAPSHOT`; use recommended creative size `720×225px`.
+- **Existing pattern to preserve**: master MyPage registration, Supabase bucket image URL registration, existing automatic rotation behavior, and existing rotation interval.
+- **Registration limit update planned**: PC banners max 3 → 5; mobile Home banners max 5.
+- **Implementation constraint**: do not invent a new ad management system; extend the existing PC banner implementation.
+- **No implementation in this phase. No runtime source changes. No API route changes. No DB/Supabase schema changes. No production deployment.**
+- **Recommended next phase**: Phase 3DU — Mobile Home Ad Banner Slot Implementation.
+
 ## Phase 3DS-CLOSEOUT - 2026-06-27
 
 ### Owner Browser Review Closeout (Completed — owner browser review PASS)
