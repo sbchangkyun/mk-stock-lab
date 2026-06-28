@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DV-HF1-DEPLOY-VERIFY - 2026-06-28
+
+### Production Deployment Alias and Asset Verification (Completed - Phase 3DV-HF1-Retry required)
+
+- **Owner report**: local HF1 review passed, but production still showed the mobile blank-area behavior.
+- **Goal**: verify whether canonical production `https://mkstocklab.vercel.app` is actually serving the HF1 deployment.
+- **Verification**: the local link contains exactly one project named `mkstocklab`; Vercel reports the canonical alias target as production READY and resolves it to the exact recorded HF1 deployment URL. Canonical production HTML contains the HF1 viewport marker, and public CSS asset `/_astro/Layout.BawJWM8C.css` contains the global width ceiling, body overflow guard, `.site-main` shrink rules, and the complete shared route-containment selector set.
+- **HTTP/cache evidence**: `/` and `/mypage` returned HTTP 200 with zero redirects. HTML and CSS responses use `cache-control: public, max-age=0, must-revalidate`; the CSS request was a Vercel cache HIT, but it returned the current HF1 marker set.
+- **Conclusion**: canonical production is serving the HF1 artifact. This is not a stale alias or missing-asset deployment. Under the verification decision rules, the remaining mobile blank area is a true production layout issue and must proceed to `Phase 3DV-HF1-Retry` for overflowing-element diagnosis.
+- **No runtime source hotfix. No redeploy. No Supabase/DB changes. No Vercel environment changes. No project relink. No push.**
+
 ## Phase 3DV-HF1 - 2026-06-28
 
 ### Mobile Viewport and Global Responsive Layout Hotfix (Implemented and deployed - owner production re-check pending)
