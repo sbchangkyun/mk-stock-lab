@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DV-CLOSEOUT - 2026-06-28
+
+### Mobile Home Banner Production Deployment Closeout (Completed - production owner re-check PASS)
+
+- **Status**: Completed - production owner re-check PASS.
+- **Final deployed runtime fix**: `9f7f4a1 fix: contain production mobile overflow`.
+- **Final owner result**: PASS after the Phase 3DV-HF1-Retry production deployment.
+- **Completed scope**: PC slots 1-5, mobile slots 1-5, mobile Home banner placement between `MY PORTFOLIO` and `MARKET SNAPSHOT`, mobile visibility through 859px, hidden from 860px, PC rail from 1440px, URL-only MyPage admin workflow, PC banner persistence fix, and footer-ad mobile overflow fix.
+- **Production issue resolved**: the right-side mobile blank area was traced to the fixed 728x70 footer partner ad injected into `.footer-ad-wrapper`; the ad region and injected `ins`/iframe are now viewport-contained.
+- **Final production check**: owner confirmed Home, Chart AI, Market, Lab, Portfolio, MyPage, login modal, footer/slide ads, mobile Home banner, and PC rail behavior passed.
+- **Safety**: no runtime source or API route changes, no DB/Supabase schema changes, no SQL, no migration, no Supabase Storage upload, no Vercel environment changes, no deployment, no new Vercel project or relink, and no push in this closeout phase.
+- **Decision**: Phase 3DV is closed.
+
 ## Phase 3DV-HF1-Retry - 2026-06-28
 
 ### Production Mobile Overflow Hotfix (Implemented and deployed - owner production re-check pending)
