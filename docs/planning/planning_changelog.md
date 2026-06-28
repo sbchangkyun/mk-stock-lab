@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DS - 2026-06-27
+
+### Owner Local Browser Review of Portfolio Live Preview UI (Prepared — owner browser review pending)
+
+- **Status**: Prepared — owner browser review pending. No runtime UI changes in this phase.
+- **Goal**: Prepare the owner manual browser review runbook and safe report template for the Phase 3DR Portfolio live preview UI.
+- **Baseline**: Phase 3DR implemented owner local preview mode in `src/pages/portfolio.astro` only.
+- **Review URL**: `http://localhost:4321/portfolio?previewMode=owner`.
+- **Fixture regression URL**: `http://localhost:4321/portfolio`.
+- **Production safety URL**: `https://mkstocklab.vercel.app/portfolio?previewMode=owner`.
+- **Review focus**: owner preview banner, freshness badges, KPI fallback suppression, eligibility blocking, mobile 390px layout, production preview blocking, and no raw provider leakage.
+- **Safety**: owner must share only pass/fail fields, not prices, screenshots with values, full API responses, request/response bodies, tokens, account numbers, or provider payloads.
+- **No live KIS/API calls by Claude Code.** Owner performs browser review manually.
+- **No API route changes. No DB/Supabase changes. No production deployment.**
+- **Recommended next phase**: PASS → Phase 3DS-CLOSEOUT; local issue → Phase 3DS-Retry; UI issue → Phase 3DR-HF1.
+
 ## Phase 3DQ - 2026-06-27
 
 ### Portfolio UI Preview Mode Wiring Plan (Planned — no runtime UI changes)
