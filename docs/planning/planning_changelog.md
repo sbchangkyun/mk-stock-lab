@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DX - 2026-06-28
+
+### UI Architecture Stabilization Plan (Completed - architecture plan ready)
+
+- **Status**: Completed - architecture plan ready. No runtime source changes.
+- **Background**: Phase 3DV closed the mobile Home banner production deployment and footer-ad overflow issue. Phase 3DW closed the production mobile geometry guard. This phase stabilizes UI architecture rules before future UI or live-data work.
+- **Plan scope**: global layout, route shells, header/ticker/nav, ad/iframe containment, dense data surfaces, modal/overlay sizing, Home mobile banner, PC rail, production acceptance, future phase checklist, and prohibited patterns.
+- **Key rule**: document/body width must not be widened by child components; dense content must scroll locally; external ad/iframe integrations must be wrapper-contained.
+- **Production acceptance policy**: future public UI changes should use the Phase 3DW geometry guard before owner acceptance and after production deployment when applicable.
+- **Validation**: architecture plan contract 94/94 PASS, Phase 3DW closeout 59/59 PASS, Phase 3DV closeout 41/41 PASS, mobile baseline 74/74 PASS, production-domain contract 33/33 PASS, guard dry-run PASS, build PASS, and `git diff --check` PASS.
+- **Deployment**: none.
+- **Push**: none.
+
 ## Phase 3DW-CLOSEOUT - 2026-06-28
 
 ### Production Mobile Geometry Guard Closeout (Completed - guard ready)
