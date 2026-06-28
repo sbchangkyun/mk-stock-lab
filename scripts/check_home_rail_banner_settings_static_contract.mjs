@@ -19,6 +19,7 @@ const root = join(__dirname, '..');
 const MIGRATION_PATH = join(root, 'supabase', 'migrations', '20260625_site_admins_and_settings.sql');
 const CLIENT_PATH = join(root, 'src', 'lib', 'siteSettingsClient.ts');
 const RAIL_PATH = join(root, 'src', 'components', 'HomeRailAd.astro');
+const MOBILE_AD_PATH = join(root, 'src', 'components', 'HomeMobileAd.astro');
 const MYPAGE_PATH = join(root, 'src', 'pages', 'mypage.astro');
 const STYLE_PATH = join(root, 'src', 'styles', 'style.css');
 const PACKAGE_JSON = join(root, 'package.json');
@@ -47,12 +48,14 @@ log('--- Group 1: File existence ---');
 const migExists = existsSync(MIGRATION_PATH);
 const clientExists = existsSync(CLIENT_PATH);
 const railExists = existsSync(RAIL_PATH);
+const mobileAdExists = existsSync(MOBILE_AD_PATH);
 const mypageExists = existsSync(MYPAGE_PATH);
 const styleExists = existsSync(STYLE_PATH);
 
 check('Migration 20260625_site_admins_and_settings.sql exists', migExists);
 check('siteSettingsClient.ts exists', clientExists);
 check('HomeRailAd.astro exists', railExists);
+check('HomeMobileAd.astro exists', mobileAdExists);
 check('mypage.astro exists', mypageExists);
 check('style.css exists', styleExists);
 
@@ -105,7 +108,8 @@ if (clientExists) {
   check('Imports getBrowserSupabaseClient from supabase', client.includes('getBrowserSupabaseClient'));
   check('Imports isSupabaseConfigured from supabase', client.includes('isSupabaseConfigured'));
   check('HomeRailBanner type exported', client.includes('HomeRailBanner'));
-  check('slot type is 1|2|3', client.includes('1 | 2 | 3'));
+  check('HomeMobileBanner type exported', client.includes('HomeMobileBanner'));
+  check('managed slot type is 1|2|3|4|5', /1\s*\|\s*2\s*\|\s*3\s*\|\s*4\s*\|\s*5/.test(client));
   check('validateBannerUrl exported', client.includes('validateBannerUrl'));
   check('BLOCKED_SCHEMES blocks javascript:', client.includes('javascript:'));
   check('BLOCKED_SCHEMES blocks data:', client.includes('data:'));
@@ -113,9 +117,13 @@ if (clientExists) {
   check('normalizeBanners exported', client.includes('normalizeBanners'));
   check('getHomeRailBanners exported', client.includes('getHomeRailBanners'));
   check('saveHomeRailBanners exported', client.includes('saveHomeRailBanners'));
+  check('getHomeMobileBanners exported', client.includes('getHomeMobileBanners'));
+  check('saveHomeMobileBanners exported', client.includes('saveHomeMobileBanners'));
+  check('normalizeMobileBanners exported', client.includes('normalizeMobileBanners'));
   check('isCurrentUserSiteAdmin exported', client.includes('isCurrentUserSiteAdmin'));
   check('Reads from site_settings table', client.includes("'site_settings'"));
   check('Reads home_rail_banners key', client.includes("'home_rail_banners'"));
+  check('Stores mobile settings under home_mobile_banners property', client.includes("'home_mobile_banners'"));
   check('Writes to site_settings via upsert', client.includes('.upsert'));
   check('Checks site_admins table for admin', client.includes("'site_admins'"));
   check('No setInterval in client helper', !client.includes('setInterval'));
@@ -196,10 +204,22 @@ if (mypageExists) {
   check('siteSettingsClient imported in mypage', mp.includes('siteSettingsClient'));
   check('getHomeRailBanners called for reload', mp.includes('getHomeRailBanners'));
   check('saveHomeRailBanners called for save', mp.includes('saveHomeRailBanners'));
-  check('Panel has imageUrl inputs (slots 1-3)', mp.includes('mpBannerImageUrl1') && mp.includes('mpBannerImageUrl2') && mp.includes('mpBannerImageUrl3'));
-  check('Panel has linkUrl inputs (slots 1-3)', mp.includes('mpBannerLinkUrl1') && mp.includes('mpBannerLinkUrl2') && mp.includes('mpBannerLinkUrl3'));
-  check('Panel has alt text inputs (slots 1-3)', mp.includes('mpBannerAlt1') && mp.includes('mpBannerAlt2') && mp.includes('mpBannerAlt3'));
-  check('Panel has active checkboxes (slots 1-3)', mp.includes('mpBannerActive1') && mp.includes('mpBannerActive2') && mp.includes('mpBannerActive3'));
+  check('getHomeMobileBanners called for reload', mp.includes('getHomeMobileBanners'));
+  check('saveHomeMobileBanners called for save', mp.includes('saveHomeMobileBanners'));
+  check('Panel has desktop imageUrl inputs (slots 1-5)',
+    [1, 2, 3, 4, 5].every((slot) => mp.includes(`mpBannerImageUrl${slot}`)));
+  check('Panel has desktop linkUrl inputs (slots 1-5)',
+    [1, 2, 3, 4, 5].every((slot) => mp.includes(`mpBannerLinkUrl${slot}`)));
+  check('Panel has desktop alt text inputs (slots 1-5)',
+    [1, 2, 3, 4, 5].every((slot) => mp.includes(`mpBannerAlt${slot}`)));
+  check('Panel has desktop active checkboxes (slots 1-5)',
+    [1, 2, 3, 4, 5].every((slot) => mp.includes(`mpBannerActive${slot}`)));
+  check('Panel has mobile controls (slots 1-5)',
+    [1, 2, 3, 4, 5].every((slot) =>
+      mp.includes(`mpMobileBannerImageUrl${slot}`) &&
+      mp.includes(`mpMobileBannerLinkUrl${slot}`) &&
+      mp.includes(`mpMobileBannerAlt${slot}`) &&
+      mp.includes(`mpMobileBannerActive${slot}`)));
   check('Panel has 저장 button', mp.includes('mpBannerSaveBtn') && mp.includes('저장'));
   check('Panel has 다시 불러오기 button', mp.includes('다시 불러오기'));
   check('Panel has save message status element', mp.includes('mpBannerSaveMsg'));

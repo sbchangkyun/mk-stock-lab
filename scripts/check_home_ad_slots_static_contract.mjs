@@ -12,6 +12,9 @@ const root = join(__dirname, '..');
 
 const BANNERS_JSON_PATH = join(root, 'src', 'data', 'homeAdBanners.json');
 const RAIL_COMPONENT_PATH = join(root, 'src', 'components', 'HomeRailAd.astro');
+const MOBILE_COMPONENT_PATH = join(root, 'src', 'components', 'HomeMobileAd.astro');
+const SETTINGS_CLIENT_PATH = join(root, 'src', 'lib', 'siteSettingsClient.ts');
+const MYPAGE_PATH = join(root, 'src', 'pages', 'mypage.astro');
 const HOME_PAGE_PATH = join(root, 'src', 'pages', 'index.astro');
 const SVG_01_PATH = join(root, 'public', 'ads', 'home-rail', 'home-rail-sample-01.svg');
 const SVG_02_PATH = join(root, 'public', 'ads', 'home-rail', 'home-rail-sample-02.svg');
@@ -43,6 +46,9 @@ log('');
 log('File existence:');
 check('homeAdBanners.json exists', existsSync(BANNERS_JSON_PATH));
 check('HomeRailAd.astro exists', existsSync(RAIL_COMPONENT_PATH));
+check('HomeMobileAd.astro exists', existsSync(MOBILE_COMPONENT_PATH));
+check('siteSettingsClient.ts exists', existsSync(SETTINGS_CLIENT_PATH));
+check('mypage.astro exists', existsSync(MYPAGE_PATH));
 check('index.astro (Home page) exists', existsSync(HOME_PAGE_PATH));
 check('SVG slot 01 exists', existsSync(SVG_01_PATH));
 check('SVG slot 02 exists', existsSync(SVG_02_PATH));
@@ -66,7 +72,7 @@ try {
 }
 
 check('homeAdBanners.json parses as valid JSON', true);
-check('Total of exactly 3 banner entries', banners.length === 3);
+check('Legacy sample fixture keeps exactly 3 banner entries', banners.length === 3);
 
 const ids = banners.map((b) => b.id ?? '');
 check('Entry for home-rail-sample-01 present', ids.some((id) => id.includes('sample-01')));
@@ -104,6 +110,30 @@ if (existsSync(HOME_PAGE_PATH)) {
   const homeContent = readFileSync(HOME_PAGE_PATH, 'utf8');
   check('Home page imports HomeRailAd', homeContent.includes('HomeRailAd'));
   check('Home page renders HomeRailAd component', homeContent.includes('<HomeRailAd'));
+  check('Home page imports HomeMobileAd', homeContent.includes('HomeMobileAd'));
+  check('Home page renders HomeMobileAd component', homeContent.includes('<HomeMobileAd'));
+  check('HomeMobileAd is rendered before HomeIndexCards',
+    homeContent.indexOf('<HomeMobileAd') > -1 &&
+    homeContent.indexOf('<HomeMobileAd') < homeContent.indexOf('<HomeIndexCards'));
+}
+log('');
+
+// --- Phase 3DU managed slot counts ---
+log('Phase 3DU managed slot counts:');
+if (existsSync(SETTINGS_CLIENT_PATH)) {
+  const settingsClient = readFileSync(SETTINGS_CLIENT_PATH, 'utf8');
+  check('Managed banner slot union supports 1 through 5',
+    /1\s*\|\s*2\s*\|\s*3\s*\|\s*4\s*\|\s*5/.test(settingsClient));
+  check('Managed banner slot list contains exactly 1 through 5',
+    settingsClient.includes('BANNER_SLOTS = [1, 2, 3, 4, 5]'));
+  check('Mobile settings property is present', settingsClient.includes('home_mobile_banners'));
+}
+if (existsSync(MYPAGE_PATH)) {
+  const mypageContent = readFileSync(MYPAGE_PATH, 'utf8');
+  check('MyPage exposes desktop managed slots 1 through 5',
+    [1, 2, 3, 4, 5].every((slot) => mypageContent.includes(`mpBannerSlot${slot}`)));
+  check('MyPage exposes mobile managed slots 1 through 5',
+    [1, 2, 3, 4, 5].every((slot) => mypageContent.includes(`mpMobileBannerSlot${slot}`)));
 }
 log('');
 

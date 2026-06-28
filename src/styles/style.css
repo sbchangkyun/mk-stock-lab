@@ -454,6 +454,60 @@ h2 {
   background: var(--surface);
 }
 
+.home-mobile-ad {
+  display: none;
+  width: 100%;
+}
+
+.home-mobile-ad-viewport {
+  width: 100%;
+  aspect-ratio: 720 / 225;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.home-mobile-ad-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 320ms ease;
+  will-change: transform;
+}
+
+.home-mobile-ad-card {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.home-mobile-ad-card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -3px;
+}
+
+.home-mobile-ad-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  background: var(--surface);
+}
+
+@media (max-width: 859px) {
+  .home-mobile-ad {
+    display: block;
+  }
+}
+
+@media (min-width: 860px) {
+  .home-mobile-ad {
+    display: none !important;
+  }
+}
+
 @media (min-width: 1440px) {
   .home-shell {
     grid-template-columns: minmax(0, 1fr) 176px;
@@ -472,7 +526,8 @@ h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-rail-track {
+  .home-rail-track,
+  .home-mobile-ad-track {
     transition-duration: 1ms;
   }
 }
@@ -3735,6 +3790,46 @@ body.modal-open {
 
 .mp-banner-accordion-body {
   margin-top: 12px;
+}
+
+.mp-banner-subsection + .mp-banner-subsection {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.mp-banner-subsection-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.mp-banner-subsection-heading h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.mp-banner-size-guide {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.mp-banner-subsection .mp-notif-desc {
+  margin-bottom: 0;
+}
+
+.mp-banner-subsection--mobile .mp-banner-preview {
+  max-width: 180px;
+  aspect-ratio: 720 / 225;
+}
+
+.mp-banner-subsection--mobile .mp-banner-preview img {
+  height: 100%;
+  object-fit: contain;
 }
 
 /* ---- Phase 3CA: master banner admin panel ---- */

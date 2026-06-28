@@ -1,0 +1,151 @@
+---
+// Managed mobile banners load client-side; no sample creative is rendered by SSR.
+---
+
+<aside
+  class="home-mobile-ad"
+  data-home-mobile-ad
+  data-managed-mobile-pending
+  aria-label="Home mobile banner"
+  style="display:none"
+>
+  <div class="home-mobile-ad-viewport">
+    <div class="home-mobile-ad-track"></div>
+  </div>
+</aside>
+
+<script>
+  import { getHomeMobileBanners } from '../lib/siteSettingsClient';
+  import { isSupabaseConfigured } from '../lib/supabase';
+
+  type MobileAdElement = HTMLElement & {
+    _mobileBannerIntervalId?: number;
+    _mobileBannerAbortController?: AbortController;
+  };
+
+  const setupMobileCarousel = (mobileAd: MobileAdElement) => {
+    const track = mobileAd.querySelector<HTMLElement>('.home-mobile-ad-track');
+    const cards = mobileAd.querySelectorAll<HTMLElement>('.home-mobile-ad-card');
+    if (
+      !mobileAd.classList.contains('is-carousel') ||
+      !track ||
+      cards.length < 2 ||
+      mobileAd.dataset.ready === 'true'
+    ) return;
+
+    mobileAd.dataset.ready = 'true';
+    let activeIndex = 0;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const events = new AbortController();
+    mobileAd._mobileBannerAbortController = events;
+
+    const render = () => {
+      track.style.transitionDuration = reduceMotion.matches ? '0ms' : '320ms';
+      track.style.transform = `translateX(-${activeIndex * 100}%)`;
+    };
+
+    const startCarousel = () => {
+      if (mobileAd._mobileBannerIntervalId !== undefined) return;
+      mobileAd._mobileBannerIntervalId = window.setInterval(() => {
+        activeIndex = (activeIndex + 1) % cards.length;
+        render();
+      }, 5000);
+    };
+
+    const stopCarousel = () => {
+      if (mobileAd._mobileBannerIntervalId === undefined) return;
+      window.clearInterval(mobileAd._mobileBannerIntervalId);
+      delete mobileAd._mobileBannerIntervalId;
+    };
+
+    mobileAd.addEventListener('mouseenter', stopCarousel, { signal: events.signal });
+    mobileAd.addEventListener('mouseleave', startCarousel, { signal: events.signal });
+    reduceMotion.addEventListener('change', render, { signal: events.signal });
+    render();
+    startCarousel();
+  };
+
+  const resetMobileCarousel = (mobileAd: MobileAdElement) => {
+    if (mobileAd._mobileBannerIntervalId !== undefined) {
+      window.clearInterval(mobileAd._mobileBannerIntervalId);
+      delete mobileAd._mobileBannerIntervalId;
+    }
+    mobileAd._mobileBannerAbortController?.abort();
+    delete mobileAd._mobileBannerAbortController;
+    mobileAd.removeAttribute('data-ready');
+  };
+
+  const loadManagedMobileBanners = async () => {
+    const mobileAd = document.querySelector<MobileAdElement>('[data-home-mobile-ad]');
+    if (!mobileAd || mobileAd.dataset.loading === 'true') return;
+
+    mobileAd.dataset.loading = 'true';
+    try {
+      if (!isSupabaseConfigured()) return;
+      const banners = await getHomeMobileBanners();
+      const active = (banners ?? []).filter(
+        (banner) =>
+          banner.active &&
+          banner.imageUrl.trim() &&
+          /^https?:\/\//i.test(banner.imageUrl.trim()),
+      );
+      const track = mobileAd.querySelector<HTMLElement>('.home-mobile-ad-track');
+      if (!track) return;
+
+      mobileAd.removeAttribute('data-managed-mobile-pending');
+      resetMobileCarousel(mobileAd);
+      track.style.transform = '';
+      track.style.transitionDuration = '';
+      track.innerHTML = '';
+
+      if (active.length === 0) {
+        mobileAd.classList.remove('is-carousel');
+        mobileAd.dataset.count = '0';
+        mobileAd.style.display = 'none';
+        return;
+      }
+
+      for (const banner of active) {
+        const safeAlt = (banner.alt || 'MK Stock Lab mobile banner').slice(0, 120);
+        const safeImageUrl = banner.imageUrl.trim();
+        let card: HTMLElement;
+
+        if (banner.linkUrl && /^https?:\/\//i.test(banner.linkUrl.trim())) {
+          const anchor = document.createElement('a');
+          anchor.href = banner.linkUrl.trim();
+          anchor.target = '_blank';
+          anchor.rel = 'noopener noreferrer';
+          anchor.className = 'home-mobile-ad-card';
+          anchor.setAttribute('aria-label', safeAlt);
+          card = anchor;
+        } else {
+          const container = document.createElement('div');
+          container.className = 'home-mobile-ad-card';
+          container.setAttribute('role', 'img');
+          container.setAttribute('aria-label', safeAlt);
+          card = container;
+        }
+
+        const image = document.createElement('img');
+        image.src = safeImageUrl;
+        image.alt = safeAlt;
+        image.width = 720;
+        image.height = 225;
+        image.loading = 'lazy';
+        card.appendChild(image);
+        track.appendChild(card);
+      }
+
+      mobileAd.classList.toggle('is-carousel', active.length >= 2);
+      mobileAd.dataset.count = String(active.length);
+      mobileAd.style.display = '';
+
+      if (active.length >= 2) setupMobileCarousel(mobileAd);
+    } finally {
+      delete mobileAd.dataset.loading;
+    }
+  };
+
+  document.addEventListener('astro:page-load', () => { void loadManagedMobileBanners(); });
+  void loadManagedMobileBanners();
+</script>

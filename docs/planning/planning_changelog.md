@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DU - 2026-06-28
+
+### Mobile Home Ad Banner Slot Implementation (Completed — safe local validation PASS)
+
+- **Status**: Completed; safe local static checks and production build passed.
+- **PC Home rail**: expanded managed banner slots from 3 to 5 while preserving existing slots 1-3 and the `160×600` desktop rail behavior.
+- **Mobile Home banner**: added a five-slot mobile component between `MY PORTFOLIO` and `MARKET SNAPSHOT`, visible only at `max-width: 859px` with reserved `720 / 225` aspect ratio and `object-fit: contain`.
+- **Rotation**: mobile banners match the desktop 5000ms behavior: hidden at zero active banners, static at one, and rotating at two or more, with timer teardown on reload.
+- **MyPage**: extended the existing admin-gated, URL-only panel into separate PC and mobile subsections; no file upload UI was added.
+- **Storage compatibility**: the checked-in RLS policy publicly reads only the existing `home_rail_banners` row, so the row now supports a backward-compatible object containing `home_rail_banners` and `home_mobile_banners`. Legacy array values remain readable. No migration was added.
+- **Validation**: `check:home-ad-slots` PASS, `check:home-rail-banner-settings` 111/111 PASS, new `check:phase-3du-mobile-home-ad-banner` 59/59 PASS, `npm run build` PASS, and `git diff --check` PASS.
+- **No API route changes. No DB migration. No live Supabase calls. No external provider calls. No production deployment.**
+
 ## Phase 3DT - 2026-06-27
 
 ### Mobile Home Ad Banner Slot Implementation Plan (Planned — implementation pending)
