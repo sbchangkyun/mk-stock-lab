@@ -112,6 +112,13 @@ const normalizeStoredHomeBannerSettings = (raw: unknown): StoredHomeBannerSettin
   };
 };
 
+const bannerSettingsMatch = (
+  expected: StoredHomeBannerSettings,
+  actual: StoredHomeBannerSettings,
+): boolean =>
+  JSON.stringify(expected.home_rail_banners) === JSON.stringify(actual.home_rail_banners) &&
+  JSON.stringify(expected.home_mobile_banners) === JSON.stringify(actual.home_mobile_banners);
+
 const readHomeBannerSettings = async (): Promise<StoredHomeBannerSettings | null> => {
   if (!isSupabaseConfigured()) return null;
   const supabase = getBrowserSupabaseClient();
@@ -211,9 +218,17 @@ const saveHomeBannerSettings = async (
       updated_at: new Date().toISOString(),
     };
     if (updatedBy) payload['updated_by'] = updatedBy;
-    const { error } = await supabase.from('site_settings').upsert(payload);
-    if (error) {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .upsert(payload)
+      .select('value')
+      .single();
+    if (error || !data) {
       return { ok: false, message: '저장에 실패했습니다. 관리자 권한을 확인하세요.' };
+    }
+    const persisted = normalizeStoredHomeBannerSettings((data as { value: unknown }).value);
+    if (!bannerSettingsMatch(next, persisted)) {
+      return { ok: false, message: '저장된 배너 설정을 확인하지 못했습니다. 다시 시도하세요.' };
     }
     return { ok: true, message: '배너 설정이 저장되었습니다.' };
   } catch {

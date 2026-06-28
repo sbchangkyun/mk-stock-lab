@@ -84,7 +84,11 @@
     track.style.transitionDuration = '';
 
     if (active.length === 0) {
-      // No active managed banners — keep rail hidden, never show sample banners
+      // No active managed banners — clear stale managed content and keep the rail hidden.
+      track.innerHTML = '';
+      rail.classList.remove('is-carousel');
+      rail.dataset.count = '0';
+      rail.style.display = 'none';
       return;
     }
 

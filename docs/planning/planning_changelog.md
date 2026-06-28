@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DU-HF2 - 2026-06-28
+
+### PC Banner Admin Save Persistence Hotfix (Implemented — owner re-test pending)
+
+- **Owner report**: PC slot 2 `linkUrl` and PC slot 3 `active` changes reverted after save/reload, while mobile banner saves appeared to persist.
+- **Source finding**: PC and mobile fields used the same correct collection/merge path, but save success was based only on the upsert response status; MyPage did not reload persisted values after success. The two group save buttons also had identical labels.
+- **Fix**: the upsert now returns and normalizes the stored value, compares both desktop and mobile groups with the intended payload, and reports success only after verification. MyPage reloads both groups after verified save and uses explicit PC/mobile save labels.
+- **Checkbox behavior**: section guidance now states that only checked slots are eligible. `HomeRailAd` already filters by `active`; its zero-active path now clears stale managed DOM and hides the rail during client navigation.
+- **Compatibility**: legacy array-shaped desktop values and object-shaped `home_rail_banners` / `home_mobile_banners` values remain supported. Saving either group preserves the other group.
+- **No live Supabase calls by Codex. No SQL or migration. No dev server or browser automation. No production deployment.**
+- **Next phase**: owner re-test; PASS → Phase 3DU-HF2-CLOSEOUT or Phase 3DU-OWNER-REVIEW-CLOSEOUT.
+
 ## Phase 3DU-OWNER-REVIEW - 2026-06-28
 
 ### Mobile Home Ad Banner Owner Review (Prepared — owner manual browser/admin review pending)

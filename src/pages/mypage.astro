@@ -204,6 +204,7 @@ import Layout from '../layouts/Layout.astro';
               <span class="mp-banner-size-guide">160×600</span>
             </div>
             <p class="mp-notif-desc">Supabase 버킷에 이미지를 올린 뒤 생성된 URL을 등록합니다. 앱 내 업로드는 지원하지 않습니다.</p>
+            <p class="mp-banner-active-guide">체크된 슬롯만 노출됩니다. 체크 해제 시 이미지 URL이 있어도 노출되지 않습니다.</p>
 
           <div class="mp-banner-slot" id="mpBannerSlot1">
             <div class="mp-banner-slot-header">
@@ -316,7 +317,7 @@ import Layout from '../layouts/Layout.astro';
           </div>
 
           <div class="mp-banner-admin-actions">
-            <button class="mp-add-btn" type="button" id="mpBannerSaveBtn">저장</button>
+            <button class="mp-add-btn" type="button" id="mpBannerSaveBtn">PC 배너 저장</button>
             <button class="header-button secondary" type="button" id="mpBannerReloadBtn">다시 불러오기</button>
             <span class="mp-banner-save-msg" id="mpBannerSaveMsg" role="status" aria-live="polite" hidden></span>
           </div>
@@ -328,6 +329,7 @@ import Layout from '../layouts/Layout.astro';
               <span class="mp-banner-size-guide">720×225</span>
             </div>
             <p class="mp-notif-desc">모바일 Home 전용 배너 URL을 등록합니다. 화면 너비 859px 이하에서만 표시됩니다.</p>
+            <p class="mp-banner-active-guide">체크된 슬롯만 노출됩니다. 체크 해제 시 이미지 URL이 있어도 노출되지 않습니다.</p>
 
             <div class="mp-banner-slot" id="mpMobileBannerSlot1">
               <div class="mp-banner-slot-header">
@@ -440,7 +442,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
 
             <div class="mp-banner-admin-actions">
-              <button class="mp-add-btn" type="button" id="mpMobileBannerSaveBtn">저장</button>
+              <button class="mp-add-btn" type="button" id="mpMobileBannerSaveBtn">모바일 배너 저장</button>
               <button class="header-button secondary" type="button" id="mpMobileBannerReloadBtn">다시 불러오기</button>
               <span class="mp-banner-save-msg" id="mpMobileBannerSaveMsg" role="status" aria-live="polite" hidden></span>
             </div>
@@ -749,15 +751,25 @@ import Layout from '../layouts/Layout.astro';
     const mobileMsgEl = document.getElementById('mpMobileBannerSaveMsg') as HTMLElement | null;
 
     desktopSaveBtn?.addEventListener('click', async () => {
-      const result = await saveHomeRailBanners(collectSlots('mpBanner'));
-      showMsg(desktopMsgEl, result.message, result.ok);
-      if (result.ok) updateSummaryFromForm();
+      desktopSaveBtn.disabled = true;
+      try {
+        const result = await saveHomeRailBanners(collectSlots('mpBanner'));
+        if (result.ok) await reload();
+        showMsg(desktopMsgEl, result.message, result.ok);
+      } finally {
+        desktopSaveBtn.disabled = false;
+      }
     });
 
     mobileSaveBtn?.addEventListener('click', async () => {
-      const result = await saveHomeMobileBanners(collectSlots('mpMobileBanner'));
-      showMsg(mobileMsgEl, result.message, result.ok);
-      if (result.ok) updateSummaryFromForm();
+      mobileSaveBtn.disabled = true;
+      try {
+        const result = await saveHomeMobileBanners(collectSlots('mpMobileBanner'));
+        if (result.ok) await reload();
+        showMsg(mobileMsgEl, result.message, result.ok);
+      } finally {
+        mobileSaveBtn.disabled = false;
+      }
     });
 
     desktopReloadBtn?.addEventListener('click', reload);
