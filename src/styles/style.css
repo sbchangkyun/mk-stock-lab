@@ -33,11 +33,18 @@ body.dark-mode {
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: Pretendard, Inter, Arial, "Malgun Gothic", sans-serif;
@@ -287,9 +294,38 @@ body.dark-mode .primary-nav {
 .site-main {
   flex: 1 0 auto;
   width: min(calc(100% - 2 * var(--page-gutter-x)), var(--page-max-width));
-  max-width: none;
+  min-width: 0;
+  max-width: 100%;
   margin: 0 auto;
   padding: 32px 0 48px;
+}
+
+/* Keep wide route content inside the viewport. Dense data remains scrollable
+   through its dedicated wrappers instead of widening the document itself. */
+.site-header,
+.ticker-belt,
+.primary-nav,
+.site-footer,
+.bottom-document-area,
+.slide-ad,
+.site-main > *,
+.home-shell,
+.home-main-column,
+.chart-ai-shell,
+.market-dashboard,
+.market-dashboard-stage,
+.market-dashboard-panel,
+.market-dashboard-grid,
+.market-fixture-section,
+.lab-shell,
+.lab-landing-shell,
+.lab-card-grid,
+.portfolio-mvp,
+.portfolio-dashboard,
+.mp-page-layout,
+.mp-sections {
+  min-width: 0;
+  max-width: 100%;
 }
 
 body.home-page .site-main {

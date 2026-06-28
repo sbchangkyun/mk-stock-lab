@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3DV-HF1 - 2026-06-28
+
+### Mobile Viewport and Global Responsive Layout Hotfix (Implemented - owner production re-check pending)
+
+- **Owner report**: production mobile pages rendered like a desktop page scaled down, with a large right-side blank area across Home, Chart AI, Market, Lab, Portfolio, MyPage, and login modal states.
+- **Root cause**: the shared viewport meta was already device-width based, but the global shell did not fully contain intrinsic-width descendants. `html`/`body` had no explicit viewport width ceiling, `body` had no horizontal-overflow guard, `.site-main` used `max-width: none` without `min-width: 0`, and major route shells did not consistently declare shrink containment.
+- **Fix**: upgraded the viewport meta with `viewport-fit=cover`; constrained `html`, `body`, `.site-main`, common shell elements, and major route containers to the viewport; made `.site-main` and route shells shrink-safe; and added body-level overflow protection after the source overflow paths were contained.
+- **Preserved behavior**: mobile Home banner through 859px, hidden at 860px+, PC rail at 1440px+, MyPage banner admin, and internal scroll behavior for Portfolio holdings and Lab matrices.
+- **Validation**: focused viewport checker 47/47, mobile baseline checker 74/74, Phase 3DU checker 59/59, Phase 3DU-HF2 checker 43/43, Phase 3DV deployment checker 32/32, production-domain checker 33/33, build, and `git diff --check` passed.
+- **Deployment**: pending validation and the implementation commit.
+- **Owner production re-check**: pending.
+
 ## Phase 3DV - 2026-06-28
 
 ### Production Deployment for Mobile Home Ad Banner (Deployed)
