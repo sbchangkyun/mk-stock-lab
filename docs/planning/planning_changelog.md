@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3ED - 2026-06-28
+
+### Owner Mixed-Currency Preview Smoke Closeout (Completed - owner smoke PASS)
+
+- **Status**: Completed - owner mixed-currency preview smoke PASS.
+- **Background**: Phase 3EB implemented the strictly gated mixed-currency owner-preview API using mocked FX, and Phase 3EC prepared the owner-run smoke script, runbook, and sanitized result template.
+- **Owner result**: active local owner smoke PASS. HTTP 200, contract PASS, mixedCurrencyPreview=true, mockedFx=true, fxSource=mocked, fxStaleState=sample, rowCount=2, unavailableRows=2, unsupportedCurrencyRows=0, missingQuoteRows=2, aggregateState=null, provider-leakage PASS, final result PASS.
+- **Interpretation**: unavailable rows and aggregate null are accepted for this phase because real US quotes and real FX provider integration are not in scope.
+- **Safety**: no active smoke by Codex, no live KIS call by Codex, no live FX call, no real FX provider, no public `source=live`, no `source=auto`, no production touch, no secrets/env values, no raw API response, no prices/totals/P&L, no screenshots/server logs, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3ED closeout contract 66/66 PASS, Phase 3EC preparation contract 78/78 PASS, Phase 3EB contract 92/92 PASS, Phase 3EA contract 124/124 PASS, Portfolio live-preview API 110/110 PASS, production-domain contract 33/33 PASS, geometry guard dry-run PASS, build PASS, and `git diff --check` PASS.
+- **Recommended next phase**: Phase 3EE - Portfolio Mixed-Currency Preview UI Wiring Plan.
+
 ## Phase 3EC - 2026-06-28
 
 ### Owner-Run Mixed-Currency Preview Smoke Preparation (Prepared - owner execution pending)
