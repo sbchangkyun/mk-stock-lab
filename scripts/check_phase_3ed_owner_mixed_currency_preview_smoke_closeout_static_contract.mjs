@@ -176,12 +176,12 @@ let uiChanged = true;
 let lockChanged = true;
 let dependenciesChanged = true;
 try {
-  runtimeChanges = execFileSync('git', ['diff', '--name-only', '6e05ecd', '--', 'src'], {
+  runtimeChanges = execFileSync('git', ['diff', '--name-only', '6e05ecd', '01e21a6', '--', 'src'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().split(/\r?\n/).filter(Boolean);
   uiChanged = runtimeChanges.includes(paths.ui);
-  lockChanged = execFileSync('git', ['diff', '--name-only', '6e05ecd', '--', 'package-lock.json'], {
+  lockChanged = execFileSync('git', ['diff', '--name-only', '6e05ecd', '01e21a6', '--', 'package-lock.json'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().length > 0;
@@ -189,8 +189,12 @@ try {
     cwd: root,
     encoding: 'utf8',
   }));
-  dependenciesChanged = JSON.stringify(baselinePackage.dependencies) !== JSON.stringify(packageJson.dependencies) ||
-    JSON.stringify(baselinePackage.devDependencies) !== JSON.stringify(packageJson.devDependencies);
+  const phasePackage = JSON.parse(execFileSync('git', ['show', '01e21a6:package.json'], {
+    cwd: root,
+    encoding: 'utf8',
+  }));
+  dependenciesChanged = JSON.stringify(baselinePackage.dependencies) !== JSON.stringify(phasePackage.dependencies) ||
+    JSON.stringify(baselinePackage.devDependencies) !== JSON.stringify(phasePackage.devDependencies);
 } catch {
   // Fail closed through initialized values.
 }

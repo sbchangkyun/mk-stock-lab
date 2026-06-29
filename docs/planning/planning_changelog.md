@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EF - 2026-06-28
+
+### Portfolio Mixed-Currency Preview UI Implementation (Implemented - local owner-preview UI ready)
+
+- **Status**: Implemented - local-only mixed-currency owner-preview UI ready. No deployment.
+- **Background**: Phase 3EE completed the UI wiring plan after Phase 3ED owner smoke PASS. This phase implements the local-only Portfolio UI activation for mixed mocked-FX preview.
+- **Implemented scope**: local-only activation using `previewMode=owner` plus explicit `fxPreview=mocked`, Phase 3EB API request mapping, a mixed mocked-FX UI state, safe preview labels, unavailable-row display, aggregate-null display, metadata leakage protection, and mobile/layout-safe UI treatment.
+- **Preserved policy**: public production remains fixture-only, KR-only owner preview remains preserved, public `source=live` remains disabled, `source=auto` remains deferred, real FX provider integration remains blocked, and no real US quote provider is added.
+- **Safety**: no active owner smoke by Codex, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EF checker 65/65 PASS; Phase 3EE 135/135 PASS; Phase 3ED 66/66 PASS; Phase 3EB 92/92 PASS; Phase 3EA 124/124 PASS; Portfolio live-preview API 110/110 PASS; mobile baseline 74/74 PASS; production-domain 33/33 PASS; production build PASS; `git diff --check` PASS; production mobile geometry guard `DRY_RUN` with no browser or network. The Phase 3EB, 3ED, and 3EE historical checkers received commit-range-only corrections so they validate their completed phase spans rather than the authorized Phase 3EF working tree. The optional Phase 3DX checker remained 93/94 on its documented `52fcfb7` baseline issue while all 93 architecture assertions passed; it was not modified.
+- **Recommended next phase**: Phase 3EG - Owner Local Mixed-Currency Preview UI Review.
+
 ## Phase 3EE - 2026-06-28
 
 ### Portfolio Mixed-Currency Preview UI Wiring Plan (Completed - UI wiring plan ready)

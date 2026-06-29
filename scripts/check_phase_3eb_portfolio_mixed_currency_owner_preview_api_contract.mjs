@@ -364,12 +364,12 @@ let uiChanged = true;
 let lockChanged = true;
 let dependenciesChanged = true;
 try {
-  sourceChanges = execFileSync('git', ['diff', '--name-only', '9b96477', '--', 'src'], {
+  sourceChanges = execFileSync('git', ['diff', '--name-only', '9b96477', 'ede8f65', '--', 'src'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().split(/\r?\n/).filter(Boolean);
   uiChanged = sourceChanges.includes(paths.ui);
-  lockChanged = execFileSync('git', ['diff', '--name-only', '9b96477', '--', 'package-lock.json'], {
+  lockChanged = execFileSync('git', ['diff', '--name-only', '9b96477', 'ede8f65', '--', 'package-lock.json'], {
     cwd: root,
     encoding: 'utf8',
   }).trim().length > 0;
@@ -377,8 +377,12 @@ try {
     cwd: root,
     encoding: 'utf8',
   }));
-  dependenciesChanged = JSON.stringify(baselinePackage.dependencies) !== JSON.stringify(packageJson.dependencies) ||
-    JSON.stringify(baselinePackage.devDependencies) !== JSON.stringify(packageJson.devDependencies);
+  const phasePackage = JSON.parse(execFileSync('git', ['show', 'ede8f65:package.json'], {
+    cwd: root,
+    encoding: 'utf8',
+  }));
+  dependenciesChanged = JSON.stringify(baselinePackage.dependencies) !== JSON.stringify(phasePackage.dependencies) ||
+    JSON.stringify(baselinePackage.devDependencies) !== JSON.stringify(phasePackage.devDependencies);
 } catch {
   sourceChanges = ['<git-diff-unavailable>'];
 }
