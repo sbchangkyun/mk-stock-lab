@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EE - 2026-06-28
+
+### Portfolio Mixed-Currency Preview UI Wiring Plan (Completed - UI wiring plan ready)
+
+- **Status**: Completed - UI wiring plan ready. No runtime source changes.
+- **Background**: Phase 3ED closed the owner mixed-currency preview smoke with PASS. The API owner smoke confirmed HTTP 200, contract PASS, mixedCurrencyPreview=true, mockedFx=true, fxSource=mocked, fxStaleState=sample, rowCount=2, unavailableRows=2, unsupportedCurrencyRows=0, missingQuoteRows=2, aggregateState=null, provider-leakage PASS, and final result PASS.
+- **Plan scope**: local-only UI activation contract, API request mapping, UI state model, mocked FX label policy, row/aggregate display policy, metadata leakage policy, Phase 3DX layout constraints, owner visual review scope, and Phase 3EF validation plan.
+- **Preserved policy**: public production remains fixture-only, public `source=live` remains disabled, `source=auto` remains deferred, real FX provider integration remains blocked, and no real US quote provider is added.
+- **Safety**: no runtime/UI changes, no active smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EE plan checker 135/135 PASS; Phase 3ED 66/66 PASS; Phase 3EB 92/92 PASS; Phase 3EA 124/124 PASS; mobile baseline 74/74 PASS; Portfolio live-preview API 110/110 PASS; production-domain 33/33 PASS; production build PASS; `git diff --check` PASS; production mobile geometry guard `DRY_RUN` with no browser or network. The Phase 3DX architecture checker reported 93/94 because its historical `52fcfb7` baseline rejects later approved runtime phases; its 93 architecture assertions passed and the historical checker was not weakened.
+- **Recommended next phase**: Phase 3EF - Portfolio Mixed-Currency Preview UI Implementation.
+
 ## Phase 3ED - 2026-06-28
 
 ### Owner Mixed-Currency Preview Smoke Closeout (Completed - owner smoke PASS)
