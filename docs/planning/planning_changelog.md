@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EG - 2026-06-28
+
+### Owner Local Mixed-Currency Preview UI Review Preparation (Prepared — owner visual review pending)
+
+- **Status**: Prepared — owner visual review pending. No runtime source changes.
+- **Background**: Phase 3EF implemented the local-only mixed-currency Portfolio preview UI. This phase prepares the owner visual review runbook and safe PASS/FAIL template.
+- **Review scope**: fixture default, KR-only owner preview, mixed mocked-FX owner preview, preview labels, unavailable rows, aggregate-null display, mobile 390px layout, and production blocking.
+- **Owner workload**: visual review only; the owner should return PASS/FAIL fields and short visual notes only if something fails.
+- **Safety**: no dev server or browser launched by Codex, no screenshots required, no active owner smoke, no live KIS call, no live FX call, no secrets, no API response body, no prices/totals/P&L, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EG checker 40/40 PASS; Phase 3EF 65/65 PASS; Phase 3EE 135/135 PASS; Phase 3ED 66/66 PASS; Portfolio live-preview API 110/110 PASS; mobile baseline 74/74 PASS; production-domain 33/33 PASS; production build PASS; `git diff --check` PASS; production mobile geometry guard `DRY_RUN` with no browser or network. The optional Phase 3DX checker remained 93/94 on its documented `52fcfb7` baseline issue while all 93 architecture assertions passed; it was not modified.
+- **Next step**: owner runs the local visual review using the runbook and returns the filled result template.
+
 ## Phase 3EF - 2026-06-28
 
 ### Portfolio Mixed-Currency Preview UI Implementation (Implemented - local owner-preview UI ready)
