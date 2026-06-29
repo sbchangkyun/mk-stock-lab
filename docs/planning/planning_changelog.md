@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EI - 2026-06-29
+
+### KIS Data Surface Impact Plan (Completed — NAV impact plan ready)
+
+- **Status**: Completed — KIS data surface impact plan ready. No runtime source changes.
+- **Background**: Phase 3EH closed the local mixed-currency Portfolio owner-preview UI review with `PASS_WITH_MOBILE_NOTE`. This phase expands the planning scope from Portfolio-only preview to NAV-wide KIS data impact.
+- **Plan scope**: Home ticker belt and MARKET SNAPSHOT, Chart AI symbol search and analysis data, Market treemaps/Momentum/Trend/index flow/asset returns, Lab asset-class and S&P500 sector return data, Portfolio registered holdings, MyPage watchlist price alerts, and common infrastructure such as symbol master, quote API, quote cache, market calendar, source labels, provider leakage guard, alert worker, and external data gaps.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, real FX provider is not selected, US quote provider is not implemented, and no real-time/live wording is introduced.
+- **Safety**: no runtime/UI/API/provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EI checker 56/56 PASS; Phase 3EH 52/52 PASS; Phase 3EF 65/65 PASS; Portfolio live-preview API 110/110 PASS; mobile baseline 74/74 PASS; production-domain 33/33 PASS; production build PASS; `git diff --check` PASS; production mobile geometry guard `DRY_RUN` with no browser or network. The optional Phase 3DX checker remained 93/94 on its documented `52fcfb7` baseline issue while all 93 architecture assertions passed; it was not modified.
+- **Recommended next phase**: Phase 3EJ — KIS Symbol Master & Quote Infrastructure Plan.
+
 ## Phase 3EH - 2026-06-29
 
 ### Owner Mixed-Currency Preview UI Review Closeout (Completed — owner review PASS with mobile note)
