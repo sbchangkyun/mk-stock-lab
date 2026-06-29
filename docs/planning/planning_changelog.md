@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EH - 2026-06-29
+
+### Owner Mixed-Currency Preview UI Review Closeout (Completed — owner review PASS with mobile note)
+
+- **Status**: Completed — owner mixed-currency preview UI review PASS with mobile evidence note. No runtime source changes.
+- **Background**: Phase 3EF implemented the local-only mixed-currency Portfolio preview UI and Phase 3EG prepared the owner visual review package.
+- **Owner review**: fixture default PASS, KR-only owner preview no-regression PASS, mixed mocked-FX owner preview PASS after selecting individual portfolios with holdings, production block PASS.
+- **Confirmed mixed-preview labels**: `오너 미리보기`, `Mocked FX`, `샘플 환율`, and `실제 시세 아님`.
+- **Initial inconclusive state**: the aggregate/all tab made the URLs appear similar because the selected state did not satisfy preview eligibility; retry with individual portfolios confirmed activation.
+- **Mobile note**: a dedicated 390px owner screenshot was not separately provided. Prior static/mobile validation passed and no mobile issue was reported; this is non-blocking for the local-only closeout.
+- **Safety**: screenshots were voluntarily shared in chat but not committed; no raw API response, request/response body, prices/totals/P&L, secrets, environment values, or account data were recorded in the repository. No dev server or browser was launched by Codex, no active owner smoke, no live KIS call, no live FX call, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EH checker 52/52 PASS; Phase 3EG 40/40 PASS; Phase 3EF 65/65 PASS; Phase 3EE 135/135 PASS; Phase 3ED 66/66 PASS; Portfolio live-preview API 110/110 PASS; mobile baseline 74/74 PASS; production-domain 33/33 PASS; production build PASS; `git diff --check` PASS; production mobile geometry guard `DRY_RUN` with no browser or network. The optional Phase 3DX checker remained 93/94 on its documented `52fcfb7` baseline issue while all 93 architecture assertions passed; it was not modified.
+- **Decision**: Phase 3EH closed.
+- **Recommended next phase**: Phase 3EI — KIS Data Surface Impact Plan.
+
 ## Phase 3EG - 2026-06-28
 
 ### Owner Local Mixed-Currency Preview UI Review Preparation (Prepared — owner visual review pending)
