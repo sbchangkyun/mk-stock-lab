@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3ej-kis-symbol-master-quote-infrastructure-plan": "node scripts/check_phase_3ej_kis_symbol_master_quote_infrastructure_plan_static_contract.mjs",
     "check:phase-3ei-kis-data-surface-impact-plan": "node scripts/check_phase_3ei_kis_data_surface_impact_plan_static_contract.mjs",
     "check:phase-3eh-owner-mixed-currency-ui-review-closeout": "node scripts/check_phase_3eh_owner_mixed_currency_preview_ui_review_closeout_static_contract.mjs",
     "check:phase-3eg-owner-mixed-currency-ui-review": "node scripts/check_phase_3eg_owner_local_mixed_currency_preview_ui_review_static_contract.mjs",

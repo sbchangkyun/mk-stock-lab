@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EJ - 2026-06-29
+
+### KIS Symbol Master & Quote Infrastructure Plan (Completed - shared data infrastructure plan ready)
+
+- **Status**: Completed - KIS symbol master and quote infrastructure plan ready. No runtime source changes.
+- **Background**: Phase 3EI mapped NAV-wide KIS data impact. This phase narrows the next implementation path to the shared domestic symbol, search, quote, cache, freshness, market-calendar, and provider-leakage infrastructure required before visible NAV-wide KIS data expansion.
+- **Plan scope**: domestic stocks + domestic ETFs first, symbol master data contract, source strategy, search index behavior, normalized quote snapshot contract, quote API layer, quote cache/freshness policy, market calendar plan, source/freshness label policy, provider leakage guard, storage/file plan, consumer surface mapping, roadmap, owner decision matrix, and risk register.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, a real FX provider is not selected, a US quote provider is not implemented, no real-time/live wording is introduced, and no account/trading APIs are added.
+- **Safety**: no runtime/UI/API/provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EJ infrastructure-plan contract 263/263 PASS, Phase 3EI impact-plan contract 56/56 PASS, Phase 3EH owner-review closeout 52/52 PASS, Portfolio live preview API 110/110 PASS, mobile baseline 74/74 PASS, production-domain contract 33/33 PASS, geometry guard dry-run PASS, build PASS, and `git diff --check` PASS.
+- **Recommended next phase**: Phase 3EK - Domestic Symbol Master / Search Index Mocked-First Implementation.
+
 ## Phase 3EI - 2026-06-29
 
 ### KIS Data Surface Impact Plan (Completed — NAV impact plan ready)
