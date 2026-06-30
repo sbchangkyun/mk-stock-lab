@@ -1,5 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getClientSafeDomesticSymbolRecords } from '../lib/symbol-master/domesticSymbolMaster';
+
+const clientSafeDomesticSymbols = getClientSafeDomesticSymbolRecords();
+const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols)
+  .replaceAll('<', '\\u003c');
 ---
 
 <Layout title="Chart AI | MK Stock Lab" activePath="/chart-ai">
@@ -7,56 +12,97 @@ import Layout from '../layouts/Layout.astro';
     <div>
       <p class="eyebrow">Chart AI</p>
       <h1>차트 분석 준비 화면</h1>
-      <p class="lead">차트 AI는 선택 종목의 차트 컨텍스트를 기반으로 분석을 제공할 예정입니다. 현재 화면은 <strong>예시 분석 데이터</strong>를 사용하며, 실제 AI · 시세 · 차트 연동은 이후 단계에서 진행합니다.</p>
+      <p class="lead">국내 종목을 검색해 샘플 분석 화면을 확인할 수 있습니다. 현재 화면은 <strong>샘플 종목 데이터와 예시 분석 데이터</strong>를 사용하며, AI · 시세 · 차트 연결은 이후 단계에서 진행합니다.</p>
     </div>
   </header>
 
   <div class="chart-ai-shell">
-
-    <!-- Control panel -->
     <section class="panel chart-ai-control-panel" aria-labelledby="chart-ai-control-heading">
-      <p class="eyebrow">분석 설정</p>
-      <h2 id="chart-ai-control-heading" class="visually-hidden">분석 설정</h2>
-
-      <div class="chart-ai-symbol-row">
-        <label class="chart-search-shell">
-          <span>종목 티커</span>
-          <input
-            id="chartAiInput"
-            type="search"
-            placeholder="005930, AAPL, NVDA …"
-            aria-label="차트 AI 종목 티커"
-            autocomplete="off"
-            spellcheck="false"
-          />
-        </label>
-        <button class="button-link chart-ai-run-btn" id="chartAiRunBtn" type="button">
-          예시 분석 보기
-        </button>
+      <div class="chart-ai-search-heading">
+        <div>
+          <p class="eyebrow">국내 주식·ETF</p>
+          <h2 id="chart-ai-control-heading">국내 종목 검색</h2>
+        </div>
+        <span class="chart-ai-sample-data-badge">샘플 종목 데이터</span>
       </div>
 
-      <div class="chart-ai-sample-list" role="group" aria-label="예시 종목 선택">
-        <span class="chart-ai-sample-label">예시 종목:</span>
-        <button class="chart-ai-sample-btn active" type="button" data-symbol="005930" data-name="삼성전자" data-market="KR">삼성전자</button>
-        <button class="chart-ai-sample-btn" type="button" data-symbol="035420" data-name="NAVER" data-market="KR">NAVER</button>
-        <button class="chart-ai-sample-btn" type="button" data-symbol="AAPL" data-name="Apple" data-market="US">AAPL</button>
-        <button class="chart-ai-sample-btn" type="button" data-symbol="NVDA" data-name="NVIDIA" data-market="US">NVDA</button>
+      <div class="chart-ai-search-workbench">
+        <div class="chart-ai-search-column">
+          <div class="chart-ai-symbol-row">
+            <label class="chart-search-shell" for="chartAiInput">
+              <span>종목 코드 또는 이름</span>
+              <input
+                id="chartAiInput"
+                type="search"
+                placeholder="005930, 삼성, KODEX …"
+                aria-label="국내 종목 코드 또는 이름 검색"
+                aria-controls="chartAiSearchResults"
+                aria-describedby="chartAiSearchExamples"
+                aria-autocomplete="list"
+                aria-expanded="true"
+                role="combobox"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </label>
+            <button class="button-link chart-ai-run-btn" id="chartAiRunBtn" type="button">
+              선택 종목 분석 보기
+            </button>
+          </div>
+
+          <p class="chart-ai-search-examples" id="chartAiSearchExamples">
+            검색 예시: 005930 · 삼성 · 000660 · 하이닉스 · 069500 · KODEX
+          </p>
+
+          <div class="chart-ai-filter-bar" role="group" aria-label="종목 유형 필터">
+            <button class="chart-ai-filter-btn active" type="button" data-asset-filter="all" aria-pressed="true">전체</button>
+            <button class="chart-ai-filter-btn" type="button" data-asset-filter="stock" aria-pressed="false">주식</button>
+            <button class="chart-ai-filter-btn" type="button" data-asset-filter="etf" aria-pressed="false">ETF</button>
+          </div>
+
+          <div class="chart-ai-results-head">
+            <strong>검색 결과</strong>
+            <span id="chartAiResultCount" aria-live="polite">0개</span>
+          </div>
+          <div
+            class="chart-ai-search-results"
+            id="chartAiSearchResults"
+            role="listbox"
+            aria-label="국내 종목 검색 결과"
+          ></div>
+          <p class="chart-ai-empty-state" id="chartAiEmptyState" hidden>
+            조건에 맞는 샘플 종목이 없습니다. 종목 코드나 이름을 다시 확인해 주세요.
+          </p>
+        </div>
+
+        <aside class="chart-ai-selection-card" aria-labelledby="chart-ai-selection-heading" aria-live="polite">
+          <p class="eyebrow" id="chart-ai-selection-heading">선택 종목</p>
+          <div class="chart-ai-selection-title">
+            <strong id="chartAiSelectedName">삼성전자</strong>
+            <span id="chartAiSelectedSymbol">005930</span>
+          </div>
+          <dl class="chart-ai-selection-meta">
+            <div><dt>자산 유형</dt><dd id="chartAiSelectedAssetType">주식</dd></div>
+            <div><dt>거래소</dt><dd id="chartAiSelectedExchange">KOSPI</dd></div>
+            <div><dt>통화</dt><dd id="chartAiSelectedCurrency">KRW</dd></div>
+          </dl>
+          <p class="chart-ai-selection-copy">선택한 샘플 종목 기준의 데모 분석 화면입니다.</p>
+        </aside>
       </div>
 
       <p class="chart-ai-local-note">
-        <span class="chart-ai-local-badge">예시 데이터</span>
-        실제 AI 분석이 아닙니다. 연동 전 화면입니다.
+        <span class="chart-ai-local-badge">실제 시세 아님</span>
+        검색과 선택은 브라우저에 포함된 안전한 샘플 종목 데이터만 사용합니다.
       </p>
     </section>
 
-    <!-- Chart snapshot placeholder -->
     <section class="panel chart-ai-snapshot" aria-label="차트 스냅샷 영역">
       <div class="chart-ai-snapshot-header">
         <div>
           <p class="eyebrow">차트 스냅샷</p>
           <h2 id="chartAiSnapshotTitle">005930 · 삼성전자 · 일봉 예시</h2>
         </div>
-        <span class="chart-ai-snapshot-badge">연동 전 화면</span>
+        <span class="chart-ai-snapshot-badge">샘플 차트</span>
       </div>
       <div class="chart-skeleton" aria-hidden="true" id="chartAiSnapshotBars">
         <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -64,7 +110,6 @@ import Layout from '../layouts/Layout.astro';
       <p class="chart-ai-snapshot-note">차트 스냅샷은 이후 단계에서 연결됩니다. 현재는 시각적 예시 영역입니다.</p>
     </section>
 
-    <!-- Analysis result section (default: 005930) -->
     <section class="chart-ai-result-section" id="chartAiResultSection" aria-labelledby="chart-ai-result-heading">
       <p class="eyebrow">예시 분석 결과</p>
       <h2 id="chart-ai-result-heading">
@@ -99,122 +144,121 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </section>
 
-    <!-- Template / fallback state (hidden by default) -->
     <section class="panel chart-ai-template-state" id="chartAiTemplateState" hidden aria-live="polite">
       <p class="eyebrow" id="chartAiTemplateEyebrow">분석 템플릿 준비 중</p>
-      <p id="chartAiTemplateMsg">입력한 종목에 대한 예시 분석 데이터를 준비 중입니다. 연동 전 화면입니다.</p>
+      <p id="chartAiTemplateMsg">선택한 샘플 종목 기준의 데모 분석 화면입니다. 예시 분석 데이터는 준비 중입니다.</p>
     </section>
 
-    <!-- Disclaimer -->
     <aside class="panel chart-ai-disclaimer" aria-label="이용 안내">
       <p class="eyebrow">이용 안내</p>
       <ul class="chart-ai-disclaimer-list">
-        <li>이 화면의 분석 내용은 <strong>예시 데이터</strong>입니다. 실제 AI 분석 결과가 아닙니다.</li>
-        <li>실제 시세, 차트 데이터, AI 모델은 아직 연결되지 않았습니다.</li>
-        <li>투자 판단 참고용 화면이 아니며, 실제 매매 판단에 사용할 수 없습니다.</li>
+        <li>이 화면의 종목과 분석 내용은 <strong>샘플 데이터</strong>입니다. AI 분석 결과가 아닙니다.</li>
+        <li>시세, 차트 데이터, AI 모델은 아직 연결되지 않았습니다.</li>
+        <li>투자 판단 참고용 화면이 아니며, 매매 판단에 사용할 수 없습니다.</li>
         <li>제공되는 정보는 특정 종목의 매수 또는 매도를 권고하지 않습니다.</li>
         <li>최종 투자 결정 및 그에 따른 결과는 전적으로 이용자 본인의 책임입니다.</li>
       </ul>
     </aside>
-
   </div>
 
+  <script
+    id="chartAiDomesticSymbolData"
+    type="application/json"
+    set:html={clientSafeDomesticSymbolPayload}
+  ></script>
+
   <script>
+    import { searchClientSafeDomesticSymbols } from '../lib/symbol-master/clientSymbolSearch';
+    import type {
+      ClientSafeSymbolSearchRecord,
+      DomesticAssetType,
+    } from '../lib/symbol-master/types';
+
     type DemoEntry = {
-      symbol: string; name: string; market: string; profile: string; timeframe: string;
-      trend: string; momentum: string; volatility: string; support: string; resistance: string;
-      risk: string; disclaimer: string;
+      symbol: string;
+      name: string;
+      profile: string;
+      timeframe: string;
+      trend: string;
+      momentum: string;
+      volatility: string;
+      support: string;
+      resistance: string;
+      risk: string;
     };
 
     const DEMO_ANALYSIS: Record<string, DemoEntry> = {
       '005930': {
-        symbol: '005930', name: '삼성전자', market: 'KR',
-        profile: '국내 대형 기술주 예시', timeframe: '일봉 예시',
+        symbol: '005930', name: '삼성전자', profile: '국내 대형 기술주 예시', timeframe: '일봉 예시',
         trend: '상승 전환을 시도하는 구간으로 가정한 예시 분석입니다.',
         momentum: '단기 모멘텀은 중립에서 개선되는 흐름으로 표시합니다.',
         volatility: '변동성은 보통 수준으로 가정합니다.',
         support: '예시 지지 구간', resistance: '예시 저항 구간',
         risk: '거래량 확인 전까지 추세 신뢰도는 제한적입니다.',
-        disclaimer: '예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다.',
       },
       '035420': {
-        symbol: '035420', name: 'NAVER', market: 'KR',
-        profile: '국내 인터넷 대형주 예시', timeframe: '일봉 예시',
+        symbol: '035420', name: 'NAVER', profile: '국내 인터넷 대형주 예시', timeframe: '일봉 예시',
         trend: '횡보 후 반등을 모색하는 구간으로 가정한 예시 분석입니다.',
         momentum: '단기 모멘텀은 하락에서 중립으로 전환 중인 흐름으로 표시합니다.',
         volatility: '변동성은 평균 수준으로 가정합니다.',
         support: '예시 지지 구간', resistance: '예시 저항 구간',
         risk: '이동평균선 수렴 여부를 추가 확인하는 예시 항목입니다.',
-        disclaimer: '예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다.',
-      },
-      'AAPL': {
-        symbol: 'AAPL', name: 'Apple', market: 'US',
-        profile: '미국 대형 기술주 예시', timeframe: 'Daily example',
-        trend: 'Assumed uptrend continuation for demo purposes. Not a real analysis.',
-        momentum: 'Short-term momentum assumed neutral-to-positive for demo display.',
-        volatility: 'Volatility assumed moderate for this demo entry.',
-        support: 'Example support zone', resistance: 'Example resistance zone',
-        risk: 'Demo entry: volume confirmation not yet simulated.',
-        disclaimer: '예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다.',
-      },
-      'NVDA': {
-        symbol: 'NVDA', name: 'NVIDIA', market: 'US',
-        profile: '미국 반도체 대형주 예시', timeframe: 'Daily example',
-        trend: 'Assumed high-momentum trend scenario for demo purposes. Not a real analysis.',
-        momentum: 'Short-term momentum assumed elevated for demo display.',
-        volatility: 'Volatility assumed above average for this demo entry.',
-        support: 'Example support zone', resistance: 'Example resistance zone',
-        risk: 'Demo entry: elevated volatility scenario — position sizing consideration shown.',
-        disclaimer: '예시 데이터 기반 화면입니다. 실제 투자 판단에 사용할 수 없습니다.',
       },
     };
 
-    const KNOWN_SYMBOLS: Record<string, string> = {
-      '000660': 'SK하이닉스', '069500': 'KODEX 200',
-      'KO': 'Coca-Cola', 'MSFT': 'Microsoft', 'TSLA': 'Tesla',
-      'SPY': 'SPDR S&P 500 ETF', 'QQQ': 'Invesco QQQ',
+    const assetTypeLabel = (assetType: DomesticAssetType): string => {
+      if (assetType === 'stock') return '주식';
+      if (assetType === 'etf') return 'ETF';
+      if (assetType === 'etn') return 'ETN';
+      return '기타';
     };
 
-    const SYMBOL_RE = /^[A-Za-z0-9._-]{1,32}$/;
+    const parseClientSafeRecords = (): ClientSafeSymbolSearchRecord[] => {
+      const payload = document.getElementById('chartAiDomesticSymbolData')?.textContent ?? '[]';
+      try {
+        const parsed: unknown = JSON.parse(payload);
+        return Array.isArray(parsed) ? parsed as ClientSafeSymbolSearchRecord[] : [];
+      } catch {
+        return [];
+      }
+    };
 
     const setup = () => {
       const input = document.getElementById('chartAiInput') as HTMLInputElement | null;
       const runBtn = document.getElementById('chartAiRunBtn') as HTMLButtonElement | null;
+      const resultsEl = document.getElementById('chartAiSearchResults');
+      const resultCount = document.getElementById('chartAiResultCount');
+      const emptyState = document.getElementById('chartAiEmptyState');
       const snapshotTitle = document.getElementById('chartAiSnapshotTitle');
       const resultSection = document.getElementById('chartAiResultSection');
       const templateState = document.getElementById('chartAiTemplateState');
-      const templateEyebrow = document.getElementById('chartAiTemplateEyebrow');
       const templateMsg = document.getElementById('chartAiTemplateMsg');
-      const sampleBtns = document.querySelectorAll<HTMLButtonElement>('.chart-ai-sample-btn');
+      const filterButtons = document.querySelectorAll<HTMLButtonElement>('.chart-ai-filter-btn');
+      const records = parseClientSafeRecords();
+      let activeFilter: DomesticAssetType | 'all' = 'all';
+      let selectedSymbol = '005930';
+      let visibleRecords: ClientSafeSymbolSearchRecord[] = [];
 
-      if (!input || !runBtn) return;
+      if (!input || !runBtn || !resultsEl || !resultCount || !emptyState) return;
       if (runBtn.dataset.ready === 'true') return;
       runBtn.dataset.ready = 'true';
 
       const setText = (id: string, text: string) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = text;
+        const element = document.getElementById(id);
+        if (element) element.textContent = text;
       };
 
-      const selectSample = (symbol: string) => {
-        sampleBtns.forEach((b) => b.classList.toggle('active', b.dataset.symbol === symbol));
-        input.value = symbol;
-      };
-
-      const renderAnalysis = (symbol: string) => {
-        const key = symbol.trim().toUpperCase();
-        const data: DemoEntry | undefined = DEMO_ANALYSIS[key];
-
+      const renderAnalysis = (record: ClientSafeSymbolSearchRecord) => {
+        const data = DEMO_ANALYSIS[record.symbol];
         if (snapshotTitle) {
           snapshotTitle.textContent = data
-            ? `${data.symbol} · ${data.name} · ${data.timeframe}`
-            : `${key} · 차트 스냅샷 영역`;
+            ? `${record.symbol} · ${record.nameKo} · ${data.timeframe}`
+            : `${record.symbol} · ${record.nameKo} · 샘플 차트`;
         }
 
         if (data) {
           if (resultSection) resultSection.hidden = false;
           if (templateState) templateState.hidden = true;
-
           setText('chartAiResultSymbol', data.symbol);
           setText('chartAiResultName', data.name);
           setText('chartAiResultProfile', `${data.profile} · ${data.timeframe}`);
@@ -224,45 +268,349 @@ import Layout from '../layouts/Layout.astro';
           setText('chartAiSupport', data.support);
           setText('chartAiResistance', data.resistance);
           setText('chartAiRisk', data.risk);
-        } else {
-          if (resultSection) resultSection.hidden = true;
-          if (templateState) templateState.hidden = false;
+          return;
+        }
 
-          const knownName = KNOWN_SYMBOLS[key];
-          if (knownName) {
-            if (templateEyebrow) templateEyebrow.textContent = '분석 템플릿 준비 중';
-            if (templateMsg) templateMsg.textContent =
-              `${key} (${knownName}) 예시 분석 데이터를 준비 중입니다. 연동 전 화면입니다.`;
-          } else {
-            if (templateEyebrow) templateEyebrow.textContent = '티커 직접 입력';
-            if (templateMsg) templateMsg.textContent =
-              `입력한 종목 (${key})에 대한 예시 데이터가 없습니다. 위 예시 종목 버튼을 눌러보세요.`;
-          }
+        if (resultSection) resultSection.hidden = true;
+        if (templateState) templateState.hidden = false;
+        if (templateMsg) {
+          templateMsg.textContent = `${record.symbol} (${record.nameKo}) 선택 완료. 선택한 샘플 종목 기준의 데모 분석 화면이며, 예시 분석 데이터는 준비 중입니다.`;
         }
       };
 
-      sampleBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const symbol = btn.dataset.symbol || '';
-          if (!symbol) return;
-          selectSample(symbol);
-          renderAnalysis(symbol);
+      const updateSelection = (record: ClientSafeSymbolSearchRecord) => {
+        selectedSymbol = record.symbol;
+        input.value = record.symbol;
+        setText('chartAiSelectedName', record.nameKo);
+        setText('chartAiSelectedSymbol', record.symbol);
+        setText('chartAiSelectedAssetType', assetTypeLabel(record.assetType));
+        setText('chartAiSelectedExchange', record.exchange);
+        setText('chartAiSelectedCurrency', record.currency);
+        renderAnalysis(record);
+        renderResults();
+      };
+
+      const renderResults = () => {
+        visibleRecords = searchClientSafeDomesticSymbols(records, {
+          query: input.value,
+          limit: 15,
+          assetTypes: activeFilter === 'all' ? undefined : [activeFilter],
+          includeStatuses: ['active'],
+        });
+        resultsEl.replaceChildren();
+        resultCount.textContent = `${visibleRecords.length}개`;
+        emptyState.hidden = visibleRecords.length > 0;
+        input.setAttribute('aria-expanded', String(visibleRecords.length > 0));
+
+        for (const record of visibleRecords) {
+          const button = document.createElement('button');
+          const isSelected = record.symbol === selectedSymbol;
+          button.type = 'button';
+          button.className = 'chart-ai-search-result';
+          button.dataset.symbol = record.symbol;
+          button.setAttribute('role', 'option');
+          button.setAttribute('aria-selected', String(isSelected));
+          button.classList.toggle('selected', isSelected);
+
+          const identity = document.createElement('span');
+          identity.className = 'chart-ai-result-identity';
+          const name = document.createElement('strong');
+          name.textContent = record.nameKo;
+          const symbol = document.createElement('span');
+          symbol.textContent = record.symbol;
+          identity.append(name, symbol);
+
+          const metadata = document.createElement('span');
+          metadata.className = 'chart-ai-result-metadata';
+          metadata.textContent = `${assetTypeLabel(record.assetType)} · ${record.exchange} · ${record.currency}`;
+          button.append(identity, metadata);
+          button.addEventListener('click', () => updateSelection(record));
+          resultsEl.append(button);
+        }
+      };
+
+      filterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.assetFilter;
+          if (filter !== 'all' && filter !== 'stock' && filter !== 'etf') return;
+          activeFilter = filter;
+          filterButtons.forEach((candidate) => {
+            const active = candidate === button;
+            candidate.classList.toggle('active', active);
+            candidate.setAttribute('aria-pressed', String(active));
+          });
+          renderResults();
         });
       });
 
+      input.addEventListener('input', renderResults);
+      input.addEventListener('keydown', (event: KeyboardEvent) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          runBtn.click();
+        }
+        if (event.key === 'ArrowDown') {
+          const firstResult = resultsEl.querySelector<HTMLButtonElement>('.chart-ai-search-result');
+          if (firstResult) {
+            event.preventDefault();
+            firstResult.focus();
+          }
+        }
+      });
       runBtn.addEventListener('click', () => {
-        const value = input.value.trim();
-        if (!value || !SYMBOL_RE.test(value)) return;
-        selectSample(value.toUpperCase());
-        renderAnalysis(value);
+        if (visibleRecords[0]) updateSelection(visibleRecords[0]);
       });
 
-      input.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Enter') runBtn.click();
-      });
+      renderResults();
     };
 
     document.addEventListener('astro:page-load', setup);
     setup();
   </script>
+
+  <style>
+    .chart-ai-search-heading,
+    .chart-ai-results-head,
+    .chart-ai-selection-title,
+    .chart-ai-result-identity {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .chart-ai-search-heading h2 {
+      margin: 0.25rem 0 0;
+    }
+
+    .chart-ai-sample-data-badge,
+    .chart-ai-filter-btn {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .chart-ai-sample-data-badge {
+      padding: 0.4rem 0.7rem;
+    }
+
+    .chart-ai-search-workbench {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(220px, 0.85fr);
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .chart-ai-search-column,
+    .chart-ai-selection-card {
+      min-width: 0;
+    }
+
+    .chart-ai-search-examples {
+      margin: 0.55rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .chart-ai-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 0.9rem 0;
+    }
+
+    .chart-ai-filter-btn {
+      min-height: 34px;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+    }
+
+    .chart-ai-filter-btn.active,
+    .chart-ai-filter-btn[aria-pressed='true'] {
+      border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
+      background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+      color: var(--primary);
+    }
+
+    .chart-ai-results-head {
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    .chart-ai-search-results {
+      max-height: 286px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      scrollbar-gutter: stable;
+    }
+
+    .chart-ai-search-result {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      min-height: 58px;
+      padding: 0.7rem 0.8rem;
+      border: 0;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .chart-ai-search-result:last-child {
+      border-bottom: 0;
+    }
+
+    .chart-ai-search-result:hover,
+    .chart-ai-search-result.selected {
+      background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+    }
+
+    .chart-ai-search-result.selected {
+      box-shadow: inset 3px 0 0 var(--primary);
+    }
+
+    .chart-ai-search-result:focus-visible,
+    .chart-ai-filter-btn:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--primary) 35%, transparent);
+      outline-offset: -3px;
+    }
+
+    .chart-ai-result-identity {
+      justify-content: flex-start;
+      min-width: 0;
+    }
+
+    .chart-ai-result-identity strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chart-ai-result-identity span,
+    .chart-ai-result-metadata {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .chart-ai-empty-state {
+      margin: 0;
+      padding: 1rem;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .chart-ai-selection-card {
+      align-self: start;
+      padding: 1rem;
+      border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+      border-radius: 14px;
+      background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 9%, var(--surface)), var(--surface));
+      box-shadow: inset 3px 0 0 var(--primary);
+    }
+
+    .chart-ai-selection-title {
+      align-items: baseline;
+      margin-top: 0.45rem;
+    }
+
+    .chart-ai-selection-title strong {
+      font-size: 1.15rem;
+    }
+
+    .chart-ai-selection-title span {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-ai-selection-meta {
+      display: grid;
+      gap: 0.55rem;
+      margin: 1rem 0;
+    }
+
+    .chart-ai-selection-meta div {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chart-ai-selection-meta dt,
+    .chart-ai-selection-copy {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .chart-ai-selection-meta dd {
+      margin: 0;
+      font-size: 0.82rem;
+      font-weight: 750;
+    }
+
+    .chart-ai-selection-copy {
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 720px) {
+      .chart-ai-search-workbench {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .chart-ai-search-heading {
+        align-items: flex-start;
+      }
+
+      .chart-ai-search-results {
+        max-height: 244px;
+      }
+
+      .chart-ai-search-result {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.25rem;
+      }
+
+      .chart-ai-result-metadata {
+        white-space: normal;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .chart-ai-search-heading {
+        display: grid;
+      }
+
+      .chart-ai-sample-data-badge {
+        justify-self: start;
+      }
+
+      .chart-ai-result-identity {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+    }
+  </style>
 </Layout>

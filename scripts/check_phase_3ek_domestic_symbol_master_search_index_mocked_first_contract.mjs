@@ -25,6 +25,7 @@ const paths = {
   normalize: 'src/lib/symbol-master/normalize.ts',
   master: 'src/lib/symbol-master/domesticSymbolMaster.ts',
   search: 'src/lib/symbol-master/domesticSymbolSearch.ts',
+  clientSearch: 'src/lib/symbol-master/clientSymbolSearch.ts',
 };
 
 const read = (relativePath) => {
@@ -53,12 +54,8 @@ try {
   seed = [];
 }
 
-const diffFiles = git('diff', '--name-only', 'a6492ce').split(/\r?\n/).filter(Boolean);
-const statusFiles = git('status', '--porcelain=v1').split(/\r?\n/).filter(Boolean)
-  .filter((line) => !line.startsWith('?? '))
-  .map((line) => line.slice(3).trim());
-const untrackedFiles = git('ls-files', '--others', '--exclude-standard').split(/\r?\n/).filter(Boolean);
-const changedFiles = [...new Set([...diffFiles, ...statusFiles, ...untrackedFiles])];
+const phaseEnd = '5baf3b5';
+const changedFiles = git('diff', '--name-only', 'a6492ce', phaseEnd).split(/\r?\n/).filter(Boolean);
 const uiPageChanges = changedFiles.filter((path) =>
   path.startsWith('src/layouts/') || path.startsWith('src/components/') ||
   (path.startsWith('src/pages/') && !path.startsWith('src/pages/api/')));
@@ -76,7 +73,8 @@ const devDependenciesUnchanged = JSON.stringify(packageJson.devDependencies ?? {
   JSON.stringify(baselinePackage.devDependencies ?? {});
 const lockfileUnchanged = !changedFiles.includes('package-lock.json');
 const phaseSection = source.changelog.split('## Phase 3EK - 2026-06-30')[1]?.split('\n## ')[0] ?? '';
-const librarySource = [source.types, source.normalize, source.master, source.search].join('\n');
+const searchSource = [source.search, source.clientSearch].join('\n');
+const librarySource = [source.types, source.normalize, source.master, searchSource].join('\n');
 
 let passed = 0;
 let failed = 0;
@@ -174,20 +172,20 @@ for (const helper of [
 }
 check('Search exports DomesticSymbolSearchOptions', source.search.includes('export type DomesticSymbolSearchOptions'));
 check('Search exports searchDomesticSymbols', source.search.includes('export function searchDomesticSymbols'));
-check('Search default limit is 15', /DOMESTIC_SYMBOL_SEARCH_DEFAULT_LIMIT\s*=\s*15/.test(source.search));
-check('Search maximum limit is 20', /DOMESTIC_SYMBOL_SEARCH_MAX_LIMIT\s*=\s*20/.test(source.search));
+check('Search default limit is 15', /DOMESTIC_SYMBOL_SEARCH_DEFAULT_LIMIT\s*=\s*15/.test(searchSource));
+check('Search maximum limit is 20', /DOMESTIC_SYMBOL_SEARCH_MAX_LIMIT\s*=\s*20/.test(searchSource));
 for (const matchType of [
   'exact-symbol', 'exact-name-ko', 'prefix-symbol', 'prefix-name-ko',
   'alias', 'contains', 'fallback',
 ]) {
-  check(`Search ranking includes ${matchType}`, source.search.includes(`'${matchType}'`) || source.search.includes(`${matchType}:`));
+  check(`Search ranking includes ${matchType}`, searchSource.includes(`'${matchType}'`) || searchSource.includes(`${matchType}:`));
 }
-check('Search supports asset type filter', source.search.includes('assetTypes?: DomesticAssetType[]'));
-check('Search supports exchange filter', source.search.includes('exchanges?: DomesticExchange[]'));
-check('Search supports status filter', source.search.includes('includeStatuses?: SymbolLifecycleStatus[]'));
+check('Search supports asset type filter', searchSource.includes('assetTypes?: DomesticAssetType[]'));
+check('Search supports exchange filter', searchSource.includes('exchanges?: DomesticExchange[]'));
+check('Search supports status filter', searchSource.includes('includeStatuses?: SymbolLifecycleStatus[]'));
 check('Search has deterministic name and symbol tie-breakers',
-  source.search.includes('left.score - right.score') &&
-  source.search.includes('left.nameKo') && source.search.includes('left.symbol'));
+  searchSource.includes('left.score - right.score') &&
+  searchSource.includes('left.nameKo') && searchSource.includes('left.symbol'));
 process.stdout.write('\n');
 
 process.stdout.write('No-network and dependency boundaries:\n');
@@ -215,6 +213,7 @@ try {
       contents: [
         "export * from './src/lib/symbol-master/normalize.ts';",
         "export * from './src/lib/symbol-master/domesticSymbolMaster.ts';",
+        "export * from './src/lib/symbol-master/clientSymbolSearch.ts';",
         "export * from './src/lib/symbol-master/domesticSymbolSearch.ts';",
       ].join('\n'),
       resolveDir: root,
@@ -298,14 +297,14 @@ if (symbolLibrary) {
 }
 process.stdout.write('\n');
 
-process.stdout.write('Change-scope and changelog contract:\n');
-check('Only intended symbol/search runtime files changed',
+process.stdout.write('Historical Phase 3EK change-scope and changelog contract:\n');
+check('Only intended Phase 3EK symbol/search runtime files changed',
   runtimeChanges.length === allowedRuntimeChanges.size && unexpectedRuntimeChanges.length === 0 &&
   [...allowedRuntimeChanges].every((path) => runtimeChanges.includes(path)));
-check('No UI page file changed', uiPageChanges.length === 0);
-check('No API route file changed', apiChanges.length === 0);
-check('No provider file changed', providerChanges.length === 0);
-check('No new dependency added', dependenciesUnchanged && devDependenciesUnchanged && lockfileUnchanged);
+check('No UI page file changed during Phase 3EK', uiPageChanges.length === 0);
+check('No API route file changed during Phase 3EK', apiChanges.length === 0);
+check('No provider file changed during Phase 3EK', providerChanges.length === 0);
+check('No dependency was added during Phase 3EK', dependenciesUnchanged && devDependenciesUnchanged && lockfileUnchanged);
 check('Changelog records no deployment or push', /no deployment/i.test(phaseSection) && /no push/i.test(phaseSection));
 check('Changelog records no UI/API/provider changes',
   phaseSection.includes('no UI page changes') && phaseSection.includes('no API route changes') && phaseSection.includes('no provider changes'));

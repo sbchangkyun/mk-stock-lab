@@ -81,7 +81,8 @@ log('--- Group 3: Symbol input ---');
 check('Page contains symbol input element (chartAiInput id)',
   page.includes('chartAiInput'));
 check('Page contains ticker or symbol label text',
-  page.includes('종목 티커') || page.includes('종목명') || page.includes('티커'));
+  page.includes('종목 티커') || page.includes('종목명') || page.includes('티커') ||
+  page.includes('종목 코드 또는 이름'));
 check('Page contains input placeholder with example symbols',
   page.includes('005930') || page.includes('AAPL'));
 check('Symbol input has autocomplete=off (no persistent autocomplete)',
@@ -90,18 +91,18 @@ check('Symbol input has autocomplete=off (no persistent autocomplete)',
 log('');
 
 // ---------------------------------------------------------------------------
-// Group 4: Sample symbol buttons
+// Group 4: Domestic sample symbol selection
 // ---------------------------------------------------------------------------
-log('--- Group 4: Sample symbol buttons ---');
+log('--- Group 4: Domestic sample symbol selection ---');
 
-check('Page contains chart-ai-sample-btn class',
-  page.includes('chart-ai-sample-btn'));
-check('005930 sample button present', page.includes('data-symbol="005930"'));
-check('035420 sample button present', page.includes('data-symbol="035420"'));
-check('AAPL sample button present', page.includes('data-symbol="AAPL"'));
-check('NVDA sample button present', page.includes('data-symbol="NVDA"'));
-check('Sample button group has role or label',
-  page.includes('aria-label="예시 종목 선택"') || page.includes("role=\"group\""));
+check('Page contains domestic search result class',
+  page.includes('chart-ai-search-result'));
+check('005930 domestic sample is present', page.includes("'005930'") && page.includes('삼성전자'));
+check('035420 domestic sample is present', page.includes("'035420'") && page.includes('NAVER'));
+check('Domestic search examples include 000660', page.includes('000660'));
+check('Domestic search examples include 069500', page.includes('069500'));
+check('Selection controls have accessible roles or labels',
+  page.includes('role="listbox"') && page.includes('aria-label="종목 유형 필터"'));
 
 log('');
 
@@ -161,7 +162,8 @@ log('--- Group 8: Disclaimer and guardrail ---');
 
 check('Page contains chart-ai-disclaimer class', page.includes('chart-ai-disclaimer'));
 check('Disclaimer says not real AI analysis',
-  page.includes('실제 AI 분석이 아닙니다') || page.includes('실제 AI 분석 결과가 아닙니다'));
+  page.includes('실제 AI 분석이 아닙니다') || page.includes('실제 AI 분석 결과가 아닙니다') ||
+  page.includes('AI 분석 결과가 아닙니다'));
 check('Disclaimer says not for investment decisions',
   page.includes('투자 판단 참고용 화면이 아니며') || page.includes('투자 판단에 사용할 수 없습니다'));
 check('Disclaimer disavows buy/sell recommendation',
@@ -235,8 +237,8 @@ if (logos) {
   check('securityLogos.json contains 035420', logoKeys.includes('035420'));
   check('securityLogos.json contains AAPL', logoKeys.includes('AAPL'));
   check('securityLogos.json contains NVDA', logoKeys.includes('NVDA'));
-  check('Page references KNOWN_SYMBOLS or securityLogos-compatible symbols',
-    page.includes('KNOWN_SYMBOLS') || page.includes('securityLogos'));
+  check('Page uses client-safe domestic symbol records for selection',
+    page.includes('getClientSafeDomesticSymbolRecords') && page.includes('ClientSafeSymbolSearchRecord'));
 } else {
   check('securityLogos.json readable', false);
 }
@@ -282,7 +284,8 @@ log('--- Group 12: CSS additions ---');
 
 const css = existsSync(STYLE_PATH) ? readFileSync(STYLE_PATH, 'utf8') : '';
 check('chart-ai-shell class in style.css', css.includes('.chart-ai-shell'));
-check('chart-ai-sample-btn class in style.css', css.includes('.chart-ai-sample-btn'));
+check('chart-ai search result styling is present',
+  page.includes('.chart-ai-search-result') || css.includes('.chart-ai-search-result'));
 check('chart-ai-result-grid class in style.css', css.includes('.chart-ai-result-grid'));
 check('chart-ai-disclaimer class in style.css', css.includes('.chart-ai-disclaimer'));
 check('chart-ai-result-card class in style.css', css.includes('.chart-ai-result-card'));

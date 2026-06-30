@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL - 2026-06-30
+
+### Chart AI Domestic Symbol Search Wiring (Implemented — owner review pending)
+
+- **Status**: Implemented — Chart AI domestic symbol search wiring ready for owner review. No API route or provider integration.
+- **Background**: Phase 3EK implemented the mocked-first domestic symbol master and deterministic search foundation. This phase connects that foundation to the Chart AI page as the first visible consumer.
+- **Implemented scope**: Chart AI search input, deterministic domestic stock/ETF results, selected-symbol summary, stock/ETF filters, sample-data notice, client-safe symbol records, and safe fixture/demo analysis copy.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, a real FX provider is not selected, a US quote provider is not implemented, no real-time/live wording is introduced, no KIS metadata fetch is performed, no quote/API/provider/live integration is added, and no account/trading APIs are added.
+- **Safety**: no API route changes, no provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL contract 89/89 PASS, Phase 3EK 245/245 PASS, Phase 3EJ 263/263 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-OWNER-REVIEW — Chart AI Domestic Symbol Search Owner Review.
+
 ## Phase 3EK - 2026-06-30
 
 ### Domestic Symbol Master / Search Index Mocked-First Implementation (Implemented - mocked-first symbol/search foundation ready)
