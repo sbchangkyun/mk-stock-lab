@@ -224,6 +224,10 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       };
 
       const closeDropdown = () => {
+        visibleRecords = [];
+        resultsEl.replaceChildren();
+        resultCount.textContent = '0개';
+        emptyState.hidden = true;
         dropdown.hidden = true;
         input.setAttribute('aria-expanded', 'false');
       };
@@ -243,8 +247,14 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       };
 
       const renderResults = (open = true) => {
+        const query = input.value.trim();
+        if (!query) {
+          closeDropdown();
+          return;
+        }
+
         visibleRecords = searchClientSafeDomesticSymbols(records, {
-          query: input.value,
+          query,
           limit: 15,
           assetTypes: activeFilter === 'all' ? undefined : [activeFilter],
           includeStatuses: ['active'],
@@ -266,8 +276,10 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           button.classList.toggle('selected', isSelected);
 
           const name = document.createElement('strong');
+          name.className = 'chart-ai-search-result-name';
           name.textContent = record.nameKo;
           const metadata = document.createElement('span');
+          metadata.className = 'chart-ai-search-result-meta';
           metadata.textContent = record.assetType === 'etf'
             ? `${record.symbol} · ${record.exchange} · ${record.currency}`
             : `${record.symbol} · ${record.exchange} · ${assetTypeLabel(record.assetType)}`;
@@ -308,6 +320,10 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         if (event.key === 'Escape') closeDropdown();
       });
       runBtn.addEventListener('click', () => {
+        if (!input.value.trim()) {
+          closeDropdown();
+          return;
+        }
         renderResults(true);
         if (visibleRecords[0]) updateSelection(visibleRecords[0]);
       });
@@ -344,9 +360,38 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-lookup-shell {
+      --chart-shell-bg: #fbfcfe;
+      --chart-shell-rail: #f3f6fb;
+      --chart-shell-border: rgb(23 32 51 / 12%);
+      --chart-shell-grid: rgb(23 32 51 / 7%);
+      --chart-shell-axis: #637083;
+      --chart-shell-muted: #637083;
+      --chart-shell-volume: #9aabc0;
+      --chart-shell-overlay: rgb(255 255 255 / 90%);
+      --chart-shell-up: #118a4f;
+      --chart-shell-down: #c43f3f;
+      --chart-shell-active: color-mix(in srgb, var(--primary) 11%, var(--chart-shell-bg));
+      --chart-shell-warning: #8a5a05;
+      --chart-shell-shadow: 0 18px 42px rgb(20 36 64 / 10%);
       display: grid;
       gap: 1rem;
       min-width: 0;
+    }
+
+    :global(body.dark-mode) .chart-lookup-shell {
+      --chart-shell-bg: #0d1728;
+      --chart-shell-rail: #111e32;
+      --chart-shell-border: rgb(148 163 184 / 18%);
+      --chart-shell-grid: rgb(148 163 184 / 9%);
+      --chart-shell-axis: #91a3ba;
+      --chart-shell-muted: #91a3ba;
+      --chart-shell-volume: #39506d;
+      --chart-shell-overlay: rgb(13 23 40 / 90%);
+      --chart-shell-up: #30c892;
+      --chart-shell-down: #f06b74;
+      --chart-shell-active: rgb(90 120 255 / 14%);
+      --chart-shell-warning: #f5c96a;
+      --chart-shell-shadow: 0 18px 42px rgb(0 0 0 / 24%);
     }
 
     .chart-lookup-search {
@@ -367,6 +412,10 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
     .chart-lookup-submit {
       min-width: 76px;
+    }
+
+    .chart-ai-symbol-row {
+      max-width: 820px;
     }
 
     .chart-lookup-search-tools,
@@ -421,7 +470,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     .chart-lookup-dropdown {
       position: absolute;
       top: calc(100% - 0.45rem);
-      right: 1rem;
+      width: min(820px, calc(100% - 2rem));
       left: 1rem;
       overflow: hidden;
       border: 1px solid var(--border);
@@ -438,17 +487,20 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-ai-search-results {
+      display: flex;
+      flex-direction: column;
       max-height: 250px;
       overflow-y: auto;
       overscroll-behavior: contain;
     }
 
-    .chart-ai-search-result {
+    :global(.chart-ai-search-result) {
       display: grid;
       gap: 0.18rem;
       width: 100%;
       min-height: 52px;
       padding: 0.58rem 0.75rem;
+      appearance: none;
       border: 0;
       border-bottom: 1px solid var(--border);
       background: transparent;
@@ -456,28 +508,31 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       font: inherit;
       text-align: left;
       cursor: pointer;
+      transition: background-color 140ms ease, box-shadow 140ms ease;
     }
 
-    .chart-ai-search-result:last-child {
+    :global(.chart-ai-search-result:last-child) {
       border-bottom: 0;
     }
 
-    .chart-ai-search-result:hover,
-    .chart-ai-search-result.selected {
+    :global(.chart-ai-search-result:hover),
+    :global(.chart-ai-search-result.selected) {
       background: color-mix(in srgb, var(--primary) 7%, var(--surface));
     }
 
-    .chart-ai-search-result.selected {
+    :global(.chart-ai-search-result.selected) {
       box-shadow: inset 3px 0 0 var(--primary);
     }
 
-    .chart-ai-search-result strong {
+    :global(.chart-ai-search-result-name) {
       font-size: 0.88rem;
+      line-height: 1.35;
     }
 
-    .chart-ai-search-result span {
+    :global(.chart-ai-search-result-meta) {
       color: var(--text-muted);
       font-size: 0.75rem;
+      line-height: 1.4;
     }
 
     .chart-ai-empty-state {
@@ -565,18 +620,18 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     .chart-market-panel {
       min-width: 0;
       overflow: hidden;
-      border: 1px solid #24324a;
+      border: 1px solid var(--chart-shell-border);
       border-radius: 16px;
-      background: #0d1728;
-      color: #e5edf8;
-      box-shadow: 0 18px 42px rgb(15 23 42 / 18%);
+      background: var(--chart-shell-bg);
+      color: var(--text);
+      box-shadow: var(--chart-shell-shadow);
     }
 
     .chart-market-rail {
       min-height: 72px;
       padding: 0.85rem 1rem;
-      border-bottom: 1px solid rgb(148 163 184 / 18%);
-      background: #111e32;
+      border-bottom: 1px solid var(--chart-shell-border);
+      background: var(--chart-shell-rail);
     }
 
     .chart-market-heading-group {
@@ -590,7 +645,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-market-kicker {
-      color: #91a3ba;
+      color: var(--chart-shell-muted);
       font-size: 0.7rem;
       font-weight: 750;
       letter-spacing: 0.08em;
@@ -628,11 +683,11 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-market-status span {
-      color: #91a3ba;
+      color: var(--chart-shell-muted);
     }
 
     .chart-market-status strong {
-      color: #f5c96a;
+      color: var(--chart-shell-warning);
     }
 
     .chart-period-controls {
@@ -640,7 +695,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       gap: 0.3rem;
       overflow-x: auto;
       padding: 0.65rem 1rem;
-      border-bottom: 1px solid rgb(148 163 184 / 14%);
+      border-bottom: 1px solid var(--chart-shell-border);
       scrollbar-width: thin;
     }
 
@@ -652,7 +707,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       border: 1px solid transparent;
       border-radius: 6px;
       background: transparent;
-      color: #91a3ba;
+      color: var(--chart-shell-muted);
       font: inherit;
       font-size: 0.72rem;
       font-weight: 750;
@@ -660,9 +715,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-period-controls button.active {
-      border-color: rgb(109 133 255 / 42%);
-      background: rgb(90 120 255 / 14%);
-      color: #dfe6ff;
+      border-color: color-mix(in srgb, var(--primary) 42%, transparent);
+      background: var(--chart-shell-active);
+      color: var(--primary);
     }
 
     .chart-candlestick-ready {
@@ -670,8 +725,8 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       min-height: 390px;
       overflow: hidden;
       background-image:
-        linear-gradient(rgb(148 163 184 / 8%) 1px, transparent 1px),
-        linear-gradient(90deg, rgb(148 163 184 / 7%) 1px, transparent 1px);
+        linear-gradient(var(--chart-shell-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--chart-shell-grid) 1px, transparent 1px);
       background-size: 100% 25%, 12.5% 100%;
     }
 
@@ -683,7 +738,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      color: #60738e;
+      color: var(--chart-shell-axis);
       font-size: 0.62rem;
     }
 
@@ -706,7 +761,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       height: 42px;
       border-radius: 1px;
       background: currentColor;
-      color: #30c892;
+      color: var(--chart-shell-up);
     }
 
     .chart-candle-stage i::before {
@@ -721,7 +776,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-candle-stage i.down {
-      color: #f06b74;
+      color: var(--chart-shell-down);
     }
 
     .chart-candle-stage i.short { height: 22px; transform: translateY(28px); }
@@ -739,13 +794,13 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       gap: 0.25rem;
       height: 58px;
       padding-top: 0.4rem;
-      border-top: 1px solid rgb(148 163 184 / 16%);
+      border-top: 1px solid var(--chart-shell-border);
     }
 
     .chart-volume-reserve span {
       width: clamp(5px, 0.75vw, 9px);
       height: 35%;
-      background: #39506d;
+      background: var(--chart-shell-volume);
       opacity: 0.65;
     }
 
@@ -761,9 +816,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       gap: 0.25rem;
       min-width: min(280px, calc(100% - 3rem));
       padding: 0.75rem 1rem;
-      border: 1px solid rgb(148 163 184 / 18%);
+      border: 1px solid var(--chart-shell-border);
       border-radius: 10px;
-      background: rgb(13 23 40 / 88%);
+      background: var(--chart-shell-overlay);
       text-align: center;
       transform: translate(-50%, -50%);
       backdrop-filter: blur(6px);
@@ -774,15 +829,15 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-ready-message span {
-      color: #91a3ba;
+      color: var(--chart-shell-muted);
       font-size: 0.7rem;
       line-height: 1.45;
     }
 
     .chart-mk-ai-note {
       padding: 0.8rem 1rem;
-      border-top: 1px solid rgb(148 163 184 / 14%);
-      background: #111e32;
+      border-top: 1px solid var(--chart-shell-border);
+      background: var(--chart-shell-rail);
     }
 
     .chart-mk-ai-note strong {
@@ -791,7 +846,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
     .chart-mk-ai-note p {
       margin-top: 0.25rem;
-      color: #91a3ba;
+      color: var(--chart-shell-muted);
       font-size: 0.72rem;
     }
 
@@ -879,7 +934,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--text);
     }
 
-    .chart-ai-search-result:focus-visible,
+    :global(.chart-ai-search-result:focus-visible),
     .chart-ai-filter-btn:focus-visible,
     .chart-period-controls button:focus-visible,
     .chart-mk-ai-button:focus-visible {
@@ -902,12 +957,18 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         padding: 0.8rem;
       }
 
+      .chart-ai-symbol-row {
+        width: 100%;
+        max-width: none;
+      }
+
       .chart-lookup-search-tools {
         align-items: flex-start;
         flex-direction: column;
       }
 
       .chart-lookup-dropdown {
+        width: auto;
         right: 0.8rem;
         left: 0.8rem;
       }

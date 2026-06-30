@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-HF1-SX - 2026-06-30
+
+### Chart AI Search UX & Theme Alignment Hotfix (Implemented — owner review recommended)
+
+- **Status**: Implemented — Chart AI search UX and chart theme alignment hotfix ready for owner review. No API route or provider integration.
+- **Background**: Phase 3EL-HF1 repositioned `/chart-ai` as a stock lookup-first chart page and Phase 3EL-OWNER-REVIEW-HF1 prepared the owner review package. The owner’s local visual review found that the search input was too wide, search result styling did not match the site style, results appeared before user input, results were laid out horizontally instead of vertically, and the chart shell looked fixed dark in light mode.
+- **Implemented scope**: desktop search control width reduced, mobile search containment preserved, idle empty input hides results, typing opens a vertical one-result-per-row list, no-match state appears only for non-empty queries, result rows use site-consistent styling, selection clears input and closes the dropdown, required query coverage is preserved, and chart shell colors now follow light/dark theme tokens instead of remaining fixed dark-only.
+- **Deferred scope**: mocked OHLC candlestick data, volume data foundation, MK AI intro modal, staged loading, sequential analysis cards, runtime companyProfile data, KIS chart/profile integration, quote API integration, deployment, and push.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, real FX provider is not selected, US quote provider is not implemented, no real-time/live/current-price wording is introduced, no KIS metadata fetch is performed, no quote/API/provider/live integration is added, and no account/trading APIs are added.
+- **Safety**: no Home/Market/Lab/Portfolio/MyPage/Layout changes, no API route changes, no provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-HF1-SX contract 109/109 PASS, owner-review HF1 72/72 PASS, Phase 3EL-HF1 112/112 PASS, Phase 3EL-UXR 143/143 PASS, closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-OWNER-REVIEW-HF1-SX — Owner Review of Search UX & Theme Alignment Hotfix. Alternative: Phase 3EL-HF2 — Mocked Candlestick Chart and Volume Foundation if owner review is skipped.
+
 ## Phase 3EL-OWNER-REVIEW-HF1 - 2026-06-30
 
 ### Chart AI Stock Lookup Layout Owner Review Preparation (Prepared — owner visual review pending)

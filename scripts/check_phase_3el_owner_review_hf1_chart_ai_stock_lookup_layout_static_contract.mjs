@@ -15,6 +15,7 @@ import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const startingCommit = '41b0af4';
+const endingCommit = '0d8f357';
 const paths = {
   runbook: 'docs/planning/phase_3el_owner_review_hf1_chart_ai_stock_lookup_layout_runbook_v0.1.md',
   template: 'docs/planning/phase_3el_owner_review_hf1_chart_ai_stock_lookup_layout_result_template_v0.1.md',
@@ -48,8 +49,8 @@ const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog
   .split('## Phase 3EL-OWNER-REVIEW-HF1 - 2026-06-30')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean);
-const srcChanges = git('diff', '--name-only', startingCommit, '--', 'src').split(/\r?\n/).filter(Boolean);
+const phaseChanges = git('diff', '--name-only', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean);
+const srcChanges = git('diff', '--name-only', startingCommit, endingCommit, '--', 'src').split(/\r?\n/).filter(Boolean);
 const uiChanges = srcChanges.filter((path) =>
   path.startsWith('src/pages/') || path.startsWith('src/components/') || path.startsWith('src/layouts/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
