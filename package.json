@@ -12,6 +12,7 @@
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
     "check:phase-3el-hf1-sx2-chart-ai-compact-search-panel-hotfix": "node scripts/check_phase_3el_hf1_sx2_chart_ai_compact_search_panel_hotfix_contract.mjs",
+    "check:phase-3el-owner-review-hf1-sx2-closeout": "node scripts/check_phase_3el_owner_review_hf1_sx2_closeout_static_contract.mjs",
     "check:phase-3el-hf1-sx-chart-ai-search-ux-theme-alignment-hotfix": "node scripts/check_phase_3el_hf1_sx_chart_ai_search_ux_theme_alignment_hotfix_contract.mjs",
     "check:phase-3el-owner-review-hf1-sx-chart-ai-search-ux-theme-alignment": "node scripts/check_phase_3el_owner_review_hf1_sx_chart_ai_search_ux_theme_alignment_static_contract.mjs",
     "check:phase-3el-owner-review-hf1-chart-ai-stock-lookup-layout": "node scripts/check_phase_3el_owner_review_hf1_chart_ai_stock_lookup_layout_static_contract.mjs",

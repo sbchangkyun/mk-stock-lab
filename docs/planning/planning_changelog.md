@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-OWNER-REVIEW-HF1-SX2-CLOSEOUT - 2026-07-01
+
+### Chart AI Compact Search Panel Owner Review Closeout (Closed — owner review PASS)
+
+- **Status**: Closed — owner review PASS for Phase 3EL-HF1-SX2 compact search panel hotfix. No runtime source changes.
+- **Decision**: `PASS`.
+- **Background**: Phase 3EL-HF1-SX2 compacted the `/chart-ai` search panel after prior owner feedback on search width, visible card background width, dropdown alignment, example query text, filter placement, and result row density. The owner manually reviewed the local `/chart-ai` screen and reported `검수 결과: 통과`.
+- **Accepted scope**: compact `540px` desktop search panel, visible search card/background reduced with input group, example query text removed, dropdown aligned to the compact panel and attached below the search control, `전체`/`주식`/`ETF` filters moved into the result header, filters hidden when inactive, compact one-line result rows, vertical one-result-per-row list, preserved idle/typing/no-match/selection states, preserved six-query search behavior, and preserved chart theme alignment.
+- **Deferred scope**: mocked OHLC candlestick data, volume data foundation, MK AI intro modal, staged loading, sequential analysis cards, runtime companyProfile data, KIS chart/profile integration, quote API integration, deployment, and push.
+- **Safety**: no runtime/UI/API/provider changes, no screenshots or image files committed, no dev server or browser launched by Codex, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-OWNER-REVIEW-HF1-SX2-CLOSEOUT contract 79/79 PASS, Phase 3EL-HF1-SX2 112/112 PASS, owner-review HF1-SX 78/78 PASS, Phase 3EL-HF1-SX 109/109 PASS, owner-review HF1 72/72 PASS, Phase 3EL-HF1 112/112 PASS, Phase 3EL-UXR 143/143 PASS, prior closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-HF2 — Mocked Candlestick Chart and Volume Foundation.
+
 ## Phase 3EL-HF1-SX2 - 2026-07-01
 
 ### Chart AI Compact Search Panel Hotfix (Implemented — owner review recommended)
