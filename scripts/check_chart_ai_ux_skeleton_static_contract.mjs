@@ -131,7 +131,7 @@ check('Page contains primary chart market panel', page.includes('chart-market-pa
 check('Page contains candlestick-ready visual area', page.includes('chart-candlestick-ready'));
 check('Page contains chart heading', page.includes('chart-market-heading'));
 check('Page contains sample chart notice', page.includes('샘플 차트'));
-check('Chart note references future OHLC connection', page.includes('HF2에서 샘플 OHLC'));
+check('Chart identifies sample OHLC and volume data', page.includes('샘플 OHLC·거래량 데이터'));
 
 log('');
 

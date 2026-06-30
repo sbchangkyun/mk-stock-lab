@@ -16,6 +16,7 @@ import { build } from 'esbuild';
 
 const root = process.cwd();
 const startingCommit = '0d8f357';
+const endingCommit = '6e37572';
 const paths = {
   result: 'docs/planning/phase_3el_hf1_sx_chart_ai_search_ux_theme_alignment_hotfix_result_v0.1.md',
   checker: 'scripts/check_phase_3el_hf1_sx_chart_ai_search_ux_theme_alignment_hotfix_contract.mjs',
@@ -41,12 +42,12 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3EL-HF1-SX - 2026-06-30')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = new Set(git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean));
+const phaseChanges = new Set(git('diff', '--name-only', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean));
 const srcChanges = [...phaseChanges].filter((path) => path.startsWith('src/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
 const providerChanges = srcChanges.filter((path) =>
   path.startsWith('src/lib/server/providers/') || path.startsWith('src/lib/server/marketData/'));
-const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit).split(/\r?\n/).filter(Boolean);
+const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean);
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp']);
 const addedImages = addedFiles.filter((path) => imageExtensions.has(extname(path).toLowerCase()));
 const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) ===
@@ -180,7 +181,7 @@ check('Dark chart background token is dark', source.page.includes('--chart-shell
 check('Chart panel is not fixed dark-only',
   /\.chart-market-panel\s*\{[^}]*background:\s*var\(--chart-shell-bg\)/s.test(source.page));
 check('Chart grid is theme-tokenized',
-  source.page.includes('linear-gradient(var(--chart-shell-grid)'));
+  source.page.includes('stroke: var(--chart-shell-grid)'));
 check('Chart axis is theme-tokenized', source.page.includes('color: var(--chart-shell-axis)'));
 check('Chart candles and volume are theme-tokenized',
   ['var(--chart-shell-up)', 'var(--chart-shell-down)', 'var(--chart-shell-volume)']

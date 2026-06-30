@@ -96,7 +96,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             </div>
           </div>
           <div class="chart-market-status">
-            <span>캔들 차트 준비</span>
+            <span id="chartAiChartStatus">샘플 OHLC·거래량 데이터</span>
             <strong>실제 시세 아님</strong>
           </div>
         </div>
@@ -109,25 +109,26 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           <button type="button" data-period="1y" aria-pressed="false">1년</button>
         </div>
 
-        <div class="chart-candlestick-ready" aria-label="캔들 차트 준비 영역">
-          <div class="chart-axis-labels" aria-hidden="true">
-            <span>고가</span>
-            <span>중간</span>
-            <span>저가</span>
+        <div
+          class="chart-candlestick-ready"
+          id="chartAiMarketChart"
+          role="img"
+          aria-label="선택 종목의 샘플 캔들 차트와 거래량"
+        >
+          <div class="chart-plot-heading" aria-hidden="true">
+            <strong id="chartAiChartIdentity">삼성전자 · 005930</strong>
+            <span id="chartAiChartPeriodLabel">1일 샘플</span>
           </div>
-          <div class="chart-candle-stage" aria-hidden="true">
-            <i class="up short"></i><i class="down medium"></i><i class="up tall"></i><i class="up medium"></i>
-            <i class="down short"></i><i class="down tall"></i><i class="up medium"></i><i class="up tall"></i>
-            <i class="down medium"></i><i class="up short"></i><i class="up medium"></i><i class="down short"></i>
-            <i class="up tall"></i><i class="down medium"></i><i class="up short"></i><i class="up tall"></i>
-          </div>
-          <div class="chart-volume-reserve" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-          </div>
-          <div class="chart-ready-message">
-            <strong>캔들·거래량 영역</strong>
-            <span>HF2에서 샘플 OHLC와 거래량 데이터가 연결됩니다.</span>
+          <svg
+            class="chart-market-svg"
+            id="chartAiMarketSvg"
+            viewBox="0 0 960 440"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          ></svg>
+          <div class="chart-safety-note">
+            <strong>샘플 OHLC·거래량 데이터</strong>
+            <span>실제 시세 아님 · 투자 참고용</span>
           </div>
         </div>
 
@@ -175,6 +176,14 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
   ></script>
 
   <script>
+    import { buildMockedChartGeometry } from '../lib/chart-ai/chartScale';
+    import {
+      CHART_PERIOD_LABELS,
+      createMockedOhlcSeries,
+      isChartPeriodKey,
+      isValidMockedOhlcSeries,
+      type ChartPeriodKey,
+    } from '../lib/chart-ai/mockedOhlc';
     import { searchClientSafeDomesticSymbols } from '../lib/symbol-master/clientSymbolSearch';
     import type { ClientSafeSymbolSearchRecord, DomesticAssetType } from '../lib/symbol-master/types';
 
@@ -207,18 +216,103 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       const periodButtons = document.querySelectorAll<HTMLButtonElement>('[data-period]');
       const mkAiButton = document.getElementById('chartAiMkAiBtn') as HTMLButtonElement | null;
       const mkAiNote = document.getElementById('chartAiMkAiNote');
+      const chart = document.getElementById('chartAiMarketChart');
+      const chartSvg = document.getElementById('chartAiMarketSvg') as SVGSVGElement | null;
       const records = parseClientSafeRecords();
       let activeFilter: DomesticAssetType | 'all' = 'all';
       let selectedSymbol = '005930';
+      let selectedName = '삼성전자';
+      let activePeriod: ChartPeriodKey = '1d';
       let visibleRecords: ClientSafeSymbolSearchRecord[] = [];
 
-      if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState) return;
+      if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState || !chart || !chartSvg) return;
       if (runBtn.dataset.ready === 'true') return;
       runBtn.dataset.ready = 'true';
 
       const setText = (id: string, text: string) => {
         const element = document.getElementById(id);
         if (element) element.textContent = text;
+      };
+
+      const createSvgElement = <K extends keyof SVGElementTagNameMap>(
+        name: K,
+        attributes: Record<string, string | number>,
+        className?: string,
+      ): SVGElementTagNameMap[K] => {
+        const element = document.createElementNS('http://www.w3.org/2000/svg', name);
+        Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+        if (className) element.setAttribute('class', className);
+        return element;
+      };
+
+      const renderChart = () => {
+        const points = createMockedOhlcSeries(selectedSymbol, activePeriod);
+        if (!isValidMockedOhlcSeries(points)) return;
+        const geometry = buildMockedChartGeometry(points, activePeriod);
+        const gridLayer = createSvgElement('g', {}, 'chart-svg-grid');
+        const volumeLayer = createSvgElement('g', {}, 'chart-svg-volume');
+        const candleLayer = createSvgElement('g', {}, 'chart-svg-candles');
+        const axisLayer = createSvgElement('g', {}, 'chart-svg-axis');
+
+        geometry.priceLabels.forEach(({ y, label }) => {
+          if (y === undefined) return;
+          gridLayer.append(createSvgElement('line', {
+            x1: geometry.plotLeft, y1: y, x2: geometry.plotRight, y2: y,
+          }, 'chart-grid-line'));
+          const axisText = createSvgElement('text', { x: geometry.plotRight + 14, y: y + 4 }, 'chart-axis-text');
+          axisText.textContent = label;
+          axisLayer.append(axisText);
+        });
+
+        gridLayer.append(createSvgElement('line', {
+          x1: geometry.plotLeft,
+          y1: geometry.volumeTop - 14,
+          x2: geometry.plotRight,
+          y2: geometry.volumeTop - 14,
+        }, 'chart-volume-divider'));
+
+        geometry.dateLabels.forEach(({ x, label }) => {
+          if (x === undefined) return;
+          gridLayer.append(createSvgElement('line', {
+            x1: x, y1: geometry.priceTop, x2: x, y2: geometry.volumeBottom,
+          }, 'chart-grid-line chart-grid-line-vertical'));
+          const axisText = createSvgElement('text', { x, y: 430, 'text-anchor': 'middle' }, 'chart-axis-text');
+          axisText.textContent = label;
+          axisLayer.append(axisText);
+        });
+
+        geometry.candles.forEach((candle) => {
+          const directionClass = candle.direction === 'up' ? 'is-up' : 'is-down';
+          candleLayer.append(createSvgElement('line', {
+            x1: candle.x,
+            y1: candle.wickTop,
+            x2: candle.x,
+            y2: candle.wickBottom,
+          }, `chart-candle-wick ${directionClass}`));
+          candleLayer.append(createSvgElement('rect', {
+            x: candle.x - candle.bodyWidth / 2,
+            y: candle.bodyTop,
+            width: candle.bodyWidth,
+            height: candle.bodyHeight,
+            rx: 0.8,
+          }, `chart-candle-body ${directionClass}`));
+          volumeLayer.append(createSvgElement('rect', {
+            x: candle.x - candle.bodyWidth / 2,
+            y: candle.volumeY,
+            width: candle.bodyWidth,
+            height: candle.volumeHeight,
+            rx: 0.6,
+          }, `chart-volume-bar ${directionClass}`));
+        });
+
+        chartSvg.setAttribute('viewBox', geometry.viewBox);
+        chartSvg.replaceChildren(gridLayer, volumeLayer, candleLayer, axisLayer);
+        setText('chartAiChartIdentity', `${selectedName} · ${selectedSymbol}`);
+        setText('chartAiChartPeriodLabel', `${CHART_PERIOD_LABELS[activePeriod]} 샘플`);
+        chart.setAttribute(
+          'aria-label',
+          `${selectedName} ${selectedSymbol}, ${CHART_PERIOD_LABELS[activePeriod]} 선택 종목의 샘플 캔들 차트와 거래량. 실제 시세 아님.`,
+        );
       };
 
       const closeDropdown = () => {
@@ -233,6 +327,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
       const updateSelection = (record: ClientSafeSymbolSearchRecord) => {
         selectedSymbol = record.symbol;
+        selectedName = record.nameKo;
         setText('chartAiSelectedName', record.nameKo);
         setText('chartAiSelectedSymbol', record.symbol);
         setText('chartAiSelectedExchange', record.exchange);
@@ -243,6 +338,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         setText('chartAiMetaCurrency', record.currency);
         input.value = '';
         closeDropdown();
+        renderChart();
       };
 
       const renderResults = (open = true) => {
@@ -330,11 +426,14 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
       periodButtons.forEach((button) => {
         button.addEventListener('click', () => {
+          if (!isChartPeriodKey(button.dataset.period)) return;
+          activePeriod = button.dataset.period;
           periodButtons.forEach((candidate) => {
             const active = candidate === button;
             candidate.classList.toggle('active', active);
             candidate.setAttribute('aria-pressed', String(active));
           });
+          renderChart();
         });
       });
 
@@ -344,6 +443,8 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         mkAiButton.setAttribute('aria-expanded', String(!expanded));
         mkAiNote.hidden = expanded;
       });
+
+      renderChart();
     };
 
     document.addEventListener('astro:page-load', setup);
@@ -731,116 +832,123 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
     .chart-candlestick-ready {
       position: relative;
-      min-height: 390px;
+      min-height: 440px;
       overflow: hidden;
-      background-image:
-        linear-gradient(var(--chart-shell-grid) 1px, transparent 1px),
-        linear-gradient(90deg, var(--chart-shell-grid) 1px, transparent 1px);
-      background-size: 100% 25%, 12.5% 100%;
+      background: var(--chart-shell-bg);
     }
 
-    .chart-axis-labels {
+    .chart-plot-heading {
       position: absolute;
-      top: 1rem;
-      right: 0.8rem;
-      bottom: 7rem;
+      z-index: 1;
+      top: 0.72rem;
+      right: 4.4rem;
+      left: 1.2rem;
       display: flex;
-      flex-direction: column;
       justify-content: space-between;
+      gap: 0.75rem;
+      pointer-events: none;
+    }
+
+    .chart-plot-heading strong {
+      overflow: hidden;
+      font-size: 0.76rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chart-plot-heading span {
+      flex: 0 0 auto;
       color: var(--chart-shell-axis);
-      font-size: 0.62rem;
+      font-size: 0.66rem;
+      font-weight: 700;
     }
 
-    .chart-candle-stage {
+    .chart-market-svg {
+      display: block;
+      width: 100%;
+      height: 440px;
+      overflow: visible;
+    }
+
+    :global(.chart-grid-line) {
+      stroke: var(--chart-shell-grid);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    :global(.chart-grid-line-vertical) {
+      stroke-dasharray: 3 6;
+    }
+
+    :global(.chart-volume-divider) {
+      stroke: var(--chart-shell-border);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    :global(.chart-axis-text) {
+      fill: var(--chart-shell-axis);
+      font-family: inherit;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    :global(.chart-candle-wick) {
+      stroke-width: 1.25;
+      vector-effect: non-scaling-stroke;
+    }
+
+    :global(.chart-candle-body.is-up),
+    :global(.chart-candle-wick.is-up) {
+      fill: var(--chart-shell-up);
+      stroke: var(--chart-shell-up);
+    }
+
+    :global(.chart-candle-wick.is-down) {
+      stroke: var(--chart-shell-down);
+    }
+
+    :global(.chart-candle-body.is-down) {
+      fill: var(--chart-shell-bg);
+      stroke: var(--chart-shell-down);
+      stroke-width: 1.5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    :global(.chart-volume-bar) {
+      fill: var(--chart-shell-volume);
+      opacity: 0.52;
+    }
+
+    :global(.chart-volume-bar.is-up) {
+      fill: var(--chart-shell-up);
+    }
+
+    :global(.chart-volume-bar.is-down) {
+      fill: var(--chart-shell-down);
+    }
+
+    .chart-safety-note {
       position: absolute;
-      top: 2.25rem;
-      right: 3.1rem;
-      bottom: 7rem;
-      left: 1.25rem;
+      right: 4.4rem;
+      bottom: 2.25rem;
       display: flex;
+      gap: 0.45rem;
       align-items: center;
-      justify-content: space-around;
-      gap: clamp(0.2rem, 1vw, 0.65rem);
-      opacity: 0.74;
-    }
-
-    .chart-candle-stage i {
-      position: relative;
-      width: clamp(5px, 0.75vw, 9px);
-      height: 42px;
-      border-radius: 1px;
-      background: currentColor;
-      color: var(--chart-shell-up);
-    }
-
-    .chart-candle-stage i::before {
-      position: absolute;
-      top: -18px;
-      bottom: -18px;
-      left: 50%;
-      width: 1px;
-      background: currentColor;
-      content: '';
-      transform: translateX(-50%);
-    }
-
-    .chart-candle-stage i.down {
-      color: var(--chart-shell-down);
-    }
-
-    .chart-candle-stage i.short { height: 22px; transform: translateY(28px); }
-    .chart-candle-stage i.medium { height: 36px; transform: translateY(4px); }
-    .chart-candle-stage i.tall { height: 52px; transform: translateY(-22px); }
-
-    .chart-volume-reserve {
-      position: absolute;
-      right: 3.1rem;
-      bottom: 0.9rem;
-      left: 1.25rem;
-      display: flex;
-      align-items: end;
-      justify-content: space-around;
-      gap: 0.25rem;
-      height: 58px;
-      padding-top: 0.4rem;
-      border-top: 1px solid var(--chart-shell-border);
-    }
-
-    .chart-volume-reserve span {
-      width: clamp(5px, 0.75vw, 9px);
-      height: 35%;
-      background: var(--chart-shell-volume);
-      opacity: 0.65;
-    }
-
-    .chart-volume-reserve span:nth-child(3n) { height: 78%; }
-    .chart-volume-reserve span:nth-child(4n) { height: 55%; }
-    .chart-volume-reserve span:nth-child(5n) { height: 90%; }
-
-    .chart-ready-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      display: grid;
-      gap: 0.25rem;
-      min-width: min(280px, calc(100% - 3rem));
-      padding: 0.75rem 1rem;
+      max-width: calc(100% - 5.6rem);
+      padding: 0.28rem 0.48rem;
       border: 1px solid var(--chart-shell-border);
-      border-radius: 10px;
+      border-radius: 5px;
       background: var(--chart-shell-overlay);
-      text-align: center;
-      transform: translate(-50%, -50%);
-      backdrop-filter: blur(6px);
-    }
-
-    .chart-ready-message strong {
-      font-size: 0.82rem;
-    }
-
-    .chart-ready-message span {
       color: var(--chart-shell-muted);
-      font-size: 0.7rem;
-      line-height: 1.45;
+      font-size: 0.6rem;
+      line-height: 1.3;
+      backdrop-filter: blur(5px);
+    }
+
+    .chart-safety-note strong {
+      flex: 0 0 auto;
+      color: var(--chart-shell-warning);
     }
 
     .chart-mk-ai-note {
@@ -1000,7 +1108,17 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       }
 
       .chart-candlestick-ready {
-        min-height: 330px;
+        min-height: 360px;
+      }
+
+      .chart-market-svg {
+        height: 360px;
+      }
+
+      .chart-safety-note {
+        right: 2.85rem;
+        bottom: 1.72rem;
+        max-width: calc(100% - 3.7rem);
       }
 
       .chart-stock-sidebar {
@@ -1023,10 +1141,14 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         text-align: left;
       }
 
-      .chart-candle-stage,
-      .chart-volume-reserve {
-        right: 2.6rem;
+      .chart-plot-heading {
+        right: 2.85rem;
         left: 0.8rem;
+      }
+
+      .chart-safety-note {
+        display: grid;
+        gap: 0.1rem;
       }
     }
 

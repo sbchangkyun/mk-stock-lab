@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-HF2 - 2026-07-01
+
+### Mocked Candlestick Chart and Volume Foundation (Implemented — owner review recommended)
+
+- **Status**: Implemented — mocked candlestick chart and volume foundation ready for owner review. No API route or provider integration.
+- **Background**: Phase 3EL-HF1 repositioned `/chart-ai` as a stock lookup-first chart page, Phase 3EL-HF1-SX and SX2 refined search UX and theme alignment, and Phase 3EL-OWNER-REVIEW-HF1-SX2-CLOSEOUT recorded owner review `PASS` for the compact search panel. This phase implements the next deferred core surface: mocked candlestick chart and volume foundation.
+- **Implemented scope**: mocked/client-safe OHLC data contract, deterministic mocked series, candlestick bodies and wicks, up/down candle distinction, sample axis/labels, period controls, selected-symbol chart updates, period-based chart updates, volume band and volume bars, light/dark theme-aware chart rendering, mobile-contained chart sizing, and preservation of the approved compact search panel.
+- **Deferred scope**: KIS chart data, live quote data, quote API integration, real market data, MK AI intro modal, staged loading, sequential analysis cards, runtime companyProfile data, deployment, and push.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, real FX provider is not selected, US quote provider is not implemented, no real-time/live/current-price wording is introduced, no KIS metadata fetch is performed, no quote/API/provider/live integration is added, and no account/trading APIs are added.
+- **Safety**: no Home/Market/Lab/Portfolio/MyPage/Layout changes, no API route changes, no provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-HF2 134/134 PASS, Phase 3EL-OWNER-REVIEW-HF1-SX2-CLOSEOUT 79/79 PASS, Phase 3EL-HF1-SX2 112/112 PASS, owner-review HF1-SX 78/78 PASS, Phase 3EL-HF1-SX 109/109 PASS, owner-review HF1 72/72 PASS, Phase 3EL-HF1 112/112 PASS, Phase 3EL-UXR 143/143 PASS, prior closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-OWNER-REVIEW-HF2 — Owner Review of Mocked Candlestick Chart and Volume Foundation. Alternative: Phase 3EL-HF3 — MK AI Activation Intro and Staged Loading Foundation if owner review is skipped.
+
 ## Phase 3EL-OWNER-REVIEW-HF1-SX2-CLOSEOUT - 2026-07-01
 
 ### Chart AI Compact Search Panel Owner Review Closeout (Closed — owner review PASS)

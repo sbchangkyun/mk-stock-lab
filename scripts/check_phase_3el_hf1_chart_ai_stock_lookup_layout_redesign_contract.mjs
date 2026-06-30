@@ -16,6 +16,7 @@ import { build } from 'esbuild';
 
 const root = process.cwd();
 const startingCommit = '8fede60';
+const endingCommit = '41b0af4';
 const paths = {
   result: 'docs/planning/phase_3el_hf1_chart_ai_stock_lookup_layout_redesign_result_v0.1.md',
   checker: 'scripts/check_phase_3el_hf1_chart_ai_stock_lookup_layout_redesign_contract.mjs',
@@ -42,7 +43,7 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3EL-HF1 - 2026-06-30')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = new Set(git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean));
+const phaseChanges = new Set(git('diff', '--name-only', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean));
 const srcChanges = [...phaseChanges].filter((path) => path.startsWith('src/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
 const providerChanges = srcChanges.filter((path) =>
@@ -123,9 +124,9 @@ check('Primary chart panel exists', source.page.includes('class="chart-market-pa
 check('Chart panel contains 차트', source.page.includes('>차트</p>'));
 check('Chart panel contains 샘플 차트', source.page.includes('>샘플 차트</h2>'));
 check('Candlestick-ready area exists', source.page.includes('chart-candlestick-ready'));
-check('Static candlestick-style placeholder exists', source.page.includes('chart-candle-stage'));
-check('Reserved volume band exists', source.page.includes('chart-volume-reserve'));
-check('No OHLC runtime dataset is introduced', !source.page.includes('MockedOhlcPoint'));
+check('Candlestick rendering layer exists', source.page.includes('chart-svg-candles'));
+check('Volume rendering layer exists', source.page.includes('chart-svg-volume'));
+check('HF2 mocked OHLC foundation is client-safe', source.page.includes("../lib/chart-ai/mockedOhlc"));
 check('Period controls exist', source.page.includes('chart-period-controls'));
 for (const period of ['1일', '1주', '1개월', '3개월', '1년']) {
   check(`Period control includes ${period}`, source.page.includes(`>${period}</button>`));
