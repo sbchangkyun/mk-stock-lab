@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-OWNER-REVIEW-HF1-SX - 2026-06-30
+
+### Chart AI Search UX & Theme Alignment Owner Review Preparation (Prepared — owner visual review pending)
+
+- **Status**: Prepared — owner visual review pending. No runtime source changes.
+- **Background**: Phase 3EL-HF1-SX refined `/chart-ai` search UX and chart theme alignment after the owner identified search width, result styling, idle result visibility, horizontal result layout, and fixed-dark chart shell issues. This phase prepares the owner-run manual local review package for the hotfix.
+- **Review scope**: local `/chart-ai` search width, idle search state, typing state, vertical result list, result row content and style, required query coverage, selection behavior, no-match state, filters, light/dark chart shell alignment, preserved HF1 layout, mobile 390px layout, accessibility basics, and forbidden wording.
+- **Owner workload**: owner runs the local dev server and reviews the UI manually, then returns only the filled PASS/FAIL template and short visual notes for failed or inconclusive items.
+- **Routing**: PASS leads to Phase 3EL-HF2 — Mocked Candlestick Chart and Volume Foundation. Search width, idle results, result list style, selection behavior, chart theme, mobile layout, and safety-copy failures route to focused follow-up phases.
+- **Safety**: no runtime/UI/API/provider changes, no dev server or browser launched by Codex, no screenshots required, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-OWNER-REVIEW-HF1-SX static contract 78/78 PASS, Phase 3EL-HF1-SX 109/109 PASS, owner-review HF1 72/72 PASS, Phase 3EL-HF1 112/112 PASS, Phase 3EL-UXR 143/143 PASS, closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Next step**: owner performs the manual local review. PASS leads to Phase 3EL-HF2.
+
 ## Phase 3EL-HF1-SX - 2026-06-30
 
 ### Chart AI Search UX & Theme Alignment Hotfix (Implemented — owner review recommended)
