@@ -18,6 +18,7 @@ const root = join(__dirname, '..');
 const CHART_AI_PATH = join(root, 'src', 'pages', 'chart-ai.astro');
 const FIXTURE_PATH = join(root, 'src', 'data', 'chartAiDemoAnalysis.json');
 const SECURITY_LOGOS_PATH = join(root, 'src', 'data', 'securityLogos.json');
+const DOMESTIC_SYMBOL_SEED_PATH = join(root, 'src', 'data', 'symbol-master', 'domesticSymbolSeed.mocked.json');
 const STYLE_PATH = join(root, 'src', 'styles', 'style.css');
 const PACKAGE_JSON = join(root, 'package.json');
 const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3de_chart_ai_ux_skeleton_enhancement_result_v0.1.md');
@@ -58,6 +59,9 @@ if (!existsSync(CHART_AI_PATH)) {
 }
 
 const page = readFileSync(CHART_AI_PATH, 'utf8');
+const domesticSymbolSeed = existsSync(DOMESTIC_SYMBOL_SEED_PATH)
+  ? readFileSync(DOMESTIC_SYMBOL_SEED_PATH, 'utf8')
+  : '';
 
 // ---------------------------------------------------------------------------
 // Group 2: Improved page heading
@@ -98,9 +102,9 @@ log('--- Group 4: Domestic sample symbol selection ---');
 check('Page contains domestic search result class',
   page.includes('chart-ai-search-result'));
 check('005930 domestic sample is present', page.includes("'005930'") && page.includes('삼성전자'));
-check('KODEX domestic ETF sample is present', page.includes('KODEX'));
-check('Domestic search examples include 000660', page.includes('000660'));
-check('Domestic search examples include 069500', page.includes('069500'));
+check('KODEX domestic ETF sample is present', domesticSymbolSeed.includes('KODEX'));
+check('Domestic symbol seed includes 000660', domesticSymbolSeed.includes('000660'));
+check('Domestic symbol seed includes 069500', domesticSymbolSeed.includes('069500'));
 check('Selection controls have accessible roles or labels',
   page.includes('role="listbox"') && page.includes('aria-label="종목 유형 필터"'));
 

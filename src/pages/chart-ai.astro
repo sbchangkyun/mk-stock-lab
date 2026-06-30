@@ -27,7 +27,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             placeholder="종목명 또는 종목코드 입력"
             aria-label="종목명 또는 종목코드 입력"
             aria-controls="chartAiSearchResults"
-            aria-describedby="chartAiSearchExamples"
             aria-autocomplete="list"
             aria-expanded="false"
             role="combobox"
@@ -38,19 +37,17 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         <button class="button-link chart-ai-run-btn chart-lookup-submit" id="chartAiRunBtn" type="button">조회</button>
       </div>
 
-      <div class="chart-lookup-search-tools">
-        <p id="chartAiSearchExamples">005930 · 삼성 · 000660 · 하이닉스 · 069500 · KODEX</p>
-        <div class="chart-ai-filter-bar" role="group" aria-label="종목 유형 필터">
-          <button class="chart-ai-filter-btn active" type="button" data-asset-filter="all" aria-pressed="true">전체</button>
-          <button class="chart-ai-filter-btn" type="button" data-asset-filter="stock" aria-pressed="false">주식</button>
-          <button class="chart-ai-filter-btn" type="button" data-asset-filter="etf" aria-pressed="false">ETF</button>
-        </div>
-      </div>
-
       <div class="chart-lookup-dropdown" id="chartAiSearchDropdown" hidden>
         <div class="chart-ai-results-head">
-          <strong>검색 결과</strong>
-          <span id="chartAiResultCount" aria-live="polite">0개</span>
+          <div class="chart-ai-results-summary">
+            <strong>검색 결과</strong>
+            <span id="chartAiResultCount" aria-live="polite">0개</span>
+          </div>
+          <div class="chart-ai-filter-bar" role="group" aria-label="종목 유형 필터">
+            <button class="chart-ai-filter-btn active" type="button" data-asset-filter="all" aria-pressed="true">전체</button>
+            <button class="chart-ai-filter-btn" type="button" data-asset-filter="stock" aria-pressed="false">주식</button>
+            <button class="chart-ai-filter-btn" type="button" data-asset-filter="etf" aria-pressed="false">ETF</button>
+          </div>
         </div>
         <div
           class="chart-ai-search-results"
@@ -201,6 +198,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     const setup = () => {
       const input = document.getElementById('chartAiInput') as HTMLInputElement | null;
       const runBtn = document.getElementById('chartAiRunBtn') as HTMLButtonElement | null;
+      const searchPanel = document.querySelector<HTMLElement>('.chart-lookup-search');
       const dropdown = document.getElementById('chartAiSearchDropdown');
       const resultsEl = document.getElementById('chartAiSearchResults');
       const resultCount = document.getElementById('chartAiResultCount');
@@ -214,7 +212,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       let selectedSymbol = '005930';
       let visibleRecords: ClientSafeSymbolSearchRecord[] = [];
 
-      if (!input || !runBtn || !dropdown || !resultsEl || !resultCount || !emptyState) return;
+      if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState) return;
       if (runBtn.dataset.ready === 'true') return;
       runBtn.dataset.ready = 'true';
 
@@ -229,6 +227,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         resultCount.textContent = '0개';
         emptyState.hidden = true;
         dropdown.hidden = true;
+        searchPanel.classList.remove('open');
         input.setAttribute('aria-expanded', 'false');
       };
 
@@ -263,6 +262,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         resultCount.textContent = `${visibleRecords.length}개`;
         emptyState.hidden = visibleRecords.length > 0;
         dropdown.hidden = !open;
+        searchPanel.classList.toggle('open', open);
         input.setAttribute('aria-expanded', String(open));
 
         for (const record of visibleRecords) {
@@ -397,11 +397,17 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     .chart-lookup-search {
       position: relative;
       z-index: 4;
-      padding: 1rem;
+      width: min(540px, 100%);
+      max-width: 540px;
+      padding: 0.8rem;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: var(--surface);
       box-shadow: 0 10px 30px rgb(15 23 42 / 5%);
+    }
+
+    .chart-lookup-search.open {
+      border-radius: 14px 14px 0 0;
     }
 
     .chart-lookup-search-field span {
@@ -415,11 +421,12 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-ai-symbol-row {
-      max-width: 820px;
+      width: 100%;
+      max-width: none;
     }
 
-    .chart-lookup-search-tools,
     .chart-ai-results-head,
+    .chart-ai-results-summary,
     .chart-stock-title-line,
     .chart-market-rail,
     .chart-market-heading-group,
@@ -429,17 +436,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-    }
-
-    .chart-lookup-search-tools {
-      margin-top: 0.65rem;
-    }
-
-    .chart-lookup-search-tools p {
-      margin: 0;
-      color: var(--text-muted);
-      font-size: 0.76rem;
-      overflow-wrap: anywhere;
     }
 
     .chart-ai-filter-bar {
@@ -469,21 +465,27 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
     .chart-lookup-dropdown {
       position: absolute;
-      top: calc(100% - 0.45rem);
-      width: min(820px, calc(100% - 2rem));
-      left: 1rem;
+      top: calc(100% - 1px);
+      left: -1px;
+      width: calc(100% + 2px);
       overflow: hidden;
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 0 0 14px 14px;
       background: var(--surface);
       box-shadow: 0 20px 45px rgb(15 23 42 / 16%);
     }
 
     .chart-ai-results-head {
+      flex-wrap: wrap;
       padding: 0.55rem 0.75rem;
       border-bottom: 1px solid var(--border);
       color: var(--text-muted);
       font-size: 0.76rem;
+    }
+
+    .chart-ai-results-summary {
+      justify-content: flex-start;
+      gap: 0.4rem;
     }
 
     .chart-ai-search-results {
@@ -495,11 +497,12 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     :global(.chart-ai-search-result) {
-      display: grid;
-      gap: 0.18rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
       width: 100%;
-      min-height: 52px;
-      padding: 0.58rem 0.75rem;
+      min-height: 42px;
+      padding: 0.48rem 0.75rem;
       appearance: none;
       border: 0;
       border-bottom: 1px solid var(--border);
@@ -525,14 +528,20 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     :global(.chart-ai-search-result-name) {
+      flex: 0 0 auto;
       font-size: 0.88rem;
       line-height: 1.35;
+      white-space: nowrap;
     }
 
     :global(.chart-ai-search-result-meta) {
+      min-width: 0;
+      overflow: hidden;
       color: var(--text-muted);
       font-size: 0.75rem;
       line-height: 1.4;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .chart-ai-empty-state {
@@ -954,6 +963,8 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
     @media (max-width: 640px) {
       .chart-lookup-search {
+        width: 100%;
+        max-width: none;
         padding: 0.8rem;
       }
 
@@ -962,15 +973,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         max-width: none;
       }
 
-      .chart-lookup-search-tools {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
       .chart-lookup-dropdown {
-        width: auto;
-        right: 0.8rem;
-        left: 0.8rem;
+        left: -1px;
+        width: calc(100% + 2px);
       }
 
       .chart-stock-header {
@@ -1025,8 +1030,18 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       }
     }
 
+    @media (max-width: 350px) {
+      :global(.chart-ai-search-result) {
+        flex-wrap: wrap;
+      }
+
+      :global(.chart-ai-search-result-meta) {
+        width: 100%;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .chart-ai-search-result,
+      :global(.chart-ai-search-result),
       .chart-period-controls button,
       .chart-mk-ai-button {
         transition: none;

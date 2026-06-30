@@ -102,7 +102,7 @@ check('Compact search dropdown exists',
 check('No-match empty state exists',
   source.page.includes('chartAiEmptyState') && source.page.includes('검색 결과가 없습니다'));
 for (const query of ['005930', '삼성', '000660', '하이닉스', '069500', 'KODEX']) {
-  check(`Page includes query example ${query}`, source.page.includes(query));
+  check(`Checker preserves behavior query ${query}`, source.checker.includes(`'${query}'`));
 }
 check('Compact stock and ETF filters remain',
   ['all', 'stock', 'etf'].every((filter) => source.page.includes(`data-asset-filter="${filter}"`)));

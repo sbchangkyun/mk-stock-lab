@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-HF1-SX2 - 2026-07-01
+
+### Chart AI Compact Search Panel Hotfix (Implemented — owner review recommended)
+
+- **Status**: Implemented — Chart AI compact search panel hotfix ready for owner review. No API route or provider integration.
+- **Background**: Phase 3EL-HF1-SX refined `/chart-ai` search UX and chart theme alignment, and Phase 3EL-OWNER-REVIEW-HF1-SX prepared the owner review package. The owner’s latest local visual review found that the search panel remained too wide, the visible search card background left too much empty space, the dropdown should match the search panel width and attach directly below it, the example query text should be removed, filters should move into the result header, and each result row should use a compact one-line layout.
+- **Implemented scope**: desktop search panel reduced to a compact `540px` width, visible search card/background reduced with the input group, mobile search containment preserved, example query text removed, dropdown width aligned with the compact search panel, dropdown visually attached below the search control, `전체`/`주식`/`ETF` filters moved into the result header, filters hidden when the dropdown is inactive, result rows compacted to one-line rows, vertical one-result-per-row list preserved, idle/typing/no-match/selection states preserved, required query coverage preserved, and chart theme alignment preserved.
+- **Deferred scope**: mocked OHLC candlestick data, volume data foundation, MK AI intro modal, staged loading, sequential analysis cards, runtime companyProfile data, KIS chart/profile integration, quote API integration, deployment, and push.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, real FX provider is not selected, US quote provider is not implemented, no real-time/live/current-price wording is introduced, no KIS metadata fetch is performed, no quote/API/provider/live integration is added, and no account/trading APIs are added.
+- **Safety**: no Home/Market/Lab/Portfolio/MyPage/Layout changes, no API route changes, no provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-HF1-SX2 contract 112/112 PASS, owner-review HF1-SX 78/78 PASS, Phase 3EL-HF1-SX 109/109 PASS, owner-review HF1 72/72 PASS, Phase 3EL-HF1 112/112 PASS, Phase 3EL-UXR 143/143 PASS, closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-OWNER-REVIEW-HF1-SX2 — Owner Review of Compact Search Panel Hotfix. Alternative: Phase 3EL-HF2 — Mocked Candlestick Chart and Volume Foundation if owner review is skipped.
+
 ## Phase 3EL-OWNER-REVIEW-HF1-SX - 2026-06-30
 
 ### Chart AI Search UX & Theme Alignment Owner Review Preparation (Prepared — owner visual review pending)
