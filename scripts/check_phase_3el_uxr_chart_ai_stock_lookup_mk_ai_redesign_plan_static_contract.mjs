@@ -15,6 +15,7 @@ import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const startingCommit = 'f00c8c2';
+const phaseEnd = '8fede60';
 const paths = {
   plan: 'docs/planning/phase_3el_uxr_chart_ai_stock_lookup_mk_ai_redesign_plan_v0.1.md',
   checker: 'scripts/check_phase_3el_uxr_chart_ai_stock_lookup_mk_ai_redesign_plan_static_contract.mjs',
@@ -39,8 +40,8 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3EL-UXR - 2026-06-30')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean);
-const srcChanges = git('diff', '--name-only', startingCommit, '--', 'src').split(/\r?\n/).filter(Boolean);
+const phaseChanges = git('diff', '--name-only', startingCommit, phaseEnd).split(/\r?\n/).filter(Boolean);
+const srcChanges = git('diff', '--name-only', startingCommit, phaseEnd, '--', 'src').split(/\r?\n/).filter(Boolean);
 const uiChanges = srcChanges.filter((path) =>
   path.startsWith('src/pages/') || path.startsWith('src/components/') || path.startsWith('src/layouts/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
@@ -210,9 +211,9 @@ check('Plan recommends Phase 3EL-HF1',
   source.plan.includes('Recommended next phase: Phase 3EL-HF1 — Chart AI Stock Lookup Layout Redesign.'));
 process.stdout.write('\n');
 
-process.stdout.write('Planning-only change boundaries:\n');
-check('No src runtime file changed in this phase', srcChanges.length === 0);
-check('No UI page file changed in this phase', uiChanges.length === 0);
+process.stdout.write('Historical Phase 3EL-UXR planning-only change boundaries:\n');
+check('No src runtime file changed during Phase 3EL-UXR', srcChanges.length === 0);
+check('No UI page file changed during Phase 3EL-UXR', uiChanges.length === 0);
 check('No API route file changed in this phase', apiChanges.length === 0);
 check('No provider file changed in this phase', providerChanges.length === 0);
 check('No image file was added', imageChanges.length === 0);

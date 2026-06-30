@@ -15,6 +15,7 @@ import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const startingCommit = '742d115';
+const phaseEnd = 'f00c8c2';
 const paths = {
   result: 'docs/planning/phase_3el_owner_review_chart_ai_domestic_symbol_search_closeout_result_v0.1.md',
   checker: 'scripts/check_phase_3el_owner_review_closeout_static_contract.mjs',
@@ -47,8 +48,8 @@ const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog
   .split('## Phase 3EL-OWNER-REVIEW-CLOSEOUT - 2026-06-30')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean);
-const srcChanges = git('diff', '--name-only', startingCommit, '--', 'src').split(/\r?\n/).filter(Boolean);
+const phaseChanges = git('diff', '--name-only', startingCommit, phaseEnd).split(/\r?\n/).filter(Boolean);
+const srcChanges = git('diff', '--name-only', startingCommit, phaseEnd, '--', 'src').split(/\r?\n/).filter(Boolean);
 const uiChanges = srcChanges.filter((path) =>
   path.startsWith('src/pages/') || path.startsWith('src/components/') || path.startsWith('src/layouts/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
@@ -154,7 +155,7 @@ check('Closeout classifies failure as structural',
   source.result.includes('The failure is structural, not a narrow hotfix.'));
 process.stdout.write('\n');
 
-process.stdout.write('Safety and change-scope boundaries:\n');
+process.stdout.write('Safety and historical Phase 3EL closeout boundaries:\n');
 for (const statement of [
   'No runtime changes', 'No UI changes', 'No API route changes', 'No provider changes',
   'No screenshot committed', 'No image file added', 'No dev server launched by Codex',
@@ -167,12 +168,12 @@ check('Closeout records no Supabase/SQL/migration',
   source.result.includes('No Supabase access, SQL, or migration'));
 check('Closeout records no Vercel changes',
   source.result.includes('No Vercel environment or project change'));
-check('No src runtime file changed in this phase', srcChanges.length === 0);
-check('No UI page file changed in this phase', uiChanges.length === 0);
-check('No API route file changed in this phase', apiChanges.length === 0);
-check('No provider file changed in this phase', providerChanges.length === 0);
-check('No image file was added in this phase', imageChanges.length === 0);
-check('No dependency was added in this phase', dependenciesUnchanged && devDependenciesUnchanged && lockfileUnchanged);
+check('No src runtime file changed during the closeout', srcChanges.length === 0);
+check('No UI page file changed during the closeout', uiChanges.length === 0);
+check('No API route file changed during the closeout', apiChanges.length === 0);
+check('No provider file changed during the closeout', providerChanges.length === 0);
+check('No image file was added during the closeout', imageChanges.length === 0);
+check('No dependency was added during the closeout', dependenciesUnchanged && devDependenciesUnchanged && lockfileUnchanged);
 check('Changelog records failure decision',
   phaseSection.includes('FAIL_PRODUCT_DIRECTION / UX_REDESIGN_REQUIRED'));
 check('Changelog recommends Phase 3EL-UXR', phaseSection.includes('Phase 3EL-UXR'));

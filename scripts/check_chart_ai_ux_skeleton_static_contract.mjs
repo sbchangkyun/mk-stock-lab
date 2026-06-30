@@ -64,12 +64,12 @@ const page = readFileSync(CHART_AI_PATH, 'utf8');
 // ---------------------------------------------------------------------------
 log('--- Group 2: Page heading ---');
 
-check('Page contains improved h1 heading "차트 분석 준비 화면"',
-  page.includes('차트 분석 준비 화면'));
-check('Page contains Chart AI eyebrow or title reference',
-  page.includes('Chart AI'));
-check('Page contains lead copy explaining skeleton-first approach',
-  page.includes('예시 분석 데이터') || page.includes('연동 전') || page.includes('이후 단계'));
+check('Page contains approved stock lookup heading "종목 차트"',
+  page.includes('종목 차트'));
+check('Page keeps MK AI as an optional chart feature',
+  page.includes('MK AI'));
+check('Page contains lead copy explaining sample stock lookup',
+  page.includes('종목을 조회하고') && page.includes('샘플 데이터'));
 
 log('');
 
@@ -98,7 +98,7 @@ log('--- Group 4: Domestic sample symbol selection ---');
 check('Page contains domestic search result class',
   page.includes('chart-ai-search-result'));
 check('005930 domestic sample is present', page.includes("'005930'") && page.includes('삼성전자'));
-check('035420 domestic sample is present', page.includes("'035420'") && page.includes('NAVER'));
+check('KODEX domestic ETF sample is present', page.includes('KODEX'));
 check('Domestic search examples include 000660', page.includes('000660'));
 check('Domestic search examples include 069500', page.includes('069500'));
 check('Selection controls have accessible roles or labels',
@@ -112,8 +112,7 @@ log('');
 log('--- Group 5: Analysis trigger button ---');
 
 check('Page contains chartAiRunBtn id', page.includes('chartAiRunBtn'));
-check('Run button has descriptive text ("예시 분석 보기" or similar)',
-  page.includes('예시 분석 보기') || page.includes('분석 실행') || page.includes('분석 보기'));
+check('Run button uses concise lookup text', page.includes('>조회</button>'));
 check('Run button is a type=button (not submit)',
   page.includes('type="button"') && page.includes('chartAiRunBtn'));
 
@@ -124,14 +123,11 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 6: Chart snapshot placeholder ---');
 
-check('Page contains chart-ai-snapshot class', page.includes('chart-ai-snapshot'));
-check('Page contains chart-skeleton class (bar visual)', page.includes('chart-skeleton'));
-check('Page contains chartAiSnapshotTitle or snapshot heading',
-  page.includes('chartAiSnapshotTitle') || page.includes('차트 스냅샷'));
-check('Page contains "연동 전 화면" or snapshot placeholder notice',
-  page.includes('연동 전 화면') || page.includes('차트 스냅샷은 이후 단계'));
-check('Snapshot note references future connection (not live)',
-  page.includes('이후 단계') || page.includes('연결됩니다') || page.includes('연동 전'));
+check('Page contains primary chart market panel', page.includes('chart-market-panel'));
+check('Page contains candlestick-ready visual area', page.includes('chart-candlestick-ready'));
+check('Page contains chart heading', page.includes('chart-market-heading'));
+check('Page contains sample chart notice', page.includes('샘플 차트'));
+check('Chart note references future OHLC connection', page.includes('HF2에서 샘플 OHLC'));
 
 log('');
 
@@ -140,18 +136,16 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 7: Analysis result section ---');
 
-check('Page contains chartAiResultSection id',
-  page.includes('chartAiResultSection'));
-check('Page contains chart-ai-result-section class',
-  page.includes('chart-ai-result-section'));
-check('Page contains 추세 요약 result card', page.includes('추세 요약'));
-check('Page contains 모멘텀 result card', page.includes('모멘텀'));
-check('Page contains 변동성 result card', page.includes('변동성'));
-check('Page contains 지지 result label', page.includes('지지'));
-check('Page contains 저항 result label', page.includes('저항'));
-check('Page contains 리스크 체크 result card', page.includes('리스크 체크'));
-check('Page contains chart-ai-result-grid class', page.includes('chart-ai-result-grid'));
-check('Page contains chart-ai-result-card class', page.includes('chart-ai-result-card'));
+check('Page contains centralized stock header', page.includes('chart-stock-header'));
+check('Page contains selected stock name field', page.includes('chartAiSelectedName'));
+check('Page contains selected stock symbol field', page.includes('chartAiSelectedSymbol'));
+check('Page contains stock metadata panel', page.includes('chart-stock-metadata'));
+check('Page contains company profile placeholder', page.includes('chart-company-placeholder'));
+check('Page contains period controls', page.includes('chart-period-controls'));
+check('Page contains MK AI button', page.includes('chartAiMkAiBtn'));
+check('Page removes default trend card', !page.includes('추세 요약'));
+check('Page removes default momentum card', !page.includes('모멘텀'));
+check('Page removes default risk card', !page.includes('리스크 체크'));
 
 log('');
 
@@ -160,16 +154,11 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 8: Disclaimer and guardrail ---');
 
-check('Page contains chart-ai-disclaimer class', page.includes('chart-ai-disclaimer'));
-check('Disclaimer says not real AI analysis',
-  page.includes('실제 AI 분석이 아닙니다') || page.includes('실제 AI 분석 결과가 아닙니다') ||
-  page.includes('AI 분석 결과가 아닙니다'));
-check('Disclaimer says not for investment decisions',
-  page.includes('투자 판단 참고용 화면이 아니며') || page.includes('투자 판단에 사용할 수 없습니다'));
-check('Disclaimer disavows buy/sell recommendation',
-  page.includes('매수 또는 매도를 권고하지 않습니다') || page.includes('매수나 매도를'));
-check('Disclaimer states user responsibility for investment decisions',
-  page.includes('이용자 본인의 책임') || page.includes('본인의 책임'));
+check('Page contains compact lookup disclaimer', page.includes('chart-lookup-disclaimer'));
+check('Disclaimer identifies sample screen', page.includes('샘플 화면'));
+check('Disclaimer says not for investment decisions', page.includes('투자 판단'));
+check('Disclaimer disavows buy/sell recommendation', page.includes('매수·매도 추천이 아닙니다'));
+check('Safety labels say actual price is not shown', page.includes('실제 시세 아님'));
 
 log('');
 
@@ -286,9 +275,9 @@ const css = existsSync(STYLE_PATH) ? readFileSync(STYLE_PATH, 'utf8') : '';
 check('chart-ai-shell class in style.css', css.includes('.chart-ai-shell'));
 check('chart-ai search result styling is present',
   page.includes('.chart-ai-search-result') || css.includes('.chart-ai-search-result'));
-check('chart-ai-result-grid class in style.css', css.includes('.chart-ai-result-grid'));
-check('chart-ai-disclaimer class in style.css', css.includes('.chart-ai-disclaimer'));
-check('chart-ai-result-card class in style.css', css.includes('.chart-ai-result-card'));
+check('chart market panel styling is present', page.includes('.chart-market-panel'));
+check('chart stock header styling is present', page.includes('.chart-stock-header'));
+check('chart lookup disclaimer styling is present', page.includes('.chart-lookup-disclaimer'));
 
 log('');
 
@@ -314,7 +303,7 @@ log(`Checks passed: ${passes}/${total}`);
 log('');
 
 if (failures === 0) {
-  log('Result: PASS — Phase 3DE Chart AI UX Skeleton implemented');
+  log('Result: PASS — Chart AI stock lookup skeleton verified');
   process.exitCode = 0;
 } else {
   log(`Result: FAIL (${failures} failure(s))`);

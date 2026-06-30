@@ -133,8 +133,8 @@ check('Chart AI includes search input', source.page.includes('id="chartAiInput"'
 check('Chart AI includes results area', source.page.includes('id="chartAiSearchResults"'));
 check('Chart AI includes selected-symbol summary',
   source.page.includes('선택 종목') && source.page.includes('chartAiSelectedSymbol'));
-check('Chart AI includes sample-data notice', source.page.includes('샘플 종목 데이터'));
-for (const label of ['국내 종목 검색', '샘플 종목 데이터', '국내 주식·ETF', '검색 결과', '선택 종목', '실제 시세 아님']) {
+check('Chart AI includes sample-data notice', source.page.includes('샘플 데이터'));
+for (const label of ['종목 검색', '샘플 데이터', '국내 주식·ETF', '검색 결과', '종목 차트', '실제 시세 아님']) {
   check(`Chart AI includes ${label}`, source.page.includes(label));
 }
 check('Chart AI does not expose sourceAsOf', !source.page.includes('sourceAsOf'));
@@ -153,17 +153,17 @@ check('Result buttons are keyboard-selectable native buttons',
   source.page.includes("button.type = 'button'") && source.page.includes("role', 'option'"));
 check('Selected state is visible and accessible',
   source.page.includes("aria-selected") && source.page.includes('.chart-ai-search-result.selected'));
-check('Empty state is present', source.page.includes('chartAiEmptyState') && source.page.includes('샘플 종목이 없습니다'));
+check('Empty state is present', source.page.includes('chartAiEmptyState') && source.page.includes('검색 결과가 없습니다'));
 check('Stock/ETF filter is present',
   source.page.includes('data-asset-filter="stock"') && source.page.includes('data-asset-filter="etf"'));
 check('Dense result list scrolls locally',
   /\.chart-ai-search-results[\s\S]*?overflow-y:\s*auto/.test(source.page));
 check('Mobile search layout is contained',
-  source.page.includes('@media (max-width: 720px)') && source.page.includes('grid-template-columns: minmax(0, 1fr)'));
+  source.page.includes('@media (max-width: 640px)') && source.page.includes('grid-template-columns: minmax(0, 1fr)'));
 check('Selection updates summary',
   source.page.includes('updateSelection') && source.page.includes("setText('chartAiSelectedSymbol'"));
-check('Demo analysis remains explicitly sample-based',
-  source.page.includes('선택한 샘플 종목 기준의 데모 분석 화면입니다.'));
+check('Post-redesign page remains explicitly sample-based',
+  source.page.includes('샘플 차트') && source.page.includes('MK AI 분석은 다음 단계'));
 process.stdout.write('\n');
 
 process.stdout.write('Deterministic search behavior:\n');

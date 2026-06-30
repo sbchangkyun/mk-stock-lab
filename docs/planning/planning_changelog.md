@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-HF1 - 2026-06-30
+
+### Chart AI Stock Lookup Layout Redesign (Implemented — owner review recommended)
+
+- **Status**: Implemented — Chart AI stock lookup-first layout ready for owner review. No API route or provider integration.
+- **Background**: Phase 3EL-UXR completed the redesign plan after Phase 3EL-OWNER-REVIEW-CLOSEOUT recorded `FAIL_PRODUCT_DIRECTION / UX_REDESIGN_REQUIRED`. This phase begins the redesign by fixing the information architecture before candlestick rendering, MK AI loading, or companyProfile runtime implementation.
+- **Implemented scope**: page repositioned to `종목 차트`, compact stock search, short `조회` button, separated search input and selected-stock state, input clear after selection, compact result dropdown/list, centralized stock header, chart-first main visual surface, period controls, chart-level `MK AI` CTA, default AI analysis sections removed, compact company/profile placeholder, and mobile-safe layout treatment.
+- **Deferred scope**: mocked OHLC candlestick data, volume data foundation, MK AI intro modal, staged loading, sequential analysis cards, runtime companyProfile data, KIS chart/profile integration, quote API integration, and deployment.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, real FX provider is not selected, US quote provider is not implemented, no real-time/live/current-price wording is introduced, no KIS metadata fetch is performed, no quote/API/provider/live integration is added, and no account/trading APIs are added.
+- **Safety**: no Home/Market/Lab/Portfolio/MyPage/Layout changes, no API route changes, no provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-HF1 contract 112/112 PASS, Phase 3EL-UXR 143/143 PASS, closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-HF2 — Mocked Candlestick Chart and Volume Foundation, or Phase 3EL-OWNER-REVIEW-HF1 if owner layout confirmation is preferred before chart implementation.
+
 ## Phase 3EL-UXR - 2026-06-30
 
 ### Chart AI Stock Lookup & MK AI Interaction Redesign Plan (Completed — redesign plan ready)
