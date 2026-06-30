@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-OWNER-REVIEW-CLOSEOUT - 2026-06-30
+
+### Chart AI Domestic Symbol Search Owner Review Closeout (Closed — UX redesign required)
+
+- **Status**: Closed — owner review failed due to product direction. UX redesign required. No runtime source changes.
+- **Decision**: `FAIL_PRODUCT_DIRECTION / UX_REDESIGN_REQUIRED`.
+- **Background**: Phase 3EL connected the mocked-first domestic symbol/search foundation to the Chart AI page as the first visible consumer, and Phase 3EL-OWNER-REVIEW prepared the manual local browser review package. The owner manually reviewed the local Chart AI page and rejected the current product direction.
+- **Owner finding**: the page feels like an AI demo page rather than a familiar stock lookup and candlestick chart page. The owner expects a stock lookup-first flow with a familiar brokerage-style candlestick chart, concise search behavior, reduced repeated stock identity, and optional AI analysis only after explicit user activation.
+- **Required redesign direction**: future UX should follow the pattern `search → stock header → candlestick chart → basic stock/company information → optional MK AI analysis`. Search input and selected-stock state must be separated, the lookup button should be shortened to `조회`, and AI analysis should start from a chart-level `MK AI` button with intro guidance, staged loading, and sequential result sections.
+- **AI analysis direction**: future MK AI should not show trend/momentum/volatility/support-resistance/risk/template sections by default. After user activation, it should reveal deeper sections such as `국면·수급`, `매매 전략`, `가격 패턴`, `기술적 지표`, `지지·저항`, and `리스크 체크`.
+- **Company/profile direction**: future design should include a company/security description area. KIS support for natural-language company description must be verified later; mocked/static `companyProfile` is acceptable for the first redesign implementation.
+- **Safety**: no runtime/UI/API/provider changes, no screenshot or image files committed, no dev server or browser launched by Codex, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-OWNER-REVIEW-CLOSEOUT static contract 77/77 PASS, owner-review preparation 84/84 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-UXR — Chart AI Stock Lookup & MK AI Interaction Redesign Plan.
+
 ## Phase 3EL-OWNER-REVIEW - 2026-06-30
 
 ### Chart AI Domestic Symbol Search Owner Review Preparation (Prepared — owner visual review pending)
