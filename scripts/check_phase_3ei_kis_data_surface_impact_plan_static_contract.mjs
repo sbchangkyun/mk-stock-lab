@@ -38,16 +38,15 @@ const git = (...args) => {
 const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [key, read(path)]));
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', '87b019a:package.json') || '{}');
-const diffFiles = git('diff', '--name-only', '87b019a').split(/\r?\n/).filter(Boolean);
-const statusFiles = git('status', '--porcelain=v1').split(/\r?\n/).filter(Boolean).map((line) => line.slice(3).trim());
-const changedFiles = [...new Set([...diffFiles, ...statusFiles])];
+const phaseEndPackage = JSON.parse(git('show', 'f97e74d:package.json') || '{}');
+const changedFiles = git('diff', '--name-only', '87b019a..f97e74d').split(/\r?\n/).filter(Boolean);
 const runtimeChanges = changedFiles.filter((path) => path.startsWith('src/'));
 const apiChanges = changedFiles.filter((path) => path.startsWith('src/pages/api/'));
 const uiPageChanges = changedFiles.filter((path) =>
   path.startsWith('src/pages/') || path.startsWith('src/layouts/') || path.startsWith('src/components/'));
 const phaseSection = source.changelog.split('## Phase 3EI - 2026-06-29')[1]?.split('\n## ')[0] ?? '';
-const dependenciesUnchanged = JSON.stringify(packageJson.dependencies) === JSON.stringify(baselinePackage.dependencies);
-const devDependenciesUnchanged = JSON.stringify(packageJson.devDependencies ?? {}) === JSON.stringify(baselinePackage.devDependencies ?? {});
+const dependenciesUnchanged = JSON.stringify(phaseEndPackage.dependencies) === JSON.stringify(baselinePackage.dependencies);
+const devDependenciesUnchanged = JSON.stringify(phaseEndPackage.devDependencies ?? {}) === JSON.stringify(baselinePackage.devDependencies ?? {});
 
 let passed = 0;
 let failed = 0;

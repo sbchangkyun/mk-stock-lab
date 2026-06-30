@@ -38,9 +38,8 @@ const git = (...args) => {
 const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [key, read(path)]));
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', 'f97e74d:package.json') || '{}');
-const diffFiles = git('diff', '--name-only', 'f97e74d').split(/\r?\n/).filter(Boolean);
-const statusFiles = git('status', '--porcelain=v1').split(/\r?\n/).filter(Boolean).map((line) => line.slice(3).trim());
-const changedFiles = [...new Set([...diffFiles, ...statusFiles])];
+const phaseEndPackage = JSON.parse(git('show', 'a6492ce:package.json') || '{}');
+const changedFiles = git('diff', '--name-only', 'f97e74d..a6492ce').split(/\r?\n/).filter(Boolean);
 const runtimeChanges = changedFiles.filter((path) => path.startsWith('src/'));
 const apiChanges = changedFiles.filter((path) => path.startsWith('src/pages/api/'));
 const uiPageChanges = changedFiles.filter((path) =>
@@ -48,9 +47,9 @@ const uiPageChanges = changedFiles.filter((path) =>
   (path.startsWith('src/pages/') && !path.startsWith('src/pages/api/')));
 const providerChanges = changedFiles.filter((path) =>
   path.startsWith('src/lib/server/providers/') || path.startsWith('src/lib/server/marketData/'));
-const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) ===
+const dependenciesUnchanged = JSON.stringify(phaseEndPackage.dependencies ?? {}) ===
   JSON.stringify(baselinePackage.dependencies ?? {});
-const devDependenciesUnchanged = JSON.stringify(packageJson.devDependencies ?? {}) ===
+const devDependenciesUnchanged = JSON.stringify(phaseEndPackage.devDependencies ?? {}) ===
   JSON.stringify(baselinePackage.devDependencies ?? {});
 const lockfileUnchanged = !changedFiles.includes('package-lock.json');
 const phaseSection = source.changelog.split('## Phase 3EJ - 2026-06-29')[1]?.split('\n## ')[0] ?? '';

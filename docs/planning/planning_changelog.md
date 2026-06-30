@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EK - 2026-06-30
+
+### Domestic Symbol Master / Search Index Mocked-First Implementation (Implemented - mocked-first symbol/search foundation ready)
+
+- **Status**: Implemented - mocked-first domestic symbol master and search index foundation ready. No UI or API route integration.
+- **Background**: Phase 3EJ planned the shared symbol, search, quote, cache, freshness, market-calendar, and provider-leakage infrastructure. This phase implements only the first domestic symbol/search foundation.
+- **Implemented scope**: domestic stocks + domestic ETFs mocked/static seed, normalized symbol master type, normalization helpers, client-safe projection, deterministic search index, filters, integrity assertions, result document, and static/behavioral checker.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, a real FX provider is not selected, a US quote provider is not implemented, no real-time/live wording is introduced, no KIS metadata fetch is performed, and no account/trading APIs are added.
+- **Safety**: no UI page changes, no API route changes, no provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EK mocked-first contract 244/244 PASS, Phase 3EJ infrastructure-plan contract 263/263 PASS, Phase 3EI impact-plan contract 56/56 PASS, Portfolio live preview API 110/110 PASS, mobile baseline 74/74 PASS, production-domain contract 33/33 PASS, geometry guard dry-run PASS, build PASS, and `git diff --check` PASS.
+- **Recommended next phase**: Phase 3EL - Chart AI Domestic Symbol Search Wiring.
+
 ## Phase 3EJ - 2026-06-29
 
 ### KIS Symbol Master & Quote Infrastructure Plan (Completed - shared data infrastructure plan ready)
