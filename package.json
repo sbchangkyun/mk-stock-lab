@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3el-owner-review-chart-ai-domestic-symbol-search": "node scripts/check_phase_3el_owner_review_chart_ai_domestic_symbol_search_static_contract.mjs",
     "check:phase-3el-chart-ai-domestic-symbol-search-wiring": "node scripts/check_phase_3el_chart_ai_domestic_symbol_search_wiring_contract.mjs",
     "check:phase-3ek-domestic-symbol-master-search-index-mocked-first": "node scripts/check_phase_3ek_domestic_symbol_master_search_index_mocked_first_contract.mjs",
     "check:phase-3ej-kis-symbol-master-quote-infrastructure-plan": "node scripts/check_phase_3ej_kis_symbol_master_quote_infrastructure_plan_static_contract.mjs",

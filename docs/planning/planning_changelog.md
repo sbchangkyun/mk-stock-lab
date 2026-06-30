@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-OWNER-REVIEW - 2026-06-30
+
+### Chart AI Domestic Symbol Search Owner Review Preparation (Prepared — owner visual review pending)
+
+- **Status**: Prepared — owner visual review pending. No runtime source changes.
+- **Background**: Phase 3EL implemented Chart AI domestic stock/ETF search using the Phase 3EK mocked-first symbol/search foundation. This phase prepares the owner-run local browser review package.
+- **Review scope**: local `/chart-ai` page load, required labels, search queries `005930`, `삼성`, `000660`, `하이닉스`, `069500`, `KODEX`, stock/ETF filters, selection summary, empty state, keyboard/accessibility basics, mobile 390px layout, and forbidden wording.
+- **Owner workload**: owner runs the local dev server and browser review manually, then returns only the filled PASS/FAIL template and short visual notes for failed items.
+- **Safety**: no runtime/UI/API/provider changes, no dev server or browser launched by Codex, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-OWNER-REVIEW static contract 84/84 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Next step**: owner performs the manual local review. PASS leads to Phase 3EL-OWNER-REVIEW-CLOSEOUT.
+
 ## Phase 3EL - 2026-06-30
 
 ### Chart AI Domestic Symbol Search Wiring (Implemented — owner review pending)
