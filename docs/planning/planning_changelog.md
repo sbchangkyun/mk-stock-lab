@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-OWNER-REVIEW-HF1 - 2026-06-30
+
+### Chart AI Stock Lookup Layout Owner Review Preparation (Prepared — owner visual review pending)
+
+- **Status**: Prepared — owner visual review pending. No runtime source changes.
+- **Background**: Phase 3EL-HF1 repositioned `/chart-ai` as a stock lookup-first chart page after Phase 3EL-UXR and the failed owner review closeout. This phase prepares the owner-run manual local review package for the redesigned layout.
+- **Review scope**: local `/chart-ai` page identity, compact search, `조회` button, input clear after selection, compact result dropdown, required query coverage, filters, centralized stock header, chart-first shell, period controls, chart-level `MK AI` CTA, default-hidden AI analysis, company/profile placeholder, mobile 390px layout, accessibility basics, and forbidden wording.
+- **Owner workload**: owner runs the local dev server and reviews the UI manually, then returns only the filled PASS/FAIL template and short visual notes for failed or inconclusive items.
+- **Routing**: PASS leads to Phase 3EL-HF2 — Mocked Candlestick Chart and Volume Foundation. Layout/search/chart/MK AI/mobile/safety failures route to focused HF1 follow-up phases.
+- **Safety**: no runtime/UI/API/provider changes, no dev server or browser launched by Codex, no screenshots required, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-OWNER-REVIEW-HF1 static contract 72/72 PASS, Phase 3EL-HF1 112/112 PASS, Phase 3EL-UXR 143/143 PASS, closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Next step**: owner performs the manual local review. PASS leads to Phase 3EL-HF2.
+
 ## Phase 3EL-HF1 - 2026-06-30
 
 ### Chart AI Stock Lookup Layout Redesign (Implemented — owner review recommended)
