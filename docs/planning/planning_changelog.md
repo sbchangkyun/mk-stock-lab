@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EQ - 2026-07-01
+
+### KIS Chart/OHLC Feasibility and Chart Data Integration Plan (Completed — integration plan ready)
+
+- **Status**: Completed — KIS chart/OHLC feasibility and Chart AI chart data integration plan ready. No runtime source changes.
+- **Background**: Phase 3EP-OWNER-REVIEW-CLOSEOUT closed Chart AI owner-local quote preview with PASS. The quote preview is now owner-reviewed, while the main candlestick chart remains mocked/sample OHLC data.
+- **Plan scope**: official KIS chart/OHLC source verification, current Chart AI mocked chart contract review, period-control mapping, normalized OHLC contract proposal, domestic stock/ETF feasibility, 1d intraday feasibility, daily/weekly/monthly/yearly feasibility, volume/adjusted-price policy, fallback policy, and safe implementation sequence.
+- **Verification note**: the quote endpoint (`inquire-price`/`FHKST01010100`) is already verified in-repo, but chart/OHLC endpoint paths, transaction ids, and parameters are marked `NEEDS_OFFICIAL_VERIFICATION` and are not treated as implementation-ready; they must be verified owner-locally in the OHLC smoke phase.
+- **Preserved policy**: no live KIS chart call, no public OHLC API route, no Chart AI chart replacement, no raw KIS response, no secrets, no account/trading APIs, no Supabase/SQL/migration, no Vercel changes, no deployment, and no push.
+- **Validation**: Phase 3EQ contract PASS, Phase 3EP closeout PASS, Phase 3EP PASS, Phase 3EO closeout PASS, Phase 3EO PASS, Phase 3EN PASS, Phase 3EM PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known pre-existing unrelated failure remains: `check:kis-quote-adapter-mocked` 100/101 (`src/pages/api/portfolio/valuation.ts` `source=live` string; file unchanged; checker not weakened).
+- **Recommended next phase**: Phase 3ER — KIS OHLC Contract and Mocked Adapter Foundation. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3EP-OWNER-REVIEW-CLOSEOUT - 2026-07-01
 
 ### Chart AI Owner-Local Quote Preview Owner Review Closeout (Closed — PASS)
