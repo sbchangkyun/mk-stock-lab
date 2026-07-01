@@ -2,13 +2,17 @@
 
 ## 1. Status
 
-BLOCKED — Owner-local KIS quote smoke.
+PASS_WITH_INTERMITTENT_PROVIDER_NOTE — Owner-local KIS quote smoke.
 
-The smoke pipeline is fully implemented, verified, and owner-runnable. In this automated
-(non-interactive) session the live KIS credentials and explicit smoke flags are NOT present, so no
-live call was executed. The block is a credential/flag-availability block in this session, NOT an
-endpoint-verification block and NOT an authentication failure. The owner can run the prepared smoke
-locally to obtain a PASS.
+The owner ran the prepared owner-local smoke locally. The first run returned PASS for KR `005930`
+through the verified `KR_STOCK_QUOTE` endpoint, proving owner-local KIS quote connectivity works. An
+immediate retry returned a transient `PROVIDER_UNAVAILABLE` (5xx); this is recorded as an
+intermittent provider-availability note, not as a failure of Phase 3EO.
+
+For completeness, the earlier automated (non-interactive) session was BLOCKED because live KIS
+credentials and explicit smoke flags are not present there; that block was a credential/flag
+availability block, never an endpoint-verification block or an authentication failure. The
+owner-run PASS supersedes it as the phase decision.
 
 Starting HEAD: `75621c6` (`feat: add kis owner local quote gate`).
 
@@ -53,15 +57,47 @@ Starting HEAD: `75621c6` (`feat: add kis owner local quote gate`).
 - Smoke command form (values are not shown; set them in your own shell):
   - `KIS_OWNER_LOCAL_SMOKE=1 KIS_ALLOW_LIVE_QUOTE=1 node scripts/kis_owner_local_quote_smoke.mjs --symbol 005930 --market KR --asset-type stock`
   - PowerShell: set `$env:KIS_OWNER_LOCAL_SMOKE`, `$env:KIS_ALLOW_LIVE_QUOTE`, then run the same node command.
-- Decision (this session): `BLOCKED`.
+
+### 5.1 Automated-session attempt (retained note)
+
+- Decision (automated session): `BLOCKED`.
 - HTTP status class: `not-run` (no live request was attempted).
-- Normalized snapshot safety: `true` (blocked path returns a client-safe unavailable snapshot).
-- Field-presence booleans (this session): lastPrice `false`, previousClose `false`, change `false`,
-  changeRate `false`, volume `false` (no live data fetched).
-- Reason: required KIS credential env names were not present in this automated session (3 missing),
-  so the smoke client blocked before any network call. The gate opened and the endpoint resolved as
-  verified, confirming the pipeline is smoke-ready.
-- No actual prices were recorded.
+- Reason: required KIS credential env names were not present in the automated session, so the smoke
+  client blocked before any network call. The gate opened and the endpoint resolved as verified,
+  confirming the pipeline was smoke-ready. No actual prices were recorded.
+
+### 5.2 Owner-run first attempt (PASS)
+
+Sanitized fields only (no prices, no raw response):
+
+- Decision: `PASS`.
+- symbol: `005930`, market: `KR`, endpointKey: `KR_STOCK_QUOTE`, endpointVerified: `true`.
+- HTTP status class: `2xx`.
+- normalizedSnapshotSafe: `true`.
+- source: `kis-local`, freshness: `delayed`, isLive: `true`, providerStatus: `ok`.
+- Field-presence booleans: lastPrice `true`, previousClose `true`, change `true`, changeRate `true`,
+  volume `true`.
+- rawResponsePrinted: `false`, secretsPrinted: `false`.
+- Interpretation: proves owner-local KIS quote connectivity works for KR `005930` via the verified
+  `KR_STOCK_QUOTE` endpoint.
+
+### 5.3 Owner-run immediate retry (intermittent provider note)
+
+Sanitized fields only:
+
+- Decision: `FAIL` on the retry, recorded as an intermittent provider-availability note.
+- symbol: `005930`, market: `KR`, endpointKey: `KR_STOCK_QUOTE`, endpointVerified: `true`.
+- HTTP status class: `5xx`.
+- normalizedSnapshotSafe: `true`.
+- source: `unavailable`, freshness: `unavailable`, isLive: `false`, providerStatus: `error`.
+- Field-presence booleans: all `false`.
+- message: transient `PROVIDER_UNAVAILABLE`.
+- Interpretation: an immediate retry hit a transient upstream provider unavailability. Because the
+  first run succeeded through the same verified endpoint, this is treated as an intermittent
+  provider-availability note, not a Phase 3EO failure. The client returned a client-safe unavailable
+  snapshot with no leaked data.
+
+- No actual prices were recorded in either run; no raw response was printed or committed.
 
 ## 6. Sanitization
 
@@ -119,16 +155,21 @@ Starting HEAD: `75621c6` (`feat: add kis owner local quote gate`).
 
 ## 10. Recommended Next Phase
 
-Because the smoke was BLOCKED only by credential availability in this automated session (the
-endpoint is verified and the pipeline is proven smoke-ready), the recommended path is for the owner
-to run the prepared smoke locally:
+The owner-run smoke PASSed on the first attempt through the verified `KR_STOCK_QUOTE` endpoint, so
+live owner-local KIS quote connectivity is proven. The immediate retry's transient
+`PROVIDER_UNAVAILABLE` is an intermittent provider-availability note, not a blocker.
 
-- If the owner-local run PASSes: Phase 3EP — Chart AI Owner-Local Quote Preview Wiring.
-- If it is BLOCKED due to endpoint verification (not expected for KR): Phase 3EO-HF1 — KIS Endpoint
-  Verification Hotfix.
-- If it FAILs due to auth/headers: Phase 3EO-HF2 — KIS Auth/Header Smoke Fix.
+Recommended: Phase 3EP — Chart AI Owner-Local Quote Preview Wiring, with an intermittent-provider
+fallback path so a transient `PROVIDER_UNAVAILABLE` degrades to a safe unavailable state rather than
+an error surface.
+
+Contingencies retained for reference:
+
+- If a future owner-local run is BLOCKED due to endpoint verification (not expected for KR):
+  Phase 3EO-HF1 — KIS Endpoint Verification Hotfix.
+- If a future run FAILs due to auth/headers: Phase 3EO-HF2 — KIS Auth/Header Smoke Fix.
 
 Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
 
-Rationale: The first live call must happen only in the owner-local smoke; all preparation and
-verification are complete, so the owner can execute it locally and proceed to Phase 3EP on PASS.
+Rationale: Owner-local connectivity is confirmed; Phase 3EP should wire the preview behind the same
+owner-local gate while explicitly handling intermittent provider availability.
