@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-OWNER-REVIEW-HF2 - 2026-07-01
+
+### Mocked Candlestick Chart and Volume Owner Review Preparation (Prepared — owner visual review pending)
+
+- **Status**: Prepared — owner visual review pending. No runtime source changes.
+- **Background**: Phase 3EL-HF2 implemented a mocked/client-safe candlestick chart and volume foundation after the compact search panel passed owner review. This phase prepares the owner-run manual local review package for chart visual quality and interaction behavior.
+- **Review scope**: local `/chart-ai` page load, preserved compact search UX, stock header, chart first impression, candlestick body/wick readability, up/down candle distinction, volume band readability, period controls `1일`/`1주`/`1개월`/`3개월`/`1년`, selected-symbol chart updates, sample/non-live labels, light/dark theme alignment, mobile 390px layout, accessibility basics, and forbidden wording.
+- **Owner workload**: owner runs the local dev server and reviews the UI manually, then returns only the filled PASS/FAIL template and short visual notes for failed or inconclusive items.
+- **Routing**: PASS leads to Phase 3EL-OWNER-REVIEW-HF2-CLOSEOUT. Chart visual quality, candle readability, volume readability, period interaction, symbol chart update, mobile layout, theme alignment, search regression, and safety-copy failures route to focused HF2 follow-up phases.
+- **Safety**: no runtime/UI/API/provider changes, no chart data/helper file changes, no dev server or browser launched by Codex, no screenshots required, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-OWNER-REVIEW-HF2 104/104 PASS, Phase 3EL-HF2 134/134 PASS, Phase 3EL-OWNER-REVIEW-HF1-SX2-CLOSEOUT 79/79 PASS, Phase 3EL-HF1-SX2 112/112 PASS, owner-review HF1-SX 78/78 PASS, Phase 3EL-HF1-SX 109/109 PASS, owner-review HF1 72/72 PASS, Phase 3EL-HF1 112/112 PASS, Phase 3EL-UXR 143/143 PASS, prior closeout 77/77 PASS, Phase 3EL 89/89 PASS, Phase 3EK 245/245 PASS, Chart AI UX skeleton 82/82 PASS, mobile baseline 74/74 PASS, production-domain 33/33 PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Next step**: owner performs the manual local review. PASS leads to Phase 3EL-OWNER-REVIEW-HF2-CLOSEOUT.
+
 ## Phase 3EL-HF2 - 2026-07-01
 
 ### Mocked Candlestick Chart and Volume Foundation (Implemented — owner review recommended)
