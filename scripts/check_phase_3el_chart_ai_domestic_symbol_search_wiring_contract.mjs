@@ -16,6 +16,10 @@ import { build } from 'esbuild';
 
 const root = process.cwd();
 const startingCommit = '5baf3b5';
+// Pinned to this phase's own ending commit so later phases (e.g. Phase 3EM provider
+// foundation) do not pollute this phase-scoped diff. Content checks still read the
+// current working-tree files.
+const endingCommit = '461cfe1';
 const paths = {
   result: 'docs/planning/phase_3el_chart_ai_domestic_symbol_search_wiring_result_v0.1.md',
   checker: 'scripts/check_phase_3el_chart_ai_domestic_symbol_search_wiring_contract.mjs',
@@ -54,8 +58,7 @@ const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`)
 const phaseSection = source.changelog.split('## Phase 3EL - 2026-06-30')[1]?.split('\n## ')[0] ?? '';
 
 const trackedChanges = new Set([
-  ...git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean),
-  ...git('diff', '--name-only', '--cached').split(/\r?\n/).filter(Boolean),
+  ...git('diff', '--name-only', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean),
 ]);
 const phaseFiles = new Set(Object.values(paths));
 for (const relativePath of phaseFiles) {
@@ -134,7 +137,7 @@ check('Chart AI includes results area', source.page.includes('id="chartAiSearchR
 check('Chart AI includes selected-symbol summary',
   source.page.includes('선택 종목') && source.page.includes('chartAiSelectedSymbol'));
 check('Chart AI includes sample-data notice', source.page.includes('샘플 데이터'));
-for (const label of ['종목 검색', '샘플 데이터', '국내 주식·ETF', '검색 결과', '종목 차트', '실제 시세 아님']) {
+for (const label of ['종목 검색', '샘플 데이터', '국내/미국 주식·ETF', '검색 결과', '종목 차트', '실제 시세 아님']) {
   check(`Chart AI includes ${label}`, source.page.includes(label));
 }
 check('Chart AI does not expose sourceAsOf', !source.page.includes('sourceAsOf'));

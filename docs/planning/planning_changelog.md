@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EM - 2026-07-01
+
+### KIS Quote Integration Roadmap Reset and Local Provider Foundation (Implemented — mocked/local foundation ready)
+
+- **Status**: Implemented — KIS quote integration foundation ready for mocked/local validation. No live KIS call and no public API route.
+- **Background**: Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT recorded `PASS_WITH_COPY_NOTE` for the Chart AI header/sidebar layout. The owner requested faster progress toward KIS API integration instead of continuing long review-only loops. This phase shifts the project from Chart AI UI polish toward the KIS quote integration track.
+- **Implemented scope**: applied the eyebrow copy note `국내 주식·ETF` → `국내/미국 주식·ETF`, added a normalized quote snapshot contract, added a quote provider request/context/interface, added a deterministic mocked quote provider for Korean and US stock/ETF samples, added a server-only KIS provider boundary/skeleton that remains blocked until owner-local smoke, documented the accelerated KIS roadmap, and preserved public production fixture/default behavior.
+- **Deferred scope**: live KIS quote calls, KIS token handling, KIS chart/OHLC, public quote API route, Chart AI quote preview wiring, US symbol search UI, MK AI intro/loading/results, deployment, and push.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, no live/current/realtime wording is introduced, no quote/API/provider/live integration is exposed to public UI, and no account/trading APIs are added.
+- **Safety**: no live KIS call, no live FX call, no provider payload committed, no `.env` or secret read, no Supabase/SQL/migration, no Vercel environment changes, no dependency added, no deployment, and no push.
+- **Validation**: Phase 3EM contract PASS, Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT PASS, Phase 3EL-HF2-LX PASS, Phase 3EL-HF2 PASS, Phase 3EL-HF1-SX2 PASS, Phase 3EL PASS, Phase 3EK PASS, Phase 3EJ plan PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, KIS quote adapter mocked PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EN — KIS Quote Adapter Owner-Local Gate Implementation. Alternative: Phase 3EO — Owner-Local KIS Quote Smoke only if the adapter boundary is already sufficient and owner confirms local credential readiness.
+
 ## Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT - 2026-07-01
 
 ### Chart AI Header and Sidebar Layout Owner Review Closeout (Closed — owner review PASS_WITH_COPY_NOTE)

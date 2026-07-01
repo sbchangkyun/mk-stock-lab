@@ -15,6 +15,9 @@ import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const startingCommit = 'be7a885';
+// Pinned to this closeout's own commit so later phases do not pollute this
+// documentation-only phase diff.
+const endingCommit = '32cdd87';
 const paths = {
   result: 'docs/planning/phase_3el_owner_review_hf2_lx_closeout_result_v0.1.md',
   checker: 'scripts/check_phase_3el_owner_review_hf2_lx_closeout_static_contract.mjs',
@@ -40,15 +43,15 @@ const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog
   .split('## Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT - 2026-07-01')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean);
-const srcChanges = git('diff', '--name-only', startingCommit, '--', 'src').split(/\r?\n/).filter(Boolean);
+const phaseChanges = git('diff', '--name-only', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean);
+const srcChanges = git('diff', '--name-only', startingCommit, endingCommit, '--', 'src').split(/\r?\n/).filter(Boolean);
 const uiChanges = srcChanges.filter((path) =>
   path.startsWith('src/pages/') || path.startsWith('src/components/') || path.startsWith('src/layouts/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
 const providerChanges = srcChanges.filter((path) =>
   path.startsWith('src/lib/server/providers/') || path.startsWith('src/lib/server/marketData/'));
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp']);
-const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit).split(/\r?\n/).filter(Boolean);
+const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean);
 const addedImages = addedFiles.filter((path) => imageExtensions.has(extname(path).toLowerCase()));
 const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) ===
   JSON.stringify(baselinePackage.dependencies ?? {});
