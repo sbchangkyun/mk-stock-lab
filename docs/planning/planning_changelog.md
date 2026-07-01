@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EO - 2026-07-01
+
+### Owner-Local KIS Quote Smoke Preparation and Execution (BLOCKED — credentials not present in automated session; owner-runnable)
+
+- **Status**: BLOCKED — Owner-local KIS quote smoke. No public API route and no UI quote wiring. The smoke pipeline is fully implemented and verified; in this automated session the live KIS credentials and explicit smoke flags are not present, so no live call was executed. This is a credential/flag-availability block, not an endpoint-verification block and not an auth failure.
+- **Background**: Phase 3EN implemented the owner-local KIS gate and adapter preparation. The owner confirmed KIS_APP_KEY / KIS_APP_SECRET / KIS_ACCESS_TOKEN readiness and prior API communication test history. This phase performs the first controlled owner-local KIS quote smoke, strictly limited to an owner-local script.
+- **Implemented scope**: endpoint registry (KR domestic inquire-price verified from official-docs-derived kisClient.ts; US endpoints left unverified and unused), owner-local smoke client (delegates transport to the approved kisClient adapter; no fetch of its own; presence-only env checks; sanitized result), smoke script (explicit flag gate, sanitized summary only, no committed output), sanitized result template, sanitized result document, static/behavioral checker, and env-name contract extended with smoke flag names.
+- **Smoke target**: KR stock `005930` as primary smoke target. US stock `AAPL` optional only if official endpoint mapping is verified (currently unverified, so not run).
+- **Smoke result**: BLOCKED with HTTP status class `not-run`; normalized field-presence booleans all false (no live data fetched). No actual prices recorded. The gate opened and the KR endpoint resolved as verified, confirming the pipeline is smoke-ready for an owner-local run.
+- **Safety**: no app key, app secret, access token, authorization header, raw request, raw response, account number, provider payload, or `.env` content is recorded or committed; no Supabase/SQL/migration; no Vercel environment change; no deployment; and no push.
+- **Preserved policy**: no public quote API route, no Chart AI quote preview, public `source=live` remains disabled, `source=auto` remains deferred, public production cannot trigger KIS live behavior, and no account/trading APIs are added.
+- **Validation**: Phase 3EO contract PASS, Phase 3EN PASS, Phase 3EM PASS, Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT PASS, Phase 3EL-HF2-LX PASS, Phase 3EL-HF2 PASS, Phase 3EL-HF1-SX2 PASS, Phase 3EL PASS, Phase 3EK PASS, Phase 3EJ plan PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known pre-existing unrelated failure remains: `check:kis-quote-adapter-mocked` 100/101 (`src/pages/api/portfolio/valuation.ts` `source=live` string; file unchanged in Phase 3EO; checker not weakened).
+- **Recommended next phase**: owner runs the prepared owner-local smoke; on PASS, Phase 3EP — Chart AI Owner-Local Quote Preview Wiring. If BLOCKED due to endpoint verification, Phase 3EO-HF1 — KIS Endpoint Verification Hotfix. If FAIL due to auth/headers, Phase 3EO-HF2 — KIS Auth/Header Smoke Fix. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3EN - 2026-07-01
 
 ### KIS Quote Adapter Owner-Local Gate Implementation (Implemented — smoke-ready gate, no live call)

@@ -11,10 +11,24 @@ export type KisEnvKey =
   | 'KIS_APP_KEY'
   | 'KIS_APP_SECRET'
   | 'KIS_ACCESS_TOKEN'
+  | 'KIS_BASE_URL'
   | 'KIS_ACCOUNT_NO'
   | 'KIS_MOCK_APP_KEY'
   | 'KIS_MOCK_APP_SECRET'
   | 'KIS_MODE';
+
+/**
+ * Explicit owner-local smoke gate flag NAMES (Phase 3EO). Names only — the smoke script
+ * reads these at runtime; this contract never reads or prints their values.
+ */
+export type KisSmokeFlag =
+  | 'KIS_OWNER_LOCAL_SMOKE'
+  | 'KIS_ALLOW_LIVE_QUOTE';
+
+export const KIS_OWNER_LOCAL_SMOKE_FLAGS: KisSmokeFlag[] = [
+  'KIS_OWNER_LOCAL_SMOKE',
+  'KIS_ALLOW_LIVE_QUOTE',
+];
 
 /**
  * Names (only) required for a quote-only owner-local smoke. Account/trading keys are
@@ -49,6 +63,7 @@ export const isKisEnvKey = (value: string): value is KisEnvKey =>
       'KIS_APP_KEY',
       'KIS_APP_SECRET',
       'KIS_ACCESS_TOKEN',
+      'KIS_BASE_URL',
       'KIS_ACCOUNT_NO',
       'KIS_MOCK_APP_KEY',
       'KIS_MOCK_APP_SECRET',
