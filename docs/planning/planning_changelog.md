@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT - 2026-07-01
+
+### Chart AI Header and Sidebar Layout Owner Review Closeout (Closed — owner review PASS_WITH_COPY_NOTE)
+
+- **Status**: Closed — owner review PASS_WITH_COPY_NOTE for Phase 3EL-HF2-LX chart header and sidebar layout hotfix. No runtime source changes.
+- **Decision**: `PASS_WITH_COPY_NOTE`.
+- **Background**: Phase 3EL-HF2-LX moved the selected-stock identity into the gray chart header, removed the standalone selected-stock header card and the duplicate right-side `종목 정보` card, kept `기업 개요` as the first sidebar card, and moved the MK AI button below `기업 개요` at sidebar width. The owner manually reviewed the local `/chart-ai` UI and accepted the layout with one minor copy note.
+- **Accepted scope**: HF2-LX layout accepted — standalone selected-stock header removed, identity moved into the gray chart header, duplicate `종목 정보` card removed, `기업 개요` kept as the first sidebar card, MK AI moved below `기업 개요` at sidebar width, and candlestick chart, volume band, period controls, selected-symbol update, and compact search UX all preserved.
+- **Copy note**: eyebrow copy `국내 주식·ETF` → `국내/미국 주식·ETF`, deferred to the next implementation phase because the planned KIS roadmap should support Korean and US stocks/ETFs. No runtime change is made in this closeout.
+- **Deferred scope**: KIS chart data, KIS quote data, US stock/ETF support, quote API integration, MK AI intro modal, MK AI staged loading, MK AI result cards, runtime companyProfile data, deployment, and push.
+- **Safety**: no runtime changes, no UI changes, no API route changes, no provider changes, no screenshots committed, no image files added, no dependency added, no live KIS call, no live FX call, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT contract PASS, Phase 3EL-HF2-LX PASS, Phase 3EL-OWNER-REVIEW-HF2 PASS, Phase 3EL-HF2 PASS, Phase 3EL-HF1-SX2 PASS, Phase 3EL PASS, Phase 3EK PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EM — KIS Quote Integration Roadmap Reset and Local Provider Foundation. Alternative: Phase 3EL-HF3 — MK AI Activation Intro and Staged Loading Foundation.
+
 ## Phase 3EL-HF2-LX - 2026-07-01
 
 ### Chart AI Chart Header and Sidebar Layout Hotfix (Implemented — owner review recommended)
