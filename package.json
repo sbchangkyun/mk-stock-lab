@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3en-kis-quote-adapter-owner-local-gate": "node scripts/check_phase_3en_kis_quote_adapter_owner_local_gate_contract.mjs",
     "check:phase-3em-kis-quote-integration-foundation": "node scripts/check_phase_3em_kis_quote_integration_foundation_contract.mjs",
     "check:phase-3el-owner-review-hf2-lx-closeout": "node scripts/check_phase_3el_owner_review_hf2_lx_closeout_static_contract.mjs",
     "check:phase-3el-hf2-lx-chart-header-sidebar-layout-hotfix": "node scripts/check_phase_3el_hf2_lx_chart_header_sidebar_layout_hotfix_contract.mjs",

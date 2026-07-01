@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EN - 2026-07-01
+
+### KIS Quote Adapter Owner-Local Gate Implementation (Implemented — smoke-ready gate, no live call)
+
+- **Status**: Implemented — KIS quote adapter owner-local gate ready for smoke preparation. No live KIS call and no public API route.
+- **Background**: Phase 3EM established the normalized quote contract, quote provider interface, deterministic mocked quote provider, and blocked KIS provider boundary. The owner requested faster progress toward real KIS API integration. This phase implements the owner-local gate and adapter preparation needed before the first real KIS quote smoke.
+- **Implemented scope**: owner-local KIS gate helper, env-name contract, KIS quote request descriptor, sanitized quote mapper stub, extended KIS quote provider boundary, blocked/not-implemented behavior for Phase 3EN, explicit `allowNetwork`/`allowKisLive` gate path, and no public UI quote wiring.
+- **Deferred scope**: live KIS quote call, real KIS token request, verified KIS endpoint/tr_id mapping, public quote API route, Chart AI quote preview UI, KIS chart/OHLC, US symbol search UI, MK AI intro/loading/results, deployment, and push.
+- **Preserved policy**: first real KIS call remains deferred to Phase 3EO owner-local smoke, public `source=live` remains disabled, `source=auto` remains deferred, no live/current/realtime wording is introduced, no account/trading APIs are added, and public production remains unable to trigger KIS live behavior.
+- **Safety**: no live KIS call, no live FX call, no fetch, no `.env` or secret read, no provider payload committed, no Supabase/SQL/migration, no Vercel environment changes, no dependency added, no deployment, and no push.
+- **Validation**: Phase 3EN contract PASS, Phase 3EM PASS, Phase 3EL-OWNER-REVIEW-HF2-LX-CLOSEOUT PASS, Phase 3EL-HF2-LX PASS, Phase 3EL-HF2 PASS, Phase 3EL-HF1-SX2 PASS, Phase 3EL PASS, Phase 3EK PASS, Phase 3EJ plan PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known pre-existing unrelated failure remains: `check:kis-quote-adapter-mocked` 100/101 (`src/pages/api/portfolio/valuation.ts` `source=live` string; file unchanged in Phase 3EN; checker not weakened).
+- **Recommended next phase**: Phase 3EO — Owner-Local KIS Quote Smoke Preparation and Execution. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup if the owner wants zero known checker failures before live smoke.
+
 ## Phase 3EM - 2026-07-01
 
 ### KIS Quote Integration Roadmap Reset and Local Provider Foundation (Implemented — mocked/local foundation ready)
