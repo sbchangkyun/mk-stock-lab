@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EP-OWNER-REVIEW-CLOSEOUT - 2026-07-01
+
+### Chart AI Owner-Local Quote Preview Owner Review Closeout (Closed — PASS)
+
+- **Status**: Closed — owner review PASS. No runtime source changes.
+- **Decision**: `PASS`.
+- **Background**: Phase 3EP wired the Chart AI owner-local KIS quote preview behind the owner-local gate. The owner locally reviewed `/chart-ai?source=owner-local` with the required KIS environment flags.
+- **Accepted scope**: KIS 로컬 프리뷰 card, owner-local preview button, sanitized quote preview display for 삼성전자 / 005930, current price / previous close / change / change rate / volume / asOf presence, delayed owner-local KRW label, existing sample chart preservation, and no raw response or secret exposure.
+- **Production boundary note**: KIS-related variables are registered in Vercel, but public production live quote exposure remains blocked and is not authorized in this phase. The preview remains owner-local gated.
+- **Safety**: no runtime changes, no API route changes, no provider changes, no live KIS re-run, no `.env` read, no raw response, no secrets, no actual price values recorded in docs, no Supabase/SQL/migration, no Vercel changes, no deployment, and no push.
+- **Validation**: Phase 3EP-OWNER-REVIEW-CLOSEOUT contract PASS, Phase 3EP PASS, Phase 3EO closeout PASS, Phase 3EO PASS, Phase 3EN PASS, Phase 3EM PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known pre-existing unrelated failure remains: `check:kis-quote-adapter-mocked` 100/101 (`src/pages/api/portfolio/valuation.ts` `source=live` string; file unchanged; checker not weakened).
+- **Recommended next phase**: Phase 3EQ — KIS Chart/OHLC Feasibility and Chart Data Integration Plan. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3EP - 2026-07-01
 
 ### Chart AI Owner-Local Quote Preview Wiring (Implemented — owner-local gated preview)
