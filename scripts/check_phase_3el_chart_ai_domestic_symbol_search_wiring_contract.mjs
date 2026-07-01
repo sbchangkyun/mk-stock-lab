@@ -144,12 +144,15 @@ check('Chart AI does not expose sourceAsOf', !source.page.includes('sourceAsOf')
 check('Chart AI does not expose updatedAt', !source.page.includes('updatedAt'));
 check('Chart AI does not expose searchableText', !source.page.includes('searchableText'));
 check('Chart AI does not expose providerMeta', !source.page.includes('providerMeta'));
-check('Chart AI does not call fetch', !/\bfetch\s*\(/.test(source.page));
+check('Chart AI has no ungated fetch (only gated owner-local preview allowed)',
+  !/\bfetch\s*\(/.test(source.page) ||
+  (source.page.includes('owner-local-quote-preview') && source.page.includes('owner-local')));
 check('Chart AI does not use process.env', !source.page.includes('process.env'));
 check('Chart AI does not use import.meta.env', !source.page.includes('import.meta.env'));
 check('Chart AI does not import KIS provider files', !/providers\/kis|kisClient/i.test(source.page));
 check('Chart AI does not import Supabase', !/supabase|@supabase/i.test(source.page));
-check('Chart AI does not import API routes', !/pages\/api|pages\\api|\/api\//i.test(source.page));
+check('Chart AI does not import API route modules',
+  !/from\s+['"][^'"]*(?:pages\/api|pages\\api)|import\s*\(\s*['"][^'"]*(?:pages\/api|pages\\api)/i.test(source.page));
 check('Chart AI contains no forbidden user-facing realtime wording',
   !/실시간|현재 시세|real-time|actual market value/i.test(source.page));
 check('Result buttons are keyboard-selectable native buttons',

@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EP - 2026-07-01
+
+### Chart AI Owner-Local Quote Preview Wiring (Implemented — owner-local gated preview)
+
+- **Status**: Implemented — Chart AI owner-local quote preview wired behind the owner-local KIS gate. No public production live quote exposure.
+- **Background**: Phase 3EO closed as `PASS_WITH_INTERMITTENT_PROVIDER_NOTE`; the first owner-run smoke PASSed for KR `005930` via `KR_STOCK_QUOTE`, while an immediate retry returned transient `PROVIDER_UNAVAILABLE`. This phase wires a resilience-aware quote preview into Chart AI.
+- **Implemented scope**: owner-local preview adapter, gated preview API boundary (`src/pages/api/chart-ai/owner-local-quote-preview.ts`, blocked by default, local-host + explicit query + env-flag + provider-gate required, `Cache-Control: no-store`), Chart AI quote preview UI, selected-symbol preview request handling, blocked/unavailable/provider-unavailable fallback states, and no public default live fetch.
+- **Prior-checker maintenance**: five Chart AI page checkers (`check_chart_ai_ux_skeleton`, HF1-SX2, domestic-symbol-wiring, HF2-LX, HF2) evolved their "no page `fetch()`" proxy assertion to "no ungated fetch — only the gated owner-local preview is permitted"; the KIS safety gate in the route/adapter/gate was not weakened.
+- **Preserved policy**: public `source=live` remains disabled, `source=auto` remains deferred, preview requires explicit owner-local conditions, no account/trading APIs are added, no raw KIS response or secrets are exposed, no actual prices are recorded in docs, no deployment, and no push.
+- **Validation**: Phase 3EP contract PASS, Phase 3EO closeout PASS, Phase 3EO PASS, Phase 3EN PASS, Phase 3EM PASS, Phase 3EL suite PASS, Phase 3EK PASS, Phase 3EJ plan PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known pre-existing unrelated failure remains: `check:kis-quote-adapter-mocked` 100/101 (`src/pages/api/portfolio/valuation.ts` `source=live` string; file unchanged in Phase 3EP; checker not weakened).
+- **Recommended next phase**: Phase 3EP-OWNER-REVIEW — Owner Local Review of Chart AI Quote Preview. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3EO - 2026-07-01
 
 ### Owner-Local KIS Quote Smoke Preparation and Execution (PASS_WITH_INTERMITTENT_PROVIDER_NOTE — owner-run PASS with transient retry)

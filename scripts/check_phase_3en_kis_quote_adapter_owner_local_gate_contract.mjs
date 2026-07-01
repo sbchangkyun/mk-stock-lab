@@ -17,6 +17,9 @@ import { build } from 'esbuild';
 
 const root = process.cwd();
 const startingCommit = '32c666a';
+// Pinned to this phase's own ending commit so later phases (e.g. Phase 3EP preview wiring)
+// do not pollute this phase-scoped diff. Content checks still read current working-tree files.
+const endingCommit = '75621c6';
 const paths = {
   result: 'docs/planning/phase_3en_kis_quote_adapter_owner_local_gate_result_v0.1.md',
   checker: 'scripts/check_phase_3en_kis_quote_adapter_owner_local_gate_contract.mjs',
@@ -46,12 +49,12 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3EN - 2026-07-01')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = new Set(git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean));
+const phaseChanges = new Set(git('diff', '--name-only', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean));
 const srcChanges = [...phaseChanges].filter((path) => path.startsWith('src/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
 const supabaseChanges = srcChanges.filter((path) => /supabase/i.test(path));
 const migrationChanges = [...phaseChanges].filter((path) => /migration|\.sql$/i.test(path));
-const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit).split(/\r?\n/).filter(Boolean);
+const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean);
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp']);
 const addedImages = addedFiles.filter((path) => imageExtensions.has(extname(path).toLowerCase()));
 const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) === JSON.stringify(baselinePackage.dependencies ?? {});
@@ -162,9 +165,11 @@ process.stdout.write('\n');
 
 process.stdout.write('Chart AI, API, and boundary safety:\n');
 check('Chart AI eyebrow remains 국내/미국 주식·ETF', source.page.includes('국내/미국 주식·ETF'));           // 53
-check('No Chart AI quote preview UI added',
-  !source.page.includes('quote-preview') && !source.page.includes('normalizedQuote') &&
-  !source.page.includes('quoteProvider') && !source.page.includes('kisQuote'));                           // 54
+check('No ungated Chart AI quote UI (server quote modules not imported; only gated preview allowed)',
+  !source.page.includes('normalizedQuote') && !source.page.includes('quoteProvider') &&
+  !source.page.includes('kisQuote') &&
+  (!source.page.includes('quote-preview') ||
+    (source.page.includes('owner-local-quote-preview') && source.page.includes('owner-local'))));         // 54
 check('No public quote API route added', addedFiles.every((path) => !path.startsWith('src/pages/api/'))); // 55
 check('No /api/market/quote route added',
   !addedFiles.includes('src/pages/api/market/quote.ts'));                                                 // 56

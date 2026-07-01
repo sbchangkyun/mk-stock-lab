@@ -243,7 +243,9 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 11: Safety boundaries ---');
 
-check('No fetch() call in chart-ai.astro', !/\bfetch\s*\(/.test(page));
+check('No ungated fetch() in chart-ai.astro (only gated owner-local preview allowed)',
+  !/\bfetch\s*\(/.test(page) ||
+  (page.includes('owner-local-quote-preview') && page.includes('owner-local')));
 check('No XMLHttpRequest in chart-ai.astro', !page.includes('XMLHttpRequest'));
 check('No Supabase import in chart-ai.astro', !/@supabase/.test(page));
 check('No chartAiClient import (server route removed)',

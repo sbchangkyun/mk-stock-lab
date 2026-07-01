@@ -15,6 +15,9 @@ import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const startingCommit = '86539e0';
+// Pinned to this closeout's own commit so later phases do not pollute this
+// documentation-only phase diff.
+const endingCommit = 'c85e1f8';
 const paths = {
   closeout: 'docs/planning/phase_3eo_owner_local_kis_quote_smoke_closeout_result_v0.1.md',
   result: 'docs/planning/phase_3eo_owner_local_kis_quote_smoke_result_v0.1.md',
@@ -36,11 +39,11 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3EO - 2026-07-01')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = new Set(git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean));
+const phaseChanges = new Set(git('diff', '--name-only', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean));
 const srcChanges = [...phaseChanges].filter((path) => path.startsWith('src/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
 const providerChanges = srcChanges.filter((path) => path.startsWith('src/lib/server/providers/'));
-const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit).split(/\r?\n/).filter(Boolean);
+const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit, endingCommit).split(/\r?\n/).filter(Boolean);
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp']);
 const addedImages = addedFiles.filter((path) => imageExtensions.has(extname(path).toLowerCase()));
 const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) === JSON.stringify(baselinePackage.dependencies ?? {});

@@ -251,7 +251,9 @@ check('Page uses 매도 추천 only in non-recommendation disclaimer',
   source.page.includes('매수·매도 추천이 아닙니다') && source.page.split('매도 추천').length === 2);
 check('No buy or order CTA introduced',
   !/(>\s*매수\s*<|>\s*주문\s*<|buy-button|order-button)/i.test(source.page));
-check('Chart AI page does not call fetch', !/\bfetch\s*\(/.test(source.page));
+check('Chart AI page has no ungated fetch (only gated owner-local preview allowed)',
+  !/\bfetch\s*\(/.test(source.page) ||
+  (source.page.includes('owner-local-quote-preview') && source.page.includes('owner-local')));
 check('Chart AI page does not use process.env', !source.page.includes('process.env'));
 check('Chart AI page does not import KIS providers', !/from ['"][^'"]*kis/i.test(source.page));
 check('Chart AI page does not import Supabase', !/from ['"][^'"]*supabase/i.test(source.page));

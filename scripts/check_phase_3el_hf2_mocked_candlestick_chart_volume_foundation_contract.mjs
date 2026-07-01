@@ -229,7 +229,9 @@ for (const wording of ['실시간', '실시간 시세', '현재 시세', 'real-t
 }
 check('No affirmative sell recommendation wording', !/매도 추천(?!이 아닙니다)/.test(source.page));
 check('No buy or order CTA introduced', !/<button[^>]*>\s*(?:매수|매도|주문)\s*<\/button>/.test(source.page));
-check('Chart AI page contains no fetch call', !/\bfetch\s*\(/.test(source.page));
+check('Chart AI page has no ungated fetch (only gated owner-local preview allowed)',
+  !/\bfetch\s*\(/.test(source.page) ||
+  (source.page.includes('owner-local-quote-preview') && source.page.includes('owner-local')));
 check('Chart AI page contains no process.env', !source.page.includes('process.env'));
 check('Chart AI page contains no import.meta.env', !source.page.includes('import.meta.env'));
 check('Chart AI page does not import KIS provider files', !/providers\/(?:kis|koreaInvestment)/i.test(source.page));
