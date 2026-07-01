@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EL-HF2-LX - 2026-07-01
+
+### Chart AI Chart Header and Sidebar Layout Hotfix (Implemented — owner review recommended)
+
+- **Status**: Implemented — Chart AI chart header and sidebar layout hotfix ready for owner review. No API route or provider integration.
+- **Background**: Phase 3EL-HF2 implemented the mocked candlestick chart and volume foundation. During owner review of that surface, the owner asked to remove the duplicated standalone selected-stock header card, fold the selected-stock identity into the gray chart header, remove the duplicate right-side `종목 정보` card, keep `기업 개요` as the first sidebar card, and move the MK AI button below `기업 개요` at the sidebar card width.
+- **Implemented scope**: removed the standalone `chart-stock-header` card (with `chart-stock-identity` and `chart-stock-source`), moved the selected-stock identity into the gray chart header as `chart-market-identity-row` (name, symbol, exchange, asset type, currency), removed the duplicate right-side `종목 정보` metadata card and its `chartAiMetaExchange`/`chartAiMetaAssetType`/`chartAiMetaCurrency`/`chartAiMetaDataStatus` fields, removed the duplicated in-plot chart identity, kept `기업 개요` (`chart-company-placeholder`) as the first sidebar card, moved the MK AI button (`chartAiMkAiBtn`) below `기업 개요` inside the sidebar, and styled the MK AI button full-width to match the company card.
+- **Deferred scope**: MK AI intro modal, staged loading, sequential analysis cards, runtime companyProfile data, KIS chart/profile integration, quote API integration, deployment, and push.
+- **Preserved policy**: mocked candlestick and volume rendering, period controls, selected-symbol chart updates, compact SX2 search UX, deterministic six-query search behavior, light/dark chart theme, mobile containment, deferred non-blocking MK AI note, public `source=live` remains disabled, `source=auto` remains deferred, public production remains fixture/default, no real-time/live/current-price wording is introduced, and no quote/API/provider/live integration is added.
+- **Safety**: no Home/Market/Lab/Portfolio/MyPage/Layout changes, no API route changes, no provider changes, no active owner smoke, no live KIS call, no live FX call, no secrets, no Supabase/SQL/migration, no Vercel environment changes, no deployment, and no push.
+- **Validation**: Phase 3EL-HF2-LX contract PASS, Phase 3EL-OWNER-REVIEW-HF2 PASS, Phase 3EL-HF2 PASS, Phase 3EL-OWNER-REVIEW-HF1-SX2-CLOSEOUT PASS, Phase 3EL-HF1-SX2 PASS, owner-review HF1-SX PASS, Phase 3EL-HF1-SX PASS, owner-review HF1 PASS, Phase 3EL-HF1 PASS, Phase 3EL-UXR PASS, prior closeout PASS, Phase 3EL PASS, Phase 3EK PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network.
+- **Recommended next phase**: Phase 3EL-OWNER-REVIEW-HF2-LX — Owner Review of the Chart Header and Sidebar Layout Hotfix. Alternative: Phase 3EL-HF3 — MK AI Activation Intro and Staged Loading Foundation if owner review is skipped.
+
 ## Phase 3EL-OWNER-REVIEW-HF2 - 2026-07-01
 
 ### Mocked Candlestick Chart and Volume Owner Review Preparation (Prepared — owner visual review pending)

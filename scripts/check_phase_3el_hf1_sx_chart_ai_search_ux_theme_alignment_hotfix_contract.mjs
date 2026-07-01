@@ -157,7 +157,7 @@ check('All stock and ETF filters remain',
 process.stdout.write('\n');
 
 process.stdout.write('Preserved stock and chart shell structure:\n');
-check('Central stock header remains', source.page.includes('class="chart-stock-header"'));
+check('Central selected-stock identity remains', source.page.includes('class="chart-market-identity-row"'));
 check('Chart shell remains',
   source.page.includes('class="chart-market-panel"') && source.page.includes('class="chart-candlestick-ready"'));
 for (const period of ['1일', '1주', '1개월', '3개월', '1년']) {

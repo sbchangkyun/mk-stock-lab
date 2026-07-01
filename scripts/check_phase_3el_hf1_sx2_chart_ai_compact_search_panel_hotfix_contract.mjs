@@ -188,7 +188,7 @@ check('No-match state remains after non-empty query guard',
 check('Selection clears input', source.page.includes("input.value = '';"));
 check('Selection closes dropdown',
   /const updateSelection = [\s\S]*?input\.value = '';\s*closeDropdown\(\)/s.test(source.page));
-check('Central stock header remains', source.page.includes('class="chart-stock-header"'));
+check('Central selected-stock identity remains', source.page.includes('class="chart-market-identity-row"'));
 check('Chart shell remains', source.page.includes('class="chart-market-panel"'));
 check('Light/dark chart theme alignment remains',
   source.page.includes('--chart-shell-bg: #fbfcfe') &&

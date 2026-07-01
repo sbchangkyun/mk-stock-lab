@@ -140,10 +140,10 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 7: Analysis result section ---');
 
-check('Page contains centralized stock header', page.includes('chart-stock-header'));
+check('Page contains centralized selected-stock identity', page.includes('chart-market-identity-row'));
 check('Page contains selected stock name field', page.includes('chartAiSelectedName'));
 check('Page contains selected stock symbol field', page.includes('chartAiSelectedSymbol'));
-check('Page contains stock metadata panel', page.includes('chart-stock-metadata'));
+check('Page contains compact company overview panel', page.includes('chart-company-placeholder'));
 check('Page contains company profile placeholder', page.includes('chart-company-placeholder'));
 check('Page contains period controls', page.includes('chart-period-controls'));
 check('Page contains MK AI button', page.includes('chartAiMkAiBtn'));
@@ -280,7 +280,7 @@ check('chart-ai-shell class in style.css', css.includes('.chart-ai-shell'));
 check('chart-ai search result styling is present',
   page.includes('.chart-ai-search-result') || css.includes('.chart-ai-search-result'));
 check('chart market panel styling is present', page.includes('.chart-market-panel'));
-check('chart stock header styling is present', page.includes('.chart-stock-header'));
+check('chart selected-stock identity styling is present', page.includes('.chart-market-identity-row'));
 check('chart lookup disclaimer styling is present', page.includes('.chart-lookup-disclaimer'));
 
 log('');

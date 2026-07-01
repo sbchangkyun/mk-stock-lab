@@ -61,38 +61,20 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       </div>
     </section>
 
-    <section class="chart-stock-header" aria-labelledby="chartAiSelectedName" aria-live="polite">
-      <div class="chart-stock-identity">
-        <div class="chart-stock-title-line">
-          <h2 id="chartAiSelectedName">삼성전자</h2>
-          <span id="chartAiSelectedSymbol">005930</span>
-        </div>
-        <div class="chart-stock-tags" aria-label="선택 종목 기본 정보">
-          <span id="chartAiSelectedExchange">KOSPI</span>
-          <span id="chartAiSelectedAssetType">주식</span>
-          <span id="chartAiSelectedCurrency">KRW</span>
-        </div>
-      </div>
-      <div class="chart-stock-source">
-        <strong>샘플 데이터</strong>
-        <span>실제 시세 아님</span>
-      </div>
-    </section>
-
     <div class="chart-lookup-content-grid">
       <section class="chart-market-panel" aria-labelledby="chart-market-heading">
         <div class="chart-market-rail">
-          <div class="chart-market-heading-group">
-            <button
-              class="chart-mk-ai-button"
-              id="chartAiMkAiBtn"
-              type="button"
-              aria-expanded="false"
-              aria-controls="chartAiMkAiNote"
-            >MK AI</button>
-            <div>
+          <div class="chart-market-summary">
+            <div class="chart-market-heading-group">
               <p class="chart-market-kicker">차트</p>
               <h2 id="chart-market-heading">샘플 차트</h2>
+            </div>
+            <div class="chart-market-identity-row" aria-label="선택 종목 기본 정보" aria-live="polite">
+              <strong id="chartAiSelectedName">삼성전자</strong>
+              <span class="chart-identity-symbol" id="chartAiSelectedSymbol">005930</span>
+              <span class="chart-identity-chip" id="chartAiSelectedExchange">KOSPI</span>
+              <span class="chart-identity-chip" id="chartAiSelectedAssetType">주식</span>
+              <span class="chart-identity-chip" id="chartAiSelectedCurrency">KRW</span>
             </div>
           </div>
           <div class="chart-market-status">
@@ -116,7 +98,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           aria-label="선택 종목의 샘플 캔들 차트와 거래량"
         >
           <div class="chart-plot-heading" aria-hidden="true">
-            <strong id="chartAiChartIdentity">삼성전자 · 005930</strong>
             <span id="chartAiChartPeriodLabel">1일 샘플</span>
           </div>
           <svg
@@ -132,26 +113,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           </div>
         </div>
 
-        <div class="chart-mk-ai-note" id="chartAiMkAiNote" hidden>
-          <strong>MK AI 분석 준비</strong>
-          <p>MK AI 분석은 다음 단계에서 버튼 클릭 후 안내와 함께 시작됩니다.</p>
-        </div>
       </section>
 
       <aside class="chart-stock-sidebar">
-        <section class="panel chart-stock-metadata" aria-labelledby="chart-stock-metadata-heading">
-          <div class="chart-sidebar-heading">
-            <p class="eyebrow">기본 정보</p>
-            <h2 id="chart-stock-metadata-heading">종목 정보</h2>
-          </div>
-          <dl>
-            <div><dt>거래소</dt><dd id="chartAiMetaExchange">KOSPI</dd></div>
-            <div><dt>자산 유형</dt><dd id="chartAiMetaAssetType">주식</dd></div>
-            <div><dt>통화</dt><dd id="chartAiMetaCurrency">KRW</dd></div>
-            <div><dt>데이터 상태</dt><dd>샘플 데이터</dd></div>
-          </dl>
-        </section>
-
         <section class="panel chart-company-placeholder" aria-labelledby="chart-company-heading">
           <div class="chart-sidebar-heading">
             <p class="eyebrow">샘플 정보</p>
@@ -160,6 +124,17 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           <p>선택한 종목의 사업 내용과 기본 정보는 이후 companyProfile 데이터와 연결될 예정입니다.</p>
           <small>샘플 정보 · 실제 투자 판단용 아님</small>
         </section>
+        <button
+          class="chart-mk-ai-button chart-sidebar-mk-ai"
+          id="chartAiMkAiBtn"
+          type="button"
+          aria-expanded="false"
+          aria-controls="chartAiMkAiNote"
+        >MK AI</button>
+        <div class="chart-mk-ai-note" id="chartAiMkAiNote" hidden>
+          <strong>MK AI 분석 준비</strong>
+          <p>MK AI 분석은 다음 단계에서 버튼 클릭 후 안내와 함께 시작됩니다.</p>
+        </div>
       </aside>
     </div>
 
@@ -307,7 +282,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
         chartSvg.setAttribute('viewBox', geometry.viewBox);
         chartSvg.replaceChildren(gridLayer, volumeLayer, candleLayer, axisLayer);
-        setText('chartAiChartIdentity', `${selectedName} · ${selectedSymbol}`);
         setText('chartAiChartPeriodLabel', `${CHART_PERIOD_LABELS[activePeriod]} 샘플`);
         chart.setAttribute(
           'aria-label',
@@ -333,9 +307,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         setText('chartAiSelectedExchange', record.exchange);
         setText('chartAiSelectedAssetType', assetTypeLabel(record.assetType));
         setText('chartAiSelectedCurrency', record.currency);
-        setText('chartAiMetaExchange', record.exchange);
-        setText('chartAiMetaAssetType', assetTypeLabel(record.assetType));
-        setText('chartAiMetaCurrency', record.currency);
         input.value = '';
         closeDropdown();
         renderChart();
@@ -528,7 +499,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
     .chart-ai-results-head,
     .chart-ai-results-summary,
-    .chart-stock-title-line,
     .chart-market-rail,
     .chart-market-heading-group,
     .chart-market-status,
@@ -653,73 +623,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       text-align: center;
     }
 
-    .chart-stock-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.25rem;
-      min-width: 0;
-      padding: 1.05rem 1.2rem;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--surface);
-    }
-
-    .chart-stock-identity {
-      min-width: 0;
-    }
-
-    .chart-stock-title-line {
-      justify-content: flex-start;
-      align-items: baseline;
-    }
-
-    .chart-stock-title-line h2 {
-      margin: 0;
-      font-size: clamp(1.35rem, 3vw, 1.85rem);
-      letter-spacing: -0.035em;
-    }
-
-    .chart-stock-title-line > span {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      font-variant-numeric: tabular-nums;
-      font-weight: 700;
-    }
-
-    .chart-stock-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-top: 0.45rem;
-    }
-
-    .chart-stock-tags span {
-      padding: 0.2rem 0.48rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      font-weight: 700;
-    }
-
-    .chart-stock-source {
-      display: grid;
-      flex: 0 0 auto;
-      gap: 0.2rem;
-      text-align: right;
-    }
-
-    .chart-stock-source strong {
-      color: var(--primary);
-      font-size: 0.78rem;
-    }
-
-    .chart-stock-source span {
-      color: var(--text-muted);
-      font-size: 0.72rem;
-    }
-
     .chart-lookup-content-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
@@ -738,14 +641,20 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-market-rail {
-      min-height: 72px;
+      min-height: 92px;
       padding: 0.85rem 1rem;
       border-bottom: 1px solid var(--chart-shell-border);
       background: var(--chart-shell-rail);
     }
 
+    .chart-market-summary {
+      display: grid;
+      min-width: 0;
+      gap: 0.55rem;
+    }
+
     .chart-market-heading-group {
-      justify-content: flex-start;
+      display: block;
     }
 
     .chart-market-kicker,
@@ -766,7 +675,44 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       font-size: 1rem;
     }
 
+    .chart-market-identity-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .chart-market-identity-row strong {
+      overflow: hidden;
+      max-width: min(240px, 42vw);
+      font-size: 0.92rem;
+      letter-spacing: -0.02em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chart-identity-symbol {
+      margin-right: 0.2rem;
+      color: var(--chart-shell-muted);
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+      font-weight: 750;
+    }
+
+    .chart-identity-chip {
+      padding: 0.16rem 0.42rem;
+      border: 1px solid var(--chart-shell-border);
+      border-radius: 5px;
+      background: color-mix(in srgb, var(--chart-shell-bg) 72%, transparent);
+      color: var(--chart-shell-muted);
+      font-size: 0.64rem;
+      font-weight: 750;
+      line-height: 1.2;
+    }
+
     .chart-mk-ai-button {
+      width: 100%;
       min-height: 38px;
       padding: 0.45rem 0.72rem;
       border: 1px solid #5a78ff;
@@ -844,16 +790,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       right: 4.4rem;
       left: 1.2rem;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 0.75rem;
       pointer-events: none;
-    }
-
-    .chart-plot-heading strong {
-      overflow: hidden;
-      font-size: 0.76rem;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .chart-plot-heading span {
@@ -953,8 +892,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
     .chart-mk-ai-note {
       padding: 0.8rem 1rem;
-      border-top: 1px solid var(--chart-shell-border);
-      background: var(--chart-shell-rail);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-muted);
     }
 
     .chart-mk-ai-note strong {
@@ -978,6 +918,11 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       padding: 1rem;
     }
 
+    .chart-sidebar-mk-ai {
+      min-height: 44px;
+      justify-self: stretch;
+    }
+
     .chart-sidebar-heading {
       align-items: end;
       margin-bottom: 0.85rem;
@@ -986,38 +931,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     .chart-sidebar-heading h2 {
       margin: 0;
       font-size: 1rem;
-    }
-
-    .chart-stock-metadata dl {
-      display: grid;
-      gap: 0.1rem;
-      margin: 0;
-    }
-
-    .chart-stock-metadata dl div {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.58rem 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .chart-stock-metadata dl div:last-child {
-      border-bottom: 0;
-    }
-
-    .chart-stock-metadata dt,
-    .chart-stock-metadata dd {
-      font-size: 0.78rem;
-    }
-
-    .chart-stock-metadata dt {
-      color: var(--text-muted);
-    }
-
-    .chart-stock-metadata dd {
-      margin: 0;
-      font-weight: 750;
     }
 
     .chart-company-placeholder p {
@@ -1064,9 +977,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         grid-template-columns: minmax(0, 1fr);
       }
 
-      .chart-stock-sidebar {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
     }
 
     @media (max-width: 640px) {
@@ -1084,18 +994,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       .chart-lookup-dropdown {
         left: -1px;
         width: calc(100% + 2px);
-      }
-
-      .chart-stock-header {
-        align-items: flex-start;
-        flex-direction: column;
-        padding: 0.9rem;
-      }
-
-      .chart-stock-source {
-        display: flex;
-        gap: 0.55rem;
-        text-align: left;
       }
 
       .chart-market-rail {
