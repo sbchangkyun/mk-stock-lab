@@ -79,7 +79,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           </div>
           <div class="chart-market-status">
             <span id="chartAiChartStatus">샘플 OHLC·거래량 데이터</span>
-            <strong>실제 시세 아님</strong>
+            <strong id="chartAiChartStatusStrong">실제 시세 아님</strong>
           </div>
         </div>
 
@@ -90,13 +90,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           <button type="button" data-period="3m" aria-pressed="false">3개월</button>
           <button type="button" data-period="1y" aria-pressed="false">1년</button>
         </div>
-
-        <div class="chart-ohlc-preview-row" id="chartAiOhlcPreviewRow">
-          <button type="button" class="chart-ohlc-preview-btn" id="chartAiOhlcPreviewBtn" disabled>KIS OHLC 프리뷰 확인</button>
-          <span class="chart-ohlc-preview-tag" id="chartAiOhlcPreviewTag" hidden>지연 시세 · 오너 로컬 OHLC · KRW</span>
-        </div>
-        <p class="chart-ohlc-preview-guide" id="chartAiOhlcPreviewGuide">오너 로컬 환경에서만 KIS OHLC 프리뷰를 확인할 수 있습니다. (source=owner-local)</p>
-        <p class="chart-ohlc-preview-message" id="chartAiOhlcPreviewMessage" hidden aria-live="polite"></p>
 
         <div
           class="chart-candlestick-ready"
@@ -137,9 +130,14 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             <p class="eyebrow">오너 로컬 전용</p>
             <h2 id="chart-quote-preview-heading">KIS 로컬 프리뷰</h2>
           </div>
-          <p class="chart-quote-preview-guide" id="chartAiQuotePreviewGuide">오너 로컬 환경에서만 실제 시세 프리뷰를 확인할 수 있습니다.</p>
-          <button class="chart-quote-preview-btn" id="chartAiQuotePreviewBtn" type="button" disabled>KIS 프리뷰 확인</button>
+          <p class="chart-quote-preview-guide" id="chartAiQuotePreviewGuide">오너 로컬 환경에서만 지연 시세와 OHLC 차트 프리뷰를 확인할 수 있습니다.</p>
+          <div class="chart-preview-actions">
+            <button class="chart-quote-preview-btn" id="chartAiQuotePreviewBtn" type="button" disabled>KIS 시세 프리뷰 확인</button>
+            <button class="chart-ohlc-preview-btn" id="chartAiOhlcPreviewBtn" type="button" disabled>KIS 차트 프리뷰 확인</button>
+          </div>
           <div class="chart-quote-preview-result" id="chartAiQuotePreviewResult" hidden aria-live="polite"></div>
+          <p class="chart-ohlc-preview-message" id="chartAiOhlcPreviewMessage" hidden aria-live="polite"></p>
+          <span class="chart-ohlc-preview-tag" id="chartAiOhlcPreviewTag" hidden>지연 시세 · KIS OHLC · KRW</span>
           <small>지연 시세 · 오너 로컬 전용 · 실제 투자 판단용 아님</small>
         </section>
 
@@ -233,6 +231,11 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         if (element) element.textContent = text;
       };
 
+      const setChartStatus = (status: string, strongLabel: string) => {
+        setText('chartAiChartStatus', status);
+        setText('chartAiChartStatusStrong', strongLabel);
+      };
+
       const createSvgElement = <K extends keyof SVGElementTagNameMap>(
         name: K,
         attributes: Record<string, string | number>,
@@ -311,6 +314,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       const renderChart = () => {
         const points = createMockedOhlcSeries(selectedSymbol, activePeriod);
         if (!isValidMockedOhlcSeries(points)) return;
+        setChartStatus('샘플 OHLC·거래량 데이터', '실제 시세 아님');
         renderChartFromPoints(
           points,
           `${CHART_PERIOD_LABELS[activePeriod]} 샘플`,
@@ -323,8 +327,8 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         if (!isValidMockedOhlcSeries(points)) return false;
         renderChartFromPoints(
           points,
-          `${CHART_PERIOD_LABELS[activePeriod]} · 오너 로컬 OHLC`,
-          `${selectedName} ${selectedSymbol}, ${CHART_PERIOD_LABELS[activePeriod]} 오너 로컬 OHLC 프리뷰 차트와 거래량. 지연 시세, 실제 투자 판단용 아님.`,
+          `${CHART_PERIOD_LABELS[activePeriod]} · KIS OHLC`,
+          `${selectedName} ${selectedSymbol}, ${CHART_PERIOD_LABELS[activePeriod]} KIS OHLC 프리뷰 차트와 거래량. 지연 시세, 실제 투자 판단용 아님.`,
         );
         return true;
       };
@@ -462,7 +466,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       // Owner-local KIS quote preview. Gated: never auto-fetches, and only fetches the gated
       // owner-local preview route when the page URL carries source=owner-local.
       const previewBtn = document.getElementById('chartAiQuotePreviewBtn') as HTMLButtonElement | null;
-      const previewGuide = document.getElementById('chartAiQuotePreviewGuide');
       const previewResult = document.getElementById('chartAiQuotePreviewResult');
       const ownerLocalPreview = new URLSearchParams(window.location.search).get('source') === 'owner-local';
 
@@ -535,7 +538,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       if (previewBtn) {
         if (ownerLocalPreview) {
           previewBtn.disabled = false;
-          if (previewGuide) previewGuide.textContent = '오너 로컬 프리뷰가 활성화되었습니다. 선택 종목의 지연 시세를 확인하세요.';
           previewBtn.addEventListener('click', async () => {
             if (selectedAssetType !== 'stock' && selectedAssetType !== 'etf') {
               showPreviewMessage('해당 종목 유형은 아직 프리뷰가 지원되지 않습니다.');
@@ -561,12 +563,11 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
               showPreviewMessage('일시적으로 시세를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.');
             } finally {
               previewBtn.disabled = false;
-              previewBtn.textContent = previousLabel ?? 'KIS 프리뷰 확인';
+              previewBtn.textContent = previousLabel ?? 'KIS 시세 프리뷰 확인';
             }
           });
         } else {
           previewBtn.disabled = true;
-          if (previewGuide) previewGuide.textContent = '오너 로컬 환경에서만 실제 시세 프리뷰를 확인할 수 있습니다. (source=owner-local)';
         }
       }
 
@@ -575,7 +576,6 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       // blocked/unavailable/malformed/insufficient response, falls back to the sample chart with
       // a safe Korean message — never a raw error, provider payload, or stack trace.
       const ohlcPreviewBtn = document.getElementById('chartAiOhlcPreviewBtn') as HTMLButtonElement | null;
-      const ohlcPreviewGuide = document.getElementById('chartAiOhlcPreviewGuide');
       const ohlcPreviewTag = document.getElementById('chartAiOhlcPreviewTag');
       const ohlcPreviewMessage = document.getElementById('chartAiOhlcPreviewMessage');
       const ownerLocalOhlcPreview = new URLSearchParams(window.location.search).get('source') === 'owner-local';
@@ -606,10 +606,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       if (ohlcPreviewBtn) {
         if (ownerLocalOhlcPreview) {
           ohlcPreviewBtn.disabled = false;
-          if (ohlcPreviewGuide) ohlcPreviewGuide.textContent = '오너 로컬 OHLC 프리뷰가 활성화되었습니다. 버튼을 눌러 선택 종목의 OHLC 데이터를 확인하세요.';
           ohlcPreviewBtn.addEventListener('click', async () => {
             if (selectedAssetType !== 'stock' && selectedAssetType !== 'etf') {
-              fallbackToSampleChart('오너 로컬 OHLC 프리뷰 조건이 충족되지 않았습니다.');
+              fallbackToSampleChart('오너 로컬 환경에서만 사용할 수 있습니다.');
               return;
             }
             ohlcPreviewBtn.disabled = true;
@@ -631,26 +630,26 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
               if (data?.status === 'ok' && data?.renderable && Array.isArray(data?.points) && data.points.length > 0) {
                 const rendered = renderOhlcChart(data.points as OwnerLocalOhlcPreviewPoint[]);
                 if (rendered) {
-                  clearOhlcPreviewMessage();
+                  setChartStatus('지연 시세 · KIS OHLC · KRW', '오너 로컬 전용');
+                  showOhlcPreviewMessage('KIS OHLC 차트가 반영되었습니다.');
                   if (ohlcPreviewTag) ohlcPreviewTag.hidden = false;
                 } else {
                   fallbackToSampleChart('표시 가능한 OHLC 데이터가 부족하여 샘플 차트를 유지합니다.');
                 }
               } else if (data?.status === 'blocked') {
-                fallbackToSampleChart('오너 로컬 OHLC 프리뷰 조건이 충족되지 않았습니다.');
+                fallbackToSampleChart('오너 로컬 환경에서만 사용할 수 있습니다.');
               } else {
-                fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다.');
+                fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다. 샘플 차트를 유지합니다.');
               }
             } catch {
-              fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다.');
+              fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다. 샘플 차트를 유지합니다.');
             } finally {
               ohlcPreviewBtn.disabled = false;
-              ohlcPreviewBtn.textContent = previousLabel ?? 'KIS OHLC 프리뷰 확인';
+              ohlcPreviewBtn.textContent = previousLabel ?? 'KIS 차트 프리뷰 확인';
             }
           });
         } else {
           ohlcPreviewBtn.disabled = true;
-          if (ohlcPreviewGuide) ohlcPreviewGuide.textContent = '오너 로컬 환경에서만 KIS OHLC 프리뷰를 확인할 수 있습니다. (source=owner-local)';
         }
       }
 
@@ -1015,24 +1014,22 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--primary);
     }
 
-    .chart-ohlc-preview-row {
+    .chart-preview-actions {
       display: flex;
-      align-items: center;
       flex-wrap: wrap;
       gap: 0.5rem;
-      padding: 0.6rem 1rem 0;
     }
 
     .chart-ohlc-preview-btn {
-      flex: 0 0 auto;
-      min-height: 32px;
-      padding: 0.3rem 0.65rem;
+      flex: 1 1 140px;
+      min-height: 40px;
+      padding: 0.45rem 0.65rem;
       border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
-      border-radius: 7px;
+      border-radius: 8px;
       background: color-mix(in srgb, var(--primary) 9%, var(--surface));
       color: var(--primary);
       font: inherit;
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       font-weight: 800;
       cursor: pointer;
     }
@@ -1045,16 +1042,17 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-ohlc-preview-tag {
-      color: var(--chart-shell-warning);
+      display: block;
+      margin: 0.55rem 0 0;
+      color: var(--chart-shell-warning, #8a5a05);
       font-size: 0.68rem;
       font-weight: 750;
     }
 
-    .chart-ohlc-preview-guide,
     .chart-ohlc-preview-message {
-      margin: 0.35rem 1rem 0;
-      color: var(--chart-shell-muted);
-      font-size: 0.72rem;
+      margin: 0.55rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
       line-height: 1.5;
     }
 
@@ -1230,7 +1228,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     }
 
     .chart-quote-preview-btn {
-      width: 100%;
+      flex: 1 1 140px;
       min-height: 40px;
       padding: 0.45rem 0.72rem;
       border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
