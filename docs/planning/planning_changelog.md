@@ -1,5 +1,43 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3ES - 2026-07-01
+
+### Owner-Local KIS OHLC Smoke (BLOCKED in automated session — endpoint verified, pipeline confirmed)
+
+- **Status**: BLOCKED in the automated session — required KIS credential env values and the three
+  explicit owner-local OHLC smoke flags are not present in this environment. Endpoint verification
+  and the full implementation chain are confirmed correct; this is a credential/flag availability
+  block, not an endpoint or authentication failure.
+- **Background**: Phase 3ER implemented the normalized OHLC contract and mocked adapter foundation.
+  This phase verified the official KR domestic daily/weekly/monthly/yearly OHLC endpoint against the
+  official `koreainvestment/open-trading-api` sample repository, then implemented the owner-local
+  OHLC smoke chain mirroring the Phase 3EO/3EN owner-local quote smoke pattern.
+- **Verified endpoint**: `KR_STOCK_DAILY_OHLC` / `KR_ETF_DAILY_OHLC` —
+  `/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`, tr_id `FHKST03010100`. Intraday
+  and US OHLC endpoints remain `unverified` and intentionally unused.
+- **Implemented scope**: verified endpoint registry update, request descriptor with verified-only
+  query construction, sanitized OHLC mapper, narrow `getKisDomesticDailyOhlcSeries` kisClient
+  transport, owner-local OHLC smoke client with a three-flag gate and quality gate, smoke script, and
+  static/behavioral checker. Injected-transport behavioral testing confirmed PASS/FAIL/BLOCKED paths
+  all work correctly with no network call.
+- **Preserved policy**: no Chart AI OHLC wiring, no public OHLC API route, no raw KIS response, no
+  secrets, no account/trading APIs, no Supabase/SQL/migration, no Vercel changes, no deployment, and
+  no push.
+- **Validation**: Phase 3ES contract PASS (70/70), Phase 3EP PASS, Phase 3EO closeout PASS, Phase
+  3EO PASS, Phase 3EN PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback
+  PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build
+  PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or
+  network. Known pre-existing unrelated failures remain, none fixed or weakened this phase:
+  `check:kis-quote-adapter-mocked` 100/101 (`src/pages/api/portfolio/valuation.ts` `source=live`
+  string; file unchanged); `check:phase-3er-kis-ohlc-contract-mocked-adapter` 117/120 (that checker
+  asserted all OHLC endpoints stay unverified, which this phase's verified-endpoint scope
+  intentionally supersedes); `check:phase-3eq-kis-chart-ohlc-feasibility-plan` 64/66 and
+  `check:phase-3ep-owner-review-closeout` 30/32 (both checkers diff from a pinned start commit with
+  no pinned end commit, so any later phase's `src/` changes trip their "no runtime change"
+  assumption). See Phase 3ES result document §9 for full detail.
+- **Recommended next phase**: owner-run local smoke to confirm PASS, then Phase 3ET — Chart AI
+  Owner-Local OHLC Preview Wiring. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3ER - 2026-07-01
 
 ### KIS OHLC Contract and Mocked Adapter Foundation (Implemented — no live OHLC)

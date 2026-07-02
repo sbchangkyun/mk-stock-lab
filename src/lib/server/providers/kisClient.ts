@@ -16,8 +16,10 @@ const optionalEnvNames = ['KIS_ACCOUNT_NO'];
 const featureFlagEnvName = 'KIS_ENABLE_LIVE_QUOTES';
 const previewGuardFlagEnvName = 'KIS_ENABLE_PREVIEW_LIVE_QUOTES';
 const quotePath = '/uapi/domestic-stock/v1/quotations/inquire-price';
+const dailyOhlcPath = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice';
 const tokenPath = '/oauth2/tokenP';
 const domesticQuoteTrId = 'FHKST01010100';
+const domesticDailyOhlcTrId = 'FHKST03010100';
 const tokenCacheSkewMs = 60_000;
 
 type KisQuoteConfigReadiness = ProviderConfigReadiness & {
@@ -52,6 +54,29 @@ type KisQuoteOutput = {
 type KisQuoteResponse = {
   rt_cd?: unknown;
   output?: KisQuoteOutput;
+};
+
+type KisDailyOhlcOutputRow = {
+  stck_bsop_date?: unknown;
+  stck_oprc?: unknown;
+  stck_hgpr?: unknown;
+  stck_lwpr?: unknown;
+  stck_clpr?: unknown;
+  acml_vol?: unknown;
+};
+
+type KisDailyOhlcResponse = {
+  rt_cd?: unknown;
+  output2?: KisDailyOhlcOutputRow[];
+};
+
+export type KisDailyOhlcPoint = {
+  dateTime: string;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  close: number | null;
+  volume: number | null;
 };
 
 let accessTokenCache: KisAccessTokenCache | null = null;
@@ -344,6 +369,93 @@ export const getKisDomesticQuoteSnapshot = async (input: SecurityIdentity): Prom
 
 export const getKisQuoteSnapshot = async (input: SecurityIdentity): Promise<ProviderResult<QuoteSnapshot>> =>
   getKisDomesticQuoteSnapshot(input);
+
+/**
+ * Narrow KIS domestic daily/weekly/monthly/yearly OHLC transport (Phase 3ES). The caller
+ * (kisOhlcRequest.ts / kisOwnerLocalOhlcClient.ts) builds the FID_* query; this function only
+ * performs the request, sanitizes the response into minimal OHLC points, and never exposes any
+ * other raw KIS field. Reuses the same token/readiness/error-mapping conventions as the quote
+ * transport above; does not call account/trading APIs and never reads KIS_ACCOUNT_NO.
+ */
+export const getKisDomesticDailyOhlcSeries = async (input: {
+  symbol: string;
+  query: Record<string, string>;
+}): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
+  assertServerRuntime(moduleName);
+
+  const symbol = normalizeKrSymbol(input.symbol);
+  if (!isValidKrQuoteSymbol(symbol)) {
+    return createProviderError('VALIDATION_FAILED', 'KR OHLC symbol must be exactly six digits.', {
+      provider,
+      staleState: 'unavailable',
+    });
+  }
+
+  const readiness = getKisQuoteConfigReadiness();
+  if (!readiness.ready) return readinessToError(readiness);
+
+  const config = getRuntimeConfig();
+  if (!config) return readinessToError(readiness);
+
+  const tokenResult = await getKisAccessToken(config);
+  if (!tokenResult.ok) return tokenResult;
+
+  const params = new URLSearchParams(input.query);
+
+  try {
+    const response = await fetch(`${config.baseUrl}${dailyOhlcPath}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/plain',
+        charset: 'UTF-8',
+        authorization: `Bearer ${tokenResult.data.accessToken}`,
+        appkey: config.appKey,
+        appsecret: config.appSecret,
+        tr_id: domesticDailyOhlcTrId,
+        custtype: 'P',
+        tr_cont: '',
+      },
+    });
+
+    if (response.status === 429) {
+      return createProviderError('PROVIDER_RATE_LIMITED', 'KIS OHLC request was rate limited.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    if (!response.ok) {
+      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS OHLC request failed safely.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    const payload = (await response.json()) as KisDailyOhlcResponse;
+    if (payload.rt_cd !== '0' || !Array.isArray(payload.output2)) {
+      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS OHLC provider rejected the request.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    const points: KisDailyOhlcPoint[] = payload.output2
+      .map((row) => ({
+        dateTime: normalizeString(row.stck_bsop_date),
+        open: parseNumericText(row.stck_oprc),
+        high: parseNumericText(row.stck_hgpr),
+        low: parseNumericText(row.stck_lwpr),
+        close: parseNumericText(row.stck_clpr),
+        volume: parseNumericText(row.acml_vol),
+      }))
+      .filter((point) => point.dateTime.length > 0);
+
+    return { ok: true, data: { symbol, points }, staleState: 'fresh' };
+  } catch (error) {
+    return sanitizeUnknownError(error, provider);
+  }
+};
 
 export const getKisChartSeries = async (
   input: SecurityIdentity & { interval: '1d' | '1w' | '1m' },
