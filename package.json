@@ -12,6 +12,7 @@
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
     "check:phase-3et-hf1-owner-local-ohlc-preview-control-ux-simplification": "node scripts/check_phase_3et_hf1_owner_local_ohlc_preview_control_ux_simplification_contract.mjs",
+    "check:phase-3et-owner-review-retry-after-ohlc-preview-ux-simplification": "node scripts/check_phase_3et_owner_review_retry_after_ohlc_preview_ux_simplification_static_contract.mjs",
     "check:phase-3et-owner-review-chart-ai-ohlc-preview": "node scripts/check_phase_3et_owner_review_chart_ai_ohlc_preview_static_contract.mjs",
     "check:phase-3et-chart-ai-owner-local-ohlc-preview-wiring": "node scripts/check_phase_3et_chart_ai_owner_local_ohlc_preview_wiring_contract.mjs",
     "check:phase-3es-owner-local-kis-ohlc-smoke-closeout": "node scripts/check_phase_3es_owner_local_kis_ohlc_smoke_closeout_contract.mjs",

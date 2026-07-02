@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3ET-OWNER-REVIEW-RETRY - 2026-07-02
+
+### Chart AI Owner-Local OHLC Preview Review Retry Preparation (Prepared — owner review retry pending)
+
+- **Status**: Prepared — owner visual/runtime review retry pending. No runtime source changes.
+- **Background**: Phase 3ET-HF1 simplified the owner-local OHLC preview UI after owner feedback that the chart-left controls were too technical. The OHLC preview trigger now lives inside the right-side KIS local preview card with simplified copy.
+- **Review scope**: default `/chart-ai` sample behavior, simplified main chart area, right-side KIS 로컬 프리뷰 quote/chart button layout, explicit-click OHLC preview, chart readability, chart status after OHLC preview, period reset, symbol reset, blocked/unavailable fallback, quote preview preservation, no unsafe output, and mobile/theme layout.
+- **Owner workload**: owner runs the local dev server with local KIS credentials and flags, reviews the updated UI manually, and returns only the sanitized PASS/FAIL template.
+- **Safety**: no runtime changes, no live KIS call by Codex, no dev server or browser launched by Codex, no `.env` read, no actual OHLC values recorded, no raw response, no secrets, no account/trading APIs, no public OHLC API changes, no Supabase/SQL/migration, no Vercel changes, no dependency changes, no deployment, and no push.
+- **Validation**: full 14-command suite run. `check:phase-3et-owner-review-retry-after-ohlc-preview-ux-simplification` 44/44, `check:phase-3et-hf1-owner-local-ohlc-preview-control-ux-simplification` 46/46, `check:phase-3ep-chart-ai-owner-local-quote-preview-wiring` 49/49, `check:phase-3eo-owner-local-kis-quote-smoke` 58/58, `check:phase-3en-kis-quote-adapter-owner-local-gate` 87/87, `check:provider-boundaries` PASS, `check:kis-runtime-guard` 7/7, `check:kis-error-fallback` 48/48, `check:chart-ai-ux-skeleton` 82/82, `check:mobile-baseline` 74/74, `check:production-domain` 33/33, `build` PASS, `git diff --check` PASS, `guard:production-mobile-geometry` DRY_RUN. Known unrelated failures, not run/fixed: `check:kis-quote-adapter-mocked` 100/101; `check:phase-3et-owner-review-chart-ai-ohlc-preview` 37/38; `check:phase-3et-chart-ai-owner-local-ohlc-preview-wiring` 61/62; `check:phase-3es-owner-local-kis-ohlc-smoke-closeout` 37/38; `check:phase-3es-owner-local-kis-ohlc-smoke` 68/70 (pre-existing open-ended diff / literal-string checker fragility).
+- **Next step**: owner performs the manual local review retry. PASS leads to Phase 3ET-OWNER-REVIEW-CLOSEOUT. FAIL routes to focused Phase 3ET-HF* hotfixes. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3ET-HF1 - 2026-07-02
 
 ### Owner-Local OHLC Preview Control UX Simplification (Implemented — owner review retry recommended)
