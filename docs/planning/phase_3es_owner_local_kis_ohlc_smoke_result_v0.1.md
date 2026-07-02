@@ -2,21 +2,28 @@
 
 ## 1. Status
 
-BLOCKED — Owner-local KIS OHLC smoke (automated session).
+`PASS_WITH_OWNER_LOCAL_RUN` — Owner-local KIS OHLC smoke.
 
-This automated (non-interactive) session was BLOCKED because live KIS credential env values and
-the three explicit owner-local OHLC smoke flags (`KIS_OWNER_LOCAL_SMOKE`, `KIS_ALLOW_LIVE_QUOTE`,
-`KIS_ENABLE_LIVE_QUOTES=true`) are not present in this environment. This is a credential/flag
-availability block, not an endpoint-verification failure and not an authentication failure — the
-target endpoint (`KR_STOCK_DAILY_OHLC`) is verified against official KIS documentation, and the
-full implementation chain was confirmed working end-to-end with an injected fake transport (see
-§5.2). This matches the accepted Phase 3EO precedent for automated-session smoke attempts.
+The owner ran the prepared owner-local OHLC smoke locally and it returned `PASS` for KR `005930`
+through the verified `KR_STOCK_DAILY_OHLC` endpoint, proving owner-local KIS OHLC connectivity works
+and produces a renderable, sanitized `NormalizedOhlcSeries`. See §5.3 for the sanitized owner-run
+evidence.
 
-The owner has not yet run the smoke script locally in this session. The owner-local run is expected
-to supersede this BLOCKED result once performed locally with real credentials, per the recommended
-next step in §10.
+For history, the earlier automated (non-interactive) session in this same phase was `BLOCKED`
+because live KIS credential env values and the three explicit owner-local OHLC smoke flags
+(`KIS_OWNER_LOCAL_SMOKE`, `KIS_ALLOW_LIVE_QUOTE`, `KIS_ENABLE_LIVE_QUOTES=true`) were not present in
+that automated environment. That was a credential/flag availability block only — never an
+endpoint-verification failure and never an authentication failure. The endpoint verification
+recorded in §3 remains valid and unchanged; it was already correct at the time of the automated
+block and is what allowed the owner-run smoke to proceed to a live call at all. The owner-run PASS
+supersedes the automated-session BLOCKED result as the phase decision. This matches the accepted
+Phase 3EO precedent for automated-session smoke attempts being superseded by an owner-run result.
 
-Starting HEAD: `bab2119` (`feat: add kis ohlc mocked foundation`).
+No actual OHLC price values are recorded anywhere in this document, in either the automated-session
+attempt or the owner-run attempt.
+
+Starting HEAD: `bab2119` (`feat: add kis ohlc mocked foundation`). Owner-run PASS recorded against
+HEAD `d84884b` (`feat: add owner local kis ohlc smoke`).
 
 ## 2. Background
 
@@ -81,7 +88,7 @@ Starting HEAD: `bab2119` (`feat: add kis ohlc mocked foundation`).
     `$env:KIS_ENABLE_LIVE_QUOTES="true"`, then run
     `npm run smoke:kis-owner-local-ohlc -- --symbol 005930 --market KR --asset-type stock --period 1m`.
 
-### 5.1 Automated-session attempt (this phase's recorded result)
+### 5.1 Automated-session attempt (retained note; superseded by §5.3)
 
 Sanitized fields only (no prices, no raw response):
 
@@ -116,8 +123,26 @@ no real data):
 
 No real KIS credentials, network calls, or raw responses were involved in this confirmation step.
 
-- No actual OHLC prices were recorded in either the automated-session attempt or the injected-transport
-  confirmation; no raw response was printed or committed in either case.
+### 5.3 Owner-run attempt (PASS — supersedes §5.1)
+
+Sanitized fields only (no prices, no raw response):
+
+- Decision: `PASS`.
+- symbol: `005930`, market: `KR`, assetType: `stock`, period: `1m`.
+- endpointKey: `KR_STOCK_DAILY_OHLC`, endpointVerified: `true`.
+- HTTP status class: `2xx`.
+- normalizedSeriesSafe: `true`.
+- pointCount: `27`, renderable: `true`.
+- Field-presence booleans: open `true`, high `true`, low `true`, close `true`, volume `true`.
+- source: `kis-local`, freshness: `delayed`, isLive: `true`, providerStatus: `ok`.
+- rawResponsePrinted: `false`, secretsPrinted: `false`.
+- message: "Owner-local KIS OHLC smoke completed."
+- Interpretation: proves owner-local KIS OHLC connectivity works for KR `005930` via the verified
+  `KR_STOCK_DAILY_OHLC` endpoint, producing a renderable, sanitized 27-point daily series with all
+  OHLCV fields present.
+
+- No actual OHLC prices were recorded in the automated-session attempt, the injected-transport
+  confirmation, or the owner-run attempt; no raw response was printed or committed in any of them.
 
 ## 6. Sanitization
 
@@ -210,25 +235,23 @@ No real KIS credentials, network calls, or raw responses were involved in this c
 
 ## 10. Recommended Next Phase
 
-The endpoint is verified, the full implementation chain is confirmed correct via injected-transport
-behavioral testing, and the automated-session BLOCKED result is an expected credential/flag
-availability outcome rather than an endpoint or implementation problem.
+The owner-run smoke PASSed through the verified `KR_STOCK_DAILY_OHLC` endpoint with a renderable
+27-point series and all OHLCV fields present, so live owner-local KIS OHLC connectivity is proven.
 
-Recommended: the owner should run
-`npm run smoke:kis-owner-local-ohlc -- --symbol 005930 --market KR --asset-type stock --period 1m`
-locally with the three smoke flags and real KIS credentials to obtain an owner-run PASS/FAIL. Once
-confirmed PASS, recommended: Phase 3ET — Chart AI Owner-Local OHLC Preview Wiring (mirroring Phase
-3EP's owner-local quote preview pattern, with the same intermittent-provider-unavailable fallback
-handling established in Phase 3EO/3EP).
+Recommended: Phase 3ET — Chart AI Owner-Local OHLC Preview Wiring (mirroring Phase 3EP's owner-local
+quote preview pattern, with the same intermittent-provider-unavailable fallback handling established
+in Phase 3EO/3EP).
 
-Contingencies retained for reference:
+See `docs/planning/phase_3es_owner_local_kis_ohlc_smoke_closeout_result_v0.1.md` for the formal
+closeout of this phase.
 
-- If a future owner-local run is BLOCKED due to endpoint verification (not expected for the KR daily
-  endpoint, which is already verified): Phase 3ES-HF1 — KIS OHLC Endpoint Verification Hotfix.
+Contingencies retained for reference (not expected, since the owner-run already PASSed):
+
+- If a future owner-local run is BLOCKED due to endpoint verification: Phase 3ES-HF1 — KIS OHLC
+  Endpoint Verification Hotfix.
 - If a future run FAILs due to auth/headers: Phase 3ES-HF2 — KIS OHLC Auth/Header Smoke Fix.
 
 Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
 
-Rationale: the owner-local OHLC smoke pipeline is implementation-complete and verified end-to-end
-short of a live network call; the next controlled step is an owner-run local smoke, not further
-automated-session work.
+Rationale: owner-local OHLC connectivity is confirmed; Phase 3ET should wire the preview behind the
+same owner-local gate while preserving the sample/mocked chart for public production.

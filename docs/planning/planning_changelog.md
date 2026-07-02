@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3ES-OWNER-SMOKE-CLOSEOUT - 2026-07-01
+
+### Owner Local KIS OHLC Smoke Closeout (Closed — PASS_WITH_OWNER_LOCAL_RUN)
+
+- **Status**: Closed — owner-local KIS OHLC smoke PASS. The earlier automated-session BLOCKED result is superseded by the owner-run local PASS.
+- **Decision**: `PASS_WITH_OWNER_LOCAL_RUN`.
+- **Owner-run evidence**: KR `005930`, stock, period `1m`, endpoint `KR_STOCK_DAILY_OHLC`, endpoint verified, HTTP `2xx`, normalized series safe, point count `27`, renderable `true`, open/high/low/close/volume presence booleans all `true`, source `kis-local`, freshness `delayed`, isLive `true`, providerStatus `ok`, rawResponsePrinted `false`, secretsPrinted `false`.
+- **Endpoint verification**: `/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice`, tr_id `FHKST03010100`; intraday and US OHLC remain unverified and unused.
+- **Preserved policy**: no actual OHLC values recorded, no raw KIS response, no secrets, no account/trading APIs, no public OHLC API route, no Chart AI wiring, no Supabase/SQL/migration, no Vercel changes, no deployment, and no push.
+- **Validation**: Phase 3ES-OWNER-SMOKE-CLOSEOUT contract PASS, Phase 3ES contract PASS, Phase 3EP wiring PASS, Phase 3EO PASS, Phase 3EN PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known pre-existing unrelated failures remain, none fixed or weakened this closeout: `check:kis-quote-adapter-mocked` 100/101; `check:phase-3er-kis-ohlc-contract-mocked-adapter` (endpoint-verification assumption superseded by Phase 3ES); `check:phase-3eq-kis-chart-ohlc-feasibility-plan` and `check:phase-3ep-owner-review-closeout` (open-ended diff fragility).
+- **Recommended next phase**: Phase 3ET — Chart AI Owner-Local OHLC Preview Wiring. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3ES - 2026-07-01
 
 ### Owner-Local KIS OHLC Smoke (BLOCKED in automated session — endpoint verified, pipeline confirmed)

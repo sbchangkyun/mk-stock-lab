@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3es-owner-local-kis-ohlc-smoke-closeout": "node scripts/check_phase_3es_owner_local_kis_ohlc_smoke_closeout_contract.mjs",
     "check:phase-3es-owner-local-kis-ohlc-smoke": "node scripts/check_phase_3es_owner_local_kis_ohlc_smoke_contract.mjs",
     "smoke:kis-owner-local-ohlc": "node scripts/kis_owner_local_ohlc_smoke.mjs",
     "check:phase-3er-kis-ohlc-contract-mocked-adapter": "node scripts/check_phase_3er_kis_ohlc_contract_mocked_adapter_contract.mjs",
