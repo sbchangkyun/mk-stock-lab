@@ -36,6 +36,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         </label>
         <button class="button-link chart-ai-run-btn chart-lookup-submit" id="chartAiRunBtn" type="button">조회</button>
       </div>
+      <p class="chart-ai-search-hint" id="chartAiSearchHint" hidden aria-live="polite">종목명 또는 종목코드를 입력해 주세요.</p>
 
       <div class="chart-lookup-dropdown" id="chartAiSearchDropdown" hidden>
         <div class="chart-ai-results-head">
@@ -119,24 +120,38 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       <aside class="chart-stock-sidebar">
         <section class="panel chart-company-placeholder" aria-labelledby="chart-company-heading">
           <div class="chart-sidebar-heading">
-            <p class="eyebrow">샘플 정보</p>
-            <h2 id="chart-company-heading">기업 개요</h2>
+            <p class="eyebrow">종목 정보</p>
+            <h2 id="chart-company-heading">종목 개요</h2>
           </div>
           <dl class="chart-company-fallback-fields">
             <div>
-              <dt>업종</dt>
-              <dd>업종 정보는 준비 중입니다.</dd>
+              <dt>종목명</dt>
+              <dd id="chartAiOverviewName">삼성전자</dd>
             </div>
             <div>
-              <dt>시장 구분</dt>
-              <dd>시장 구분 정보는 준비 중입니다.</dd>
+              <dt>종목코드</dt>
+              <dd id="chartAiOverviewSymbol">005930</dd>
+            </div>
+            <div>
+              <dt>시장</dt>
+              <dd id="chartAiOverviewMarket">KOSPI</dd>
+            </div>
+            <div>
+              <dt>종목 유형</dt>
+              <dd id="chartAiOverviewAssetType">주식</dd>
+            </div>
+            <div>
+              <dt>통화</dt>
+              <dd id="chartAiOverviewCurrency">KRW</dd>
             </div>
             <div>
               <dt>데이터 상태</dt>
-              <dd>기업 개요는 샘플 데이터 기준으로 표시됩니다.</dd>
+              <dd id="chartAiOverviewDataStatus">샘플·구조화 데이터</dd>
             </div>
           </dl>
+          <p id="chartAiOverviewSummary">삼성전자은(는) KOSPI에 상장된 국내 주식입니다. 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.</p>
           <p>정식 기업 데이터 연동 전까지는 참고용 구조 예시로 제공됩니다.</p>
+          <p>정식 기업 공시 데이터가 아닌 화면 구성용 요약 정보입니다.</p>
           <small>샘플 정보 · 실제 투자 판단용 정보가 아닙니다.</small>
         </section>
 
@@ -165,7 +180,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         >MK AI</button>
         <div class="chart-mk-ai-note" id="chartAiMkAiNote" hidden>
           <strong>MK AI 분석 준비 중</strong>
-          <p>MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.</p>
+          <p id="chartAiMkAiReadinessText">삼성전자 기준의 MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.</p>
           <p>현재는 차트와 데이터 상태를 먼저 확인할 수 있습니다.</p>
         </div>
       </aside>
@@ -222,6 +237,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       const resultsEl = document.getElementById('chartAiSearchResults');
       const resultCount = document.getElementById('chartAiResultCount');
       const emptyState = document.getElementById('chartAiEmptyState');
+      const searchHint = document.getElementById('chartAiSearchHint');
       const filterButtons = document.querySelectorAll<HTMLButtonElement>('.chart-ai-filter-btn');
       const periodButtons = document.querySelectorAll<HTMLButtonElement>('[data-period]');
       const mkAiButton = document.getElementById('chartAiMkAiBtn') as HTMLButtonElement | null;
@@ -237,6 +253,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       let visibleRecords: ClientSafeSymbolSearchRecord[] = [];
       let resetQuotePreview: () => void = () => {};
       let resetOhlcPreview: () => void = () => {};
+      let ownerLocalConnected = false;
 
       if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState || !chart || !chartSvg) return;
       if (runBtn.dataset.ready === 'true') return;
@@ -359,6 +376,24 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         input.setAttribute('aria-expanded', 'false');
       };
 
+      const buildSelectedSymbolOverview = (record: ClientSafeSymbolSearchRecord): string => {
+        if (record.assetType === 'stock') {
+          return `${record.nameKo}은(는) ${record.exchange}에 상장된 국내 주식입니다. 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.`;
+        }
+        if (record.assetType === 'etf') {
+          return `${record.nameKo}은(는) ${record.exchange}에 상장된 국내 ETF입니다. 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.`;
+        }
+        return `${record.nameKo}은(는) 선택된 국내 종목입니다. 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.`;
+      };
+
+      const updateOverviewDataStatus = () => {
+        if (!ownerLocalPreview) {
+          setText('chartAiOverviewDataStatus', '샘플·구조화 데이터');
+          return;
+        }
+        setText('chartAiOverviewDataStatus', ownerLocalConnected ? '오너 로컬 KIS 연결 확인' : '오너 로컬 연결 대기');
+      };
+
       const updateSelection = (record: ClientSafeSymbolSearchRecord) => {
         selectedSymbol = record.symbol;
         selectedName = record.nameKo;
@@ -368,7 +403,17 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         setText('chartAiSelectedExchange', record.exchange);
         setText('chartAiSelectedAssetType', assetTypeLabel(record.assetType));
         setText('chartAiSelectedCurrency', record.currency);
+        setText('chartAiOverviewName', record.nameKo);
+        setText('chartAiOverviewSymbol', record.symbol);
+        setText('chartAiOverviewMarket', record.exchange);
+        setText('chartAiOverviewAssetType', assetTypeLabel(record.assetType));
+        setText('chartAiOverviewCurrency', record.currency);
+        setText('chartAiOverviewSummary', buildSelectedSymbolOverview(record));
+        setText('chartAiMkAiReadinessText', `${record.nameKo} 기준의 MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.`);
+        ownerLocalConnected = false;
+        updateOverviewDataStatus();
         input.value = '';
+        if (searchHint) searchHint.hidden = true;
         closeDropdown();
         resetOhlcPreview();
         renderChart();
@@ -376,6 +421,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       };
 
       const renderResults = (open = true) => {
+        if (searchHint) searchHint.hidden = true;
         const query = input.value.trim();
         if (!query) {
           closeDropdown();
@@ -451,6 +497,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       });
       runBtn.addEventListener('click', () => {
         if (!input.value.trim()) {
+          if (searchHint) searchHint.hidden = false;
           closeDropdown();
           return;
         }
@@ -496,6 +543,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           previewGuide.textContent = '공개 화면은 샘플 모드입니다. KIS 연결 프리뷰는 오너 로컬 환경에서만 사용할 수 있습니다.';
         }
       }
+      updateOverviewDataStatus();
 
       resetQuotePreview = () => {
         if (previewResult) {
@@ -532,6 +580,8 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       }) => {
         if (!previewResult) return;
         if (data.status === 'ok' && data.quote) {
+          ownerLocalConnected = true;
+          updateOverviewDataStatus();
           const quote = data.quote;
           previewResult.hidden = false;
           previewResult.replaceChildren();
@@ -658,6 +708,8 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
               if (data?.status === 'ok' && data?.renderable && Array.isArray(data?.points) && data.points.length > 0) {
                 const rendered = renderOhlcChart(data.points as OwnerLocalOhlcPreviewPoint[]);
                 if (rendered) {
+                  ownerLocalConnected = true;
+                  updateOverviewDataStatus();
                   setChartStatus('지연 시세 · KIS OHLC · KRW', '오너 로컬 전용');
                   showOhlcPreviewMessage('KIS OHLC 차트가 반영되었습니다.');
                   if (ohlcPreviewTag) ohlcPreviewTag.hidden = false;
@@ -887,6 +939,12 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--text-muted);
       font-size: 0.82rem;
       text-align: center;
+    }
+
+    .chart-ai-search-hint {
+      margin: 0.4rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
     }
 
     .chart-lookup-content-grid {
@@ -1255,6 +1313,10 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--text-muted);
       font-size: 0.82rem;
       line-height: 1.65;
+    }
+
+    .chart-company-placeholder p + p {
+      margin-top: 0.5rem;
     }
 
     .chart-company-fallback-fields {

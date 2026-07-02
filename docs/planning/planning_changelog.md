@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EV-B - 2026-07-02
+
+### Chart AI Company Overview and Selected Symbol Detail Implementation (Implemented)
+
+- **Status**: Implemented — selected-symbol-aware company overview and detail behavior complete.
+- **Background**: Phase 3EV-A hardened public sample/fallback states. The owner requested faster implementation progress. This phase improves visible `/chart-ai` product behavior without adding public KIS data.
+- **Implemented scope**: added a deterministic `buildSelectedSymbolOverview()` detail builder and an `updateOverviewDataStatus()` helper in `src/pages/chart-ai.astro`; upgraded the sidebar company panel to a selected-symbol-aware "종목 개요" panel with 종목명/종목코드/시장/종목 유형/통화/데이터 상태 fields plus a stock/ETF/other-safe overview sentence and disclaimer copy; extended `updateSelection()` to sync these fields, reset owner-local connection state, and update the selected-symbol-aware MK AI readiness note; preserved existing OHLC/quote preview reset and sample-chart-on-period-change behavior; added an inline hint for an empty 조회 submission.
+- **Preserved policy**: no public KIS quote, no public KIS OHLC, no `source=live`, no `source=auto`, no production deployment, no owner-local gate weakening, no raw KIS response, no secrets, no account/trading APIs, no Supabase/SQL/migration, no Vercel changes, no dependency changes, no deployment, and no push.
+- **Validation**: `npm run check:phase-3ev-b-chart-ai-company-overview-selected-symbol-detail` PASS (44/44); full 26-command established validation suite PASS; `npm run build` PASS.
+- **Recommended next phase**: Phase 3EV-C — Chart AI Owner-Local KIS Connected Result UI Enhancement. Alternative: Phase 3EW-A — MK AI Analysis Panel Mocked-First Implementation.
+
 ## Phase 3EV-A - 2026-07-02
 
 ### Chart AI Public Sample/Fallback Hardening (Implemented)
