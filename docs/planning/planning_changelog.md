@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EW-B - 2026-07-02
+
+### MK AI Analysis Panel Interaction and Explanation Depth (Implemented)
+
+- **Status**: Implemented — MK AI interaction and explanation depth complete.
+- **Background**: Phase 3EW-A implemented the mocked-first MK AI analysis panel. The owner requested faster implementation progress. This phase adds sectioned interaction and deeper explanation without external AI API calls and without public KIS data exposure.
+- **Implemented scope**: restructured the MK AI panel in `src/pages/chart-ai.astro` into five labeled sections (요약, 핵심 해석, 분석 근거, 확인 체크리스트, 데이터 한계); added native `<details>/<summary>` expand/collapse areas for "분석 근거 자세히 보기" and "데이터 한계 확인"; extended `buildMockMkAiAnalysis(record, context)` to return `keyInterpretation`, `evidence`, `checklist`, `limitations`, and `connectedNote` alongside the existing `summary`/`basis`/`status`, with distinct stock/ETF-safe copy; added a deterministic 4-item checklist; added owner-local connected-state explanation text (`#chartAiMkAiConnectedNote`) shown only after a successful owner-local quote/OHLC preview; added a `getTopicParticle(name)` Korean particle helper applied to the overview and MK AI summary copy.
+- **Preserved policy**: no external AI API calls, no server-side AI route, no public KIS quote, no public KIS OHLC, no `source=live`, no `source=auto`, no production deployment, no owner-local gate weakening, no raw KIS response, no secrets, no account/trading APIs, no Supabase/SQL/migration, no Vercel changes, no dependency changes, no deployment, and no push.
+- **Validation**: `npm run check:phase-3ew-b-mk-ai-analysis-panel-interaction-depth` PASS (50/50); full established validation suite PASS; `npm run build` PASS.
+- **Recommended next phase**: Phase 3EW-C — MK AI Mocked Scenario and Risk Checklist Expansion. Alternative: Phase 3EV-C — Chart AI Owner-Local KIS Connected Result UI Enhancement.
+
 ## Phase 3EW-A - 2026-07-02
 
 ### MK AI Analysis Panel Mocked-First Implementation (Implemented)
