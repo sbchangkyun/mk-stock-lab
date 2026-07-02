@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3ET-OWNER-REVIEW-CLOSEOUT - 2026-07-02
+
+### Chart AI OHLC Preview Owner Review Closeout (Closed — PASS after HF1 UX simplification)
+
+- **Status**: Closed — owner review PASS after Phase 3ET-HF1 UX simplification. No runtime source changes.
+- **Decision**: `PASS`.
+- **Background**: Phase 3ET wired the Chart AI owner-local OHLC preview, the initial owner review found the chart-left controls too technical, Phase 3ET-HF1 simplified the UI, and Phase 3ET-OWNER-REVIEW-RETRY prepared a manual retry checklist.
+- **Owner-reviewed evidence**: owner visually confirmed `/chart-ai?source=owner-local` after HF1. The main chart no longer shows the previous chart-left OHLC button/guide; the right-side `KIS 로컬 프리뷰` card contains both `KIS 시세 프리뷰 확인` and `KIS 차트 프리뷰 확인`; the OHLC preview success state is visible; the main chart status shows delayed KIS OHLC state; the existing quote preview remains present; and no raw response, secret, stack trace, request header, or unsafe output is visible. No actual quote/OHLC/volume/timestamp values are recorded.
+- **Accepted scope**: simplified main chart area, sidebar-based KIS local preview controls, concise chart status copy, OHLC preview applied-state copy, fallback/sample policy, quote preview preservation, and owner-local-only boundary.
+- **Not authorized**: no public live OHLC, no `source=live`, no `source=auto`, no production deployment, no weakening of owner-local gates, and no default/public `/chart-ai` live data behavior.
+- **Safety**: no runtime changes, no live KIS call by Codex, no dev server or browser launched by Codex, no `.env` read, no actual OHLC or quote values recorded, no raw response, no secrets, no account/trading APIs, no screenshot committed, no Supabase/SQL/migration, no Vercel changes, no dependency changes, no deployment, and no push.
+- **Validation**: full 15-command suite run. `check:phase-3et-owner-review-closeout-chart-ai-ohlc-preview` 41/41, `check:phase-3et-owner-review-retry-after-ohlc-preview-ux-simplification` 44/44, `check:phase-3et-hf1-owner-local-ohlc-preview-control-ux-simplification` 46/46, `check:phase-3ep-chart-ai-owner-local-quote-preview-wiring` 49/49, `check:phase-3eo-owner-local-kis-quote-smoke` 58/58, `check:phase-3en-kis-quote-adapter-owner-local-gate` 87/87, `check:provider-boundaries` PASS, `check:kis-runtime-guard` 7/7, `check:kis-error-fallback` 48/48, `check:chart-ai-ux-skeleton` 82/82, `check:mobile-baseline` 74/74, `check:production-domain` 33/33, `build` PASS, `git diff --check` PASS, `guard:production-mobile-geometry` DRY_RUN. Known unrelated failures, not run/fixed: `check:kis-quote-adapter-mocked` 100/101; `check:phase-3et-owner-review-chart-ai-ohlc-preview` 37/38; `check:phase-3et-chart-ai-owner-local-ohlc-preview-wiring` 61/62; `check:phase-3es-owner-local-kis-ohlc-smoke-closeout` 37/38; `check:phase-3es-owner-local-kis-ohlc-smoke` 68/70 (pre-existing open-ended diff / literal-string checker fragility).
+- **Recommended next phase**: Phase 3EN-HF1 — Legacy KIS Checker Cleanup. Alternative: Phase 3EU — Chart AI Data Integration Policy and Public Boundary Plan.
+
 ## Phase 3ET-OWNER-REVIEW-RETRY - 2026-07-02
 
 ### Chart AI Owner-Local OHLC Preview Review Retry Preparation (Prepared — owner review retry pending)
