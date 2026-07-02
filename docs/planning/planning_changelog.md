@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EW-A - 2026-07-02
+
+### MK AI Analysis Panel Mocked-First Implementation (Implemented)
+
+- **Status**: Implemented — mocked-first MK AI analysis panel complete.
+- **Background**: Phase 3EV-B completed selected-symbol overview/detail behavior. The owner requested faster implementation progress. This phase implements visible MK AI analysis preview behavior without external AI API calls and without public KIS data exposure.
+- **Implemented scope**: upgraded the sidebar MK AI note in `src/pages/chart-ai.astro` into a mocked-first analysis panel (eyebrow, "AI 분석 미리보기" heading, status badge, summary, three deterministic bullets, data basis list, disclaimers); added a deterministic `buildMockMkAiAnalysis(record, context)` builder with stock/ETF/other-safe copy; wired `updateMkAiPanel()` into `updateSelection()` for selected-symbol synchronization and into the owner-local quote/OHLC preview success paths to reflect "오너 로컬 데이터 반영" status and an "오너 로컬 KIS 연결 상태" data basis entry, without ever inserting actual quote/OHLC values into the panel text; public/default `/chart-ai` shows "샘플 분석" status only.
+- **Preserved policy**: no external AI API calls, no server-side AI route, no public KIS quote, no public KIS OHLC, no `source=live`, no `source=auto`, no production deployment, no owner-local gate weakening, no raw KIS response, no secrets, no account/trading APIs, no Supabase/SQL/migration, no Vercel changes, no dependency changes, no deployment, and no push.
+- **Validation**: `npm run check:phase-3ew-a-mk-ai-analysis-panel-mocked-first` PASS (46/46); full established validation suite PASS; `npm run build` PASS.
+- **Recommended next phase**: Phase 3EW-B — MK AI Analysis Panel Interaction and Explanation Depth. Alternative: Phase 3EV-C — Chart AI Owner-Local KIS Connected Result UI Enhancement.
+
 ## Phase 3EV-B - 2026-07-02
 
 ### Chart AI Company Overview and Selected Symbol Detail Implementation (Implemented)

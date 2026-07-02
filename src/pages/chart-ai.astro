@@ -178,10 +178,29 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           aria-expanded="false"
           aria-controls="chartAiMkAiNote"
         >MK AI</button>
-        <div class="chart-mk-ai-note" id="chartAiMkAiNote" hidden>
+        <div class="chart-mk-ai-note" id="chartAiMkAiNote" hidden aria-labelledby="chart-mk-ai-heading">
+          <div class="chart-sidebar-heading">
+            <p class="eyebrow">MK AI</p>
+            <h2 id="chart-mk-ai-heading">AI 분석 미리보기</h2>
+          </div>
+          <span class="chart-identity-chip chart-mk-ai-status" id="chartAiMkAiStatus">샘플 분석</span>
+          <p id="chartAiMkAiSummary">삼성전자은(는) KOSPI 상장 국내 주식으로, 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 기준으로 분석 미리보기를 제공합니다.</p>
+          <ul class="chart-mk-ai-bullets" id="chartAiMkAiBullets">
+            <li>선택 종목의 시장·통화·종목 유형을 기준으로 차트 분석 화면을 구성합니다.</li>
+            <li>샘플 OHLC 데이터로 추세·변동성 표현 구조를 점검할 수 있습니다.</li>
+            <li>실제 재무·공시·최신 시세가 반영된 분석은 아직 제공하지 않습니다.</li>
+          </ul>
+          <div class="chart-mk-ai-basis">
+            <p class="chart-mk-ai-basis-label">분석 기준 데이터</p>
+            <ul class="chart-mk-ai-basis-list" id="chartAiMkAiBasisList">
+              <li>종목 식별 정보</li>
+              <li>샘플 OHLC·거래량 데이터</li>
+            </ul>
+          </div>
           <strong>MK AI 분석 준비 중</strong>
           <p id="chartAiMkAiReadinessText">삼성전자 기준의 MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.</p>
-          <p>현재는 차트와 데이터 상태를 먼저 확인할 수 있습니다.</p>
+          <p>현재 분석은 샘플 로직 기반 미리보기입니다.</p>
+          <p>실제 투자 판단용 정보가 아니며 매수·매도 추천이 아닙니다.</p>
         </div>
       </aside>
     </div>
@@ -254,6 +273,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       let resetQuotePreview: () => void = () => {};
       let resetOhlcPreview: () => void = () => {};
       let ownerLocalConnected = false;
+      let selectedRecord: ClientSafeSymbolSearchRecord | null = records.find((r) => r.symbol === selectedSymbol) ?? null;
+      const mkAiBulletsEl = document.getElementById('chartAiMkAiBullets');
+      const mkAiBasisEl = document.getElementById('chartAiMkAiBasisList');
 
       if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState || !chart || !chartSvg) return;
       if (runBtn.dataset.ready === 'true') return;
@@ -394,6 +416,73 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         setText('chartAiOverviewDataStatus', ownerLocalConnected ? '오너 로컬 KIS 연결 확인' : '오너 로컬 연결 대기');
       };
 
+      const buildMockMkAiAnalysis = (
+        record: ClientSafeSymbolSearchRecord,
+        context: { ownerLocalPreview: boolean; ownerLocalConnected: boolean },
+      ): { summary: string; bullets: string[]; basis: string[]; status: string } => {
+        const name = record.nameKo;
+        const exchange = record.exchange;
+        let summary: string;
+        let bullets: string[];
+
+        if (record.assetType === 'stock') {
+          summary = `${name}은(는) ${exchange} 상장 국내 주식으로, 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 기준으로 분석 미리보기를 제공합니다.`;
+          bullets = [
+            '선택 종목의 시장·통화·종목 유형을 기준으로 차트 분석 화면을 구성합니다.',
+            '샘플 OHLC 데이터로 추세·변동성 표현 구조를 점검할 수 있습니다.',
+            '실제 재무·공시·최신 시세가 반영된 분석은 아직 제공하지 않습니다.',
+          ];
+        } else if (record.assetType === 'etf') {
+          summary = `${name}은(는) ${exchange} 상장 국내 ETF로, 현재 화면에서는 ETF 식별 정보와 샘플 차트 구조를 기준으로 분석 미리보기를 제공합니다.`;
+          bullets = [
+            'ETF 유형에 맞춰 기업 개요가 아닌 종목 구조 중심으로 표시합니다.',
+            '샘플 OHLC 데이터로 차트 표현과 데이터 상태를 점검할 수 있습니다.',
+            '실제 구성 종목·NAV·괴리율 기반 분석은 아직 제공하지 않습니다.',
+          ];
+        } else {
+          summary = `${name}은(는) 선택된 국내 종목으로, 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 기준으로 분석 미리보기를 제공합니다.`;
+          bullets = [
+            '종목 식별 정보와 샘플 차트 구조를 기준으로 화면을 구성합니다.',
+            '실제 시세나 투자 판단 지표는 반영하지 않습니다.',
+            '향후 데이터 연동 범위가 확정되면 분석 항목을 확장할 수 있습니다.',
+          ];
+        }
+
+        const basis = ['종목 식별 정보', '샘플 OHLC·거래량 데이터'];
+        if (context.ownerLocalConnected) {
+          basis.push('오너 로컬 KIS 연결 상태');
+          bullets = [...bullets, '오너 로컬 KIS 연결이 확인된 상태이지만, 본 패널은 아직 샘플 분석 로직으로 표시됩니다.'];
+        }
+
+        let status = '샘플 분석';
+        if (context.ownerLocalPreview) {
+          status = context.ownerLocalConnected ? '오너 로컬 데이터 반영' : '오너 로컬 연결 대기';
+        }
+
+        return { summary, bullets, basis, status };
+      };
+
+      const updateMkAiPanel = () => {
+        if (!selectedRecord) return;
+        const analysis = buildMockMkAiAnalysis(selectedRecord, { ownerLocalPreview, ownerLocalConnected });
+        setText('chartAiMkAiStatus', analysis.status);
+        setText('chartAiMkAiSummary', analysis.summary);
+        if (mkAiBulletsEl) {
+          mkAiBulletsEl.replaceChildren(...analysis.bullets.map((text) => {
+            const li = document.createElement('li');
+            li.textContent = text;
+            return li;
+          }));
+        }
+        if (mkAiBasisEl) {
+          mkAiBasisEl.replaceChildren(...analysis.basis.map((text) => {
+            const li = document.createElement('li');
+            li.textContent = text;
+            return li;
+          }));
+        }
+      };
+
       const updateSelection = (record: ClientSafeSymbolSearchRecord) => {
         selectedSymbol = record.symbol;
         selectedName = record.nameKo;
@@ -411,7 +500,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         setText('chartAiOverviewSummary', buildSelectedSymbolOverview(record));
         setText('chartAiMkAiReadinessText', `${record.nameKo} 기준의 MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.`);
         ownerLocalConnected = false;
+        selectedRecord = record;
         updateOverviewDataStatus();
+        updateMkAiPanel();
         input.value = '';
         if (searchHint) searchHint.hidden = true;
         closeDropdown();
@@ -544,6 +635,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         }
       }
       updateOverviewDataStatus();
+      updateMkAiPanel();
 
       resetQuotePreview = () => {
         if (previewResult) {
@@ -582,6 +674,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         if (data.status === 'ok' && data.quote) {
           ownerLocalConnected = true;
           updateOverviewDataStatus();
+          updateMkAiPanel();
           const quote = data.quote;
           previewResult.hidden = false;
           previewResult.replaceChildren();
@@ -710,6 +803,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
                 if (rendered) {
                   ownerLocalConnected = true;
                   updateOverviewDataStatus();
+                  updateMkAiPanel();
                   setChartStatus('지연 시세 · KIS OHLC · KRW', '오너 로컬 전용');
                   showOhlcPreviewMessage('KIS OHLC 차트가 반영되었습니다.');
                   if (ohlcPreviewTag) ohlcPreviewTag.hidden = false;
@@ -1280,6 +1374,27 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       margin-top: 0.25rem;
       color: var(--chart-shell-muted);
       font-size: 0.72rem;
+    }
+
+    .chart-mk-ai-status {
+      display: inline-block;
+      margin: 0.3rem 0 0.6rem;
+    }
+
+    .chart-mk-ai-bullets,
+    .chart-mk-ai-basis-list {
+      margin: 0.4rem 0;
+      padding-left: 1.1rem;
+      color: var(--chart-shell-muted);
+      font-size: 0.72rem;
+      line-height: 1.55;
+    }
+
+    .chart-mk-ai-basis-label {
+      margin: 0.6rem 0 0.2rem;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 750;
     }
 
     .chart-stock-sidebar {
