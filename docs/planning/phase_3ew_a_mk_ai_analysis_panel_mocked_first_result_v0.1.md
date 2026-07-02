@@ -31,8 +31,14 @@ Implemented — mocked-first MK AI analysis panel complete.
 ## 5. Validation
 
 - `npm run check:phase-3ew-a-mk-ai-analysis-panel-mocked-first`: PASS (46/46).
-- Full established validation suite (27 prior commands + build + diff-check + geometry guard): PASS, see final report for the complete command list and results.
+- `npm run check:phase-3ev-b-chart-ai-company-overview-selected-symbol-detail`: PASS (44/44).
+- `npm run check:phase-3ev-a-chart-ai-public-sample-fallback-hardening`: PASS (42/42).
+- `npm run check:phase-3eu-owner-review-closeout-chart-ai-data-policy`: PASS (45/45).
+- `npm run check:chart-ai-ux-skeleton`: PASS (82/82).
+- `npm run check:mobile-baseline`: PASS (74/74).
+- `npm run check:provider-boundaries`, `npm run check:kis-runtime-guard`, `npm run check:kis-error-fallback`: PASS.
 - `npm run build`: PASS.
+- See final report for the complete command list and results.
 
 ## 6. Safety
 
