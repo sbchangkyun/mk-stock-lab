@@ -168,9 +168,13 @@ check('Page falls back to the sample chart on blocked/unavailable/malformed/erro
   source.page.includes("data?.status === 'blocked'") &&
   source.page.includes('catch') &&
   source.page.includes('표시 가능한 OHLC 데이터가 부족하여 샘플 차트를 유지합니다.'));                    // 36
-check('Page preserves sample-chart wording and owner-local OHLC tag text',
+// The tag text was intentionally simplified by Phase 3ET-HF1: the original
+// '지연 시세 · 오너 로컬 OHLC · KRW' copy was replaced with the current approved
+// '지연 시세 · KIS OHLC · KRW' copy after owner review. This checks the current accepted
+// state, not the superseded pre-HF1 string.
+check('Page preserves sample-chart wording and current KIS OHLC delayed-state tag text',
   source.page.includes('샘플 차트') && source.page.includes('실제 시세 아님') &&
-  source.page.includes('지연 시세 · 오너 로컬 OHLC · KRW'));                                                // 37
+  source.page.includes('지연 시세 · KIS OHLC · KRW'));                                                     // 37
 process.stdout.write('\n');
 
 process.stdout.write('Phase-boundary and forbidden-pattern checks (38-46):\n');

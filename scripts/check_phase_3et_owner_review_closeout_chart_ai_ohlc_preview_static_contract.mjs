@@ -18,6 +18,10 @@ import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const startingCommit = '30c2830';
+// Bounded to this phase's own ending commit (Pattern B). Diffing to HEAD would falsely trip
+// "no src/api files changed" once later phases (e.g. Phase 3EN-HF1) made their own legitimate
+// src/ changes. This closeout was doc-only and its own work concluded at 7d757ae.
+const endingCommit = '7d757ae';
 const paths = {
   result: 'docs/planning/phase_3et_owner_review_closeout_chart_ai_ohlc_preview_result_v0.1.md',
   checker: 'scripts/check_phase_3et_owner_review_closeout_chart_ai_ohlc_preview_static_contract.mjs',
@@ -38,8 +42,8 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3ET-OWNER-REVIEW-CLOSEOUT - 2026-07-02')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = new Set(git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean));
-const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit).split(/\r?\n/).filter(Boolean);
+const phaseChanges = new Set(git('diff', '--name-only', `${startingCommit}..${endingCommit}`).split(/\r?\n/).filter(Boolean));
+const addedFiles = git('diff', '--name-only', '--diff-filter=A', `${startingCommit}..${endingCommit}`).split(/\r?\n/).filter(Boolean);
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp']);
 const addedImages = addedFiles.filter((path) => imageExtensions.has(extname(path).toLowerCase()));
 const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) === JSON.stringify(baselinePackage.dependencies ?? {});

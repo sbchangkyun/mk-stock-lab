@@ -18,6 +18,10 @@ import { build } from 'esbuild';
 
 const root = process.cwd();
 const startingCommit = 'bab2119';
+// Bounded to this phase's own ending commit (Pattern B). Diffing to HEAD would falsely trip
+// "no API route file changed" once later phases (e.g. Phase 3ET) added their own legitimate
+// src/pages/api/ routes. This phase's own work concluded at d84884b.
+const endingCommit = 'd84884b';
 const paths = {
   result: 'docs/planning/phase_3es_owner_local_kis_ohlc_smoke_result_v0.1.md',
   checker: 'scripts/check_phase_3es_owner_local_kis_ohlc_smoke_contract.mjs',
@@ -45,12 +49,12 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3ES - 2026-07-01')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = new Set(git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean));
+const phaseChanges = new Set(git('diff', '--name-only', `${startingCommit}..${endingCommit}`).split(/\r?\n/).filter(Boolean));
 const srcChanges = [...phaseChanges].filter((path) => path.startsWith('src/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
 const supabaseChanges = srcChanges.filter((path) => /supabase/i.test(path));
 const migrationChanges = [...phaseChanges].filter((path) => /migration|\.sql$/i.test(path));
-const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit).split(/\r?\n/).filter(Boolean);
+const addedFiles = git('diff', '--name-only', '--diff-filter=A', `${startingCommit}..${endingCommit}`).split(/\r?\n/).filter(Boolean);
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp']);
 const addedImages = addedFiles.filter((path) => imageExtensions.has(extname(path).toLowerCase()));
 const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) === JSON.stringify(baselinePackage.dependencies ?? {});

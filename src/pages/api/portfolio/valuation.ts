@@ -160,7 +160,7 @@ export const POST: APIRoute = async ({ request }) => {
       const hasUsdCurrency = rawPositionRecords.some((p) => p.currency === 'USD');
       const mixedCurrencyPreview = hasNonKr || hasUsdCurrency;
 
-      // Mixed-currency behavior is never inferred from source=live alone. Both
+      // Mixed-currency behavior is never inferred from the live source alone. Both
       // explicit mocked-FX flags are required before any quote provider call.
       if (
         mixedCurrencyPreview &&

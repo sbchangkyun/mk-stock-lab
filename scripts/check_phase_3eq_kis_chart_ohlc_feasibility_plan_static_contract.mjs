@@ -16,6 +16,10 @@ import { extname, join } from 'node:path';
 
 const root = process.cwd();
 const startingCommit = '66a2388';
+// Bounded to this phase's own ending commit (Pattern B). Diffing to HEAD would falsely trip
+// "no src/api/lib changed" once later phases (e.g. Phase 3ER, 3ES, 3ET) made their own
+// legitimate src/ changes. This phase was doc-only and its own work concluded at 5d52a80.
+const endingCommit = '5d52a80';
 const paths = {
   result: 'docs/planning/phase_3eq_kis_chart_ohlc_feasibility_and_chart_data_integration_plan_v0.1.md',
   checker: 'scripts/check_phase_3eq_kis_chart_ohlc_feasibility_plan_static_contract.mjs',
@@ -36,11 +40,11 @@ const source = Object.fromEntries(Object.entries(paths).map(([key, path]) => [ke
 const packageJson = JSON.parse(source.package || '{}');
 const baselinePackage = JSON.parse(git('show', `${startingCommit}:package.json`) || '{}');
 const phaseSection = source.changelog.split('## Phase 3EQ - 2026-07-01')[1]?.split('\n## ')[0] ?? '';
-const phaseChanges = new Set(git('diff', '--name-only', startingCommit).split(/\r?\n/).filter(Boolean));
+const phaseChanges = new Set(git('diff', '--name-only', `${startingCommit}..${endingCommit}`).split(/\r?\n/).filter(Boolean));
 const srcChanges = [...phaseChanges].filter((path) => path.startsWith('src/'));
 const apiChanges = srcChanges.filter((path) => path.startsWith('src/pages/api/'));
 const providerChanges = srcChanges.filter((path) => path.startsWith('src/lib/server/providers/'));
-const addedFiles = git('diff', '--name-only', '--diff-filter=A', startingCommit).split(/\r?\n/).filter(Boolean);
+const addedFiles = git('diff', '--name-only', '--diff-filter=A', `${startingCommit}..${endingCommit}`).split(/\r?\n/).filter(Boolean);
 const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif', '.bmp']);
 const addedImages = addedFiles.filter((path) => imageExtensions.has(extname(path).toLowerCase()));
 const dependenciesUnchanged = JSON.stringify(packageJson.dependencies ?? {}) === JSON.stringify(baselinePackage.dependencies ?? {});
