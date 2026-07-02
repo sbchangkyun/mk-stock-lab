@@ -89,7 +89,7 @@ check('Result references PROVIDER_UNAVAILABLE fallback', source.result.includes(
 check('Preview adapter exists', existsSync(join(root, paths.adapter)));                                   // 7
 check('Preview API route exists', existsSync(join(root, paths.route)));                                   // 8
 check('Chart AI page includes KIS local preview UI',
-  source.page.includes('chartAiQuotePreview') && source.page.includes('KIS 로컬 프리뷰'));                // 9
+  source.page.includes('chartAiQuotePreview') && source.page.includes('KIS 연결 프리뷰'));                // 9
 process.stdout.write('\n');
 
 process.stdout.write('Route gate and safety:\n');

@@ -167,7 +167,7 @@ check('Page falls back to the sample chart on blocked/unavailable/malformed/erro
   source.page.includes('fallbackToSampleChart') &&
   source.page.includes("data?.status === 'blocked'") &&
   source.page.includes('catch') &&
-  source.page.includes('표시 가능한 OHLC 데이터가 부족하여 샘플 차트를 유지합니다.'));                    // 36
+  source.page.includes('KIS 응답을 차트에 표시할 수 없어 샘플 차트를 유지합니다.'));                    // 36
 // The tag text was intentionally simplified by Phase 3ET-HF1: the original
 // '지연 시세 · 오너 로컬 OHLC · KRW' copy was replaced with the current approved
 // '지연 시세 · KIS OHLC · KRW' copy after owner review. This checks the current accepted

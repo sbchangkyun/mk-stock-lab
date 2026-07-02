@@ -81,6 +81,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             <span id="chartAiChartStatus">샘플 OHLC·거래량 데이터</span>
             <strong id="chartAiChartStatusStrong">실제 시세 아님</strong>
           </div>
+          <p class="chart-market-sample-helper">현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 실제 투자 판단용 정보가 아닙니다.</p>
         </div>
 
         <div class="chart-period-controls" role="group" aria-label="차트 기간 선택">
@@ -121,16 +122,30 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             <p class="eyebrow">샘플 정보</p>
             <h2 id="chart-company-heading">기업 개요</h2>
           </div>
-          <p>선택한 종목의 사업 내용과 기본 정보는 이후 companyProfile 데이터와 연결될 예정입니다.</p>
-          <small>샘플 정보 · 실제 투자 판단용 아님</small>
+          <dl class="chart-company-fallback-fields">
+            <div>
+              <dt>업종</dt>
+              <dd>업종 정보는 준비 중입니다.</dd>
+            </div>
+            <div>
+              <dt>시장 구분</dt>
+              <dd>시장 구분 정보는 준비 중입니다.</dd>
+            </div>
+            <div>
+              <dt>데이터 상태</dt>
+              <dd>기업 개요는 샘플 데이터 기준으로 표시됩니다.</dd>
+            </div>
+          </dl>
+          <p>정식 기업 데이터 연동 전까지는 참고용 구조 예시로 제공됩니다.</p>
+          <small>샘플 정보 · 실제 투자 판단용 정보가 아닙니다.</small>
         </section>
 
         <section class="panel chart-quote-preview" id="chartAiQuotePreview" aria-labelledby="chart-quote-preview-heading">
           <div class="chart-sidebar-heading">
-            <p class="eyebrow">오너 로컬 전용</p>
-            <h2 id="chart-quote-preview-heading">KIS 로컬 프리뷰</h2>
+            <p class="eyebrow" id="chartAiQuotePreviewEyebrow">오너 로컬 전용</p>
+            <h2 id="chart-quote-preview-heading">KIS 연결 프리뷰</h2>
           </div>
-          <p class="chart-quote-preview-guide" id="chartAiQuotePreviewGuide">오너 로컬 환경에서만 지연 시세와 OHLC 차트 프리뷰를 확인할 수 있습니다.</p>
+          <p class="chart-quote-preview-guide" id="chartAiQuotePreviewGuide">공개 화면은 샘플 모드입니다. KIS 연결 프리뷰는 오너 로컬 환경에서만 사용할 수 있습니다.</p>
           <div class="chart-preview-actions">
             <button class="chart-quote-preview-btn" id="chartAiQuotePreviewBtn" type="button" disabled>KIS 시세 프리뷰 확인</button>
             <button class="chart-ohlc-preview-btn" id="chartAiOhlcPreviewBtn" type="button" disabled>KIS 차트 프리뷰 확인</button>
@@ -149,15 +164,16 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           aria-controls="chartAiMkAiNote"
         >MK AI</button>
         <div class="chart-mk-ai-note" id="chartAiMkAiNote" hidden>
-          <strong>MK AI 분석 준비</strong>
-          <p>MK AI 분석은 다음 단계에서 버튼 클릭 후 안내와 함께 시작됩니다.</p>
+          <strong>MK AI 분석 준비 중</strong>
+          <p>MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.</p>
+          <p>현재는 차트와 데이터 상태를 먼저 확인할 수 있습니다.</p>
         </div>
       </aside>
     </div>
 
     <aside class="chart-lookup-disclaimer" aria-label="데이터 이용 안내">
       <strong>샘플 화면</strong>
-      <span>차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.</span>
+      <span>현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.</span>
     </aside>
   </main>
 
@@ -467,7 +483,19 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       // owner-local preview route when the page URL carries source=owner-local.
       const previewBtn = document.getElementById('chartAiQuotePreviewBtn') as HTMLButtonElement | null;
       const previewResult = document.getElementById('chartAiQuotePreviewResult');
+      const previewEyebrow = document.getElementById('chartAiQuotePreviewEyebrow');
+      const previewGuide = document.getElementById('chartAiQuotePreviewGuide');
       const ownerLocalPreview = new URLSearchParams(window.location.search).get('source') === 'owner-local';
+
+      if (previewEyebrow && previewGuide) {
+        if (ownerLocalPreview) {
+          previewEyebrow.textContent = '오너 로컬 KIS 연결 모드';
+          previewGuide.textContent = '오너 로컬 환경에서 KIS 연결 프리뷰를 사용할 수 있습니다. 버튼을 눌러 지연 시세와 OHLC를 확인하세요.';
+        } else {
+          previewEyebrow.textContent = '오너 로컬 전용';
+          previewGuide.textContent = '공개 화면은 샘플 모드입니다. KIS 연결 프리뷰는 오너 로컬 환경에서만 사용할 수 있습니다.';
+        }
+      }
 
       resetQuotePreview = () => {
         if (previewResult) {
@@ -529,9 +557,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           tag.textContent = `지연 시세 · 오너 로컬 전용 · ${quote.currency ?? 'KRW'}`;
           previewResult.append(list, tag);
         } else if (data.status === 'unavailable' || data.status === 'error') {
-          showPreviewMessage('일시적으로 시세를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.', `provider: ${String(data.providerStatus ?? 'unavailable')}`);
+          showPreviewMessage('현재 KIS 데이터를 불러오지 못했습니다. 샘플 데이터로 계속 표시합니다.');
         } else {
-          showPreviewMessage('오너 로컬 프리뷰 조건이 충족되지 않았습니다.');
+          showPreviewMessage('오너 로컬 환경에서만 KIS 연결 프리뷰를 사용할 수 있습니다.');
         }
       };
 
@@ -560,7 +588,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
               const data = await response.json();
               renderPreview(data);
             } catch {
-              showPreviewMessage('일시적으로 시세를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.');
+              showPreviewMessage('현재 KIS 데이터를 불러오지 못했습니다. 샘플 데이터로 계속 표시합니다.');
             } finally {
               previewBtn.disabled = false;
               previewBtn.textContent = previousLabel ?? 'KIS 시세 프리뷰 확인';
@@ -608,7 +636,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           ohlcPreviewBtn.disabled = false;
           ohlcPreviewBtn.addEventListener('click', async () => {
             if (selectedAssetType !== 'stock' && selectedAssetType !== 'etf') {
-              fallbackToSampleChart('오너 로컬 환경에서만 사용할 수 있습니다.');
+              fallbackToSampleChart('오너 로컬 환경에서만 KIS 연결 프리뷰를 사용할 수 있습니다.');
               return;
             }
             ohlcPreviewBtn.disabled = true;
@@ -634,15 +662,15 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
                   showOhlcPreviewMessage('KIS OHLC 차트가 반영되었습니다.');
                   if (ohlcPreviewTag) ohlcPreviewTag.hidden = false;
                 } else {
-                  fallbackToSampleChart('표시 가능한 OHLC 데이터가 부족하여 샘플 차트를 유지합니다.');
+                  fallbackToSampleChart('KIS 응답을 차트에 표시할 수 없어 샘플 차트를 유지합니다.');
                 }
               } else if (data?.status === 'blocked') {
-                fallbackToSampleChart('오너 로컬 환경에서만 사용할 수 있습니다.');
+                fallbackToSampleChart('오너 로컬 환경에서만 KIS 연결 프리뷰를 사용할 수 있습니다.');
               } else {
-                fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다. 샘플 차트를 유지합니다.');
+                fallbackToSampleChart('현재 KIS 데이터를 불러오지 못했습니다. 샘플 데이터로 계속 표시합니다.');
               }
             } catch {
-              fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다. 샘플 차트를 유지합니다.');
+              fallbackToSampleChart('현재 KIS 데이터를 불러오지 못했습니다. 샘플 데이터로 계속 표시합니다.');
             } finally {
               ohlcPreviewBtn.disabled = false;
               ohlcPreviewBtn.textContent = previousLabel ?? 'KIS 차트 프리뷰 확인';
@@ -984,6 +1012,15 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--chart-shell-warning);
     }
 
+    .chart-market-sample-helper {
+      flex-basis: 100%;
+      margin: 0.4rem 0 0;
+      color: var(--chart-shell-muted);
+      font-size: 0.68rem;
+      line-height: 1.5;
+      text-align: right;
+    }
+
     .chart-period-controls {
       display: flex;
       gap: 0.3rem;
@@ -1218,6 +1255,31 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--text-muted);
       font-size: 0.82rem;
       line-height: 1.65;
+    }
+
+    .chart-company-fallback-fields {
+      display: grid;
+      gap: 0.4rem;
+      margin: 0 0 0.75rem;
+    }
+
+    .chart-company-fallback-fields div {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.6rem;
+    }
+
+    .chart-company-fallback-fields dt {
+      color: var(--text-muted);
+      font-size: 0.74rem;
+    }
+
+    .chart-company-fallback-fields dd {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.76rem;
+      font-weight: 650;
+      text-align: right;
     }
 
     .chart-quote-preview-guide {

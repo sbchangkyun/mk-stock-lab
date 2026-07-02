@@ -106,8 +106,8 @@ check('Page uses the simplified allowed copy set',
   source.page.includes('KIS 차트 프리뷰 확인') &&
   source.page.includes('지연 시세 · KIS OHLC · KRW') &&
   source.page.includes('KIS OHLC 차트가 반영되었습니다.') &&
-  source.page.includes('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다. 샘플 차트를 유지합니다.') &&
-  source.page.includes('오너 로컬 환경에서만 사용할 수 있습니다.'));                                        // 9
+  source.page.includes('현재 KIS 데이터를 불러오지 못했습니다. 샘플 데이터로 계속 표시합니다.') &&
+  source.page.includes('오너 로컬 환경에서만 KIS 연결 프리뷰를 사용할 수 있습니다.'));                     // 9
 process.stdout.write('\n');
 
 process.stdout.write('Main-chart-area exclusion (10-11):\n');
@@ -150,7 +150,7 @@ check('Blocked/unavailable/malformed responses fall back to the sample chart wit
   source.page.includes('fallbackToSampleChart') &&
   source.page.includes("data?.status === 'blocked'") &&
   source.page.includes('catch') &&
-  source.page.includes('표시 가능한 OHLC 데이터가 부족하여 샘플 차트를 유지합니다.'));                       // 20
+  source.page.includes('KIS 응답을 차트에 표시할 수 없어 샘플 차트를 유지합니다.'));                       // 20
 check('Quote preview gate and fetch wiring are unchanged',
   source.page.includes('ownerLocalPreview') &&
   source.page.includes('/api/chart-ai/owner-local-quote-preview') &&
@@ -160,7 +160,7 @@ check('Quote preview button click handler is intact',
   /previewBtn\.addEventListener\('click'/.test(source.page));                                                // 22
 check('Both preview controls are contained within the single KIS local preview sidebar card',
   quotePreviewSection.length > 0 &&
-  quotePreviewSection.includes('KIS 로컬 프리뷰') &&
+  quotePreviewSection.includes('KIS 연결 프리뷰') &&
   quotePreviewSection.includes('id="chartAiQuotePreviewBtn"') &&
   quotePreviewSection.includes('id="chartAiOhlcPreviewBtn"'));                                               // 23
 process.stdout.write('\n');
