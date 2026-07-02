@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EU - 2026-07-02
+
+### Chart AI Data Integration Policy and Public Boundary Plan (Completed — policy plan ready)
+
+- **Status**: Completed — Chart AI data integration policy and public boundary plan ready. No runtime source changes.
+- **Background**: Phase 3ET-OWNER-REVIEW-CLOSEOUT closed Chart AI owner-local OHLC preview as PASS, and Phase 3EN-HF1 restored validation reliability with no known checker failures. This phase defines how Chart AI data integration may proceed beyond owner-local preview.
+- **Policy scope**: current accepted state, data source modes (`fixture`, `mocked`, `owner-local`, `live`, `auto`), public production boundary, owner-local boundary, KIS approval gates, UI labeling policy, route/API boundary, fallback policy, security/compliance policy, production deployment policy, implementation sequence, decision matrix, and open questions.
+- **Policy decision**: public/default `/chart-ai` remains sample/mocked. Owner-local preview remains the only approved KIS-backed runtime path. Public live/delayed KIS quote or OHLC exposure, `source=live`, `source=auto`, and production deployment remain unauthorized until separate approval gates are complete.
+- **Safety**: no runtime changes, no live KIS call, no dev server/browser, no `.env` read, no actual market values recorded, no raw response, no secrets, no account/trading APIs, no screenshot committed, no Supabase/SQL/migration, no Vercel changes, no dependency changes, no deployment, and no push.
+- **Validation**: full validation suite run, all green. `check:phase-3eu-chart-ai-data-integration-policy-public-boundary-plan` 48/48, `check:phase-3en-hf1-legacy-kis-checker-cleanup` 42/42, `check:kis-quote-adapter-mocked` 101/101, `check:phase-3et-owner-review-closeout-chart-ai-ohlc-preview` 41/41, `check:phase-3et-owner-review-retry-after-ohlc-preview-ux-simplification` 44/44, `check:phase-3et-hf1-owner-local-ohlc-preview-control-ux-simplification` 46/46, `check:phase-3et-chart-ai-owner-local-ohlc-preview-wiring` 62/62, `check:phase-3et-owner-review-chart-ai-ohlc-preview` 38/38, `check:phase-3es-owner-local-kis-ohlc-smoke-closeout` 38/38, `check:phase-3es-owner-local-kis-ohlc-smoke` 70/70, `check:phase-3ep-owner-review-closeout` 32/32, `check:phase-3eq-kis-chart-ohlc-feasibility-plan` 66/66, `check:phase-3ep-chart-ai-owner-local-quote-preview-wiring` 49/49, `check:phase-3eo-owner-local-kis-quote-smoke` 58/58, `check:phase-3en-kis-quote-adapter-owner-local-gate` 87/87, `check:provider-boundaries` PASS, `check:kis-runtime-guard` 7/7, `check:kis-error-fallback` 48/48, `check:chart-ai-ux-skeleton` 82/82, `check:mobile-baseline` 74/74, `check:production-domain` 33/33, `build` PASS, `git diff --check` PASS, `guard:production-mobile-geometry` DRY_RUN. No known checker failures remain.
+- **Recommended next phase**: Phase 3EU-OWNER-REVIEW — Owner Review of Chart AI Data Integration Policy and Public Boundary Plan. Alternative: Phase 3EV-A — Public Sample/Fallback Hardening.
+
 ## Phase 3EN-HF1 - 2026-07-02
 
 ### Legacy KIS Checker Cleanup (Implemented — validation reliability restored)
