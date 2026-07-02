@@ -1,5 +1,45 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3ET - 2026-07-01
+
+### Chart AI Owner-Local OHLC Preview Wiring (Implemented — no public OHLC exposure)
+
+- **Status**: Implemented — owner-local Chart AI OHLC preview wiring is in place. Public production
+  Chart AI still renders the mocked/sample candlestick chart by default; no live KIS OHLC call is
+  possible outside the full owner-local gate.
+- **Background**: Phase 3ES-OWNER-SMOKE-CLOSEOUT closed with an owner-local KIS OHLC smoke
+  `PASS_WITH_OWNER_LOCAL_RUN` (KR `005930`, stock, period `1m`, endpoint `KR_STOCK_DAILY_OHLC`
+  verified, renderable series with all field-presence booleans true), but returned no actual OHLC
+  values and no Chart AI wiring. This phase adds the first Chart AI-facing owner-local OHLC
+  preview path.
+- **Implemented scope**: owner-local OHLC preview adapter (`kisOwnerLocalOhlcPreview.ts`) returning
+  client-safe sanitized OHLC points only under the full owner-local gate; owner-local-gated GET-only
+  API route (`owner-local-ohlc-preview.ts`) requiring `source=owner-local`, `preview=ohlc`,
+  localhost, and the three explicit env flags, KR-only, `Cache-Control: no-store`; a small
+  `NormalizedOhlcPoint` → `MockedOhlcPoint` chart adapter (`ohlcPreviewChart.ts`) reusing the
+  existing SVG chart geometry/renderer unchanged; a new owner-local-gated "KIS OHLC 프리뷰 확인"
+  control on `/chart-ai`, disabled unless `source=owner-local`, never auto-fetching, resetting to
+  the sample chart on symbol or period change and on any blocked/unavailable/malformed/insufficient
+  response.
+- **Preserved policy**: public production stays mocked/sample only; default `/chart-ai` behavior is
+  unchanged; no public OHLC API route besides the owner-local-gated one; no `source=live`, no
+  `source=auto`; no account/trading API added; no `KIS_ACCOUNT_NO` usage; no raw KIS response, no
+  secrets, and no actual OHLC values recorded in docs/logs/checkers/fixtures; no Supabase/SQL/
+  migration changes; no Vercel changes; no dependency added; the existing KIS quote preview card
+  and route are untouched; no deployment; and no push.
+- **Validation**: Phase 3ET contract PASS (62/62), Phase 3ES PASS (70/70), Phase 3EP wiring PASS
+  (49/49), Phase 3EO PASS (58/58), Phase 3EN PASS (87/87), provider boundaries PASS, KIS runtime
+  guard PASS (7/7), KIS error fallback PASS (48/48), Chart AI UX skeleton PASS (82/82), mobile
+  baseline PASS (74/74), production-domain PASS (33/33), production build PASS, `git diff --check`
+  PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known
+  pre-existing unrelated failures remain, none fixed or weakened this phase: `check:kis-quote-
+  adapter-mocked` 100/101; `check:phase-3es-owner-local-kis-ohlc-smoke-closeout` 37/38 and
+  `check:phase-3er-kis-ohlc-contract-mocked-adapter`, `check:phase-3eq-kis-chart-ohlc-feasibility-
+  plan`, `check:phase-3ep-owner-review-closeout` (all open-ended diff fragility — pinned starting
+  commit, no pinned ending commit, tripped by this phase's own `src/` additions).
+- **Recommended next phase**: Phase 3ET-OWNER-REVIEW — Owner Local Review of Chart AI OHLC Preview.
+  Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3ES-OWNER-SMOKE-CLOSEOUT - 2026-07-01
 
 ### Owner Local KIS OHLC Smoke Closeout (Closed — PASS_WITH_OWNER_LOCAL_RUN)

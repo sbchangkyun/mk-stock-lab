@@ -91,6 +91,13 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           <button type="button" data-period="1y" aria-pressed="false">1년</button>
         </div>
 
+        <div class="chart-ohlc-preview-row" id="chartAiOhlcPreviewRow">
+          <button type="button" class="chart-ohlc-preview-btn" id="chartAiOhlcPreviewBtn" disabled>KIS OHLC 프리뷰 확인</button>
+          <span class="chart-ohlc-preview-tag" id="chartAiOhlcPreviewTag" hidden>지연 시세 · 오너 로컬 OHLC · KRW</span>
+        </div>
+        <p class="chart-ohlc-preview-guide" id="chartAiOhlcPreviewGuide">오너 로컬 환경에서만 KIS OHLC 프리뷰를 확인할 수 있습니다. (source=owner-local)</p>
+        <p class="chart-ohlc-preview-message" id="chartAiOhlcPreviewMessage" hidden aria-live="polite"></p>
+
         <div
           class="chart-candlestick-ready"
           id="chartAiMarketChart"
@@ -170,7 +177,9 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       isChartPeriodKey,
       isValidMockedOhlcSeries,
       type ChartPeriodKey,
+      type MockedOhlcPoint,
     } from '../lib/chart-ai/mockedOhlc';
+    import { toMockedOhlcPoints, type OwnerLocalOhlcPreviewPoint } from '../lib/chart-ai/ohlcPreviewChart';
     import { searchClientSafeDomesticSymbols } from '../lib/symbol-master/clientSymbolSearch';
     import type { ClientSafeSymbolSearchRecord, DomesticAssetType } from '../lib/symbol-master/types';
 
@@ -213,6 +222,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       let activePeriod: ChartPeriodKey = '1d';
       let visibleRecords: ClientSafeSymbolSearchRecord[] = [];
       let resetQuotePreview: () => void = () => {};
+      let resetOhlcPreview: () => void = () => {};
 
       if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState || !chart || !chartSvg) return;
       if (runBtn.dataset.ready === 'true') return;
@@ -234,9 +244,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         return element;
       };
 
-      const renderChart = () => {
-        const points = createMockedOhlcSeries(selectedSymbol, activePeriod);
-        if (!isValidMockedOhlcSeries(points)) return;
+      const renderChartFromPoints = (points: MockedOhlcPoint[], periodLabel: string, ariaLabel: string) => {
         const geometry = buildMockedChartGeometry(points, activePeriod);
         const gridLayer = createSvgElement('g', {}, 'chart-svg-grid');
         const volumeLayer = createSvgElement('g', {}, 'chart-svg-volume');
@@ -296,11 +304,29 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
         chartSvg.setAttribute('viewBox', geometry.viewBox);
         chartSvg.replaceChildren(gridLayer, volumeLayer, candleLayer, axisLayer);
-        setText('chartAiChartPeriodLabel', `${CHART_PERIOD_LABELS[activePeriod]} 샘플`);
-        chart.setAttribute(
-          'aria-label',
+        setText('chartAiChartPeriodLabel', periodLabel);
+        chart.setAttribute('aria-label', ariaLabel);
+      };
+
+      const renderChart = () => {
+        const points = createMockedOhlcSeries(selectedSymbol, activePeriod);
+        if (!isValidMockedOhlcSeries(points)) return;
+        renderChartFromPoints(
+          points,
+          `${CHART_PERIOD_LABELS[activePeriod]} 샘플`,
           `${selectedName} ${selectedSymbol}, ${CHART_PERIOD_LABELS[activePeriod]} 선택 종목의 샘플 캔들 차트와 거래량. 실제 시세 아님.`,
         );
+      };
+
+      const renderOhlcChart = (rawPoints: OwnerLocalOhlcPreviewPoint[]): boolean => {
+        const points = toMockedOhlcPoints(rawPoints);
+        if (!isValidMockedOhlcSeries(points)) return false;
+        renderChartFromPoints(
+          points,
+          `${CHART_PERIOD_LABELS[activePeriod]} · 오너 로컬 OHLC`,
+          `${selectedName} ${selectedSymbol}, ${CHART_PERIOD_LABELS[activePeriod]} 오너 로컬 OHLC 프리뷰 차트와 거래량. 지연 시세, 실제 투자 판단용 아님.`,
+        );
+        return true;
       };
 
       const closeDropdown = () => {
@@ -324,6 +350,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         setText('chartAiSelectedCurrency', record.currency);
         input.value = '';
         closeDropdown();
+        resetOhlcPreview();
         renderChart();
         resetQuotePreview();
       };
@@ -420,6 +447,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             candidate.classList.toggle('active', active);
             candidate.setAttribute('aria-pressed', String(active));
           });
+          resetOhlcPreview();
           renderChart();
         });
       });
@@ -539,6 +567,90 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         } else {
           previewBtn.disabled = true;
           if (previewGuide) previewGuide.textContent = '오너 로컬 환경에서만 실제 시세 프리뷰를 확인할 수 있습니다. (source=owner-local)';
+        }
+      }
+
+      // Owner-local KIS OHLC preview. Gated: never auto-fetches, and only fetches the gated
+      // owner-local OHLC preview route when the page URL carries source=owner-local. On any
+      // blocked/unavailable/malformed/insufficient response, falls back to the sample chart with
+      // a safe Korean message — never a raw error, provider payload, or stack trace.
+      const ohlcPreviewBtn = document.getElementById('chartAiOhlcPreviewBtn') as HTMLButtonElement | null;
+      const ohlcPreviewGuide = document.getElementById('chartAiOhlcPreviewGuide');
+      const ohlcPreviewTag = document.getElementById('chartAiOhlcPreviewTag');
+      const ohlcPreviewMessage = document.getElementById('chartAiOhlcPreviewMessage');
+      const ownerLocalOhlcPreview = new URLSearchParams(window.location.search).get('source') === 'owner-local';
+
+      const showOhlcPreviewMessage = (text: string) => {
+        if (!ohlcPreviewMessage) return;
+        ohlcPreviewMessage.hidden = false;
+        ohlcPreviewMessage.textContent = text;
+      };
+
+      const clearOhlcPreviewMessage = () => {
+        if (!ohlcPreviewMessage) return;
+        ohlcPreviewMessage.hidden = true;
+        ohlcPreviewMessage.textContent = '';
+      };
+
+      resetOhlcPreview = () => {
+        if (ohlcPreviewTag) ohlcPreviewTag.hidden = true;
+        clearOhlcPreviewMessage();
+      };
+
+      const fallbackToSampleChart = (message: string) => {
+        resetOhlcPreview();
+        showOhlcPreviewMessage(message);
+        renderChart();
+      };
+
+      if (ohlcPreviewBtn) {
+        if (ownerLocalOhlcPreview) {
+          ohlcPreviewBtn.disabled = false;
+          if (ohlcPreviewGuide) ohlcPreviewGuide.textContent = '오너 로컬 OHLC 프리뷰가 활성화되었습니다. 버튼을 눌러 선택 종목의 OHLC 데이터를 확인하세요.';
+          ohlcPreviewBtn.addEventListener('click', async () => {
+            if (selectedAssetType !== 'stock' && selectedAssetType !== 'etf') {
+              fallbackToSampleChart('오너 로컬 OHLC 프리뷰 조건이 충족되지 않았습니다.');
+              return;
+            }
+            ohlcPreviewBtn.disabled = true;
+            const previousLabel = ohlcPreviewBtn.textContent;
+            ohlcPreviewBtn.textContent = '불러오는 중…';
+            try {
+              const params = new URLSearchParams({
+                symbol: selectedSymbol,
+                market: 'KR',
+                assetType: selectedAssetType,
+                period: activePeriod,
+                source: 'owner-local',
+                preview: 'ohlc',
+              });
+              const response = await fetch(`/api/chart-ai/owner-local-ohlc-preview?${params.toString()}`, {
+                headers: { accept: 'application/json' },
+              });
+              const data = await response.json();
+              if (data?.status === 'ok' && data?.renderable && Array.isArray(data?.points) && data.points.length > 0) {
+                const rendered = renderOhlcChart(data.points as OwnerLocalOhlcPreviewPoint[]);
+                if (rendered) {
+                  clearOhlcPreviewMessage();
+                  if (ohlcPreviewTag) ohlcPreviewTag.hidden = false;
+                } else {
+                  fallbackToSampleChart('표시 가능한 OHLC 데이터가 부족하여 샘플 차트를 유지합니다.');
+                }
+              } else if (data?.status === 'blocked') {
+                fallbackToSampleChart('오너 로컬 OHLC 프리뷰 조건이 충족되지 않았습니다.');
+              } else {
+                fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다.');
+              }
+            } catch {
+              fallbackToSampleChart('KIS OHLC 데이터를 일시적으로 불러올 수 없습니다.');
+            } finally {
+              ohlcPreviewBtn.disabled = false;
+              ohlcPreviewBtn.textContent = previousLabel ?? 'KIS OHLC 프리뷰 확인';
+            }
+          });
+        } else {
+          ohlcPreviewBtn.disabled = true;
+          if (ohlcPreviewGuide) ohlcPreviewGuide.textContent = '오너 로컬 환경에서만 KIS OHLC 프리뷰를 확인할 수 있습니다. (source=owner-local)';
         }
       }
 
@@ -901,6 +1013,49 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       border-color: color-mix(in srgb, var(--primary) 42%, transparent);
       background: var(--chart-shell-active);
       color: var(--primary);
+    }
+
+    .chart-ohlc-preview-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem 0;
+    }
+
+    .chart-ohlc-preview-btn {
+      flex: 0 0 auto;
+      min-height: 32px;
+      padding: 0.3rem 0.65rem;
+      border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+      border-radius: 7px;
+      background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+      color: var(--primary);
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .chart-ohlc-preview-btn:disabled {
+      border-color: var(--border);
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .chart-ohlc-preview-tag {
+      color: var(--chart-shell-warning);
+      font-size: 0.68rem;
+      font-weight: 750;
+    }
+
+    .chart-ohlc-preview-guide,
+    .chart-ohlc-preview-message {
+      margin: 0.35rem 1rem 0;
+      color: var(--chart-shell-muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
     }
 
     .chart-candlestick-ready {
