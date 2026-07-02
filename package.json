@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3eu-owner-review-chart-ai-data-integration-policy": "node scripts/check_phase_3eu_owner_review_chart_ai_data_integration_policy_static_contract.mjs",
     "check:phase-3eu-chart-ai-data-integration-policy-public-boundary-plan": "node scripts/check_phase_3eu_chart_ai_data_integration_policy_public_boundary_plan_static_contract.mjs",
     "check:phase-3en-hf1-legacy-kis-checker-cleanup": "node scripts/check_phase_3en_hf1_legacy_kis_checker_cleanup_contract.mjs",
     "check:phase-3et-hf1-owner-local-ohlc-preview-control-ux-simplification": "node scripts/check_phase_3et_hf1_owner_local_ohlc_preview_control_ux_simplification_contract.mjs",
