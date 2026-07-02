@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3ER - 2026-07-01
+
+### KIS OHLC Contract and Mocked Adapter Foundation (Implemented — no live OHLC)
+
+- **Status**: Implemented — normalized OHLC contract and deterministic mocked adapter foundation ready. No live KIS OHLC call and no chart replacement.
+- **Background**: Phase 3EQ completed the KIS Chart/OHLC feasibility plan and recommended contract/mocked foundation before owner-local OHLC smoke. Chart AI quote preview is owner-reviewed and PASS, while the main candlestick chart remains sample/mocked.
+- **Implemented scope**: normalized OHLC contract, OHLC provider interface, deterministic mocked OHLC provider, KIS OHLC endpoint registry skeleton with all endpoints unverified, blocked KIS OHLC provider skeleton, and static checker.
+- **Preserved policy**: no live KIS call, no OHLC smoke, no public OHLC API route, no Chart AI chart replacement, no raw KIS response, no secrets, no account/trading APIs, no Supabase/SQL/migration, no Vercel changes, no deployment, and no push.
+- **Validation**: Phase 3ER contract PASS, Phase 3EQ PASS, Phase 3EP closeout PASS, Phase 3EP PASS, Phase 3EO closeout PASS, Phase 3EO PASS, Phase 3EN PASS, Phase 3EM PASS, provider boundaries PASS, KIS runtime guard PASS, KIS error fallback PASS, Chart AI UX skeleton PASS, mobile baseline PASS, production-domain PASS, production build PASS, `git diff --check` PASS, and production mobile geometry guard `DRY_RUN` with no browser or network. Known pre-existing unrelated failure remains: `check:kis-quote-adapter-mocked` 100/101 (`src/pages/api/portfolio/valuation.ts` `source=live` string; file unchanged; checker not weakened).
+- **Recommended next phase**: Phase 3ES — Owner-Local KIS OHLC Smoke. Alternative: Phase 3EN-HF1 — Legacy KIS Checker Cleanup.
+
 ## Phase 3EQ - 2026-07-01
 
 ### KIS Chart/OHLC Feasibility and Chart Data Integration Plan (Completed — integration plan ready)
