@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EY-C - 2026-07-03
+
+### Auth and Usage Guard Plan for Similarity Execution (Prepared/Implemented)
+
+- **Status**: Prepared/Implemented — auth and usage guard planning/foundation added, no real auth or usage runtime.
+- **Background**: Phase 3EY-B verified the server-only provider contract with a mocked adapter. This phase defines the guard contract required before any future authenticated Chart Similarity API route.
+- **Implemented scope**: added `src/lib/server/chartSimilarity/similarityExecutionGuardTypes.ts` (`SimilarityExecutionRole`, `SimilarityExecutionAuthState`, `SimilarityExecutionUsageWindow`, `SimilarityExecutionGuardStatus`, `SimilarityExecutionPurpose`, `SimilarityExecutionSource`, `SimilarityExecutionGuardRequest`, `SimilarityExecutionUsageSnapshot`, `SimilarityExecutionGuardPolicy`, `SimilarityExecutionGuardResult`); `similarityExecutionGuardPolicy.ts` (feature flag name constants and `buildDefaultSimilarityExecutionGuardPolicy()`, disabled by default, no `process.env`/`.env` read); `similarityExecutionGuard.ts` (`normalizeSimilarityExecutionGuardRequest`, `buildUsageSnapshot`, `getRoleDailyLimit`, `evaluateSimilarityExecutionGuard` — a policy-first, disabled-by-default evaluator that only evaluates a caller-supplied usage snapshot and never persists usage); `mockedSimilarityExecutionGuardFixtures.ts` (deterministic mocked requests/usage snapshot with fake user ids only); updated `index.ts` to export all guard symbols alongside all existing Phase 3EY-A/3EY-B exports; added the committed runtime smoke script `scripts/smoke_phase_3ey_c_auth_usage_guard_plan_for_similarity_execution.mjs` (30 numbered assertions, including a `process.env` Proxy-based runtime no-env-access check); added the 91-check static checker `scripts/check_phase_3ey_c_auth_usage_guard_plan_for_similarity_execution_contract.mjs`.
+- **Guard policy**: feature disabled by default; auth required; usage guard required; anonymous mocked preview allowed; public KIS execution disallowed; role limits defined (`defaultDailyLimit: 3`, `betaDailyLimit: 10`, `ownerDailyLimit: 50`, `adminDailyLimit: 100`).
+- **Guard contract results**: anonymous mocked preview path, feature-disabled KIS path, auth-required path, not-configured missing-usage path, usage-limited path, allowed path, and owner-local role restriction are verified with mocked inputs only.
+- **Preserved policy**: no real auth runtime, no usage persistence, no Supabase auth import, no API route, no `/chart-ai` UI change, no KIS call, no DB/cache runtime, no SQL/migration, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env`/`process.env` read.
+- **Validation**: `npm run check:phase-3ey-c-auth-usage-guard-plan-for-similarity-execution`, `npm run smoke:phase-3ey-c-auth-usage-guard-plan-for-similarity-execution`, and the established validation suite run in full; results recorded in the phase result document and final report.
+- **Recommended next phase**: Phase 3EY-D — Auth/Usage Guard Contract and Mocked API Response Plan. Alternative: Phase 3EX-E — Similarity Result UI Owner Review and Polish.
+
 ## Phase 3EY-B - 2026-07-03
 
 ### Server-only KIS OHLC Provider Contract and Mocked Adapter Test (Implemented)
