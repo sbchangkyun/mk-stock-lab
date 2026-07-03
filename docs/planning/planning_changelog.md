@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EX-A - 2026-07-03
+
+### Chart AI Similarity MVP Scope Alignment and Architecture Update (Prepared)
+
+- **Status**: Prepared — Chart AI similarity MVP scope and architecture direction aligned. No runtime implementation.
+- **Background**: Phase 3EW-C completed mocked scenario/risk checklist expansion and production deployment. The owner provided a KIS-based differential similarity design draft and then locked five direction decisions before implementation.
+- **Owner decisions**: `/chart-ai` remains public sample while actual similarity execution requires login/authorization/usage guard; production may include UI but real KIS similarity remains feature-flag off; implementation starts with deterministic similarity engine; DB/cache starts with policy/type design only and SQL requires separate approval; existing MK AI panel is retained but redefined as supporting narrative.
+- **Prepared scope**: architecture v0.2 document, owner decision log, updated implementation roadmap, feature flag/access policy, cache/type-first policy, and similarity-engine-first sequence.
+- **Preserved policy**: no runtime code, no KIS call, no external AI call, no API route, no DB/SQL/migration, no Supabase mutation, no Vercel env changes, no deployment, no push, no public KIS data, no `source=live`, no `source=auto`, no account/trading APIs, no secrets, and no raw KIS response.
+- **Validation**: `npm run check:phase-3ex-a-chart-ai-similarity-mvp-scope-alignment-architecture` PASS (62/62); full established validation suite PASS (9 commands); `npm run build` PASS; `git diff --check` PASS.
+- **Recommended next phase**: Phase 3EX-B — Chart Similarity Engine Deterministic Foundation. Alternative: Phase 3EV-C — Chart AI Owner-Local KIS Connected Result UI Enhancement.
+
 ## Phase 3EW-C - 2026-07-02
 
 ### MK AI Mocked Scenario and Risk Checklist Expansion with Vercel Deployment (Implemented)

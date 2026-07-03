@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3ex-a-chart-ai-similarity-mvp-scope-alignment-architecture": "node scripts/check_phase_3ex_a_chart_ai_similarity_mvp_scope_alignment_architecture_contract.mjs",
     "check:phase-3ew-c-mk-ai-mocked-scenario-risk-checklist-expansion": "node scripts/check_phase_3ew_c_mk_ai_mocked_scenario_risk_checklist_expansion_contract.mjs",
     "check:phase-3ew-b-mk-ai-analysis-panel-interaction-depth": "node scripts/check_phase_3ew_b_mk_ai_analysis_panel_interaction_depth_contract.mjs",
     "check:phase-3ew-a-mk-ai-analysis-panel-mocked-first": "node scripts/check_phase_3ew_a_mk_ai_analysis_panel_mocked_first_contract.mjs",
