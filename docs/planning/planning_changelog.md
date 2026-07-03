@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EX-C - 2026-07-03
+
+### Similarity Engine Contract and Edge Case Hardening (Implemented)
+
+- **Status**: Implemented — similarity engine contract and edge-case hardening complete.
+- **Background**: Phase 3EX-B implemented the deterministic chart similarity engine foundation but deferred a committed runtime smoke script, because Node's native TypeScript execution requires explicit `.ts` extensions on relative imports, conflicting with the project's extensionless-import convention. This phase resolves that gap and hardens the engine against a broader edge-case surface.
+- **Implemented scope**: added `src/lib/chartSimilarity/scanOptions.ts` (`normalizeScanOptions`) as a sanitization boundary for raw `SimilarityScanOptions` (fixes a NaN-defeats-numeric-guards bug for `baseWindow`/`topK`/`excludeRecentBars`; sanitizes/dedupes/sorts `forwardWindows`); wired it into `similarityScanner.ts`; added `src/data/chartSimilarity/edgeCaseOhlcvFixtures.ts` (flat/short/invalid/unsorted synthetic fixtures); added a committed runtime smoke script `scripts/smoke_phase_3ex_c_similarity_engine_edge_cases.mjs` that copies the real engine sources into an OS temp directory, rewrites only the copies' relative imports to add `.ts` extensions (committed source imports untouched), executes them via Node's native TypeScript support, and verifies 27 real-engine assertions, cleaning up the temp directory afterward; added the 78-check static checker `scripts/check_phase_3ex_c_similarity_engine_contract_edge_case_hardening_contract.mjs`.
+- **Contract guarantees**: expected bad input (empty bars, one-bar input, invalid options, invalid bars) returns warnings/empty matches instead of throwing; `similarityScore` always remains `0..100`; no NaN/Infinity in any public output; forward outcomes use `null` (never NaN) when unavailable; current/recent-window overlap remains excluded; future data is never used in similarity scoring.
+- **Preserved policy**: no KIS provider, no KIS call, no API route, no UI integration, no login/auth, no usage guard, no DB/cache runtime, no SQL/migration, no external AI call, no Vercel deployment, no push, no dependency changes.
+- **Validation**: `npm run check:phase-3ex-c-similarity-engine-contract-edge-case-hardening` PASS (78/78); `npm run smoke:phase-3ex-c-similarity-engine-edge-cases` PASS (27/27); established validation suite PASS 11/12 commands, `npm run build` PASS, `git diff --check` PASS — the one non-passing command, `check:phase-3ex-a-chart-ai-similarity-mvp-scope-alignment-architecture` (61/62), fails on a pre-existing, unrelated assertion (`No src runtime files changed in this phase`) confirmed present at clean HEAD `9f8cfcb` before this phase's changes; left unmodified since it is outside this phase's allowed changed paths.
+- **Recommended next phase**: Phase 3EX-D — Similarity Result UI Mocked Integration. Alternative: Phase 3EY-A — Server-only KIS OHLC Provider Planning/Foundation.
+
 ## Phase 3EX-B - 2026-07-03
 
 ### Chart Similarity Engine Deterministic Foundation (Implemented)
