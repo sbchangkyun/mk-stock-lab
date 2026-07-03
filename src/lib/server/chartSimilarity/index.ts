@@ -82,3 +82,34 @@ export {
   buildMockedInvalidSimilarityGuardRequest,
   buildMockedUsageSnapshot,
 } from './mockedSimilarityExecutionGuardFixtures';
+
+export type {
+  SimilarityApiResponseStatus,
+  SimilarityApiResponseSource,
+  SimilarityApiResponseMode,
+  SimilarityApiSafeRequest,
+  SimilarityApiSafeUsage,
+  SimilarityApiSafeError,
+  SimilarityApiMockedMatch,
+  SimilarityApiMockedSuccessData,
+  SimilarityApiResponse,
+} from './similarityApiResponseTypes';
+
+export {
+  toSimilarityApiSafeRequest,
+  toSimilarityApiSafeUsage,
+  mapGuardStatusToApiStatus,
+  buildSimilarityApiErrorFromGuard,
+  buildSimilarityApiResponseFromGuard,
+  buildMockedSimilarityApiSuccessData,
+  buildMockedAllowedSimilarityApiResponse,
+} from './similarityApiResponseBuilder';
+
+export {
+  buildMockedSimilarityApiAllowedResponse,
+  buildMockedSimilarityApiAuthRequiredResponse,
+  buildMockedSimilarityApiUsageLimitedResponse,
+  buildMockedSimilarityApiFeatureDisabledResponse,
+  buildMockedSimilarityApiNotConfiguredResponse,
+  buildMockedSimilarityApiBlockedResponse,
+} from './mockedSimilarityApiResponseFixtures';

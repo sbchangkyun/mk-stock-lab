@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EY-D - 2026-07-04
+
+### Auth/Usage Guard Contract and Mocked API Response Plan (Prepared/Implemented)
+
+- **Status**: Prepared/Implemented — sanitized mocked API response contract added on top of the Phase 3EY-C guard, no API route or runtime integration.
+- **Background**: Phase 3EY-C added a disabled-by-default, policy-first auth/usage execution guard returning a `SimilarityExecutionGuardResult`. This phase defines the sanitized API-shaped response contract a later, separately authorized phase can use to shape a real route's JSON response.
+- **Implemented scope**: added `src/lib/server/chartSimilarity/similarityApiResponseTypes.ts` (`SimilarityApiResponseStatus`, `SimilarityApiResponseSource`, `SimilarityApiResponseMode`, `SimilarityApiSafeRequest`, `SimilarityApiSafeUsage`, `SimilarityApiSafeError`, `SimilarityApiMockedMatch`, `SimilarityApiMockedSuccessData`, `SimilarityApiResponse`); `similarityApiResponseBuilder.ts` (`toSimilarityApiSafeRequest`, `toSimilarityApiSafeUsage`, `mapGuardStatusToApiStatus`, `buildSimilarityApiErrorFromGuard`, `buildSimilarityApiResponseFromGuard`, `buildMockedSimilarityApiSuccessData`, `buildMockedAllowedSimilarityApiResponse` — converts a guard result into a sanitized response, never calls the real similarity engine, KIS, or `fetch`, never reads env or usage state); `mockedSimilarityApiResponseFixtures.ts` (`buildMockedSimilarityApiAllowedResponse`, `buildMockedSimilarityApiAuthRequiredResponse`, `buildMockedSimilarityApiUsageLimitedResponse`, `buildMockedSimilarityApiFeatureDisabledResponse`, `buildMockedSimilarityApiNotConfiguredResponse`, `buildMockedSimilarityApiBlockedResponse` — each drives the real Phase 3EY-C guard evaluator and mocked guard fixtures with fixed synthetic inputs); updated `index.ts` to export all new symbols alongside all existing Phase 3EY-A/3EY-B/3EY-C exports; added the committed runtime smoke script `scripts/smoke_phase_3ey_d_auth_usage_guard_contract_mocked_api_response_plan.mjs` (33 numbered assertions, including a `process.env` Proxy-based runtime no-env-access check); added the 87-check static checker `scripts/check_phase_3ey_d_auth_usage_guard_contract_mocked_api_response_plan_contract.mjs`.
+- **Response contract results**: success/blocked/auth-required/usage-limited/feature-disabled/not-configured responses are all verified with mocked inputs only; every response is sanitized to drop `userId`, `role`, `authState`, tokens, email, IP address, raw auth/KIS payload fields, and account/trading fields.
+- **Preserved policy**: no API route added, no real auth runtime, no usage persistence, no Supabase auth import, no `/chart-ai` UI change, no KIS call, no DB/cache runtime, no SQL/migration, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env`/`process.env` read.
+- **Validation**: `npm run check:phase-3ey-d-auth-usage-guard-contract-mocked-api-response-plan`, `npm run smoke:phase-3ey-d-auth-usage-guard-contract-mocked-api-response-plan`, and the established validation suite run in full; results recorded in the phase result document and final report.
+- **Recommended next phase**: Phase 3EX-E — Similarity Result UI Owner Review and Polish. Alternative: Phase 3EZ-A — Real Auth Integration Design for Similarity Execution.
+
 ## Phase 3EY-C - 2026-07-03
 
 ### Auth and Usage Guard Plan for Similarity Execution (Prepared/Implemented)
