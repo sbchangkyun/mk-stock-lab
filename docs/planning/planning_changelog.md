@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EX-B - 2026-07-03
+
+### Chart Similarity Engine Deterministic Foundation (Implemented)
+
+- **Status**: Implemented — deterministic chart similarity engine foundation complete.
+- **Background**: Phase 3EX-A aligned Chart AI similarity MVP architecture and locked the decision to implement the similarity engine before KIS provider, API route, DB/cache, or UI integration. This phase implements that engine.
+- **Implemented scope**: pure, deterministic chart similarity engine under `src/lib/chartSimilarity/` (`types.ts`, `returns.ts`, `normalize.ts`, `rollingWindow.ts`, `similarityScore.ts`, `forwardOutcome.ts`, `summaryStats.ts`, `similarityScanner.ts`, `index.ts`) covering OHLC type foundation, return/log-return calculation, normalization, rolling-window generation with current-window exclusion, correlation/RMSE/direction-match similarity scoring, forward outcome calculation, and null-safe summary statistics; deterministic synthetic OHLCV fixture (`src/data/chartSimilarity/syntheticOhlcvFixture.ts`, fake market `SYNTHETIC` / symbol `SYNTH001`, 260 bars, no `Math.random()`, no `Date.now()`).
+- **Algorithm policy**: log-return-based comparison only (never raw price levels); `similarityScore = corrScore * 0.45 + rmseScore * 0.35 + directionScore * 0.20`, clamped 0..100; RMSE normalized by mean absolute current-window return magnitude (epsilon `1e-6`) for numerical stability; `excludeRecentBars` prevents current/candidate window overlap; no future leakage.
+- **Preserved policy**: no KIS provider or call, no API route, no UI integration, no DB/cache runtime, no SQL/migration, no auth/usage guard, no external AI call, no public KIS data, no `source=live`, no `source=auto`, no account/trading/order/balance APIs, no Vercel env changes, no deployment, no push, no dependency changes, no real market values.
+- **Validation**: `npm run check:phase-3ex-b-chart-similarity-engine-deterministic-foundation` PASS; full established validation suite PASS (9 commands); `npm run build` PASS; `git diff --check` PASS.
+- **Recommended next phase**: Phase 3EX-C — Similarity Engine Contract and Edge Case Hardening. Alternative: Phase 3EX-D — Similarity Result UI Mocked Integration.
+
 ## Phase 3EX-A - 2026-07-03
 
 ### Chart AI Similarity MVP Scope Alignment and Architecture Update (Prepared)
