@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EY-B - 2026-07-03
+
+### Server-only KIS OHLC Provider Contract and Mocked Adapter Test (Implemented)
+
+- **Status**: Implemented — server-only KIS OHLC provider contract and mocked adapter verification complete.
+- **Background**: Phase 3EY-A added a disabled-by-default server-only KIS OHLC provider foundation (types, policy, `getServerOnlyKisOhlcForSimilarity`). This phase adds a mocked adapter / test harness that exercises the same request/normalize/validate/adapt contract end to end using only already-normalized synthetic OHLC input, without enabling any live KIS call.
+- **Implemented scope**: added `src/lib/server/chartSimilarity/mockedKisOhlcFixtures.ts` (`buildMockedNormalizedDailyOhlcInput`, `buildInvalidMockedNormalizedDailyOhlcInput` — fixed sine/cosine synthetic arithmetic, no `Math.random`, no `Date.now`, no real stock code); `mockedKisOhlcAdapter.ts` (`getMockedServerOnlyKisOhlcForSimilarity`, reusing the Phase 3EY-A `normalizeServerOnlyKisOhlcRequest`/`validateServerOnlyKisOhlcRequest`/`toSimilarityOhlcBarsFromNormalizedDailyBars` functions unmodified); updated `index.ts` to export the new mocked adapter and fixture symbols alongside all existing Phase 3EY-A exports; added the committed runtime smoke script `scripts/smoke_phase_3ey_b_server_only_kis_ohlc_provider_mocked_adapter.mjs` (copies real TypeScript source into a temp directory, rewrites only the copies' relative imports, executes via Node's native TypeScript support, 30 numbered assertions); added the 72-check static checker `scripts/check_phase_3ey_b_server_only_kis_ohlc_provider_contract_mocked_adapter_test_contract.mjs`.
+- **Contract results**: invalid requests are `blocked`; the mocked adapter returns `disabled` under the default/disabled policy; an enabled policy with valid mocked bars returns `ready` with `OhlcBar[]` (`source: "kis-normalized"`, `market: "KR"`, requested symbol); an enabled policy with zero valid mapped bars returns a safe empty-bars `blocked` result; no NaN/Infinity, raw KIS field name, or secret-looking value appears in any output.
+- **Preserved policy**: the Phase 3EY-A disabled provider foundation (`serverOnlyKisOhlcProvider.ts`, `kisOhlcProviderTypes.ts`, `kisOhlcProviderPolicy.ts`) is unmodified and still returns only `disabled`/`not_implemented`/`blocked`; the mocked adapter's `"ready"` status is a separate, non-live, test-harness-only contract; no KIS call, no KIS provider/client import, no API route, no `/chart-ai` UI change, no DB/cache runtime, no SQL/migration, no auth/usage runtime, no external AI, no Vercel env changes, no deployment, no push, no dependency changes, no `.env` read.
+- **Validation**: `npm run check:phase-3ey-b-server-only-kis-ohlc-provider-contract-mocked-adapter-test`, `npm run smoke:phase-3ey-b-server-only-kis-ohlc-provider-mocked-adapter`, and the established validation suite run in full; results recorded in the phase result document and final report.
+- **Recommended next phase**: Phase 3EY-C — Auth and Usage Guard Plan for Similarity Execution. Alternative: Phase 3EX-E — Similarity Result UI Owner Review and Polish.
+
 ## Phase 3EY-A - 2026-07-03
 
 ### Server-only KIS OHLC Provider Planning/Foundation (Prepared/Implemented)
