@@ -149,7 +149,7 @@ check('Page contains period controls', page.includes('chart-period-controls'));
 check('Page contains MK AI button', page.includes('chartAiMkAiBtn'));
 check('Page removes default trend card', !page.includes('추세 요약'));
 check('Page removes default momentum card', !page.includes('모멘텀'));
-check('Page removes default risk card', !page.includes('리스크 체크'));
+check('Page removes default risk card', !/리스크 체크(?!리스트)/.test(page));
 
 log('');
 

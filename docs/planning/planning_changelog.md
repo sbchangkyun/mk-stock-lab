@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EW-C - 2026-07-02
+
+### MK AI Mocked Scenario and Risk Checklist Expansion with Vercel Deployment (Implemented)
+
+- **Status**: Implemented — mocked scenario and risk checklist expansion complete.
+- **Background**: Phase 3EW-B completed MK AI interaction and explanation depth. The owner requested faster implementation progress and explicitly authorized Vercel deployment for this phase. This phase expands scenario and risk checklist behavior without external AI API calls and without public KIS data exposure.
+- **Implemented scope**: added a "시나리오 점검" section with three deterministic scenario cards (긍정 관찰 시나리오/기준 유지 시나리오/주의 점검 시나리오) and a "리스크 체크리스트" section with stock/ETF-specific items to the MK AI panel in `src/pages/chart-ai.astro`; extended `buildMockMkAiAnalysis(record, context)` to return `scenarios`, `riskChecklist`, `scenarioNote`, and `connectedScenarioNote`; folded rendering into the existing `updateMkAiPanel()` function so scenario/risk sections update on selected-symbol change and owner-local quote/OHLC preview success without adding new call sites; added an owner-local connected-state scenario note ("오너 로컬 KIS 연결 상태가 확인되었지만, 시나리오와 체크리스트는 아직 샘플 로직 기준입니다."); added minimal mobile-safe CSS for scenario cards.
+- **Preserved policy**: no external AI API calls, no server-side AI route, no public KIS quote, no public KIS OHLC, no `source=live`, no `source=auto`, no owner-local gate weakening, no raw KIS response, no secrets, no account/trading APIs, no Supabase/SQL/migration, no Vercel env changes, no dependency changes.
+- **Validation**: `npm run check:phase-3ew-c-mk-ai-mocked-scenario-risk-checklist-expansion` PASS (50/50); full established validation suite PASS (13 commands); `npm run build` PASS. One pre-existing checker (`check_chart_ai_ux_skeleton_static_contract.mjs`) had a stale literal-copy guard narrowed to avoid colliding with the new legitimate "리스크 체크리스트" label.
+- **Vercel deployment**: `vercel --prod --yes` succeeded (deployment id `dpl_H8SrWq1TcZJ7MeahCwbdGmFCi7XQ`, readyState `READY`). Deployment URL `https://mkstocklab-iaevgc1w0-sbchangkyun-2946s-projects.vercel.app`; production URL `https://mkstocklab.vercel.app`. Post-deploy status check `curl -I https://mkstocklab.vercel.app/chart-ai` returned HTTP 200. No Vercel env changes. Push not required — Vercel CLI deployed the local working directory directly.
+- **Recommended next phase**: Phase 3EV-C — Chart AI Owner-Local KIS Connected Result UI Enhancement. Alternative: Phase 3EW-D — MK AI Mocked Action Plan and User Guidance Expansion.
+
 ## Phase 3EW-B - 2026-07-02
 
 ### MK AI Analysis Panel Interaction and Explanation Depth (Implemented)

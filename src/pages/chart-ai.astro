@@ -200,6 +200,26 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             </ul>
           </section>
 
+          <section class="chart-mk-ai-section" aria-labelledby="chart-mk-ai-scenario-heading">
+            <p class="chart-mk-ai-section-label" id="chart-mk-ai-scenario-heading">시나리오 점검</p>
+            <p class="chart-mk-ai-scenario-note" id="chartAiMkAiScenarioNote">아래 시나리오는 실제 예측이 아닌 샘플 분석 구조입니다. 실제 투자 판단 전 공시·재무·시세 데이터를 별도로 확인해야 합니다.</p>
+            <div class="chart-mk-ai-scenario-list" id="chartAiMkAiScenarioList">
+              <article class="chart-mk-ai-scenario-card" data-scenario-tone="positive">
+                <p class="chart-mk-ai-scenario-label">긍정 관찰 시나리오</p>
+                <p class="chart-mk-ai-scenario-text" id="chartAiMkAiScenarioPositive"></p>
+              </article>
+              <article class="chart-mk-ai-scenario-card" data-scenario-tone="base">
+                <p class="chart-mk-ai-scenario-label">기준 유지 시나리오</p>
+                <p class="chart-mk-ai-scenario-text" id="chartAiMkAiScenarioBase"></p>
+              </article>
+              <article class="chart-mk-ai-scenario-card" data-scenario-tone="caution">
+                <p class="chart-mk-ai-scenario-label">주의 점검 시나리오</p>
+                <p class="chart-mk-ai-scenario-text" id="chartAiMkAiScenarioCaution"></p>
+              </article>
+            </div>
+            <p class="chart-mk-ai-connected-note" id="chartAiMkAiConnectedScenarioNote" hidden></p>
+          </section>
+
           <details class="chart-mk-ai-details">
             <summary>분석 근거 자세히 보기</summary>
             <div class="chart-mk-ai-section-body">
@@ -227,6 +247,11 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
               <li>KIS 연결 프리뷰 사용 시 오너 로컬 연결 상태 확인</li>
               <li>투자 판단 전 실제 공시·재무·시세 데이터 별도 확인</li>
             </ul>
+          </section>
+
+          <section class="chart-mk-ai-section" aria-labelledby="chart-mk-ai-risk-heading">
+            <p class="chart-mk-ai-section-label" id="chart-mk-ai-risk-heading">리스크 체크리스트</p>
+            <ul class="chart-mk-ai-checklist" id="chartAiMkAiRiskChecklist"></ul>
           </section>
 
           <details class="chart-mk-ai-details">
@@ -332,6 +357,11 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       const mkAiChecklistEl = document.getElementById('chartAiMkAiChecklist');
       const mkAiLimitationsEl = document.getElementById('chartAiMkAiLimitations');
       const mkAiConnectedNoteEl = document.getElementById('chartAiMkAiConnectedNote');
+      const mkAiScenarioPositiveEl = document.getElementById('chartAiMkAiScenarioPositive');
+      const mkAiScenarioBaseEl = document.getElementById('chartAiMkAiScenarioBase');
+      const mkAiScenarioCautionEl = document.getElementById('chartAiMkAiScenarioCaution');
+      const mkAiRiskChecklistEl = document.getElementById('chartAiMkAiRiskChecklist');
+      const mkAiConnectedScenarioNoteEl = document.getElementById('chartAiMkAiConnectedScenarioNote');
 
       if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState || !chart || !chartSvg) return;
       if (runBtn.dataset.ready === 'true') return;
@@ -485,6 +515,10 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         basis: string[];
         status: string;
         connectedNote: string | null;
+        scenarios: { label: string; tone: 'positive' | 'base' | 'caution'; text: string }[];
+        riskChecklist: string[];
+        scenarioNote: string;
+        connectedScenarioNote: string | null;
       } => {
         const name = record.nameKo;
         const exchange = record.exchange;
@@ -492,6 +526,8 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         let summary: string;
         let keyInterpretation: string[];
         let limitations: string[];
+        let scenarioTexts: { positive: string; base: string; caution: string };
+        let riskChecklist: string[];
 
         const defaultLimitations = [
           '실제 가격, 거래량, 재무제표, 공시 정보는 분석에 반영하지 않았습니다.',
@@ -507,6 +543,18 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             '실제 재무·공시·최신 시세가 반영된 분석은 아직 제공하지 않습니다.',
           ];
           limitations = defaultLimitations;
+          scenarioTexts = {
+            positive: `${name}의 종목 식별 정보와 차트 구조가 정상적으로 구성된 경우, 향후 실제 재무·공시·시세 데이터가 연결되면 분석 깊이를 확장할 수 있습니다.`,
+            base: '현재 단계에서는 샘플 OHLC와 종목 식별 정보를 기준으로 화면 구조와 분석 흐름을 점검합니다.',
+            caution: '실제 실적, 공시, 수급, 가격 변동 데이터가 반영되지 않았으므로 투자 판단에는 사용할 수 없습니다.',
+          };
+          riskChecklist = [
+            '실제 시세와 거래량 확인',
+            '최근 공시 및 실적 이벤트 확인',
+            '재무제표와 밸류에이션 지표 별도 확인',
+            '시장·섹터 변동성 확인',
+            '샘플 분석과 실제 투자 판단 구분',
+          ];
         } else if (record.assetType === 'etf') {
           summary = `${name}${particle} ${exchange} 상장 국내 ETF로, 현재 화면에서는 ETF 식별 정보와 샘플 차트 구조를 기준으로 분석 미리보기를 제공합니다.`;
           keyInterpretation = [
@@ -519,6 +567,18 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             '본 패널은 외부 AI API를 호출하지 않는 ETF 구조 확인용 샘플 분석입니다.',
             '매수·매도 추천이나 투자 자문이 아닙니다.',
           ];
+          scenarioTexts = {
+            positive: `${name}의 ETF 식별 정보와 차트 구조가 정상적으로 구성된 경우, 향후 구성 종목·NAV·괴리율 데이터 연동 시 분석 범위를 확장할 수 있습니다.`,
+            base: '현재 단계에서는 샘플 OHLC와 ETF 식별 정보를 기준으로 화면 구조와 분석 흐름을 점검합니다.',
+            caution: '실제 구성 종목, NAV, 괴리율, 추적오차가 반영되지 않았으므로 투자 판단에는 사용할 수 없습니다.',
+          };
+          riskChecklist = [
+            '실제 시세와 거래량 확인',
+            '구성 종목 및 기초지수 확인',
+            'NAV·괴리율·추적오차 확인',
+            '운용보수와 유동성 확인',
+            '샘플 분석과 실제 투자 판단 구분',
+          ];
         } else {
           summary = `${name}${particle} 선택된 국내 종목으로, 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 기준으로 분석 미리보기를 제공합니다.`;
           keyInterpretation = [
@@ -527,6 +587,16 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
             '향후 데이터 연동 범위가 확정되면 분석 항목을 확장할 수 있습니다.',
           ];
           limitations = defaultLimitations;
+          scenarioTexts = {
+            positive: `${name}의 종목 식별 정보와 차트 구조가 정상적으로 구성된 경우, 향후 실제 데이터가 연결되면 분석 깊이를 확장할 수 있습니다.`,
+            base: '현재 단계에서는 샘플 OHLC와 종목 식별 정보를 기준으로 화면 구조와 분석 흐름을 점검합니다.',
+            caution: '실제 시세, 수급, 가격 변동 데이터가 반영되지 않았으므로 투자 판단에는 사용할 수 없습니다.',
+          };
+          riskChecklist = [
+            '실제 시세와 거래량 확인',
+            '종목 유형에 맞는 공시·기초자산 정보 확인',
+            '샘플 분석과 실제 투자 판단 구분',
+          ];
         }
 
         const evidence = [
@@ -544,9 +614,11 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
         const basis = ['종목 식별 정보', '샘플 OHLC·거래량 데이터'];
         let connectedNote: string | null = null;
+        let connectedScenarioNote: string | null = null;
         if (context.ownerLocalConnected) {
           basis.push('오너 로컬 KIS 연결 상태');
           connectedNote = '오너 로컬 KIS 연결이 확인된 상태입니다. 단, 본 패널은 아직 샘플 분석 로직으로 표시됩니다.';
+          connectedScenarioNote = '오너 로컬 KIS 연결 상태가 확인되었지만, 시나리오와 체크리스트는 아직 샘플 로직 기준입니다.';
         }
 
         let status = '샘플 분석';
@@ -554,7 +626,28 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           status = context.ownerLocalConnected ? '오너 로컬 데이터 반영' : '오너 로컬 연결 대기';
         }
 
-        return { summary, keyInterpretation, evidence, checklist, limitations, basis, status, connectedNote };
+        const scenarios: { label: string; tone: 'positive' | 'base' | 'caution'; text: string }[] = [
+          { label: '긍정 관찰 시나리오', tone: 'positive', text: scenarioTexts.positive },
+          { label: '기준 유지 시나리오', tone: 'base', text: scenarioTexts.base },
+          { label: '주의 점검 시나리오', tone: 'caution', text: scenarioTexts.caution },
+        ];
+
+        const scenarioNote = '아래 시나리오는 실제 예측이 아닌 샘플 분석 구조입니다. 실제 투자 판단 전 공시·재무·시세 데이터를 별도로 확인해야 합니다.';
+
+        return {
+          summary,
+          keyInterpretation,
+          evidence,
+          checklist,
+          limitations,
+          basis,
+          status,
+          connectedNote,
+          scenarios,
+          riskChecklist,
+          scenarioNote,
+          connectedScenarioNote,
+        };
       };
 
       const renderMkAiList = (element: Element | null, items: string[]) => {
@@ -579,6 +672,15 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         if (mkAiConnectedNoteEl) {
           mkAiConnectedNoteEl.textContent = analysis.connectedNote ?? '';
           mkAiConnectedNoteEl.hidden = !analysis.connectedNote;
+        }
+        const scenarioByTone = new Map(analysis.scenarios.map((scenario) => [scenario.tone, scenario.text]));
+        if (mkAiScenarioPositiveEl) mkAiScenarioPositiveEl.textContent = scenarioByTone.get('positive') ?? '';
+        if (mkAiScenarioBaseEl) mkAiScenarioBaseEl.textContent = scenarioByTone.get('base') ?? '';
+        if (mkAiScenarioCautionEl) mkAiScenarioCautionEl.textContent = scenarioByTone.get('caution') ?? '';
+        renderMkAiList(mkAiRiskChecklistEl, analysis.riskChecklist);
+        if (mkAiConnectedScenarioNoteEl) {
+          mkAiConnectedScenarioNoteEl.textContent = analysis.connectedScenarioNote ?? '';
+          mkAiConnectedScenarioNoteEl.hidden = !analysis.connectedScenarioNote;
         }
       };
 
@@ -1541,6 +1643,51 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--chart-shell-muted);
       font-size: 0.7rem;
       line-height: 1.5;
+    }
+
+    .chart-mk-ai-scenario-note {
+      margin: 0 0 0.5rem;
+      color: var(--chart-shell-muted);
+      font-size: 0.68rem;
+      line-height: 1.5;
+    }
+
+    .chart-mk-ai-scenario-list {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .chart-mk-ai-scenario-card {
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .chart-mk-ai-scenario-card[data-scenario-tone="positive"] {
+      border-left: 3px solid var(--chart-shell-success, #1a7f4b);
+    }
+
+    .chart-mk-ai-scenario-card[data-scenario-tone="base"] {
+      border-left: 3px solid var(--primary);
+    }
+
+    .chart-mk-ai-scenario-card[data-scenario-tone="caution"] {
+      border-left: 3px solid var(--chart-shell-warning, #8a5a05);
+    }
+
+    .chart-mk-ai-scenario-label {
+      margin: 0 0 0.2rem;
+      color: var(--text);
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    .chart-mk-ai-scenario-text {
+      margin: 0;
+      color: var(--chart-shell-muted);
+      font-size: 0.72rem;
+      line-height: 1.55;
     }
 
     .chart-stock-sidebar {
