@@ -1,10 +1,75 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getClientSafeDomesticSymbolRecords } from '../lib/symbol-master/domesticSymbolMaster';
+import { scanSimilarity } from '../lib/chartSimilarity';
+import type { SimilarityMatch } from '../lib/chartSimilarity';
+import { buildSyntheticOhlcvFixture } from '../data/chartSimilarity/syntheticOhlcvFixture';
 
 const clientSafeDomesticSymbols = getClientSafeDomesticSymbolRecords();
 const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols)
   .replaceAll('<', '\\u003c');
+
+// Mocked/sample similarity result: deterministic engine run over synthetic fixture data only.
+// No KIS, no API, no fetch. See docs/planning/phase_3ex_d_similarity_result_ui_mocked_integration_result_v0.1.md.
+const similarityFixtureBars = buildSyntheticOhlcvFixture();
+const similarityResult = scanSimilarity(similarityFixtureBars, {
+  baseWindow: 20,
+  forwardWindows: [5, 20],
+  topK: 5,
+  similarityMethod: 'return_correlation_rmse',
+  excludeRecentBars: 40,
+});
+const similarityTopMatches = similarityResult.matches;
+const similarityStats = similarityResult.summaryStats;
+const similarityCurrentWindow = similarityResult.currentWindow;
+
+const formatSimilarityScore = (value: number): string => `${value.toFixed(2)}점`;
+const formatForwardReturnPct = (value: number | null | undefined): string =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? `${value >= 0 ? '+' : ''}${(value * 100).toFixed(2)}%`
+    : '데이터 부족';
+const formatDrawdownPct = (value: number | null | undefined): string =>
+  typeof value === 'number' && Number.isFinite(value) ? `${(value * 100).toFixed(2)}%` : '-';
+
+// Local SVG overlay geometry: no external chart library, computed once at build/render time.
+const OVERLAY_WIDTH = 640;
+const OVERLAY_HEIGHT = 200;
+const buildOverlayPath = (
+  points: Array<{ index: number; value: number }>,
+  minValue: number,
+  maxValue: number,
+): string => {
+  if (points.length === 0) return '';
+  const n = points.length;
+  const xStep = n > 1 ? OVERLAY_WIDTH / (n - 1) : 0;
+  const range = maxValue - minValue || 1;
+  return points
+    .map((point, i) => {
+      const x = round2(i * xStep);
+      const y = round2(OVERLAY_HEIGHT - ((point.value - minValue) / range) * OVERLAY_HEIGHT);
+      return `${i === 0 ? 'M' : 'L'}${x},${y}`;
+    })
+    .join(' ');
+};
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+const overlaySeries: Array<{ label: string; tone: string; path: Array<{ index: number; value: number }> }> = [
+  { label: '현재 구간', tone: 'current', path: similarityResult.currentNormalizedPath },
+  ...similarityTopMatches.slice(0, 3).map((match: SimilarityMatch, i: number) => ({
+    label: `유사 구간 ${i + 1}`,
+    tone: `match-${i + 1}`,
+    path: match.normalizedPath,
+  })),
+];
+const overlayValues = overlaySeries.flatMap((series) => series.path.map((point) => point.value));
+const overlayMin = overlayValues.length > 0 ? Math.min(...overlayValues) : 0;
+const overlayMax = overlayValues.length > 0 ? Math.max(...overlayValues) : 100;
+const overlayDrawnSeries = overlaySeries.map((series) => ({
+  ...series,
+  d: buildOverlayPath(series.path, overlayMin, overlayMax),
+}));
 ---
 
 <Layout title="종목 차트 | MK Stock Lab" activePath="/chart-ai">
@@ -171,6 +236,23 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           <small>지연 시세 · 오너 로컬 전용 · 실제 투자 판단용 아님</small>
         </section>
 
+        <section class="panel chart-similarity-card" id="chartAiSimilarityCard" aria-labelledby="chart-similarity-card-heading">
+          <div class="chart-sidebar-heading">
+            <p class="eyebrow">패턴 분석</p>
+            <h2 id="chart-similarity-card-heading">유사 패턴 분석</h2>
+          </div>
+          <span class="chart-identity-chip chart-similarity-card-status">샘플 분석</span>
+          <p class="chart-similarity-card-guide">최근 흐름과 유사했던 과거 구간을 샘플 데이터로 비교합니다.</p>
+          <button
+            class="chart-similarity-view-btn"
+            id="chartAiSimilarityViewBtn"
+            type="button"
+            aria-expanded="false"
+            aria-controls="chartAiSimilarityPanel"
+          >유사 패턴 분석 보기</button>
+          <small>실제 KIS 기반 실행은 로그인/권한/사용량 제한 적용 후 별도 활성화됩니다.</small>
+        </section>
+
         <button
           class="chart-mk-ai-button chart-sidebar-mk-ai"
           id="chartAiMkAiBtn"
@@ -178,7 +260,121 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           aria-expanded="false"
           aria-controls="chartAiMkAiNote"
         >MK AI</button>
-        <div class="chart-mk-ai-note" id="chartAiMkAiNote" hidden aria-labelledby="chart-mk-ai-heading">
+      </aside>
+    </div>
+
+    <section class="chart-similarity-panel" id="chartAiSimilarityPanel" aria-labelledby="chart-similarity-panel-heading">
+      <div class="chart-similarity-panel-heading">
+        <p class="eyebrow">유사 패턴 분석</p>
+        <h2 id="chart-similarity-panel-heading">유사 패턴 분석 결과</h2>
+        <div class="chart-similarity-status-row">
+          <span class="chart-identity-chip">샘플 데이터</span>
+          <span class="chart-identity-chip">실제 KIS 데이터 아님</span>
+          <span class="chart-identity-chip">매수·매도 추천 또는 투자자문이 아님</span>
+        </div>
+        <p class="chart-similarity-panel-guide">결정적 유사도 엔진을 합성 샘플 OHLC 데이터에 적용한 결과이며, 외부 AI를 호출하지 않습니다.</p>
+      </div>
+
+      <section class="chart-similarity-section" aria-labelledby="chart-similarity-summary-heading">
+        <h3 id="chart-similarity-summary-heading">현재 패턴 요약</h3>
+        <dl class="chart-similarity-summary-grid">
+          <div>
+            <dt>기준 구간</dt>
+            <dd>{similarityResult.baseWindow}일</dd>
+          </div>
+          <div>
+            <dt>현재 구간</dt>
+            <dd>{similarityCurrentWindow.startDate} ~ {similarityCurrentWindow.endDate}</dd>
+          </div>
+          <div>
+            <dt>데이터 기준</dt>
+            <dd>{similarityResult.market} · {similarityResult.symbol} (합성 샘플)</dd>
+          </div>
+          <div>
+            <dt>상태</dt>
+            <dd>샘플 · Mocked</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="chart-similarity-section" aria-labelledby="chart-similarity-top5-heading">
+        <h3 id="chart-similarity-top5-heading">유사 구간 Top 5</h3>
+        <div class="chart-similarity-table-wrap">
+          <table class="chart-similarity-top5-table">
+            <caption>유사 구간 Top 5 (샘플 데이터 기준)</caption>
+            <thead>
+              <tr>
+                <th scope="col">순위</th>
+                <th scope="col">유사 구간</th>
+                <th scope="col">유사도</th>
+                <th scope="col">5일 후</th>
+                <th scope="col">20일 후</th>
+                <th scope="col">최대 낙폭</th>
+              </tr>
+            </thead>
+            <tbody>
+              {similarityTopMatches.map((match: SimilarityMatch) => (
+                <tr>
+                  <td>{match.rank}</td>
+                  <td>{match.startDate} ~ {match.endDate}</td>
+                  <td>{formatSimilarityScore(match.similarityScore)}</td>
+                  <td>{formatForwardReturnPct(match.forwardOutcome.forwardReturns.d5)}</td>
+                  <td>{formatForwardReturnPct(match.forwardOutcome.forwardReturns.d20)}</td>
+                  <td>{formatDrawdownPct(match.forwardOutcome.maxDrawdownPct)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="chart-similarity-section" aria-labelledby="chart-similarity-overlay-heading">
+        <h3 id="chart-similarity-overlay-heading">기준일 100 정규화 오버레이</h3>
+        <p class="chart-similarity-overlay-guide">현재 구간과 유사 구간 상위 3개의 가격 흐름을 기준일 100 기준으로 정규화하여 비교합니다.</p>
+        <svg
+          class="chart-similarity-overlay-svg"
+          viewBox={`0 0 ${OVERLAY_WIDTH} ${OVERLAY_HEIGHT}`}
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="기준일 100 정규화 오버레이 차트 (샘플 데이터)"
+        >
+          {overlayDrawnSeries.map((series) => (
+            <path d={series.d} class={`chart-similarity-overlay-path ${series.tone}`} />
+          ))}
+        </svg>
+        <div class="chart-similarity-overlay-legend">
+          {overlayDrawnSeries.map((series) => (
+            <span class={`chart-similarity-overlay-legend-item ${series.tone}`}>{series.label}</span>
+          ))}
+        </div>
+      </section>
+
+      <section class="chart-similarity-section" aria-labelledby="chart-similarity-outcome-heading">
+        <h3 id="chart-similarity-outcome-heading">사후 성과 요약</h3>
+        <dl class="chart-similarity-outcome-grid">
+          <div>
+            <dt>평균 5일 후 수익률</dt>
+            <dd>{formatForwardReturnPct(similarityStats.averageForwardReturnByWindow.d5 ?? null)}</dd>
+          </div>
+          <div>
+            <dt>평균 20일 후 수익률</dt>
+            <dd>{formatForwardReturnPct(similarityStats.averageForwardReturnByWindow.d20 ?? null)}</dd>
+          </div>
+          <div>
+            <dt>상승/하락 구간 수 (5일 기준)</dt>
+            <dd>{similarityStats.positiveCountByWindow.d5 ?? 0}승 / {similarityStats.negativeCountByWindow.d5 ?? 0}패</dd>
+          </div>
+          <div>
+            <dt>평균 최대 낙폭</dt>
+            <dd>{formatDrawdownPct(similarityStats.averageMaxDrawdownPct)}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="chart-similarity-section chart-similarity-mkai-section" aria-labelledby="chart-mk-ai-heading">
+        <h3 id="chart-similarity-heading-mkai">MK AI 해석</h3>
+        <p class="chart-similarity-mkai-intro">아래 해석은 샘플·합성 데이터를 결정적 로직으로 분석한 결과이며, 외부 AI를 호출하지 않습니다.</p>
+        <div class="chart-mk-ai-note" id="chartAiMkAiNote" aria-labelledby="chart-mk-ai-heading">
           <div class="chart-sidebar-heading">
             <p class="eyebrow">MK AI</p>
             <h2 id="chart-mk-ai-heading">AI 분석 미리보기</h2>
@@ -271,8 +467,18 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
           <p>현재 분석은 샘플 로직 기반 미리보기입니다.</p>
           <p>실제 투자 판단용 정보가 아니며 매수·매도 추천이 아닙니다.</p>
         </div>
-      </aside>
-    </div>
+      </section>
+
+      <section class="chart-similarity-section" aria-labelledby="chart-similarity-limits-heading">
+        <h3 id="chart-similarity-limits-heading">데이터 한계 / 투자 유의</h3>
+        <ul class="chart-similarity-limits-list">
+          <li>본 결과는 합성 샘플 데이터에 결정적 유사도 엔진을 적용한 것으로, 실제 KIS 시세 데이터가 아닙니다.</li>
+          <li>과거 유사 구간의 사후 성과는 미래 성과를 보장하지 않습니다.</li>
+          <li>본 패널은 매수·매도 추천 또는 투자자문이 아니며, 실제 투자 판단 전 별도의 공시·재무·시세 데이터 확인이 필요합니다.</li>
+          <li>실제 KIS 기반 유사 패턴 분석 실행은 로그인/권한/사용량 제한이 적용된 이후 별도로 활성화됩니다.</li>
+        </ul>
+      </section>
+    </section>
 
     <aside class="chart-lookup-disclaimer" aria-label="데이터 이용 안내">
       <strong>샘플 화면</strong>
@@ -816,6 +1022,16 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
         const expanded = mkAiButton.getAttribute('aria-expanded') === 'true';
         mkAiButton.setAttribute('aria-expanded', String(!expanded));
         mkAiNote.hidden = expanded;
+        if (!expanded) {
+          mkAiNote.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+
+      const similarityViewBtn = document.getElementById('chartAiSimilarityViewBtn') as HTMLButtonElement | null;
+      const similarityPanel = document.getElementById('chartAiSimilarityPanel');
+      similarityViewBtn?.addEventListener('click', () => {
+        similarityViewBtn.setAttribute('aria-expanded', 'true');
+        similarityPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
 
       // Owner-local KIS quote preview. Gated: never auto-fetches, and only fetches the gated
@@ -1247,6 +1463,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
       gap: 1rem;
       min-width: 0;
+      align-items: start;
     }
 
     .chart-market-panel {
@@ -1257,6 +1474,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       background: var(--chart-shell-bg);
       color: var(--text);
       box-shadow: var(--chart-shell-shadow);
+      align-self: start;
     }
 
     .chart-market-rail {
@@ -1693,6 +1911,7 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
     .chart-stock-sidebar {
       display: grid;
       align-content: start;
+      align-self: start;
       gap: 1rem;
       min-width: 0;
     }
@@ -1831,6 +2050,228 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
       color: var(--primary);
       font-size: 0.68rem;
       font-weight: 750;
+    }
+
+    .chart-similarity-card {
+      display: grid;
+      gap: 0.5rem;
+      align-content: start;
+    }
+
+    .chart-similarity-card-status {
+      justify-self: start;
+    }
+
+    .chart-similarity-card-guide {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .chart-similarity-view-btn {
+      min-height: 44px;
+      padding: 0.6rem 0.9rem;
+      border: 1px solid var(--chart-shell-border);
+      border-radius: 10px;
+      background: var(--primary);
+      color: var(--on-primary, #fff);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chart-similarity-card small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      line-height: 1.5;
+    }
+
+    .chart-similarity-panel {
+      display: grid;
+      gap: 1.4rem;
+      padding: 1.1rem 1.2rem;
+      border: 1px solid var(--chart-shell-border);
+      border-radius: 16px;
+      background: var(--chart-shell-bg);
+      color: var(--text);
+      box-shadow: var(--chart-shell-shadow);
+    }
+
+    .chart-similarity-panel-heading {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .chart-similarity-status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chart-similarity-panel-guide {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .chart-similarity-section {
+      display: grid;
+      gap: 0.6rem;
+      padding-top: 1.1rem;
+      border-top: 1px solid var(--chart-shell-border);
+    }
+
+    .chart-similarity-section:first-of-type {
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .chart-similarity-summary-grid,
+    .chart-similarity-outcome-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.7rem;
+      margin: 0;
+    }
+
+    .chart-similarity-summary-grid dt,
+    .chart-similarity-outcome-grid dt {
+      margin: 0 0 0.2rem;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+    }
+
+    .chart-similarity-summary-grid dd,
+    .chart-similarity-outcome-grid dd {
+      margin: 0;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .chart-similarity-table-wrap {
+      overflow-x: auto;
+    }
+
+    .chart-similarity-top5-table {
+      width: 100%;
+      min-width: 480px;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .chart-similarity-top5-table caption {
+      caption-side: top;
+      text-align: left;
+      margin-bottom: 0.4rem;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+    }
+
+    .chart-similarity-top5-table th,
+    .chart-similarity-top5-table td {
+      padding: 0.5rem 0.6rem;
+      border-bottom: 1px solid var(--chart-shell-border);
+      text-align: right;
+    }
+
+    .chart-similarity-top5-table th:first-child,
+    .chart-similarity-top5-table td:first-child,
+    .chart-similarity-top5-table th:nth-child(2),
+    .chart-similarity-top5-table td:nth-child(2) {
+      text-align: left;
+    }
+
+    .chart-similarity-overlay-guide {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .chart-similarity-overlay-svg {
+      width: 100%;
+      height: auto;
+      max-height: 220px;
+    }
+
+    .chart-similarity-overlay-path {
+      fill: none;
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .chart-similarity-overlay-path.current {
+      stroke: var(--primary);
+    }
+
+    .chart-similarity-overlay-path.match-1 {
+      stroke: #1a7f4b;
+    }
+
+    .chart-similarity-overlay-path.match-2 {
+      stroke: #c98a1f;
+    }
+
+    .chart-similarity-overlay-path.match-3 {
+      stroke: #8a5acb;
+    }
+
+    .chart-similarity-overlay-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .chart-similarity-overlay-legend-item::before {
+      content: '';
+      display: inline-block;
+      width: 0.6rem;
+      height: 0.6rem;
+      margin-right: 0.3rem;
+      border-radius: 50%;
+      background: currentColor;
+      vertical-align: middle;
+    }
+
+    .chart-similarity-overlay-legend-item.current {
+      color: var(--primary);
+    }
+
+    .chart-similarity-overlay-legend-item.match-1 {
+      color: #1a7f4b;
+    }
+
+    .chart-similarity-overlay-legend-item.match-2 {
+      color: #c98a1f;
+    }
+
+    .chart-similarity-overlay-legend-item.match-3 {
+      color: #8a5acb;
+    }
+
+    .chart-similarity-mkai-section .chart-mk-ai-note {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .chart-similarity-mkai-intro {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .chart-similarity-limits-list {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.6;
     }
 
     .chart-lookup-disclaimer {

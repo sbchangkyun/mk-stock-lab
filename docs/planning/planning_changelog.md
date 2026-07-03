@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EX-D - 2026-07-03
+
+### Similarity Result UI Mocked Integration (Implemented)
+
+- **Status**: Implemented — mocked similarity result UI integrated into `/chart-ai`, chart/sidebar stretch layout bug fixed.
+- **Background**: Owner visual review found that expanding the MK AI sidebar note also stretched the left chart card vertically, creating a large empty white area, because `.chart-lookup-content-grid` defaulted to `align-items: stretch`. This phase fixes that layout bug and adds a mocked "유사 패턴 분석" (similar pattern analysis) result UI using the existing deterministic similarity engine and synthetic fixture data only.
+- **Implemented scope**: added `align-items: start` / `align-self: start` to the chart/sidebar grid to stop the stretch; added a compact "유사 패턴 분석" card to the right sidebar with a `유사 패턴 분석 보기` button that scrolls to (and marks `aria-expanded` on) the new full-width result panel; added a full-width `#chartAiSimilarityPanel` section below the chart/sidebar grid with all six required subsections (현재 패턴 요약, 유사 구간 Top 5 table, 기준일 100 정규화 오버레이 local SVG, 사후 성과 요약, MK AI 해석, 데이터 한계 / 투자 유의); relocated the existing `#chartAiMkAiNote` block into the panel's MK AI 해석 subsection, keeping the `#chartAiMkAiBtn` trigger in the sidebar; wired `scanSimilarity(buildSyntheticOhlcvFixture(), { baseWindow: 20, forwardWindows: [5, 20], topK: 5, similarityMethod: 'return_correlation_rmse', excludeRecentBars: 40 })` in Astro frontmatter, computed once at render time.
+- **Layout decision**: right sidebar is now a compact control/status area only; all long-form similarity result content and the full MK AI narrative live in the full-width panel below the chart grid; the chart card no longer stretches when sidebar or panel content grows.
+- **Mocked data policy**: all similarity data comes from the already-hardened deterministic engine (Phase 3EX-B/3EX-C) run against the existing deterministic synthetic fixture, computed once in Astro frontmatter with no client fetch, no API route, and no KIS call; every result section carries a "샘플 데이터" / "실제 KIS 데이터 아님" disclaimer.
+- **Preserved policy**: no KIS provider, no KIS call, no new API route, no login/auth, no usage guard, no DB/cache runtime, no SQL/migration, no external AI call, no Vercel deployment, no push, no dependency changes.
+- **Validation**: `npm run check:phase-3ex-d-similarity-result-ui-mocked-integration` PASS (58/58); full established validation suite run (14 commands including `npm run build`), all PASS except two pre-existing, documented, out-of-scope failures in the 3EX-B and 3EX-C checkers (their `no src/pages changed` scope-boundary assertions, written before any UI integration phase existed — see result doc section 7); `git diff --check` PASS.
+- **Recommended next phase**: Phase 3EX-E — Similarity Result UI Owner Review and Polish. Alternative: Phase 3EY-A — Server-only KIS OHLC Provider Planning/Foundation.
+
 ## Phase 3EX-C - 2026-07-03
 
 ### Similarity Engine Contract and Edge Case Hardening (Implemented)
