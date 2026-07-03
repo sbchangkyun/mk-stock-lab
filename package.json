@@ -11,6 +11,7 @@
     "postbuild": "node scripts/repair-vercel-output.mjs",
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
+    "check:phase-3ey-a-server-only-kis-ohlc-provider-planning-foundation": "node scripts/check_phase_3ey_a_server_only_kis_ohlc_provider_planning_foundation_contract.mjs",
     "check:phase-3ex-d-similarity-result-ui-mocked-integration": "node scripts/check_phase_3ex_d_similarity_result_ui_mocked_integration_contract.mjs",
     "check:phase-3ex-c-similarity-engine-contract-edge-case-hardening": "node scripts/check_phase_3ex_c_similarity_engine_contract_edge_case_hardening_contract.mjs",
     "smoke:phase-3ex-c-similarity-engine-edge-cases": "node scripts/smoke_phase_3ex_c_similarity_engine_edge_cases.mjs",

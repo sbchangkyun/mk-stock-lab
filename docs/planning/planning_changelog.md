@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EY-A - 2026-07-03
+
+### Server-only KIS OHLC Provider Planning/Foundation (Prepared/Implemented)
+
+- **Status**: Prepared/Implemented — server-only KIS OHLC provider foundation added, live execution disabled.
+- **Background**: Phase 3EX-D integrated a mocked similarity result UI using synthetic fixture data only. This phase starts the KIS provider track without enabling live KIS execution.
+- **Implemented scope**: added `src/lib/server/chartSimilarity/kisOhlcProviderTypes.ts` (`ServerOnlyKisOhlcProviderStatus`, `ServerOnlyKisOhlcRequest`, `ServerOnlyKisOhlcPolicy`, `ServerOnlyKisOhlcResult`, `NormalizedDailyOhlcInput`/`NormalizedDailyOhlcMeta`, reusing `OhlcBar` from `src/lib/chartSimilarity/types`); `kisOhlcProviderPolicy.ts` (feature flag name constants and `buildDefaultServerOnlyKisOhlcPolicy()`, disabled by default, no `process.env`/`.env` read); `serverOnlyKisOhlcProvider.ts` (`normalizeServerOnlyKisOhlcRequest`, `validateServerOnlyKisOhlcRequest`, `getServerOnlyKisOhlcForSimilarity` returning `disabled`/`blocked`/`not_implemented` only, and the pure `toSimilarityOhlcBarsFromNormalizedDailyBars` adapter placeholder); `index.ts` re-exporting the above, not imported into any page/API route.
+- **Provider policy**: default `enabled` false; auth and usage guard required before future execution; public execution not allowed; raw provider payload not allowed; client secret exposure not allowed.
+- **Preserved policy**: no KIS call, no KIS provider/client import, no API route, no `/chart-ai` UI change, no DB/cache runtime, no SQL/migration, no auth/usage runtime, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env` read.
+- **Validation**: `npm run check:phase-3ey-a-server-only-kis-ohlc-provider-planning-foundation` and the established validation suite run in full; results recorded in the phase result document and final report.
+- **Recommended next phase**: Phase 3EY-B — Server-only KIS OHLC Provider Contract and Mocked Adapter Test. Alternative: Phase 3EX-E — Similarity Result UI Owner Review and Polish.
+
 ## Phase 3EX-D - 2026-07-03
 
 ### Similarity Result UI Mocked Integration (Implemented)
