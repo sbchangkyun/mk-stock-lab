@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FB-D - 2026-07-04
+
+### Chart AI Owner-local Mocked UI Runtime Polish and Failure-state Hardening (Implemented)
+
+- **Status**: Implemented. The local-only `/chart-ai` owner-local mocked panel now has hardened runtime handling for loading, success, timeout, malformed response, non-success response, and retry-ready states while default public UI remains unchanged.
+- **Background**: Phase 3FB-C connected `/chart-ai` to the existing owner-local mocked route branch. This phase hardens that local UI path without changing API route behavior or enabling live KIS.
+- **Implemented scope**: `src/pages/chart-ai.astro` gained a response shape guard (`isOwnerLocalMockedSuccessResponse`) validating the full success shape before any render, an `AbortController`-based 8000ms request timeout, an in-flight request flag preventing duplicate concurrent clicks, `aria-busy` loading-state handling on the result region, and a "다시 실행" retry-ready button label after every completion; new 67-assertion static contract checker `check:phase-3fb-d-chart-ai-owner-local-mocked-ui-runtime-polish`.
+- **Runtime result**: panel remains hidden unless local + `?ownerLocalMocked=1`; no auto-run occurs; click calls only `/api/chart-ai/similarity`; response is rendered only after owner-local mocked success shape validation; error/timeout/malformed states render safe static copy only, and the button always returns to a re-enabled, retry-ready state.
+- **Preserved policy**: no live KIS call, no KIS provider source change, no deterministic engine source change, no API route change, no public/beta execution, no real auth/usage storage/DB/cache, no SQL/migration, no account/trading/order/balance APIs, no dependency change, no deployment, no push, no raw values committed.
+- **Recommended next phase**: Phase 3FB-C-ALT — Auth/Usage Runtime Bridge for Similarity Route, No Live KIS. Alternative: Phase 3FB-E — Chart AI Owner-local Mocked Manual QA and Productization Boundary Review, Live KIS Off.
+
 ## Phase 3FB-C - 2026-07-04
 
 ### Chart AI UI Owner-local Mocked API Execution Wiring (Implemented)

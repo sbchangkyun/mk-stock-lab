@@ -1314,15 +1314,19 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         }
       }
 
-      // Owner-local mocked similarity API execution panel (Phase 3FB-C). Local-only, explicit
-      // opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the URL carries
-      // `?ownerLocalMocked=1`. Never auto-runs; the API call only happens on explicit click.
-      // Calls the owner-local mocked branch of `/api/chart-ai/similarity` (Phase 3FB-B) and
-      // renders only sanitized, bucketed fields — never raw provider payload, OHLC values,
-      // prices, volume, real timestamps, raw matches, similarity scores, or returns.
+      // Owner-local mocked similarity API execution panel (Phase 3FB-C, hardened in 3FB-D).
+      // Local-only, explicit opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the
+      // URL carries `?ownerLocalMocked=1`. Never auto-runs; the API call only happens on
+      // explicit click. Calls the owner-local mocked branch of `/api/chart-ai/similarity`
+      // (Phase 3FB-B) and renders only sanitized, bucketed fields — never raw provider payload,
+      // OHLC values, prices, volume, real timestamps, raw matches, similarity scores, returns,
+      // or raw response/error data. Phase 3FB-D adds: a response shape guard, an 8s request
+      // timeout via AbortController, repeated-click prevention, and aria-busy loading /
+      // retry-ready state handling.
       const ownerLocalMockedPanel = document.getElementById('chartAiOwnerLocalMockedPanel');
       const ownerLocalMockedRunBtn = document.getElementById('chartAiOwnerLocalMockedRunBtn') as HTMLButtonElement | null;
       const ownerLocalMockedResult = document.getElementById('chartAiOwnerLocalMockedResult');
+      if (ownerLocalMockedResult) ownerLocalMockedResult.tabIndex = -1;
 
       const isLocalOwnerHostname = (): boolean => {
         const hostname = window.location.hostname;
@@ -1332,6 +1336,9 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       const ownerLocalMockedEnabled = isLocalOwnerHostname() && ownerLocalMockedOptIn;
 
       if (ownerLocalMockedPanel) ownerLocalMockedPanel.hidden = !ownerLocalMockedEnabled;
+
+      const OWNER_LOCAL_MOCKED_TIMEOUT_MS = 8000;
+      let ownerLocalMockedRequestInFlight = false;
 
       const showOwnerLocalMockedMessage = (text: string) => {
         if (!ownerLocalMockedResult) return;
@@ -1343,26 +1350,53 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         ownerLocalMockedResult.append(message);
       };
 
-      const renderOwnerLocalMockedSuccess = (data: {
-        status?: string;
-        mode?: string;
-        request?: { source?: string };
-        data?: {
-          engineStatus?: string;
-          normalizedBarsAvailable?: boolean;
-          normalizedBarCountBucket?: string;
-          matchCountBucket?: string;
-          disclaimer?: string;
-          dataPolicy?: {
+      // Response shape guard (Phase 3FB-D): validates the parsed body is exactly the sanitized
+      // owner-local mocked success shape before anything is rendered. Any missing or
+      // wrong-typed field falls through to the safe static error path below — never a partial
+      // or best-effort render of an unvalidated response.
+      type OwnerLocalMockedSuccessResponse = {
+        status: string;
+        mode: string;
+        request: { source: string };
+        data: {
+          engineStatus: string;
+          normalizedBarsAvailable: boolean;
+          normalizedBarCountBucket: string;
+          matchCountBucket: string;
+          disclaimer: string;
+          dataPolicy: {
             ownerLocalOnly?: boolean;
             allowLiveKis?: boolean;
             allowRouteSuccess?: boolean;
             allowPublicExecution?: boolean;
             allowBetaExecution?: boolean;
           };
-        } | null;
-      }) => {
-        if (!ownerLocalMockedResult || !data.data) return;
+        };
+      };
+
+      const isOwnerLocalMockedSuccessResponse = (value: unknown): value is OwnerLocalMockedSuccessResponse => {
+        if (!value || typeof value !== 'object') return false;
+        const record = value as Record<string, unknown>;
+        if (record.ok !== true) return false;
+        if (record.status !== 'success') return false;
+        if (record.mode !== 'owner-local-mocked') return false;
+        const request = record.request;
+        if (!request || typeof request !== 'object') return false;
+        if ((request as Record<string, unknown>).source !== 'mocked-provider-compatible') return false;
+        const data = record.data;
+        if (!data || typeof data !== 'object') return false;
+        const resultData = data as Record<string, unknown>;
+        if (typeof resultData.engineStatus !== 'string') return false;
+        if (typeof resultData.normalizedBarsAvailable !== 'boolean') return false;
+        if (typeof resultData.normalizedBarCountBucket !== 'string') return false;
+        if (typeof resultData.matchCountBucket !== 'string') return false;
+        if (!resultData.dataPolicy || typeof resultData.dataPolicy !== 'object') return false;
+        if (typeof resultData.disclaimer !== 'string') return false;
+        return true;
+      };
+
+      const renderOwnerLocalMockedSuccess = (data: OwnerLocalMockedSuccessResponse) => {
+        if (!ownerLocalMockedResult) return;
         const resultData = data.data;
         ownerLocalMockedResult.hidden = false;
         ownerLocalMockedResult.replaceChildren();
@@ -1416,10 +1450,15 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
 
       if (ownerLocalMockedRunBtn && ownerLocalMockedEnabled) {
         ownerLocalMockedRunBtn.addEventListener('click', async () => {
+          if (ownerLocalMockedRequestInFlight) return;
+          ownerLocalMockedRequestInFlight = true;
           ownerLocalMockedRunBtn.disabled = true;
-          const previousLabel = ownerLocalMockedRunBtn.textContent;
-          ownerLocalMockedRunBtn.textContent = '불러오는 중…';
-          showOwnerLocalMockedMessage('불러오는 중…');
+          if (ownerLocalMockedResult) ownerLocalMockedResult.setAttribute('aria-busy', 'true');
+          showOwnerLocalMockedMessage('불러오는 중… (mocked/sample 데이터, 로컬 개발 검증용)');
+
+          const abortController = new AbortController();
+          const timeoutId = window.setTimeout(() => abortController.abort(), OWNER_LOCAL_MOCKED_TIMEOUT_MS);
+
           try {
             const response = await fetch('/api/chart-ai/similarity', {
               method: 'POST',
@@ -1430,18 +1469,31 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
                 ownerLocalMocked: true,
                 symbol: selectedSymbol || 'MOCKSYM',
               }),
+              signal: abortController.signal,
             });
-            const data = await response.json();
-            if (data?.ok === true && data?.status === 'success' && data?.data) {
-              renderOwnerLocalMockedSuccess(data);
-            } else {
-              showOwnerLocalMockedMessage('Owner-local mocked 실행 결과를 불러오지 못했습니다. (기본 화면은 기능 비활성화 상태입니다.)');
+            let parsedResponse: unknown = null;
+            try {
+              parsedResponse = await response.json();
+            } catch {
+              parsedResponse = null;
             }
-          } catch {
-            showOwnerLocalMockedMessage('Owner-local mocked 실행 결과를 불러오지 못했습니다.');
+            if (isOwnerLocalMockedSuccessResponse(parsedResponse)) {
+              renderOwnerLocalMockedSuccess(parsedResponse);
+            } else {
+              showOwnerLocalMockedMessage('Owner-local mocked 실행 결과를 불러오지 못했습니다. (기본 화면은 기능 비활성화 상태이며, 실제 KIS 데이터가 아닙니다.) 다시 실행 버튼으로 재시도해 주세요.');
+            }
+          } catch (thrownError) {
+            if (thrownError instanceof DOMException && thrownError.name === 'AbortError') {
+              showOwnerLocalMockedMessage('요청 시간이 초과되었습니다. 다시 실행 버튼으로 재시도해 주세요.');
+            } else {
+              showOwnerLocalMockedMessage('Owner-local mocked 실행 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.');
+            }
           } finally {
+            window.clearTimeout(timeoutId);
+            ownerLocalMockedRequestInFlight = false;
             ownerLocalMockedRunBtn.disabled = false;
-            ownerLocalMockedRunBtn.textContent = previousLabel ?? 'Owner-local mocked 실행';
+            ownerLocalMockedRunBtn.textContent = '다시 실행';
+            if (ownerLocalMockedResult) ownerLocalMockedResult.removeAttribute('aria-busy');
           }
         });
       }
@@ -2318,6 +2370,10 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       color: var(--text-muted);
       font-size: 0.78rem;
       line-height: 1.5;
+    }
+
+    .chart-owner-local-mocked-result[aria-busy='true'] {
+      opacity: 0.85;
     }
 
     .chart-company-placeholder small {
