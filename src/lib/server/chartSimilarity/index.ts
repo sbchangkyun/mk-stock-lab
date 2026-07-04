@@ -298,3 +298,37 @@ export {
   buildMockedOwnerLocalSmokeCloseoutResult,
   buildMockedOwnerLocalSmokeCloseoutBlockedResult,
 } from './mockedSimilarityOwnerLocalSmokeCloseoutFixtures';
+
+export type {
+  SimilarityOwnerLocalManualRunStatus,
+  SimilarityOwnerLocalManualRunDecision,
+  SimilarityOwnerLocalManualRunCheckStatus,
+  SimilarityOwnerLocalManualRunCheck,
+  SimilarityOwnerLocalManualRunPolicy,
+  SimilarityOwnerLocalManualRunProviderProbe,
+  SimilarityOwnerLocalManualRunEngineContractCheck,
+  SimilarityOwnerLocalManualRunRedactionCheck,
+  SimilarityOwnerLocalManualRunReport,
+  SimilarityOwnerLocalManualRunResult,
+} from './similarityOwnerLocalManualRunTypes';
+
+export {
+  buildDefaultSimilarityOwnerLocalManualRunPolicy,
+  buildApprovedSimilarityOwnerLocalManualRunPolicy,
+  buildOwnerLocalManualRunPreflightChecks,
+  buildOwnerLocalManualRunBlockedReport,
+  buildOwnerLocalManualRunRedactedReport,
+  buildOwnerLocalManualRunResult,
+  bucketNormalizedBarCount,
+  sanitizeManualRunSerializedOutput,
+  assertManualRunReportIsRedacted,
+} from './similarityOwnerLocalManualRun';
+
+export {
+  buildMockedOwnerLocalManualRunDefaultPolicy,
+  buildMockedOwnerLocalManualRunApprovedPolicy,
+  buildMockedOwnerLocalManualRunBlockedReport,
+  buildMockedOwnerLocalManualRunExecutedRedactedReport,
+  buildMockedOwnerLocalManualRunFailedRedactedReport,
+  buildMockedOwnerLocalManualRunResult,
+} from './mockedSimilarityOwnerLocalManualRunFixtures';
