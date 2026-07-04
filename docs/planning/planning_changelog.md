@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EZ-C - 2026-07-04
+
+### Authenticated Similarity API Route Shell with Feature Flag Off (Implemented)
+
+- **Status**: Implemented — route shell added, feature flag off, no real auth/usage storage/KIS runtime.
+- **Background**: Phase 3EZ-B defined the storage-agnostic usage storage design and required explicit API route approval before any route may read or write usage. This phase adds that route, as a shell only, disabled by default, before any real auth or usage storage backend exists.
+- **Implemented scope**: added route shell types (`similarityApiRouteShellTypes.ts`: `SimilarityApiRouteShellStatus`, `SimilarityApiRouteShellPolicy`, `SimilarityApiRouteShellRequest`, `SimilarityApiRouteShellResult`); added the route shell helper module (`similarityApiRouteShell.ts`: `buildDefaultSimilarityApiRouteShellPolicy`, `normalizeSimilarityApiRouteShellRequest`, `buildFeatureFlagOffSimilarityApiRouteShellResult`, `buildSimilarityApiRouteShellResult`); added `src/pages/api/chart-ai/similarity.ts` (`POST` route, `prerender = false`, defensive JSON body parsing, `Content-Type: application/json`, `Cache-Control: no-store`); updated `src/lib/server/chartSimilarity/index.ts` exports; added the Phase 3EZ-C planning/result docs, static checker, and package script.
+- **Route contract results**: `POST /api/chart-ai/similarity` always returns `httpStatus: 503`, `response.ok: false`, `response.status: 'feature_disabled'`, `response.mode: 'feature-flag-off'`, `response.data: null`, and a safe `{ code: 'feature_disabled', message, retryable: false }` error object, matching the existing Phase 3EY-D `SimilarityApiResponse` contract; non-`POST` methods resolve to the identical safe response with no side effects.
+- **Preserved policy**: no real auth runtime, no Supabase/Auth0/OAuth/NextAuth/Clerk/Firebase/Passport import, no usage storage implementation, no DB/cache runtime, no SQL/migration, no KIS call, no real similarity engine call, no `/chart-ai` UI change, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env`/`process.env` read.
+- **Validation**: the full Phase 3EZ-C validation suite (new static checker plus the established Phase 3EZ-B/3EZ-A/3EX-E/3EY-D/3EY-C/3EX-C/3EW-C/3EW-B/3EW-A/3EV-B/3EV-A checkers/smokes, provider-boundaries, kis-runtime-guard, kis-error-fallback, production-domain, build, and `git diff --check`) was run; only the known historical allowed-changed-path exceptions in `check:phase-3ez-b`, `check:phase-3ez-a`, `check:phase-3ey-d`, `check:phase-3ey-c`, and `check:phase-3ex-e` remained, consistent with the pattern already documented in Phase 3EZ-B.
+- **Recommended next phase**: Phase 3FA-A — Owner-local KIS-normalized Similarity Execution Plan. Alternative: Phase 3EX-E-OWNER-RUNTIME-CHECK — Owner Runtime Check of Polished Chart Analysis Workspace.
+
 ## Phase 3EZ-B - 2026-07-04
 
 ### Usage Storage Design and Approval (Prepared/Implemented)

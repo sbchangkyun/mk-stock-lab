@@ -172,3 +172,17 @@ export {
   buildMockedUsageChargeProviderErrorDecision,
   buildMockedUsageStorageDesignResult,
 } from './mockedSimilarityUsageStorageDesignFixtures';
+
+export type {
+  SimilarityApiRouteShellStatus,
+  SimilarityApiRouteShellPolicy,
+  SimilarityApiRouteShellRequest,
+  SimilarityApiRouteShellResult,
+} from './similarityApiRouteShellTypes';
+
+export {
+  buildDefaultSimilarityApiRouteShellPolicy,
+  normalizeSimilarityApiRouteShellRequest,
+  buildFeatureFlagOffSimilarityApiRouteShellResult,
+  buildSimilarityApiRouteShellResult,
+} from './similarityApiRouteShell';
