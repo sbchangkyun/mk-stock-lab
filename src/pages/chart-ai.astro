@@ -247,6 +247,38 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         <p class="chart-analysis-header-guide">샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.</p>
       </div>
 
+      <!--
+        Phase 3FB-C: local-only, explicit opt-in owner-local mocked similarity API execution panel.
+        Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
+        the URL carries `?ownerLocalMocked=1`. Never auto-runs; the API call only happens on an
+        explicit button click. Calls the existing owner-local mocked branch of
+        `/api/chart-ai/similarity` (Phase 3FB-B) and renders only sanitized, bucketed fields. This
+        is not real auth, not production authorization, and not live KIS data.
+      -->
+      <section
+        id="chartAiOwnerLocalMockedPanel"
+        class="chart-owner-local-mocked-panel"
+        aria-labelledby="chart-owner-local-mocked-heading"
+        hidden
+      >
+        <div class="chart-owner-local-mocked-heading">
+          <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
+          <h3 id="chart-owner-local-mocked-heading">Owner-local mocked 실행</h3>
+          <p class="chart-owner-local-mocked-guide">
+            실제 KIS 데이터가 아닌 mocked/sample 데이터입니다. 실서비스 인증·사용량·실시간 시세 연동 전 단계입니다.
+          </p>
+        </div>
+        <button type="button" id="chartAiOwnerLocalMockedRunBtn" class="chart-owner-local-mocked-run-btn">
+          Owner-local mocked 실행
+        </button>
+        <div
+          id="chartAiOwnerLocalMockedResult"
+          class="chart-owner-local-mocked-result"
+          hidden
+          aria-live="polite"
+        ></div>
+      </section>
+
       <div class="chart-analysis-book">
         <div class="chart-analysis-tags" role="tablist" aria-label="차트 분석 보기 선택">
           <button
@@ -1282,6 +1314,138 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         }
       }
 
+      // Owner-local mocked similarity API execution panel (Phase 3FB-C). Local-only, explicit
+      // opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the URL carries
+      // `?ownerLocalMocked=1`. Never auto-runs; the API call only happens on explicit click.
+      // Calls the owner-local mocked branch of `/api/chart-ai/similarity` (Phase 3FB-B) and
+      // renders only sanitized, bucketed fields — never raw provider payload, OHLC values,
+      // prices, volume, real timestamps, raw matches, similarity scores, or returns.
+      const ownerLocalMockedPanel = document.getElementById('chartAiOwnerLocalMockedPanel');
+      const ownerLocalMockedRunBtn = document.getElementById('chartAiOwnerLocalMockedRunBtn') as HTMLButtonElement | null;
+      const ownerLocalMockedResult = document.getElementById('chartAiOwnerLocalMockedResult');
+
+      const isLocalOwnerHostname = (): boolean => {
+        const hostname = window.location.hostname;
+        return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+      };
+      const ownerLocalMockedOptIn = new URLSearchParams(window.location.search).get('ownerLocalMocked') === '1';
+      const ownerLocalMockedEnabled = isLocalOwnerHostname() && ownerLocalMockedOptIn;
+
+      if (ownerLocalMockedPanel) ownerLocalMockedPanel.hidden = !ownerLocalMockedEnabled;
+
+      const showOwnerLocalMockedMessage = (text: string) => {
+        if (!ownerLocalMockedResult) return;
+        ownerLocalMockedResult.hidden = false;
+        ownerLocalMockedResult.replaceChildren();
+        const message = document.createElement('p');
+        message.className = 'chart-owner-local-mocked-msg';
+        message.textContent = text;
+        ownerLocalMockedResult.append(message);
+      };
+
+      const renderOwnerLocalMockedSuccess = (data: {
+        status?: string;
+        mode?: string;
+        request?: { source?: string };
+        data?: {
+          engineStatus?: string;
+          normalizedBarsAvailable?: boolean;
+          normalizedBarCountBucket?: string;
+          matchCountBucket?: string;
+          disclaimer?: string;
+          dataPolicy?: {
+            ownerLocalOnly?: boolean;
+            allowLiveKis?: boolean;
+            allowRouteSuccess?: boolean;
+            allowPublicExecution?: boolean;
+            allowBetaExecution?: boolean;
+          };
+        } | null;
+      }) => {
+        if (!ownerLocalMockedResult || !data.data) return;
+        const resultData = data.data;
+        ownerLocalMockedResult.hidden = false;
+        ownerLocalMockedResult.replaceChildren();
+
+        const summaryList = document.createElement('dl');
+        summaryList.className = 'chart-owner-local-mocked-dl';
+        const summaryRows: Array<[string, string]> = [
+          ['상태', data.status ?? '-'],
+          ['모드', data.mode ?? '-'],
+          ['데이터 소스', data.request?.source ?? '-'],
+          ['엔진 상태', resultData.engineStatus ?? '-'],
+          ['정규화 데이터 여부', resultData.normalizedBarsAvailable ? '있음' : '없음'],
+          ['정규화 구간 버킷', resultData.normalizedBarCountBucket ?? '-'],
+          ['매칭 구간 버킷', resultData.matchCountBucket ?? '-'],
+        ];
+        for (const [label, value] of summaryRows) {
+          const dt = document.createElement('dt');
+          dt.textContent = label;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          summaryList.append(dt, dd);
+        }
+        ownerLocalMockedResult.append(summaryList);
+
+        if (resultData.dataPolicy) {
+          const policy = resultData.dataPolicy;
+          const policyList = document.createElement('ul');
+          policyList.className = 'chart-owner-local-mocked-policy-list';
+          const policyRows: Array<[string, boolean | undefined]> = [
+            ['오너 로컬 전용', policy.ownerLocalOnly],
+            ['실시간 KIS 허용', policy.allowLiveKis],
+            ['라우트 성공 허용', policy.allowRouteSuccess],
+            ['공개 실행 허용', policy.allowPublicExecution],
+            ['베타 실행 허용', policy.allowBetaExecution],
+          ];
+          for (const [label, value] of policyRows) {
+            const li = document.createElement('li');
+            li.textContent = `${label}: ${value ? '예' : '아니오'}`;
+            policyList.append(li);
+          }
+          ownerLocalMockedResult.append(policyList);
+        }
+
+        if (resultData.disclaimer) {
+          const disclaimer = document.createElement('p');
+          disclaimer.className = 'chart-owner-local-mocked-disclaimer';
+          disclaimer.textContent = resultData.disclaimer;
+          ownerLocalMockedResult.append(disclaimer);
+        }
+      };
+
+      if (ownerLocalMockedRunBtn && ownerLocalMockedEnabled) {
+        ownerLocalMockedRunBtn.addEventListener('click', async () => {
+          ownerLocalMockedRunBtn.disabled = true;
+          const previousLabel = ownerLocalMockedRunBtn.textContent;
+          ownerLocalMockedRunBtn.textContent = '불러오는 중…';
+          showOwnerLocalMockedMessage('불러오는 중…');
+          try {
+            const response = await fetch('/api/chart-ai/similarity', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                mode: 'owner-local-mocked',
+                source: 'mocked-provider-compatible',
+                ownerLocalMocked: true,
+                symbol: selectedSymbol || 'MOCKSYM',
+              }),
+            });
+            const data = await response.json();
+            if (data?.ok === true && data?.status === 'success' && data?.data) {
+              renderOwnerLocalMockedSuccess(data);
+            } else {
+              showOwnerLocalMockedMessage('Owner-local mocked 실행 결과를 불러오지 못했습니다. (기본 화면은 기능 비활성화 상태입니다.)');
+            }
+          } catch {
+            showOwnerLocalMockedMessage('Owner-local mocked 실행 결과를 불러오지 못했습니다.');
+          } finally {
+            ownerLocalMockedRunBtn.disabled = false;
+            ownerLocalMockedRunBtn.textContent = previousLabel ?? 'Owner-local mocked 실행';
+          }
+        });
+      }
+
       renderChart();
     };
 
@@ -2069,6 +2233,91 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       margin-top: 0.35rem;
       color: var(--text-muted);
       font-size: 0.68rem;
+    }
+
+    .chart-owner-local-mocked-panel {
+      margin-bottom: 1rem;
+      padding: 0.85rem 1rem;
+      border: 1px dashed color-mix(in srgb, var(--primary) 40%, var(--border));
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+    }
+
+    .chart-owner-local-mocked-heading h3 {
+      margin: 0.15rem 0 0.35rem;
+      font-size: 0.95rem;
+    }
+
+    .chart-owner-local-mocked-guide {
+      margin: 0 0 0.65rem;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .chart-owner-local-mocked-run-btn {
+      min-height: 38px;
+      padding: 0.42rem 0.75rem;
+      border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+      color: var(--primary);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .chart-owner-local-mocked-run-btn:disabled {
+      border-color: var(--border);
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .chart-owner-local-mocked-result {
+      margin-top: 0.75rem;
+    }
+
+    .chart-owner-local-mocked-dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.28rem 0.75rem;
+      margin: 0 0 0.6rem;
+    }
+
+    .chart-owner-local-mocked-dl dt {
+      color: var(--text-muted);
+      font-size: 0.74rem;
+    }
+
+    .chart-owner-local-mocked-dl dd {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 750;
+      text-align: right;
+    }
+
+    .chart-owner-local-mocked-policy-list {
+      margin: 0 0 0.6rem;
+      padding-left: 1.1rem;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      line-height: 1.6;
+    }
+
+    .chart-owner-local-mocked-disclaimer {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    .chart-owner-local-mocked-msg {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
     }
 
     .chart-company-placeholder small {

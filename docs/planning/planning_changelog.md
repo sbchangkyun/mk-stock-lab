@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FB-C - 2026-07-04
+
+### Chart AI UI Owner-local Mocked API Execution Wiring (Implemented)
+
+- **Status**: Implemented. `/chart-ai` now has a local-only, explicit opt-in owner-local mocked execution control that calls the existing `/api/chart-ai/similarity` owner-local mocked branch and renders only sanitized bucketed response fields.
+- **Background**: Phase 3FB-A connected provider-compatible mocked OHLC to the deterministic engine; Phase 3FB-B connected that integration to the API route. Live KIS remains externally blocked, so this phase wires the UI to the mocked route branch only for local development verification.
+- **Implemented scope**: `src/pages/chart-ai.astro` gained a hidden-by-default panel gated by a local hostname check (`localhost`/`127.0.0.1`/`::1`) and a `?ownerLocalMocked=1` URL query opt-in, an explicit click-only button that calls `POST /api/chart-ai/similarity` with the required owner-local-mocked request body, and sanitized rendering of the bucketed response; new 49-assertion static contract checker `check:phase-3fb-c-chart-ai-ui-owner-local-mocked-api-execution-wiring`; no API route code was changed (no contract mismatch found).
+- **UI result**: default `/chart-ai` behavior remains unchanged; the owner-local mocked panel is hidden unless running locally with `?ownerLocalMocked=1`; no auto-run occurs; click calls `/api/chart-ai/similarity` with the explicit owner-local mocked request body and displays only `engineStatus`/`normalizedBarsAvailable`/`normalizedBarCountBucket`/`matchCountBucket`/`dataPolicy`/disclaimer.
+- **Preserved policy**: no live KIS call, no KIS provider source change, no deterministic engine source change, no API route change, no public/beta execution, no real auth/usage storage/DB/cache, no SQL/migration, no account/trading/order/balance APIs, no dependency change, no deployment, no push, no raw values committed.
+- **Recommended next phase**: Phase 3FB-D — Chart AI Owner-local Mocked UI Runtime Polish and Failure-state Hardening, Live KIS Off. Alternative: Phase 3FB-C-ALT — Auth/Usage Runtime Bridge for Similarity Route, No Live KIS.
+
 ## Phase 3FB-B - 2026-07-04
 
 ### Owner-local Mocked Similarity API Route Integration (Implemented)
