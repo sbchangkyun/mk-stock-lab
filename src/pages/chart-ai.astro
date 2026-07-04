@@ -247,27 +247,29 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         <p class="chart-analysis-header-guide">샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.</p>
       </div>
 
-      <div class="chart-analysis-tabs" role="tablist" aria-label="차트 분석 보기 선택">
-        <button
-          id="chartAiSimilarityTab"
-          type="button"
-          role="tab"
-          class="chart-analysis-tab active"
-          aria-selected="true"
-          aria-controls="chartAiSimilarityPanel"
-        >유사 패턴 분석 보기</button>
-        <button
-          id="chartAiMkAiTab"
-          type="button"
-          role="tab"
-          class="chart-analysis-tab"
-          aria-selected="false"
-          aria-controls="chartAiMkAiPanel"
-          tabindex="-1"
-        >MK AI 분석 보기</button>
-      </div>
+      <div class="chart-analysis-book">
+        <div class="chart-analysis-tags" role="tablist" aria-label="차트 분석 보기 선택">
+          <button
+            id="chartAiSimilarityTab"
+            type="button"
+            role="tab"
+            class="chart-analysis-tag active"
+            aria-selected="true"
+            aria-controls="chartAiSimilarityPanel"
+          >유사 패턴 분석 보기</button>
+          <button
+            id="chartAiMkAiTab"
+            type="button"
+            role="tab"
+            class="chart-analysis-tag"
+            aria-selected="false"
+            aria-controls="chartAiMkAiPanel"
+            tabindex="-1"
+          >MK AI 분석 보기</button>
+        </div>
 
-      <div id="chartAiSimilarityPanel" class="chart-analysis-panel" role="tabpanel" aria-labelledby="chartAiSimilarityTab" tabindex="0">
+        <div class="chart-analysis-page-canvas">
+      <div id="chartAiSimilarityPanel" class="chart-analysis-page active" role="tabpanel" aria-labelledby="chartAiSimilarityTab" tabindex="0">
       <div class="chart-similarity-panel-heading">
         <p class="eyebrow">유사 패턴 분석</p>
         <h2 id="chart-similarity-panel-heading">유사 패턴 분석 결과</h2>
@@ -386,7 +388,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       </section>
       </div>
 
-      <div id="chartAiMkAiPanel" class="chart-analysis-panel" role="tabpanel" aria-labelledby="chartAiMkAiTab" hidden tabindex="0">
+      <div id="chartAiMkAiPanel" class="chart-analysis-page" role="tabpanel" aria-labelledby="chartAiMkAiTab" hidden tabindex="0">
         <div class="chart-mk-ai-panel-heading">
           <p class="eyebrow">MK AI</p>
           <h3 id="chart-mk-ai-heading">MK AI 해석</h3>
@@ -481,6 +483,8 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           <p id="chartAiMkAiReadinessText">삼성전자 기준의 MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.</p>
           <p>현재 분석은 샘플 로직 기반 미리보기입니다.</p>
           <p>실제 투자 판단용 정보가 아니며 매수·매도 추천이 아닙니다.</p>
+        </div>
+      </div>
         </div>
       </div>
     </section>
@@ -1020,13 +1024,14 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         });
       });
 
-      // Chart analysis workspace tabs: local class/attribute toggling only, no network/storage.
+      // Chart analysis workspace page-swap: local class/attribute toggling only, no network/storage.
       const similarityTab = document.getElementById('chartAiSimilarityTab') as HTMLButtonElement | null;
       const mkAiTab = document.getElementById('chartAiMkAiTab') as HTMLButtonElement | null;
       const similarityPanel = document.getElementById('chartAiSimilarityPanel');
       const mkAiPanel = document.getElementById('chartAiMkAiPanel');
+      const analysisTabs = [similarityTab, mkAiTab].filter((tab): tab is HTMLButtonElement => tab !== null);
 
-      const activateAnalysisTab = (tab: 'similarity' | 'mk-ai') => {
+      const activateAnalysisTab = (tab: 'similarity' | 'mk-ai', options: { focusTab?: boolean } = {}) => {
         const isSimilarity = tab === 'similarity';
         similarityTab?.classList.toggle('active', isSimilarity);
         mkAiTab?.classList.toggle('active', !isSimilarity);
@@ -1034,12 +1039,38 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         mkAiTab?.setAttribute('aria-selected', String(!isSimilarity));
         similarityTab?.setAttribute('tabindex', isSimilarity ? '0' : '-1');
         mkAiTab?.setAttribute('tabindex', !isSimilarity ? '0' : '-1');
+        similarityPanel?.classList.toggle('active', isSimilarity);
+        mkAiPanel?.classList.toggle('active', !isSimilarity);
         if (similarityPanel) similarityPanel.hidden = !isSimilarity;
         if (mkAiPanel) mkAiPanel.hidden = isSimilarity;
+        if (options.focusTab) {
+          (isSimilarity ? similarityTab : mkAiTab)?.focus();
+        }
       };
 
       similarityTab?.addEventListener('click', () => activateAnalysisTab('similarity'));
       mkAiTab?.addEventListener('click', () => activateAnalysisTab('mk-ai'));
+
+      const analysisTagKeyToTarget: Record<string, 'similarity' | 'mk-ai'> = {
+        Home: 'similarity',
+        End: 'mk-ai',
+      };
+
+      analysisTabs.forEach((tab) => {
+        tab.addEventListener('keydown', (event) => {
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            const currentIsSimilarity = tab === similarityTab;
+            activateAnalysisTab(currentIsSimilarity ? 'mk-ai' : 'similarity', { focusTab: true });
+            return;
+          }
+          const homeEndTarget = analysisTagKeyToTarget[event.key];
+          if (homeEndTarget) {
+            event.preventDefault();
+            activateAnalysisTab(homeEndTarget, { focusTab: true });
+          }
+        });
+      });
 
       // Owner-local KIS quote preview. Gated: never auto-fetches, and only fetches the gated
       // owner-local preview route when the page URL carries source=owner-local.
@@ -2076,18 +2107,27 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       line-height: 1.55;
     }
 
-    .chart-analysis-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
+    .chart-analysis-book {
+      display: grid;
+      gap: 0;
     }
 
-    .chart-analysis-tab {
+    .chart-analysis-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      padding: 0 0.4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chart-analysis-tag {
       flex: 1 1 200px;
       min-height: 44px;
       padding: 0.6rem 0.9rem;
       border: 1px solid var(--chart-shell-border);
-      border-radius: 10px;
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
       background: var(--surface-muted);
       color: var(--text-muted);
       font: inherit;
@@ -2095,18 +2135,66 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       font-weight: 800;
       text-align: center;
       cursor: pointer;
+      transform: translateY(2px);
+      box-shadow: 0 2px 4px rgb(15 23 42 / 6%);
+      transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease, color 150ms ease;
     }
 
-    .chart-analysis-tab.active {
+    .chart-analysis-tag:hover {
+      color: var(--text);
+    }
+
+    .chart-analysis-tag.active {
+      position: relative;
+      transform: translateY(0);
       border-color: color-mix(in srgb, var(--primary) 55%, var(--chart-shell-border));
-      background: var(--primary);
-      color: var(--on-primary, #fff);
-      box-shadow: 0 7px 18px rgb(49 83 232 / 20%);
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 -6px 14px rgb(15 23 42 / 8%);
     }
 
-    .chart-analysis-panel {
+    .chart-analysis-tag.active::after {
+      content: '';
+      position: absolute;
+      left: 1px;
+      right: 1px;
+      bottom: -1px;
+      height: 2px;
+      background: var(--surface);
+    }
+
+    .chart-analysis-page-canvas {
+      position: relative;
+      border: 1px solid var(--chart-shell-border);
+      border-radius: 4px 12px 12px 12px;
+      background: var(--surface);
+      box-shadow: 0 10px 24px rgb(15 23 42 / 10%);
+      padding: 1.1rem 1.2rem;
+      z-index: 0;
+    }
+
+    .chart-analysis-page {
       display: grid;
       gap: 1.4rem;
+    }
+
+    .chart-analysis-page[hidden] {
+      display: none !important;
+    }
+
+    @keyframes chart-analysis-page-swap-enter {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chart-analysis-page.active {
+      animation: chart-analysis-page-swap-enter 160ms ease;
     }
 
     .chart-similarity-panel-heading,
@@ -2305,7 +2393,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     :global(.chart-ai-search-result:focus-visible),
     .chart-ai-filter-btn:focus-visible,
     .chart-period-controls button:focus-visible,
-    .chart-analysis-tab:focus-visible {
+    .chart-analysis-tag:focus-visible {
       outline: 3px solid color-mix(in srgb, var(--primary) 45%, transparent);
       outline-offset: 2px;
     }
@@ -2365,12 +2453,30 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         display: grid;
       }
 
-      .chart-analysis-tabs {
+      .chart-analysis-tags {
         flex-direction: column;
+        padding: 0;
       }
 
-      .chart-analysis-tab {
+      .chart-analysis-tag {
         flex: 1 1 auto;
+        border-radius: 10px;
+        border-bottom: 1px solid var(--chart-shell-border);
+        transform: none;
+      }
+
+      .chart-analysis-tag.active {
+        border-bottom: 1px solid color-mix(in srgb, var(--primary) 55%, var(--chart-shell-border));
+      }
+
+      .chart-analysis-tag.active::after {
+        content: none;
+      }
+
+      .chart-analysis-page-canvas {
+        margin-top: 0.5rem;
+        border-radius: 12px;
+        padding: 1rem;
       }
     }
 
@@ -2409,8 +2515,12 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     @media (prefers-reduced-motion: reduce) {
       :global(.chart-ai-search-result),
       .chart-period-controls button,
-      .chart-analysis-tab {
+      .chart-analysis-tag {
         transition: none;
+      }
+
+      .chart-analysis-page.active {
+        animation: none;
       }
     }
   </style>
