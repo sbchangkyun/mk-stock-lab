@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FB-B - 2026-07-04
+
+### Owner-local Mocked Similarity API Route Integration (Implemented)
+
+- **Status**: Implemented. The existing `/api/chart-ai/similarity` route now has an explicit, owner-local mocked execution branch that calls the Phase 3FB-A provider-compatible mocked similarity integration and returns a sanitized, bucketed success response; default route behavior for every other request is unchanged.
+- **Background**: Phase 3FB-A built a server-only integration layer exercising the real deterministic similarity engine against provider-compatible mocked bars, but it was not wired into any route. Live KIS OHLC connectivity remains externally blocked, so this phase continues forward-looking implementation by connecting that integration to the existing route as an owner-local mocked-only path.
+- **Implemented scope**: `src/pages/api/chart-ai/similarity.ts` gained a detection branch requiring all of `mode: "owner-local-mocked"`, `source: "mocked-provider-compatible"`, and `ownerLocalMocked: true`; `similarityApiResponseTypes.ts` gained `'mocked-provider-compatible'`/`'owner-local-mocked'` enum values and a new bucketed `SimilarityApiOwnerLocalMockedSuccessData` type; `similarityApiResponseBuilder.ts` gained `isOwnerLocalMockedSimilarityApiRequestBody`, `extractOwnerLocalMockedIntegrationRequestFields`, and `buildOwnerLocalMockedSimilarityApiResponse`; `index.ts` exports updated; new 36-assertion smoke script bundling and directly invoking the real route handlers.
+- **Route result**: default/malformed/partial-approval requests remain byte-identical to the pre-existing `feature_disabled` contract; an explicit owner-local mocked request returns `httpStatus: 200`, `status: "success"`, `mode: "owner-local-mocked"`, bucketed engine/bar/match fields, and a mocked/sample disclaimer — never a raw provider payload, credential/env value, or `source: "live"`/`"auto"`.
+- **Preserved policy**: no change to `/chart-ai` UI, KIS provider source, or the deterministic engine source (confirmed by an empty forbidden-path diff); no live KIS call; no public/beta execution; no real auth/usage storage/DB/cache/SQL/migration; no account/trading/order/balance APIs; no dependency change; no deployment, no push.
+- **Recommended next phase**: Phase 3FB-C — Chart AI UI Owner-local Mocked API Execution Wiring, Live KIS Off. Alternative: Phase 3FB-C-ALT — Auth/Usage Runtime Bridge for Similarity Route, No Live KIS.
+
 ## Phase 3FB-A - 2026-07-04
 
 ### Provider-Compatible OHLC to Similarity Engine Integration (Implemented)

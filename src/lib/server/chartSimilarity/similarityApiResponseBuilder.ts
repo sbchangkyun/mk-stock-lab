@@ -18,6 +18,7 @@ import type {
 import { evaluateSimilarityExecutionGuard } from './similarityExecutionGuard';
 import type {
   SimilarityApiMockedSuccessData,
+  SimilarityApiOwnerLocalMockedSuccessData,
   SimilarityApiResponse,
   SimilarityApiResponseMode,
   SimilarityApiResponseStatus,
@@ -25,6 +26,8 @@ import type {
   SimilarityApiSafeRequest,
   SimilarityApiSafeUsage,
 } from './similarityApiResponseTypes';
+import type { SimilarityProviderIntegrationRequest, SimilarityProviderIntegrationResult } from './similarityProviderIntegrationTypes';
+import { runMockedProviderCompatibleSimilarityIntegration } from './similarityProviderIntegration';
 
 /** Sanitizes a guard request down to only the fields safe to echo back in an API response. */
 export const toSimilarityApiSafeRequest = (
@@ -202,4 +205,122 @@ export const buildMockedAllowedSimilarityApiResponse = (
 ): SimilarityApiResponse => {
   const guardResult = evaluateSimilarityExecutionGuard(request, options);
   return buildSimilarityApiResponseFromGuard(guardResult);
+};
+
+/**
+ * Owner-local mocked provider-compatible route path (Phase 3FB-B).
+ *
+ * This is NOT real auth and NOT production authorization — it is only an explicit, non-secret,
+ * owner-local mocked route path for development verification of the Phase 3FB-A provider
+ * integration through the actual API route contract. It never calls live KIS, never reads
+ * `process.env`/`.env`, and never exposes a raw provider payload or real market data.
+ */
+export const isOwnerLocalMockedSimilarityApiRequestBody = (body: unknown): boolean => {
+  if (body === null || typeof body !== 'object') return false;
+  const record = body as Record<string, unknown>;
+  return (
+    record.mode === 'owner-local-mocked' &&
+    record.source === 'mocked-provider-compatible' &&
+    record.ownerLocalMocked === true
+  );
+};
+
+/** Extracts only the safe, non-secret integration request fields from a raw request body. */
+export const extractOwnerLocalMockedIntegrationRequestFields = (
+  body: unknown,
+): Partial<SimilarityProviderIntegrationRequest> => {
+  if (body === null || typeof body !== 'object') return {};
+  const record = body as Record<string, unknown>;
+  return {
+    symbol: typeof record.symbol === 'string' ? record.symbol : undefined,
+    baseWindow: typeof record.baseWindow === 'number' ? record.baseWindow : undefined,
+    forwardWindows: Array.isArray(record.forwardWindows) ? (record.forwardWindows as number[]) : undefined,
+    topK: typeof record.topK === 'number' ? record.topK : undefined,
+  };
+};
+
+const OWNER_LOCAL_MOCKED_DISCLAIMER =
+  'Owner-local mocked similarity result. Synthetic, provider-compatible sample data only — ' +
+  'not real KIS market data, not investment advice. This is not real auth or production ' +
+  'authorization; it is an owner-local mocked route path for development verification only.';
+
+const mapIntegrationStatusToApiStatus = (
+  status: SimilarityProviderIntegrationResult['status'],
+): SimilarityApiResponseStatus => {
+  switch (status) {
+    case 'ready':
+      return 'success';
+    case 'blocked':
+      return 'blocked';
+    case 'disabled':
+      return 'feature_disabled';
+    case 'provider_error':
+    case 'engine_error':
+    default:
+      return 'error';
+  }
+};
+
+const buildOwnerLocalMockedSimilarityApiSuccessData = (
+  integrationResult: SimilarityProviderIntegrationResult,
+): SimilarityApiOwnerLocalMockedSuccessData => ({
+  engineStatus: integrationResult.engineStatus,
+  normalizedBarsAvailable: integrationResult.normalizedBarsAvailable,
+  normalizedBarCountBucket: integrationResult.normalizedBarCountBucket,
+  matchCountBucket: integrationResult.matchCountBucket,
+  disclaimer: OWNER_LOCAL_MOCKED_DISCLAIMER,
+  dataPolicy: {
+    ownerLocalOnly: integrationResult.dataPolicy.ownerLocalOnly,
+    allowLiveKis: integrationResult.dataPolicy.allowLiveKis,
+    allowRouteSuccess: integrationResult.dataPolicy.allowRouteSuccess,
+    allowPublicExecution: integrationResult.dataPolicy.allowPublicExecution,
+    allowBetaExecution: integrationResult.dataPolicy.allowBetaExecution,
+  },
+});
+
+/**
+ * Runs the Phase 3FB-A mocked, provider-compatible similarity integration and packages the
+ * result into a sanitized `SimilarityApiResponse` for the owner-local mocked route path. Never
+ * calls live KIS, never calls `fetch`, never reads `process.env`/`.env`.
+ */
+export const buildOwnerLocalMockedSimilarityApiResponse = (body: unknown): SimilarityApiResponse => {
+  const integrationRequestFields = extractOwnerLocalMockedIntegrationRequestFields(body);
+  const integrationResult = runMockedProviderCompatibleSimilarityIntegration(integrationRequestFields);
+
+  const request: SimilarityApiSafeRequest = {
+    purpose: 'chart-similarity',
+    source: 'mocked-provider-compatible',
+    symbol: integrationResult.safeSummary.symbol,
+    market: 'KR',
+    assetType: 'stock',
+  };
+
+  if (integrationResult.status === 'ready') {
+    return {
+      ok: true,
+      status: 'success',
+      mode: 'owner-local-mocked',
+      request,
+      usage: null,
+      data: buildOwnerLocalMockedSimilarityApiSuccessData(integrationResult),
+      error: null,
+      warnings: integrationResult.warnings,
+    };
+  }
+
+  const apiStatus = mapIntegrationStatusToApiStatus(integrationResult.status);
+  return {
+    ok: false,
+    status: apiStatus,
+    mode: 'owner-local-mocked',
+    request,
+    usage: null,
+    data: null,
+    error: {
+      code: integrationResult.status,
+      message: integrationResult.safeMessage,
+      retryable: integrationResult.status === 'engine_error' || integrationResult.status === 'provider_error',
+    },
+    warnings: integrationResult.warnings,
+  };
 };

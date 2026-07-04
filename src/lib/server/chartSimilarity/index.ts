@@ -92,6 +92,8 @@ export type {
   SimilarityApiSafeError,
   SimilarityApiMockedMatch,
   SimilarityApiMockedSuccessData,
+  SimilarityApiOwnerLocalMockedDataPolicy,
+  SimilarityApiOwnerLocalMockedSuccessData,
   SimilarityApiResponse,
 } from './similarityApiResponseTypes';
 
@@ -103,6 +105,9 @@ export {
   buildSimilarityApiResponseFromGuard,
   buildMockedSimilarityApiSuccessData,
   buildMockedAllowedSimilarityApiResponse,
+  isOwnerLocalMockedSimilarityApiRequestBody,
+  extractOwnerLocalMockedIntegrationRequestFields,
+  buildOwnerLocalMockedSimilarityApiResponse,
 } from './similarityApiResponseBuilder';
 
 export {
