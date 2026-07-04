@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FA-B - 2026-07-04
+
+### Owner-local KIS Similarity Smoke Plan (Prepared/Implemented)
+
+- **Status**: Prepared/Implemented — owner-local KIS similarity smoke plan added, no smoke executed.
+- **Background**: Phase 3FA-A defined the owner-local KIS-normalized similarity execution plan. This phase defines the future owner-local manual smoke procedure, redaction policy, safe report template, and pass/fail criteria before any KIS smoke or live similarity execution is allowed.
+- **Implemented scope**: added smoke plan types (`similarityOwnerLocalSmokePlanTypes.ts`: `SimilarityOwnerLocalSmokePlanStatus`, `SimilarityOwnerLocalSmokeStage`, `SimilarityOwnerLocalSmokeGate`, `SimilarityOwnerLocalSmokeRedactionPolicy`, `SimilarityOwnerLocalSmokeCheckOutcome`, `SimilarityOwnerLocalSmokeReportTemplate`, `SimilarityOwnerLocalSmokePlanPolicy`, `SimilarityOwnerLocalSmokePlanResult`); added the smoke plan module (`similarityOwnerLocalSmokePlan.ts`: `buildDefaultSimilarityOwnerLocalSmokePlanPolicy`, `buildOwnerLocalSmokeStages`, `buildOwnerLocalSmokeGates`, `buildOwnerLocalSmokeRedactionPolicy`, `buildOwnerLocalSmokeReportTemplate`, `buildSimilarityOwnerLocalSmokePlanResult`, `isOwnerLocalSmokeAllowedByPlan`); added mocked fixtures (`mockedSimilarityOwnerLocalSmokePlanFixtures.ts`); updated `src/lib/server/chartSimilarity/index.ts` exports; added the Phase 3FA-B planning/result docs, static checker, and package script.
+- **Smoke plan results**: default policy `enabled: false`, `ownerLocalOnly: true`, `manualExecutionOnly: true`, public/beta execution disabled, route success disabled, live KIS call disabled in this phase, live similarity execution disabled in this phase, raw provider payload disallowed, actual market values in reports disallowed.
+- **Redaction policy**: no raw KIS payload, OHLC prices, volume, market timestamps, similarity scores from real data, derived returns from real data, credentials, tokens, or env values may be reported; future smoke reports may include only safe status/pass/fail/summary fields.
+- **Preserved policy**: no KIS call, no live similarity execution, no API route change, no `/chart-ai` UI change, no real auth runtime, no usage storage implementation, no DB/cache runtime, no SQL/migration, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading/order/balance APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env`/`process.env` read.
+- **Validation**: the new Phase 3FA-B static checker and the full established checker/smoke suite were run; see the final phase report for the itemized pass/fail list.
+- **Recommended next phase**: Phase 3FA-C — Owner-local KIS Similarity Smoke Harness, Disabled by Default. Alternative: Phase 3EX-E-OWNER-RUNTIME-CHECK — Owner Runtime Check of Polished Chart Analysis Workspace.
+
 ## Phase 3FA-A - 2026-07-04
 
 ### Owner-local KIS-normalized Similarity Execution Plan (Prepared/Implemented)

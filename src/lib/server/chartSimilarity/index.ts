@@ -213,3 +213,34 @@ export {
   buildMockedOwnerLocalExecutionPlanResult,
   buildMockedOwnerLocalExecutionDeniedResult,
 } from './mockedSimilarityOwnerLocalExecutionPlanFixtures';
+
+export type {
+  SimilarityOwnerLocalSmokePlanStatus,
+  SimilarityOwnerLocalSmokeStage,
+  SimilarityOwnerLocalSmokeGate,
+  SimilarityOwnerLocalSmokeRedactionPolicy,
+  SimilarityOwnerLocalSmokeCheckOutcome,
+  SimilarityOwnerLocalSmokeReportTemplate,
+  SimilarityOwnerLocalSmokePlanPolicy,
+  SimilarityOwnerLocalSmokePlanResult,
+} from './similarityOwnerLocalSmokePlanTypes';
+
+export {
+  buildDefaultSimilarityOwnerLocalSmokePlanPolicy,
+  buildOwnerLocalSmokeStages,
+  buildOwnerLocalSmokeGates,
+  buildOwnerLocalSmokeRedactionPolicy,
+  buildOwnerLocalSmokeReportTemplate,
+  buildSimilarityOwnerLocalSmokePlanResult,
+  isOwnerLocalSmokeAllowedByPlan,
+} from './similarityOwnerLocalSmokePlan';
+
+export {
+  buildMockedOwnerLocalSmokePlanPolicy,
+  buildMockedOwnerLocalSmokeStages,
+  buildMockedOwnerLocalSmokeGates,
+  buildMockedOwnerLocalSmokeRedactionPolicy,
+  buildMockedOwnerLocalSmokeReportTemplate,
+  buildMockedOwnerLocalSmokePlanResult,
+  buildMockedOwnerLocalSmokeDeniedResult,
+} from './mockedSimilarityOwnerLocalSmokePlanFixtures';
