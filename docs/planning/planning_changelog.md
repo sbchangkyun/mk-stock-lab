@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FB-A - 2026-07-04
+
+### Provider-Compatible OHLC to Similarity Engine Integration (Implemented)
+
+- **Status**: Implemented. A server-only integration layer feeds provider-compatible, mocked, normalized `OhlcBar[]` data into the real deterministic similarity engine (`scanSimilarity`), entirely without live KIS.
+- **Background**: live KIS OHLC connectivity remains blocked by a real, external network condition (Phase 3FA-D-MANUAL-RUN-RETRY-HF1). Rather than continuing to chase that network issue, this phase builds forward-looking, reusable product functionality using the existing engine plus mocked provider-compatible data.
+- **New modules**: `similarityProviderIntegrationTypes.ts`, `similarityProviderIntegration.ts` (policy builders, request normalizer, bar/match count bucket helpers, `runSimilarityProviderIntegrationWithBars`, `runMockedProviderCompatibleSimilarityIntegration`), and `mockedSimilarityProviderIntegrationFixtures.ts`, all under `src/lib/server/chartSimilarity/`. Reuses the existing mocked KIS OHLC fixture/adapter mapping; never reads `process.env`/`.env`; never calls `fetch`; never imports `src/lib/server/providers/kis`.
+- **Result**: ready path confirms `status: "ready"`, `engineStatus: "ready"`, non-empty `matches` from the real engine, using mocked bars only; blocked path confirms insufficient-bar handling; disabled path confirms the default feature-flag-off policy; a `kis-normalized-future` source request is always blocked regardless of policy, keeping live KIS out of scope.
+- **Preserved policy**: no route, page, or `/chart-ai` UI change; no forbidden-path change (`src/pages`, `src/pages/api`, `src/lib/server/providers`, `src/lib/chartSimilarity`, `src/data/chartSimilarity` all confirmed unchanged); no public/beta execution; no auth/storage/DB/cache/SQL/migration; no account/trading/order/balance APIs; no new dependency; no live KIS call or network diagnostic in this phase; no deployment, no push.
+- **Validation**: new 35-assertion smoke script passed; `npm run build` passed; forbidden-path diff empty; changed-files diff limited to the intended file set.
+- **Recommended next phase**: Phase 3FB-B — decide whether to wire this mocked integration into a disabled-by-default, owner-local-only API route for manual review, independently of the separate KIS network-reachability track (Phase 3FA-D-MANUAL-RUN-RETRY-HF2).
+
 ## Phase 3FA-D-MANUAL-RUN-RETRY-HF1 - 2026-07-04
 
 ### Targeted Owner-local KIS Provider Path Fix (Executed)

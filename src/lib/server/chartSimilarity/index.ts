@@ -360,3 +360,34 @@ export {
   buildMockedOwnerLocalCredentialPartialResult,
   buildMockedOwnerLocalCredentialConfiguredResult,
 } from './mockedSimilarityOwnerLocalCredentialCheckFixtures';
+
+export type {
+  SimilarityProviderIntegrationStatus,
+  SimilarityProviderIntegrationSource,
+  SimilarityProviderIntegrationMode,
+  SimilarityProviderIntegrationPolicy,
+  SimilarityProviderIntegrationRequest,
+  SimilarityProviderIntegrationBarCountBucket,
+  SimilarityProviderIntegrationMatchCountBucket,
+  SimilarityProviderIntegrationProviderStatus,
+  SimilarityProviderIntegrationEngineStatus,
+  SimilarityProviderIntegrationSafeSummary,
+  SimilarityProviderIntegrationResult,
+} from './similarityProviderIntegrationTypes';
+
+export {
+  buildDefaultSimilarityProviderIntegrationPolicy,
+  buildOwnerLocalMockedSimilarityProviderIntegrationPolicy,
+  normalizeSimilarityProviderIntegrationRequest,
+  bucketProviderNormalizedBarCount,
+  bucketSimilarityMatchCount,
+  runSimilarityProviderIntegrationWithBars,
+  runMockedProviderCompatibleSimilarityIntegration,
+} from './similarityProviderIntegration';
+
+export {
+  buildMockedProviderIntegrationRequest,
+  buildMockedProviderIntegrationPolicy,
+  buildMockedProviderCompatibleIntegrationReadyResult,
+  buildMockedProviderCompatibleIntegrationBlockedResult,
+} from './mockedSimilarityProviderIntegrationFixtures';

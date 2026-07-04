@@ -16,6 +16,7 @@
     "smoke:phase-3fa-c-owner-local-kis-similarity-smoke-harness-disabled-by-default": "node scripts/smoke_phase_3fa_c_owner_local_kis_similarity_smoke_harness_disabled_by_default.mjs",
     "check:phase-3fa-d-owner-local-manual-smoke-execution-closeout": "node scripts/check_phase_3fa_d_owner_local_manual_smoke_execution_closeout_contract.mjs",
     "smoke:phase-3fa-d-owner-local-manual-smoke-execution-closeout": "node scripts/smoke_phase_3fa_d_owner_local_manual_smoke_execution_closeout.mjs",
+    "smoke:phase-3fb-a-provider-compatible-ohlc-to-similarity-engine-integration": "node scripts/smoke_phase_3fb_a_provider_compatible_ohlc_to_similarity_engine_integration.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",
