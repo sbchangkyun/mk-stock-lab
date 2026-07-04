@@ -186,3 +186,30 @@ export {
   buildFeatureFlagOffSimilarityApiRouteShellResult,
   buildSimilarityApiRouteShellResult,
 } from './similarityApiRouteShell';
+
+export type {
+  SimilarityOwnerLocalExecutionPlanStatus,
+  SimilarityOwnerLocalExecutionStage,
+  SimilarityOwnerLocalExecutionSource,
+  SimilarityOwnerLocalExecutionGate,
+  SimilarityOwnerLocalProviderExpectation,
+  SimilarityOwnerLocalExecutionPlanPolicy,
+  SimilarityOwnerLocalExecutionPlanResult,
+} from './similarityOwnerLocalExecutionPlanTypes';
+
+export {
+  buildDefaultSimilarityOwnerLocalExecutionPlanPolicy,
+  buildOwnerLocalProviderExpectation,
+  buildOwnerLocalExecutionStages,
+  buildOwnerLocalExecutionGates,
+  buildSimilarityOwnerLocalExecutionPlanResult,
+  isOwnerLocalExecutionAllowedByPlan,
+} from './similarityOwnerLocalExecutionPlan';
+
+export {
+  buildMockedOwnerLocalExecutionPlanPolicy,
+  buildMockedOwnerLocalProviderExpectation,
+  buildMockedOwnerLocalExecutionGates,
+  buildMockedOwnerLocalExecutionPlanResult,
+  buildMockedOwnerLocalExecutionDeniedResult,
+} from './mockedSimilarityOwnerLocalExecutionPlanFixtures';

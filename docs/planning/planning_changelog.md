@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FA-A - 2026-07-04
+
+### Owner-local KIS-normalized Similarity Execution Plan (Prepared/Implemented)
+
+- **Status**: Prepared/Implemented — owner-local KIS-normalized similarity execution plan added, no execution enabled.
+- **Background**: Phase 3EZ-C added a disabled `/api/chart-ai/similarity` route shell. This phase defines the future owner-local KIS-normalized execution sequence and activation gates before any KIS execution or route success is enabled.
+- **Implemented scope**: added execution plan types (`similarityOwnerLocalExecutionPlanTypes.ts`: `SimilarityOwnerLocalExecutionPlanStatus`, `SimilarityOwnerLocalExecutionStage`, `SimilarityOwnerLocalExecutionSource`, `SimilarityOwnerLocalExecutionGate`, `SimilarityOwnerLocalProviderExpectation`, `SimilarityOwnerLocalExecutionPlanPolicy`, `SimilarityOwnerLocalExecutionPlanResult`); added the execution plan module (`similarityOwnerLocalExecutionPlan.ts`: `buildDefaultSimilarityOwnerLocalExecutionPlanPolicy`, `buildOwnerLocalProviderExpectation`, `buildOwnerLocalExecutionStages`, `buildOwnerLocalExecutionGates`, `buildSimilarityOwnerLocalExecutionPlanResult`, `isOwnerLocalExecutionAllowedByPlan`); added mocked fixtures (`mockedSimilarityOwnerLocalExecutionPlanFixtures.ts`); updated `src/lib/server/chartSimilarity/index.ts` exports; added the Phase 3FA-A planning/result docs, static checker, and package script.
+- **Execution plan results**: default policy `enabled: false`, `ownerLocalOnly: true`, public/beta execution disabled, route success disabled, live KIS call disabled, raw provider payload disallowed; planned stages are route shell → auth mapping → usage check → KIS-normalized OHLC fetch → normalized OHLC validation → similarity engine scan → safe response packaging.
+- **Activation gates**: owner approval, owner-local environment confirmation, real auth decision, usage storage approval, provider smoke approval, route feature flag approval, raw provider payload exclusion, public execution disabled, and route success disabled in this phase.
+- **Preserved policy**: no KIS call, no live similarity execution, no API route change, no `/chart-ai` UI change, no real auth runtime, no usage storage implementation, no DB/cache runtime, no SQL/migration, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading/order/balance APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env`/`process.env` read.
+- **Validation**: the new Phase 3FA-A static checker and the full established checker/smoke suite were run; see the final phase report for the itemized pass/fail list.
+- **Recommended next phase**: Phase 3FA-B — Owner-local KIS Similarity Smoke Plan. Alternative: Phase 3EX-E-OWNER-RUNTIME-CHECK — Owner Runtime Check of Polished Chart Analysis Workspace.
+
 ## Phase 3EZ-C - 2026-07-04
 
 ### Authenticated Similarity API Route Shell with Feature Flag Off (Implemented)
