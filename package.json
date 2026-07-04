@@ -18,6 +18,8 @@
     "smoke:phase-3fa-d-owner-local-manual-smoke-execution-closeout": "node scripts/smoke_phase_3fa_d_owner_local_manual_smoke_execution_closeout.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
+    "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",
+    "smoke:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/smoke_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check.mjs",
     "check:phase-3fa-b-owner-local-kis-similarity-smoke-plan": "node scripts/check_phase_3fa_b_owner_local_kis_similarity_smoke_plan_contract.mjs",
     "check:phase-3fa-a-owner-local-kis-normalized-similarity-execution-plan": "node scripts/check_phase_3fa_a_owner_local_kis_normalized_similarity_execution_plan_contract.mjs",
     "check:phase-3ez-c-authenticated-similarity-api-route-shell-feature-flag-off": "node scripts/check_phase_3ez_c_authenticated_similarity_api_route_shell_feature_flag_off_contract.mjs",

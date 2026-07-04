@@ -332,3 +332,31 @@ export {
   buildMockedOwnerLocalManualRunFailedRedactedReport,
   buildMockedOwnerLocalManualRunResult,
 } from './mockedSimilarityOwnerLocalManualRunFixtures';
+
+export type {
+  SimilarityOwnerLocalCredentialCheckStatus,
+  SimilarityOwnerLocalCredentialCheckDecision,
+  SimilarityOwnerLocalCredentialCheckSource,
+  SimilarityOwnerLocalCredentialKeyRequirement,
+  SimilarityOwnerLocalCredentialKeyStatus,
+  SimilarityOwnerLocalCredentialCheckPolicy,
+  SimilarityOwnerLocalCredentialCheckReport,
+  SimilarityOwnerLocalCredentialCheckResult,
+} from './similarityOwnerLocalCredentialCheckTypes';
+
+export {
+  buildDefaultSimilarityOwnerLocalCredentialCheckPolicy,
+  buildOwnerLocalCredentialKeyRequirements,
+  buildOwnerLocalCredentialKeyStatuses,
+  buildOwnerLocalCredentialCheckReport,
+  buildOwnerLocalCredentialCheckResult,
+  assertCredentialCheckReportHasNoSecretEcho,
+} from './similarityOwnerLocalCredentialCheck';
+
+export {
+  buildMockedOwnerLocalCredentialCheckPolicy,
+  buildMockedOwnerLocalCredentialRequirements,
+  buildMockedOwnerLocalCredentialMissingResult,
+  buildMockedOwnerLocalCredentialPartialResult,
+  buildMockedOwnerLocalCredentialConfiguredResult,
+} from './mockedSimilarityOwnerLocalCredentialCheckFixtures';
