@@ -30,7 +30,8 @@ export type SimilarityApiResponseMode =
   | 'guard-blocked'
   | 'guard-allowed'
   | 'provider-deferred'
-  | 'owner-local-mocked';
+  | 'owner-local-mocked'
+  | 'owner-local-auth-usage-bridge';
 
 export type SimilarityApiSafeRequest = {
   purpose: 'chart-similarity';
@@ -102,13 +103,37 @@ export type SimilarityApiOwnerLocalMockedSuccessData = {
   dataPolicy: SimilarityApiOwnerLocalMockedDataPolicy;
 };
 
+/**
+ * Sanitized success data for the owner-local auth/usage runtime bridge path (Phase 3FB-C-ALT).
+ * Carries only safe, bucketed/labeled fields derived from a caller-supplied mock auth/usage
+ * request and the guard-allowed mocked integration result — never a raw user id, session/access
+ * token, exact usage store key, or account/trading field.
+ */
+export type SimilarityApiAuthUsageBridgeSuccessData = {
+  guardStatus: string;
+  authState: string;
+  role: string;
+  usageWindow: string;
+  usageRemainingBucket: string;
+  engineStatus: string;
+  normalizedBarsAvailable: boolean;
+  normalizedBarCountBucket: string;
+  matchCountBucket: string;
+  disclaimer: string;
+  dataPolicy: SimilarityApiOwnerLocalMockedDataPolicy;
+};
+
 export type SimilarityApiResponse = {
   ok: boolean;
   status: SimilarityApiResponseStatus;
   mode: SimilarityApiResponseMode;
   request: SimilarityApiSafeRequest;
   usage: SimilarityApiSafeUsage | null;
-  data: SimilarityApiMockedSuccessData | SimilarityApiOwnerLocalMockedSuccessData | null;
+  data:
+    | SimilarityApiMockedSuccessData
+    | SimilarityApiOwnerLocalMockedSuccessData
+    | SimilarityApiAuthUsageBridgeSuccessData
+    | null;
   error: SimilarityApiSafeError | null;
   warnings: string[];
 };

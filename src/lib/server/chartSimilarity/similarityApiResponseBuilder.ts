@@ -17,6 +17,7 @@ import type {
 } from './similarityExecutionGuardTypes';
 import { evaluateSimilarityExecutionGuard } from './similarityExecutionGuard';
 import type {
+  SimilarityApiAuthUsageBridgeSuccessData,
   SimilarityApiMockedSuccessData,
   SimilarityApiOwnerLocalMockedSuccessData,
   SimilarityApiResponse,
@@ -28,6 +29,8 @@ import type {
 } from './similarityApiResponseTypes';
 import type { SimilarityProviderIntegrationRequest, SimilarityProviderIntegrationResult } from './similarityProviderIntegrationTypes';
 import { runMockedProviderCompatibleSimilarityIntegration } from './similarityProviderIntegration';
+import type { SimilarityAuthUsageBridgeResult } from './similarityAuthUsageRouteBridgeTypes';
+import { isOwnerLocalAuthUsageBridgeRequestBody, runSimilarityAuthUsageRouteBridge } from './similarityAuthUsageRouteBridge';
 
 /** Sanitizes a guard request down to only the fields safe to echo back in an API response. */
 export const toSimilarityApiSafeRequest = (
@@ -322,5 +325,124 @@ export const buildOwnerLocalMockedSimilarityApiResponse = (body: unknown): Simil
       retryable: integrationResult.status === 'engine_error' || integrationResult.status === 'provider_error',
     },
     warnings: integrationResult.warnings,
+  };
+};
+
+/**
+ * Owner-local auth/usage runtime bridge route path (Phase 3FB-C-ALT).
+ *
+ * This is NOT real auth and NOT production authorization — mock auth/usage state is
+ * caller-supplied only. It evaluates the existing `evaluateSimilarityExecutionGuard` before
+ * allowing the Phase 3FB-A mocked, provider-compatible similarity integration to run. It never
+ * calls live KIS, never reads `process.env`/`.env`, and never exposes a raw provider payload,
+ * real market data, or account/trading field.
+ */
+export const isOwnerLocalAuthUsageBridgeSimilarityApiRequestBody = (body: unknown): boolean =>
+  isOwnerLocalAuthUsageBridgeRequestBody(body);
+
+const OWNER_LOCAL_AUTH_USAGE_BRIDGE_DISCLAIMER =
+  'Owner-local auth/usage bridge result. Synthetic, provider-compatible sample data only — not ' +
+  'real KIS market data, not investment advice. Mock auth/usage state is caller-supplied for ' +
+  'local development verification only; this is not a real session or usage store.';
+
+const buildOwnerLocalAuthUsageBridgeSimilarityApiSuccessData = (
+  bridgeResult: SimilarityAuthUsageBridgeResult,
+): SimilarityApiAuthUsageBridgeSuccessData => {
+  const integrationResult = bridgeResult.integrationResult;
+  return {
+    guardStatus: bridgeResult.guardStatus,
+    authState: bridgeResult.authState,
+    role: bridgeResult.role,
+    usageWindow: bridgeResult.usageWindow,
+    usageRemainingBucket: bridgeResult.usageRemainingBucket,
+    engineStatus: integrationResult?.engineStatus ?? 'not_run',
+    normalizedBarsAvailable: integrationResult?.normalizedBarsAvailable ?? false,
+    normalizedBarCountBucket: integrationResult?.normalizedBarCountBucket ?? 'none',
+    matchCountBucket: integrationResult?.matchCountBucket ?? 'none',
+    disclaimer: OWNER_LOCAL_AUTH_USAGE_BRIDGE_DISCLAIMER,
+    dataPolicy: integrationResult
+      ? {
+          ownerLocalOnly: integrationResult.dataPolicy.ownerLocalOnly,
+          allowLiveKis: integrationResult.dataPolicy.allowLiveKis,
+          allowRouteSuccess: integrationResult.dataPolicy.allowRouteSuccess,
+          allowPublicExecution: integrationResult.dataPolicy.allowPublicExecution,
+          allowBetaExecution: integrationResult.dataPolicy.allowBetaExecution,
+        }
+      : {
+          ownerLocalOnly: true,
+          allowLiveKis: false,
+          allowRouteSuccess: false,
+          allowPublicExecution: false,
+          allowBetaExecution: false,
+        },
+  };
+};
+
+/** Maps an owner-local auth/usage bridge API response status to its HTTP status code. */
+export const mapAuthUsageBridgeApiStatusToHttpStatus = (status: SimilarityApiResponseStatus): number => {
+  switch (status) {
+    case 'success':
+      return 200;
+    case 'auth_required':
+      return 401;
+    case 'usage_limited':
+      return 429;
+    case 'feature_disabled':
+      return 503;
+    case 'blocked':
+    case 'not_configured':
+    case 'error':
+    default:
+      return 422;
+  }
+};
+
+/**
+ * Runs the owner-local auth/usage runtime bridge and packages the result into a sanitized
+ * `SimilarityApiResponse`. Never calls live KIS, never calls `fetch`, never reads
+ * `process.env`/`.env`.
+ */
+export const buildOwnerLocalAuthUsageBridgeSimilarityApiResponse = (body: unknown): SimilarityApiResponse => {
+  const bridgeResult = runSimilarityAuthUsageRouteBridge(body);
+  const apiStatus = mapGuardStatusToApiStatus(bridgeResult.guardStatus);
+
+  const symbol = bridgeResult.normalizedRequest?.symbol ?? 'MOCKSYM';
+  const assetType = bridgeResult.normalizedRequest?.assetType ?? 'stock';
+
+  const request: SimilarityApiSafeRequest = {
+    purpose: 'chart-similarity',
+    source: 'mocked-provider-compatible',
+    symbol,
+    market: 'KR',
+    assetType,
+  };
+
+  if (bridgeResult.ok && apiStatus === 'success') {
+    return {
+      ok: true,
+      status: 'success',
+      mode: 'owner-local-auth-usage-bridge',
+      request,
+      usage: null,
+      data: buildOwnerLocalAuthUsageBridgeSimilarityApiSuccessData(bridgeResult),
+      error: null,
+      warnings: [],
+    };
+  }
+
+  const resolvedStatus: SimilarityApiResponseStatus = apiStatus === 'success' ? 'error' : apiStatus;
+  return {
+    ok: false,
+    status: resolvedStatus,
+    mode: 'owner-local-auth-usage-bridge',
+    request,
+    usage: null,
+    data: null,
+    error: {
+      code: bridgeResult.errorCode ?? resolvedStatus,
+      message: bridgeResult.safeMessage,
+      retryable: resolvedStatus === 'usage_limited' || resolvedStatus === 'error',
+    },
+    warnings: [],
   };
 };

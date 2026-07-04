@@ -94,6 +94,7 @@ export type {
   SimilarityApiMockedSuccessData,
   SimilarityApiOwnerLocalMockedDataPolicy,
   SimilarityApiOwnerLocalMockedSuccessData,
+  SimilarityApiAuthUsageBridgeSuccessData,
   SimilarityApiResponse,
 } from './similarityApiResponseTypes';
 
@@ -108,6 +109,9 @@ export {
   isOwnerLocalMockedSimilarityApiRequestBody,
   extractOwnerLocalMockedIntegrationRequestFields,
   buildOwnerLocalMockedSimilarityApiResponse,
+  isOwnerLocalAuthUsageBridgeSimilarityApiRequestBody,
+  mapAuthUsageBridgeApiStatusToHttpStatus,
+  buildOwnerLocalAuthUsageBridgeSimilarityApiResponse,
 } from './similarityApiResponseBuilder';
 
 export {
@@ -396,3 +400,34 @@ export {
   buildMockedProviderCompatibleIntegrationReadyResult,
   buildMockedProviderCompatibleIntegrationBlockedResult,
 } from './mockedSimilarityProviderIntegrationFixtures';
+
+export type {
+  SimilarityAuthUsageBridgeMode,
+  SimilarityAuthUsageBridgeSource,
+  SimilarityAuthUsageBridgeAuthState,
+  SimilarityAuthUsageBridgeRole,
+  SimilarityAuthUsageBridgeUsageWindow,
+  SimilarityAuthUsageBridgeUsageRemainingBucket,
+  SimilarityAuthUsageBridgeMockAuth,
+  SimilarityAuthUsageBridgeMockUsage,
+  SimilarityAuthUsageBridgeRequestBody,
+  SimilarityAuthUsageBridgeNormalizedRequest,
+  SimilarityAuthUsageBridgePolicy,
+  SimilarityAuthUsageBridgeResult,
+} from './similarityAuthUsageRouteBridgeTypes';
+
+export {
+  buildDefaultSimilarityAuthUsageRouteBridgePolicy,
+  isOwnerLocalAuthUsageBridgeRequestBody,
+  normalizeSimilarityAuthUsageBridgeRequestBody,
+  mapBridgeRequestToSimilarityExecutionGuardRequest,
+  mapBridgeUsageToGuardUsageSnapshot,
+  runSimilarityAuthUsageRouteBridge,
+} from './similarityAuthUsageRouteBridge';
+
+export {
+  buildMockedOwnerAuthUsageBridgeAllowedRequestBody,
+  buildMockedAnonymousAuthUsageBridgeBlockedRequestBody,
+  buildMockedUsageLimitedAuthUsageBridgeRequestBody,
+  buildMockedInvalidAuthUsageBridgeRequestBody,
+} from './mockedSimilarityAuthUsageRouteBridgeFixtures';

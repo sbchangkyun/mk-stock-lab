@@ -20,6 +20,8 @@
     "smoke:phase-3fb-b-owner-local-mocked-similarity-api-route-integration": "node scripts/smoke_phase_3fb_b_owner_local_mocked_similarity_api_route_integration.mjs",
     "check:phase-3fb-c-chart-ai-ui-owner-local-mocked-api-execution-wiring": "node scripts/check_phase_3fb_c_chart_ai_ui_owner_local_mocked_api_execution_wiring_contract.mjs",
     "check:phase-3fb-d-chart-ai-owner-local-mocked-ui-runtime-polish": "node scripts/check_phase_3fb_d_chart_ai_owner_local_mocked_ui_runtime_polish_contract.mjs",
+    "smoke:phase-3fb-c-alt-auth-usage-runtime-bridge-for-similarity-route": "node scripts/smoke_phase_3fb_c_alt_auth_usage_runtime_bridge_for_similarity_route.mjs",
+    "check:phase-3fb-c-alt-auth-usage-runtime-bridge-for-similarity-route": "node scripts/check_phase_3fb_c_alt_auth_usage_runtime_bridge_for_similarity_route_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

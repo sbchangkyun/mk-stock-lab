@@ -16,6 +16,16 @@
  * development verification. It never calls live KIS, never reads `process.env`/`.env`, and never
  * exposes a raw provider payload or real market data.
  *
+ * An explicit owner-local auth/usage bridge request (body containing
+ * `mode: "owner-local-auth-usage-bridge"`, `source: "mocked-provider-compatible"`,
+ * `ownerLocalAuthUsageBridge: true`, `mockAuth`, and `mockUsage`) additionally routes to the
+ * Phase 3FB-C-ALT auth/usage runtime bridge (`similarityAuthUsageRouteBridge.ts`), which evaluates
+ * the existing `evaluateSimilarityExecutionGuard` against the caller-supplied mock auth/usage
+ * state before allowing the same Phase 3FB-A mocked integration to run. This is also NOT real
+ * auth and NOT real usage persistence — it never calls live KIS, never reads
+ * `process.env`/`.env`, and never exposes a raw provider payload or account/trading field. The two
+ * owner-local branches are mutually exclusive by their distinct `mode` values.
+ *
  * Request bodies are parsed defensively; malformed JSON never crashes the route and always falls
  * back to the safe default (feature-disabled) request shape.
  */
@@ -24,8 +34,11 @@ import type { APIRoute } from 'astro';
 import { buildSimilarityApiRouteShellResult } from '../../../lib/server/chartSimilarity/similarityApiRouteShell';
 import type { SimilarityApiRouteShellResult } from '../../../lib/server/chartSimilarity/similarityApiRouteShellTypes';
 import {
+  buildOwnerLocalAuthUsageBridgeSimilarityApiResponse,
   buildOwnerLocalMockedSimilarityApiResponse,
+  isOwnerLocalAuthUsageBridgeSimilarityApiRequestBody,
   isOwnerLocalMockedSimilarityApiRequestBody,
+  mapAuthUsageBridgeApiStatusToHttpStatus,
 } from '../../../lib/server/chartSimilarity/similarityApiResponseBuilder';
 import type { SimilarityApiResponse } from '../../../lib/server/chartSimilarity/similarityApiResponseTypes';
 
@@ -66,6 +79,15 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       const response = buildOwnerLocalMockedSimilarityApiResponse(body);
       return jsonApiResponse(response, response.ok ? 200 : 422);
+    } catch {
+      return jsonResponse(buildSimilarityApiRouteShellResult({}));
+    }
+  }
+
+  if (isOwnerLocalAuthUsageBridgeSimilarityApiRequestBody(body)) {
+    try {
+      const response = buildOwnerLocalAuthUsageBridgeSimilarityApiResponse(body);
+      return jsonApiResponse(response, mapAuthUsageBridgeApiStatusToHttpStatus(response.status));
     } catch {
       return jsonResponse(buildSimilarityApiRouteShellResult({}));
     }
