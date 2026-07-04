@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FA-D-MANUAL-RUN-RETRY-HF1 - 2026-07-04
+
+### Targeted Owner-local KIS Provider Path Fix (Executed)
+
+- **Status**: Executed. Root-cause analysis identified and resolved a configuration gate, then surfaced a real network-layer connectivity blocker. No source code fix was needed or committed; KIS OHLC connectivity was not confirmed in this session.
+- **Background**: credential readiness was already confirmed by Phase 3FA-D-MANUAL-RUN-HF1, but the Phase 3FA-D-MANUAL-RUN-RETRY attempt still failed before reaching normalized OHLC bars. This phase targeted the specific provider-path blocker directly instead of adding another generic check.
+- **Root-cause analysis**: identified two sequential blockers via source inspection and one temporary, off-by-default, redacted-only diagnostic. Blocker 1: `getKisQuoteConfigReadiness()` in `kisClient.ts` requires the non-secret boolean feature flag `KIS_ENABLE_LIVE_QUOTES` (must equal the string `"true"`), independent of the three credential env names — this flag was absent, causing a `CONFIG_MISSING` result (configuration-only, not a code defect). Blocker 2 (surfaced after resolving Blocker 1): a real network-layer TCP connect timeout while reaching the configured KIS host, sanitized by the existing error handler into `INTERNAL_ERROR` (external network condition, not a code defect).
+- **Fix/gate handling**: no permanent source fix. `KIS_ENABLE_LIVE_QUOTES` was set only in the current process environment for the single retry invocation (not committed, not persisted, not in `.env`/Vercel). A temporary diagnostic (error type + network cause code only, no URL/credential/payload) was added to `kisClient.ts` to identify Blocker 2's category, then fully reverted via `git checkout` before commit since no defect was found.
+- **Redacted retry result**: `credentialPreflightStatus: "configured"`, `credentialReady: true`, `resultStatus: "failed_redacted"`, `decision: "failed_before_provider_call"`, `providerProbeStatus: "fail"`, `normalizedBarsAvailable: false`, `normalizedBarCountBucket: "none"`, `engineContractCheckStatus: "not_run"`, `engineInvoked: false`, `redactionCheckStatus: "pass"`, `routeStatus: "feature_disabled"`, `smokeExecuted: true`, `rawValuesPrinted: false`, `credentialsOrEnvPrinted: false`.
+- **Preserved policy**: no API route change, route remains `feature_disabled`, no `/chart-ai` UI change, no change to the deterministic similarity engine, no new checker/harness/credential-check layer, no public/beta execution, no auth/storage/DB/cache, no SQL/migration, no account/trading/order/balance APIs, no dependency changes, no deployment, no push, no raw values printed or committed; `kisClient.ts` reverted to its prior committed state (no net source change).
+- **Recommended next phase**: Phase 3FA-D-MANUAL-RUN-RETRY-HF2 — targeted to the real transport connectivity failure (owner must confirm outbound network reachability to the KIS host from their own local session, outside this repository), then re-run the approved retry with `KIS_ENABLE_LIVE_QUOTES=true` set for that session.
+
 ## Phase 3FA-D-MANUAL-RUN-RETRY - 2026-07-04
 
 ### Owner-local KIS OHLC Smoke Retry, Redacted Result (Executed)
