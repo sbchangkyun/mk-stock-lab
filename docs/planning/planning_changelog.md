@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FA-D-MANUAL-RUN-RETRY - 2026-07-04
+
+### Owner-local KIS OHLC Smoke Retry, Redacted Result (Executed)
+
+- **Status**: Executed. The owner-approved owner-local KIS OHLC manual smoke retry was run once under explicit dual approval (CLI flag + env flag); resolved to a redacted failed result. No source code change was required or made.
+- **Background**: Phase 3FA-D-MANUAL-RUN-HF1 previously reported `status: "missing"`; after the owner set the three required KIS credential env key names at the Windows User environment scope and restarted the host process (newly-set User-scope env vars are not inherited by already-running processes), the HF1 preflight check was re-run and reported `status: "configured"`, `readyForManualRunRetry: true`, satisfying the precondition for this retry.
+- **Approval scope**: the owner approved a KIS OHLC call for this manual-run retry only, using the same dual-approval-flag mechanism from Phase 3FA-D-MANUAL-RUN; this approval does not extend to public execution, beta execution, route success, API route integration, `/chart-ai` UI integration, auth runtime, usage storage, DB/cache runtime, SQL/migration, deployment, or push.
+- **Redacted retry result**: result status `failed_redacted`, decision `failed_before_provider_call`, `providerProbe.status: "fail"`, `normalizedBarsAvailable: false`, `normalizedBarCountBucket: "none"`, `engineContractCheck.status: "not_run"`, `engineInvoked: false`, `redactionCheck.status: "pass"`, `routeStatus: "feature_disabled"`, `smokeExecuted: true`. No raw KIS payload, OHLC value, credential, token, or environment value was printed or persisted.
+- **Preserved policy**: no API route change, no `/chart-ai` UI change, no change to the deterministic similarity engine, the existing owner-local KIS OHLC client, the existing KIS client adapter, or the Phase 3FA-D-MANUAL-RUN/HF1 modules and scripts (behavior fully preserved, no source modification needed), no new phase/checker/harness/credential-check layer created, no KIS route call, no public/beta execution, no real auth runtime, no DB/cache runtime, no SQL/migration, no external AI, no account/trading/order/balance APIs, no Vercel env changes, no deployment, no push, no dependency changes, no `.env`/`process.env` value printed or committed.
+- **Recommended next phase**: Phase 3FA-D-MANUAL-RUN-RETRY-HF1 — a targeted, narrowly scoped fix to identify (without printing any secret or raw value) the additional configuration condition behind the transport-level failure, distinct from the three required credential env key names already confirmed present.
+
 ## Phase 3FA-D-MANUAL-RUN-HF1 - 2026-07-04
 
 ### Owner-local KIS Credential Configuration Check, No Secret Echo (Implemented)
