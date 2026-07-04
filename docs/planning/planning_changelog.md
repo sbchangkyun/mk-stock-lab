@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EZ-B - 2026-07-04
+
+### Usage Storage Design and Approval (Prepared/Implemented)
+
+- **Status**: Prepared/Implemented — usage storage design foundation added, no storage runtime or SQL.
+- **Background**: Phase 3EZ-A defined provider-agnostic auth subject-to-guard mapping. This phase defines usage storage design and approval requirements before any route/storage implementation.
+- **Implemented scope**: added usage storage design types (`similarityUsageStorageDesignTypes.ts`), a storage-agnostic default policy, UTC window/key helpers, a role-based limit helper, a charge decision helper (`similarityUsageStorageDesign.ts`), mocked usage design fixtures (`mockedSimilarityUsageStorageDesignFixtures.ts`), server exports, and the docs/changelog/package/checker for this phase.
+- **Usage design results**: backend default `none`; enabled false; subjectKey strategy `not_configured`; daily/monthly UTC window model; role limits aligned to guard policy (`authenticated/default: 3`, `beta: 10`, `owner: 50`, `admin: 100` daily); default charge policy charges only successful execution and does not charge auth-required, usage-limited, feature-disabled, provider-disabled, validation-error, provider-error, or internal-error paths.
+- **Approval requirements**: owner approval before any storage runtime; SQL/migration approval before database implementation; cache approval before runtime cache; privacy review for subjectKey; explicit route approval before API implementation.
+- **Preserved policy**: no usage storage implementation, no DB/cache runtime, no SQL/migration, no Supabase/Redis/Turso/Prisma/Drizzle import, no API route, no real auth runtime, no KIS call, no `/chart-ai` UI change, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env`/`process.env` read.
+- **Validation**: the full Phase 3EZ-B validation suite (new static checker plus the established Phase 3EZ-A/3EX-E/3EY-D/3EY-C/3EX-C/3EW-C/3EW-B/3EW-A/3EV-B/3EV-A checkers/smokes, provider-boundaries, kis-runtime-guard, kis-error-fallback, production-domain, build, and `git diff --check`) was run; only the known historical allowed-changed-path exceptions in `check:phase-3ey-d`, `check:phase-3ey-c`, and `check:phase-3ex-e` remained, consistent with the pattern already documented in Phase 3EZ-A.
+- **Recommended next phase**: Phase 3EZ-C — Authenticated Similarity API Route Shell with Feature Flag Off. Alternative: Phase 3EX-E-OWNER-RUNTIME-CHECK — Owner Runtime Check of Polished Chart Analysis Workspace.
+
 ## Phase 3EZ-A - 2026-07-04
 
 ### Real Auth Integration Design for Similarity Execution (Prepared/Implemented)

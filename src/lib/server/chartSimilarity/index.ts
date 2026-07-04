@@ -137,3 +137,38 @@ export {
   buildSimilarityAuthIntegrationDesignResult,
   buildGuardRequestFromAuthDesign,
 } from './similarityAuthIntegrationDesign';
+
+export type {
+  SimilarityUsageStorageBackendKind,
+  SimilarityUsageStorageStatus,
+  SimilarityUsageWindowKind,
+  SimilarityUsageChargeTiming,
+  SimilarityUsageChargeOutcome,
+  SimilarityUsageExecutionOutcome,
+  SimilarityUsageStorageKey,
+  SimilarityUsageStoragePolicy,
+  SimilarityUsageChargeDecision,
+  SimilarityUsageStorageDesignResult,
+} from './similarityUsageStorageDesignTypes';
+
+export type { SimilarityUsageStorageKeyInput } from './similarityUsageStorageDesign';
+
+export {
+  buildDefaultSimilarityUsageStoragePolicy,
+  buildUsageWindowStartIso,
+  buildSimilarityUsageStorageKey,
+  getUsageLimitForGuardRole,
+  decideSimilarityUsageCharge,
+  buildSimilarityUsageStorageDesignResult,
+} from './similarityUsageStorageDesign';
+
+export {
+  buildMockedSimilarityUsageStoragePolicy,
+  buildMockedAuthenticatedDailyUsageKey,
+  buildMockedBetaDailyUsageKey,
+  buildMockedOwnerDailyUsageKey,
+  buildMockedUsageChargeSuccessDecision,
+  buildMockedUsageChargeAuthRequiredDecision,
+  buildMockedUsageChargeProviderErrorDecision,
+  buildMockedUsageStorageDesignResult,
+} from './mockedSimilarityUsageStorageDesignFixtures';
