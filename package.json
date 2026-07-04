@@ -12,6 +12,8 @@
     "check:mobile-baseline": "node scripts/check_mobile_baseline_usability_static_contract.mjs",
     "guard:production-mobile-geometry": "node scripts/owner_check_production_mobile_geometry.mjs",
     "check:phase-3ex-e-hf1-analysis-workspace-tagged-page-swap-ui-fix": "node scripts/check_phase_3ex_e_hf1_analysis_workspace_tagged_page_swap_ui_fix_contract.mjs",
+    "check:phase-3fa-c-owner-local-kis-similarity-smoke-harness-disabled-by-default": "node scripts/check_phase_3fa_c_owner_local_kis_similarity_smoke_harness_disabled_by_default_contract.mjs",
+    "smoke:phase-3fa-c-owner-local-kis-similarity-smoke-harness-disabled-by-default": "node scripts/smoke_phase_3fa_c_owner_local_kis_similarity_smoke_harness_disabled_by_default.mjs",
     "check:phase-3fa-b-owner-local-kis-similarity-smoke-plan": "node scripts/check_phase_3fa_b_owner_local_kis_similarity_smoke_plan_contract.mjs",
     "check:phase-3fa-a-owner-local-kis-normalized-similarity-execution-plan": "node scripts/check_phase_3fa_a_owner_local_kis_normalized_similarity_execution_plan_contract.mjs",
     "check:phase-3ez-c-authenticated-similarity-api-route-shell-feature-flag-off": "node scripts/check_phase_3ez_c_authenticated_similarity_api_route_shell_feature_flag_off_contract.mjs",
