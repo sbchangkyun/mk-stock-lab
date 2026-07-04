@@ -113,3 +113,27 @@ export {
   buildMockedSimilarityApiNotConfiguredResponse,
   buildMockedSimilarityApiBlockedResponse,
 } from './mockedSimilarityApiResponseFixtures';
+
+export type {
+  SimilarityAuthProviderKind,
+  SimilarityAuthIntegrationStatus,
+  SimilarityAuthSubjectKind,
+  SimilarityAuthSubject,
+  SimilarityAuthRoleMappingPolicy,
+  SimilarityAuthIntegrationDesignResult,
+} from './similarityAuthIntegrationDesignTypes';
+
+export type { SimilarityGuardRequestDesignInput } from './similarityAuthIntegrationDesign';
+
+export {
+  buildDefaultSimilarityAuthRoleMappingPolicy,
+  buildAnonymousSimilarityAuthSubject,
+  buildMockedAuthenticatedSimilarityAuthSubject,
+  buildMockedBetaSimilarityAuthSubject,
+  buildMockedOwnerSimilarityAuthSubject,
+  buildMockedAdminSimilarityAuthSubject,
+  mapAuthSubjectToGuardRole,
+  mapAuthSubjectToGuardAuthState,
+  buildSimilarityAuthIntegrationDesignResult,
+  buildGuardRequestFromAuthDesign,
+} from './similarityAuthIntegrationDesign';

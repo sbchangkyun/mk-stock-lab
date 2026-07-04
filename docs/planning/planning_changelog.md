@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3EZ-A - 2026-07-04
+
+### Real Auth Integration Design for Similarity Execution (Prepared/Implemented)
+
+- **Status**: Prepared/Implemented — real-auth integration design foundation added, no real auth runtime or API route.
+- **Background**: Phase 3EX-E completed the `/chart-ai` owner-review UI polish. Phase 3EY-C added the guard foundation, and Phase 3EY-D added the sanitized mocked API response contract. This phase defines provider-agnostic auth subject-to-guard mapping before any real route or auth provider is added.
+- **Implemented scope**: added `similarityAuthIntegrationDesignTypes.ts` defining `SimilarityAuthProviderKind`, `SimilarityAuthIntegrationStatus`, `SimilarityAuthSubjectKind`, `SimilarityAuthSubject`, `SimilarityAuthRoleMappingPolicy`, and `SimilarityAuthIntegrationDesignResult`; added `similarityAuthIntegrationDesign.ts` with `buildDefaultSimilarityAuthRoleMappingPolicy`, mocked subject builders for anonymous/authenticated/beta/owner/admin, `mapAuthSubjectToGuardRole`/`mapAuthSubjectToGuardAuthState`, `buildSimilarityAuthIntegrationDesignResult`, and `buildGuardRequestFromAuthDesign`; updated `src/lib/server/chartSimilarity/index.ts` exports; added the Phase 3EZ-A planning/result docs, static checker, and package script.
+- **Auth mapping results**: anonymous maps to guard `anonymous`/`missing`; authenticated maps to `authenticated`/`authenticated`; beta maps to `beta`/`authenticated`; owner maps to `owner`/`owner`; admin maps to `admin`/`admin`.
+- **Safe data policy**: no tokens, email, IP address, raw auth provider payload, cookies, headers, KIS credentials, or account/trading fields are introduced; future API responses must continue to use the Phase 3EY-D sanitized response boundary that drops `userId`, `role`, and `authState`.
+- **Preserved policy**: no real auth runtime, no Supabase auth import, no external auth provider import, no cookies/headers read, no API route, no usage storage, no KIS call, no `/chart-ai` UI change, no DB/cache runtime, no SQL/migration, no external AI, no public KIS data, no `source=live`, no `source=auto`, no account/trading APIs, no Vercel env changes, no deployment, no push, no dependency changes, no actual market values, and no `.env`/`process.env` read.
+- **Validation**: `npm run check:phase-3ez-a-real-auth-integration-design-for-similarity-execution` and the established validation suite run in full; results recorded in the phase result document and final report.
+- **Recommended next phase**: Phase 3EZ-B — Usage Storage Design and Approval. Alternative: Phase 3EX-E-OWNER-RUNTIME-CHECK — Owner Runtime Check of Polished Chart Analysis Workspace.
+
 ## Phase 3EX-E - 2026-07-04
 
 ### Similarity Result UI Owner Review and Polish (Implemented)
