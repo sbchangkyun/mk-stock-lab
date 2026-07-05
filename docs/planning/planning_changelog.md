@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-D-PLAN - 2026-07-04
+
+### Role/Usage Store Runtime Adapter Approval Package, No Runtime Change (Prepared)
+
+- **Status**: Prepared. Added a lean documentation-only approval package for future role assignment and usage store runtime adapters. No runtime source file, route file, UI file, database connection, Supabase client, environment read, migration execution, package install, dependency change, deploy, or push occurred.
+- **Background**: Phase 3FD-C created a review-only migration draft for role assignment and usage store persistence. This phase defines the approval boundary for future runtime adapters before implementation begins.
+- **Implemented scope**: consolidated runtime adapter approval plan, result doc, narrow static checker, package script, changelog.
+- **Preserved policy**: no migration execution, no database connection, no Supabase client creation, no environment value read, no cookie/header/session parsing, no JWT verification, no route source change, no `/chart-ai` source change, no server runtime source change, no live KIS call, no package install, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-D — Role/Usage Store Runtime Adapter Interface Implementation, Disabled by Default, Mocked DB Only. Alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change. Hold alternative: Phase 3FD-C-HF1 — Migration Draft Review Revisions, Not Executed.
+
 ## Phase 3FD-C - 2026-07-04
 
 ### Role Assignment and Usage Store Migration Draft, Not Executed (Implemented)

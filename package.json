@@ -47,6 +47,7 @@
     "check:phase-3fd-b-real-supabase-auth-subject-resolver-disabled-by-default": "node scripts/check_phase_3fd_b_real_supabase_auth_subject_resolver_disabled_by_default_contract.mjs",
     "check:phase-3fd-c-plan-role-usage-schema-migration-approval": "node scripts/check_phase_3fd_c_plan_role_usage_schema_migration_approval_contract.mjs",
     "check:phase-3fd-c-role-usage-migration-draft-not-executed": "node scripts/check_phase_3fd_c_role_usage_migration_draft_not_executed_contract.mjs",
+    "check:phase-3fd-d-plan-role-usage-runtime-adapter-approval": "node scripts/check_phase_3fd_d_plan_role_usage_runtime_adapter_approval_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",
