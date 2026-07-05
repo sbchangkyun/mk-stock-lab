@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-A - 2026-07-04
+
+### Real Supabase Auth Runtime Approval and Setup Package, No Runtime Change (Prepared)
+
+- **Status**: Prepared. Added a documentation-only real Supabase Auth runtime approval and setup package for the Chart Similarity feature. No runtime source file was changed, no route source file was changed, no UI file was changed, no package was installed, no dependency was changed, and no live KIS call was made.
+- **Background**: Phase 3FC-J completed the guarded route manual QA checklist and productization boundary review. This phase prepares the owner approval package, dependency/environment key plan, future runtime implementation plan, redaction and subject mapping policy, and owner approval form needed before any real Supabase Auth subject resolver implementation phase can begin.
+- **Implemented scope**: real Supabase Auth runtime approval package, Supabase dependency and environment key plan, Supabase Auth runtime implementation plan, auth redaction and subject mapping policy, owner approval form, result doc, narrow static checker, package script, changelog.
+- **Preserved policy**: `@supabase/supabase-js` was already present in `package.json` prior to this phase and remains unchanged; its presence is documented as a factual observation only and is not treated as owner approval to implement real Supabase runtime for the Chart Similarity feature. No package was installed, removed, or upgraded, no lockfile was modified, no environment variable value was read or printed, no real Supabase client was created, no cookie/header/session parsing occurred, no real database or SQL/migration work occurred, no route or `/chart-ai` source change occurred, no route success was enabled, no beta/public activation occurred, and no live KIS call was made.
+- **Recommended next phase**: Phase 3FD-B — Real Supabase Auth Subject Resolver Implementation, Disabled by Default. Alternative: Phase 3FD-B-ALT — Supabase Auth Runtime Mocked Adapter First, No Real Supabase Call. Hold alternative: Phase 3FC-K — Owner Manual QA Findings Incorporation, No Runtime Change.
+
 ## Phase 3FC-J - 2026-07-04
 
 ### Guarded Route Manual QA and Productization Boundary Review, No Runtime Change (Prepared)
