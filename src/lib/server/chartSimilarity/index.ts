@@ -734,3 +734,43 @@ export {
   buildMockedDbWithTransactionFailure,
   buildMockedDbUnavailable,
 } from './mockedSimilarityRoleUsageRuntimeAdapterFixtures';
+
+export type {
+  SimilarityGuardedRouteRuntimeCompositionStatus,
+  SimilarityGuardedRouteRuntimeCompositionSource,
+  SimilarityGuardedRouteRuntimeCompositionPolicy,
+  SimilarityGuardedRouteRuntimeCompositionSafePolicySummary,
+  SimilarityGuardedRouteRuntimeCompositionRequest,
+  SimilarityGuardedRouteRuntimeCompositionAuthState,
+  SimilarityGuardedRouteRuntimeCompositionRole,
+  SimilarityGuardedRouteRuntimeCompositionRemainingBucket,
+  SimilarityGuardedRouteRuntimeCompositionCountBucket,
+  SimilarityGuardedRouteRuntimeCompositionMatchBucket,
+  SimilarityGuardedRouteRuntimeCompositionSafeResponse,
+  SimilarityGuardedRouteRuntimeCompositionResult,
+  SimilarityGuardedRouteRuntimeAuthBoundaryResult,
+  SimilarityGuardedRouteRuntimeRoleUsageBoundaryResult,
+  SimilarityGuardedRouteRuntimeFeatureFlagBoundaryResult,
+  SimilarityGuardedRouteRuntimeProviderBoundaryResult,
+  SimilarityGuardedRouteRuntimeCompositionDeps,
+} from './similarityGuardedRouteRuntimeCompositionTypes';
+
+export {
+  buildDefaultSimilarityGuardedRouteRuntimeCompositionPolicy,
+  buildAllGatesOffMockedRuntimeCompositionPolicy,
+  normalizeSimilarityGuardedRouteRuntimeCompositionRequest,
+  runSimilarityGuardedRouteRuntimeComposition,
+  buildBlockedGuardedRouteRuntimeCompositionResult,
+  assertSimilarityGuardedRouteRuntimeCompositionResultIsSafe,
+} from './similarityGuardedRouteRuntimeComposition';
+
+export {
+  buildMockedGuardedRouteRuntimeCompositionRequest,
+  buildMockedCompositionDepsAllBlocked,
+  buildMockedCompositionDepsAuthBlocked,
+  buildMockedCompositionDepsRoleUsageBlocked,
+  buildMockedCompositionDepsFeatureFlagBlocked,
+  buildMockedCompositionDepsProviderBlocked,
+  buildMockedCompositionDepsMostFavorableStillRouteDisabled,
+  buildMockedCompositionDepsUnsafeOutputAttempt,
+} from './mockedSimilarityGuardedRouteRuntimeCompositionFixtures';

@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-E - 2026-07-04
+
+### Guarded Route Runtime Composition Scaffold, All Gates Off, Mocked Runtime Only (Implemented)
+
+- **Status**: Implemented. Added a server-only guarded route runtime composition scaffold and wired it into the existing guarded route branch while keeping all gates off. Route success remains disabled and the guarded branch still returns safe blocked behavior.
+- **Background**: Phase 3FD-E-PLAN defined the approved route composition order after the mocked role/usage runtime adapter was implemented.
+- **Implemented scope**: composition types, composition implementation, deterministic mocked fixtures, existing guarded route branch integration, export wiring, smoke, static checker, result doc, package scripts, changelog.
+- **Preserved policy**: no new route branch, no `/chart-ai` source change, no provider or deterministic engine change, no database connection, no Supabase client creation, no environment value read, no cookie/header/session parsing, no JWT verification, no migration execution, no live KIS call, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-F-PLAN ??Owner-local Guarded Composition Manual QA and Activation Boundary Review, No Runtime Change. Alternative: Phase 3FD-E-HF1 ??Guarded Composition Scaffold Revisions, All Gates Off. Hold: Phase 3FD-B-HF1 ??Real Supabase Client Factory Approval Package, No Runtime Change.
+
 ## Phase 3FD-E-PLAN - 2026-07-04
 
 ### Guarded Route Runtime Composition Approval Package, No Runtime Change (Prepared)

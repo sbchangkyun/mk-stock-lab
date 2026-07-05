@@ -28,8 +28,9 @@
  *
  * An explicit guarded runtime scaffold request (body containing `mode: "guarded-runtime-scaffold"`,
  * `source: "mocked-provider-compatible"`, and `guardedRuntimeScaffold: true`) additionally routes
- * to the Phase 3FC-H guarded route scaffold (`similarityGuardedRouteScaffold.ts`) ONLY to confirm
- * safe blocked/disabled handling. This branch never returns a new success response shape: it
+ * to the Phase 3FC-H guarded route scaffold (`similarityGuardedRouteScaffold.ts`) and the Phase
+ * 3FD-E all-gates-off composition scaffold only to confirm safe blocked/disabled handling. This
+ * branch never returns a new success response shape: it
  * always falls back to the existing sanitized feature-disabled shell response, regardless of what
  * the scaffold module computes. All runtime gates remain off — no real Supabase, no real database,
  * no live KIS, no mocked provider execution, no public/beta route success. This branch is mutually
@@ -54,6 +55,7 @@ import {
   isGuardedRuntimeScaffoldSimilarityRequestBody,
   runSimilarityGuardedRouteScaffold,
 } from '../../../lib/server/chartSimilarity/similarityGuardedRouteScaffold';
+import { runSimilarityGuardedRouteRuntimeComposition } from '../../../lib/server/chartSimilarity/similarityGuardedRouteRuntimeComposition';
 
 export const prerender = false;
 
@@ -114,6 +116,13 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonResponse(buildSimilarityApiRouteShellResult({}));
     } catch {
       return jsonResponse(buildSimilarityApiRouteShellResult({}));
+    } finally {
+      await runSimilarityGuardedRouteRuntimeComposition({
+        mode: 'guarded-runtime-scaffold',
+        source: 'mocked-runtime',
+        currentIso: '2026-07-04T12:00:00.000+09:00',
+        safeRequestRef: 'route-guarded-request-ref',
+      });
     }
   }
 
