@@ -461,3 +461,34 @@ export {
   buildMockedInvalidSupabaseSessionResolverInput,
   buildMockedClientClaimedRoleIgnoredResolverInput,
 } from './mockedSimilarityAuthSubjectResolverFixtures';
+
+export type {
+  SimilarityRoleAssignmentRole,
+  SimilarityRoleAssignmentResolverStatus,
+  SimilarityRoleAssignmentSource,
+  SimilarityRoleAssignmentSubjectRef,
+  SimilarityRoleAssignmentRecord,
+  SimilarityRoleAssignmentResolverInput,
+  SimilarityRoleAssignmentResolverPolicy,
+  SimilarityRoleAssignmentResolverSafePolicySummary,
+  SimilarityRoleAssignmentResolverResult,
+} from './similarityRoleAssignmentResolverTypes';
+
+export {
+  buildDefaultSimilarityRoleAssignmentResolverPolicy,
+  buildMockedSimilarityRoleAssignmentResolverPolicy,
+  normalizeSimilarityRoleAssignmentResolverInput,
+  resolveSimilarityRoleAssignment,
+  assertSimilarityRoleAssignmentResolverResultIsSafe,
+} from './similarityRoleAssignmentResolver';
+
+export {
+  buildMockedAnonymousRoleAssignmentResolverInput,
+  buildMockedAuthenticatedNoAssignmentRoleResolverInput,
+  buildMockedBetaRoleAssignmentResolverInput,
+  buildMockedOwnerRoleAssignmentResolverInput,
+  buildMockedAdminRoleAssignmentResolverInput,
+  buildMockedInactiveAssignmentIgnoredResolverInput,
+  buildMockedMultipleAssignmentsIgnoredResolverInput,
+  buildMockedClientClaimedRoleIgnoredRoleResolverInput,
+} from './mockedSimilarityRoleAssignmentResolverFixtures';

@@ -28,6 +28,8 @@
     "check:phase-3fc-b-real-auth-usage-runtime-design": "node scripts/check_phase_3fc_b_real_auth_usage_runtime_design_contract.mjs",
     "smoke:phase-3fc-c-supabase-auth-subject-resolver-scaffold": "node scripts/smoke_phase_3fc_c_supabase_auth_subject_resolver_scaffold.mjs",
     "check:phase-3fc-c-supabase-auth-subject-resolver-scaffold": "node scripts/check_phase_3fc_c_supabase_auth_subject_resolver_scaffold_contract.mjs",
+    "smoke:phase-3fc-d-role-assignment-resolver-scaffold": "node scripts/smoke_phase_3fc_d_role_assignment_resolver_scaffold.mjs",
+    "check:phase-3fc-d-role-assignment-resolver-scaffold": "node scripts/check_phase_3fc_d_role_assignment_resolver_scaffold_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

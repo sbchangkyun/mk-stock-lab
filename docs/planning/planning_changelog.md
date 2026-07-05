@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-D - 2026-07-04
+
+### Role Assignment Resolver Scaffold, Disabled by Default, No Live KIS (Implemented)
+
+- **Status**: Implemented. Added a server-only role assignment resolver scaffold that is disabled by default and testable only through deterministic mocked fixtures. No real Supabase or DB role lookup was connected.
+- **Background**: Phase 3FC-C added the auth subject resolver scaffold, which can resolve only anonymous/authenticated role seeds. This phase adds the next isolated scaffold: resolving beta/owner/admin roles only from explicit role assignment records.
+- **Implemented scope**: role assignment resolver types, disabled-by-default resolver policy, mocked role assignment fixtures, resolver smoke, static checker, exports, contract doc, result doc, package scripts, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env change, no deploy, no push, no public live route, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import or real Supabase client, no cookie/header/session parsing, no usage DB/cache runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/API route/`/chart-ai` runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FC-E — Usage Store Interface Scaffold, Disabled by Default, No Live KIS. Alternative: Phase 3FC-E-ALT — Feature Flag Resolver Scaffold, Disabled by Default, No Live KIS.
+
 ## Phase 3FC-C - 2026-07-04
 
 ### Supabase Auth Subject Resolver Scaffold, Disabled by Default, No Live KIS (Implemented)
