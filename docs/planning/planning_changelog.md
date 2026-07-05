@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-C - 2026-07-04
+
+### Role Assignment and Usage Store Migration Draft, Not Executed (Implemented)
+
+- **Status**: Implemented. Added a review-only migration draft for future role assignment and usage store persistence. The draft was not executed, and no database connection was made.
+- **Background**: Phase 3FD-C-PLAN prepared the schema/migration approval package and the owner approved the open decisions for migration drafting only. This phase turns those approved decisions into a review-only migration draft without connecting to Supabase or changing runtime behavior.
+- **Implemented scope**: draft migration SQL file, migration draft review doc, result doc, narrow static checker, package script, changelog.
+- **Preserved policy**: no migration execution, no database connection, no Supabase client creation, no environment value read, no route source change, no `/chart-ai` source change, no server runtime source change, no live KIS call, no KIS network diagnostics, no package install, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-D-PLAN — Role/Usage Store Runtime Adapter Approval Package, No Runtime Change. Alternative: Phase 3FD-C-HF1 — Migration Draft Review Revisions, Not Executed. Hold alternative: Phase 3FC-K — Owner Manual QA Findings Incorporation, No Runtime Change.
+
 ## Phase 3FD-C-PLAN - 2026-07-04
 
 ### Role Assignment and Usage Store Schema/Migration Approval Package, No Runtime Change (Prepared)
