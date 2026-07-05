@@ -683,3 +683,54 @@ export {
   buildMockedClientErrorSupabaseCompatibleAuthClient,
   buildMockedClientRoleClaimSupabaseCompatibleAuthClient,
 } from './mockedSimilarityRealSupabaseAuthSubjectResolverFixtures';
+
+export type {
+  SimilarityRoleUsageRuntimeAdapterStatus,
+  SimilarityRoleUsageRuntimeAdapterSource,
+  SimilarityRoleUsageRuntimeAdapterPolicy,
+  SimilarityRoleUsageRuntimeAdapterSafePolicySummary,
+  SimilarityRoleUsageRuntimeSubject,
+  SimilarityRoleUsageResolvedRole,
+  SimilarityRoleAssignmentRecord as SimilarityRoleUsageRuntimeAssignmentRecord,
+  SimilarityUsageCounterRecord as SimilarityRoleUsageRuntimeCounterRecord,
+  SimilarityUsageEventRecord as SimilarityRoleUsageRuntimeEventRecord,
+  SimilarityRoleUsageRuntimeAdapterRequest,
+  SimilarityRoleUsageRuntimeAdapterDecision,
+  SimilarityRoleUsageRuntimeAdapterResult,
+  SimilarityRoleUsageCounterLookupInput,
+  SimilarityRoleUsageCommitInput,
+  SimilarityRoleUsageMockDb,
+  SimilarityRoleUsageRuntimeAdapterDeps,
+  SimilarityRoleUsageRoleResolution,
+  SimilarityRoleUsageComputation,
+} from './similarityRoleUsageRuntimeAdapterTypes';
+
+export {
+  buildDefaultSimilarityRoleUsageRuntimeAdapterPolicy,
+  buildMockedDbSimilarityRoleUsageRuntimeAdapterPolicy,
+  normalizeSimilarityRoleUsageRuntimeAdapterRequest,
+  resolveRoleFromAssignments,
+  mapUsageRemainingBucket,
+  computeUsageDecision,
+  resolveSimilarityRoleUsageRuntimeAdapter,
+  assertSimilarityRoleUsageRuntimeAdapterResultIsSafe,
+} from './similarityRoleUsageRuntimeAdapter';
+
+export type { SimilarityRoleUsageMockDbFixture } from './mockedSimilarityRoleUsageRuntimeAdapterFixtures';
+
+export {
+  buildMockedRoleUsageRuntimeAdapterRequest,
+  buildMockedRoleUsageRuntimeAdapterPolicy,
+  buildMockedDbWithAuthenticatedUsageAvailable,
+  buildMockedDbWithBetaRoleUsageAvailable,
+  buildMockedDbWithOwnerRoleUsageAvailable,
+  buildMockedDbWithAdminRoleUsageAvailable,
+  buildMockedDbWithUsageLimited,
+  buildMockedDbWithIdempotentReplay,
+  buildMockedDbWithAmbiguousRoleAssignments,
+  buildMockedDbWithExpiredRoleAssignment,
+  buildMockedDbWithMalformedRoleAssignment,
+  buildMockedDbWithMissingCounters,
+  buildMockedDbWithTransactionFailure,
+  buildMockedDbUnavailable,
+} from './mockedSimilarityRoleUsageRuntimeAdapterFixtures';

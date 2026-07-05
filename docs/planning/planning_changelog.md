@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-D - 2026-07-04
+
+### Role/Usage Store Runtime Adapter Interface Implementation, Disabled by Default, Mocked DB Only (Implemented)
+
+- **Status**: Implemented. Added a server-only role/usage runtime adapter interface that is disabled by default and validated only with deterministic mocked DB fixtures. No real database connection, Supabase client, environment read, migration execution, route integration, UI change, live KIS call, deploy, or push occurred.
+- **Background**: Phase 3FD-D-PLAN prepared the approval boundary for future role and usage runtime adapters after the Phase 3FD-C review-only migration draft. This phase implements the mocked DB-only adapter interface without enabling real persistence.
+- **Implemented scope**: runtime adapter types, adapter implementation, mocked DB fixtures, export wiring, smoke, static checker, result doc, package scripts, changelog.
+- **Preserved policy**: no migration execution, no database connection, no Supabase client creation, no environment value read, no cookie/header/session parsing, no JWT verification, no route source change, no `/chart-ai` source change, no server provider source change, no live KIS call, no package install, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-E-PLAN — Guarded Route Runtime Composition Approval, No Runtime Change. Alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change. Hold alternative: Phase 3FD-D-HF1 — Runtime Adapter Mocked DB Revisions.
+
 ## Phase 3FD-D-PLAN - 2026-07-04
 
 ### Role/Usage Store Runtime Adapter Approval Package, No Runtime Change (Prepared)
