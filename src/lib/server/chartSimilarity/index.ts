@@ -492,3 +492,41 @@ export {
   buildMockedMultipleAssignmentsIgnoredResolverInput,
   buildMockedClientClaimedRoleIgnoredRoleResolverInput,
 } from './mockedSimilarityRoleAssignmentResolverFixtures';
+
+export type {
+  SimilarityUsageStoreRole,
+  SimilarityUsageStoreWindow,
+  SimilarityUsageStoreStatus,
+  SimilarityUsageStoreSource,
+  SimilarityUsageStoreSubjectRef,
+  SimilarityUsageCounterRecord,
+  SimilarityUsageEventRecord,
+  SimilarityUsageStoreInput,
+  SimilarityUsageStorePolicy,
+  SimilarityUsageStoreSafePolicySummary,
+  SimilarityUsageSnapshot,
+  SimilarityUsageStoreSnapshotResult,
+  SimilarityUsageStoreIncrementResult,
+} from './similarityUsageStoreTypes';
+
+export {
+  buildDefaultSimilarityUsageStorePolicy,
+  buildMockedSimilarityUsageStorePolicy,
+  getApprovedSimilarityUsageLimit,
+  normalizeSimilarityUsageStoreInput,
+  loadSimilarityUsageSnapshot,
+  recordSimilarityUsageIncrement,
+  assertSimilarityUsageStoreResultIsSafe,
+} from './similarityUsageStore';
+
+export {
+  buildMockedAnonymousUsageStoreInput,
+  buildMockedAuthenticatedFreshDailyUsageStoreInput,
+  buildMockedAuthenticatedAtDailyLimitUsageStoreInput,
+  buildMockedBetaPartialDailyUsageStoreInput,
+  buildMockedBetaAtMonthlyLimitUsageStoreInput,
+  buildMockedOwnerPartialDailyUsageStoreInput,
+  buildMockedAdminPartialMonthlyUsageStoreInput,
+  buildMockedCounterMismatchIgnoredUsageStoreInput,
+  buildMockedClientClaimedUsageIgnoredUsageStoreInput,
+} from './mockedSimilarityUsageStoreFixtures';

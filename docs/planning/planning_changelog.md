@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-E - 2026-07-04
+
+### Usage Store Interface Scaffold, Disabled by Default, No Live KIS (Implemented)
+
+- **Status**: Implemented. Added a server-only usage store interface scaffold that is disabled by default and testable only through deterministic mocked fixtures. No real Supabase or DB usage store was connected.
+- **Background**: Phase 3FC-C added the auth subject resolver scaffold, and Phase 3FC-D added the role assignment resolver scaffold. This phase adds the next isolated scaffold: loading role-based usage snapshots and computing mocked usage increments without real persistence.
+- **Implemented scope**: usage store types, disabled-by-default usage store policy, approved role/limit table, mocked counter/event fixtures, usage snapshot loader, mocked increment result computation, smoke, static checker, exports, contract doc, result doc, package scripts, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env change, no deploy, no push, no public live route, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import or real Supabase client, no cookie/header/session parsing, no usage DB/cache runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/API route/`/chart-ai` runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FC-F — Feature Flag Resolver Scaffold, Disabled by Default, No Live KIS. Alternative: Phase 3FC-F-ALT — Guarded Route Integration Plan Refresh, No Runtime Change.
+
 ## Phase 3FC-D - 2026-07-04
 
 ### Role Assignment Resolver Scaffold, Disabled by Default, No Live KIS (Implemented)
