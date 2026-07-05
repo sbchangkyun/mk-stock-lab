@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-C - 2026-07-04
+
+### Supabase Auth Subject Resolver Scaffold, Disabled by Default, No Live KIS (Implemented)
+
+- **Status**: Implemented. Added a disabled-by-default, server-only Supabase Auth subject resolver scaffold, testable only via deterministic mocked fixtures. No real Supabase runtime, no live KIS, no route/UI integration.
+- **Background**: Phase 3FC-B finalized the real auth/usage runtime design and recommended this phase; the future runtime module plan proposed the auth subject resolver as the first implementation unit.
+- **Implemented scope**: `similarityAuthSubjectResolverTypes.ts`, `similarityAuthSubjectResolver.ts`, `mockedSimilarityAuthSubjectResolverFixtures.ts`, `index.ts` export wiring, smoke script (53 assertions), narrow static checker, contract doc, result doc, changelog.
+- **Preserved policy**: no live KIS call, no live KIS smoke rerun, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env change, no deploy, no push, no public live route, no public KIS data exposure, no account/trading/order/balance APIs, no real Supabase Auth runtime implementation or import, no dependency added, no real usage DB/cache runtime, no SQL/migration/schema files, no cookie/header reads, no real Supabase session/JWT verification, no KIS provider/deterministic engine/API route/`/chart-ai` runtime source change, no data fixture change under `src/data/chartSimilarity`, no external AI, no dev server start, no manual browser QA. `roleSeed` is limited to `anonymous`/`authenticated` only; `beta`/`owner`/`admin` remain out of scope.
+- **Recommended next phase**: Phase 3FC-D — Role Assignment Resolver Scaffold. Alternative: Phase 3FC-D-ALT — Usage Store Interface Scaffold.
+
 ## Phase 3FC-B - 2026-07-04
 
 ### Real Auth/Usage Runtime Design Finalization from Owner Decisions, No Live KIS (Prepared)

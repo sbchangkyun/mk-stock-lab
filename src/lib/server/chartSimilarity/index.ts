@@ -431,3 +431,33 @@ export {
   buildMockedUsageLimitedAuthUsageBridgeRequestBody,
   buildMockedInvalidAuthUsageBridgeRequestBody,
 } from './mockedSimilarityAuthUsageRouteBridgeFixtures';
+
+export type {
+  SimilarityAuthSubjectProvider,
+  SimilarityAuthSubjectResolverStatus,
+  SimilarityAuthSubjectAuthState,
+  SimilarityAuthSubjectRoleSeed,
+  SimilarityAuthSubjectResolverMode,
+  SimilarityAuthSubjectMockSessionCandidateState,
+  SimilarityAuthSubjectMockSessionCandidate,
+  SimilarityAuthSubjectSafeRef,
+  SimilarityAuthSubjectResolverInput,
+  SimilarityAuthSubjectResolverPolicy,
+  SimilarityAuthSubjectResolverSafePolicySummary,
+  SimilarityAuthSubjectResolverResult,
+} from './similarityAuthSubjectResolverTypes';
+
+export {
+  buildDefaultSimilarityAuthSubjectResolverPolicy,
+  buildMockedSimilarityAuthSubjectResolverPolicy,
+  normalizeSimilarityAuthSubjectResolverInput,
+  resolveSimilarityAuthSubject,
+  assertSimilarityAuthSubjectResolverResultIsSafe,
+} from './similarityAuthSubjectResolver';
+
+export {
+  buildMockedMissingSupabaseSessionResolverInput,
+  buildMockedValidSupabaseSessionResolverInput,
+  buildMockedInvalidSupabaseSessionResolverInput,
+  buildMockedClientClaimedRoleIgnoredResolverInput,
+} from './mockedSimilarityAuthSubjectResolverFixtures';
