@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-B - 2026-07-04
+
+### Real Auth/Usage Runtime Design Finalization from Owner Decisions, No Live KIS (Prepared)
+
+- **Status**: Prepared. Finalized the real auth/usage runtime design from the owner's approved 3FC-A decisions. No runtime behavior was changed.
+- **Background**: Phase 3FC-A produced the approval package; the owner approved Supabase Auth, Postgres/Supabase-style usage storage, role/limit policy, persistence categories, feature flag design scope, and proceeding to 3FC-B as design finalization only.
+- **Implemented scope**: main runtime design, Supabase auth/usage storage design, future runtime module plan, beta release gate checklist, narrow static checker, package script, changelog.
+- **Preserved policy**: no live KIS call, no live KIS smoke rerun, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env change, no deploy, no push, no public live route, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase runtime implementation or import, no real usage DB/cache runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/server chartSimilarity/API route/`/chart-ai` runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FC-C — Supabase Auth Subject Resolver Scaffold, Disabled by Default, No Live KIS. Alternative: Phase 3FB-G — Owner Manual QA Findings Incorporation, Live KIS Off.
+
 ## Phase 3FC-A - 2026-07-04
 
 ### Real Auth Provider Selection and Usage Storage Approval, No Live KIS (Prepared)
