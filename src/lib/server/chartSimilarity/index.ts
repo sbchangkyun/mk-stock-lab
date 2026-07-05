@@ -530,3 +530,39 @@ export {
   buildMockedCounterMismatchIgnoredUsageStoreInput,
   buildMockedClientClaimedUsageIgnoredUsageStoreInput,
 } from './mockedSimilarityUsageStoreFixtures';
+
+export type {
+  SimilarityFeatureFlagKey,
+  SimilarityFeatureFlagResolverStatus,
+  SimilarityFeatureFlagSource,
+  SimilarityFeatureFlagCapability,
+  SimilarityFeatureFlagRecord,
+  SimilarityFeatureFlagResolverInput,
+  SimilarityFeatureFlagResolverPolicy,
+  SimilarityFeatureFlagResolverSafePolicySummary,
+  SimilarityFeatureFlagState,
+  SimilarityFeatureFlagGateState,
+  SimilarityFeatureFlagResolverResult,
+} from './similarityFeatureFlagResolverTypes';
+
+export {
+  buildDefaultSimilarityFeatureFlagResolverPolicy,
+  buildMockedSimilarityFeatureFlagResolverPolicy,
+  buildDefaultSimilarityFeatureFlagStates,
+  normalizeSimilarityFeatureFlagResolverInput,
+  resolveSimilarityFeatureFlags,
+  isSimilarityFeatureCapabilityAllowed,
+  assertSimilarityFeatureFlagResolverResultIsSafe,
+} from './similarityFeatureFlagResolver';
+
+export {
+  buildMockedAllFlagsOffFeatureFlagResolverInput,
+  buildMockedAuthOnlyFeatureFlagResolverInput,
+  buildMockedAuthUsageBetaReadyFeatureFlagResolverInput,
+  buildMockedBetaMissingAuthFeatureFlagResolverInput,
+  buildMockedBetaMissingUsageFeatureFlagResolverInput,
+  buildMockedPublicRequestedFeatureFlagResolverInput,
+  buildMockedLiveKisRequestedFeatureFlagResolverInput,
+  buildMockedDuplicateFlagIgnoredFeatureFlagResolverInput,
+  buildMockedClientClaimedFlagsIgnoredFeatureFlagResolverInput,
+} from './mockedSimilarityFeatureFlagResolverFixtures';

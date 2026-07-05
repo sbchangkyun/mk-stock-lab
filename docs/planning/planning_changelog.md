@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-F - 2026-07-04
+
+### Feature Flag Resolver Scaffold, Disabled by Default, No Live KIS (Implemented)
+
+- **Status**: Implemented. Added a server-only feature flag resolver scaffold that is disabled by default and testable only through deterministic mocked fixtures. No real env, Vercel env, Supabase, or DB-backed flag source was connected.
+- **Background**: Phase 3FC-C added the auth subject resolver scaffold, Phase 3FC-D added the role assignment resolver scaffold, and Phase 3FC-E added the usage store interface scaffold. This phase adds the next isolated scaffold: evaluating feature flags and dependency gates without activating any runtime path.
+- **Implemented scope**: feature flag resolver types, disabled-by-default feature flag policy, five approved flag keys, mocked flag fixtures, dependency evaluation, capability helper, smoke, static checker, exports, contract doc, result doc, package scripts, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env read/change, no deploy, no push, no public live route, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import or real Supabase client, no cookie/header/session parsing, no feature flag DB/cache runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/API route/`/chart-ai` runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FC-G — Guarded Route Integration Plan Refresh, No Runtime Change. Alternative: Phase 3FC-G-ALT — Guarded Route Integration Scaffold, All Flags Off, No Live KIS.
+
 ## Phase 3FC-E - 2026-07-04
 
 ### Usage Store Interface Scaffold, Disabled by Default, No Live KIS (Implemented)
