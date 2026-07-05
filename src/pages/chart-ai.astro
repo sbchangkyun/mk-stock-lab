@@ -279,6 +279,52 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         ></div>
       </section>
 
+      <!--
+        Phase 3FB-E: local-only, explicit opt-in owner-local auth/usage bridge verification panel.
+        Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
+        the URL carries `?ownerLocalAuthUsageBridge=1`. Never auto-runs; the API call only happens
+        on an explicit scenario button click. Calls the owner-local-auth-usage-bridge branch of
+        `/api/chart-ai/similarity` (Phase 3FB-C-ALT), which evaluates mock auth/usage state
+        against the existing execution guard before allowing mocked execution. Renders only
+        sanitized, bucketed fields. This is not real auth, not a real session, not real usage
+        persistence, and not live KIS data.
+      -->
+      <section
+        id="chartAiOwnerLocalAuthUsageBridgePanel"
+        class="chart-owner-local-auth-usage-bridge-panel"
+        aria-labelledby="chart-owner-local-auth-usage-bridge-heading"
+        hidden
+      >
+        <div class="chart-owner-local-auth-usage-bridge-heading">
+          <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
+          <h3 id="chart-owner-local-auth-usage-bridge-heading">Owner-local auth/usage bridge 실행</h3>
+          <p class="chart-owner-local-auth-usage-bridge-guide">
+            mock auth/usage 상태를 이용해 guard 평가 후 mocked 실행을 확인합니다.
+            실제 로그인, 세션, 사용량 저장, KIS 데이터가 아닙니다. 투자 판단용 정보가 아닙니다.
+          </p>
+        </div>
+        <div class="chart-owner-local-auth-usage-bridge-scenarios" role="group" aria-label="auth/usage bridge 시나리오 선택">
+          <button type="button" id="chartAiAuthUsageBridgeAllowedBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="allowed">
+            허용 시나리오 (Owner)
+          </button>
+          <button type="button" id="chartAiAuthUsageBridgeAnonymousBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="anonymous">
+            익명 차단 시나리오
+          </button>
+          <button type="button" id="chartAiAuthUsageBridgeUsageLimitedBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="usage-limited">
+            사용량 초과 시나리오
+          </button>
+          <button type="button" id="chartAiAuthUsageBridgeInvalidBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="invalid">
+            잘못된 요청 시나리오
+          </button>
+        </div>
+        <div
+          id="chartAiOwnerLocalAuthUsageBridgeResult"
+          class="chart-owner-local-auth-usage-bridge-result"
+          hidden
+          aria-live="polite"
+        ></div>
+      </section>
+
       <div class="chart-analysis-book">
         <div class="chart-analysis-tags" role="tablist" aria-label="차트 분석 보기 선택">
           <button
@@ -1498,6 +1544,299 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         });
       }
 
+      // Owner-local auth/usage runtime bridge verification panel (Phase 3FB-E).
+      // Local-only, explicit opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the
+      // URL carries `?ownerLocalAuthUsageBridge=1`. Never auto-runs; the API call only happens on
+      // an explicit scenario button click. Calls the owner-local-auth-usage-bridge branch of
+      // `/api/chart-ai/similarity` (Phase 3FB-C-ALT) with caller-supplied mock auth/usage state,
+      // and renders only sanitized, bucketed fields — never raw provider payload, OHLC values,
+      // prices, volume, real timestamps, raw matches, similarity scores, returns, secret material,
+      // env values, session/user id, IP address, or brokerage-sensitive fields.
+      const authUsageBridgePanel = document.getElementById('chartAiOwnerLocalAuthUsageBridgePanel');
+      const authUsageBridgeResult = document.getElementById('chartAiOwnerLocalAuthUsageBridgeResult');
+      const authUsageBridgeButtons = document.querySelectorAll<HTMLButtonElement>('.chart-owner-local-auth-usage-bridge-btn');
+      if (authUsageBridgeResult) authUsageBridgeResult.tabIndex = -1;
+
+      const authUsageBridgeOptIn = new URLSearchParams(window.location.search).get('ownerLocalAuthUsageBridge') === '1';
+      const authUsageBridgeEnabled = isLocalOwnerHostname() && authUsageBridgeOptIn;
+
+      if (authUsageBridgePanel) authUsageBridgePanel.hidden = !authUsageBridgeEnabled;
+
+      const AUTH_USAGE_BRIDGE_TIMEOUT_MS = 8000;
+      let authUsageBridgeRequestInFlight = false;
+
+      const showAuthUsageBridgeMessage = (text: string) => {
+        if (!authUsageBridgeResult) return;
+        authUsageBridgeResult.hidden = false;
+        authUsageBridgeResult.replaceChildren();
+        const message = document.createElement('p');
+        message.className = 'chart-owner-local-auth-usage-bridge-msg';
+        message.textContent = text;
+        authUsageBridgeResult.append(message);
+      };
+
+      type AuthUsageBridgeScenario = 'allowed' | 'anonymous' | 'usage-limited' | 'invalid';
+
+      const buildAuthUsageBridgeRequestBody = (scenario: AuthUsageBridgeScenario) => {
+        const symbol = selectedSymbol || 'MOCKSYM';
+        const base = {
+          mode: 'owner-local-auth-usage-bridge',
+          source: 'mocked-provider-compatible',
+          ownerLocalAuthUsageBridge: true,
+          symbol,
+          assetType: 'stock',
+        };
+        if (scenario === 'anonymous') {
+          return {
+            ...base,
+            mockAuth: { state: 'anonymous', role: 'anonymous' },
+            mockUsage: { window: 'daily', used: 0, limit: 3, remaining: 3 },
+          };
+        }
+        if (scenario === 'usage-limited') {
+          return {
+            ...base,
+            mockAuth: { state: 'authenticated', role: 'owner' },
+            mockUsage: { window: 'daily', used: 50, limit: 50, remaining: 0 },
+          };
+        }
+        if (scenario === 'invalid') {
+          return {
+            ...base,
+            mockAuth: { state: 'authenticated', role: 'owner' },
+            mockUsage: { window: 'daily', used: 10, limit: 5, remaining: 0 },
+          };
+        }
+        return {
+          ...base,
+          mockAuth: { state: 'authenticated', role: 'owner' },
+          mockUsage: { window: 'daily', used: 0, limit: 50, remaining: 50 },
+        };
+      };
+
+      // Response shape guard (success): validates the parsed body is exactly the sanitized
+      // owner-local-auth-usage-bridge success shape before anything is rendered. Any missing or
+      // wrong-typed field falls through to the safe static error path below.
+      type AuthUsageBridgeSuccessResponse = {
+        status: string;
+        mode: string;
+        request: { source: string; symbol: string; assetType: string };
+        data: {
+          guardStatus: string;
+          authState: string;
+          role: string;
+          usageWindow: string;
+          usageRemainingBucket: string;
+          engineStatus: string;
+          normalizedBarsAvailable: boolean;
+          normalizedBarCountBucket: string;
+          matchCountBucket: string;
+          disclaimer: string;
+          dataPolicy: {
+            ownerLocalOnly?: boolean;
+            allowLiveKis?: boolean;
+            allowRouteSuccess?: boolean;
+            allowPublicExecution?: boolean;
+            allowBetaExecution?: boolean;
+          };
+        };
+      };
+
+      const isAuthUsageBridgeSuccessResponse = (value: unknown): value is AuthUsageBridgeSuccessResponse => {
+        if (!value || typeof value !== 'object') return false;
+        const record = value as Record<string, unknown>;
+        if (record.ok !== true) return false;
+        if (record.status !== 'success') return false;
+        if (record.mode !== 'owner-local-auth-usage-bridge') return false;
+        const request = record.request;
+        if (!request || typeof request !== 'object') return false;
+        if ((request as Record<string, unknown>).source !== 'mocked-provider-compatible') return false;
+        const data = record.data;
+        if (!data || typeof data !== 'object') return false;
+        const resultData = data as Record<string, unknown>;
+        if (typeof resultData.guardStatus !== 'string') return false;
+        if (typeof resultData.authState !== 'string') return false;
+        if (typeof resultData.role !== 'string') return false;
+        if (typeof resultData.usageWindow !== 'string') return false;
+        if (typeof resultData.usageRemainingBucket !== 'string') return false;
+        if (typeof resultData.engineStatus !== 'string') return false;
+        if (typeof resultData.normalizedBarsAvailable !== 'boolean') return false;
+        if (typeof resultData.normalizedBarCountBucket !== 'string') return false;
+        if (typeof resultData.matchCountBucket !== 'string') return false;
+        if (!resultData.dataPolicy || typeof resultData.dataPolicy !== 'object') return false;
+        if (typeof resultData.disclaimer !== 'string') return false;
+        return true;
+      };
+
+      const AUTH_USAGE_BRIDGE_BLOCKED_STATUSES = new Set([
+        'auth_required',
+        'usage_limited',
+        'blocked',
+        'feature_disabled',
+        'error',
+        'not_configured',
+      ]);
+
+      // Response shape guard (blocked): validates a safe, sanitized blocked/error shape before
+      // rendering. Any missing or wrong-typed field falls through to the safe static error path.
+      type AuthUsageBridgeBlockedResponse = {
+        status: string;
+        mode: string;
+        error: { code: string; message: string; retryable: boolean };
+      };
+
+      const isAuthUsageBridgeBlockedResponse = (value: unknown): value is AuthUsageBridgeBlockedResponse => {
+        if (!value || typeof value !== 'object') return false;
+        const record = value as Record<string, unknown>;
+        if (record.ok !== false) return false;
+        if (typeof record.status !== 'string' || !AUTH_USAGE_BRIDGE_BLOCKED_STATUSES.has(record.status)) return false;
+        if (record.mode !== 'owner-local-auth-usage-bridge' && record.mode !== 'feature-flag-off') return false;
+        const error = record.error;
+        if (!error || typeof error !== 'object') return false;
+        const errorRecord = error as Record<string, unknown>;
+        if (typeof errorRecord.code !== 'string') return false;
+        if (typeof errorRecord.message !== 'string') return false;
+        if (typeof errorRecord.retryable !== 'boolean') return false;
+        return true;
+      };
+
+      const renderAuthUsageBridgeSuccess = (data: AuthUsageBridgeSuccessResponse) => {
+        if (!authUsageBridgeResult) return;
+        const resultData = data.data;
+        authUsageBridgeResult.hidden = false;
+        authUsageBridgeResult.replaceChildren();
+
+        const summaryList = document.createElement('dl');
+        summaryList.className = 'chart-owner-local-auth-usage-bridge-dl';
+        const summaryRows: Array<[string, string]> = [
+          ['상태', data.status ?? '-'],
+          ['모드', data.mode ?? '-'],
+          ['데이터 소스', data.request?.source ?? '-'],
+          ['guard 상태', resultData.guardStatus ?? '-'],
+          ['인증 상태', resultData.authState ?? '-'],
+          ['역할', resultData.role ?? '-'],
+          ['사용량 주기', resultData.usageWindow ?? '-'],
+          ['잔여 사용량 버킷', resultData.usageRemainingBucket ?? '-'],
+          ['엔진 상태', resultData.engineStatus ?? '-'],
+          ['정규화 데이터 여부', resultData.normalizedBarsAvailable ? '있음' : '없음'],
+          ['정규화 구간 버킷', resultData.normalizedBarCountBucket ?? '-'],
+          ['매칭 구간 버킷', resultData.matchCountBucket ?? '-'],
+        ];
+        for (const [label, value] of summaryRows) {
+          const dt = document.createElement('dt');
+          dt.textContent = label;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          summaryList.append(dt, dd);
+        }
+        authUsageBridgeResult.append(summaryList);
+
+        if (resultData.dataPolicy) {
+          const policy = resultData.dataPolicy;
+          const policyList = document.createElement('ul');
+          policyList.className = 'chart-owner-local-auth-usage-bridge-policy-list';
+          const policyRows: Array<[string, boolean | undefined]> = [
+            ['오너 로컬 전용', policy.ownerLocalOnly],
+            ['실시간 KIS 허용', policy.allowLiveKis],
+            ['라우트 성공 허용', policy.allowRouteSuccess],
+            ['공개 실행 허용', policy.allowPublicExecution],
+            ['베타 실행 허용', policy.allowBetaExecution],
+          ];
+          for (const [label, value] of policyRows) {
+            const li = document.createElement('li');
+            li.textContent = `${label}: ${value ? '예' : '아니오'}`;
+            policyList.append(li);
+          }
+          authUsageBridgeResult.append(policyList);
+        }
+
+        if (resultData.disclaimer) {
+          const disclaimer = document.createElement('p');
+          disclaimer.className = 'chart-owner-local-auth-usage-bridge-disclaimer';
+          disclaimer.textContent = resultData.disclaimer;
+          authUsageBridgeResult.append(disclaimer);
+        }
+      };
+
+      const renderAuthUsageBridgeBlocked = (data: AuthUsageBridgeBlockedResponse) => {
+        if (!authUsageBridgeResult) return;
+        authUsageBridgeResult.hidden = false;
+        authUsageBridgeResult.replaceChildren();
+
+        const summaryList = document.createElement('dl');
+        summaryList.className = 'chart-owner-local-auth-usage-bridge-dl';
+        const summaryRows: Array<[string, string]> = [
+          ['상태', data.status ?? '-'],
+          ['모드', data.mode ?? '-'],
+          ['오류 코드', data.error?.code ?? '-'],
+          ['재시도 가능', data.error?.retryable ? '예' : '아니오'],
+        ];
+        for (const [label, value] of summaryRows) {
+          const dt = document.createElement('dt');
+          dt.textContent = label;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          summaryList.append(dt, dd);
+        }
+        authUsageBridgeResult.append(summaryList);
+
+        if (data.error?.message) {
+          const message = document.createElement('p');
+          message.className = 'chart-owner-local-auth-usage-bridge-msg';
+          message.textContent = data.error.message;
+          authUsageBridgeResult.append(message);
+        }
+      };
+
+      if (authUsageBridgeButtons.length > 0 && authUsageBridgeEnabled) {
+        authUsageBridgeButtons.forEach((button) => {
+          button.addEventListener('click', async () => {
+            if (authUsageBridgeRequestInFlight) return;
+            const scenario = (button.dataset.scenario ?? 'allowed') as AuthUsageBridgeScenario;
+            authUsageBridgeRequestInFlight = true;
+            authUsageBridgeButtons.forEach((btn) => { btn.disabled = true; });
+            if (authUsageBridgeResult) authUsageBridgeResult.setAttribute('aria-busy', 'true');
+            showAuthUsageBridgeMessage('불러오는 중… (mock auth/usage 상태, 로컬 개발 검증용)');
+
+            const abortController = new AbortController();
+            const timeoutId = window.setTimeout(() => abortController.abort(), AUTH_USAGE_BRIDGE_TIMEOUT_MS);
+
+            try {
+              const response = await fetch('/api/chart-ai/similarity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(buildAuthUsageBridgeRequestBody(scenario)),
+                signal: abortController.signal,
+              });
+              let parsedResponse: unknown = null;
+              try {
+                parsedResponse = await response.json();
+              } catch {
+                parsedResponse = null;
+              }
+              if (isAuthUsageBridgeSuccessResponse(parsedResponse)) {
+                renderAuthUsageBridgeSuccess(parsedResponse);
+              } else if (isAuthUsageBridgeBlockedResponse(parsedResponse)) {
+                renderAuthUsageBridgeBlocked(parsedResponse);
+              } else {
+                showAuthUsageBridgeMessage('Auth/usage bridge 실행 결과를 불러오지 못했습니다. 다른 시나리오 버튼으로 재시도해 주세요.');
+              }
+            } catch (thrownError) {
+              if (thrownError instanceof DOMException && thrownError.name === 'AbortError') {
+                showAuthUsageBridgeMessage('요청 시간이 초과되었습니다. 다른 시나리오 버튼으로 재시도해 주세요.');
+              } else {
+                showAuthUsageBridgeMessage('Auth/usage bridge 실행 결과를 불러오지 못했습니다. 다른 시나리오 버튼으로 재시도해 주세요.');
+              }
+            } finally {
+              window.clearTimeout(timeoutId);
+              authUsageBridgeRequestInFlight = false;
+              authUsageBridgeButtons.forEach((btn) => { btn.disabled = false; });
+              if (authUsageBridgeResult) authUsageBridgeResult.removeAttribute('aria-busy');
+            }
+          });
+        });
+      }
+
       renderChart();
     };
 
@@ -2373,6 +2712,101 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     }
 
     .chart-owner-local-mocked-result[aria-busy='true'] {
+      opacity: 0.85;
+    }
+
+    .chart-owner-local-auth-usage-bridge-panel {
+      margin-bottom: 1rem;
+      padding: 0.85rem 1rem;
+      border: 1px dashed color-mix(in srgb, var(--primary) 40%, var(--border));
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+    }
+
+    .chart-owner-local-auth-usage-bridge-heading h3 {
+      margin: 0.15rem 0 0.35rem;
+      font-size: 0.95rem;
+    }
+
+    .chart-owner-local-auth-usage-bridge-guide {
+      margin: 0 0 0.65rem;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .chart-owner-local-auth-usage-bridge-scenarios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chart-owner-local-auth-usage-bridge-btn {
+      min-height: 38px;
+      padding: 0.42rem 0.75rem;
+      border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+      color: var(--primary);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .chart-owner-local-auth-usage-bridge-btn:disabled {
+      border-color: var(--border);
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .chart-owner-local-auth-usage-bridge-result {
+      margin-top: 0.75rem;
+    }
+
+    .chart-owner-local-auth-usage-bridge-dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.28rem 0.75rem;
+      margin: 0 0 0.6rem;
+    }
+
+    .chart-owner-local-auth-usage-bridge-dl dt {
+      color: var(--text-muted);
+      font-size: 0.74rem;
+    }
+
+    .chart-owner-local-auth-usage-bridge-dl dd {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 750;
+      text-align: right;
+    }
+
+    .chart-owner-local-auth-usage-bridge-policy-list {
+      margin: 0 0 0.6rem;
+      padding-left: 1.1rem;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      line-height: 1.6;
+    }
+
+    .chart-owner-local-auth-usage-bridge-disclaimer {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    .chart-owner-local-auth-usage-bridge-msg {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .chart-owner-local-auth-usage-bridge-result[aria-busy='true'] {
       opacity: 0.85;
     }
 

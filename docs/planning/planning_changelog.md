@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FB-E - 2026-07-04
+
+### Chart AI Owner-local Auth/Usage Bridge UI Wiring (Implemented)
+
+- **Status**: Implemented. `/chart-ai` now has a second local-only, explicit opt-in panel that calls the Phase 3FB-C-ALT `owner-local-auth-usage-bridge` branch of `POST /api/chart-ai/similarity` with caller-supplied mock auth/usage state and renders only sanitized, bucketed fields. Default public UI and the existing Phase 3FB-C/D owner-local-mocked panel are unchanged. Live KIS remains disabled.
+- **Background**: Phase 3FB-C-ALT added an auth/usage-gated branch to the similarity route but had no UI caller. This phase wires that branch into `/chart-ai` as its own independently gated panel, reusing the hostname + query opt-in, timeout/abort, in-flight, and response-shape-guard patterns already established in Phase 3FB-C/D.
+- **Implemented scope**: `src/pages/chart-ai.astro` gained a new `chartAiOwnerLocalAuthUsageBridgePanel` with four scenario buttons (allowed/owner, anonymous/blocked, usage-limited, invalid-usage), gated by the shared `isLocalOwnerHostname()` helper plus a new independent `?ownerLocalAuthUsageBridge=1` query opt-in; an `AbortController`-based 8000ms timeout; an in-flight flag disabling all four buttons together; client-side success/blocked response shape guards; sanitized DOM-only rendering. New 81-assertion static contract checker `check:phase-3fb-e-chart-ai-owner-local-auth-usage-bridge-ui-wiring`. No API route or server module was changed.
+- **UI result**: default `/chart-ai` behavior and the existing owner-local-mocked panel are unchanged; the new panel is hidden unless running locally with `?ownerLocalAuthUsageBridge=1`; no auto-run occurs; each of the four scenario buttons independently calls `/api/chart-ai/similarity` and renders only `guardStatus`/`authState`/`role`/`usageWindow`/`usageRemainingBucket`/`engineStatus`/`normalizedBarsAvailable`/`normalizedBarCountBucket`/`matchCountBucket`/`dataPolicy`/`disclaimer` on success, or a safe blocked message otherwise.
+- **Preserved policy**: no live KIS call, no KIS provider source change, no deterministic engine source change, no API route change, no public/beta execution, no real auth/usage storage/DB/cache, no SQL/migration, no account/trading/order/balance APIs, no dependency change, no deployment, no push, no raw values committed. One prior-phase checker assertion (`check:phase-3fb-c-alt-...`) that asserted `chart-ai.astro` must stay untouched is now expectedly superseded by this phase's explicit mandate; that checker is outside this phase's allowed-file list and was left unmodified.
+- **Recommended next phase**: Phase 3FB-F — Chart AI Owner-local Auth/Usage Bridge Manual QA and Productization Boundary Review, Live KIS Off. Alternative: a design-only phase evaluating a real (non-mocked) auth/usage runtime, without implementing it.
+
 ## Phase 3FB-C-ALT - 2026-07-04
 
 ### Auth/Usage Runtime Bridge for Similarity Route, No Live KIS (Implemented)
