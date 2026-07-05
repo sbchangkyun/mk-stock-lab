@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-J - 2026-07-04
+
+### Guarded Route Manual QA and Productization Boundary Review, No Runtime Change (Prepared)
+
+- **Status**: Prepared. Added a documentation-only manual QA and productization boundary package for the guarded route scaffold after the owner-local mocked route smoke passed. No runtime source file was changed.
+- **Background**: Phase 3FC-H added the guarded-runtime-scaffold route branch with all runtime gates off, and Phase 3FC-I smoke-verified that branch through the real route handlers. This phase defines the manual QA checklist, productization boundary, and real runtime entry decision matrix before any real Supabase/DB work begins.
+- **Implemented scope**: guarded route manual QA checklist, productization boundary review, real runtime entry decision matrix, result doc, narrow static checker, package script, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env read/change, no deploy, no push, no public live route success, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import or real Supabase client, no cookie/header/session parsing, no feature flag DB/cache runtime, no usage DB/cache runtime, no role DB runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/API route/`/chart-ai`/guarded route scaffold runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FD-A — Real Supabase Auth Runtime Approval and Setup Package, No Runtime Change. Alternative: Phase 3FC-K — Owner Manual QA Findings Incorporation, No Runtime Change. KIS alternative: Phase 3FE-A — Actual KIS Reachability Recheck, Separately Approved.
+
 ## Phase 3FC-I - 2026-07-04
 
 ### Owner-local Mocked Guarded Route Smoke, No Live KIS (Prepared)
