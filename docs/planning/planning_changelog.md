@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-C-PLAN - 2026-07-04
+
+### Role Assignment and Usage Store Schema/Migration Approval Package, No Runtime Change (Prepared)
+
+- **Status**: Prepared. Added a documentation-only schema/migration approval package for future role assignment and usage store persistence. No runtime source file, route file, UI file, SQL file, migration file, or schema file was changed or created.
+- **Background**: Phase 3FD-B implemented a disabled, real-compatible Supabase Auth subject resolver boundary using injected mocked clients only. This phase defines the owner approval package needed before any role assignment or usage store database migration can be drafted or executed.
+- **Implemented scope**: role assignment schema approval doc, usage store schema approval doc, RLS/retention/idempotency policy doc, migration execution approval checklist, result doc, narrow static checker, package script, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env read/change, no deploy, no push, no public live route success, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase client creation, no real Supabase network call, no cookie/header/session parsing, no real JWT verification, no feature flag DB/cache runtime, no usage DB/cache runtime, no role DB runtime, no SQL/migration/schema files, no new dependencies, no package install, no lockfile change, no KIS provider/deterministic engine/API route/`/chart-ai`/guarded route scaffold/server runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FD-C — Role Assignment and Usage Store Migration Draft, Not Executed. Alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change. Hold alternative: Phase 3FC-K — Owner Manual QA Findings Incorporation, No Runtime Change.
+
 ## Phase 3FD-B - 2026-07-04
 
 ### Real Supabase Auth Subject Resolver Implementation, Disabled by Default (Implemented)
