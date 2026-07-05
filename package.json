@@ -43,6 +43,8 @@
     "check:phase-3fd-a-real-supabase-auth-runtime-approval-setup": "node scripts/check_phase_3fd_a_real_supabase_auth_runtime_approval_setup_contract.mjs",
     "smoke:phase-3fd-b-alt-supabase-auth-runtime-mocked-adapter-first": "node scripts/smoke_phase_3fd_b_alt_supabase_auth_runtime_mocked_adapter_first.mjs",
     "check:phase-3fd-b-alt-supabase-auth-runtime-mocked-adapter-first": "node scripts/check_phase_3fd_b_alt_supabase_auth_runtime_mocked_adapter_first_contract.mjs",
+    "smoke:phase-3fd-b-real-supabase-auth-subject-resolver-disabled-by-default": "node scripts/smoke_phase_3fd_b_real_supabase_auth_subject_resolver_disabled_by_default.mjs",
+    "check:phase-3fd-b-real-supabase-auth-subject-resolver-disabled-by-default": "node scripts/check_phase_3fd_b_real_supabase_auth_subject_resolver_disabled_by_default_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

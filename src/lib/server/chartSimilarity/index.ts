@@ -632,3 +632,54 @@ export {
   buildMockedValidWithClientRoleClaimSupabaseAuthRuntimeAdapterInput,
   buildMockedUnsafeLikeSupabaseAuthRuntimeAdapterInputForRedactionTest,
 } from './mockedSimilaritySupabaseAuthRuntimeAdapterFixtures';
+
+export type {
+  SimilarityRealSupabaseAuthSubjectResolverStatus,
+  SimilarityRealSupabaseAuthSubjectResolverSource,
+  SimilarityRealSupabaseAuthSubjectResolverPolicy,
+  SimilarityRealSupabaseAuthSubjectResolverSafePolicySummary,
+  SimilaritySupabaseCompatibleGetUserInput,
+  SimilaritySupabaseCompatibleUserProviderKind,
+  SimilaritySupabaseCompatibleUserMetadataKind,
+  SimilaritySupabaseCompatibleUser,
+  SimilaritySupabaseCompatibleGetUserStatus,
+  SimilaritySupabaseCompatibleErrorCategory,
+  SimilaritySupabaseCompatibleGetUserResult,
+  SimilaritySupabaseCompatibleAuthClient,
+  SimilarityRealSupabaseAuthSubjectResolverRequestedRuntime,
+  SimilarityRealSupabaseAuthSubjectResolverInput,
+  SimilarityRealSupabaseAuthSubjectResolverDeps,
+  SimilarityRealSupabaseAuthSubjectResolverAuthState,
+  SimilarityRealSupabaseAuthSubjectResolverRoleSeed,
+  SimilarityRealSupabaseAuthSubject,
+  SimilarityRealSupabaseAuthSubjectResolverResult,
+  SimilarityRealSupabaseAuthSubjectResolverSubjectSeed,
+} from './similarityRealSupabaseAuthSubjectResolverTypes';
+
+export {
+  buildDefaultSimilarityRealSupabaseAuthSubjectResolverPolicy,
+  buildInjectedMockSimilarityRealSupabaseAuthSubjectResolverPolicy,
+  normalizeSimilarityRealSupabaseAuthSubjectResolverInput,
+  resolveSimilarityRealSupabaseAuthSubject,
+  mapRealSupabaseAuthSubjectResultToAuthSubjectSeed,
+  assertSimilarityRealSupabaseAuthSubjectResolverResultIsSafe,
+} from './similarityRealSupabaseAuthSubjectResolver';
+
+export {
+  buildMockedMissingSessionRealSupabaseAuthSubjectInput,
+  buildMockedInvalidSessionRealSupabaseAuthSubjectInput,
+  buildMockedExpiredSessionRealSupabaseAuthSubjectInput,
+  buildMockedMalformedSessionRealSupabaseAuthSubjectInput,
+  buildMockedValidEmailRealSupabaseAuthSubjectInput,
+  buildMockedValidOauthRealSupabaseAuthSubjectInput,
+  buildMockedClientRoleClaimRealSupabaseAuthSubjectInput,
+  buildMockedUnsafeLikeRealSupabaseAuthSubjectInputForRedactionTest,
+  buildMockedMissingSessionSupabaseCompatibleAuthClient,
+  buildMockedInvalidSessionSupabaseCompatibleAuthClient,
+  buildMockedExpiredSessionSupabaseCompatibleAuthClient,
+  buildMockedMalformedSessionSupabaseCompatibleAuthClient,
+  buildMockedValidEmailSupabaseCompatibleAuthClient,
+  buildMockedValidOauthSupabaseCompatibleAuthClient,
+  buildMockedClientErrorSupabaseCompatibleAuthClient,
+  buildMockedClientRoleClaimSupabaseCompatibleAuthClient,
+} from './mockedSimilarityRealSupabaseAuthSubjectResolverFixtures';

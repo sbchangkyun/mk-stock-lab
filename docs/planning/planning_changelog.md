@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-B - 2026-07-04
+
+### Real Supabase Auth Subject Resolver Implementation, Disabled by Default (Implemented)
+
+- **Status**: Implemented. Added a server-only, real-compatible Supabase Auth subject resolver boundary that remains disabled by default and is tested only through deterministic injected mocked clients. No real Supabase client was created and no real Supabase call was made.
+- **Background**: Phase 3FD-A prepared the owner approval/setup package for future real Supabase Auth runtime, and Phase 3FD-B-ALT validated the mocked adapter contract and redaction behavior before real runtime work. This phase implements the real-compatible subject resolver boundary without connecting it to route execution.
+- **Implemented scope**: real-compatible Supabase auth subject resolver types, disabled-by-default resolver module, deterministic injected-client fixtures, export wiring, smoke, static checker, contract doc, result doc, package scripts, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env read/change, no deploy, no push, no public live route success, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import, no real Supabase client creation, no real Supabase network call, no cookie/header/session parsing, no real JWT verification, no feature flag DB/cache runtime, no usage DB/cache runtime, no role DB runtime, no SQL/migration files, no new dependencies, no package install, no lockfile change, no KIS provider/deterministic engine/API route/`/chart-ai`/guarded route scaffold runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FD-C-PLAN — Role Assignment and Usage Store Schema/Migration Approval Package, No Runtime Change. Alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change. Hold alternative: Phase 3FC-K — Owner Manual QA Findings Incorporation, No Runtime Change.
+
 ## Phase 3FD-B-ALT - 2026-07-04
 
 ### Supabase Auth Runtime Mocked Adapter First, No Real Supabase Call (Implemented)
