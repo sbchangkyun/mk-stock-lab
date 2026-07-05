@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-F-PLAN - 2026-07-04
+
+### Owner-local Guarded Composition Manual QA and Activation Boundary Review, No Runtime Change (Prepared)
+
+- **Status**: Prepared. Added a lean documentation-only manual QA and activation boundary review for the all-gates-off guarded route composition scaffold. No route source file, UI file, server runtime source file, database connection, Supabase client, environment read, migration execution, package install, dependency change, deploy, or push occurred.
+- **Background**: Phase 3FD-E added the guarded route runtime composition scaffold inside the existing guarded branch while preserving safe blocked behavior. This phase defines owner-local manual QA scenarios and activation approval gates before any route success or provider execution can be considered.
+- **Implemented scope**: consolidated owner-local manual QA and activation boundary plan, result doc, narrow static checker, package script, changelog.
+- **Preserved policy**: no route source change, no `/chart-ai` source change, no server runtime source change, no database connection, no Supabase client creation, no environment value read, no cookie/header/session parsing, no JWT verification, no migration execution, no live KIS call, no package install, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-F — Owner-local Guarded Composition Manual QA Package, No Runtime Change. Alternative: Phase 3FD-E-HF1 — Guarded Composition Scaffold Revisions, All Gates Off. Hold alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change.
+
 ## Phase 3FD-E - 2026-07-04
 
 ### Guarded Route Runtime Composition Scaffold, All Gates Off, Mocked Runtime Only (Implemented)
