@@ -41,6 +41,8 @@
     "check:phase-3fc-i-owner-local-mocked-guarded-route-smoke-no-live-kis": "node scripts/check_phase_3fc_i_owner_local_mocked_guarded_route_smoke_contract.mjs",
     "check:phase-3fc-j-guarded-route-manual-qa-productization-boundary": "node scripts/check_phase_3fc_j_guarded_route_manual_qa_productization_boundary_contract.mjs",
     "check:phase-3fd-a-real-supabase-auth-runtime-approval-setup": "node scripts/check_phase_3fd_a_real_supabase_auth_runtime_approval_setup_contract.mjs",
+    "smoke:phase-3fd-b-alt-supabase-auth-runtime-mocked-adapter-first": "node scripts/smoke_phase_3fd_b_alt_supabase_auth_runtime_mocked_adapter_first.mjs",
+    "check:phase-3fd-b-alt-supabase-auth-runtime-mocked-adapter-first": "node scripts/check_phase_3fd_b_alt_supabase_auth_runtime_mocked_adapter_first_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

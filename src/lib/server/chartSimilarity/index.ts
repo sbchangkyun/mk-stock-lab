@@ -592,3 +592,43 @@ export {
   buildMockedMalformedGuardedRuntimeScaffoldRequestBody,
   buildMockedPartialGuardedRuntimeScaffoldRequestBody,
 } from './mockedSimilarityGuardedRouteScaffoldFixtures';
+
+export type {
+  SimilaritySupabaseAuthRuntimeAdapterStatus,
+  SimilaritySupabaseAuthRuntimeAdapterSource,
+  SimilaritySupabaseAuthRuntimeAdapterPolicy,
+  SimilaritySupabaseAuthRuntimeAdapterSafePolicySummary,
+  SimilarityMockedSupabaseUserProviderKind,
+  SimilarityMockedSupabaseUserMetadataKind,
+  SimilarityMockedSupabaseUser,
+  SimilarityMockedSupabaseSessionState,
+  SimilarityMockedSupabaseSessionTokenShape,
+  SimilarityMockedSupabaseSession,
+  SimilaritySupabaseAuthRuntimeAdapterRequestedRuntime,
+  SimilaritySupabaseAuthRuntimeAdapterInput,
+  SimilaritySupabaseAuthRuntimeAdapterAuthState,
+  SimilaritySupabaseAuthRuntimeAdapterRoleSeed,
+  SimilaritySupabaseAuthRuntimeAdapterSubject,
+  SimilaritySupabaseAuthRuntimeAdapterResult,
+  SimilaritySupabaseAuthRuntimeAdapterSubjectSeed,
+} from './similaritySupabaseAuthRuntimeAdapterTypes';
+
+export {
+  buildDefaultSimilaritySupabaseAuthRuntimeAdapterPolicy,
+  buildMockedSimilaritySupabaseAuthRuntimeAdapterPolicy,
+  normalizeSimilaritySupabaseAuthRuntimeAdapterInput,
+  resolveMockedSimilaritySupabaseAuthRuntimeAdapter,
+  mapSupabaseAuthAdapterResultToAuthSubjectSeed,
+  assertSimilaritySupabaseAuthRuntimeAdapterResultIsSafe,
+} from './similaritySupabaseAuthRuntimeAdapter';
+
+export {
+  buildMockedMissingSupabaseAuthRuntimeAdapterInput,
+  buildMockedInvalidSupabaseAuthRuntimeAdapterInput,
+  buildMockedExpiredSupabaseAuthRuntimeAdapterInput,
+  buildMockedMalformedSupabaseAuthRuntimeAdapterInput,
+  buildMockedValidEmailSupabaseAuthRuntimeAdapterInput,
+  buildMockedValidOauthSupabaseAuthRuntimeAdapterInput,
+  buildMockedValidWithClientRoleClaimSupabaseAuthRuntimeAdapterInput,
+  buildMockedUnsafeLikeSupabaseAuthRuntimeAdapterInputForRedactionTest,
+} from './mockedSimilaritySupabaseAuthRuntimeAdapterFixtures';

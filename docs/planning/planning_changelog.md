@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-B-ALT - 2026-07-04
+
+### Supabase Auth Runtime Mocked Adapter First, No Real Supabase Call (Implemented)
+
+- **Status**: Implemented. Added a server-only mocked Supabase Auth runtime adapter scaffold that maps deterministic mocked Supabase-like session inputs to safe anonymous/authenticated subject outputs. No real Supabase call or client was introduced.
+- **Background**: Phase 3FD-A prepared the owner approval/setup package for future real Supabase Auth runtime. This phase validates the adapter contract and redaction behavior with mocks before any real Supabase runtime is implemented.
+- **Implemented scope**: mocked Supabase auth adapter types, adapter module, deterministic fixtures, export wiring, smoke, static checker, contract doc, result doc, package scripts, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env read/change, no deploy, no push, no public live route success, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import or real Supabase client creation, no real Supabase Auth runtime, no cookie/header/session parsing, no real JWT verification, no feature flag DB/cache runtime, no usage DB/cache runtime, no role DB runtime, no SQL/migration files, no new dependencies, no package install, no lockfile change, no KIS provider/deterministic engine/API route/`/chart-ai`/guarded route scaffold runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FD-B — Real Supabase Auth Subject Resolver Implementation, Disabled by Default. Alternative: Phase 3FD-C-PLAN — Role Assignment and Usage Store Schema/Migration Approval Package, No Runtime Change. Hold alternative: Phase 3FC-K — Owner Manual QA Findings Incorporation, No Runtime Change.
+
 ## Phase 3FD-A - 2026-07-04
 
 ### Real Supabase Auth Runtime Approval and Setup Package, No Runtime Change (Prepared)
