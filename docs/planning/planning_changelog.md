@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-G - 2026-07-04
+
+### Guarded Route Integration Plan Refresh, No Runtime Change (Prepared)
+
+- **Status**: Prepared. Created a documentation-only guarded route integration refresh after completion of the auth subject, role assignment, usage store, and feature flag scaffolds. No runtime behavior was changed.
+- **Background**: Phase 3FC-C through 3FC-F created four disabled-by-default scaffolds needed before any guarded route branch can be planned: auth subject resolver, role assignment resolver, usage store interface, and feature flag resolver. This phase consolidates those contracts into a route integration blueprint and clarifies the actual KIS API connection stage.
+- **Implemented scope**: guarded route integration plan, route contract matrix, remaining roadmap and KIS stage briefing, owner approval gate checklist, narrow static checker, package script, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env read/change, no deploy, no push, no public live route, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import or real Supabase client, no cookie/header/session parsing, no feature flag DB/cache runtime, no usage DB/cache runtime, no role DB runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/API route/`/chart-ai` runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FC-H — Guarded Route Integration Scaffold, All Flags Off, No Live KIS. Alternative: Phase 3FC-H-ALT — Real Supabase/Auth/Usage Implementation Approval Package, No Runtime Change.
+
 ## Phase 3FC-F - 2026-07-04
 
 ### Feature Flag Resolver Scaffold, Disabled by Default, No Live KIS (Implemented)
