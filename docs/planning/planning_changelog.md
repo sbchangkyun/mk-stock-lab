@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FB-F - 2026-07-04
+
+### Chart AI Owner-local Auth/Usage Bridge Manual QA and Productization Boundary Review (Prepared)
+
+- **Status**: Prepared. Created the owner-executable manual QA checklist and productization boundary review for the `/chart-ai` owner-local auth/usage bridge path. No runtime behavior was changed.
+- **Background**: Phase 3FB-E made the auth/usage bridge route browser-reachable through a local-only, explicit opt-in panel. This phase defines how the owner should manually verify that path and what must remain blocked before public/beta exposure.
+- **Implemented scope**: manual QA checklist, productization boundary matrix, go/no-go criteria, owner decision list, narrow static checker, package script, changelog.
+- **Preserved policy**: no live KIS call, no KIS provider source change, no deterministic engine source change, no API route change, no `/chart-ai` runtime change, no server chartSimilarity source change, no public/beta execution, no real auth provider import, no real usage storage/DB/cache/SQL/migration, no account/trading/order/balance APIs, no dependency change, no deployment, no push.
+- **Recommended next phase**: Phase 3FC-A — Real Auth Provider Selection and Usage Storage Approval, No Live KIS. Alternative: Phase 3FB-G — Owner Manual QA Findings Incorporation, Live KIS Off.
+
 ## Phase 3FB-E - 2026-07-04
 
 ### Chart AI Owner-local Auth/Usage Bridge UI Wiring (Implemented)
