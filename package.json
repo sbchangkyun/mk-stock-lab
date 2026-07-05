@@ -35,6 +35,8 @@
     "smoke:phase-3fc-f-feature-flag-resolver-scaffold": "node scripts/smoke_phase_3fc_f_feature_flag_resolver_scaffold.mjs",
     "check:phase-3fc-f-feature-flag-resolver-scaffold": "node scripts/check_phase_3fc_f_feature_flag_resolver_scaffold_contract.mjs",
     "check:phase-3fc-g-guarded-route-integration-plan-refresh": "node scripts/check_phase_3fc_g_guarded_route_integration_plan_refresh_contract.mjs",
+    "smoke:phase-3fc-h-guarded-route-integration-scaffold-all-flags-off": "node scripts/smoke_phase_3fc_h_guarded_route_integration_scaffold_all_flags_off.mjs",
+    "check:phase-3fc-h-guarded-route-integration-scaffold-all-flags-off": "node scripts/check_phase_3fc_h_guarded_route_integration_scaffold_all_flags_off_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

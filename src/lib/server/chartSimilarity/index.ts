@@ -566,3 +566,29 @@ export {
   buildMockedDuplicateFlagIgnoredFeatureFlagResolverInput,
   buildMockedClientClaimedFlagsIgnoredFeatureFlagResolverInput,
 } from './mockedSimilarityFeatureFlagResolverFixtures';
+
+export type {
+  SimilarityGuardedRouteScaffoldStatus,
+  SimilarityGuardedRouteScaffoldMode,
+  SimilarityGuardedRouteScaffoldSource,
+  SimilarityGuardedRouteScaffoldRequestBody,
+  SimilarityGuardedRouteScaffoldPolicy,
+  SimilarityGuardedRouteScaffoldSafePolicySummary,
+  SimilarityGuardedRouteScaffoldSummary,
+  SimilarityGuardedRouteScaffoldResult,
+} from './similarityGuardedRouteScaffoldTypes';
+
+export {
+  buildDefaultSimilarityGuardedRouteScaffoldPolicy,
+  buildRouteRecognizedSimilarityGuardedRouteScaffoldPolicy,
+  isGuardedRuntimeScaffoldSimilarityRequestBody,
+  normalizeSimilarityGuardedRouteScaffoldRequestBody,
+  runSimilarityGuardedRouteScaffold,
+  assertSimilarityGuardedRouteScaffoldResultIsSafe,
+} from './similarityGuardedRouteScaffold';
+
+export {
+  buildMockedGuardedRuntimeScaffoldRequestBody,
+  buildMockedMalformedGuardedRuntimeScaffoldRequestBody,
+  buildMockedPartialGuardedRuntimeScaffoldRequestBody,
+} from './mockedSimilarityGuardedRouteScaffoldFixtures';

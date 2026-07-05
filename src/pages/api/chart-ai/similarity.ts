@@ -26,6 +26,15 @@
  * `process.env`/`.env`, and never exposes a raw provider payload or account/trading field. The two
  * owner-local branches are mutually exclusive by their distinct `mode` values.
  *
+ * An explicit guarded runtime scaffold request (body containing `mode: "guarded-runtime-scaffold"`,
+ * `source: "mocked-provider-compatible"`, and `guardedRuntimeScaffold: true`) additionally routes
+ * to the Phase 3FC-H guarded route scaffold (`similarityGuardedRouteScaffold.ts`) ONLY to confirm
+ * safe blocked/disabled handling. This branch never returns a new success response shape: it
+ * always falls back to the existing sanitized feature-disabled shell response, regardless of what
+ * the scaffold module computes. All runtime gates remain off — no real Supabase, no real database,
+ * no live KIS, no mocked provider execution, no public/beta route success. This branch is mutually
+ * exclusive with the two owner-local branches above by its distinct `mode` value.
+ *
  * Request bodies are parsed defensively; malformed JSON never crashes the route and always falls
  * back to the safe default (feature-disabled) request shape.
  */
@@ -41,6 +50,10 @@ import {
   mapAuthUsageBridgeApiStatusToHttpStatus,
 } from '../../../lib/server/chartSimilarity/similarityApiResponseBuilder';
 import type { SimilarityApiResponse } from '../../../lib/server/chartSimilarity/similarityApiResponseTypes';
+import {
+  isGuardedRuntimeScaffoldSimilarityRequestBody,
+  runSimilarityGuardedRouteScaffold,
+} from '../../../lib/server/chartSimilarity/similarityGuardedRouteScaffold';
 
 export const prerender = false;
 
@@ -88,6 +101,17 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       const response = buildOwnerLocalAuthUsageBridgeSimilarityApiResponse(body);
       return jsonApiResponse(response, mapAuthUsageBridgeApiStatusToHttpStatus(response.status));
+    } catch {
+      return jsonResponse(buildSimilarityApiRouteShellResult({}));
+    }
+  }
+
+  if (isGuardedRuntimeScaffoldSimilarityRequestBody(body)) {
+    try {
+      // Confirm safe blocked/disabled handling only; the scaffold result is never exposed to the
+      // client and never used to unlock a success response.
+      runSimilarityGuardedRouteScaffold(body);
+      return jsonResponse(buildSimilarityApiRouteShellResult({}));
     } catch {
       return jsonResponse(buildSimilarityApiRouteShellResult({}));
     }

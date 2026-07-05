@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-H - 2026-07-04
+
+### Guarded Route Integration Scaffold, All Flags Off, No Live KIS (Implemented)
+
+- **Status**: Implemented. Added a guarded route integration scaffold branch while keeping all runtime gates off. The new branch fails closed to safe disabled behavior and does not allow route success.
+- **Background**: Phase 3FC-G refreshed the route integration blueprint after the auth subject, role assignment, usage store, and feature flag scaffolds were completed. This phase adds the first route scaffold without activating real runtime behavior.
+- **Implemented scope**: guarded route scaffold types, route scaffold module, deterministic request fixtures, new exact route discriminator, smoke, static checker, exports, contract doc, result doc, package scripts, changelog.
+- **Preserved policy**: no live KIS call, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env read/change, no deploy, no push, no public live route success, no public KIS data exposure, no account/trading/order/balance APIs, no Supabase package import or real Supabase client, no cookie/header/session parsing, no feature flag DB/cache runtime, no usage DB/cache runtime, no role DB runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/`/chart-ai` runtime source change, no data fixture change, no external AI, no dev server start, no manual browser QA.
+- **Recommended next phase**: Phase 3FC-I — Owner-local Mocked Guarded Route Smoke, No Live KIS. Alternative: Phase 3FC-I-ALT — Real Supabase/Auth/Usage Implementation Approval Package, No Runtime Change.
+
 ## Phase 3FC-G - 2026-07-04
 
 ### Guarded Route Integration Plan Refresh, No Runtime Change (Prepared)
