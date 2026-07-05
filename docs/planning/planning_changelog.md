@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FC-A - 2026-07-04
+
+### Real Auth Provider Selection and Usage Storage Approval, No Live KIS (Prepared)
+
+- **Status**: Prepared for owner decision. No runtime source changed. No real auth implemented. No usage storage implemented. No live KIS. No deploy, no push.
+- **Background**: Phase 3FB-F delivered a manual QA package and a productization boundary review, concluding that the next blocker is an explicit owner decision on real auth strategy, usage storage strategy, role/limit policy, and approval conditions before any public/beta transition. This phase is that architecture decision/approval package, not an implementation phase.
+- **Implemented scope**: main decision document with auth strategy options, usage storage options, a recommended initial architecture, proposed role tiers/usage limits, a conceptual data model proposal, a route integration plan, feature flag/release gate proposals, and go/no-go criteria; a decision matrix document; an owner-fillable approval form; a narrow static checker; package script; changelog.
+- **Preserved policy**: no live KIS call, no live KIS smoke rerun, no KIS network diagnostics, no `.env`/env/credential/token inspection or printing, no Vercel env change, no deploy, no push, no public live route, no public KIS data exposure, no account/trading/order/balance APIs, no real external auth provider runtime or import, no real usage DB/cache runtime, no SQL/migration files, no new dependencies, no KIS provider/deterministic engine/server chartSimilarity/API route/`/chart-ai` runtime source change, no data fixture change under `src/data/chartSimilarity`, no external AI, no dev server start, no manual browser QA. Owner approval is required before any of the proposed options may be implemented.
+- **Recommended next phase**: Phase 3FC-B — Real Auth/Usage Runtime Design Finalization from Owner Decisions, No Live KIS. Alternative: Phase 3FB-G — Owner Manual QA Findings Incorporation, Live KIS Off.
+
 ## Phase 3FB-F - 2026-07-04
 
 ### Chart AI Owner-local Auth/Usage Bridge Manual QA and Productization Boundary Review (Prepared)
