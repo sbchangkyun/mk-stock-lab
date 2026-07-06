@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-G-PLAN - 2026-07-04
+
+### Chart AI Analysis Trigger UX and Login/Usage Gate Design, No Runtime Change (Prepared)
+
+- **Status**: Prepared. Added a documentation-only design plan for converting Chart AI analysis content from immediate display into explicit user-triggered analysis flows. No UI source file, route source file, server runtime source file, database connection, Supabase client, environment read, migration execution, LLM/API call, live KIS call, package install, dependency change, deploy, or push occurred.
+- **Background**: After Phase 3FD-F prepared the manual QA package, owner browser QA confirmed that the analysis area visually works but requested product UX changes. Similar Pattern Analysis and MK AI Analysis are core product contents and future monetization candidates, so each must require an explicit user trigger, login gate, loading state, and future usage-limit structure.
+- **Implemented scope**: consolidated analysis trigger UX and login/usage gate design plan, result doc, narrow static checker, package script, changelog.
+- **Preserved policy**: no `/chart-ai` source change, no route source change, no server runtime source change, no provider source change, no deterministic engine source change, no data source change, no database connection, no Supabase client creation, no environment value read, no cookie/header/session parsing, no JWT verification, no migration execution, no live KIS call, no LLM/API call, no payment/ad integration, no package install, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-G — Chart AI Analysis Trigger UX Mocked-only Implementation. Alternative: Phase 3FD-G-HF1 — Analysis Trigger UX Design Revisions, No Runtime Change. Hold alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change.
+
 ## Phase 3FD-F - 2026-07-04
 
 ### Owner-local Guarded Composition Manual QA Package, No Runtime Change (Prepared)
