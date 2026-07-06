@@ -359,6 +359,29 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         <p class="chart-similarity-panel-guide">결정적 유사도 엔진을 합성 샘플 OHLC 데이터에 적용한 결과이며, 외부 AI를 호출하지 않습니다.</p>
       </div>
 
+      <section
+        class="chart-analysis-trigger-card"
+        data-chart-ai-analysis-state="similar-pattern"
+        data-state="idle"
+        aria-live="polite"
+        aria-busy="false"
+      >
+        <div class="chart-analysis-trigger-copy">
+          <p class="chart-analysis-trigger-kicker">분석 실행 대기</p>
+          <p class="chart-analysis-trigger-message" data-chart-ai-analysis-message="similar-pattern">현재 차트와 유사한 과거 패턴을 분석합니다.</p>
+          <p class="chart-analysis-trigger-subtext" data-chart-ai-analysis-subtext="similar-pattern">로그인 후 유사 패턴 분석을 실행할 수 있습니다.</p>
+          <p class="chart-analysis-usage-status" data-chart-ai-usage-status="similar-pattern">오늘 사용 가능 횟수: 베타 기간 제한 없음</p>
+        </div>
+        <button type="button" class="chart-analysis-trigger-button" data-chart-ai-analysis-trigger="similar-pattern">
+          유사 패턴 분석 시작
+        </button>
+        <span class="chart-analysis-loading-cue" data-chart-ai-analysis-loading="similar-pattern" hidden aria-hidden="true">
+          <span class="chart-analysis-loading-dot"></span>
+          분석 준비 중
+        </span>
+      </section>
+
+      <div class="chart-analysis-result-reveal" data-chart-ai-analysis-result="similar-pattern" hidden>
       <section class="chart-similarity-section" aria-labelledby="chart-similarity-summary-heading">
         <h3 id="chart-similarity-summary-heading">현재 패턴 요약</h3>
         <dl class="chart-similarity-summary-grid">
@@ -465,6 +488,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         </ul>
       </section>
       </div>
+      </div>
 
       <div id="chartAiMkAiPanel" class="chart-analysis-page" role="tabpanel" aria-labelledby="chartAiMkAiTab" hidden tabindex="0">
         <div class="chart-mk-ai-panel-heading">
@@ -473,6 +497,28 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           <p class="chart-mk-ai-subheading">AI 분석 미리보기</p>
           <p class="chart-mk-ai-intro">아래 해석은 샘플·합성 데이터를 결정적 로직으로 분석한 결과이며, 외부 AI를 호출하지 않습니다.</p>
         </div>
+        <section
+          class="chart-analysis-trigger-card"
+          data-chart-ai-analysis-state="mk-ai"
+          data-state="idle"
+          aria-live="polite"
+          aria-busy="false"
+        >
+          <div class="chart-analysis-trigger-copy">
+            <p class="chart-analysis-trigger-kicker">분석 실행 대기</p>
+            <p class="chart-analysis-trigger-message" data-chart-ai-analysis-message="mk-ai">차트 흐름과 유사 패턴 결과를 바탕으로 AI 해석을 제공합니다.</p>
+            <p class="chart-analysis-trigger-subtext" data-chart-ai-analysis-subtext="mk-ai">로그인 후 MK AI 분석을 실행할 수 있습니다.</p>
+            <p class="chart-analysis-usage-status" data-chart-ai-usage-status="mk-ai">오늘 사용 가능 횟수: 베타 기간 제한 없음</p>
+          </div>
+          <button type="button" class="chart-analysis-trigger-button" data-chart-ai-analysis-trigger="mk-ai">
+            MK AI 분석 시작
+          </button>
+          <span class="chart-analysis-loading-cue" data-chart-ai-analysis-loading="mk-ai" hidden aria-hidden="true">
+            <span class="chart-analysis-loading-dot"></span>
+            분석 준비 중
+          </span>
+        </section>
+        <div class="chart-analysis-result-reveal" data-chart-ai-analysis-result="mk-ai" hidden>
         <div class="chart-mk-ai-note" id="chartAiMkAiNote" aria-labelledby="chart-mk-ai-heading">
           <span class="chart-identity-chip chart-mk-ai-status" id="chartAiMkAiStatus">샘플 분석</span>
           <p class="chart-mk-ai-connected-note" id="chartAiMkAiConnectedNote" hidden></p>
@@ -562,6 +608,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           <p>현재 분석은 샘플 로직 기반 미리보기입니다.</p>
           <p>실제 투자 판단용 정보가 아니며 매수·매도 추천이 아닙니다.</p>
         </div>
+        </div>
       </div>
         </div>
       </div>
@@ -640,6 +687,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       let visibleRecords: ClientSafeSymbolSearchRecord[] = [];
       let resetQuotePreview: () => void = () => {};
       let resetOhlcPreview: () => void = () => {};
+      let resetAnalysisTriggers: () => void = () => {};
       let ownerLocalConnected = false;
       let selectedRecord: ClientSafeSymbolSearchRecord | null = records.find((r) => r.symbol === selectedSymbol) ?? null;
       const mkAiBulletsEl = document.getElementById('chartAiMkAiBullets');
@@ -995,6 +1043,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         selectedRecord = record;
         updateOverviewDataStatus();
         updateMkAiPanel();
+        resetAnalysisTriggers();
         input.value = '';
         if (searchHint) searchHint.hidden = true;
         closeDropdown();
@@ -1098,6 +1147,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
             candidate.setAttribute('aria-pressed', String(active));
           });
           resetOhlcPreview();
+          resetAnalysisTriggers();
           renderChart();
         });
       });
@@ -1108,6 +1158,153 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       const similarityPanel = document.getElementById('chartAiSimilarityPanel');
       const mkAiPanel = document.getElementById('chartAiMkAiPanel');
       const analysisTabs = [similarityTab, mkAiTab].filter((tab): tab is HTMLButtonElement => tab !== null);
+
+      type ChartAiAnalysisKind = 'similar-pattern' | 'mk-ai';
+      type ChartAiAnalysisState =
+        | 'idle'
+        | 'login_required'
+        | 'loading'
+        | 'success'
+        | 'usage_limited'
+        | 'blocked'
+        | 'error';
+
+      // Mocked client-side auth placeholder only: not production auth, no Supabase client, and no
+      // cookie/header/session/JWT parsing. The static page defaults to its existing signed-in look.
+      const mockedAnalysisAuth = {
+        authenticated: new URLSearchParams(window.location.search).get('chartAiMockLoggedOut') !== '1',
+        source: 'mocked-client-only' as const,
+      };
+      const analysisUsagePlaceholder = {
+        dailyLimitEnabled: false,
+        dailyLimit: null as number | null,
+        dailyUsed: null as number | null,
+        dailyRemaining: null as number | null,
+        usageWindow: 'daily' as const,
+        usageResetAt: null as string | null,
+        usageDisplay: '오늘 사용 가능 횟수: 베타 기간 제한 없음',
+      };
+      const analysisStates: Record<ChartAiAnalysisKind, ChartAiAnalysisState> = {
+        'similar-pattern': 'idle',
+        'mk-ai': 'idle',
+      };
+      let activeAnalysisRun: ChartAiAnalysisKind | null = null;
+      let analysisMockedDelayTimer: number | null = null;
+
+      const analysisCopy = {
+        'similar-pattern': {
+          button: '유사 패턴 분석 시작',
+          idle: '현재 차트와 유사한 과거 패턴을 분석합니다.',
+          login: '로그인 후 유사 패턴 분석을 실행할 수 있습니다.',
+          loading: '유사 패턴 분석을 진행 중입니다. 잠시만 기다려주세요.',
+          loadingSubtext: '현재 차트 데이터를 기준으로 과거 유사 구간을 탐색하고 있습니다.',
+        },
+        'mk-ai': {
+          button: 'MK AI 분석 시작',
+          idle: '차트 흐름과 유사 패턴 결과를 바탕으로 AI 해석을 제공합니다.',
+          login: '로그인 후 MK AI 분석을 실행할 수 있습니다.',
+          loading: 'MK AI 분석을 생성 중입니다. 잠시만 기다려주세요.',
+          loadingSubtext: '차트 흐름과 유사 패턴 결과를 바탕으로 해석을 구성하고 있습니다.',
+        },
+      } as const;
+
+      const renderMockedAnalysisState = (kind: ChartAiAnalysisKind) => {
+        const state = analysisStates[kind];
+        const card = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-state="${kind}"]`);
+        const message = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-message="${kind}"]`);
+        const subtext = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-subtext="${kind}"]`);
+        const usage = document.querySelector<HTMLElement>(`[data-chart-ai-usage-status="${kind}"]`);
+        const trigger = document.querySelector<HTMLButtonElement>(`[data-chart-ai-analysis-trigger="${kind}"]`);
+        const loading = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-loading="${kind}"]`);
+        const result = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-result="${kind}"]`);
+        if (!card || !message || !subtext || !usage || !trigger || !loading || !result) return;
+
+        card.dataset.state = state;
+        card.setAttribute('aria-busy', String(state === 'loading'));
+        result.hidden = state !== 'success';
+        loading.hidden = state !== 'loading';
+        loading.setAttribute('aria-hidden', String(state !== 'loading'));
+        usage.textContent = analysisUsagePlaceholder.usageDisplay;
+        trigger.disabled = state === 'loading' || activeAnalysisRun !== null;
+        trigger.textContent = state === 'loading' ? '분석 중' : analysisCopy[kind].button;
+
+        if (state === 'idle') {
+          message.textContent = analysisCopy[kind].idle;
+          subtext.textContent = analysisCopy[kind].login;
+        } else if (state === 'login_required') {
+          message.textContent = analysisCopy[kind].login;
+          subtext.textContent = '로그인 상태를 확인한 뒤 다시 실행해 주세요.';
+        } else if (state === 'loading') {
+          message.textContent = analysisCopy[kind].loading;
+          subtext.textContent = analysisCopy[kind].loadingSubtext;
+        } else if (state === 'success') {
+          message.textContent = '분석이 완료되었습니다. 아래 결과를 확인해 주세요.';
+          subtext.textContent = '표시된 내용은 샘플·모의 분석이며 투자 조언이 아닙니다.';
+        } else if (state === 'usage_limited') {
+          message.textContent = '오늘 사용할 수 있는 분석 횟수를 모두 사용했습니다.';
+          subtext.textContent = '사용 횟수 제한은 향후 계정 정책 적용 시 활성화됩니다.';
+        } else if (state === 'blocked') {
+          message.textContent = kind === 'mk-ai'
+            ? '먼저 유사 패턴 분석을 실행하면 MK AI 분석을 사용할 수 있습니다.'
+            : '현재 분석을 실행할 수 없습니다.';
+          subtext.textContent = '필요한 단계를 확인한 뒤 다시 시도해 주세요.';
+        } else {
+          message.textContent = '분석을 완료하지 못했습니다.';
+          subtext.textContent = '잠시 후 다시 실행해 주세요.';
+        }
+      };
+
+      const renderAllMockedAnalysisStates = () => {
+        renderMockedAnalysisState('similar-pattern');
+        renderMockedAnalysisState('mk-ai');
+      };
+
+      const runMockedAnalysisTrigger = (kind: ChartAiAnalysisKind) => {
+        // Duplicate and simultaneous run prevention for this mocked-only trigger flow.
+        if (activeAnalysisRun !== null || analysisStates[kind] === 'loading') return;
+        if (!mockedAnalysisAuth.authenticated) {
+          analysisStates[kind] = 'login_required';
+          renderAllMockedAnalysisStates();
+          return;
+        }
+        if (kind === 'mk-ai' && analysisStates['similar-pattern'] !== 'success') {
+          analysisStates[kind] = 'blocked';
+          renderAllMockedAnalysisStates();
+          return;
+        }
+        if (analysisUsagePlaceholder.dailyLimitEnabled && analysisUsagePlaceholder.dailyRemaining === 0) {
+          analysisStates[kind] = 'usage_limited';
+          renderAllMockedAnalysisStates();
+          return;
+        }
+
+        activeAnalysisRun = kind;
+        analysisStates[kind] = 'loading';
+        renderAllMockedAnalysisStates();
+        analysisMockedDelayTimer = window.setTimeout(() => {
+          analysisStates[kind] = 'success';
+          activeAnalysisRun = null;
+          analysisMockedDelayTimer = null;
+          renderAllMockedAnalysisStates();
+        }, 900);
+      };
+
+      document.querySelectorAll<HTMLButtonElement>('[data-chart-ai-analysis-trigger]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const kind = button.dataset.chartAiAnalysisTrigger;
+          if (kind === 'similar-pattern' || kind === 'mk-ai') runMockedAnalysisTrigger(kind);
+        });
+      });
+
+      resetAnalysisTriggers = () => {
+        if (analysisMockedDelayTimer !== null) window.clearTimeout(analysisMockedDelayTimer);
+        analysisMockedDelayTimer = null;
+        activeAnalysisRun = null;
+        analysisStates['similar-pattern'] = 'idle';
+        analysisStates['mk-ai'] = 'idle';
+        renderAllMockedAnalysisStates();
+      };
+      renderAllMockedAnalysisStates();
 
       const activateAnalysisTab = (tab: 'similarity' | 'mk-ai', options: { focusTab?: boolean } = {}) => {
         const isSimilarity = tab === 'similarity';
@@ -2961,6 +3158,143 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       line-height: 1.55;
     }
 
+    .chart-analysis-trigger-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.8rem 1rem;
+      padding: 1rem;
+      border: 1px solid var(--chart-shell-border);
+      border-left: 4px solid color-mix(in srgb, var(--primary) 72%, var(--chart-shell-border));
+      border-radius: 10px;
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--primary) 5%, var(--surface)), var(--surface) 68%);
+      box-shadow: 0 7px 18px rgb(15 23 42 / 7%);
+      transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .chart-analysis-trigger-card[data-state="loading"] {
+      border-color: color-mix(in srgb, var(--primary) 55%, var(--chart-shell-border));
+      box-shadow: 0 9px 22px rgb(15 23 42 / 10%);
+    }
+
+    .chart-analysis-trigger-card[data-state="success"] {
+      border-left-color: #1a7f4b;
+    }
+
+    .chart-analysis-trigger-card[data-state="login_required"],
+    .chart-analysis-trigger-card[data-state="blocked"],
+    .chart-analysis-trigger-card[data-state="usage_limited"],
+    .chart-analysis-trigger-card[data-state="error"] {
+      border-left-color: #c98a1f;
+    }
+
+    .chart-analysis-trigger-copy {
+      display: grid;
+      gap: 0.32rem;
+      min-width: 0;
+    }
+
+    .chart-analysis-trigger-kicker,
+    .chart-analysis-trigger-message,
+    .chart-analysis-trigger-subtext,
+    .chart-analysis-usage-status {
+      margin: 0;
+    }
+
+    .chart-analysis-trigger-kicker {
+      color: var(--primary);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+
+    .chart-analysis-trigger-message {
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 760;
+      line-height: 1.45;
+    }
+
+    .chart-analysis-trigger-subtext,
+    .chart-analysis-usage-status {
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      line-height: 1.5;
+    }
+
+    .chart-analysis-usage-status {
+      width: fit-content;
+      margin-top: 0.12rem;
+      padding: 0.2rem 0.48rem;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      font-weight: 700;
+    }
+
+    .chart-analysis-trigger-button {
+      min-height: 42px;
+      padding: 0.62rem 0.9rem;
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 12px color-mix(in srgb, var(--primary) 20%, transparent);
+      transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+    }
+
+    .chart-analysis-trigger-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 7px 16px color-mix(in srgb, var(--primary) 26%, transparent);
+    }
+
+    .chart-analysis-trigger-button:disabled {
+      cursor: wait;
+      opacity: 0.55;
+      box-shadow: none;
+    }
+
+    .chart-analysis-loading-cue {
+      grid-column: 1 / -1;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    .chart-analysis-loading-cue[hidden] {
+      display: none !important;
+    }
+
+    .chart-analysis-loading-dot {
+      width: 0.58rem;
+      height: 0.58rem;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: chart-analysis-loading-pulse 820ms ease-in-out infinite alternate;
+    }
+
+    @keyframes chart-analysis-loading-pulse {
+      from { opacity: 0.35; transform: scale(0.78); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .chart-analysis-result-reveal {
+      display: grid;
+      gap: 1.4rem;
+      animation: chart-analysis-page-swap-enter 180ms ease;
+    }
+
+    .chart-analysis-result-reveal[hidden] {
+      display: none !important;
+    }
+
     .chart-similarity-section {
       display: grid;
       gap: 0.6rem;
@@ -3132,7 +3466,8 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     :global(.chart-ai-search-result:focus-visible),
     .chart-ai-filter-btn:focus-visible,
     .chart-period-controls button:focus-visible,
-    .chart-analysis-tag:focus-visible {
+    .chart-analysis-tag:focus-visible,
+    .chart-analysis-trigger-button:focus-visible {
       outline: 3px solid color-mix(in srgb, var(--primary) 45%, transparent);
       outline-offset: 2px;
     }
@@ -3197,6 +3532,14 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         padding: 0;
       }
 
+      .chart-analysis-trigger-card {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .chart-analysis-trigger-button {
+        width: 100%;
+      }
+
       .chart-analysis-tag {
         flex: 1 1 auto;
         border-radius: 10px;
@@ -3254,11 +3597,15 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     @media (prefers-reduced-motion: reduce) {
       :global(.chart-ai-search-result),
       .chart-period-controls button,
-      .chart-analysis-tag {
+      .chart-analysis-tag,
+      .chart-analysis-trigger-card,
+      .chart-analysis-trigger-button {
         transition: none;
       }
 
-      .chart-analysis-page.active {
+      .chart-analysis-page.active,
+      .chart-analysis-result-reveal,
+      .chart-analysis-loading-dot {
         animation: none;
       }
     }

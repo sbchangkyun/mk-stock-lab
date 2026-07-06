@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-G - 2026-07-04
+
+### Chart AI Analysis Trigger UX Mocked-only Implementation (Implemented)
+
+- **Status**: Implemented. Converted the main Chart AI analysis area from immediate-result display into mocked-only user-triggered analysis flows. Added separate Similar Pattern Analysis and MK AI Analysis trigger UX, mocked loading states, login-required UI gate structure, usage status placeholder, duplicate request prevention, and delayed result reveal. No route, server runtime, API, LLM, database, Supabase, live KIS, payment, ad, dependency, deploy, or push occurred.
+- **Background**: Phase 3FD-G-PLAN fixed the product design that analysis content is core product content and future monetization candidate content, so it must require explicit user intent before display. Both analysis features remain free at initial launch by design but require login structurally.
+- **Implemented scope**: `/chart-ai` UI-only trigger UX, separate trigger buttons, mocked client-side auth placeholder, daily usage status placeholder, seven-state UI model, mocked delay, duplicate request prevention, success-only result reveal, owner-local panel preservation, static checker, result doc, package script, changelog.
+- **Preserved policy**: no route source change, no server runtime source change, no provider source change, no deterministic engine source change, no data source change, no database connection, no Supabase client creation, no environment value read, no cookie/header/session parsing, no JWT verification, no migration execution, no API call for the new trigger flow, no LLM call, no live KIS call, no actual usage count limiting, no payment/ad integration, no package install, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-G-MANUAL-RUN — Owner Browser QA for Analysis Trigger UX. Alternative: Phase 3FD-G-HF1 — Analysis Trigger UX Mocked-only Revisions. Hold alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change.
+
 ## Phase 3FD-G-PLAN - 2026-07-04
 
 ### Chart AI Analysis Trigger UX and Login/Usage Gate Design, No Runtime Change (Prepared)
