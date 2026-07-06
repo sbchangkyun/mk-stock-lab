@@ -379,6 +379,11 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           <span class="chart-analysis-loading-dot"></span>
           분석 준비 중
         </span>
+        <p class="chart-analysis-cooldown-status" data-chart-ai-cooldown="similar-pattern" aria-live="polite" hidden>
+          <span data-chart-ai-cooldown-label="similar-pattern">다시 분석 가능까지</span>
+          <strong data-chart-ai-cooldown-remaining="similar-pattern" aria-live="off">05:00 후 다시 분석 가능</strong>
+          <small data-chart-ai-cooldown-support="similar-pattern">과도한 반복 분석 요청을 방지하기 위해 잠시 후 다시 실행할 수 있습니다.</small>
+        </p>
       </section>
 
       <div class="chart-analysis-result-reveal" data-chart-ai-analysis-result="similar-pattern" hidden>
@@ -517,6 +522,11 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
             <span class="chart-analysis-loading-dot"></span>
             분석 준비 중
           </span>
+          <p class="chart-analysis-cooldown-status" data-chart-ai-cooldown="mk-ai" aria-live="polite" hidden>
+            <span data-chart-ai-cooldown-label="mk-ai">다시 분석 가능까지</span>
+            <strong data-chart-ai-cooldown-remaining="mk-ai" aria-live="off">05:00 후 다시 분석 가능</strong>
+            <small data-chart-ai-cooldown-support="mk-ai">과도한 반복 분석 요청을 방지하기 위해 잠시 후 다시 실행할 수 있습니다.</small>
+          </p>
         </section>
         <div class="chart-analysis-result-reveal" data-chart-ai-analysis-result="mk-ai" hidden>
         <div class="chart-mk-ai-note" id="chartAiMkAiNote" aria-labelledby="chart-mk-ai-heading">
@@ -1168,6 +1178,15 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         | 'usage_limited'
         | 'blocked'
         | 'error';
+      type ChartAiAnalysisCooldown = {
+        cooldownUntil: number | null;
+        cooldownRemainingMs: number;
+        cooldownTimer: number | null;
+        isCooldownActive: boolean;
+      };
+
+      // Mocked client-side cooldown UX only. Production protection must be enforced server-side before real KIS/LLM activation.
+      const ANALYSIS_COOLDOWN_MS = 5 * 60 * 1000;
 
       // Mocked client-side auth placeholder only: not production auth, no Supabase client, and no
       // cookie/header/session/JWT parsing. The static page defaults to its existing signed-in look.
@@ -1187,6 +1206,20 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       const analysisStates: Record<ChartAiAnalysisKind, ChartAiAnalysisState> = {
         'similar-pattern': 'idle',
         'mk-ai': 'idle',
+      };
+      const analysisCooldowns: Record<ChartAiAnalysisKind, ChartAiAnalysisCooldown> = {
+        'similar-pattern': {
+          cooldownUntil: null,
+          cooldownRemainingMs: 0,
+          cooldownTimer: null,
+          isCooldownActive: false,
+        },
+        'mk-ai': {
+          cooldownUntil: null,
+          cooldownRemainingMs: 0,
+          cooldownTimer: null,
+          isCooldownActive: false,
+        },
       };
       let activeAnalysisRun: ChartAiAnalysisKind | null = null;
       let analysisMockedDelayTimer: number | null = null;
@@ -1208,6 +1241,19 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         },
       } as const;
 
+      const formatAnalysisCooldown = (remainingMs: number) => {
+        const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+        const minutes = Math.floor(remainingSeconds / 60).toString().padStart(2, '0');
+        const seconds = (remainingSeconds % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds} 후 다시 분석 가능`;
+      };
+
+      const clearAnalysisCooldownTimer = (kind: ChartAiAnalysisKind) => {
+        const cooldown = analysisCooldowns[kind];
+        if (cooldown.cooldownTimer !== null) window.clearInterval(cooldown.cooldownTimer);
+        cooldown.cooldownTimer = null;
+      };
+
       const renderMockedAnalysisState = (kind: ChartAiAnalysisKind) => {
         const state = analysisStates[kind];
         const card = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-state="${kind}"]`);
@@ -1217,16 +1263,33 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         const trigger = document.querySelector<HTMLButtonElement>(`[data-chart-ai-analysis-trigger="${kind}"]`);
         const loading = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-loading="${kind}"]`);
         const result = document.querySelector<HTMLElement>(`[data-chart-ai-analysis-result="${kind}"]`);
-        if (!card || !message || !subtext || !usage || !trigger || !loading || !result) return;
+        const cooldownStatus = document.querySelector<HTMLElement>(`[data-chart-ai-cooldown="${kind}"]`);
+        const cooldownLabel = document.querySelector<HTMLElement>(`[data-chart-ai-cooldown-label="${kind}"]`);
+        const cooldownRemaining = document.querySelector<HTMLElement>(`[data-chart-ai-cooldown-remaining="${kind}"]`);
+        const cooldownSupport = document.querySelector<HTMLElement>(`[data-chart-ai-cooldown-support="${kind}"]`);
+        if (!card || !message || !subtext || !usage || !trigger || !loading || !result || !cooldownStatus || !cooldownLabel || !cooldownRemaining || !cooldownSupport) return;
+
+        const cooldown = analysisCooldowns[kind];
+        const showCooldownStatus = state === 'success';
 
         card.dataset.state = state;
+        card.dataset.cooldownActive = String(cooldown.isCooldownActive);
         card.setAttribute('aria-busy', String(state === 'loading'));
         result.hidden = state !== 'success';
         loading.hidden = state !== 'loading';
         loading.setAttribute('aria-hidden', String(state !== 'loading'));
+        cooldownStatus.hidden = !showCooldownStatus;
+        cooldownLabel.textContent = cooldown.isCooldownActive ? '다시 분석 가능까지' : '다시 분석할 수 있습니다.';
+        cooldownRemaining.hidden = !cooldown.isCooldownActive;
+        cooldownRemaining.textContent = formatAnalysisCooldown(cooldown.cooldownRemainingMs);
+        cooldownSupport.hidden = !cooldown.isCooldownActive;
         usage.textContent = analysisUsagePlaceholder.usageDisplay;
-        trigger.disabled = state === 'loading' || activeAnalysisRun !== null;
-        trigger.textContent = state === 'loading' ? '분석 중' : analysisCopy[kind].button;
+        trigger.disabled = state === 'loading' || activeAnalysisRun !== null || cooldown.isCooldownActive;
+        trigger.textContent = cooldown.isCooldownActive
+          ? '재분석 대기 중'
+          : state === 'loading'
+            ? '분석 중'
+            : analysisCopy[kind].button;
 
         if (state === 'idle') {
           message.textContent = analysisCopy[kind].idle;
@@ -1259,9 +1322,30 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         renderMockedAnalysisState('mk-ai');
       };
 
+      const updateAnalysisCooldown = (kind: ChartAiAnalysisKind) => {
+        const cooldown = analysisCooldowns[kind];
+        cooldown.cooldownRemainingMs = Math.max(0, (cooldown.cooldownUntil ?? 0) - Date.now());
+        if (cooldown.cooldownRemainingMs === 0) {
+          cooldown.cooldownUntil = null;
+          cooldown.isCooldownActive = false;
+          clearAnalysisCooldownTimer(kind);
+        }
+        renderMockedAnalysisState(kind);
+      };
+
+      const startAnalysisCooldown = (kind: ChartAiAnalysisKind) => {
+        const cooldown = analysisCooldowns[kind];
+        clearAnalysisCooldownTimer(kind);
+        cooldown.cooldownUntil = Date.now() + ANALYSIS_COOLDOWN_MS;
+        cooldown.cooldownRemainingMs = ANALYSIS_COOLDOWN_MS;
+        cooldown.isCooldownActive = true;
+        cooldown.cooldownTimer = window.setInterval(() => updateAnalysisCooldown(kind), 1000);
+        renderMockedAnalysisState(kind);
+      };
+
       const runMockedAnalysisTrigger = (kind: ChartAiAnalysisKind) => {
         // Duplicate and simultaneous run prevention for this mocked-only trigger flow.
-        if (activeAnalysisRun !== null || analysisStates[kind] === 'loading') return;
+        if (activeAnalysisRun !== null || analysisStates[kind] === 'loading' || analysisCooldowns[kind].isCooldownActive) return;
         if (!mockedAnalysisAuth.authenticated) {
           analysisStates[kind] = 'login_required';
           renderAllMockedAnalysisStates();
@@ -1285,6 +1369,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           analysisStates[kind] = 'success';
           activeAnalysisRun = null;
           analysisMockedDelayTimer = null;
+          startAnalysisCooldown(kind);
           renderAllMockedAnalysisStates();
         }, 900);
       };
@@ -1300,10 +1385,29 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         if (analysisMockedDelayTimer !== null) window.clearTimeout(analysisMockedDelayTimer);
         analysisMockedDelayTimer = null;
         activeAnalysisRun = null;
+        (['similar-pattern', 'mk-ai'] as const).forEach((kind) => {
+          clearAnalysisCooldownTimer(kind);
+          analysisCooldowns[kind].cooldownUntil = null;
+          analysisCooldowns[kind].cooldownRemainingMs = 0;
+          analysisCooldowns[kind].isCooldownActive = false;
+        });
         analysisStates['similar-pattern'] = 'idle';
         analysisStates['mk-ai'] = 'idle';
         renderAllMockedAnalysisStates();
       };
+      window.addEventListener('pagehide', () => {
+        clearAnalysisCooldownTimer('similar-pattern');
+        clearAnalysisCooldownTimer('mk-ai');
+      });
+      window.addEventListener('pageshow', () => {
+        (['similar-pattern', 'mk-ai'] as const).forEach((kind) => {
+          if (!analysisCooldowns[kind].isCooldownActive) return;
+          updateAnalysisCooldown(kind);
+          if (analysisCooldowns[kind].isCooldownActive && analysisCooldowns[kind].cooldownTimer === null) {
+            analysisCooldowns[kind].cooldownTimer = window.setInterval(() => updateAnalysisCooldown(kind), 1000);
+          }
+        });
+      });
       renderAllMockedAnalysisStates();
 
       const activateAnalysisTab = (tab: 'similarity' | 'mk-ai', options: { focusTab?: boolean } = {}) => {
@@ -3270,6 +3374,41 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
 
     .chart-analysis-loading-cue[hidden] {
       display: none !important;
+    }
+
+    .chart-analysis-cooldown-status {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.55rem;
+      margin: 0;
+      padding-top: 0.65rem;
+      border-top: 1px solid color-mix(in srgb, var(--chart-shell-border) 76%, transparent);
+      color: var(--chart-shell-muted);
+      font-size: 0.7rem;
+      line-height: 1.45;
+    }
+
+    .chart-analysis-cooldown-status[hidden],
+    .chart-analysis-cooldown-status [hidden] {
+      display: none !important;
+    }
+
+    .chart-analysis-cooldown-status strong {
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-analysis-cooldown-status small {
+      flex-basis: 100%;
+      color: var(--text-muted);
+      font-size: 0.67rem;
+    }
+
+    .chart-analysis-trigger-card[data-cooldown-active="true"] .chart-analysis-trigger-button:disabled {
+      cursor: not-allowed;
     }
 
     .chart-analysis-loading-dot {

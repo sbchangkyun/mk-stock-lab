@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-G-HF1 - 2026-07-04
+
+### Analysis Trigger Cooldown UX, Mocked-only UI Revision (Implemented)
+
+- **Status**: Implemented. Added a mocked client-side post-success cooldown UX to the main Chart AI analysis triggers. After Similar Pattern Analysis or MK AI Analysis succeeds, its rerun trigger enters a 5-minute disabled cooldown while the existing result remains visible and a countdown indicates when analysis can be run again. No route, server runtime, API, LLM, database, Supabase, live KIS, persistence, actual server-side usage limiting, payment, ad, dependency, deploy, or push occurred.
+- **Background**: Phase 3FD-G prevented duplicate clicks during loading but allowed reruns immediately after success. The owner identified future KIS API blocking risk and LLM cost risk from excessive repeated calls. This phase adds client-side UX friction only; production protection still requires server-side rate limiting, cache reuse, usage quotas, and cost guards before real KIS/LLM activation.
+- **Implemented scope**: `/chart-ai` UI-only cooldown revision, 5-minute cooldown constant, countdown display, disabled rerun trigger during cooldown, result-visible cooldown behavior, cooldown guard before execution, timer cleanup, owner-local panel preservation, static checker, result doc, package script, changelog.
+- **Preserved policy**: no route source change, no server runtime source change, no provider source change, no deterministic engine source change, no data source change, no database connection, no Supabase client creation, no environment value read, no cookie/header/session parsing, no JWT verification, no migration execution, no API call for the new trigger/cooldown flow, no LLM call, no live KIS call, no actual server-side usage limiting, no persistence, no payment/ad integration, no package install, no dependency or lockfile change, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-G-MANUAL-RUN — Owner Browser QA for Analysis Trigger Cooldown UX. Alternative: Phase 3FD-G-HF2 — Cooldown UX Copy/Visual Polish, Mocked-only UI Revision. Hold alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change.
+
 ## Phase 3FD-G - 2026-07-04
 
 ### Chart AI Analysis Trigger UX Mocked-only Implementation (Implemented)
