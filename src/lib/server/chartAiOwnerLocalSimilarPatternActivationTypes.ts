@@ -21,6 +21,8 @@ export type ChartAiOwnerLocalSimilarPatternRequest = {
   ownerLocalSimilarPatternRouteActivation: true;
   requestKind: 'similar_pattern';
   subjectRole: 'user' | 'master';
+  ownerLocalOhlcProviderMode?: 'synthetic_sample' | 'kis_ohlc_fixture';
+  ownerLocalKisOhlcFixture?: 'deterministic_safe' | 'malformed_provider_shape';
 };
 
 export type ChartAiOwnerLocalGuardScenario =
@@ -51,10 +53,20 @@ export type ChartAiOwnerLocalSimilarPatternSuccess = {
   mode: 'owner-local-similar-pattern-route';
   data: {
     summary: {
-      resultSource: 'synthetic_sample_only';
+      resultSource: 'synthetic_sample_only' | 'kis_ohlc_fixture_only';
       matchCount: number;
       currentWindowSize: number;
       scoreLabel: string;
+      providerModeLabel?: string;
+      redactedDiagnostics?: {
+        provider: 'kis_ohlc';
+        providerMode: 'fixture_only';
+        sourceLabel: 'kis_ohlc_fixture_only';
+        liveClient: 'disabled';
+        credentialRead: 'none';
+        payloadExposure: 'redacted';
+        barCountBucket: 'large' | 'small' | 'none';
+      };
     };
     matches: ChartAiOwnerLocalSimilarPatternMatch[];
   };

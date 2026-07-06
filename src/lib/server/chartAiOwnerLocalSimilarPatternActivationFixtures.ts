@@ -59,6 +59,24 @@ export const chartAiOwnerLocalSimilarPatternFixtures: ChartAiOwnerLocalSimilarPa
   guardedFixture('local_provider_unavailable', 'user', 'provider_unavailable', 'blocked_provider_disabled'),
   guardedFixture('local_feature_disabled', 'user', 'feature_disabled', 'blocked_feature_disabled'),
   {
+    name: 'local_kis_ohlc_fixture_user_success',
+    body: buildOwnerLocalSimilarPatternRequestFixture('user', {
+      ownerLocalOhlcProviderMode: 'kis_ohlc_fixture',
+      ownerLocalKisOhlcFixture: 'deterministic_safe',
+    }),
+    context: { hostname: 'localhost' },
+    expectedStatus: 'owner_local_similarity_success',
+  },
+  {
+    name: 'local_kis_ohlc_fixture_malformed_fail_closed',
+    body: buildOwnerLocalSimilarPatternRequestFixture('user', {
+      ownerLocalOhlcProviderMode: 'kis_ohlc_fixture',
+      ownerLocalKisOhlcFixture: 'malformed_provider_shape',
+    }),
+    context: { hostname: 'localhost' },
+    expectedStatus: 'fail_closed',
+  },
+  {
     name: 'malformed_input_safe_blocked',
     body: null,
     context: { hostname: 'localhost' },

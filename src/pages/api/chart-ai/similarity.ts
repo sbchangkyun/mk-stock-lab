@@ -41,6 +41,9 @@
  * and a mocked-safe role. It executes only the deterministic synthetic fixture and returns only a
  * sanitized label/count response. Public route success, live KIS, LLM, real auth, persistence,
  * Supabase, database, environment, cookie, session, header-auth, and JWT behavior remain disabled.
+ * Phase 3FE-A keeps the same owner-local subpath and adds an explicit fixture-only KIS OHLC
+ * provider-shaped mode. Live KIS remains unavailable; no credentials, provider payload, or raw
+ * OHLC rows are exposed.
  *
  * Request bodies are parsed defensively; malformed JSON never crashes the route and always falls
  * back to the safe default (feature-disabled) request shape.
@@ -105,6 +108,8 @@ const isOwnerLocalSimilarityActivationAttempt = (body: unknown): boolean => {
   const record = body as Record<string, unknown>;
   return (
     'ownerLocalSimilarPatternRouteActivation' in record ||
+    'ownerLocalOhlcProviderMode' in record ||
+    'ownerLocalKisOhlcFixture' in record ||
     'requestKind' in record ||
     'subjectRole' in record
   );

@@ -2,6 +2,8 @@
 
 import { buildSyntheticOhlcvFixture } from '../../data/chartSimilarity/syntheticOhlcvFixture';
 import { scanSimilarity } from '../chartSimilarity';
+import { runFixtureOnlyKisOhlcProviderBoundary } from './chartAiKisOhlcProviderBoundary';
+import type { ChartAiKisOhlcProviderFixtureName } from './chartAiKisOhlcProviderBoundaryTypes';
 import {
   assertChartAiServerGuardDecisionIsSafe,
   evaluateChartAiServerGuard,
@@ -66,6 +68,16 @@ export const normalizeOwnerLocalSimilarPatternRequest = (
   if (record.ownerLocalSimilarPatternRouteActivation !== true) return null;
   if (record.requestKind !== 'similar_pattern') return null;
   if (record.subjectRole !== 'user' && record.subjectRole !== 'master') return null;
+  if (
+    record.ownerLocalOhlcProviderMode !== undefined &&
+    record.ownerLocalOhlcProviderMode !== 'synthetic_sample' &&
+    record.ownerLocalOhlcProviderMode !== 'kis_ohlc_fixture'
+  ) return null;
+  if (
+    record.ownerLocalKisOhlcFixture !== undefined &&
+    record.ownerLocalKisOhlcFixture !== 'deterministic_safe' &&
+    record.ownerLocalKisOhlcFixture !== 'malformed_provider_shape'
+  ) return null;
   return {
     mode: 'guarded-runtime-scaffold',
     source: 'mocked-provider-compatible',
@@ -73,6 +85,8 @@ export const normalizeOwnerLocalSimilarPatternRequest = (
     ownerLocalSimilarPatternRouteActivation: true,
     requestKind: 'similar_pattern',
     subjectRole: record.subjectRole,
+    ownerLocalOhlcProviderMode: record.ownerLocalOhlcProviderMode,
+    ownerLocalKisOhlcFixture: record.ownerLocalKisOhlcFixture,
   };
 };
 
@@ -113,6 +127,56 @@ const guardStatusMessage = (status: ChartAiOwnerLocalSimilarPatternStatus): stri
   return messages[status] ?? 'The request was safely blocked.';
 };
 
+const resolveBarsForOwnerLocalRequest = (record: Record<string, unknown>) => {
+  if (record.ownerLocalOhlcProviderMode === undefined || record.ownerLocalOhlcProviderMode === 'synthetic_sample') {
+    return {
+      ok: true as const,
+      bars: buildSyntheticOhlcvFixture(),
+      resultSource: 'synthetic_sample_only' as const,
+      matchLabelPrefix: 'Synthetic match',
+      providerSummary: null,
+    };
+  }
+  if (record.ownerLocalOhlcProviderMode !== 'kis_ohlc_fixture') {
+    return {
+      ok: false as const,
+      status: 'blocked_invalid_request' as const,
+      code: 'invalid_provider_mode',
+      message: 'The owner-local provider mode is invalid.',
+    };
+  }
+  const fixtureName: ChartAiKisOhlcProviderFixtureName = record.ownerLocalKisOhlcFixture === 'malformed_provider_shape'
+    ? 'malformed_provider_shape'
+    : 'deterministic_safe';
+  const providerResult = runFixtureOnlyKisOhlcProviderBoundary(fixtureName);
+  if (!providerResult.ok) {
+    return {
+      ok: false as const,
+      status: 'fail_closed' as const,
+      code: providerResult.status,
+      message: 'The owner-local KIS OHLC fixture failed closed.',
+    };
+  }
+  return {
+    ok: true as const,
+    bars: providerResult.bars,
+    resultSource: 'kis_ohlc_fixture_only' as const,
+    matchLabelPrefix: 'KIS OHLC fixture match',
+    providerSummary: {
+      providerModeLabel: 'KIS OHLC fixture only',
+      redactedDiagnostics: {
+        provider: providerResult.diagnostics.provider,
+        providerMode: providerResult.diagnostics.providerMode,
+        sourceLabel: providerResult.diagnostics.sourceLabel,
+        liveClient: providerResult.diagnostics.liveClient,
+        credentialRead: providerResult.diagnostics.credentialRead,
+        payloadExposure: providerResult.diagnostics.payloadExposure,
+        barCountBucket: providerResult.diagnostics.barCountBucket,
+      },
+    },
+  };
+};
+
 export const runOwnerLocalSimilarPatternActivation = (
   body: unknown,
   context: ChartAiOwnerLocalSimilarPatternContext,
@@ -136,6 +200,13 @@ export const runOwnerLocalSimilarPatternActivation = (
   }
   if (record.requestKind !== 'similar_pattern') {
     return blocked('blocked_invalid_request', 'invalid_request_kind', 'Only Similar Pattern is supported.');
+  }
+  if (
+    record.ownerLocalOhlcProviderMode !== undefined &&
+    record.ownerLocalOhlcProviderMode !== 'synthetic_sample' &&
+    record.ownerLocalOhlcProviderMode !== 'kis_ohlc_fixture'
+  ) {
+    return blocked('blocked_invalid_request', 'invalid_provider_mode', 'The owner-local provider mode is invalid.');
   }
 
   const role = normalizeRole(record.subjectRole);
@@ -167,7 +238,12 @@ export const runOwnerLocalSimilarPatternActivation = (
     );
   }
 
-  const analysis = scanSimilarity(buildSyntheticOhlcvFixture(), {
+  const barsResult = resolveBarsForOwnerLocalRequest(record);
+  if (!barsResult.ok) {
+    return blocked(barsResult.status, barsResult.code, barsResult.message);
+  }
+
+  const analysis = scanSimilarity(barsResult.bars, {
     baseWindow: 20,
     forwardWindows: [5, 20],
     topK: 5,
@@ -176,7 +252,7 @@ export const runOwnerLocalSimilarPatternActivation = (
   });
   const matches = analysis.matches.map((match) => ({
     rank: match.rank,
-    label: `Synthetic match ${match.rank}`,
+    label: `${barsResult.matchLabelPrefix} ${match.rank}`,
     scoreLabel: toScoreLabel(match.similarityScore),
     forwardReturn5Label: toPercentLabel(match.forwardOutcome.forwardReturns.d5),
     forwardReturn20Label: toPercentLabel(match.forwardOutcome.forwardReturns.d20),
@@ -189,10 +265,11 @@ export const runOwnerLocalSimilarPatternActivation = (
     mode: MODE,
     data: {
       summary: {
-        resultSource: 'synthetic_sample_only',
+        resultSource: barsResult.resultSource,
         matchCount: matches.length,
         currentWindowSize: analysis.currentWindow.bars.length,
         scoreLabel: matches[0]?.scoreLabel ?? 'not_available',
+        ...(barsResult.providerSummary ?? {}),
       },
       matches,
     },
@@ -204,6 +281,6 @@ export const assertOwnerLocalSimilarPatternResponseIsSafe = (
   response: ChartAiOwnerLocalSimilarPatternResponse,
 ): void => {
   const serialized = JSON.stringify(response);
-  const forbidden = /@|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|subject_mock|access.?token|refresh.?token|authorization|cookie|session|stack|normalizedPath|currentNormalizedPath|"open"|"high"|"low"|"close"|"volume"/i;
+  const forbidden = /@|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|subject_mock|access.?token|refresh.?token|authorization|cookie|session|stack|normalizedPath|currentNormalizedPath|raw.?payload|stck_|acml_|"open"|"high"|"low"|"close"|"volume"/i;
   if (forbidden.test(serialized)) throw new Error('Owner-local Similar Pattern response failed safety validation.');
 };

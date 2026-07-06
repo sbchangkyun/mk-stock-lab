@@ -30,3 +30,16 @@ export {
   chartAiOwnerLocalSimilarPatternFixtures,
 } from './chartAiOwnerLocalSimilarPatternActivationFixtures';
 export { runChartAiOwnerLocalSimilarPatternActivationSmoke } from './chartAiOwnerLocalSimilarPatternActivationSmoke';
+export type * from './chartAiKisOhlcProviderBoundaryTypes';
+export {
+  assertKisOhlcProviderResultIsSafe,
+  normalizeKisOhlcProviderShapedInput,
+  runDisabledKisOhlcProviderBoundary,
+  runFixtureOnlyKisOhlcProviderBoundary,
+} from './chartAiKisOhlcProviderBoundary';
+export {
+  buildDeterministicKisOhlcProviderFixture,
+  buildKisOhlcProviderFixture,
+  buildMalformedKisOhlcProviderFixture,
+} from './chartAiKisOhlcProviderBoundaryFixtures';
+export { runChartAiKisOhlcProviderBoundarySmoke } from './chartAiKisOhlcProviderBoundarySmoke';

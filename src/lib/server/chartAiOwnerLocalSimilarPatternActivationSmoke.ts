@@ -13,6 +13,14 @@ import type {
 
 const SUCCESS_KEYS = ['data', 'error', 'mode', 'ok', 'status'];
 const SUMMARY_KEYS = ['currentWindowSize', 'matchCount', 'resultSource', 'scoreLabel'];
+const PROVIDER_SUMMARY_KEYS = [
+  'currentWindowSize',
+  'matchCount',
+  'providerModeLabel',
+  'redactedDiagnostics',
+  'resultSource',
+  'scoreLabel',
+];
 const MATCH_KEYS = [
   'drawdownLabel',
   'forwardReturn20Label',
@@ -88,6 +96,21 @@ export const runChartAiOwnerLocalSimilarPatternActivationSmoke = (
     }
   }
 
+  const providerFixture = responses.get('local_kis_ohlc_fixture_user_success');
+  assertEqual(providerFixture?.ok, true, 'provider fixture: success');
+  if (providerFixture?.ok) {
+    assertEqual(providerFixture.data.summary.resultSource, 'kis_ohlc_fixture_only', 'provider fixture: source label');
+    assertEqual(providerFixture.data.summary.providerModeLabel, 'KIS OHLC fixture only', 'provider fixture: mode label');
+    assertEqual(JSON.stringify(Object.keys(providerFixture.data.summary).sort()), JSON.stringify(PROVIDER_SUMMARY_KEYS), 'provider fixture: summary shape');
+    assertEqual(providerFixture.data.summary.redactedDiagnostics?.provider, 'kis_ohlc', 'provider fixture: provider label');
+    assertEqual(providerFixture.data.summary.redactedDiagnostics?.providerMode, 'fixture_only', 'provider fixture: fixture mode');
+    assertEqual(providerFixture.data.summary.redactedDiagnostics?.liveClient, 'disabled', 'provider fixture: live client disabled');
+    assertEqual(providerFixture.data.summary.redactedDiagnostics?.credentialRead, 'none', 'provider fixture: no credential read');
+    assertEqual(providerFixture.data.summary.redactedDiagnostics?.payloadExposure, 'redacted', 'provider fixture: payload redacted');
+    assertEqual(providerFixture.data.summary.redactedDiagnostics?.barCountBucket, 'large', 'provider fixture: bucketed bar count');
+    assertTrue(providerFixture.data.matches.every((match) => match.label.startsWith('KIS OHLC fixture match ')), 'provider fixture: safe match labels');
+  }
+
   assertEqual(responses.get('remote_explicit_user_blocked')?.status, 'blocked_owner_local_required', 'remote request blocked');
   assertEqual(responses.get('local_missing_explicit_activation')?.status, 'blocked_explicit_activation_required', 'explicit activation required');
   assertEqual(responses.get('local_anonymous_blocked')?.status, 'blocked_anonymous', 'anonymous blocked');
@@ -97,6 +120,7 @@ export const runChartAiOwnerLocalSimilarPatternActivationSmoke = (
   assertEqual(responses.get('local_usage_limited')?.status, 'blocked_usage_limited', 'usage limited blocked');
   assertEqual(responses.get('local_cost_blocked')?.status, 'blocked_cost_guard', 'cost guard blocked');
   assertEqual(responses.get('local_provider_unavailable')?.status, 'blocked_provider_disabled', 'provider unavailable blocked');
+  assertEqual(responses.get('local_kis_ohlc_fixture_malformed_fail_closed')?.status, 'fail_closed', 'malformed provider fixture fails closed');
   assertEqual(responses.get('malformed_input_safe_blocked')?.status, 'blocked_invalid_request', 'malformed input blocked');
   assertTrue(chartAiOwnerLocalSimilarPatternFixtures.length >= 14, 'fixture coverage includes fourteen scenarios');
   assertTrue(assertionCount >= 120, `smoke must run at least 120 assertions; ran ${assertionCount}`);
