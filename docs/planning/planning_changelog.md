@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-I - 2026-07-04
+
+### Real Auth and Server Guard Foundation, All Runtime Gates Off (Implemented)
+
+- **Status**: Implemented. Added a server-only Chart AI guard foundation for future real-auth and server-side protection work while keeping all runtime gates off. The foundation models caller subject state, role/capabilities, page access, analysis execution eligibility, cooldown, usage, cache, cost, audit, provider-disabled, and route-success-disabled decisions using deterministic mocked fixtures only. Route success remains disabled. No `/chart-ai` UI behavior, Portfolio source, API route source, KIS provider, LLM/API, Supabase, database, environment, session/JWT parsing, dependency, deploy, or push occurred.
+- **Background**: After Phase 3FD-H-HF1 completed the mocked Chart AI login gate and Portfolio-aligned lock UI, the roadmap was shortened to six remaining steps. This phase consolidates the real-auth-compatible subject and capability contract with deterministic server guard outcomes before any owner-local route activation.
+- **Implemented scope**: server-only guard foundation types, pure guard decision evaluator, all-runtime-gates-off policy, deterministic anonymous/user/master/unknown-role fixtures, cooldown/usage/cache/cost/audit decisions, fail-closed handling, sanitized result assertion, server export barrel, focused smoke, static checker, result doc, package scripts, changelog.
+- **Preserved policy**: no `/chart-ai` source change, no Portfolio source change, no API route source change, no existing guarded runtime activation, no provider source change, no deterministic engine source change, no data source change, no real auth runtime activation, no database connection, no Supabase client creation, no environment value read, no cookie/header/session/JWT parsing, no migration or SQL execution, no KIS call, no LLM/API call, no real usage or cache persistence, no service-role use, no dependency or lockfile change, no raw master identifiers committed, no route success, no public/beta activation, no deploy, no push.
+- **Roadmap position**: Step 1 of the shortened six-step Chart AI roadmap. The remaining sequence is Phase 3FD-J, Phase 3FE-A, Phase 3FF-A, Phase 3FG-A, and Phase 3FG-B.
+- **Recommended next phase**: Phase 3FD-J — Similar Pattern Route Owner-local Activation. Alternative: Phase 3FD-I-HF1 — Guard Foundation Revisions, All Gates Off. Hold: Phase 3FE-A — KIS OHLC Provider Owner-local Integration.
+
 ## Phase 3FD-H-HF1 - 2026-07-04
 
 ### Chart AI Login Gate Visual Alignment with Portfolio, Mocked-only UI Revision (Implemented)
