@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-J-HANDOFF - 2026-07-04
+
+### Chart AI New Chat Handoff Package, No Runtime Change (Implemented)
+
+- **Status**: Implemented. Created a documentation-only new-chat handoff package under `docs/handoff/chart-ai-new-chat/` so future work can continue from Phase 3FD-J without relying on prior chat memory. No source, route, UI, server runtime, provider, data, KIS, LLM, Supabase, database, environment, session/JWT, dependency, lockfile, deploy, or push changes occurred.
+- **Background**: After Phase 3FD-J completed owner-local Similar Pattern route activation, the current chat context became too large. This handoff package records the current state, completed phase history, architecture and guard boundaries, shortened roadmap, next Phase 3FE-A brief, validation commands, and a new-chat start prompt.
+- **Implemented scope**: handoff README, current state, completed phase history, architecture and guards, shortened roadmap, Phase 3FE-A brief, validation commands, new-chat start prompt, JSON manifest, result doc, checker, package script, changelog.
+- **Preserved policy**: no runtime source change, no `/chart-ai` change, no API route change, no provider or deterministic engine change, no data change, no KIS call, no LLM/API call, no MK AI route activation, no real auth runtime activation, no database connection, no Supabase client creation, no environment value read, no cookie/header/session/JWT parsing, no migration or SQL execution, no usage/cache persistence, no dependency or lockfile change, no raw master identifiers committed, no public/beta activation, no deploy, no push.
+- **Recommended next step**: Start a new ChatGPT conversation using `docs/handoff/chart-ai-new-chat/07_NEW_CHAT_START_PROMPT.md` and attach the handoff package. After the new chat correctly summarizes the current state and boundaries, proceed to Phase 3FE-A — KIS OHLC Provider Owner-local Integration.
+
 ## Phase 3FD-J - 2026-07-04
 
 ### Similar Pattern Route Owner-local Activation (Implemented)
