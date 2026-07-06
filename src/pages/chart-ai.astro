@@ -73,6 +73,12 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
 ---
 
 <Layout title="종목 차트 | MK Stock Lab" activePath="/chart-ai">
+  <div
+    class="chart-ai-auth-shell"
+    data-chart-ai-auth-state="authenticated"
+    data-chart-ai-master-mode="false"
+    data-chart-ai-cooldown-bypass="false"
+  >
   <header class="page-header chart-lookup-page-header">
     <div>
       <p class="eyebrow">국내/미국 주식·ETF</p>
@@ -81,7 +87,30 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     </div>
   </header>
 
-  <main class="chart-lookup-shell">
+  <section
+    class="chart-ai-auth-gate"
+    data-chart-ai-auth-gate="locked"
+    aria-labelledby="chart-ai-auth-gate-title"
+    aria-live="polite"
+    hidden
+  >
+    <div class="chart-ai-auth-gate-card" data-chart-ai-auth-gate-card>
+      <div class="chart-ai-auth-lock-visual" aria-hidden="true">🔐</div>
+      <div class="chart-ai-auth-gate-copy">
+        <p class="eyebrow">접속 필요</p>
+        <h2 id="chart-ai-auth-gate-title">로그인이 필요합니다</h2>
+        <p>회원가입 또는 로그인 후 Chart AI 분석 기능을 사용할 수 있습니다.</p>
+      </div>
+      <button class="button-link chart-ai-auth-gate-cta" data-chart-ai-auth-gate-cta type="button">
+        회원가입 / 로그인
+      </button>
+    </div>
+  </section>
+
+  <main class="chart-lookup-shell" data-chart-ai-auth-body>
+    <p class="chart-ai-master-mode-notice" data-chart-ai-master-notice hidden>
+      마스터 권한으로 재분석 대기 시간이 적용되지 않습니다.
+    </p>
     <section class="chart-lookup-search" aria-labelledby="chart-lookup-search-heading">
       <div class="chart-ai-symbol-row">
         <label class="chart-search-shell chart-lookup-search-field" for="chartAiInput">
@@ -629,6 +658,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       <span>현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.</span>
     </aside>
   </main>
+  </div>
 
   <script
     id="chartAiDomesticSymbolData"
@@ -711,6 +741,49 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       const mkAiScenarioCautionEl = document.getElementById('chartAiMkAiScenarioCaution');
       const mkAiRiskChecklistEl = document.getElementById('chartAiMkAiRiskChecklist');
       const mkAiConnectedScenarioNoteEl = document.getElementById('chartAiMkAiConnectedScenarioNote');
+
+      type ChartAiMockAuthState = 'anonymous' | 'authenticated';
+      type ChartAiMockRole = 'user' | 'master';
+      const chartAiQuery = new URLSearchParams(window.location.search);
+      const chartAiMockLoggedOut = chartAiQuery.get('chartAiMockLoggedOut') === '1';
+      const chartAiMockMaster = !chartAiMockLoggedOut && chartAiQuery.get('chartAiMockMaster') === '1';
+      // Mocked page capability model only. It contains no real identity, session, or authorization data.
+      const mockedChartAiAccess: {
+        authState: ChartAiMockAuthState;
+        role: ChartAiMockRole;
+        capabilities: {
+          canAccessChartAi: boolean;
+          canBypassAnalysisCooldown: boolean;
+          canRunSimilarPattern: boolean;
+          canRunMkAi: boolean;
+        };
+      } = {
+        authState: chartAiMockLoggedOut ? 'anonymous' : 'authenticated',
+        role: chartAiMockMaster ? 'master' : 'user',
+        capabilities: {
+          canAccessChartAi: !chartAiMockLoggedOut,
+          canBypassAnalysisCooldown: chartAiMockMaster,
+          canRunSimilarPattern: !chartAiMockLoggedOut,
+          canRunMkAi: !chartAiMockLoggedOut,
+        },
+      };
+      const authShell = document.querySelector<HTMLElement>('.chart-ai-auth-shell');
+      const authGate = document.querySelector<HTMLElement>('[data-chart-ai-auth-gate="locked"]');
+      const authGateCta = document.querySelector<HTMLButtonElement>('[data-chart-ai-auth-gate-cta]');
+      const authBody = document.querySelector<HTMLElement>('[data-chart-ai-auth-body]');
+      const masterModeNotice = document.querySelector<HTMLElement>('[data-chart-ai-master-notice]');
+
+      if (authShell) {
+        authShell.dataset.chartAiAuthState = mockedChartAiAccess.authState;
+        authShell.dataset.chartAiMasterMode = String(chartAiMockMaster);
+        authShell.dataset.chartAiCooldownBypass = String(mockedChartAiAccess.capabilities.canBypassAnalysisCooldown);
+      }
+      if (authGate) authGate.hidden = mockedChartAiAccess.capabilities.canAccessChartAi;
+      if (authBody) authBody.hidden = !mockedChartAiAccess.capabilities.canAccessChartAi;
+      if (masterModeNotice) masterModeNotice.hidden = !chartAiMockMaster;
+      authGateCta?.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('mk:open-auth'));
+      });
 
       if (!input || !runBtn || !searchPanel || !dropdown || !resultsEl || !resultCount || !emptyState || !chart || !chartSvg) return;
       if (runBtn.dataset.ready === 'true') return;
@@ -1191,7 +1264,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       // Mocked client-side auth placeholder only: not production auth, no Supabase client, and no
       // cookie/header/session/JWT parsing. The static page defaults to its existing signed-in look.
       const mockedAnalysisAuth = {
-        authenticated: new URLSearchParams(window.location.search).get('chartAiMockLoggedOut') !== '1',
+        authenticated: mockedChartAiAccess.capabilities.canAccessChartAi,
         source: 'mocked-client-only' as const,
       };
       const analysisUsagePlaceholder = {
@@ -1346,11 +1419,13 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       const runMockedAnalysisTrigger = (kind: ChartAiAnalysisKind) => {
         // Duplicate and simultaneous run prevention for this mocked-only trigger flow.
         if (activeAnalysisRun !== null || analysisStates[kind] === 'loading' || analysisCooldowns[kind].isCooldownActive) return;
-        if (!mockedAnalysisAuth.authenticated) {
+        if (!mockedAnalysisAuth.authenticated || !mockedChartAiAccess.capabilities.canAccessChartAi) {
           analysisStates[kind] = 'login_required';
           renderAllMockedAnalysisStates();
           return;
         }
+        if (kind === 'similar-pattern' && !mockedChartAiAccess.capabilities.canRunSimilarPattern) return;
+        if (kind === 'mk-ai' && !mockedChartAiAccess.capabilities.canRunMkAi) return;
         if (kind === 'mk-ai' && analysisStates['similar-pattern'] !== 'success') {
           analysisStates[kind] = 'blocked';
           renderAllMockedAnalysisStates();
@@ -1369,7 +1444,14 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           analysisStates[kind] = 'success';
           activeAnalysisRun = null;
           analysisMockedDelayTimer = null;
-          startAnalysisCooldown(kind);
+          if (mockedChartAiAccess.capabilities.canBypassAnalysisCooldown) {
+            clearAnalysisCooldownTimer(kind);
+            analysisCooldowns[kind].cooldownUntil = null;
+            analysisCooldowns[kind].cooldownRemainingMs = 0;
+            analysisCooldowns[kind].isCooldownActive = false;
+          } else {
+            startAnalysisCooldown(kind);
+          }
           renderAllMockedAnalysisStates();
         }, 900);
       };
@@ -1680,7 +1762,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
       };
       const ownerLocalMockedOptIn = new URLSearchParams(window.location.search).get('ownerLocalMocked') === '1';
-      const ownerLocalMockedEnabled = isLocalOwnerHostname() && ownerLocalMockedOptIn;
+      const ownerLocalMockedEnabled = mockedChartAiAccess.capabilities.canAccessChartAi && isLocalOwnerHostname() && ownerLocalMockedOptIn;
 
       if (ownerLocalMockedPanel) ownerLocalMockedPanel.hidden = !ownerLocalMockedEnabled;
 
@@ -1859,7 +1941,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       if (authUsageBridgeResult) authUsageBridgeResult.tabIndex = -1;
 
       const authUsageBridgeOptIn = new URLSearchParams(window.location.search).get('ownerLocalAuthUsageBridge') === '1';
-      const authUsageBridgeEnabled = isLocalOwnerHostname() && authUsageBridgeOptIn;
+      const authUsageBridgeEnabled = mockedChartAiAccess.capabilities.canAccessChartAi && isLocalOwnerHostname() && authUsageBridgeOptIn;
 
       if (authUsageBridgePanel) authUsageBridgePanel.hidden = !authUsageBridgeEnabled;
 
@@ -2146,6 +2228,107 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
   </script>
 
   <style>
+    .chart-ai-auth-shell {
+      display: grid;
+      gap: 1rem;
+      min-width: 0;
+    }
+
+    .chart-ai-auth-gate {
+      display: grid;
+      min-height: 430px;
+      place-items: center;
+      padding: clamp(1rem, 4vw, 2.5rem);
+      border: 1px solid rgb(23 32 51 / 12%);
+      border-radius: 16px;
+      background:
+        linear-gradient(rgb(23 32 51 / 4%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(23 32 51 / 4%) 1px, transparent 1px),
+        var(--surface);
+      background-size: 28px 28px;
+      box-shadow: 0 18px 42px rgb(20 36 64 / 10%);
+    }
+
+    .chart-ai-auth-gate[hidden],
+    [data-chart-ai-auth-body][hidden] {
+      display: none !important;
+    }
+
+    .chart-ai-auth-gate-card {
+      display: grid;
+      justify-items: center;
+      width: min(100%, 580px);
+      gap: 1rem;
+      padding: clamp(1.5rem, 5vw, 2.6rem);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface) 96%, transparent);
+      box-shadow: 0 16px 36px rgb(20 36 64 / 12%);
+      text-align: center;
+    }
+
+    .chart-ai-auth-lock-visual {
+      display: grid;
+      width: 3.2rem;
+      height: 3.2rem;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+      font-size: 1.35rem;
+    }
+
+    .chart-ai-auth-gate-copy {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .chart-ai-auth-gate-copy p,
+    .chart-ai-auth-gate-copy h2 {
+      margin: 0;
+    }
+
+    .chart-ai-auth-gate-copy h2 {
+      font-size: clamp(1.25rem, 4vw, 1.65rem);
+    }
+
+    .chart-ai-auth-gate-copy > p:last-child {
+      max-width: 430px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    .chart-ai-auth-gate-cta {
+      min-height: 42px;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .chart-ai-auth-gate-cta:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--primary) 45%, transparent);
+      outline-offset: 3px;
+    }
+
+    .chart-ai-master-mode-notice {
+      width: fit-content;
+      margin: 0;
+      padding: 0.35rem 0.6rem;
+      border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border));
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      line-height: 1.4;
+    }
+
+    .chart-ai-master-mode-notice[hidden] {
+      display: none !important;
+    }
+
     .chart-lookup-page-header {
       padding-bottom: 0.2rem;
     }

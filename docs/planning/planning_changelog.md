@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-H - 2026-07-04
+
+### Chart AI Login Gate and Master Cooldown Exemption Mocked-only UI Implementation (Implemented)
+
+- **Status**: Implemented. Added a mocked-only `/chart-ai` page-level login gate and master cooldown exemption. Anonymous mock mode shows a Portfolio-aligned login-required card and hides the Chart AI application body. Default authenticated mock mode keeps the existing 5-minute cooldown. Master mock mode bypasses only the client-side cooldown while preserving loading duplicate prevention and MK AI prerequisite guards. No Portfolio source, route, server runtime, real auth, database, Supabase, environment, session/JWT parsing, API/LLM, live KIS, dependency, deploy, or push occurred.
+- **Background**: Phase 3FD-H-PLAN defined that Chart AI should become login-required like Portfolio and that master users should bypass the client cooldown. Raw master identifiers are sensitive and must not be committed or exposed client-side, so this phase uses mocked capabilities only and does not implement real master identity resolution.
+- **Implemented scope**: `/chart-ai` UI-only mocked login gate, Portfolio-aligned locked state, `chartAiMockLoggedOut=1`, `chartAiMockMaster=1`, mocked capability model, normal-user cooldown preservation, master cooldown bypass, owner-local panel preservation, static checker, result doc, package script, changelog.
+- **Preserved policy**: no Portfolio source change, no route source change, no server runtime source change, no provider source change, no deterministic engine source change, no data source change, no real auth runtime implementation, no database connection, no Supabase client creation, no environment value read, no cookie/header/session/JWT parsing, no migration execution, no API/LLM call, no live KIS call, no actual server-side usage limiting, no persistence, no payment/ad integration, no package install, no dependency or lockfile change, no raw master identifiers committed, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-H-MANUAL-RUN — Owner Browser QA for Chart AI Login Gate and Master Cooldown Exemption. Alternative: Phase 3FD-H-HF1 — Login Gate or Master Exemption Mocked-only UI Revisions. Hold alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change.
+
 ## Phase 3FD-H-PLAN - 2026-07-04
 
 ### Chart AI Login Gate and Master Cooldown Exemption Design, No Runtime Change (Prepared)
