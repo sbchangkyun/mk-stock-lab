@@ -58,6 +58,7 @@
     "check:phase-3fd-g-plan-chart-ai-analysis-trigger-ux-login-usage-gate-design": "node scripts/check_phase_3fd_g_plan_chart_ai_analysis_trigger_ux_login_usage_gate_design_contract.mjs",
     "check:phase-3fd-g-chart-ai-analysis-trigger-ux-mocked-only": "node scripts/check_phase_3fd_g_chart_ai_analysis_trigger_ux_mocked_only_contract.mjs",
     "check:phase-3fd-g-hf1-analysis-trigger-cooldown-ux-mocked-only": "node scripts/check_phase_3fd_g_hf1_analysis_trigger_cooldown_ux_mocked_only_contract.mjs",
+    "check:phase-3fd-h-plan-chart-ai-login-gate-master-cooldown-exemption-design": "node scripts/check_phase_3fd_h_plan_chart_ai_login_gate_master_cooldown_exemption_design_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",
