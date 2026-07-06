@@ -36,6 +36,12 @@
  * no live KIS, no mocked provider execution, no public/beta route success. This branch is mutually
  * exclusive with the two owner-local branches above by its distinct `mode` value.
  *
+ * Phase 3FD-J adds one explicit owner-local Similar Pattern subpath inside that guarded branch.
+ * It requires a local request URL, an explicit activation flag, the Similar Pattern request kind,
+ * and a mocked-safe role. It executes only the deterministic synthetic fixture and returns only a
+ * sanitized label/count response. Public route success, live KIS, LLM, real auth, persistence,
+ * Supabase, database, environment, cookie, session, header-auth, and JWT behavior remain disabled.
+ *
  * Request bodies are parsed defensively; malformed JSON never crashes the route and always falls
  * back to the safe default (feature-disabled) request shape.
  */
@@ -56,6 +62,12 @@ import {
   runSimilarityGuardedRouteScaffold,
 } from '../../../lib/server/chartSimilarity/similarityGuardedRouteScaffold';
 import { runSimilarityGuardedRouteRuntimeComposition } from '../../../lib/server/chartSimilarity/similarityGuardedRouteRuntimeComposition';
+import {
+  runOwnerLocalSimilarPatternActivation,
+} from '../../../lib/server/chartAiOwnerLocalSimilarPatternActivation';
+import type {
+  ChartAiOwnerLocalSimilarPatternResponse,
+} from '../../../lib/server/chartAiOwnerLocalSimilarPatternActivationTypes';
 
 export const prerender = false;
 
@@ -76,6 +88,34 @@ const jsonApiResponse = (response: SimilarityApiResponse, httpStatus: number) =>
       'Cache-Control': 'no-store',
     },
   });
+
+const jsonOwnerLocalSimilarityResponse = (
+  response: ChartAiOwnerLocalSimilarPatternResponse,
+  httpStatus: number,
+) => new Response(JSON.stringify(response), {
+  status: httpStatus,
+  headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store',
+  },
+});
+
+const isOwnerLocalSimilarityActivationAttempt = (body: unknown): boolean => {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return false;
+  const record = body as Record<string, unknown>;
+  return (
+    'ownerLocalSimilarPatternRouteActivation' in record ||
+    'requestKind' in record ||
+    'subjectRole' in record
+  );
+};
+
+const ownerLocalSimilarityHttpStatus = (response: ChartAiOwnerLocalSimilarPatternResponse): number => {
+  if (response.ok) return 200;
+  if (response.status === 'blocked_invalid_request') return 400;
+  if (response.status === 'blocked_cooldown' || response.status === 'blocked_usage_limited') return 429;
+  return 403;
+};
 
 const readJsonBody = async (request: Request): Promise<unknown> => {
   try {
@@ -109,6 +149,25 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (isGuardedRuntimeScaffoldSimilarityRequestBody(body)) {
+    if (isOwnerLocalSimilarityActivationAttempt(body)) {
+      try {
+        const response = runOwnerLocalSimilarPatternActivation(body, {
+          hostname: new URL(request.url).hostname,
+        });
+        return jsonOwnerLocalSimilarityResponse(response, ownerLocalSimilarityHttpStatus(response));
+      } catch {
+        return jsonOwnerLocalSimilarityResponse({
+          ok: false,
+          status: 'fail_closed',
+          mode: 'owner-local-similar-pattern-route',
+          data: null,
+          error: {
+            code: 'unexpected_error',
+            message: 'The owner-local Similar Pattern request failed closed.',
+          },
+        }, 500);
+      }
+    }
     try {
       // Confirm safe blocked/disabled handling only; the scaffold result is never exposed to the
       // client and never used to unlock a success response.

@@ -63,6 +63,8 @@
     "check:phase-3fd-h-hf1-chart-ai-login-gate-visual-alignment": "node scripts/check_phase_3fd_h_hf1_chart_ai_login_gate_visual_alignment_contract.mjs",
     "smoke:phase-3fd-i-real-auth-server-guard-foundation-all-gates-off": "node scripts/smoke_phase_3fd_i_real_auth_server_guard_foundation_all_gates_off.mjs",
     "check:phase-3fd-i-real-auth-server-guard-foundation-all-gates-off": "node scripts/check_phase_3fd_i_real_auth_server_guard_foundation_all_gates_off_contract.mjs",
+    "smoke:phase-3fd-j-similar-pattern-route-owner-local-activation": "node scripts/smoke_phase_3fd_j_similar_pattern_route_owner_local_activation.mjs",
+    "check:phase-3fd-j-similar-pattern-route-owner-local-activation": "node scripts/check_phase_3fd_j_similar_pattern_route_owner_local_activation_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-J - 2026-07-04
+
+### Similar Pattern Route Owner-local Activation (Implemented)
+
+- **Status**: Implemented. Added an owner-local-only Similar Pattern route activation path that reuses the Phase 3FD-I server guard foundation, requires explicit local activation, executes only deterministic synthetic/sample similarity analysis, and returns a sanitized response. Default `/chart-ai` remains mocked unless `ownerLocalSimilarPatternRoute=1` is used locally. MK AI remains mocked. No public/beta activation, live KIS, LLM, real auth runtime, Supabase, database, environment read, session/JWT parsing, usage/cache persistence, dependency change, deploy, or push occurred.
+- **Background**: Phase 3FD-I added the server-only guard foundation with all runtime gates off. This phase verifies the UI-to-route path for Similar Pattern under explicit owner-local conditions before KIS provider integration.
+- **Implemented scope**: server-only owner-local Similar Pattern activation helper, guarded route owner-local subpath, deterministic synthetic similarity execution, sanitized response model, `/chart-ai` owner-local route opt-in, route smoke, static checker, result doc, package scripts, changelog.
+- **Preserved policy**: no Portfolio source change, no public route success, no beta activation, no live KIS call, no LLM/API call, no MK AI route activation, no real auth runtime activation, no database connection, no Supabase client creation, no environment value read, no cookie/header/session/JWT parsing, no migration or SQL execution, no usage/cache persistence, no payment/ad integration, no package install, no dependency or lockfile change, no raw master identifiers committed, no deploy, no push.
+- **Recommended next phase**: Phase 3FE-A — KIS OHLC Provider Owner-local Integration. Alternative: Phase 3FD-J-HF1 — Similar Pattern Owner-local Route Revisions. Hold alternative: Phase 3FF-A — MK AI LLM Scaffold + Owner-local Activation.
+
 ## Phase 3FD-I - 2026-07-04
 
 ### Real Auth and Server Guard Foundation, All Runtime Gates Off (Implemented)

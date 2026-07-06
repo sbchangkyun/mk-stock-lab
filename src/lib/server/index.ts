@@ -16,3 +16,17 @@ export {
   chartAiGuardFoundationFixtures,
 } from './chartAiGuardFoundationFixtures';
 export { runChartAiGuardFoundationSmoke } from './chartAiGuardFoundationSmoke';
+export type * from './chartAiOwnerLocalSimilarPatternActivationTypes';
+export {
+  assertOwnerLocalSimilarPatternResponseIsSafe,
+  isOwnerLocalHostname,
+  isOwnerLocalSimilarPatternGuardedBranchBody,
+  normalizeOwnerLocalSimilarPatternRequest,
+  runOwnerLocalSimilarPatternActivation,
+} from './chartAiOwnerLocalSimilarPatternActivation';
+export {
+  buildOwnerLocalSimilarPatternRequestFixture,
+  chartAiOwnerLocalSimilarPatternFixtureMap,
+  chartAiOwnerLocalSimilarPatternFixtures,
+} from './chartAiOwnerLocalSimilarPatternActivationFixtures';
+export { runChartAiOwnerLocalSimilarPatternActivationSmoke } from './chartAiOwnerLocalSimilarPatternActivationSmoke';

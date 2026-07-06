@@ -276,6 +276,17 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         <p class="chart-analysis-header-guide">샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.</p>
       </div>
 
+      <section
+        class="chart-ai-owner-local-similar-pattern-route-notice"
+        data-chart-ai-owner-local-similar-pattern-route
+        aria-live="polite"
+        hidden
+      >
+        <strong>오너 로컬 유사 패턴 라우트 검증 모드입니다.</strong>
+        <span data-chart-ai-owner-local-similar-pattern-route-status>실행 대기</span>
+        <div data-chart-ai-owner-local-similar-pattern-route-result hidden></div>
+      </section>
+
       <!--
         Phase 3FB-C: local-only, explicit opt-in owner-local mocked similarity API execution panel.
         Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
@@ -747,6 +758,10 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       const chartAiQuery = new URLSearchParams(window.location.search);
       const chartAiMockLoggedOut = chartAiQuery.get('chartAiMockLoggedOut') === '1';
       const chartAiMockMaster = !chartAiMockLoggedOut && chartAiQuery.get('chartAiMockMaster') === '1';
+      const isLocalOwnerHostname = (): boolean => {
+        const hostname = window.location.hostname;
+        return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
+      };
       // Mocked page capability model only. It contains no real identity, session, or authorization data.
       const mockedChartAiAccess: {
         authState: ChartAiMockAuthState;
@@ -767,11 +782,19 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           canRunMkAi: !chartAiMockLoggedOut,
         },
       };
+      const ownerLocalSimilarPatternRouteOptIn = chartAiQuery.get('ownerLocalSimilarPatternRoute') === '1';
+      const ownerLocalSimilarPatternRouteEnabled =
+        mockedChartAiAccess.capabilities.canAccessChartAi &&
+        isLocalOwnerHostname() &&
+        ownerLocalSimilarPatternRouteOptIn;
       const authShell = document.querySelector<HTMLElement>('.chart-ai-auth-shell');
       const authGate = document.querySelector<HTMLElement>('[data-chart-ai-auth-gate="locked"]');
       const authGateCta = document.querySelector<HTMLButtonElement>('[data-chart-ai-auth-gate-cta]');
       const authBody = document.querySelector<HTMLElement>('[data-chart-ai-auth-body]');
       const masterModeNotice = document.querySelector<HTMLElement>('[data-chart-ai-master-notice]');
+      const ownerLocalSimilarPatternRouteNotice = document.querySelector<HTMLElement>('[data-chart-ai-owner-local-similar-pattern-route]');
+      const ownerLocalSimilarPatternRouteStatus = document.querySelector<HTMLElement>('[data-chart-ai-owner-local-similar-pattern-route-status]');
+      const ownerLocalSimilarPatternRouteResult = document.querySelector<HTMLElement>('[data-chart-ai-owner-local-similar-pattern-route-result]');
 
       if (authShell) {
         authShell.dataset.chartAiAuthState = mockedChartAiAccess.authState;
@@ -781,6 +804,9 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       if (authGate) authGate.hidden = mockedChartAiAccess.capabilities.canAccessChartAi;
       if (authBody) authBody.hidden = !mockedChartAiAccess.capabilities.canAccessChartAi;
       if (masterModeNotice) masterModeNotice.hidden = !chartAiMockMaster;
+      if (ownerLocalSimilarPatternRouteNotice) {
+        ownerLocalSimilarPatternRouteNotice.hidden = !ownerLocalSimilarPatternRouteEnabled;
+      }
       authGateCta?.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('mk:open-auth'));
       });
@@ -1296,6 +1322,108 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       };
       let activeAnalysisRun: ChartAiAnalysisKind | null = null;
       let analysisMockedDelayTimer: number | null = null;
+      const OWNER_LOCAL_SIMILAR_PATTERN_TIMEOUT_MS = 8000;
+      let ownerLocalSimilarPatternRequestInFlight = false;
+      let ownerLocalSimilarPatternAbortController: AbortController | null = null;
+      let ownerLocalSimilarPatternRunId = 0;
+
+      type OwnerLocalSimilarPatternMatch = {
+        rank: number;
+        label: string;
+        scoreLabel: string;
+        forwardReturn5Label: string;
+        forwardReturn20Label: string;
+        drawdownLabel: string;
+      };
+      type OwnerLocalSimilarPatternSuccessResponse = {
+        ok: true;
+        status: 'owner_local_similarity_success';
+        mode: 'owner-local-similar-pattern-route';
+        data: {
+          summary: {
+            resultSource: 'synthetic_sample_only';
+            matchCount: number;
+            currentWindowSize: number;
+            scoreLabel: string;
+          };
+          matches: OwnerLocalSimilarPatternMatch[];
+        };
+        error: null;
+      };
+      type OwnerLocalSimilarPatternBlockedResponse = {
+        ok: false;
+        status: string;
+        mode: 'owner-local-similar-pattern-route';
+        data: null;
+        error: { code: string; message: string };
+      };
+
+      const isOwnerLocalSimilarPatternMatch = (value: unknown): value is OwnerLocalSimilarPatternMatch => {
+        if (!value || typeof value !== 'object') return false;
+        const match = value as Record<string, unknown>;
+        return (
+          typeof match.rank === 'number' &&
+          typeof match.label === 'string' &&
+          typeof match.scoreLabel === 'string' &&
+          typeof match.forwardReturn5Label === 'string' &&
+          typeof match.forwardReturn20Label === 'string' &&
+          typeof match.drawdownLabel === 'string'
+        );
+      };
+
+      const isOwnerLocalSimilarPatternSuccessResponse = (
+        value: unknown,
+      ): value is OwnerLocalSimilarPatternSuccessResponse => {
+        if (!value || typeof value !== 'object') return false;
+        const response = value as Record<string, unknown>;
+        if (response.ok !== true || response.status !== 'owner_local_similarity_success') return false;
+        if (response.mode !== 'owner-local-similar-pattern-route' || response.error !== null) return false;
+        if (!response.data || typeof response.data !== 'object') return false;
+        const data = response.data as Record<string, unknown>;
+        if (!data.summary || typeof data.summary !== 'object' || !Array.isArray(data.matches)) return false;
+        const summary = data.summary as Record<string, unknown>;
+        return (
+          summary.resultSource === 'synthetic_sample_only' &&
+          typeof summary.matchCount === 'number' &&
+          typeof summary.currentWindowSize === 'number' &&
+          typeof summary.scoreLabel === 'string' &&
+          data.matches.every(isOwnerLocalSimilarPatternMatch)
+        );
+      };
+
+      const isOwnerLocalSimilarPatternBlockedResponse = (
+        value: unknown,
+      ): value is OwnerLocalSimilarPatternBlockedResponse => {
+        if (!value || typeof value !== 'object') return false;
+        const response = value as Record<string, unknown>;
+        if (response.ok !== false || typeof response.status !== 'string') return false;
+        if (response.mode !== 'owner-local-similar-pattern-route' || response.data !== null) return false;
+        if (!response.error || typeof response.error !== 'object') return false;
+        const error = response.error as Record<string, unknown>;
+        return typeof error.code === 'string' && typeof error.message === 'string';
+      };
+
+      const renderOwnerLocalSimilarPatternSuccess = (response: OwnerLocalSimilarPatternSuccessResponse) => {
+        if (ownerLocalSimilarPatternRouteStatus) ownerLocalSimilarPatternRouteStatus.textContent = '합성 샘플 라우트 분석 완료';
+        if (!ownerLocalSimilarPatternRouteResult) return;
+        ownerLocalSimilarPatternRouteResult.hidden = false;
+        ownerLocalSimilarPatternRouteResult.replaceChildren();
+        const summary = document.createElement('dl');
+        const rows: Array<[string, string]> = [
+          ['결과 소스', response.data.summary.resultSource],
+          ['매칭 수', String(response.data.summary.matchCount)],
+          ['현재 구간', String(response.data.summary.currentWindowSize)],
+          ['최상위 점수', response.data.summary.scoreLabel],
+        ];
+        for (const [label, value] of rows) {
+          const term = document.createElement('dt');
+          term.textContent = label;
+          const detail = document.createElement('dd');
+          detail.textContent = value;
+          summary.append(term, detail);
+        }
+        ownerLocalSimilarPatternRouteResult.append(summary);
+      };
 
       const analysisCopy = {
         'similar-pattern': {
@@ -1456,16 +1584,114 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         }, 900);
       };
 
+      const runOwnerLocalSimilarPatternRoute = async () => {
+        const kind: ChartAiAnalysisKind = 'similar-pattern';
+        if (
+          ownerLocalSimilarPatternRequestInFlight ||
+          activeAnalysisRun !== null ||
+          analysisStates[kind] === 'loading' ||
+          analysisCooldowns[kind].isCooldownActive
+        ) return;
+        if (!mockedAnalysisAuth.authenticated || !mockedChartAiAccess.capabilities.canRunSimilarPattern) {
+          analysisStates[kind] = 'login_required';
+          renderAllMockedAnalysisStates();
+          return;
+        }
+
+        ownerLocalSimilarPatternRequestInFlight = true;
+        activeAnalysisRun = kind;
+        analysisStates[kind] = 'loading';
+        if (ownerLocalSimilarPatternRouteStatus) ownerLocalSimilarPatternRouteStatus.textContent = '라우트 분석 요청 중';
+        if (ownerLocalSimilarPatternRouteResult) {
+          ownerLocalSimilarPatternRouteResult.hidden = true;
+          ownerLocalSimilarPatternRouteResult.replaceChildren();
+        }
+        renderAllMockedAnalysisStates();
+
+        const runId = ++ownerLocalSimilarPatternRunId;
+        const abortController = new AbortController();
+        ownerLocalSimilarPatternAbortController = abortController;
+        const timeoutId = window.setTimeout(
+          () => abortController.abort(),
+          OWNER_LOCAL_SIMILAR_PATTERN_TIMEOUT_MS,
+        );
+
+        try {
+          const response = await fetch('/api/chart-ai/similarity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mode: 'guarded-runtime-scaffold',
+              source: 'mocked-provider-compatible',
+              guardedRuntimeScaffold: true,
+              ownerLocalSimilarPatternRouteActivation: true,
+              requestKind: 'similar_pattern',
+              subjectRole: mockedChartAiAccess.role,
+            }),
+            signal: abortController.signal,
+          });
+          const parsedResponse: unknown = await response.json();
+          if (runId !== ownerLocalSimilarPatternRunId) return;
+
+          if (isOwnerLocalSimilarPatternSuccessResponse(parsedResponse)) {
+            renderOwnerLocalSimilarPatternSuccess(parsedResponse);
+            analysisStates[kind] = 'success';
+            activeAnalysisRun = null;
+            if (mockedChartAiAccess.capabilities.canBypassAnalysisCooldown) {
+              clearAnalysisCooldownTimer(kind);
+              analysisCooldowns[kind].cooldownUntil = null;
+              analysisCooldowns[kind].cooldownRemainingMs = 0;
+              analysisCooldowns[kind].isCooldownActive = false;
+            } else {
+              startAnalysisCooldown(kind);
+            }
+          } else if (isOwnerLocalSimilarPatternBlockedResponse(parsedResponse)) {
+            analysisStates[kind] = parsedResponse.status === 'blocked_usage_limited'
+              ? 'usage_limited'
+              : 'blocked';
+            if (ownerLocalSimilarPatternRouteStatus) ownerLocalSimilarPatternRouteStatus.textContent = '안전 차단됨';
+          } else {
+            analysisStates[kind] = 'error';
+            if (ownerLocalSimilarPatternRouteStatus) ownerLocalSimilarPatternRouteStatus.textContent = '응답 검증 실패';
+          }
+        } catch {
+          if (runId !== ownerLocalSimilarPatternRunId) return;
+          analysisStates[kind] = 'error';
+          if (ownerLocalSimilarPatternRouteStatus) ownerLocalSimilarPatternRouteStatus.textContent = '요청 실패 또는 시간 초과';
+        } finally {
+          window.clearTimeout(timeoutId);
+          if (runId === ownerLocalSimilarPatternRunId) {
+            ownerLocalSimilarPatternAbortController = null;
+            ownerLocalSimilarPatternRequestInFlight = false;
+            activeAnalysisRun = null;
+            renderAllMockedAnalysisStates();
+          }
+        }
+      };
+
       document.querySelectorAll<HTMLButtonElement>('[data-chart-ai-analysis-trigger]').forEach((button) => {
         button.addEventListener('click', () => {
           const kind = button.dataset.chartAiAnalysisTrigger;
-          if (kind === 'similar-pattern' || kind === 'mk-ai') runMockedAnalysisTrigger(kind);
+          if (kind === 'similar-pattern' && ownerLocalSimilarPatternRouteEnabled) {
+            void runOwnerLocalSimilarPatternRoute();
+          } else if (kind === 'similar-pattern' || kind === 'mk-ai') {
+            runMockedAnalysisTrigger(kind);
+          }
         });
       });
 
       resetAnalysisTriggers = () => {
         if (analysisMockedDelayTimer !== null) window.clearTimeout(analysisMockedDelayTimer);
         analysisMockedDelayTimer = null;
+        ownerLocalSimilarPatternRunId += 1;
+        ownerLocalSimilarPatternAbortController?.abort();
+        ownerLocalSimilarPatternAbortController = null;
+        ownerLocalSimilarPatternRequestInFlight = false;
+        if (ownerLocalSimilarPatternRouteStatus) ownerLocalSimilarPatternRouteStatus.textContent = '실행 대기';
+        if (ownerLocalSimilarPatternRouteResult) {
+          ownerLocalSimilarPatternRouteResult.hidden = true;
+          ownerLocalSimilarPatternRouteResult.replaceChildren();
+        }
         activeAnalysisRun = null;
         (['similar-pattern', 'mk-ai'] as const).forEach((kind) => {
           clearAnalysisCooldownTimer(kind);
@@ -1478,6 +1704,7 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
         renderAllMockedAnalysisStates();
       };
       window.addEventListener('pagehide', () => {
+        ownerLocalSimilarPatternAbortController?.abort();
         clearAnalysisCooldownTimer('similar-pattern');
         clearAnalysisCooldownTimer('mk-ai');
       });
@@ -1757,10 +1984,6 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       const ownerLocalMockedResult = document.getElementById('chartAiOwnerLocalMockedResult');
       if (ownerLocalMockedResult) ownerLocalMockedResult.tabIndex = -1;
 
-      const isLocalOwnerHostname = (): boolean => {
-        const hostname = window.location.hostname;
-        return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
-      };
       const ownerLocalMockedOptIn = new URLSearchParams(window.location.search).get('ownerLocalMocked') === '1';
       const ownerLocalMockedEnabled = mockedChartAiAccess.capabilities.canAccessChartAi && isLocalOwnerHostname() && ownerLocalMockedOptIn;
 
@@ -3309,6 +3532,34 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       color: var(--text-muted);
       font-size: 0.8rem;
       line-height: 1.55;
+    }
+
+    .chart-ai-owner-local-similar-pattern-route-notice {
+      display: grid;
+      gap: 0.35rem;
+      margin: 0 0 1rem;
+      padding: 0.8rem 1rem;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      font-size: 0.86rem;
+    }
+
+    .chart-ai-owner-local-similar-pattern-route-notice[hidden] {
+      display: none;
+    }
+
+    [data-chart-ai-owner-local-similar-pattern-route-result] dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0.25rem 0.75rem;
+      margin: 0.35rem 0 0;
+    }
+
+    [data-chart-ai-owner-local-similar-pattern-route-result] dt,
+    [data-chart-ai-owner-local-similar-pattern-route-result] dd {
+      margin: 0;
     }
 
     .chart-analysis-book {
