@@ -87,24 +87,24 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     </div>
   </header>
 
+  <!-- Portfolio-aligned lock state: the section itself is the single access card. -->
   <section
-    class="chart-ai-auth-gate"
+    class="chart-ai-auth-gate chart-ai-auth-gate-card portfolio-aligned-lock-state"
     data-chart-ai-auth-gate="locked"
+    data-chart-ai-auth-gate-card
     aria-labelledby="chart-ai-auth-gate-title"
     aria-live="polite"
     hidden
   >
-    <div class="chart-ai-auth-gate-card" data-chart-ai-auth-gate-card>
-      <div class="chart-ai-auth-lock-visual" aria-hidden="true">🔐</div>
-      <div class="chart-ai-auth-gate-copy">
-        <p class="eyebrow">접속 필요</p>
-        <h2 id="chart-ai-auth-gate-title">로그인이 필요합니다</h2>
-        <p>회원가입 또는 로그인 후 Chart AI 분석 기능을 사용할 수 있습니다.</p>
-      </div>
-      <button class="button-link chart-ai-auth-gate-cta" data-chart-ai-auth-gate-cta type="button">
-        회원가입 / 로그인
-      </button>
+    <div class="chart-ai-auth-lock-visual" aria-hidden="true">🔐</div>
+    <div class="chart-ai-auth-gate-copy">
+      <p class="eyebrow">접속 필요</p>
+      <h2 id="chart-ai-auth-gate-title">로그인이 필요합니다</h2>
+      <p>회원가입 또는 로그인 후 Chart AI 분석 기능을 사용할 수 있습니다.</p>
     </div>
+    <button class="primary-action chart-ai-auth-gate-cta" data-chart-ai-auth-gate-cta type="button">
+      회원가입 / 로그인
+    </button>
   </section>
 
   <main class="chart-lookup-shell" data-chart-ai-auth-body>
@@ -2236,17 +2236,15 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
 
     .chart-ai-auth-gate {
       display: grid;
-      min-height: 430px;
-      place-items: center;
-      padding: clamp(1rem, 4vw, 2.5rem);
-      border: 1px solid rgb(23 32 51 / 12%);
-      border-radius: 16px;
-      background:
-        linear-gradient(rgb(23 32 51 / 4%) 1px, transparent 1px),
-        linear-gradient(90deg, rgb(23 32 51 / 4%) 1px, transparent 1px),
-        var(--surface);
-      background-size: 28px 28px;
-      box-shadow: 0 18px 42px rgb(20 36 64 / 10%);
+      justify-items: center;
+      gap: 14px;
+      margin-top: 18px;
+      padding: 34px 24px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      text-align: center;
     }
 
     .chart-ai-auth-gate[hidden],
@@ -2255,32 +2253,22 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     }
 
     .chart-ai-auth-gate-card {
-      display: grid;
-      justify-items: center;
-      width: min(100%, 580px);
-      gap: 1rem;
-      padding: clamp(1.5rem, 5vw, 2.6rem);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: color-mix(in srgb, var(--surface) 96%, transparent);
-      box-shadow: 0 16px 36px rgb(20 36 64 / 12%);
-      text-align: center;
+      box-sizing: border-box;
     }
 
     .chart-ai-auth-lock-visual {
       display: grid;
-      width: 3.2rem;
-      height: 3.2rem;
+      width: 76px;
+      height: 76px;
       place-items: center;
-      border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
-      border-radius: 50%;
-      background: color-mix(in srgb, var(--primary) 8%, var(--surface));
-      font-size: 1.35rem;
+      background: transparent;
+      font-size: 58px;
+      line-height: 1;
     }
 
     .chart-ai-auth-gate-copy {
       display: grid;
-      gap: 0.45rem;
+      gap: 0.35rem;
     }
 
     .chart-ai-auth-gate-copy p,
@@ -2289,23 +2277,16 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
     }
 
     .chart-ai-auth-gate-copy h2 {
-      font-size: clamp(1.25rem, 4vw, 1.65rem);
+      font-size: 1.35rem;
     }
 
     .chart-ai-auth-gate-copy > p:last-child {
-      max-width: 430px;
       color: var(--text-muted);
-      font-size: 0.9rem;
-      line-height: 1.65;
+      line-height: 1.6;
     }
 
     .chart-ai-auth-gate-cta {
-      min-height: 42px;
-      border: 0;
-      cursor: pointer;
       font: inherit;
-      font-size: 0.85rem;
-      font-weight: 800;
     }
 
     .chart-ai-auth-gate-cta:focus-visible {

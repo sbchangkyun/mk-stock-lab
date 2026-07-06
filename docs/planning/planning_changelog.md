@@ -1,5 +1,15 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FD-H-HF1 - 2026-07-04
+
+### Chart AI Login Gate Visual Alignment with Portfolio, Mocked-only UI Revision (Implemented)
+
+- **Status**: Implemented. Revised the `/chart-ai` logged-out mock login-required screen to better align visually with the Portfolio login-required pattern. The change is UI-only and preserves the Phase 3FD-H mocked login gate, `chartAiMockLoggedOut=1`, `chartAiMockMaster=1`, logged-out precedence, normal-user cooldown, master cooldown bypass, and owner-local authenticated-mode panels. No Portfolio source, route, server runtime, real auth, database, Supabase, environment, session/JWT parsing, API/LLM, live KIS, dependency, deploy, or push occurred.
+- **Background**: Owner browser QA confirmed the mocked access modes and cooldown behavior, then requested that Chart AI’s login-required page use the same visual style as Portfolio rather than a separate Chart AI-specific login card treatment.
+- **Implemented scope**: `/chart-ai` UI-only visual alignment, Portfolio pattern inspection, login-required card styling revision, PC/mobile consistency improvements, selector preservation, mocked access behavior preservation, static checker, result doc, package script, changelog.
+- **Preserved policy**: no Portfolio source change, no route source change, no server runtime source change, no provider source change, no deterministic engine source change, no data source change, no real auth runtime implementation, no database connection, no Supabase client creation, no environment value read, no cookie/header/session/JWT parsing, no migration execution, no API/LLM call, no live KIS call, no actual server-side usage limiting, no persistence, no package install, no dependency or lockfile change, no raw master identifiers committed, no route success, no beta/public activation, no deploy, no push.
+- **Recommended next phase**: Phase 3FD-H-MANUAL-RUN — Owner Browser QA for Chart AI Login Gate Visual Alignment. Alternative: Phase 3FD-H-HF2 — Login Gate Copy/Spacing Polish, Mocked-only UI Revision. Hold alternative: Phase 3FD-B-HF1 — Real Supabase Client Factory Approval Package, No Runtime Change.
+
 ## Phase 3FD-H - 2026-07-04
 
 ### Chart AI Login Gate and Master Cooldown Exemption Mocked-only UI Implementation (Implemented)
