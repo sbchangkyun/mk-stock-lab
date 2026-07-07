@@ -1,5 +1,20 @@
 # Phase 3FE-A — KIS OHLC Provider Owner-local Integration Result
 
+## Evidence Metadata
+
+- Phase: `Phase 3FE-A - KIS OHLC Provider Owner-local Integration`
+- Commit: `1b2a0f2`
+- Status: implemented
+- Validation:
+  - Phase 3FE-A checker: PASS - `188/188` assertions.
+  - Phase 3FE-A smoke: PASS - `141/141` assertions; `3` provider fixtures.
+  - Phase 3FD-J checker: PASS - `213/213` assertions.
+  - Phase 3FD-J smoke: PASS - `377/377` assertions; `16` fixtures.
+  - Phase 3FD-I checker: PASS - `180/180` assertions.
+  - Phase 3FD-I smoke: PASS - `197/197` assertions; `14` fixtures.
+  - `npm run build`: PASS.
+  - `git diff --check`: PASS.
+
 ## 1. Status
 
 Implemented. Phase 3FE-A adds a server-only, fixture-only KIS OHLC provider boundary for the

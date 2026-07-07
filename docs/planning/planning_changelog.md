@@ -1,10 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FE-A-HF1 - 2026-07-07
+
+### Evidence Metadata Completion, Documentation-only (Implemented)
+
+- **Status**: Implemented. Completed the Phase 3FE-A evidence metadata by recording commit hash `1b2a0f2` in the Phase 3FE-A result evidence and changelog context.
+- **Purpose**: Resolve the Phase 3FE-A evidence-lock HOLD by making the anti-hallucination evidence explicit: phase name, commit hash, status, and validation result.
+- **Scope**: Documentation-only update to `docs/planning/phase_3fe_a_kis_ohlc_provider_owner_local_integration_result_v0.1.md` and `docs/planning/planning_changelog.md`.
+- **Preserved policy**: no runtime source change, no API route change, no UI change, no provider/helper source change, no checker or smoke script change, no package or lockfile change, no dependency change, no live KIS, no LLM, no MK AI route activation, no Supabase client, no database connection, no environment credential read, no cookie/header/session/JWT parsing, no public/beta activation, no deploy, no push.
+- **Recommended next step**: Rerun Phase 3FE-A Evidence Lock and proceed to Phase 3FE-A-HANDOFF only if it returns PASS. Hold: Phase 3FF-A remains blocked until the evidence lock and handoff steps are complete.
+
 ## Phase 3FE-A - 2026-07-07
 
 ### KIS OHLC Provider Owner-local Integration (Implemented)
 
 - **Status**: Implemented. Added a server-only, fixture-only KIS OHLC provider boundary and wired it into the explicit owner-local Similar Pattern route path through `ownerLocalOhlcProviderMode: "kis_ohlc_fixture"`. Default `/chart-ai` and default owner-local Similar Pattern behavior remain mocked/synthetic unless the explicit provider fixture mode is requested. No live KIS call, no environment read, no Supabase client, no database connection, no cookie/header/session/JWT parsing, no usage/cache persistence, no LLM, no MK AI route activation, no public/beta activation, no dependency or lockfile change, no deploy, and no push occurred.
+- **Evidence metadata**: Commit `1b2a0f2`; status Implemented; Phase 3FE-A checker PASS (`188/188`); Phase 3FE-A smoke PASS (`141/141`); Phase 3FD-J and Phase 3FD-I regression checks/smokes passed; build passed; diff check passed.
 - **Background**: Phase 3FD-J proved the owner-local UI-to-route Similar Pattern path using deterministic synthetic/sample data. Phase 3FE-A prepares the KIS OHLC provider-shaped boundary while keeping live provider execution unavailable until a separate owner-approved phase.
 - **Implemented scope**: KIS OHLC provider boundary types, deterministic provider-shaped fixture, malformed fixture, normalized internal OHLC mapping, redacted diagnostics, explicit owner-local provider fixture mode, sanitized route response preservation, Phase 3FE-A smoke, static checker, result doc, package scripts, changelog.
 - **Preserved policy**: no public route success, no beta activation, no live KIS network call, no KIS account/trading/order/balance API, no LLM/API call, no MK AI route activation, no real auth runtime activation, no database connection, no Supabase client creation, no environment credential read, no cookie/header/session/JWT parsing, no migration or SQL execution, no usage/cache persistence, no raw master identifiers committed, no raw KIS payload or raw OHLC row exposed, no package install, no dependency or lockfile change, no deploy, no push.
