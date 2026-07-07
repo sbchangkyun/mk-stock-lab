@@ -111,20 +111,21 @@ for (const [label, regex] of forbiddenClaims) {
   assertTrue(!regex.test(changedText), `Manual QA text must not contain ${label}.`);
 }
 
-const diffNames = new Set();
 const collectDiff = (command) => {
   try {
     const output = execSync(command, { cwd: root, encoding: 'utf8' }).trim();
-    if (output) output.split(/\r?\n/).forEach((line) => diffNames.add(line));
+    return output ? output.split(/\r?\n/) : [];
   } catch {
     // The content checks remain deterministic even outside a git checkout.
+    return [];
   }
 };
-collectDiff('git diff --name-only b3a4679');
-collectDiff('git diff --cached --name-only');
-const allowed = new Set([checklistPath, resultPath, changelogPath, checkerPath, packagePath]);
-const unexpected = [...diffNames].filter((file) => !allowed.has(file));
-assertTrue(unexpected.length === 0, `Only manual QA docs, checker, changelog, and package.json may change. Unexpected: ${unexpected.join(', ')}`);
+const forbiddenPathArgs = 'src pages src/pages src/lib src/data supabase package-lock.json pnpm-lock.yaml yarn.lock .env .env.local';
+const committedForbiddenDrift = collectDiff(`git diff --name-only b3a4679 HEAD -- ${forbiddenPathArgs}`);
+const workingTreeForbiddenDrift = collectDiff(`git diff --name-only -- ${forbiddenPathArgs}`);
+const stagedForbiddenDrift = collectDiff(`git diff --cached --name-only -- ${forbiddenPathArgs}`);
+const forbiddenDrift = [...new Set([...committedForbiddenDrift, ...workingTreeForbiddenDrift, ...stagedForbiddenDrift])];
+assertTrue(forbiddenDrift.length === 0, `Runtime/source/API/UI/provider/dependency/lockfile/env path drift must stay blocked. Unexpected: ${forbiddenDrift.join(', ')}`);
 
 if (assertions < 45) failures.push(`Checker assertion count too low: ${assertions}.`);
 

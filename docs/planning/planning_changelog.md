@@ -1,5 +1,32 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FE-A-MANUAL-QA-RUN-HF1 - 2026-07-07
+
+### Handoff Checker Scope Correction, No Runtime Change (Implemented)
+
+- **Status**: Implemented.
+- **Purpose**: Resolve the checker-scope blocker that prevented Phase 3FE-A-MANUAL-QA-RUN from starting local dev server/API/browser QA.
+- **Baseline**: `0e02130`.
+- **Implemented scope**: corrected `check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs`, preserved blocked QA-RUN evidence, added HF1 result document, added HF1 checker, updated package script, updated changelog.
+- **Root cause**: handoff checker was anchored to `e6c7679` and treated legitimate post-handoff Phase 3FE-A-MANUAL-QA files as unexpected.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: rerun `Phase 3FE-A-MANUAL-QA-RUN` or proceed to `Phase 3FE-A-MANUAL-QA-RUN-RETRY`.
+- **Hold**: live KIS, beta activation, public activation, and direct Phase 3FF-A implementation remain blocked.
+
+## Phase 3FE-A-MANUAL-QA-RUN - 2026-07-07
+
+### Owner-local API/Browser QA Execution for KIS OHLC Fixture Mode (Blocked)
+
+- **Status**: Blocked. Required static validation failed before dev server startup, so local API QA and browser/browser-like QA were not executed.
+- **Purpose**: Execute local owner-only API/browser QA for the KIS OHLC fixture mode after the Phase 3FE-A-MANUAL-QA package.
+- **Baseline**: `0e02130`.
+- **Phase 3FE-A evidence reference**: `## Phase 3FE-A - 2026-07-07`; `### KIS OHLC Provider Owner-local Integration (Implemented)`.
+- **Implemented scope**: local-only QA execution documentation, result document, static checker, package script, actual static validations, and blocked dev-server/API/browser execution record.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, fixture-only KIS OHLC provider boundary preserved, owner-local Similar Pattern route preserved, No live KIS call, no environment read, no database, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Findings**: blocked; `check:phase-3fe-a-handoff-chart-ai-new-chat-package` failed because it still evaluates changed files from its original `e6c7679` handoff baseline and sees committed Phase 3FE-A-MANUAL-QA files as unexpected. No runtime issue was confirmed.
+- **Recommended next step**: resolve the local run blocker first with a narrow checker-scope correction phase.
+- **Hold**: live KIS, beta activation, public activation, and direct Phase 3FF-A implementation remain blocked.
+
 ## Phase 3FE-A-MANUAL-QA - 2026-07-07
 
 ### Owner-local Browser/API QA for KIS OHLC Fixture Mode (Partial)

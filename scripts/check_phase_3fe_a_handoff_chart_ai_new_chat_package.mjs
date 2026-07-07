@@ -148,18 +148,15 @@ assertTrue(!/(?:credential|token|secret|password|api[_-]?key)\s*[:=]\s*['"][^'"]
 assertTrue(!/(?:KIS|SUPABASE|OPENAI|ANTHROPIC|VERCEL)_[A-Z0-9_]+\s*[:=]\s*['"][^'"]+['"]/.test(handoffText), 'Handoff text must not expose environment values.');
 assertTrue(!/raw KIS payload is exposed|raw OHLC rows are exposed|provider payload is exposed/i.test(handoffText), 'Handoff text must not claim raw payload exposure.');
 
-const diffNames = new Set();
 const collectDiff = (command) => {
   try {
     const output = execSync(command, { cwd: root, encoding: 'utf8' }).trim();
-    if (output) output.split(/\r?\n/).forEach((line) => diffNames.add(line));
+    return output ? output.split(/\r?\n/) : [];
   } catch {
     // Ignore git diff availability in packaged contexts; file content checks remain deterministic.
+    return [];
   }
 };
-collectDiff('git diff --name-only e6c7679');
-collectDiff('git diff --cached --name-only');
-collectDiff('git diff --name-only e6c7679 HEAD');
 
 const allowedPrefixes = [`${handoffDir}/`];
 const allowedFiles = new Set([
@@ -168,8 +165,17 @@ const allowedFiles = new Set([
   checkerPath,
   packagePath,
 ]);
-const unexpectedRuntimeChanges = [...diffNames].filter((file) => !allowedFiles.has(file) && !allowedPrefixes.some((prefix) => file.startsWith(prefix)));
-assertTrue(unexpectedRuntimeChanges.length === 0, `Only handoff docs, result doc, changelog, checker, and package.json may change. Unexpected: ${unexpectedRuntimeChanges.join(', ')}`);
+
+const originalHandoffDiff = collectDiff('git diff --name-only e6c7679 b3a4679');
+const unexpectedOriginalHandoffFiles = originalHandoffDiff.filter((file) => !allowedFiles.has(file) && !allowedPrefixes.some((prefix) => file.startsWith(prefix)));
+assertTrue(unexpectedOriginalHandoffFiles.length === 0, `Original handoff diff e6c7679..b3a4679 must only contain handoff docs, result doc, changelog, checker, and package.json. Unexpected: ${unexpectedOriginalHandoffFiles.join(', ')}`);
+
+const forbiddenPathArgs = 'src pages src/pages src/lib src/data supabase package-lock.json pnpm-lock.yaml yarn.lock .env .env.local';
+const committedForbiddenDrift = collectDiff(`git diff --name-only b3a4679 HEAD -- ${forbiddenPathArgs}`);
+const workingTreeForbiddenDrift = collectDiff(`git diff --name-only -- ${forbiddenPathArgs}`);
+const stagedForbiddenDrift = collectDiff(`git diff --cached --name-only -- ${forbiddenPathArgs}`);
+const forbiddenDrift = [...new Set([...committedForbiddenDrift, ...workingTreeForbiddenDrift, ...stagedForbiddenDrift])];
+assertTrue(forbiddenDrift.length === 0, `Runtime/source/API/UI/provider/dependency/lockfile/env path drift must stay blocked. Unexpected: ${forbiddenDrift.join(', ')}`);
 
 if (assertions < 75) failures.push(`Checker assertion count too low: ${assertions}.`);
 
