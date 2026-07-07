@@ -9,6 +9,8 @@ const CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contr
 const CLOSEOUT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_contract.mjs';
 const CLOSEOUT_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs';
 const PACKAGE_JSON = 'package.json';
+const EXPECTED_REVIEWER = String.fromCodePoint(0xAE40, 0xCC3D, 0xADE0);
+const EXPECTED_REVIEWER_HEX = 'eab980ecb0bdeab7a0';
 
 const allowedFiles = new Set([
   EVIDENCE_RESULT,
@@ -55,6 +57,7 @@ const changelog = exists(CHANGELOG) ? read(CHANGELOG) : '';
 const checker = exists(CHECKER) ? read(CHECKER) : '';
 const packageJson = exists(PACKAGE_JSON) ? JSON.parse(read(PACKAGE_JSON)) : {};
 
+assert(Buffer.from(EXPECTED_REVIEWER, 'utf8').toString('hex') === EXPECTED_REVIEWER_HEX, 'Expected reviewer UTF-8 hex must match the approved code points.');
 assert(packageJson.scripts?.['check:phase-3fe-a-manual-qa-run-closeout-evidence'] === 'node scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs', 'Evidence package script must be exact.');
 assert(changelog.includes('Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-EVIDENCE'), 'Changelog must include evidence phase entry.');
 assert(changelog.includes('- **Status**: Implemented.'), 'Changelog must record evidence phase status Implemented.');
@@ -73,12 +76,33 @@ for (const token of [
   'Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-HF1 commit: `2ddcf7e`',
   'Branch: `rebuild/phase-1-ia-shell`',
   'Review date: 2026-07-08',
-  'Reviewer: 源李쎄퇏',
+  `Reviewer: ${EXPECTED_REVIEWER}`,
   'Owner visual QA evidence is sufficient to close the visual checklist.',
   'Closeout status updated to Closed.',
   '`Phase 3FF-A-PLAN` may proceed only as a planning-only step.',
 ]) {
   assert(evidence.includes(token), `Evidence result must include token: ${token}`);
+}
+
+for (const [file, text] of [
+  [EVIDENCE_RESULT, evidence],
+  [CLOSEOUT_RESULT, closeout],
+  [CHECKER, checker],
+]) {
+  const reviewerLines = text
+    .split(/\r?\n/)
+    .map((line, index) => ({ line, index: index + 1 }))
+    .filter(({ line }) => line.includes('Reviewer:'))
+    .filter(({ line }) => !line.includes("line.includes('Reviewer:"))
+    .filter(({ line }) => !line.includes('line.match(/Reviewer:'));
+  assert(reviewerLines.length > 0, `${file} must include at least one reviewer line or assertion.`);
+  for (const { line, index } of reviewerLines) {
+    const isExpectedReviewerAssertion = line.includes('Reviewer: ${EXPECTED_REVIEWER}');
+    const reviewerValue = line.match(/Reviewer:\s*([^.`']+)(?:[.`']|$)/)?.[1]?.trim();
+    const isExpectedReviewerValue = reviewerValue === EXPECTED_REVIEWER;
+    assert(isExpectedReviewerAssertion || isExpectedReviewerValue, `${file}:${index} reviewer value must equal the approved codepoint-generated reviewer.`);
+    assert(!/\uFFFD|\?{2,}/u.test(line), `${file}:${index} reviewer line must not contain replacement characters or question-mark corruption.`);
+  }
 }
 
 for (const label of [

@@ -23,7 +23,7 @@ Record owner-provided visual QA evidence for Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT,
 
 ## 4. Owner-provided evidence
 
-- Reviewer: 源李쎄퇏.
+- Reviewer: 김창균.
 - Review date: 2026-07-08.
 - Local URL base: `http://127.0.0.1:4321`.
 - Browser/device: Chrome / Windows.
