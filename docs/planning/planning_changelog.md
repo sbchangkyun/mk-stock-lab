@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FE-A-HANDOFF - 2026-07-07
+
+### Chart AI Phase 3FE-A New Chat Handoff Package, No Runtime Change (Implemented)
+
+- **Status**: Implemented. Created a documentation-only new-chat handoff package for the verified Phase 3FE-A plus Phase 3FE-A-HF1 baseline.
+- **Purpose**: Create a new-chat handoff package for the verified Phase 3FE-A + HF1 baseline so future work can continue from current baseline `e6c7679` without relying on prior chat memory.
+- **Current baseline**: `e6c7679`.
+- **Latest feature commit**: `1b2a0f2`.
+- **Phase 3FE-A evidence reference**: `## Phase 3FE-A - 2026-07-07`; `### KIS OHLC Provider Owner-local Integration (Implemented)`.
+- **Implemented scope**: new handoff directory, README, current state, completed phase history, architecture/guards, roadmap, next phase manual QA brief, validation commands, new chat start prompt, manifest, result doc, checker, package script.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, fixture-only KIS OHLC provider boundary preserved, owner-local Similar Pattern route preserved, No live KIS call, no environment read, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: Phase 3FE-A-MANUAL-QA.
+- **Hold**: Phase 3FF-A, live KIS, beta activation, and public activation remain blocked.
+
 ## Phase 3FE-A-HF1 - 2026-07-07
 
 ### Evidence Metadata Completion, Documentation-only (Implemented)
