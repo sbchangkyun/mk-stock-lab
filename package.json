@@ -69,6 +69,7 @@
     "smoke:phase-3fe-a-kis-ohlc-provider-owner-local-integration": "node scripts/smoke_phase_3fe_a_kis_ohlc_provider_owner_local_integration.mjs",
     "check:phase-3fe-a-kis-ohlc-provider-owner-local-integration": "node scripts/check_phase_3fe_a_kis_ohlc_provider_owner_local_integration_contract.mjs",
     "check:phase-3fe-a-handoff-chart-ai-new-chat-package": "node scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs",
+    "check:phase-3fe-a-manual-qa-result": "node scripts/check_phase_3fe_a_manual_qa_result_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

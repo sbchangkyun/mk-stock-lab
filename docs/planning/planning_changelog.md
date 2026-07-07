@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FE-A-MANUAL-QA - 2026-07-07
+
+### Owner-local Browser/API QA for KIS OHLC Fixture Mode (Partial)
+
+- **Status**: Partial. Static validations and the manual QA documentation package were prepared/executed by Codex, while local API QA and browser QA were not executed and remain owner-required.
+- **Purpose**: Validate the owner-local KIS OHLC fixture mode after Phase 3FE-A-HANDOFF.
+- **Baseline**: `b3a4679`.
+- **Implemented scope**: manual QA checklist, manual QA result document, static checker, package script, static validation execution, and documentation of not-executed local API/browser QA scope.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no database, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Findings**: partial; no static validation issue found, API/browser manual QA not executed.
+- **Recommended next step**: complete owner browser/API QA or run `Phase 3FE-A-MANUAL-QA-RUN`.
+- **Hold**: live KIS, beta activation, and public activation remain blocked.
+
 ## Phase 3FE-A-HANDOFF - 2026-07-07
 
 ### Chart AI Phase 3FE-A New Chat Handoff Package, No Runtime Change (Implemented)
