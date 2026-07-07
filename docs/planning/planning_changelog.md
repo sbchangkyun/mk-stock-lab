@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FE-A-MANUAL-QA-RUN-RETRY - 2026-07-07
+
+### Owner-local API/Browser QA Retry for KIS OHLC Fixture Mode (Partial)
+
+- **Status**: Partial.
+- **Purpose**: Retry local owner-only API/browser QA after the HF1 handoff checker scope correction.
+- **Baseline**: `fb34d72`.
+- **Phase 3FE-A evidence reference**: `## Phase 3FE-A - 2026-07-07`; `### KIS OHLC Provider Owner-local Integration (Implemented)`; fixture-only KIS OHLC provider boundary; owner-local Similar Pattern route; No live KIS call; no environment read; no database; Phase 3FF-A remains planning-only until separately approved.
+- **Implemented scope**: local-only QA retry documentation, result document, static checker, package script, actual static validations, loopback-only dev server execution, local-only API QA, and browser-like local page fetches. Full visual/client-side browser QA was not executed and remains owner-required.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Findings**: partial; static validations passed, local API QA passed for synthetic owner-local mode, explicit KIS OHLC fixture mode, and fail-closed cases, and browser-like local page fetches returned HTTP 200 with payload-safety checks passing. Full visual/client-side interaction QA remains owner-required.
+- **Recommended next step**: complete owner visual browser QA closeout or proceed to Phase 3FF-A-PLAN only as a planning-only phase after the owner accepts the remaining visual QA limitation.
+- **Hold**: live KIS, beta activation, public activation, and direct Phase 3FF-A implementation remain blocked.
+
 ## Phase 3FE-A-MANUAL-QA-RUN-HF1 - 2026-07-07
 
 ### Handoff Checker Scope Correction, No Runtime Change (Implemented)
