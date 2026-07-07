@@ -98,7 +98,7 @@ const collectDiff = (command) => {
     return [];
   }
 };
-const diffNames = new Set([...collectDiff('git diff --name-only 0e02130'), ...collectDiff('git diff --cached --name-only')]);
+const originalPhaseDiffNames = new Set(collectDiff('git diff --name-only 0e02130 fb34d72'));
 const allowed = new Set([
   qaRunResultPath,
   hf1ResultPath,
@@ -109,8 +109,15 @@ const allowed = new Set([
   handoffCheckerPath,
   packagePath,
 ]);
-const unexpected = [...diffNames].filter((file) => !allowed.has(file));
-assertTrue(unexpected.length === 0, `Only allowed HF1 docs/checkers/package files may change. Unexpected: ${unexpected.join(', ')}`);
+const unexpectedOriginalPhaseFiles = [...originalPhaseDiffNames].filter((file) => !allowed.has(file));
+assertTrue(unexpectedOriginalPhaseFiles.length === 0, `Original QA-RUN/HF1 diff 0e02130..fb34d72 must only contain allowed docs/checkers/package files. Unexpected: ${unexpectedOriginalPhaseFiles.join(', ')}`);
+
+const forbiddenPathArgs = 'src pages src/pages src/lib src/data supabase package-lock.json pnpm-lock.yaml yarn.lock .env .env.local';
+const committedForbiddenDrift = collectDiff(`git diff --name-only fb34d72 HEAD -- ${forbiddenPathArgs}`);
+const workingTreeForbiddenDrift = collectDiff(`git diff --name-only -- ${forbiddenPathArgs}`);
+const stagedForbiddenDrift = collectDiff(`git diff --cached --name-only -- ${forbiddenPathArgs}`);
+const forbiddenDrift = [...new Set([...committedForbiddenDrift, ...workingTreeForbiddenDrift, ...stagedForbiddenDrift])];
+assertTrue(forbiddenDrift.length === 0, `Runtime/source/API/UI/provider/dependency/lockfile/env path drift must stay blocked. Unexpected: ${forbiddenDrift.join(', ')}`);
 
 if (assertions < 45) failures.push(`Checker assertion count too low: ${assertions}.`);
 

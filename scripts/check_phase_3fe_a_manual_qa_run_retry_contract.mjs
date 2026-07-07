@@ -179,21 +179,22 @@ assert(changelog.includes('no public/beta activation'), 'Changelog must preserve
 assert(changelog.includes('no dependency/lockfile change'), 'Changelog must preserve dependency/lockfile policy.');
 assert(changelog.includes('no deploy/push'), 'Changelog must preserve deploy/push policy.');
 
-const diffChangedFiles = runGit(['diff', '--name-only', BASELINE]).split(/\r?\n/).filter(Boolean);
-const statusChangedFiles = runGit(['status', '--short'])
-  .split(/\r?\n/)
-  .filter(Boolean)
-  .map((line) => line.slice(3).trim())
-  .filter((file) => requiredChangedFiles.has(file));
-const changedFiles = [...new Set([...diffChangedFiles, ...statusChangedFiles])];
-const unexpected = changedFiles.filter((file) => !requiredChangedFiles.has(file));
-assert(unexpected.length === 0, `Only retry doc/checker/changelog/package files may change. Unexpected: ${unexpected.join(', ')}`);
+const originalRetryDiffFiles = runGit(['diff', '--name-only', BASELINE, 'a191dfc']).split(/\r?\n/).filter(Boolean);
+const unexpected = originalRetryDiffFiles.filter((file) => !requiredChangedFiles.has(file));
+assert(unexpected.length === 0, `Original retry diff fb34d72..a191dfc must only contain retry doc/checker/changelog/package files. Unexpected: ${unexpected.join(', ')}`);
 for (const file of requiredChangedFiles) {
-  assert(changedFiles.includes(file), `Changed files should include ${file}.`);
+  assert(originalRetryDiffFiles.includes(file), `Original retry diff should include ${file}.`);
 }
 
-const forbiddenDiff = runGit(['diff', '--name-only', BASELINE, '--', ...forbiddenPaths]);
-assert(forbiddenDiff.length === 0, 'Forbidden runtime/source/dependency/env path diff must be empty.');
+const committedForbiddenDiff = runGit(['diff', '--name-only', 'a191dfc', 'HEAD', '--', ...forbiddenPaths]);
+const workingTreeForbiddenDiff = runGit(['diff', '--name-only', '--', ...forbiddenPaths]);
+const stagedForbiddenDiff = runGit(['diff', '--cached', '--name-only', '--', ...forbiddenPaths]);
+const forbiddenDiff = [...new Set([
+  ...committedForbiddenDiff.split(/\r?\n/).filter(Boolean),
+  ...workingTreeForbiddenDiff.split(/\r?\n/).filter(Boolean),
+  ...stagedForbiddenDiff.split(/\r?\n/).filter(Boolean),
+])];
+assert(forbiddenDiff.length === 0, 'Forbidden runtime/source/dependency/env path drift must be empty.');
 
 const changedText = [resultDoc, changelog].join('\n');
 const noEmailText = [resultDoc, checker].join('\n');

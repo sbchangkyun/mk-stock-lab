@@ -1,5 +1,33 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-HF1 - 2026-07-07
+
+### Validation Chain Checker Scope Hardening, No Runtime Change (Implemented)
+
+- **Status**: Implemented.
+- **Purpose**: Resolve the stale checker-scope blocker that prevented the closeout package from being committed, and reduce recurrence of the same checker-scope failure across the Phase 3FE-A manual-QA validation chain.
+- **Baseline**: `a191dfc`.
+- **Phase 3FE-A evidence reference**: `## Phase 3FE-A - 2026-07-07`; `### KIS OHLC Provider Owner-local Integration (Implemented)`; fixture-only KIS OHLC provider boundary; owner-local Similar Pattern route; No live KIS call; no environment read; no database; Phase 3FF-A remains planning-only until separately approved.
+- **Implemented scope**: preserved closeout checklist, preserved closeout result document, preserved closeout checker, corrected stale checker scope in affected validation-chain checkers, added HF1 result document, added HF1 checker, updated package script, updated changelog.
+- **Root cause**: older checker scope rejected legitimate post-phase retry files.
+- **Anti-recurrence measure**: validation-chain checkers now separate original phase diff validation from current forbidden runtime/source/dependency drift checks.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: owner execution of the visual checklist, or closeout evidence update after owner evidence is provided.
+- **Hold**: live KIS, beta activation, public activation, and direct Phase 3FF-A implementation remain blocked.
+
+## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT - 2026-07-07
+
+### Owner Visual Browser QA Closeout for KIS OHLC Fixture Mode (Prepared)
+
+- **Status**: Prepared.
+- **Purpose**: Close out or prepare closeout for the remaining owner visual/client-side browser QA limitation after Phase 3FE-A-MANUAL-QA-RUN-RETRY.
+- **Baseline**: `a191dfc`.
+- **Implemented scope**: owner visual QA closeout checklist, closeout result document, static checker, package script, and actual owner evidence summary. No owner visual evidence covering all required cases was found, so this phase prepares the closeout package and does not claim visual QA passed.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Findings**: prepared; static/API/browser-like evidence from the retry phase remains available, but owner visual/client-side browser evidence was not found in repository docs or explicitly provided files.
+- **Recommended next step**: owner execution of the visual checklist before treating Phase 3FF-A-PLAN as fully de-risked. If owner evidence is provided separately, run a narrow closeout evidence update phase.
+- **Hold**: live KIS, beta activation, public activation, and direct Phase 3FF-A implementation remain blocked.
+
 ## Phase 3FE-A-MANUAL-QA-RUN-RETRY - 2026-07-07
 
 ### Owner-local API/Browser QA Retry for KIS OHLC Fixture Mode (Partial)

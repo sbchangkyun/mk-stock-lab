@@ -73,6 +73,8 @@
     "check:phase-3fe-a-manual-qa-run-result": "node scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs",
     "check:phase-3fe-a-manual-qa-run-hf1": "node scripts/check_phase_3fe_a_manual_qa_run_hf1_contract.mjs",
     "check:phase-3fe-a-manual-qa-run-retry": "node scripts/check_phase_3fe_a_manual_qa_run_retry_contract.mjs",
+    "check:phase-3fe-a-manual-qa-run-closeout": "node scripts/check_phase_3fe_a_manual_qa_run_closeout_contract.mjs",
+    "check:phase-3fe-a-manual-qa-run-closeout-hf1": "node scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",
