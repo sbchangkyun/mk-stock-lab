@@ -14,6 +14,8 @@ const MANUAL_QA_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_result_contract.m
 const QA_RUN_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
+const EVIDENCE_RESULT = 'docs/planning/phase_3fe_a_manual_qa_run_closeout_evidence_result_v0.1.md';
+const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
 
 const allowedFiles = new Set([
   CLOSEOUT_CHECKLIST,
@@ -22,6 +24,8 @@ const allowedFiles = new Set([
   CHANGELOG,
   CLOSEOUT_CHECKER,
   HF1_CHECKER,
+  EVIDENCE_RESULT,
+  EVIDENCE_CHECKER,
   QA_RUN_HF1_CHECKER,
   RETRY_CHECKER,
   PACKAGE_JSON,
@@ -128,11 +132,20 @@ for (const unchangedChecker of [HANDOFF_CHECKER, MANUAL_QA_CHECKER, QA_RUN_CHECK
   assert(hf1Result.includes(`${unchangedChecker}`), `HF1 result must document unchanged checker ${unchangedChecker}.`);
 }
 
-assert(closeoutResult.includes('- Status: Prepared.'), 'Closeout result must remain Prepared.');
-assert(closeoutResult.includes('Owner visual evidence: not found'), 'Closeout result must continue to state owner evidence not found.');
-assert(closeoutResult.includes('Visual QA: not closed'), 'Closeout result must continue to state visual QA not closed.');
-assert(!/Status: Closed/.test(closeoutResult), 'Closeout result must not claim Closed.');
-assert(!/Visual QA: passed|visual QA: pass\b|full visual QA pass is claimed/i.test(closeoutResult), 'Closeout result must not claim visual QA passed.');
+const closeoutEvidenceExists = exists(EVIDENCE_RESULT);
+if (closeoutEvidenceExists) {
+  assert(closeoutResult.includes('- Status: Closed.'), 'Closeout result may be Closed when evidence result exists.');
+  assert(closeoutResult.includes('Owner visual evidence: provided on 2026-07-08'), 'Closeout result must record evidence date when Closed.');
+  assert(closeoutResult.includes('Visual QA: closed from owner-provided screenshot evidence.'), 'Closeout result must record visual QA closed from evidence.');
+  assert(closeoutResult.includes('Owner visual QA completed: yes.'), 'Closeout result must record owner visual QA completed.');
+  assert(closeoutResult.includes('| Explicit KIS OHLC fixture mode UI | NOT EXPOSED IN UI |'), 'Closeout result must preserve fixture mode UI limitation.');
+} else {
+  assert(closeoutResult.includes('- Status: Prepared.'), 'Closeout result must remain Prepared without evidence.');
+  assert(closeoutResult.includes('Owner visual evidence: not found'), 'Closeout result must continue to state owner evidence not found without evidence.');
+  assert(closeoutResult.includes('Visual QA: not closed'), 'Closeout result must continue to state visual QA not closed without evidence.');
+  assert(!/Status: Closed/.test(closeoutResult), 'Closeout result must not claim Closed without evidence.');
+  assert(!/Visual QA: passed|visual QA: pass\b|full visual QA pass is claimed/i.test(closeoutResult), 'Closeout result must not claim visual QA passed without evidence.');
+}
 
 for (const visualCase of [
   '### A. Default `/chart-ai`',

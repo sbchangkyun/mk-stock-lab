@@ -7,6 +7,8 @@ const CHECKLIST = 'docs/planning/phase_3fe_a_manual_qa_run_closeout_owner_visual
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_contract.mjs';
 const PACKAGE_JSON = 'package.json';
+const EVIDENCE_RESULT = 'docs/planning/phase_3fe_a_manual_qa_run_closeout_evidence_result_v0.1.md';
+const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
 
 const allowedChangedFiles = new Set([
   RESULT_DOC,
@@ -17,7 +19,9 @@ const allowedChangedFiles = new Set([
 ]);
 const toleratedLaterPhaseFiles = new Set([
   'docs/planning/phase_3fe_a_manual_qa_run_closeout_hf1_result_v0.1.md',
+  EVIDENCE_RESULT,
   'scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs',
+  EVIDENCE_CHECKER,
   'scripts/check_phase_3fe_a_manual_qa_run_hf1_contract.mjs',
   'scripts/check_phase_3fe_a_manual_qa_run_retry_contract.mjs',
   'scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs',
@@ -58,7 +62,7 @@ const checker = exists(CHECKER) ? read(CHECKER) : '';
 const packageJson = exists(PACKAGE_JSON) ? JSON.parse(read(PACKAGE_JSON)) : {};
 
 const resultStatus = result.match(/- Status: (Prepared|Partial|Closed|Blocked)\./)?.[1] ?? null;
-const changelogStatus = changelog.match(/## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT[\s\S]*?- \*\*Status\*\*: (Prepared|Partial|Closed|Blocked)\./)?.[1] ?? null;
+const changelogStatus = changelog.match(/## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT - 2026-07-07[\s\S]*?- \*\*Status\*\*: (Prepared|Partial|Closed|Blocked)(?:\.| after)/)?.[1] ?? null;
 
 assert(exists(RESULT_DOC), 'Closeout result document must exist.');
 assert(exists(CHECKLIST), 'Owner visual checklist must exist.');
@@ -156,27 +160,38 @@ for (const boundary of [
 }
 
 for (const token of [
-  'Owner visual evidence: not found',
-  'Visual QA: not closed',
-  'owner visual evidence was not found',
-  'No owner-provided screenshot references, browser QA notes, checklist results, or sign-off evidence were found',
-  'Status: Prepared',
-  'owner execution of the visual checklist',
+  resultStatus === 'Closed' ? 'Owner visual evidence: provided on 2026-07-08' : 'Owner visual evidence: not found',
+  resultStatus === 'Closed' ? 'Visual QA: closed from owner-provided screenshot evidence.' : 'Visual QA: not closed',
+  resultStatus === 'Closed' ? 'Owner visual QA completed: yes.' : 'owner visual evidence was not found',
+  resultStatus === 'Closed' ? 'Status: Closed' : 'Status: Prepared',
+  resultStatus === 'Closed' ? 'No visual issues were found.' : 'owner execution of the visual checklist',
 ]) {
   assert(result.includes(token), `Result doc must record evidence/status token: ${token}`);
 }
 
-for (const caseResult of [
-  '| Default `/chart-ai` | NOT CONFIRMED |',
-  '| Mocked logged-out mode | NOT CONFIRMED |',
-  '| Mocked master mode | NOT CONFIRMED |',
-  '| Logged-out precedence | NOT CONFIRMED |',
-  '| Owner-local Similar Pattern route-backed flow | NOT CONFIRMED |',
-  '| Explicit KIS OHLC fixture mode UI | NOT CONFIRMED |',
-  '| MK AI mocked state | NOT CONFIRMED |',
-  '| General visual safety | NOT CONFIRMED |',
-]) {
-  assert(result.includes(caseResult), `Result doc must record unconfirmed case: ${caseResult}`);
+const expectedCaseResults = resultStatus === 'Closed'
+  ? [
+    '| Default `/chart-ai` | PASS |',
+    '| Mocked logged-out mode | PASS |',
+    '| Mocked master mode | PASS |',
+    '| Logged-out precedence | PASS |',
+    '| Owner-local Similar Pattern route-backed flow | PASS |',
+    '| Explicit KIS OHLC fixture mode UI | NOT EXPOSED IN UI |',
+    '| MK AI mocked state | PASS |',
+    '| General visual safety | PASS |',
+  ]
+  : [
+    '| Default `/chart-ai` | NOT CONFIRMED |',
+    '| Mocked logged-out mode | NOT CONFIRMED |',
+    '| Mocked master mode | NOT CONFIRMED |',
+    '| Logged-out precedence | NOT CONFIRMED |',
+    '| Owner-local Similar Pattern route-backed flow | NOT CONFIRMED |',
+    '| Explicit KIS OHLC fixture mode UI | NOT CONFIRMED |',
+    '| MK AI mocked state | NOT CONFIRMED |',
+    '| General visual safety | NOT CONFIRMED |',
+  ];
+for (const caseResult of expectedCaseResults) {
+  assert(result.includes(caseResult), `Result doc must record closeout case result: ${caseResult}`);
 }
 
 for (const command of [
