@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-SP-A - 2026-07-08
+
+### Similar Pattern Agent Deterministic Fixture Engine, No Live KIS, No UI Runtime Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `c4be878`.
+- **Purpose**: deterministic fixture-only Similar Pattern Agent engine.
+- **Implemented scope**: pure calculation module, synthetic fixture module, smoke script, static checker, result document, and package scripts.
+- **Preserved policy**: no API route change, no UI implementation change, no provider/helper source change, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: SP-B output contract hardening or MK-A deterministic report contract.
+
 ## Phase 3FF-A-PLAN-HF1 - 2026-07-08
 
 ### Strategy Checkpoint Naming Correction, No Runtime Change (Implemented)

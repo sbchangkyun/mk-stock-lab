@@ -78,6 +78,8 @@
     "check:phase-3fe-a-manual-qa-run-closeout-evidence": "node scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs",
     "check:phase-3fe-a-manual-qa-run-closeout-evidence-hf1": "node scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_hf1_contract.mjs",
     "check:phase-3ff-a-plan": "node scripts/check_phase_3ff_a_plan_contract.mjs",
+    "smoke:phase-3ff-a-sp-a": "node scripts/smoke_phase_3ff_a_sp_a_similar_pattern_agent_deterministic_fixture_engine.mjs",
+    "check:phase-3ff-a-sp-a": "node scripts/check_phase_3ff_a_sp_a_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

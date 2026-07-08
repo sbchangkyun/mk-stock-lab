@@ -17,6 +17,8 @@ const PHASE_3FF_A_PLAN_SP_DOC = 'docs/planning/phase_3ff_a_plan_similar_pattern_
 const PHASE_3FF_A_PLAN_MK_DOC = 'docs/planning/phase_3ff_a_plan_mk_agent_design_v0.1.md';
 const PHASE_3FF_A_PLAN_RESULT = 'docs/planning/phase_3ff_a_plan_result_v0.1.md';
 const PHASE_3FF_A_PLAN_CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
+const PHASE_3FF_A_PLAN_HF1_RESULT = 'docs/planning/phase_3ff_a_plan_hf1_result_v0.1.md';
+const PHASE_3FE_A_CHECKER = 'scripts/check_phase_3fe_a_kis_ohlc_provider_owner_local_integration_contract.mjs';
 
 const allowedFiles = new Set([
   EVIDENCE_RESULT,
@@ -31,6 +33,8 @@ const allowedFiles = new Set([
   PHASE_3FF_A_PLAN_MK_DOC,
   PHASE_3FF_A_PLAN_RESULT,
   PHASE_3FF_A_PLAN_CHECKER,
+  PHASE_3FF_A_PLAN_HF1_RESULT,
+  PHASE_3FE_A_CHECKER,
   PACKAGE_JSON,
 ]);
 

@@ -21,6 +21,13 @@ const assertIncludesAll = (source, phrases, label) => {
   for (const phrase of phrases) assertTrue(source.includes(phrase), `${label} must include: ${phrase}`);
 };
 
+const extractChangelogEntry = (source, heading) => {
+  const start = source.indexOf(heading);
+  if (start === -1) return '';
+  const next = source.indexOf('\n## ', start + heading.length);
+  return next === -1 ? source.slice(start) : source.slice(start, next);
+};
+
 const ROUTE_PATH = 'src/pages/api/chart-ai/similarity.ts';
 const UI_PATH = 'src/pages/chart-ai.astro';
 const BOUNDARY_TYPES_PATH = 'src/lib/server/chartAiKisOhlcProviderBoundaryTypes.ts';
@@ -236,8 +243,8 @@ assertIncludesAll(result, [
   'Deploy and push did not occur.',
 ], 'Result document');
 
-const topEntry = changelog.slice(0, 2500);
-assertIncludesAll(topEntry, [
+const phaseEntry = extractChangelogEntry(changelog, '## Phase 3FE-A - 2026-07-07');
+assertIncludesAll(phaseEntry, [
   '## Phase 3FE-A - 2026-07-07',
   '### KIS OHLC Provider Owner-local Integration (Implemented)',
   'fixture-only KIS OHLC provider boundary',
@@ -250,7 +257,7 @@ assertIncludesAll(topEntry, [
   'no MK AI route activation',
   'no public/beta activation',
   'Phase 3FF-A',
-], 'Changelog top entry');
+], 'Changelog Phase 3FE-A entry');
 
 assertTrue(phaseJResult.includes('Phase 3FD-J — Similar Pattern Route Owner-local Activation Result'), 'Phase 3FD-J result must remain present.');
 assertTrue(handoffCurrent.includes('Owner-local Similar Pattern route-backed flow is complete.'), 'Handoff current state remains readable.');
@@ -267,7 +274,7 @@ assertTrue(!/routeSuccessEnabled\s*:\s*true|publicActivationAllowed\s*:\s*true|b
 assertTrue(!/MASTER_EMAIL\s*[:=]\s*['"]|MASTER_USER_ID\s*[:=]\s*['"]/.test(newRuntimeSources), 'No raw master placeholder assignment may be introduced.');
 assertTrue(!/\baccount(?:No|Number|Id)?\s*[:=]|\border(?:No|Id)?\s*[:=]|\bbalance\s*[:=]|\btrading\s*[:=]/i.test([boundary, boundaryFixtures, activation].join('\n')), 'No account/order/balance/trading executable fields may be introduced.');
 
-const sensitiveScan = [newRuntimeSources, result, topEntry].join('\n');
+const sensitiveScan = [newRuntimeSources, result, phaseEntry].join('\n');
 const emailLiteralPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 const uuidLiteralPattern = /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/i;
 assertTrue(!emailLiteralPattern.test(sensitiveScan), 'No email literal may be introduced.');

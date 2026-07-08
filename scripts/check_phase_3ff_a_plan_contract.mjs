@@ -12,6 +12,7 @@ const PACKAGE_JSON = 'package.json';
 const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
 const EVIDENCE_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_hf1_contract.mjs';
 const CLOSEOUT_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs';
+const PHASE_3FE_A_CHECKER = 'scripts/check_phase_3fe_a_kis_ohlc_provider_owner_local_integration_contract.mjs';
 const INCORRECT_STRATEGY_CHECKPOINT_LABEL = String.fromCodePoint(0xC0AC, 0xC804, 0x20, 0xCCB4, 0xD06C, 0xD3EC, 0xC778, 0xD2B8);
 const CORRECT_STRATEGY_CHECKPOINT_LABEL = '전략 체크포인트';
 
@@ -25,6 +26,7 @@ const allowedFiles = new Set([
   EVIDENCE_CHECKER,
   EVIDENCE_HF1_CHECKER,
   CLOSEOUT_HF1_CHECKER,
+  PHASE_3FE_A_CHECKER,
   PACKAGE_JSON,
 ]);
 
