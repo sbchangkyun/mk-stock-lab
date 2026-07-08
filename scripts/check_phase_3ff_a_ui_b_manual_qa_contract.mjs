@@ -29,8 +29,21 @@ const MK_B_TOLERATED_FILES = [
   'docs/planning/phase_3ff_a_mk_b_result_v0.1.md',
 ];
 
+// Phase 3FF-A-SP-B legitimately hardens the Similar Pattern Agent
+// source/fixture under src/lib/server/chart-ai and adds its own
+// smoke/checker/result deliverables. Tolerated here, not required, so this
+// checker's scope/forbidden-diff checks do not fail once SP-B's contract
+// hardening exists on top of a32a52c.
+const SP_B_TOLERATED_FILES = [
+  'src/lib/server/chart-ai/similar-pattern-agent.mjs',
+  'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs',
+  'scripts/smoke_phase_3ff_a_sp_b_output_contract_hardening.mjs',
+  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
+  'docs/planning/phase_3ff_a_sp_b_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -104,7 +117,7 @@ assert(changelog.includes('## Phase 3FF-A-UI-B - 2026-07-08'), 'changelog must i
 // Later QA/hardening-only phases (no runtime/API/UI change) legitimately
 // prepend their own entries above this one. Tolerate exactly this known
 // allowlist of headers above the UI-B entry, in any order/count.
-const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-MK-B - 2026-07-08'];
+const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08'];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];
 assert(
@@ -134,10 +147,10 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 }
 
 // --- 6. Forbidden paths must be unchanged, including chart-ai.astro itself ---
-// (src/lib/server/chart-ai stays forbidden for everything except the two
-// exact MK-B source/fixture files explicitly tolerated above.)
+// (src/lib/server/chart-ai stays forbidden for everything except the exact
+// MK-B and SP-B source/fixture files explicitly tolerated above.)
 const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).filter(
-  (file) => !MK_B_TOLERATED_FILES.includes(file),
+  (file) => !MK_B_TOLERATED_FILES.includes(file) && !SP_B_TOLERATED_FILES.includes(file),
 );
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty except explicitly tolerated later-phase files. Found: ${forbiddenDiff.join(', ')}`);
 

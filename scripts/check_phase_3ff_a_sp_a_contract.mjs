@@ -43,8 +43,15 @@ const UI_A_SMOKE = 'scripts/smoke_phase_3ff_a_ui_a_owner_local_deterministic_age
 const MK_B_SMOKE = 'scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs';
 const MK_B_CHECKER = 'scripts/check_phase_3ff_a_mk_b_contract.mjs';
 const MK_B_RESULT = 'docs/planning/phase_3ff_a_mk_b_result_v0.1.md';
+// Phase 3FF-A-SP-B's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once SP-B's hardening pass exists
+// (SP-B further edits this checker's own SOURCE/FIXTURE, already allowed,
+// and its unexpectedSource filter below already tolerates SOURCE/FIXTURE).
+const SP_B_SMOKE = 'scripts/smoke_phase_3ff_a_sp_b_output_contract_hardening.mjs';
+const SP_B_CHECKER = 'scripts/check_phase_3ff_a_sp_b_contract.mjs';
+const SP_B_RESULT = 'docs/planning/phase_3ff_a_sp_b_result_v0.1.md';
 
-const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, PHASE_3FE_A_CHECKER, PHASE_3FF_A_PLAN_CHECKER, MK_A_SOURCE, MK_A_FIXTURE, MK_A_SMOKE, MK_A_CHECKER, MK_A_RESULT, MK_A_HF1_RESULT, 'src/pages/chart-ai.astro', UI_B_CHECKLIST, UI_B_RESULT, UI_B_CHECKER, UI_A_RESULT, UI_A_CHECKER, UI_A_SMOKE, MK_B_SMOKE, MK_B_CHECKER, MK_B_RESULT]);
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, PHASE_3FE_A_CHECKER, PHASE_3FF_A_PLAN_CHECKER, MK_A_SOURCE, MK_A_FIXTURE, MK_A_SMOKE, MK_A_CHECKER, MK_A_RESULT, MK_A_HF1_RESULT, 'src/pages/chart-ai.astro', UI_B_CHECKLIST, UI_B_RESULT, UI_B_CHECKER, UI_A_RESULT, UI_A_CHECKER, UI_A_SMOKE, MK_B_SMOKE, MK_B_CHECKER, MK_B_RESULT, SP_B_SMOKE, SP_B_CHECKER, SP_B_RESULT]);
 const forbiddenPaths = [
   'pages',
   'src/pages/api',

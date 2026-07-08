@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-SP-B - 2026-07-08
+
+### Similar Pattern Output Contract Hardening, No Live KIS, No LLM, No Public Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `3d4b7d2`.
+- **Purpose**: harden the deterministic fixture-only Similar Pattern Agent output contract so it is more useful and safer for MK Agent consumption and future UI/productization, while preserving full backward compatibility with existing SP-A output.
+- **Implemented scope**: contract versioning (`similar-pattern-agent.v0.2`, exposed as `contractVersion`); a separate `confidenceScore`/`confidenceLabel` (0-100, 높음/보통 이상/보통/낮음) distinct from per-match `similarityScore`; top-level `patternQuality` (score/label/reasons/warnings/limitations, 우수/양호/주의/낮음) that explicitly states historical similarity does not predict or guarantee future results; per-match `matchReasonTags` (상관계수 높음/정규화 경로 유사/방향성 일치/낙폭 유사/변동성 주의/성과 해석 주의, always non-empty); `outcomeDistribution` for D5/D20 (counts, average/median/best/worst); a `contractSummary` roll-up; and three new deterministic edge fixtures (`createLowConfidenceSimilarPatternFixtureInput`, `createHighVolatilitySimilarPatternFixtureInput`, `createFlatOutcomeSimilarPatternFixtureInput`). New smoke script and static checker; result document; package scripts.
+- **Backward compatibility**: every pre-existing SP-A field, export, and fixture (`createSimilarPatternFixtureInput`, `createInsufficientSimilarPatternFixtureInput`, `createInvalidCloseSimilarPatternFixtureInput`) is unchanged; new fields are additive only.
+- **Preserved policy**: no UI file change, no API route change, no MK Agent source/fixture change, no live KIS, no LLM, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: a UI/MK Agent consumption pass for the new hardened fields, or further owner-local manual QA.
+
 ## Phase 3FF-A-MK-B - 2026-07-08
 
 ### MK Agent Output Contract Hardening and Korean Grammar Fix, No LLM, No Live KIS, No Public Activation (Implemented)

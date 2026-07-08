@@ -51,8 +51,21 @@ const MK_B_TOLERATED_FILES = [
   'docs/planning/phase_3ff_a_mk_b_result_v0.1.md',
 ];
 
+// Phase 3FF-A-SP-B legitimately hardens the Similar Pattern Agent
+// source/fixture under src/lib/server/chart-ai and adds its own
+// smoke/checker/result deliverables. Tolerated here, not required, so this
+// checker's git-diff scope checks do not fail once SP-B's contract hardening
+// exists on top of 3edc84b.
+const SP_B_TOLERATED_FILES = [
+  SP_A_SOURCE,
+  SP_A_FIXTURE,
+  'scripts/smoke_phase_3ff_a_sp_b_output_contract_hardening.mjs',
+  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
+  'docs/planning/phase_3ff_a_sp_b_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [PAGE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS, ...UI_B_TOLERATED_FILES, ...MK_B_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS, ...UI_B_TOLERATED_FILES, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES]);
 
 // Exact required forbidden-diff path list (Phase 3FF-A-UI-A task spec).
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
@@ -301,7 +314,7 @@ assert(changelog.includes('## Phase 3FF-A-UI-A - 2026-07-08'), 'changelog must i
 // allowlist of headers above the UI-A entry, in any order/count; any other
 // header there would mean the changelog was reordered/corrupted by something
 // other than an expected follow-up phase.
-const TOLERATED_HEADERS_ABOVE_UI_A = ['## Phase 3FF-A-UI-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08'];
+const TOLERATED_HEADERS_ABOVE_UI_A = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-UI-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08'];
 const uiAEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-A - 2026-07-08');
 const headersAboveUiA = changelog.slice(0, uiAEntryIndex).match(/^## .+$/gm) ?? [];
 assert(
