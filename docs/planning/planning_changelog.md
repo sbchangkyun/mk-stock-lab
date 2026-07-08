@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-PLAN-HF1 - 2026-07-08
+
+### Strategy Checkpoint Naming Correction, No Runtime Change (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `a2560eb`.
+- **Purpose**: correct the Phase 3FF-A-PLAN naming defect.
+- **Defect**: `사전 체크포인트` was used incorrectly.
+- **Correction**: owner-approved label is `전략 체크포인트`.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: proceed only to narrow Similar Pattern Agent or MK Agent follow-up phases.
+
 ## Phase 3FF-A-PLAN - 2026-07-08
 
 ### Similar Pattern Agent and MK Agent Contract Planning, No Runtime Change (Prepared)
@@ -8,7 +20,7 @@
 - **Baseline**: `bd8ebd3`.
 - **Purpose**: planning package for Chart AI Similar Pattern Agent and MK Agent.
 - **Implemented scope**: Similar Pattern Agent design plan, MK Agent design plan, result document, static checker, package script, changelog update, and narrow validation-chain checker compatibility updates for already-committed HF1 evidence files.
-- **Owner decisions**: MK Agent name `MK 에이전트`; use `사전 체크포인트`; support/resistance price level mentions are allowed as observation/checkpoints; open beta free usage is 3 uses per account per day; Similar Pattern and MK Agent are separate agents connected through a sanitized contract.
+- **Owner decisions**: MK Agent name `MK 에이전트`; use `전략 체크포인트`; support/resistance price level mentions are allowed as observation/checkpoints; open beta free usage is 3 uses per account per day; Similar Pattern and MK Agent are separate agents connected through a sanitized contract.
 - **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
 - **Recommended next step**: split next work into narrow Similar Pattern Agent and MK Agent implementation/planning phases.
 - **Hold**: direct live KIS, direct LLM activation, beta/public activation, deploy, and push remain blocked.

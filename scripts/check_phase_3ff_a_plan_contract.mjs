@@ -5,19 +5,25 @@ const BASELINE = 'bd8ebd3';
 const SP_DOC = 'docs/planning/phase_3ff_a_plan_similar_pattern_agent_design_v0.1.md';
 const MK_DOC = 'docs/planning/phase_3ff_a_plan_mk_agent_design_v0.1.md';
 const RESULT_DOC = 'docs/planning/phase_3ff_a_plan_result_v0.1.md';
+const HF1_RESULT = 'docs/planning/phase_3ff_a_plan_hf1_result_v0.1.md';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
 const PACKAGE_JSON = 'package.json';
 const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
+const EVIDENCE_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_hf1_contract.mjs';
 const CLOSEOUT_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs';
+const INCORRECT_STRATEGY_CHECKPOINT_LABEL = String.fromCodePoint(0xC0AC, 0xC804, 0x20, 0xCCB4, 0xD06C, 0xD3EC, 0xC778, 0xD2B8);
+const CORRECT_STRATEGY_CHECKPOINT_LABEL = '전략 체크포인트';
 
 const allowedFiles = new Set([
   SP_DOC,
   MK_DOC,
   RESULT_DOC,
+  HF1_RESULT,
   CHANGELOG,
   CHECKER,
   EVIDENCE_CHECKER,
+  EVIDENCE_HF1_CHECKER,
   CLOSEOUT_HF1_CHECKER,
   PACKAGE_JSON,
 ]);
@@ -48,16 +54,18 @@ const exists = (file) => fs.existsSync(file);
 const read = (file) => fs.readFileSync(file, 'utf8');
 const runGit = (args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 
-for (const file of [SP_DOC, MK_DOC, RESULT_DOC, CHANGELOG, CHECKER, PACKAGE_JSON, EVIDENCE_CHECKER, CLOSEOUT_HF1_CHECKER]) {
+for (const file of [SP_DOC, MK_DOC, RESULT_DOC, CHANGELOG, CHECKER, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER]) {
   assert(exists(file), `${file} must exist.`);
 }
 
 const sp = exists(SP_DOC) ? read(SP_DOC) : '';
 const mk = exists(MK_DOC) ? read(MK_DOC) : '';
 const result = exists(RESULT_DOC) ? read(RESULT_DOC) : '';
+const hf1 = exists(HF1_RESULT) ? read(HF1_RESULT) : '';
 const changelog = exists(CHANGELOG) ? read(CHANGELOG) : '';
 const checker = exists(CHECKER) ? read(CHECKER) : '';
 const evidenceChecker = exists(EVIDENCE_CHECKER) ? read(EVIDENCE_CHECKER) : '';
+const evidenceHf1Checker = exists(EVIDENCE_HF1_CHECKER) ? read(EVIDENCE_HF1_CHECKER) : '';
 const closeoutHf1Checker = exists(CLOSEOUT_HF1_CHECKER) ? read(CLOSEOUT_HF1_CHECKER) : '';
 const packageJson = exists(PACKAGE_JSON) ? JSON.parse(read(PACKAGE_JSON)) : {};
 
@@ -83,7 +91,7 @@ for (const token of [
 for (const token of [
   'Status: Prepared.',
   'MK 에이전트',
-  '사전 체크포인트',
+  CORRECT_STRATEGY_CHECKPOINT_LABEL,
   'PC card',
   'mobile bottom sheet',
   '3 uses per account per day',
@@ -109,7 +117,7 @@ for (const token of [
 
 for (const token of [
   'MK Agent name: `MK 에이전트`',
-  'Naming policy: use `사전 체크포인트`',
+  `Naming policy: use \`${CORRECT_STRATEGY_CHECKPOINT_LABEL}\``,
   'Support/resistance price levels are allowed as observation/checkpoints.',
   'Open beta free usage policy: 3 uses per account per day.',
   'Similar Pattern and MK Agent are separate agents connected through a sanitized contract.',
@@ -132,7 +140,15 @@ for (const file of [SP_DOC, MK_DOC, RESULT_DOC, CHANGELOG, CHECKER, PACKAGE_JSON
   assert(allChanged.includes(file), `Changed files must include ${file}.`);
 }
 assert(evidenceChecker.includes('EVIDENCE_HF1_RESULT') && evidenceChecker.includes('EVIDENCE_HF1_CHECKER'), 'Evidence checker must tolerate its committed HF1 evidence files.');
+assert(evidenceChecker.includes('PHASE_3FF_A_PLAN_MK_DOC') && evidenceChecker.includes('PHASE_3FF_A_PLAN_CHECKER'), 'Evidence checker must tolerate committed Phase 3FF-A planning files.');
+assert(evidenceHf1Checker.includes('PHASE_3FF_A_PLAN_MK_DOC') && evidenceHf1Checker.includes('PHASE_3FF_A_PLAN_CHECKER'), 'Evidence HF1 checker must tolerate committed Phase 3FF-A planning files.');
 assert(closeoutHf1Checker.includes('EVIDENCE_HF1_RESULT') && closeoutHf1Checker.includes('EVIDENCE_HF1_CHECKER'), 'Closeout HF1 checker must tolerate committed evidence HF1 files.');
+assert(closeoutHf1Checker.includes('PHASE_3FF_A_PLAN_MK_DOC') && closeoutHf1Checker.includes('PHASE_3FF_A_PLAN_CHECKER'), 'Closeout HF1 checker must tolerate committed Phase 3FF-A planning files.');
+if (allChanged.includes(HF1_RESULT)) {
+  assert(hf1.includes('Implemented.'), 'HF1 result must record Implemented status.');
+  assert(hf1.includes('Current baseline before HF1: `a2560eb`'), 'HF1 result must record baseline a2560eb.');
+  assert(hf1.includes(`Correct owner-approved label: \`${CORRECT_STRATEGY_CHECKPOINT_LABEL}\``), 'HF1 result must record corrected owner-approved label.');
+}
 
 const forbiddenDiff = [
   ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
@@ -141,7 +157,8 @@ const forbiddenDiff = [
 ];
 assert([...new Set(forbiddenDiff)].length === 0, 'Forbidden runtime/source/API/UI/provider/dependency/lockfile/env diff must be empty.');
 
-const combined = [sp, mk, result, changelog.split('## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-EVIDENCE-HF1 - 2026-07-08')[0] ?? '', checker, evidenceChecker, closeoutHf1Checker].join('\n');
+const phasePlanChangelogEntry = changelog.match(/## Phase 3FF-A-PLAN - 2026-07-08[\s\S]*?(?=## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-EVIDENCE-HF1 - 2026-07-08)/)?.[0] ?? '';
+const combined = [sp, mk, result, changelog.split('## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-EVIDENCE-HF1 - 2026-07-08')[0] ?? '', checker, evidenceChecker, evidenceHf1Checker, closeoutHf1Checker].join('\n');
 const suspiciousSecretTokens = [
   'app' + 'secret',
   'access' + '_token',
@@ -158,7 +175,16 @@ assert(!/\b(?:createClient|createServerClient)\s*\(/.test(combined), 'New docs/c
 assert(!/\b(?:process\.env|import\.meta\.env)\b/.test(combined), 'New docs/checker must not read environment values.');
 
 assert(!mk.includes('매매전략'), 'Legacy trading-strategy label must not appear in the MK Agent design doc.');
-assert(mk.includes('사전 체크포인트'), 'MK Agent design doc must include 사전 체크포인트.');
+for (const [file, text] of [
+  [MK_DOC, mk],
+  [RESULT_DOC, result],
+  [CHANGELOG, phasePlanChangelogEntry],
+  [CHECKER, checker],
+]) {
+  assert(!text.includes(INCORRECT_STRATEGY_CHECKPOINT_LABEL), `${file} must not contain incorrect strategy checkpoint label.`);
+  assert(text.includes(CORRECT_STRATEGY_CHECKPOINT_LABEL), `${file} must contain corrected strategy checkpoint label.`);
+}
+assert(mk.includes(CORRECT_STRATEGY_CHECKPOINT_LABEL), 'MK Agent design doc must include corrected strategy checkpoint label.');
 
 const forbiddenSection = mk.match(/## 15\. Forbidden phrasing examples[\s\S]*?## 16\./)?.[0] ?? '';
 for (const phrase of [

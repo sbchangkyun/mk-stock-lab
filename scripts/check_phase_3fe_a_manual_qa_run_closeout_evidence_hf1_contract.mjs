@@ -14,6 +14,10 @@ const PACKAGE_JSON = 'package.json';
 const EXPECTED_REVIEWER = String.fromCodePoint(0xAE40, 0xCC3D, 0xADE0);
 const EXPECTED_REVIEWER_HEX = 'eab980ecb0bdeab7a0';
 const CORRUPTED_REVIEWER = Buffer.from('e6ba90c280efa7a1ec8e84ed878f', 'hex').toString('utf8');
+const PHASE_3FF_A_PLAN_SP_DOC = 'docs/planning/phase_3ff_a_plan_similar_pattern_agent_design_v0.1.md';
+const PHASE_3FF_A_PLAN_MK_DOC = 'docs/planning/phase_3ff_a_plan_mk_agent_design_v0.1.md';
+const PHASE_3FF_A_PLAN_RESULT = 'docs/planning/phase_3ff_a_plan_result_v0.1.md';
+const PHASE_3FF_A_PLAN_CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
 
 const allowedFiles = new Set([
   HF1_RESULT,
@@ -24,6 +28,10 @@ const allowedFiles = new Set([
   EVIDENCE_CHECKER,
   CLOSEOUT_CHECKER,
   CLOSEOUT_HF1_CHECKER,
+  PHASE_3FF_A_PLAN_SP_DOC,
+  PHASE_3FF_A_PLAN_MK_DOC,
+  PHASE_3FF_A_PLAN_RESULT,
+  PHASE_3FF_A_PLAN_CHECKER,
   PACKAGE_JSON,
 ]);
 

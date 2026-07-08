@@ -48,7 +48,7 @@ Status: Prepared.
 ## 7. Owner decisions reflected
 
 - MK Agent name: `MK 에이전트`.
-- Naming policy: use `사전 체크포인트`.
+- Naming policy: use `전략 체크포인트`.
 - Support/resistance price levels are allowed as observation/checkpoints.
 - Open beta free usage policy: 3 uses per account per day.
 - Similar Pattern and MK Agent are separate agents connected through a sanitized contract.

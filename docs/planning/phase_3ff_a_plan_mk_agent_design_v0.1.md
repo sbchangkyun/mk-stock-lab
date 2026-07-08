@@ -99,7 +99,7 @@ MK 에이전트 리포트를 준비하고 있어요.
 
 - One-line summary.
 - 구간·수급.
-- 사전 체크포인트.
+- 전략 체크포인트.
 - 가격 패턴.
 - 기술적 지표.
 - 지지·저항.
@@ -108,7 +108,7 @@ MK 에이전트 리포트를 준비하고 있어요.
 
 ## 12. Naming policy
 
-- Use `사전 체크포인트`.
+- Use `전략 체크포인트`.
 - Do not use the legacy trading-strategy label.
 - The label must frame observations and scenarios, not trading instructions.
 
@@ -117,7 +117,7 @@ MK 에이전트 리포트를 준비하고 있어요.
 - Price levels may be mentioned.
 - Must use observation/checkpoint/scenario language.
 - Must not use buy/sell instruction language.
-- Support/resistance language belongs inside `사전 체크포인트`, `지지·저항`, or risk sections as observational context.
+- Support/resistance language belongs inside `전략 체크포인트`, `지지·저항`, or risk sections as observational context.
 
 ## 14. Allowed phrasing examples
 
@@ -262,7 +262,7 @@ Fallback copy must be friendly, short, and safe.
 - Confirms PC card layout planning.
 - Confirms mobile bottom sheet planning.
 - Confirms Similar Pattern Agent input dependency.
-- Confirms `사전 체크포인트` naming.
+- Confirms `전략 체크포인트` naming.
 - Confirms the legacy trading-strategy label is not used as recommended copy.
 - Confirms support/resistance language is observational only.
 - Confirms 3 uses per account per day open beta policy.
