@@ -16,6 +16,8 @@ const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 const EVIDENCE_RESULT = 'docs/planning/phase_3fe_a_manual_qa_run_closeout_evidence_result_v0.1.md';
 const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
+const EVIDENCE_HF1_RESULT = 'docs/planning/phase_3fe_a_manual_qa_run_closeout_evidence_hf1_result_v0.1.md';
+const EVIDENCE_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_hf1_contract.mjs';
 
 const allowedFiles = new Set([
   CLOSEOUT_CHECKLIST,
@@ -26,6 +28,8 @@ const allowedFiles = new Set([
   HF1_CHECKER,
   EVIDENCE_RESULT,
   EVIDENCE_CHECKER,
+  EVIDENCE_HF1_RESULT,
+  EVIDENCE_HF1_CHECKER,
   QA_RUN_HF1_CHECKER,
   RETRY_CHECKER,
   PACKAGE_JSON,

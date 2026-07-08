@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-PLAN - 2026-07-08
+
+### Similar Pattern Agent and MK Agent Contract Planning, No Runtime Change (Prepared)
+
+- **Status**: Prepared.
+- **Baseline**: `bd8ebd3`.
+- **Purpose**: planning package for Chart AI Similar Pattern Agent and MK Agent.
+- **Implemented scope**: Similar Pattern Agent design plan, MK Agent design plan, result document, static checker, package script, changelog update, and narrow validation-chain checker compatibility updates for already-committed HF1 evidence files.
+- **Owner decisions**: MK Agent name `MK 에이전트`; use `사전 체크포인트`; support/resistance price level mentions are allowed as observation/checkpoints; open beta free usage is 3 uses per account per day; Similar Pattern and MK Agent are separate agents connected through a sanitized contract.
+- **Preserved policy**: no runtime/source/API/UI/provider changes, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: split next work into narrow Similar Pattern Agent and MK Agent implementation/planning phases.
+- **Hold**: direct live KIS, direct LLM activation, beta/public activation, deploy, and push remain blocked.
+
 ## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-EVIDENCE-HF1 - 2026-07-08
 
 ### Owner Reviewer Encoding Correction, No Runtime Change (Implemented)
