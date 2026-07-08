@@ -7,6 +7,7 @@ const FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
 const SMOKE = 'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs';
 const CHECKER = 'scripts/check_phase_3ff_a_mk_a_contract.mjs';
 const RESULT = 'docs/planning/phase_3ff_a_mk_a_result_v0.1.md';
+const HF1_RESULT = 'docs/planning/phase_3ff_a_mk_a_hf1_result_v0.1.md';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 const PHASE_3FF_A_PLAN_CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
@@ -21,7 +22,7 @@ const QA_RUN_RESULT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_result_co
 const MANUAL_QA_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_result_contract.mjs';
 const HANDOFF_CHECKER = 'scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs';
 
-const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER]);
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER]);
 const forbiddenPaths = [
   'pages',
   'src/pages',
@@ -46,14 +47,16 @@ const exists = (file) => fs.existsSync(file);
 const read = (file) => fs.readFileSync(file, 'utf8');
 const runGit = (args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 
-for (const file of [SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON]) {
+for (const file of [SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON]) {
   assert(exists(file), `${file} must exist.`);
 }
 
 const source = exists(SOURCE) ? read(SOURCE) : '';
 const fixture = exists(FIXTURE) ? read(FIXTURE) : '';
 const smoke = exists(SMOKE) ? read(SMOKE) : '';
+const checkerSelf = exists(CHECKER) ? read(CHECKER) : '';
 const result = exists(RESULT) ? read(RESULT) : '';
+const hf1Result = exists(HF1_RESULT) ? read(HF1_RESULT) : '';
 const changelog = exists(CHANGELOG) ? read(CHANGELOG) : '';
 const packageSource = exists(PACKAGE_JSON) ? read(PACKAGE_JSON) : '{}';
 const packageJson = JSON.parse(packageSource);
@@ -143,8 +146,12 @@ for (const [label, text] of [['source', source], ['fixture', fixture]]) {
 }
 
 for (const requiredText of [
-  'MK ?먯씠?꾪듃',
-  '?꾨왂 泥댄겕?ъ씤??',
+  'MK 에이전트',
+  '전략 체크포인트',
+  '오픈베타에서는 계정당 하루 3회까지 사용할 수 있어요',
+  '참고용',
+  '매수·매도 추천이 아닙니다',
+  '투자 자문이 아닙니다',
   'No LLM',
   'No buy/sell recommendation',
   'reference only',
@@ -152,7 +159,36 @@ for (const requiredText of [
 ]) {
   assert(source.includes(requiredText), `source must include marker: ${requiredText}`);
 }
-assert(!source.includes('?ъ쟾 泥댄겕?ъ씤??'), 'source must not include legacy strategy checkpoint title.');
+assert(!source.includes('사전 체크포인트'), 'source must not include legacy strategy checkpoint title.');
+
+// The corrupted mojibake fragments below are Unicode-escaped (\uXXXX), not written as
+// literal characters, so that scanning this checker's own source text (checkerSelf)
+// never self-matches. At runtime the escapes decode to the real corrupted characters,
+// so detection against other files' actual content still works.
+const mojibakeFragments = [
+  '\u004d\u004b\u0020\u003f\uba2f\uc520\u003f\uafaa\ub4c3',
+  '\u003f\uafa8\uc642',
+  '\uf9e3\ub304\uac95',
+  '\u003f\u044a\uc524',
+  '\u003f\uc496\uc0a4',
+  '\u003f\ub348\ucfcb',
+  '\u003f\uc1f1\uaf66',
+  '\uf9cd\u317c\ub2d4',
+  '\uf9cf\u247a\ubab4',
+];
+for (const [label, text] of [
+  ['source', source],
+  ['fixture', fixture],
+  ['smoke', smoke],
+  ['checker', checkerSelf],
+  ['result', result],
+  ['hf1Result', hf1Result],
+]) {
+  for (const fragment of mojibakeFragments) {
+    assert(!text.includes(fragment), `${label} must not contain corrupted mojibake fragment.`);
+  }
+  assert(!text.includes('\uFFFD'), `${label} must not contain the Unicode replacement character.`);
+}
 
 for (const requiredText of [
   'Status: Implemented.',
@@ -167,6 +203,22 @@ for (const requiredText of [
 }
 
 for (const requiredText of [
+  'Status: Implemented.',
+  'Current baseline before HF1: 60395f0.',
+  'Latest completed phase before HF1: Phase 3FF-A-MK-A.',
+  'Branch: rebuild/phase-1-ia-shell.',
+  'No LLM.',
+  'No live KIS.',
+  'No UI runtime activation.',
+  'No API route activation.',
+  'MK 에이전트',
+  '전략 체크포인트',
+  '삼성전자',
+]) {
+  assert(hf1Result.includes(requiredText), `HF1 result doc must include: ${requiredText}`);
+}
+
+for (const requiredText of [
   '## Phase 3FF-A-MK-A - 2026-07-08',
   'MK Agent Deterministic Report Contract, No LLM, No UI Runtime Activation (Implemented)',
   'Baseline: 38d660a',
@@ -178,6 +230,20 @@ for (const requiredText of [
   'no public/beta activation',
 ]) {
   assert(changelog.includes(requiredText), `changelog must include: ${requiredText}`);
+}
+
+for (const requiredText of [
+  '## Phase 3FF-A-MK-A-HF1 - 2026-07-08',
+  'MK Agent Korean Copy Encoding Correction, No Runtime Change (Implemented)',
+  '60395f0',
+  'MK 에이전트',
+  '전략 체크포인트',
+  '삼성전자',
+  'no live KIS',
+  'no LLM',
+  'no deploy/push',
+]) {
+  assert(changelog.includes(requiredText), `changelog must include HF1 entry marker: ${requiredText}`);
 }
 
 const smokeOutput = execFileSync('node', [SMOKE], { encoding: 'utf8' });

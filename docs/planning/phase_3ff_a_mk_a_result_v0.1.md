@@ -58,8 +58,8 @@ This phase implemented a deterministic fixture-only MK Agent report contract. No
 ## 7. Report contract summary
 
 - MkAgentOutput-shaped result.
-- agentName: MK ?먯씠?꾪듃.
-- strategy section title: ?꾨왂 泥댄겕?ъ씤??.
+- agentName: MK 에이전트.
+- strategy section title: 전략 체크포인트.
 - PC card and mobile bottom-sheet output modes.
 - Friendly Korean report.
 - No LLM.

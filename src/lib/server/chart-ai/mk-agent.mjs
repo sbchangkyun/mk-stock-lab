@@ -27,9 +27,9 @@ export const MK_AGENT_STATUS = Object.freeze({
   failClosed: 'fail_closed',
 });
 
-const AGENT_NAME = 'MK ?먯씠?꾪듃';
-const STRATEGY_TITLE = '?꾨왂 泥댄겕?ъ씤??';
-const USAGE_NOTICE = '?쒖삤?덈쿋??먯꽌??怨꾩젙???섎（ 3?뚭퉴吏 ?ъ슜?????덉뼱????';
+const AGENT_NAME = 'MK 에이전트';
+const STRATEGY_TITLE = '전략 체크포인트';
+const USAGE_NOTICE = '오픈베타에서는 계정당 하루 3회까지 사용할 수 있어요.';
 
 const SUCCESS_SAFETY = Object.freeze({
   containsBuySellRecommendation: false,
@@ -79,20 +79,14 @@ export function createMkAgentInput(overrides = {}) {
 export function detectForbiddenInvestmentLanguage(value) {
   const text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
   const forbiddenPatterns = [
-    '留ㅼ닔?섏꽭??',
-    '留ㅻ룄?섏꽭??',
-    '吏湲?吏꾩엯',
-    '紐⑺몴媛??',
-    '?먯젅媛??',
-    '媛뺣젰 異붿쿇',
-    '?곸듅???뺤젙',
-    '?섎씫???뺤젙',
     '매수하세요',
     '매도하세요',
-    '목표가',
-    '손절가',
-    '강력 추천',
     '지금 진입',
+    '목표가는',
+    '손절가는',
+    '강력 추천',
+    '상승이 확정',
+    '하락이 확정',
   ];
   return forbiddenPatterns.filter((pattern) => text.includes(pattern));
 }
@@ -149,7 +143,7 @@ export function summarizeSimilarPatternForMkAgent(similarPattern) {
 }
 
 export function createMkAgentDisclaimer() {
-  return '이 분석은 참고용이며 매수·매도 추천이 아니고 투자 자문도 아닙니다. 최종 투자 판단과 책임은 사용자에게 있어요.';
+  return '이 분석은 참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다. 최종 투자 판단의 책임은 이용자 본인에게 있습니다.';
 }
 
 const makeSection = ({ key, title, body, bullets, severity = 'info', confidence = 'medium', limitations = [] }) => ({
@@ -180,7 +174,7 @@ export function createDeterministicMkAgentReport(input) {
   const sections = [
     makeSection({
       key: MK_AGENT_SECTION_KEYS.phaseSupply,
-      title: '援ш컙쨌?섍툒',
+      title: '구간·수급',
       body: `${AGENT_NAME}가 ${displayName}의 최근 흐름을 구간별로 정리했어요. 유사 과거 구간은 ${similarSummary.matchCount}개로 압축됐고, 현재 흐름은 가격 자체보다 모양과 속도 중심으로 봤어요.`,
       bullets: [
         '현재 구간은 정규화된 경로 기준으로 비교했어요.',
@@ -203,7 +197,7 @@ export function createDeterministicMkAgentReport(input) {
     }),
     makeSection({
       key: MK_AGENT_SECTION_KEYS.pricePattern,
-      title: '媛寃??⑦꽩',
+      title: '가격 패턴',
       body: `상위 유사 구간의 라벨은 ${similarSummary.topScoreLabel}이고 점수는 ${similarSummary.topScore ?? '확인 제한'}점이에요. 같은 종목의 과거 모양과 닮은 정도만 뜻해요.`,
       bullets: [
         '원시 가격끼리 직접 비교하지 않았어요.',
@@ -214,7 +208,7 @@ export function createDeterministicMkAgentReport(input) {
     }),
     makeSection({
       key: MK_AGENT_SECTION_KEYS.technicalIndicators,
-      title: '湲곗닠??吏??',
+      title: '기술적 지표',
       body: '이번 deterministic report는 보조 지표를 과장하지 않고, Similar Pattern 점수 구성과 방향 일치 흐름을 중심으로 요약해요.',
       bullets: [
         `상위 매치의 D5 과거 수익률은 ${pct(similarSummary.topForwardReturnD5Pct)}였어요.`,
@@ -225,7 +219,7 @@ export function createDeterministicMkAgentReport(input) {
     }),
     makeSection({
       key: MK_AGENT_SECTION_KEYS.supportResistance,
-      title: '吏吏쨌???',
+      title: '지지·저항',
       body: '지지·저항처럼 보이는 가격대는 단정이 아니라 관찰 지점이에요. 돌파나 이탈을 확정 표현으로 말하지 않아요.',
       bullets: [
         supportText,
@@ -237,7 +231,7 @@ export function createDeterministicMkAgentReport(input) {
     }),
     makeSection({
       key: MK_AGENT_SECTION_KEYS.similarHistory,
-      title: '?좎궗 怨쇨굅 ?먮쫫',
+      title: '유사 과거 흐름',
       body: `비슷했던 과거 흐름의 D20 방향 균형은 "${similarSummary.aggregateD20DirectionBalance}"로 요약돼요. 단, 과거 유사도는 미래 예측이 아니에요.`,
       bullets: [
         `Top match score label: ${similarSummary.topScoreLabel}.`,
@@ -248,7 +242,7 @@ export function createDeterministicMkAgentReport(input) {
     }),
     makeSection({
       key: MK_AGENT_SECTION_KEYS.riskCheck,
-      title: '由ъ뒪??泥댄겕',
+      title: '리스크 체크',
       body: '리스크는 방향을 맞히기보다 틀릴 수 있는 지점을 먼저 보는 데 의미가 있어요.',
       bullets: [
         '유사 과거 흐름이 엇갈린 경우 변동성 확대 가능성을 열어둬요.',
@@ -333,5 +327,5 @@ export function runMkAgent(input) {
   }
 }
 
-// Contract markers: MK ?먯씠?꾪듃, ?꾨왂 泥댄겕?ъ씤??,
+// Contract markers: MK 에이전트, 전략 체크포인트,
 // No LLM, No buy/sell recommendation, reference only, not investment advice.

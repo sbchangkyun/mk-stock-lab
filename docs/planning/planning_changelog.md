@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-MK-A-HF1 - 2026-07-08
+
+### MK Agent Korean Copy Encoding Correction, No Runtime Change (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `60395f0`.
+- **Purpose**: correct MK Agent Korean copy mojibake in the deterministic report contract.
+- **Defect**: MK Agent Korean user-facing strings were corrupted (mojibake); Phase 3FF-A-MK-A smoke assertions incorrectly validated the corrupted strings instead of correct Korean strings.
+- **Correction**: restored `MK 에이전트`; restored `전략 체크포인트`; restored `삼성전자` fixture display name; restored the open beta usage notice; restored the Korean disclaimer; added mojibake rejection guards to smoke and checker.
+- **Preserved policy**: no API route change, no UI implementation change, no provider/helper source change, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: SP-B output contract hardening or MK-B edge-case hardening/report card polish.
+
 ## Phase 3FF-A-MK-A - 2026-07-08
 
 ### MK Agent Deterministic Report Contract, No LLM, No UI Runtime Activation (Implemented)

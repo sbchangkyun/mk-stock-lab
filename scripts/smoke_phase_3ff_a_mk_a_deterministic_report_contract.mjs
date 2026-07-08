@@ -32,22 +32,24 @@ const output = runMkAgent(createMkAgentFixtureInput());
 
 equal(output.ok, true, 'default output should be ok');
 equal(output.status, 'mk_report_ready', 'default output should be ready');
-equal(output.agentName, 'MK ?먯씠?꾪듃', 'agent name should be exact');
+equal(output.agentName, 'MK 에이전트', 'agent name should be exact');
 check(['pc_card', 'mobile_bottom_sheet'].includes(output.uiMode), 'uiMode should be supported');
 check(typeof output.report.oneLineSummary === 'string' && output.report.oneLineSummary.length > 0, 'one line summary should be non-empty');
-check(/[가-힣?]/.test(output.report.oneLineSummary), 'one line summary should be Korean-compatible text');
+check(/[가-힣]/.test(output.report.oneLineSummary), 'one line summary should contain readable Korean text');
 check(Array.isArray(output.report.sections), 'sections should be an array');
 
 for (const key of requiredKeys) {
   check(output.report.sections.some((section) => section.key === key), `section key should exist: ${key}`);
 }
 
-check(output.report.sections.some((section) => section.title === '?꾨왂 泥댄겕?ъ씤??'), 'strategy title should be exact');
-check(!output.report.sections.some((section) => section.title === '?ъ쟾 泥댄겕?ъ씤??'), 'legacy strategy title should not exist');
+check(output.report.sections.some((section) => section.title === '전략 체크포인트'), 'strategy title should be exact');
+check(!output.report.sections.some((section) => section.title === '사전 체크포인트'), 'legacy strategy title should not exist');
 check(output.report.disclaimer.includes('참고용'), 'disclaimer should include reference-only language');
-check(output.report.disclaimer.includes('매수·매도 추천이 아니고'), 'disclaimer should reject buy-sell recommendation');
-check(output.report.disclaimer.includes('투자 자문도 아닙니다'), 'disclaimer should reject investment advice');
-check(output.report.usageNotice.includes('3'), 'usage notice should include 3 daily uses');
+check(output.report.disclaimer.includes('매수·매도 추천이 아닙니다'), 'disclaimer should reject buy-sell recommendation');
+check(output.report.disclaimer.includes('투자 자문이 아닙니다'), 'disclaimer should reject investment advice');
+check(output.report.usageNotice.includes('오픈베타'), 'usage notice should mention open beta');
+check(output.report.usageNotice.includes('계정당'), 'usage notice should mention per-account limit');
+check(output.report.usageNotice.includes('하루 3회'), 'usage notice should mention daily 3-use limit');
 
 equal(output.safety.containsBuySellRecommendation, false, 'no buy-sell recommendation');
 equal(output.safety.containsTargetPrice, false, 'no target price');
@@ -77,29 +79,52 @@ equal(insufficient.status, 'blocked_data_insufficient', 'data insufficient statu
 
 const unsafeDraft = createUnsafeMkAgentDraftForSanitizerFixture();
 const unsafeFindings = detectForbiddenInvestmentLanguage(unsafeDraft);
-check(unsafeFindings.length >= 4, 'unsafe sanitizer fixture should detect forbidden language');
+equal(unsafeFindings.length, 8, 'unsafe sanitizer fixture should detect all forbidden investment language patterns');
 const sanitizerResult = sanitizeMkAgentReport(unsafeDraft);
 equal(sanitizerResult.ok, false, 'unsafe sanitizer fixture should fail sanitizer');
 equal(sanitizerResult.status, 'blocked_sanitizer_failure', 'unsafe sanitizer status should be exact');
 
 const serialized = JSON.stringify(output);
+
+// Unicode-escaped so this file's own raw text never contains the corrupted byte
+// sequences it checks for (the checker also scans this file for mojibake).
+const mojibakePatterns = [
+  '\uFFFD',
+  '\u003f\uba2f\uc520',
+  '\u003f\uafa8\uc642',
+  '\uf9e3\ub304\uac95',
+  '\u003f\u044a\uc524',
+  '\u003f\uc496\uc0a4',
+  '\u003f\ub348\ucfcb',
+  '\uf9cd\u317c\ub2d4',
+  '\uf9cf\u247a\ubab4',
+];
+for (const token of mojibakePatterns) {
+  check(!serialized.includes(token), `successful output must not contain mojibake pattern: ${token}`);
+}
+
+const forbiddenInvestmentLanguage = [
+  '매수하세요',
+  '매도하세요',
+  '지금 진입',
+  '목표가는',
+  '손절가는',
+  '강력 추천',
+  '상승이 확정',
+  '하락이 확정',
+];
+for (const token of forbiddenInvestmentLanguage) {
+  check(!serialized.includes(token), `successful output must not contain forbidden investment language: ${token}`);
+}
+
 const forbiddenSuccessfulOutput = [
-  '?ъ쟾 泥댄겕?ъ씤??',
-  '留ㅼ닔?섏꽭??',
-  '留ㅻ룄?섏꽭??',
-  '吏湲? 吏꾩엯',
-  '紐⑺몴媛??',
-  '?먯젅媛??',
-  '媛뺣젰 異붿쿇',
-  '?곸듅???뺤젙',
-  '?섎씫???뺤젙',
+  '사전 체크포인트',
   'appsecret',
   'access_token',
   'service_role',
   'OPENAI_API_KEY',
   'KIS_APP_SECRET',
 ];
-
 for (const token of forbiddenSuccessfulOutput) {
   check(!serialized.includes(token), `successful output must not contain ${token}`);
 }

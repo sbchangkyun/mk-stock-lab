@@ -14,7 +14,7 @@ export function createMkAgentFixtureInput(overrides = {}) {
   return createMkAgentInput({
     market: 'KR',
     symbol: '005930',
-    displayName: '?쇱꽦?꾩옄',
+    displayName: '삼성전자',
     asOfDate: '2024-06-29',
     selectedTab: 'mk_agent',
     uiMode: 'pc_card',
@@ -56,13 +56,13 @@ export function createMkAgentDataInsufficientFixtureInput() {
 
 export function createUnsafeMkAgentDraftForSanitizerFixture() {
   return {
-    oneLineSummary: '留ㅼ닔?섏꽭?? 紐⑺몴媛?? ?먯젅媛??',
-    summaryBullets: ['吏湲? 吏꾩엯', '媛뺣젰 異붿쿇'],
+    oneLineSummary: '매수하세요 목표가는 손절가는',
+    summaryBullets: ['지금 진입', '강력 추천'],
     sections: [
       {
         key: 'risk_check',
         title: 'unsafe test-only draft',
-        body: '留ㅻ룄?섏꽭?? ?곸듅???뺤젙 ?섎씫???뺤젙',
+        body: '매도하세요 상승이 확정 하락이 확정',
         bullets: [],
         severity: 'test',
         confidence: 'test',
