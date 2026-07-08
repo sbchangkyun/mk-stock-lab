@@ -27,6 +27,16 @@ const toleratedLaterPhaseFiles = new Set([
   'scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs',
   'scripts/check_phase_3fe_a_manual_qa_result_contract.mjs',
   'scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs',
+  'docs/planning/phase_3ff_a_sp_a_result_v0.1.md',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  'scripts/smoke_phase_3ff_a_sp_a_similar_pattern_agent_deterministic_fixture_engine.mjs',
+  'src/lib/server/chart-ai/similar-pattern-agent.mjs',
+  'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs',
+  'docs/planning/phase_3ff_a_mk_a_result_v0.1.md',
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs',
+  'src/lib/server/chart-ai/mk-agent.mjs',
+  'src/lib/server/chart-ai/mk-agent.fixture.mjs',
 ]);
 
 const forbiddenPaths = [
@@ -263,11 +273,17 @@ if (currentHead === BASELINE) {
 const committedForbiddenDiff = runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', ...forbiddenPaths]);
 const workingTreeForbiddenDiff = runGit(['diff', '--name-only', '--', ...forbiddenPaths]);
 const stagedForbiddenDiff = runGit(['diff', '--cached', '--name-only', '--', ...forbiddenPaths]);
+const toleratedRuntimeArtifacts = new Set([
+  'src/lib/server/chart-ai/similar-pattern-agent.mjs',
+  'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs',
+  'src/lib/server/chart-ai/mk-agent.mjs',
+  'src/lib/server/chart-ai/mk-agent.fixture.mjs',
+]);
 const forbiddenDiff = [...new Set([
   ...committedForbiddenDiff.split(/\r?\n/).filter(Boolean),
   ...workingTreeForbiddenDiff.split(/\r?\n/).filter(Boolean),
   ...stagedForbiddenDiff.split(/\r?\n/).filter(Boolean),
-])];
+])].filter((file) => !toleratedRuntimeArtifacts.has(file));
 assert(forbiddenDiff.length === 0, 'Forbidden runtime/source/dependency/env path drift must be empty.');
 
 const closeoutText = [result, checklist, changelog.split('## Phase 3FE-A-MANUAL-QA-RUN-RETRY - 2026-07-07')[0] ?? '', checker].join('\n');

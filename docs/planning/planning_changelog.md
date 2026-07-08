@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-MK-A - 2026-07-08
+
+### MK Agent Deterministic Report Contract, No LLM, No UI Runtime Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `38d660a`. Baseline: 38d660a.
+- **Purpose**: deterministic fixture-only MK Agent report contract.
+- **Implemented scope**: pure MK Agent report module, synthetic MK Agent fixture module, Similar Pattern Agent fixture handoff, smoke script, static checker, result document, and package scripts.
+- **Preserved policy**: no API route change, no UI implementation change, no provider/helper source change, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: SP-B output contract hardening or MK-B edge-case hardening/report card polish.
+
 ## Phase 3FF-A-SP-A - 2026-07-08
 
 ### Similar Pattern Agent Deterministic Fixture Engine, No Live KIS, No UI Runtime Activation (Implemented)

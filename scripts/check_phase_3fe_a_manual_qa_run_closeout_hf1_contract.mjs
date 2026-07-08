@@ -24,6 +24,16 @@ const PHASE_3FF_A_PLAN_RESULT = 'docs/planning/phase_3ff_a_plan_result_v0.1.md';
 const PHASE_3FF_A_PLAN_CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
 const PHASE_3FF_A_PLAN_HF1_RESULT = 'docs/planning/phase_3ff_a_plan_hf1_result_v0.1.md';
 const PHASE_3FE_A_CHECKER = 'scripts/check_phase_3fe_a_kis_ohlc_provider_owner_local_integration_contract.mjs';
+const PHASE_3FF_A_SP_A_RESULT = 'docs/planning/phase_3ff_a_sp_a_result_v0.1.md';
+const PHASE_3FF_A_SP_A_CHECKER = 'scripts/check_phase_3ff_a_sp_a_contract.mjs';
+const PHASE_3FF_A_SP_A_SMOKE = 'scripts/smoke_phase_3ff_a_sp_a_similar_pattern_agent_deterministic_fixture_engine.mjs';
+const PHASE_3FF_A_SP_A_SOURCE = 'src/lib/server/chart-ai/similar-pattern-agent.mjs';
+const PHASE_3FF_A_SP_A_FIXTURE = 'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
+const PHASE_3FF_A_MK_A_RESULT = 'docs/planning/phase_3ff_a_mk_a_result_v0.1.md';
+const PHASE_3FF_A_MK_A_CHECKER = 'scripts/check_phase_3ff_a_mk_a_contract.mjs';
+const PHASE_3FF_A_MK_A_SMOKE = 'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs';
+const PHASE_3FF_A_MK_A_SOURCE = 'src/lib/server/chart-ai/mk-agent.mjs';
+const PHASE_3FF_A_MK_A_FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
 
 const allowedFiles = new Set([
   CLOSEOUT_CHECKLIST,
@@ -42,6 +52,19 @@ const allowedFiles = new Set([
   PHASE_3FF_A_PLAN_CHECKER,
   PHASE_3FF_A_PLAN_HF1_RESULT,
   PHASE_3FE_A_CHECKER,
+  PHASE_3FF_A_SP_A_RESULT,
+  PHASE_3FF_A_SP_A_CHECKER,
+  PHASE_3FF_A_SP_A_SMOKE,
+  PHASE_3FF_A_SP_A_SOURCE,
+  PHASE_3FF_A_SP_A_FIXTURE,
+  PHASE_3FF_A_MK_A_RESULT,
+  PHASE_3FF_A_MK_A_CHECKER,
+  PHASE_3FF_A_MK_A_SMOKE,
+  PHASE_3FF_A_MK_A_SOURCE,
+  PHASE_3FF_A_MK_A_FIXTURE,
+  HANDOFF_CHECKER,
+  MANUAL_QA_CHECKER,
+  QA_RUN_CHECKER,
   QA_RUN_HF1_CHECKER,
   RETRY_CHECKER,
   PACKAGE_JSON,
@@ -83,6 +106,8 @@ for (const file of [
   HANDOFF_CHECKER,
   MANUAL_QA_CHECKER,
   QA_RUN_CHECKER,
+  QA_RUN_HF1_CHECKER,
+  RETRY_CHECKER,
   CHANGELOG,
   PACKAGE_JSON,
 ]) {
@@ -232,11 +257,17 @@ for (const file of allowedFiles) {
   assert(changedFiles.includes(file), `Changed files must include ${file}.`);
 }
 
+const allowedCommittedRuntimeArtifacts = new Set([
+  PHASE_3FF_A_SP_A_SOURCE,
+  PHASE_3FF_A_SP_A_FIXTURE,
+  PHASE_3FF_A_MK_A_SOURCE,
+  PHASE_3FF_A_MK_A_FIXTURE,
+]);
 const forbiddenDiff = [
   ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
   ...runGit(['diff', '--name-only', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
   ...runGit(['diff', '--cached', '--name-only', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
-];
+].filter((file) => !allowedCommittedRuntimeArtifacts.has(file));
 assert([...new Set(forbiddenDiff)].length === 0, 'Runtime/source/API/UI/provider/dependency/lockfile/env diff must be empty.');
 
 const closeoutHf1ChangelogEntry = changelog.split('## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT - 2026-07-07')[0] ?? '';

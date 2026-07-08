@@ -12,10 +12,21 @@ const PACKAGE_JSON = 'package.json';
 const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
 const EVIDENCE_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_hf1_contract.mjs';
 const CLOSEOUT_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs';
+const CLOSEOUT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_contract.mjs';
+const RETRY_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_retry_contract.mjs';
+const QA_RUN_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_hf1_contract.mjs';
+const QA_RUN_RESULT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs';
+const MANUAL_QA_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_result_contract.mjs';
+const HANDOFF_CHECKER = 'scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs';
 const PHASE_3FE_A_CHECKER = 'scripts/check_phase_3fe_a_kis_ohlc_provider_owner_local_integration_contract.mjs';
 const PHASE_3FF_A_PLAN_CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
+const MK_A_SOURCE = 'src/lib/server/chart-ai/mk-agent.mjs';
+const MK_A_FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
+const MK_A_SMOKE = 'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs';
+const MK_A_CHECKER = 'scripts/check_phase_3ff_a_mk_a_contract.mjs';
+const MK_A_RESULT = 'docs/planning/phase_3ff_a_mk_a_result_v0.1.md';
 
-const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, PHASE_3FE_A_CHECKER, PHASE_3FF_A_PLAN_CHECKER]);
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, PHASE_3FE_A_CHECKER, PHASE_3FF_A_PLAN_CHECKER, MK_A_SOURCE, MK_A_FIXTURE, MK_A_SMOKE, MK_A_CHECKER, MK_A_RESULT]);
 const forbiddenPaths = [
   'pages',
   'src/pages',
@@ -116,7 +127,7 @@ const allowedSourceDiff = [
   ...runGit(['diff', '--name-only', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
   ...runGit(['diff', '--cached', '--name-only', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
 ];
-const unexpectedSource = [...new Set(allowedSourceDiff)].filter((file) => ![SOURCE, FIXTURE].includes(file));
+const unexpectedSource = [...new Set(allowedSourceDiff)].filter((file) => ![SOURCE, FIXTURE, MK_A_SOURCE, MK_A_FIXTURE].includes(file));
 assert(unexpectedSource.length === 0, `Only allowed chart-ai source files may change. Unexpected: ${unexpectedSource.join(', ')}`);
 
 for (const token of [

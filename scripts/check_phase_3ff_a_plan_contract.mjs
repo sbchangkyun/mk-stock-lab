@@ -11,8 +11,24 @@ const CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
 const PACKAGE_JSON = 'package.json';
 const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
 const EVIDENCE_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_hf1_contract.mjs';
+const CLOSEOUT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_contract.mjs';
 const CLOSEOUT_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs';
+const RETRY_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_retry_contract.mjs';
+const QA_RUN_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_hf1_contract.mjs';
+const QA_RUN_RESULT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs';
+const MANUAL_QA_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_result_contract.mjs';
+const HANDOFF_CHECKER = 'scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs';
 const PHASE_3FE_A_CHECKER = 'scripts/check_phase_3fe_a_kis_ohlc_provider_owner_local_integration_contract.mjs';
+const PHASE_3FF_A_SP_A_RESULT = 'docs/planning/phase_3ff_a_sp_a_result_v0.1.md';
+const PHASE_3FF_A_SP_A_CHECKER = 'scripts/check_phase_3ff_a_sp_a_contract.mjs';
+const PHASE_3FF_A_SP_A_SMOKE = 'scripts/smoke_phase_3ff_a_sp_a_similar_pattern_agent_deterministic_fixture_engine.mjs';
+const PHASE_3FF_A_SP_A_SOURCE = 'src/lib/server/chart-ai/similar-pattern-agent.mjs';
+const PHASE_3FF_A_SP_A_FIXTURE = 'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
+const PHASE_3FF_A_MK_A_RESULT = 'docs/planning/phase_3ff_a_mk_a_result_v0.1.md';
+const PHASE_3FF_A_MK_A_CHECKER = 'scripts/check_phase_3ff_a_mk_a_contract.mjs';
+const PHASE_3FF_A_MK_A_SMOKE = 'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs';
+const PHASE_3FF_A_MK_A_SOURCE = 'src/lib/server/chart-ai/mk-agent.mjs';
+const PHASE_3FF_A_MK_A_FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
 const INCORRECT_STRATEGY_CHECKPOINT_LABEL = String.fromCodePoint(0xC0AC, 0xC804, 0x20, 0xCCB4, 0xD06C, 0xD3EC, 0xC778, 0xD2B8);
 const CORRECT_STRATEGY_CHECKPOINT_LABEL = '전략 체크포인트';
 
@@ -25,8 +41,24 @@ const allowedFiles = new Set([
   CHECKER,
   EVIDENCE_CHECKER,
   EVIDENCE_HF1_CHECKER,
+  CLOSEOUT_CHECKER,
   CLOSEOUT_HF1_CHECKER,
+  RETRY_CHECKER,
+  QA_RUN_HF1_CHECKER,
+  QA_RUN_RESULT_CHECKER,
+  MANUAL_QA_CHECKER,
+  HANDOFF_CHECKER,
   PHASE_3FE_A_CHECKER,
+  PHASE_3FF_A_SP_A_RESULT,
+  PHASE_3FF_A_SP_A_CHECKER,
+  PHASE_3FF_A_SP_A_SMOKE,
+  PHASE_3FF_A_SP_A_SOURCE,
+  PHASE_3FF_A_SP_A_FIXTURE,
+  PHASE_3FF_A_MK_A_RESULT,
+  PHASE_3FF_A_MK_A_CHECKER,
+  PHASE_3FF_A_MK_A_SMOKE,
+  PHASE_3FF_A_MK_A_SOURCE,
+  PHASE_3FF_A_MK_A_FIXTURE,
   PACKAGE_JSON,
 ]);
 
@@ -152,11 +184,17 @@ if (allChanged.includes(HF1_RESULT)) {
   assert(hf1.includes(`Correct owner-approved label: \`${CORRECT_STRATEGY_CHECKPOINT_LABEL}\``), 'HF1 result must record corrected owner-approved label.');
 }
 
+const allowedCommittedRuntimeArtifacts = new Set([
+  PHASE_3FF_A_SP_A_SOURCE,
+  PHASE_3FF_A_SP_A_FIXTURE,
+  PHASE_3FF_A_MK_A_SOURCE,
+  PHASE_3FF_A_MK_A_FIXTURE,
+]);
 const forbiddenDiff = [
   ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
   ...runGit(['diff', '--name-only', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
   ...runGit(['diff', '--cached', '--name-only', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
-];
+].filter((file) => !allowedCommittedRuntimeArtifacts.has(file));
 assert([...new Set(forbiddenDiff)].length === 0, 'Forbidden runtime/source/API/UI/provider/dependency/lockfile/env diff must be empty.');
 
 const phasePlanChangelogEntry = changelog.match(/## Phase 3FF-A-PLAN - 2026-07-08[\s\S]*?(?=## Phase 3FE-A-MANUAL-QA-RUN-CLOSEOUT-EVIDENCE-HF1 - 2026-07-08)/)?.[0] ?? '';
