@@ -32,6 +32,17 @@ const PHASE_3FF_A_MK_A_SOURCE = 'src/lib/server/chart-ai/mk-agent.mjs';
 const PHASE_3FF_A_MK_A_FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
 const INCORRECT_STRATEGY_CHECKPOINT_LABEL = String.fromCodePoint(0xC0AC, 0xC804, 0x20, 0xCCB4, 0xD06C, 0xD3EC, 0xC778, 0xD2B8);
 const CORRECT_STRATEGY_CHECKPOINT_LABEL = '전략 체크포인트';
+// Phase 3FF-A-UI-B manual QA deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once UI-B's QA docs/checker exist.
+const UI_B_CHECKLIST = 'docs/planning/phase_3ff_a_ui_b_manual_qa_checklist_v0.1.md';
+const UI_B_RESULT = 'docs/planning/phase_3ff_a_ui_b_manual_qa_result_v0.1.md';
+const UI_B_CHECKER = 'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs';
+// Phase 3FF-A-UI-A's own deliverables (the chart-ai.astro change itself was
+// already tolerated below, but its result doc/checker/smoke script were not
+// yet added to this scope check when they were created).
+const UI_A_RESULT = 'docs/planning/phase_3ff_a_ui_a_result_v0.1.md';
+const UI_A_CHECKER = 'scripts/check_phase_3ff_a_ui_a_contract.mjs';
+const UI_A_SMOKE = 'scripts/smoke_phase_3ff_a_ui_a_owner_local_deterministic_agent_ui_wiring.mjs';
 
 const allowedFiles = new Set([
   SP_DOC,
@@ -63,6 +74,12 @@ const allowedFiles = new Set([
   PHASE_3FF_A_MK_A_FIXTURE,
   PACKAGE_JSON,
   'src/pages/chart-ai.astro',
+  UI_B_CHECKLIST,
+  UI_B_RESULT,
+  UI_B_CHECKER,
+  UI_A_RESULT,
+  UI_A_CHECKER,
+  UI_A_SMOKE,
 ]);
 
 const forbiddenPaths = [

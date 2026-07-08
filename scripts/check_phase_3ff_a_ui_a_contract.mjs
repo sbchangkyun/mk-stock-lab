@@ -30,8 +30,17 @@ const SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_sp_a_contract.mjs',
 ];
 
+// Phase 3FF-A-UI-B manual QA deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once UI-B's QA docs/checker exist on top
+// of a32a52c. Tolerated here, not required.
+const UI_B_TOLERATED_FILES = [
+  'docs/planning/phase_3ff_a_ui_b_manual_qa_checklist_v0.1.md',
+  'docs/planning/phase_3ff_a_ui_b_manual_qa_result_v0.1.md',
+  'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
+];
+
 const CORE_DELIVERABLES = [PAGE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS, ...UI_B_TOLERATED_FILES]);
 
 // Exact required forbidden-diff path list (Phase 3FF-A-UI-A task spec).
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
@@ -265,10 +274,16 @@ for (const token of [
 }
 
 assert(changelog.includes('## Phase 3FF-A-UI-A - 2026-07-08'), 'changelog must include the Phase 3FF-A-UI-A entry header.');
-const firstEntryIndex = changelog.indexOf('\n## ');
+// Phase 3FF-A-UI-B (QA-only, no runtime/API/UI change) legitimately prepended
+// its own entry above this one. Tolerate exactly that one known header above
+// the UI-A entry; any other header there would mean the changelog was
+// reordered/corrupted by something other than the expected QA follow-up.
+const uiAEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-A - 2026-07-08');
+const headersAboveUiA = changelog.slice(0, uiAEntryIndex).match(/^## .+$/gm) ?? [];
 assert(
-  firstEntryIndex !== -1 && changelog.startsWith('## Phase 3FF-A-UI-A - 2026-07-08', firstEntryIndex + 1),
-  'changelog Phase 3FF-A-UI-A entry must be the first ## entry (at the very top, below the H1 title).',
+  headersAboveUiA.length === 0 ||
+    (headersAboveUiA.length === 1 && headersAboveUiA[0] === '## Phase 3FF-A-UI-B - 2026-07-08'),
+  'changelog Phase 3FF-A-UI-A entry must be at the top, tolerating only the Phase 3FF-A-UI-B QA entry directly above it.',
 );
 
 // --- Smoke script must pass ---

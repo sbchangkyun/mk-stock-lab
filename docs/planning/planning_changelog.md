@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-UI-B - 2026-07-08
+
+### Owner-local Manual QA for Deterministic Agent Panel, No Live KIS, No LLM, No Public Activation
+
+- **Status**: Executed.
+- **Baseline**: `a32a52c`.
+- **Purpose**: perform and document owner-local manual QA for the deterministic agent panel (Similar Pattern Agent + MK Agent) added to `/chart-ai` in Phase 3FF-A-UI-A.
+- **QA scope**: default `/chart-ai` safety; owner-local opt-in via `ownerLocalDeterministicAgents=1`; Similar Pattern Agent panel content; MK Agent panel content; PC and mobile visual check performed with real browser evidence; existing tab/regression check; negative/safety checks (mojibake, forbidden investment language, secrets, raw payloads).
+- **Preserved policy**: no API route change, no default UI behavior change, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Known out-of-scope issue**: MK Agent `oneLineSummary` fixture output contains a minor Korean grammar defect (`삼성전자은` should read `삼성전자는`); non-blocking, recorded for a future MK-A/MK-B follow-up rather than fixed in this QA-only phase.
+- **Recommended next step**: SP-B and/or MK-B functional hardening, now that owner-local UI wiring has passed manual QA.
+
 ## Phase 3FF-A-UI-A - 2026-07-08
 
 ### Chart AI Owner-local Deterministic Agent UI Wiring, No Live KIS, No LLM, No Public Activation (Implemented)

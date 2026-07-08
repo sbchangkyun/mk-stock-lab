@@ -21,8 +21,19 @@ const QA_RUN_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_hf1_contract
 const QA_RUN_RESULT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs';
 const MANUAL_QA_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_result_contract.mjs';
 const HANDOFF_CHECKER = 'scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs';
+// Phase 3FF-A-UI-B manual QA deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once UI-B's QA docs/checker exist.
+const UI_B_CHECKLIST = 'docs/planning/phase_3ff_a_ui_b_manual_qa_checklist_v0.1.md';
+const UI_B_RESULT = 'docs/planning/phase_3ff_a_ui_b_manual_qa_result_v0.1.md';
+const UI_B_CHECKER = 'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs';
+// Phase 3FF-A-UI-A's own deliverables (the chart-ai.astro change itself was
+// already tolerated below, but its result doc/checker/smoke script were not
+// yet added to this scope check when they were created).
+const UI_A_RESULT = 'docs/planning/phase_3ff_a_ui_a_result_v0.1.md';
+const UI_A_CHECKER = 'scripts/check_phase_3ff_a_ui_a_contract.mjs';
+const UI_A_SMOKE = 'scripts/smoke_phase_3ff_a_ui_a_owner_local_deterministic_agent_ui_wiring.mjs';
 
-const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, 'src/pages/chart-ai.astro']);
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, 'src/pages/chart-ai.astro', UI_B_CHECKLIST, UI_B_RESULT, UI_B_CHECKER, UI_A_RESULT, UI_A_CHECKER, UI_A_SMOKE]);
 const forbiddenPaths = [
   'pages',
   'src/pages/api',
