@@ -54,6 +54,14 @@ export function createMkAgentDataInsufficientFixtureInput() {
   });
 }
 
+export function createMkAgentKoreanParticleFixtureInput(displayName = '카카오') {
+  return createMkAgentFixtureInput({ displayName });
+}
+
+export function createMkAgentNonHangulDisplayNameFixtureInput() {
+  return createMkAgentFixtureInput({ displayName: '원익IPS' });
+}
+
 export function createUnsafeMkAgentDraftForSanitizerFixture() {
   return {
     oneLineSummary: '매수하세요 목표가는 손절가는',

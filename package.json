@@ -85,6 +85,8 @@
     "check:phase-3ff-a-ui-a": "node scripts/check_phase_3ff_a_ui_a_contract.mjs",
     "smoke:phase-3ff-a-ui-a": "node scripts/smoke_phase_3ff_a_ui_a_owner_local_deterministic_agent_ui_wiring.mjs",
     "check:phase-3ff-a-ui-b-manual-qa": "node scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs",
+    "smoke:phase-3ff-a-mk-b": "node scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs",
+    "check:phase-3ff-a-mk-b": "node scripts/check_phase_3ff_a_mk_b_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

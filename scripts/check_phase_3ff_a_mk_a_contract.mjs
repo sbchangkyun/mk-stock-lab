@@ -32,8 +32,14 @@ const UI_B_CHECKER = 'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs';
 const UI_A_RESULT = 'docs/planning/phase_3ff_a_ui_a_result_v0.1.md';
 const UI_A_CHECKER = 'scripts/check_phase_3ff_a_ui_a_contract.mjs';
 const UI_A_SMOKE = 'scripts/smoke_phase_3ff_a_ui_a_owner_local_deterministic_agent_ui_wiring.mjs';
+// Phase 3FF-A-MK-B's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once MK-B's hardening pass exists
+// (MK-B further edits this checker's own SOURCE/FIXTURE, already allowed).
+const MK_B_SMOKE = 'scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs';
+const MK_B_CHECKER = 'scripts/check_phase_3ff_a_mk_b_contract.mjs';
+const MK_B_RESULT = 'docs/planning/phase_3ff_a_mk_b_result_v0.1.md';
 
-const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, 'src/pages/chart-ai.astro', UI_B_CHECKLIST, UI_B_RESULT, UI_B_CHECKER, UI_A_RESULT, UI_A_CHECKER, UI_A_SMOKE]);
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, 'src/pages/chart-ai.astro', UI_B_CHECKLIST, UI_B_RESULT, UI_B_CHECKER, UI_A_RESULT, UI_A_CHECKER, UI_A_SMOKE, MK_B_SMOKE, MK_B_CHECKER, MK_B_RESULT]);
 const forbiddenPaths = [
   'pages',
   'src/pages/api',

@@ -17,8 +17,20 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_plan_contract.mjs',
 ];
 
+// Phase 3FF-A-MK-B legitimately hardens the MK Agent source/fixture under
+// src/lib/server/chart-ai and adds its own smoke/checker/result deliverables.
+// Tolerated here, not required, so this checker's scope/forbidden-diff checks
+// do not fail once MK-B's contract hardening exists on top of a32a52c.
+const MK_B_TOLERATED_FILES = [
+  'src/lib/server/chart-ai/mk-agent.mjs',
+  'src/lib/server/chart-ai/mk-agent.fixture.mjs',
+  'scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs',
+  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
+  'docs/planning/phase_3ff_a_mk_b_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -89,10 +101,15 @@ for (const token of REQUIRED_TOKENS) {
 
 // --- 4. Changelog must include the Phase 3FF-A-UI-B entry, at the top ---
 assert(changelog.includes('## Phase 3FF-A-UI-B - 2026-07-08'), 'changelog must include the Phase 3FF-A-UI-B entry header.');
-const firstEntryIndex = changelog.indexOf('\n## ');
+// Later QA/hardening-only phases (no runtime/API/UI change) legitimately
+// prepend their own entries above this one. Tolerate exactly this known
+// allowlist of headers above the UI-B entry, in any order/count.
+const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-MK-B - 2026-07-08'];
+const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
+const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];
 assert(
-  firstEntryIndex !== -1 && changelog.startsWith('## Phase 3FF-A-UI-B - 2026-07-08', firstEntryIndex + 1),
-  'changelog Phase 3FF-A-UI-B entry must be the first ## entry (at the very top, below the H1 title).',
+  headersAboveUiB.every((header) => TOLERATED_HEADERS_ABOVE_UI_B.includes(header)),
+  'changelog Phase 3FF-A-UI-B entry must be at the top, tolerating only a known allowlist of later-phase entries above it.',
 );
 
 // --- 5. Only allowed files may have changed since baseline ---
@@ -117,8 +134,12 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 }
 
 // --- 6. Forbidden paths must be unchanged, including chart-ai.astro itself ---
-const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
-assert(forbiddenDiff.length === 0, `Forbidden diff must be empty. Found: ${forbiddenDiff.join(', ')}`);
+// (src/lib/server/chart-ai stays forbidden for everything except the two
+// exact MK-B source/fixture files explicitly tolerated above.)
+const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).filter(
+  (file) => !MK_B_TOLERATED_FILES.includes(file),
+);
+assert(forbiddenDiff.length === 0, `Forbidden diff must be empty except explicitly tolerated later-phase files. Found: ${forbiddenDiff.join(', ')}`);
 
 // --- 7. No mojibake pattern in the new docs/checker ---
 // Fragments are built from numeric code points via String.fromCharCode so

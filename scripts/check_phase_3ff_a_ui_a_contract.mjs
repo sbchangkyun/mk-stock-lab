@@ -39,8 +39,20 @@ const UI_B_TOLERATED_FILES = [
   'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
 ];
 
+// Phase 3FF-A-MK-B legitimately hardens the MK Agent source/fixture under
+// src/lib/server/chart-ai and adds its own smoke/checker/result deliverables.
+// Tolerated here, not required, so this checker's git-diff scope checks do
+// not fail once MK-B's contract hardening exists on top of 3edc84b.
+const MK_B_TOLERATED_FILES = [
+  MK_A_SOURCE,
+  MK_A_FIXTURE,
+  'scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs',
+  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
+  'docs/planning/phase_3ff_a_mk_b_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [PAGE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS, ...UI_B_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS, ...UI_B_TOLERATED_FILES, ...MK_B_TOLERATED_FILES]);
 
 // Exact required forbidden-diff path list (Phase 3FF-A-UI-A task spec).
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
@@ -251,12 +263,22 @@ assert(
 );
 
 const allowedSourceDiff = gitLines(['diff', '--name-only', BASELINE, '--', 'src/lib/server/chart-ai']);
-assert(allowedSourceDiff.length === 0, `Allowed source diff under src/lib/server/chart-ai must be empty. Found: ${allowedSourceDiff.join(', ')}`);
+const unexpectedSourceDiff = allowedSourceDiff.filter((file) => !allowedFiles.has(file));
+assert(
+  unexpectedSourceDiff.length === 0,
+  `Allowed source diff under src/lib/server/chart-ai must be empty except explicitly tolerated later-phase files. Found: ${unexpectedSourceDiff.join(', ')}`,
+);
 
-// Defense in depth: no file anywhere under src/lib/server may change (covers
-// KIS provider modules and the SP-A/MK-A engine/fixture source in one check).
+// Defense in depth: no file anywhere under src/lib/server may change beyond
+// explicitly tolerated later-phase files (still covers KIS provider modules
+// and the SP-A engine/fixture source directly, since only MK-B's exact
+// mk-agent.mjs/mk-agent.fixture.mjs pair is tolerated above).
 const serverLibDiff = gitLines(['diff', '--name-only', BASELINE, '--', 'src/lib/server']);
-assert(serverLibDiff.length === 0, `src/lib/server must not change (KIS provider modules, SP-A/MK-A source). Found: ${serverLibDiff.join(', ')}`);
+const unexpectedServerLibDiff = serverLibDiff.filter((file) => !allowedFiles.has(file));
+assert(
+  unexpectedServerLibDiff.length === 0,
+  `src/lib/server must not change beyond explicitly tolerated later-phase files (KIS provider modules, SP-A source stay off-limits). Found: ${unexpectedServerLibDiff.join(', ')}`,
+);
 
 // --- Result doc and changelog required content ---
 for (const token of [
@@ -274,16 +296,17 @@ for (const token of [
 }
 
 assert(changelog.includes('## Phase 3FF-A-UI-A - 2026-07-08'), 'changelog must include the Phase 3FF-A-UI-A entry header.');
-// Phase 3FF-A-UI-B (QA-only, no runtime/API/UI change) legitimately prepended
-// its own entry above this one. Tolerate exactly that one known header above
-// the UI-A entry; any other header there would mean the changelog was
-// reordered/corrupted by something other than the expected QA follow-up.
+// Later QA/hardening-only phases (no runtime/API/UI change) legitimately
+// prepend their own entries above this one. Tolerate exactly this known
+// allowlist of headers above the UI-A entry, in any order/count; any other
+// header there would mean the changelog was reordered/corrupted by something
+// other than an expected follow-up phase.
+const TOLERATED_HEADERS_ABOVE_UI_A = ['## Phase 3FF-A-UI-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08'];
 const uiAEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-A - 2026-07-08');
 const headersAboveUiA = changelog.slice(0, uiAEntryIndex).match(/^## .+$/gm) ?? [];
 assert(
-  headersAboveUiA.length === 0 ||
-    (headersAboveUiA.length === 1 && headersAboveUiA[0] === '## Phase 3FF-A-UI-B - 2026-07-08'),
-  'changelog Phase 3FF-A-UI-A entry must be at the top, tolerating only the Phase 3FF-A-UI-B QA entry directly above it.',
+  headersAboveUiA.every((header) => TOLERATED_HEADERS_ABOVE_UI_A.includes(header)),
+  'changelog Phase 3FF-A-UI-A entry must be at the top, tolerating only a known allowlist of later-phase entries above it.',
 );
 
 // --- Smoke script must pass ---

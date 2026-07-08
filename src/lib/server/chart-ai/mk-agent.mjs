@@ -55,6 +55,31 @@ const cloneSafety = () => ({ ...SUCCESS_SAFETY });
 const pct = (value) => (Number.isFinite(value) ? `${value.toFixed(2)}%` : '확인 제한');
 const textValue = (value, fallback = '') => (typeof value === 'string' && value.trim() ? value.trim() : fallback);
 
+const HANGUL_SYLLABLE_BASE = 0xac00;
+const HANGUL_SYLLABLE_LAST = 0xd7a3;
+const HANGUL_FINAL_CONSONANT_COUNT = 28;
+
+export function hasKoreanFinalConsonant(word) {
+  if (typeof word !== 'string') return false;
+  const trimmed = word.trim();
+  if (trimmed.length === 0) return false;
+  const lastChar = trimmed.slice(-1);
+  const codePoint = lastChar.codePointAt(0);
+  if (typeof codePoint !== 'number' || codePoint < HANGUL_SYLLABLE_BASE || codePoint > HANGUL_SYLLABLE_LAST) {
+    return false;
+  }
+  return (codePoint - HANGUL_SYLLABLE_BASE) % HANGUL_FINAL_CONSONANT_COUNT !== 0;
+}
+
+export function chooseKoreanTopicParticle(word) {
+  return hasKoreanFinalConsonant(word) ? '은' : '는';
+}
+
+export function withKoreanTopicParticle(word) {
+  const safeWord = typeof word === 'string' ? word : '';
+  return `${safeWord}${chooseKoreanTopicParticle(safeWord)}`;
+}
+
 export function createMkAgentInput(overrides = {}) {
   return {
     market: 'KR',
@@ -255,7 +280,7 @@ export function createDeterministicMkAgentReport(input) {
   ];
 
   return {
-    oneLineSummary: `${AGENT_NAME} 기준으로 ${displayName}은 과거 ${similarSummary.matchCount}개 유사 흐름과 비교 가능한 상태예요. 다만 과거 유사도는 미래를 예측하지 않아요.`,
+    oneLineSummary: `${AGENT_NAME} 기준으로 ${withKoreanTopicParticle(displayName)} 과거 ${similarSummary.matchCount}개 유사 흐름과 비교 가능한 상태예요. 다만 과거 유사도는 미래를 예측하지 않아요.`,
     summaryBullets: [
       `${AGENT_NAME}는 Similar Pattern Agent의 sanitized output만 사용했어요.`,
       `상위 유사 라벨은 ${similarSummary.topScoreLabel}입니다.`,

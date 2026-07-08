@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-MK-B - 2026-07-08
+
+### MK Agent Output Contract Hardening and Korean Grammar Fix, No LLM, No Live KIS, No Public Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `f25a7fc`.
+- **Purpose**: harden the deterministic fixture-only MK Agent output contract and fix a Korean topic-particle grammar issue in the report summary.
+- **Fixed issue**: `삼성전자은` → `삼성전자는`, caused by a hardcoded Korean topic particle in `oneLineSummary` that ignored the display name's final-consonant status.
+- **Implemented scope**: deterministic Korean topic-particle helper (`hasKoreanFinalConsonant`, `chooseKoreanTopicParticle`, `withKoreanTopicParticle`) computed via Hangul syllable-block Unicode arithmetic with safe non-Hangul fallback; output contract hardening for required fields, section keys, and safety flags; optional fixture helpers for particle-grammar and non-Hangul display names; new smoke script and static checker; result document; package scripts.
+- **Preserved policy**: no UI file change, no API route change, no live KIS, no LLM, no MK AI route activation, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: Phase 3FF-A-SP-B output contract hardening, or Phase 3FF-A-UI-C / manual QA hotfix if browser-level visual confirmation of the Korean grammar fix is desired.
+
 ## Phase 3FF-A-UI-B - 2026-07-08
 
 ### Owner-local Manual QA for Deterministic Agent Panel, No Live KIS, No LLM, No Public Activation
