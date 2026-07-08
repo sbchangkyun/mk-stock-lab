@@ -30,6 +30,7 @@ const PHASE_3FF_A_SP_A_SMOKE = 'scripts/smoke_phase_3ff_a_sp_a_similar_pattern_a
 const PHASE_3FF_A_SP_A_SOURCE = 'src/lib/server/chart-ai/similar-pattern-agent.mjs';
 const PHASE_3FF_A_SP_A_FIXTURE = 'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
 const PHASE_3FF_A_MK_A_RESULT = 'docs/planning/phase_3ff_a_mk_a_result_v0.1.md';
+const PHASE_3FF_A_MK_A_HF1_RESULT = 'docs/planning/phase_3ff_a_mk_a_hf1_result_v0.1.md';
 const PHASE_3FF_A_MK_A_CHECKER = 'scripts/check_phase_3ff_a_mk_a_contract.mjs';
 const PHASE_3FF_A_MK_A_SMOKE = 'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs';
 const PHASE_3FF_A_MK_A_SOURCE = 'src/lib/server/chart-ai/mk-agent.mjs';
@@ -58,6 +59,7 @@ const allowedFiles = new Set([
   PHASE_3FF_A_SP_A_SOURCE,
   PHASE_3FF_A_SP_A_FIXTURE,
   PHASE_3FF_A_MK_A_RESULT,
+  PHASE_3FF_A_MK_A_HF1_RESULT,
   PHASE_3FF_A_MK_A_CHECKER,
   PHASE_3FF_A_MK_A_SMOKE,
   PHASE_3FF_A_MK_A_SOURCE,
@@ -68,6 +70,7 @@ const allowedFiles = new Set([
   QA_RUN_HF1_CHECKER,
   RETRY_CHECKER,
   PACKAGE_JSON,
+  'src/pages/chart-ai.astro',
 ]);
 
 const forbiddenPaths = [
@@ -262,6 +265,7 @@ const allowedCommittedRuntimeArtifacts = new Set([
   PHASE_3FF_A_SP_A_FIXTURE,
   PHASE_3FF_A_MK_A_SOURCE,
   PHASE_3FF_A_MK_A_FIXTURE,
+  'src/pages/chart-ai.astro',
 ]);
 const forbiddenDiff = [
   ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),

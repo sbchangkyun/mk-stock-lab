@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-UI-A - 2026-07-08
+
+### Chart AI Owner-local Deterministic Agent UI Wiring, No Live KIS, No LLM, No Public Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `3edc84b`.
+- **Purpose**: wire the deterministic fixture-only Similar Pattern Agent and MK Agent outputs into the Chart AI page as an owner-local-only UI path.
+- **Implemented scope**: new hidden-by-default owner-local panel in `src/pages/chart-ai.astro` rendering `runSimilarPatternAgent`/`runMkAgent` fixture output; smoke script; static checker; result document; package scripts; narrow validation-chain checker compatibility updates for the `chart-ai.astro` diff.
+- **Owner-local activation rule**: visible only when the existing mocked-access gate passes, `isLocalOwnerHostname()` is true, and the URL carries `ownerLocalDeterministicAgents=1`. Not a public or beta feature. Default `/chart-ai` behavior is unchanged for all other visitors.
+- **Preserved policy**: no API route change, no KIS provider module change, no Similar Pattern/MK Agent engine or fixture source change, no components/src/data/supabase change, no live KIS, no LLM, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: Phase 3FF-A-UI-B owner-local manual QA of the deterministic agent panel, or SP-B/MK-B output contract hardening.
+
 ## Phase 3FF-A-MK-A-HF1 - 2026-07-08
 
 ### MK Agent Korean Copy Encoding Correction, No Runtime Change (Implemented)

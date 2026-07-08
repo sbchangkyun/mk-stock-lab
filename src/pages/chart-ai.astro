@@ -4,6 +4,10 @@ import { getClientSafeDomesticSymbolRecords } from '../lib/symbol-master/domesti
 import { scanSimilarity } from '../lib/chartSimilarity';
 import type { SimilarityMatch } from '../lib/chartSimilarity';
 import { buildSyntheticOhlcvFixture } from '../data/chartSimilarity/syntheticOhlcvFixture';
+import { runSimilarPatternAgent } from '../lib/server/chart-ai/similar-pattern-agent.mjs';
+import { createSimilarPatternFixtureInput } from '../lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
+import { runMkAgent } from '../lib/server/chart-ai/mk-agent.mjs';
+import { createMkAgentFixtureInput } from '../lib/server/chart-ai/mk-agent.fixture.mjs';
 
 const clientSafeDomesticSymbols = getClientSafeDomesticSymbolRecords();
 const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols)
@@ -70,6 +74,58 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
   ...series,
   d: buildOverlayPath(series.path, overlayMin, overlayMax),
 }));
+
+// Phase 3FF-A-UI-A: owner-local deterministic agent panel data. Fixture-only, no live KIS,
+// no LLM. Computed once server-side at render time; never fetched client-side. Visibility is
+// gated purely client-side (see setup() below) behind an explicit localhost + query-param
+// opt-in, mirroring the ownerLocalMocked / ownerLocalAuthUsageBridge panels above.
+const ownerLocalDeterministicSimilarPatternResult = runSimilarPatternAgent(createSimilarPatternFixtureInput());
+const ownerLocalDeterministicMkAgentResult = runMkAgent(createMkAgentFixtureInput());
+
+const formatDeterministicReturnPct = (value: number | null | undefined): string =>
+  typeof value === 'number' && Number.isFinite(value) ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%` : '데이터 부족';
+
+const OWNER_LOCAL_DETERMINISTIC_SAFETY_NOTICES = [
+  '이 결과는 fixture 기반 owner-local 검증용입니다.',
+  '실제 KIS 데이터가 아닙니다.',
+  'LLM을 호출하지 않습니다.',
+  '투자 참고용이며 매수·매도 추천이 아닙니다.',
+];
+
+const spDeterministicOk = ownerLocalDeterministicSimilarPatternResult.ok === true;
+const spDeterministicSummary = spDeterministicOk ? ownerLocalDeterministicSimilarPatternResult.summary : null;
+const spDeterministicTopMatch = spDeterministicOk ? (ownerLocalDeterministicSimilarPatternResult.matches[0] ?? null) : null;
+const spDeterministicOutcomes = spDeterministicOk ? ownerLocalDeterministicSimilarPatternResult.aggregateOutcomes : null;
+
+const ownerLocalDeterministicSimilarPatternView = {
+  ok: spDeterministicOk,
+  market: spDeterministicSummary?.market ?? '-',
+  symbol: spDeterministicSummary?.symbol ?? '-',
+  baseWindow: spDeterministicSummary?.baseWindow ?? 0,
+  topK: spDeterministicSummary?.topK ?? 0,
+  matchCount: spDeterministicSummary?.matchCount ?? 0,
+  topMatchScore: spDeterministicTopMatch ? formatSimilarityScore(spDeterministicTopMatch.similarityScore) : '-',
+  topMatchLabel: spDeterministicTopMatch?.scoreLabel ?? '-',
+  averageReturnD5: spDeterministicOutcomes ? formatDeterministicReturnPct(spDeterministicOutcomes.averageForwardReturnD5Pct) : '데이터 부족',
+  averageReturnD20: spDeterministicOutcomes ? formatDeterministicReturnPct(spDeterministicOutcomes.averageForwardReturnD20Pct) : '데이터 부족',
+  positiveCountD5: spDeterministicOutcomes?.positiveCountD5 ?? 0,
+  negativeCountD5: spDeterministicOutcomes?.negativeCountD5 ?? 0,
+  positiveCountD20: spDeterministicOutcomes?.positiveCountD20 ?? 0,
+  negativeCountD20: spDeterministicOutcomes?.negativeCountD20 ?? 0,
+};
+
+const mkDeterministicOk = ownerLocalDeterministicMkAgentResult.ok === true;
+const mkDeterministicReport = mkDeterministicOk ? ownerLocalDeterministicMkAgentResult.report : null;
+
+const ownerLocalDeterministicMkAgentView = {
+  ok: mkDeterministicOk,
+  agentName: mkDeterministicOk ? ownerLocalDeterministicMkAgentResult.agentName : 'MK 에이전트',
+  oneLineSummary: mkDeterministicReport?.oneLineSummary ?? '',
+  summaryBullets: mkDeterministicReport?.summaryBullets ?? [],
+  sections: mkDeterministicReport?.sections ?? [],
+  usageNotice: mkDeterministicReport?.usageNotice ?? '오픈베타에서는 계정당 하루 3회까지 사용할 수 있어요.',
+  disclaimer: mkDeterministicReport?.disclaimer ?? '이 분석은 참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다. 최종 투자 판단의 책임은 이용자 본인에게 있습니다.',
+};
 ---
 
 <Layout title="종목 차트 | MK Stock Lab" activePath="/chart-ai">
@@ -363,6 +419,106 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
           hidden
           aria-live="polite"
         ></div>
+      </section>
+
+      <!--
+        Phase 3FF-A-UI-A: local-only, explicit opt-in owner-local deterministic agent UI panel.
+        Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
+        the URL carries `?ownerLocalDeterministicAgents=1`. Renders only pre-computed, sanitized
+        fixture output from the deterministic Similar Pattern Agent (Phase 3FF-A-SP-A) and MK
+        Agent (Phase 3FF-A-MK-A) engines. No fetch, no API route, no live KIS, no LLM call, no
+        cookies/headers/session/env parsing. Not real auth, not production authorization, and
+        not investment advice.
+      -->
+      <section
+        id="chartAiOwnerLocalDeterministicAgentsPanel"
+        class="chart-owner-local-deterministic-agents-panel"
+        aria-labelledby="chart-owner-local-deterministic-agents-heading"
+        hidden
+      >
+        <div class="chart-owner-local-deterministic-agents-heading">
+          <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
+          <h3 id="chart-owner-local-deterministic-agents-heading">Owner-local 결정형 에이전트</h3>
+          <p class="chart-owner-local-deterministic-agents-guide">
+            Fixture only · No live KIS · No LLM · No public activation
+          </p>
+          <ul class="chart-owner-local-deterministic-agents-safety-list">
+            {OWNER_LOCAL_DETERMINISTIC_SAFETY_NOTICES.map((notice) => (
+              <li>{notice}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="chart-owner-local-deterministic-agents-block">
+          <h4>Similar Pattern Agent</h4>
+          {ownerLocalDeterministicSimilarPatternView.ok ? (
+            <div class="chart-owner-local-deterministic-agents-body">
+              <dl class="chart-owner-local-deterministic-agents-dl">
+                <dt>시장</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.market}</dd>
+                <dt>종목코드</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.symbol}</dd>
+                <dt>기준 구간(baseWindow)</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.baseWindow}일</dd>
+                <dt>Top-K</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.topK}</dd>
+                <dt>매칭 개수</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.matchCount}건</dd>
+                <dt>최고 유사 구간 점수</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.topMatchScore}</dd>
+                <dt>최고 유사 구간 라벨</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.topMatchLabel}</dd>
+                <dt>D5 평균 수익률</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.averageReturnD5} (긍정 {ownerLocalDeterministicSimilarPatternView.positiveCountD5} · 부정 {ownerLocalDeterministicSimilarPatternView.negativeCountD5})</dd>
+                <dt>D20 평균 수익률</dt>
+                <dd>{ownerLocalDeterministicSimilarPatternView.averageReturnD20} (긍정 {ownerLocalDeterministicSimilarPatternView.positiveCountD20} · 부정 {ownerLocalDeterministicSimilarPatternView.negativeCountD20})</dd>
+              </dl>
+              <p class="chart-owner-local-deterministic-agents-disclaimer">
+                과거 유사 흐름 기반 참고 정보이며, 미래 수익률을 보장하지 않습니다. 투자 판단의 책임은 본인에게 있습니다.
+              </p>
+            </div>
+          ) : (
+            <p class="chart-owner-local-deterministic-agents-msg">
+              Similar Pattern Agent 결과를 사용할 수 없습니다. (fixture 기반 owner-local 검증용, 실제 KIS 데이터 아님)
+            </p>
+          )}
+        </div>
+
+        <div class="chart-owner-local-deterministic-agents-block">
+          <h4>{ownerLocalDeterministicMkAgentView.agentName}</h4>
+          <p class="chart-owner-local-deterministic-agents-guide">
+            구간·수급, 전략 체크포인트, 가격 패턴, 기술적 지표, 지지·저항, 유사 과거 흐름, 리스크 체크 순으로 구성된 결정형 리포트입니다.
+          </p>
+          {ownerLocalDeterministicMkAgentView.ok ? (
+            <div class="chart-owner-local-deterministic-agents-body">
+              <p class="chart-owner-local-deterministic-agents-summary">{ownerLocalDeterministicMkAgentView.oneLineSummary}</p>
+              <ul class="chart-owner-local-deterministic-agents-bullets">
+                {ownerLocalDeterministicMkAgentView.summaryBullets.map((bullet) => (
+                  <li>{bullet}</li>
+                ))}
+              </ul>
+              <div class="chart-owner-local-deterministic-agents-sections">
+                {ownerLocalDeterministicMkAgentView.sections.map((section) => (
+                  <div class="chart-owner-local-deterministic-agents-section">
+                    <h5>{section.title}</h5>
+                    <p>{section.body}</p>
+                    <ul>
+                      {section.bullets.map((bullet) => (
+                        <li>{bullet}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <p class="chart-owner-local-deterministic-agents-usage-notice">{ownerLocalDeterministicMkAgentView.usageNotice}</p>
+              <p class="chart-owner-local-deterministic-agents-disclaimer">{ownerLocalDeterministicMkAgentView.disclaimer}</p>
+            </div>
+          ) : (
+            <p class="chart-owner-local-deterministic-agents-msg">
+              MK 에이전트 결과를 사용할 수 없습니다. (fixture 기반 owner-local 검증용, 실제 KIS 데이터 아님)
+            </p>
+          )}
+        </div>
       </section>
 
       <div class="chart-analysis-book">
@@ -807,6 +963,22 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
       if (ownerLocalSimilarPatternRouteNotice) {
         ownerLocalSimilarPatternRouteNotice.hidden = !ownerLocalSimilarPatternRouteEnabled;
       }
+
+      // Owner-local deterministic agents panel (Phase 3FF-A-UI-A). Local-only, explicit
+      // opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the URL carries
+      // `?ownerLocalDeterministicAgents=1`. The panel content itself is fully pre-rendered
+      // server-side from deterministic fixture output above — this only toggles visibility.
+      // No fetch, no API call, ever, for this panel.
+      const ownerLocalDeterministicAgentsOptIn = chartAiQuery.get('ownerLocalDeterministicAgents') === '1';
+      const ownerLocalDeterministicAgentsEnabled =
+        mockedChartAiAccess.capabilities.canAccessChartAi &&
+        isLocalOwnerHostname() &&
+        ownerLocalDeterministicAgentsOptIn;
+      const ownerLocalDeterministicAgentsPanel = document.getElementById('chartAiOwnerLocalDeterministicAgentsPanel');
+      if (ownerLocalDeterministicAgentsPanel) {
+        ownerLocalDeterministicAgentsPanel.hidden = !ownerLocalDeterministicAgentsEnabled;
+      }
+
       authGateCta?.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('mk:open-auth'));
       });
@@ -3496,6 +3668,133 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
 
     .chart-owner-local-auth-usage-bridge-result[aria-busy='true'] {
       opacity: 0.85;
+    }
+
+    .chart-owner-local-deterministic-agents-panel {
+      margin-bottom: 1rem;
+      padding: 0.85rem 1rem;
+      border: 1px dashed color-mix(in srgb, var(--primary) 40%, var(--border));
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+    }
+
+    .chart-owner-local-deterministic-agents-heading h3 {
+      margin: 0.15rem 0 0.35rem;
+      font-size: 0.95rem;
+    }
+
+    .chart-owner-local-deterministic-agents-guide {
+      margin: 0 0 0.65rem;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .chart-owner-local-deterministic-agents-safety-list {
+      margin: 0 0 0.75rem;
+      padding-left: 1.1rem;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      line-height: 1.6;
+    }
+
+    .chart-owner-local-deterministic-agents-block {
+      margin-top: 0.9rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+    }
+
+    .chart-owner-local-deterministic-agents-block h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.88rem;
+    }
+
+    .chart-owner-local-deterministic-agents-dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.28rem 0.75rem;
+      margin: 0 0 0.6rem;
+    }
+
+    .chart-owner-local-deterministic-agents-dl dt {
+      color: var(--text-muted);
+      font-size: 0.74rem;
+    }
+
+    .chart-owner-local-deterministic-agents-dl dd {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 750;
+      text-align: right;
+    }
+
+    .chart-owner-local-deterministic-agents-summary {
+      margin: 0 0 0.5rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .chart-owner-local-deterministic-agents-bullets {
+      margin: 0 0 0.65rem;
+      padding-left: 1.1rem;
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+
+    .chart-owner-local-deterministic-agents-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .chart-owner-local-deterministic-agents-section {
+      padding: 0.6rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .chart-owner-local-deterministic-agents-section h5 {
+      margin: 0 0 0.3rem;
+      font-size: 0.8rem;
+    }
+
+    .chart-owner-local-deterministic-agents-section p {
+      margin: 0 0 0.35rem;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .chart-owner-local-deterministic-agents-section ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      line-height: 1.6;
+    }
+
+    .chart-owner-local-deterministic-agents-usage-notice {
+      margin: 0 0 0.4rem;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      line-height: 1.5;
+    }
+
+    .chart-owner-local-deterministic-agents-disclaimer {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    .chart-owner-local-deterministic-agents-msg {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
     }
 
     .chart-company-placeholder small {

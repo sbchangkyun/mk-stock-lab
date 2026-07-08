@@ -22,10 +22,10 @@ const QA_RUN_RESULT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_result_co
 const MANUAL_QA_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_result_contract.mjs';
 const HANDOFF_CHECKER = 'scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs';
 
-const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER]);
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, 'src/pages/chart-ai.astro']);
 const forbiddenPaths = [
   'pages',
-  'src/pages',
+  'src/pages/api',
   'components',
   'supabase',
   'src/data',

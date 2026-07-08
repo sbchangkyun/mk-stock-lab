@@ -25,11 +25,12 @@ const MK_A_FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
 const MK_A_SMOKE = 'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs';
 const MK_A_CHECKER = 'scripts/check_phase_3ff_a_mk_a_contract.mjs';
 const MK_A_RESULT = 'docs/planning/phase_3ff_a_mk_a_result_v0.1.md';
+const MK_A_HF1_RESULT = 'docs/planning/phase_3ff_a_mk_a_hf1_result_v0.1.md';
 
-const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, PHASE_3FE_A_CHECKER, PHASE_3FF_A_PLAN_CHECKER, MK_A_SOURCE, MK_A_FIXTURE, MK_A_SMOKE, MK_A_CHECKER, MK_A_RESULT]);
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, PHASE_3FE_A_CHECKER, PHASE_3FF_A_PLAN_CHECKER, MK_A_SOURCE, MK_A_FIXTURE, MK_A_SMOKE, MK_A_CHECKER, MK_A_RESULT, MK_A_HF1_RESULT, 'src/pages/chart-ai.astro']);
 const forbiddenPaths = [
   'pages',
-  'src/pages',
+  'src/pages/api',
   'components',
   'supabase',
   'src/data',

@@ -33,6 +33,7 @@ const toleratedRuntimeArtifacts = new Set([
   'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs',
   'src/lib/server/chart-ai/mk-agent.mjs',
   'src/lib/server/chart-ai/mk-agent.fixture.mjs',
+  'src/pages/chart-ai.astro',
 ]);
 
 let assertions = 0;
