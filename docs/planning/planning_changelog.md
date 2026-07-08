@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-UI-C - 2026-07-09
+
+### Owner-local Browser QA for SP-B/MK-C Improved Deterministic Panel Output, No Live KIS, No LLM, No Public Activation (Executed)
+
+- **Status**: Executed.
+- **Baseline**: `86050be`.
+- **Purpose**: perform owner-local browser QA for the deterministic Chart AI panel after Phase 3FF-A-SP-B and Phase 3FF-A-MK-C improvements, verifying that the owner-local deterministic panel correctly displays the improved MK Agent output that now consumes the SP-B Similar Pattern contract fields.
+- **QA scope**: default `/chart-ai` (unchanged/hidden panel); `ownerLocalDeterministicAgents=1` opt-in (panel + safety copy visible); MK-C improved MK Agent output (신뢰도, D5/D20 평균/중앙값, 패턴 품질, match reason tags, historical limitation copy, `삼성전자는` grammar fix, all verified present via real browser DOM extraction); Similar Pattern panel after SP-B (no regression from Phase 3FF-A-UI-B's QA'd output); existing tab/regression checks (유사 패턴 분석 보기 / MK AI 분석 보기 tabs, trigger cards, ownerLocalMocked/ownerLocalAuthUsageBridge/ownerLocalSimilarPatternRoute panels); PC (1280×900) and mobile (375×812) visual checks with explicit `scrollWidth`/`clientWidth`/`boundingClientRect` overflow measurement and screenshots; network/console safety checks (0 console errors, no KIS/LLM/deterministic-panel-triggered route calls); negative/safety checks (mojibake, forbidden investment language, secrets, `삼성전자은`/`사전 체크포인트` defect strings — all absent).
+- **Preserved policy**: no UI file change; no API route change; no MK Agent source/fixture change; no Similar Pattern Agent source/fixture change; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3FF-A-HOUSEKEEPING-A for stale historical checker cleanup, or Phase 3FG-A-PLAN for guarded productization planning.
+
 ## Phase 3FF-A-MK-C - 2026-07-08
 
 ### MK Agent Consumption of SP-B Similar Pattern Contract, No LLM, No Live KIS, No Public Activation (Implemented)
