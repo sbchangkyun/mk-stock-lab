@@ -24,8 +24,20 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_sp_a_contract.mjs',
 ];
 
+// Phase 3FF-A-MK-C's own deliverables, tolerated here so this checker's
+// git-diff scope/forbidden-diff checks do not fail once MK-C's SP-B contract
+// consumption pass exists on top of 3d4b7d2 (MK-C further edits
+// MK_SOURCE/MK_FIXTURE, already declared above).
+const MK_C_TOLERATED_FILES = [
+  MK_SOURCE,
+  MK_FIXTURE,
+  'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs',
+  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
+  'docs/planning/phase_3ff_a_mk_c_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_C_TOLERATED_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -193,14 +205,21 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty. Found: ${forbiddenDiff.join(', ')}`);
 
-// --- 10. Allowed source diff under src/lib/server/chart-ai must be exactly SOURCE/FIXTURE ---
+// --- 10. Allowed source diff under src/lib/server/chart-ai must be exactly
+// SOURCE/FIXTURE (MK Agent source/fixture tolerated: Phase 3FF-A-MK-C
+// legitimately consumes the SP-B contract from those files on top of this
+// 3d4b7d2 baseline; not required by SP-B itself.) ---
 const allowedSourceDiff = gitLines(['diff', '--name-only', BASELINE, '--', 'src/lib/server/chart-ai']);
-const unexpectedSource = allowedSourceDiff.filter((file) => ![SOURCE, FIXTURE].includes(file));
+const unexpectedSource = allowedSourceDiff.filter((file) => ![SOURCE, FIXTURE, MK_SOURCE, MK_FIXTURE].includes(file));
 assert(unexpectedSource.length === 0, `Only Similar Pattern Agent source files may change under chart-ai. Unexpected: ${unexpectedSource.join(', ')}`);
 
-// --- 11. No MK Agent source/fixture diff ---
-const mkDiff = gitLines(['diff', '--name-only', BASELINE, '--', MK_SOURCE, MK_FIXTURE]);
-assert(mkDiff.length === 0, `MK Agent source/fixture must not change. Found: ${mkDiff.join(', ')}`);
+// --- 11. No MK Agent source/fixture diff required by SP-B itself
+// (MK_C_TOLERATED_FILES already covers MK_SOURCE/MK_FIXTURE for Phase
+// 3FF-A-MK-C's legitimate SP-B contract consumption; anything else here is
+// still unexpected) ---
+const mkDiff = gitLines(['diff', '--name-only', BASELINE, '--', MK_SOURCE, MK_FIXTURE])
+  .filter((file) => !MK_C_TOLERATED_FILES.includes(file));
+assert(mkDiff.length === 0, `MK Agent source/fixture must not change outside Phase 3FF-A-MK-C. Found: ${mkDiff.join(', ')}`);
 
 // --- 12. Forbidden runtime/network/secret patterns in source/fixture ---
 const forbiddenSourcePatterns = [

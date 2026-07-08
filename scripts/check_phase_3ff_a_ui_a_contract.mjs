@@ -64,8 +64,18 @@ const SP_B_TOLERATED_FILES = [
   'docs/planning/phase_3ff_a_sp_b_result_v0.1.md',
 ];
 
+// Phase 3FF-A-MK-C's own deliverables, tolerated here so this checker's
+// git-diff scope checks do not fail once MK-C's SP-B contract consumption
+// pass exists (MK-C further edits MK_A_SOURCE/MK_A_FIXTURE, already
+// tolerated via MK_B_TOLERATED_FILES above).
+const MK_C_TOLERATED_FILES = [
+  'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs',
+  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
+  'docs/planning/phase_3ff_a_mk_c_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [PAGE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS, ...UI_B_TOLERATED_FILES, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...SIBLING_CHECKERS, ...UI_B_TOLERATED_FILES, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES]);
 
 // Exact required forbidden-diff path list (Phase 3FF-A-UI-A task spec).
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
@@ -314,7 +324,7 @@ assert(changelog.includes('## Phase 3FF-A-UI-A - 2026-07-08'), 'changelog must i
 // allowlist of headers above the UI-A entry, in any order/count; any other
 // header there would mean the changelog was reordered/corrupted by something
 // other than an expected follow-up phase.
-const TOLERATED_HEADERS_ABOVE_UI_A = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-UI-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08'];
+const TOLERATED_HEADERS_ABOVE_UI_A = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-UI-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08', '## Phase 3FF-A-MK-C - 2026-07-08'];
 const uiAEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-A - 2026-07-08');
 const headersAboveUiA = changelog.slice(0, uiAEntryIndex).match(/^## .+$/gm) ?? [];
 assert(

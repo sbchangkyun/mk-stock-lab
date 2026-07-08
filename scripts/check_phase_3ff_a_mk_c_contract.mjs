@@ -1,52 +1,32 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 
-const BASELINE = 'f25a7fc';
+const BASELINE = 'a1e2d7f';
 const SOURCE = 'src/lib/server/chart-ai/mk-agent.mjs';
 const FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
-const SMOKE = 'scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs';
-const CHECKER = 'scripts/check_phase_3ff_a_mk_b_contract.mjs';
-const RESULT = 'docs/planning/phase_3ff_a_mk_b_result_v0.1.md';
+const SMOKE = 'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs';
+const CHECKER = 'scripts/check_phase_3ff_a_mk_c_contract.mjs';
+const RESULT = 'docs/planning/phase_3ff_a_mk_c_result_v0.1.md';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
-const SP_A_SOURCE = 'src/lib/server/chart-ai/similar-pattern-agent.mjs';
-const SP_A_FIXTURE = 'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
+const SP_SOURCE = 'src/lib/server/chart-ai/similar-pattern-agent.mjs';
+const SP_FIXTURE = 'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
 
-// Sibling checkers patched during Phase 3FF-A-MK-B so their own git-diff
-// scope/forbidden-diff checks tolerate this phase's source hardening and new
-// files existing on top of f25a7fc. Tolerated here, not required.
+// Sibling checkers patched during Phase 3FF-A-MK-C so their own git-diff
+// scope/forbidden-diff checks tolerate this phase's MK Agent SP-B contract
+// consumption existing on top of their respective baselines.
 const PATCHED_SIBLING_CHECKERS = [
+  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_plan_contract.mjs',
   'scripts/check_phase_3ff_a_ui_a_contract.mjs',
   'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
-  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
-  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
-  'scripts/check_phase_3ff_a_plan_contract.mjs',
-];
-
-// Phase 3FF-A-SP-B's own deliverables, tolerated here so this checker's
-// git-diff scope/forbidden-diff checks do not fail once SP-B's Similar
-// Pattern output contract hardening pass exists on top of f25a7fc (SP-B
-// further edits SP_A_SOURCE/SP_A_FIXTURE, already declared above).
-const SP_B_TOLERATED_FILES = [
-  SP_A_SOURCE,
-  SP_A_FIXTURE,
-  'scripts/smoke_phase_3ff_a_sp_b_output_contract_hardening.mjs',
-  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
-  'docs/planning/phase_3ff_a_sp_b_result_v0.1.md',
-];
-
-// Phase 3FF-A-MK-C's own deliverables, tolerated here so this checker's
-// git-diff scope/forbidden-diff checks do not fail once MK-C's SP-B contract
-// consumption pass exists on top of f25a7fc (MK-C further edits
-// SOURCE/FIXTURE, already declared/tolerated above).
-const MK_C_TOLERATED_FILES = [
-  'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs',
-  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
-  'docs/planning/phase_3ff_a_mk_c_result_v0.1.md',
 ];
 
 const CORE_DELIVERABLES = [SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -91,15 +71,12 @@ const packageJson = exists(PACKAGE_JSON) ? JSON.parse(read(PACKAGE_JSON)) : {};
 
 // --- 2. package.json scripts exact ---
 assert(
-  packageJson.scripts?.['smoke:phase-3ff-a-mk-b'] === 'node scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs',
+  packageJson.scripts?.['smoke:phase-3ff-a-mk-c'] === 'node scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs',
   'smoke script must be exact.',
 );
-assert(packageJson.scripts?.['check:phase-3ff-a-mk-b'] === 'node scripts/check_phase_3ff_a_mk_b_contract.mjs', 'check script must be exact.');
+assert(packageJson.scripts?.['check:phase-3ff-a-mk-c'] === 'node scripts/check_phase_3ff_a_mk_c_contract.mjs', 'check script must be exact.');
 
-// --- 3. Source exports the 3 new Korean particle helpers, preserves all prior exports ---
-for (const exportedName of ['hasKoreanFinalConsonant', 'chooseKoreanTopicParticle', 'withKoreanTopicParticle']) {
-  assert(new RegExp(`export\\s+function\\s+${exportedName}\\b`).test(source), `source must export ${exportedName}.`);
-}
+// --- 3. Source preserves all prior MK-A/MK-B exports and adds the SP-B consumption helpers ---
 for (const exportedName of [
   'DEFAULT_MK_AGENT_OPTIONS',
   'MK_AGENT_SECTION_KEYS',
@@ -113,10 +90,23 @@ for (const exportedName of [
   'summarizeSimilarPatternForMkAgent',
   'createMkAgentDisclaimer',
   'detectForbiddenInvestmentLanguage',
+  'hasKoreanFinalConsonant',
+  'chooseKoreanTopicParticle',
+  'withKoreanTopicParticle',
 ]) {
   assert(new RegExp(`export\\s+(?:const|function)\\s+${exportedName}\\b`).test(source), `source must preserve prior export: ${exportedName}.`);
 }
+for (const exportedName of [
+  'hasSpbSimilarPatternContract',
+  'summarizeSpbContractForMkAgent',
+  'summarizeOutcomeDistributionForMkAgent',
+  'summarizePatternQualityForMkAgent',
+  'summarizeMatchReasonTagsForMkAgent',
+]) {
+  assert(new RegExp(`export\\s+function\\s+${exportedName}\\b`).test(source), `source must export new SP-B consumption symbol: ${exportedName}.`);
+}
 
+// --- 4. Fixture preserves prior exports and adds the 3 new SP-B/legacy/partial fixtures ---
 for (const exportedName of [
   'createMkAgentFixtureInput',
   'createMkAgentUsageExceededFixtureInput',
@@ -126,16 +116,27 @@ for (const exportedName of [
   'createMkAgentKoreanParticleFixtureInput',
   'createMkAgentNonHangulDisplayNameFixtureInput',
 ]) {
-  assert(new RegExp(`export\\s+function\\s+${exportedName}\\b`).test(fixture), `fixture must export ${exportedName}.`);
+  assert(new RegExp(`export\\s+function\\s+${exportedName}\\b`).test(fixture), `fixture must preserve prior export: ${exportedName}.`);
+}
+for (const exportedName of [
+  'createMkAgentSpbContractFixtureInput',
+  'createMkAgentLegacySimilarPatternFixtureInput',
+  'createMkAgentPartialSpbContractFixtureInput',
+]) {
+  assert(new RegExp(`export\\s+function\\s+${exportedName}\\b`).test(fixture), `fixture must export new SP-B fixture: ${exportedName}.`);
 }
 
 assert(smoke.includes('../src/lib/server/chart-ai/mk-agent.mjs'), 'smoke must import MK Agent source.');
 assert(smoke.includes('../src/lib/server/chart-ai/mk-agent.fixture.mjs'), 'smoke must import MK Agent fixture.');
-for (const name of ['createMkAgentKoreanParticleFixtureInput', 'createMkAgentNonHangulDisplayNameFixtureInput']) {
+for (const name of [
+  'createMkAgentSpbContractFixtureInput',
+  'createMkAgentLegacySimilarPatternFixtureInput',
+  'createMkAgentPartialSpbContractFixtureInput',
+]) {
   assert(smoke.includes(name), `smoke must import/use ${name}.`);
 }
 
-// --- 4. Required Korean markers preserved, known bug literal absent from source ---
+// --- 5. Required Korean/contract markers preserved, known bug literals still absent ---
 for (const requiredText of [
   'MK 에이전트',
   '전략 체크포인트',
@@ -147,6 +148,15 @@ for (const requiredText of [
   'No buy/sell recommendation',
   'reference only',
   'not investment advice',
+  'similar-pattern-agent.v0.2',
+  '신뢰도',
+  'D5',
+  'D20',
+  '평균',
+  '중앙값',
+  '과거 유사 흐름',
+  '미래 성과를 보장하지 않습니다',
+  '패턴 품질',
 ]) {
   assert(source.includes(requiredText), `source must include marker: ${requiredText}`);
 }
@@ -155,11 +165,11 @@ assert(!source.includes('삼성전자은'), 'source must not include the known b
 assert(fixture.includes("displayName: '삼성전자'"), 'fixture must keep default displayName 삼성전자.');
 assert(fixture.includes("symbol: '005930'"), 'fixture must keep default symbol 005930.');
 
-// --- 5. Smoke script must pass ---
+// --- 6. Smoke script must pass ---
 const smokeOutput = execFileSync('node', [SMOKE], { encoding: 'utf8' });
-assert(smokeOutput.includes('Phase 3FF-A-MK-B smoke: PASS'), 'smoke must pass from checker.');
+assert(smokeOutput.includes('Phase 3FF-A-MK-C smoke: PASS'), 'smoke must pass from checker.');
 
-// --- 6. Scope check: only allowed files may change since baseline ---
+// --- 7. Scope check: only allowed files may change since baseline ---
 const changedFiles = gitLines(['diff', '--name-only', BASELINE]);
 const statusChanged = runGit(['status', '--porcelain', '-uall'])
   .split(/\r?\n/)
@@ -168,7 +178,7 @@ const statusChanged = runGit(['status', '--porcelain', '-uall'])
   .filter((file) => allowedFiles.has(file));
 const allChanged = [...new Set([...changedFiles, ...statusChanged])];
 const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
-assert(unexpected.length === 0, `Only Phase 3FF-A-MK-B files may change. Unexpected: ${unexpected.join(', ')}`);
+assert(unexpected.length === 0, `Only Phase 3FF-A-MK-C files may change. Unexpected: ${unexpected.join(', ')}`);
 for (const file of CORE_DELIVERABLES) {
   assert(allChanged.includes(file), `Changed files must include ${file}.`);
 }
@@ -180,25 +190,20 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
   );
 }
 
-// --- 7. Forbidden diff must be empty (chart-ai.astro, API routes, components, supabase, src/data, lockfiles, env) ---
+// --- 8. Forbidden diff must be empty (chart-ai.astro, API routes, components, supabase, src/data, lockfiles, env) ---
 const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty. Found: ${forbiddenDiff.join(', ')}`);
 
-// --- 8. Allowed source diff under src/lib/server/chart-ai must be exactly SOURCE/FIXTURE
-// (Similar Pattern Agent source/fixture tolerated: Phase 3FF-A-SP-B legitimately
-// hardens those files on top of this f25a7fc baseline; not required by MK-B.) ---
+// --- 9. Allowed source diff under src/lib/server/chart-ai must be exactly SOURCE/FIXTURE ---
 const allowedSourceDiff = gitLines(['diff', '--name-only', BASELINE, '--', 'src/lib/server/chart-ai']);
-const unexpectedSource = allowedSourceDiff.filter((file) => ![SOURCE, FIXTURE, SP_A_SOURCE, SP_A_FIXTURE].includes(file));
+const unexpectedSource = allowedSourceDiff.filter((file) => ![SOURCE, FIXTURE].includes(file));
 assert(unexpectedSource.length === 0, `Only MK Agent source files may change under chart-ai. Unexpected: ${unexpectedSource.join(', ')}`);
 
-// --- 9. No Similar Pattern Agent source/fixture diff required by MK-B itself
-// (SP_B_TOLERATED_FILES already covers SP_A_SOURCE/SP_A_FIXTURE for Phase
-// 3FF-A-SP-B's legitimate hardening; anything else here is still unexpected) ---
-const spDiff = gitLines(['diff', '--name-only', BASELINE, '--', SP_A_SOURCE, SP_A_FIXTURE])
-  .filter((file) => !SP_B_TOLERATED_FILES.includes(file));
-assert(spDiff.length === 0, `Similar Pattern Agent source/fixture must not change outside Phase 3FF-A-SP-B. Found: ${spDiff.join(', ')}`);
+// --- 10. Similar Pattern Agent source/fixture must not change at all in Phase 3FF-A-MK-C ---
+const spDiff = gitLines(['diff', '--name-only', BASELINE, '--', SP_SOURCE, SP_FIXTURE]);
+assert(spDiff.length === 0, `Similar Pattern Agent source/fixture must not change in Phase 3FF-A-MK-C. Found: ${spDiff.join(', ')}`);
 
-// --- 10. Forbidden runtime/network/secret patterns in source/fixture ---
+// --- 11. Forbidden runtime/network/secret patterns in source/fixture ---
 const forbiddenSourcePatterns = [
   /\bfetch\s*\(/,
   /process\.env/,
@@ -218,6 +223,7 @@ const forbiddenSourcePatterns = [
 ];
 for (const pattern of forbiddenSourcePatterns) {
   assert(!pattern.test(source), `source must not contain forbidden runtime pattern: ${pattern}`);
+  assert(!pattern.test(fixture), `fixture must not contain forbidden runtime pattern: ${pattern}`);
 }
 
 for (const [label, text] of [
@@ -230,7 +236,7 @@ for (const [label, text] of [
   assert(!/rawKisPayload\s*:|rawProviderPayload\s*:|providerPayload\s*:/.test(text), `${label} must not contain provider raw payload labels.`);
 }
 
-// --- 11. Mojibake fragments and the Unicode replacement character must not
+// --- 12. Mojibake fragments and the Unicode replacement character must not
 // appear anywhere in the deliverables. Fragments are built from numeric code
 // points via String.fromCharCode so this checker's own raw source text
 // (checkerSelf, read back via fs.readFileSync, never evaluated) cannot
@@ -238,16 +244,16 @@ for (const [label, text] of [
 // corrupted characters, while the runtime array value still equals the real
 // corrupted-character fragments for comparison against the other files. ---
 const mojibakePatterns = [
-  String.fromCharCode(65533),
-  String.fromCharCode(63, 47663, 50464),
+  String.fromCharCode(77, 75, 32, 63, 47663, 50464, 63, 44970, 46275),
   String.fromCharCode(63, 44968, 50754),
-  String.fromCharCode(27877, 45828, 44181),
+  String.fromCharCode(63971, 45828, 44181),
   String.fromCharCode(63, 1098, 50468),
   String.fromCharCode(63, 50326, 49316),
   String.fromCharCode(63, 45896, 53195),
   String.fromCharCode(63, 49649, 44902),
-  String.fromCharCode(30041, 12668, 45780),
-  String.fromCharCode(32016, 9338, 47796),
+  String.fromCharCode(63949, 12668, 45780),
+  String.fromCharCode(63951, 9338, 47796),
+  String.fromCharCode(65533),
 ];
 for (const [label, text] of [
   ['source', source],
@@ -261,12 +267,11 @@ for (const [label, text] of [
   }
 }
 
-// --- 12. Result doc and changelog required content ---
+// --- 13. Result doc and changelog required content ---
 for (const requiredText of [
   'Status: Implemented.',
-  'f25a7fc',
-  '삼성전자은',
-  '삼성전자는',
+  'a1e2d7f',
+  'similar-pattern-agent.v0.2',
   'No LLM',
   'No live KIS',
   'No API route changed.',
@@ -277,11 +282,9 @@ for (const requiredText of [
 }
 
 for (const requiredText of [
-  '## Phase 3FF-A-MK-B - 2026-07-08',
-  'MK Agent Output Contract Hardening and Korean Grammar Fix, No LLM, No Live KIS, No Public Activation',
-  'Baseline**: `f25a7fc`',
-  '삼성전자은` → `삼성전자는`',
-  'hasKoreanFinalConsonant',
+  '## Phase 3FF-A-MK-C - 2026-07-08',
+  'Baseline**: `a1e2d7f`',
+  'similar-pattern-agent.v0.2',
   'no live KIS',
   'no LLM',
   'no public/beta activation',
@@ -292,8 +295,8 @@ for (const requiredText of [
 
 console.log(
   failures.length
-    ? `Phase 3FF-A-MK-B check FAILED: ${failures.length}/${assertions} assertions failed.`
-    : `Phase 3FF-A-MK-B check passed: ${assertions}/${assertions} assertions passed.`,
+    ? `Phase 3FF-A-MK-C check FAILED: ${failures.length}/${assertions} assertions failed.`
+    : `Phase 3FF-A-MK-C check passed: ${assertions}/${assertions} assertions passed.`,
 );
 
 if (failures.length) {

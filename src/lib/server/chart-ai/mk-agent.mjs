@@ -30,6 +30,7 @@ export const MK_AGENT_STATUS = Object.freeze({
 const AGENT_NAME = 'MK 에이전트';
 const STRATEGY_TITLE = '전략 체크포인트';
 const USAGE_NOTICE = '오픈베타에서는 계정당 하루 3회까지 사용할 수 있어요.';
+const SPB_CONTRACT_VERSION = 'similar-pattern-agent.v0.2';
 
 const SUCCESS_SAFETY = Object.freeze({
   containsBuySellRecommendation: false,
@@ -167,6 +168,75 @@ export function summarizeSimilarPatternForMkAgent(similarPattern) {
   };
 }
 
+export function hasSpbSimilarPatternContract(similarPattern) {
+  return Boolean(similarPattern) && similarPattern.contractVersion === SPB_CONTRACT_VERSION;
+}
+
+export function summarizeSpbContractForMkAgent(similarPattern) {
+  if (!hasSpbSimilarPatternContract(similarPattern)) return null;
+  const summary = similarPattern.contractSummary ?? {};
+  const primaryLimitations = Array.isArray(summary.primaryLimitations)
+    ? summary.primaryLimitations.filter((item) => typeof item === 'string' && item.trim().length > 0)
+    : [];
+  return {
+    confidenceScore: Number.isFinite(similarPattern.confidenceScore) ? similarPattern.confidenceScore : null,
+    confidenceLabel: textValue(similarPattern.confidenceLabel, '확인 제한'),
+    patternQualityLabel: textValue(summary.patternQualityLabel, '확인 제한'),
+    d5DirectionBalance: textValue(summary.d5DirectionBalance, '확인 제한'),
+    d20DirectionBalance: textValue(summary.d20DirectionBalance, '확인 제한'),
+    matchCount: Number.isFinite(summary.matchCount) ? summary.matchCount : null,
+    topMatchLabel: textValue(summary.topMatchLabel, '확인 제한'),
+    primaryLimitations,
+  };
+}
+
+const describeOutcomeBucket = (bucket) => {
+  if (!bucket || typeof bucket !== 'object') return null;
+  return {
+    window: textValue(bucket.window, ''),
+    totalCount: Number.isFinite(bucket.totalCount) ? bucket.totalCount : 0,
+    positiveCount: Number.isFinite(bucket.positiveCount) ? bucket.positiveCount : 0,
+    negativeCount: Number.isFinite(bucket.negativeCount) ? bucket.negativeCount : 0,
+    flatCount: Number.isFinite(bucket.flatCount) ? bucket.flatCount : 0,
+    averageForwardReturnPct: Number.isFinite(bucket.averageForwardReturnPct) ? bucket.averageForwardReturnPct : null,
+    medianForwardReturnPct: Number.isFinite(bucket.medianForwardReturnPct) ? bucket.medianForwardReturnPct : null,
+    bestForwardReturnPct: Number.isFinite(bucket.bestForwardReturnPct) ? bucket.bestForwardReturnPct : null,
+    worstForwardReturnPct: Number.isFinite(bucket.worstForwardReturnPct) ? bucket.worstForwardReturnPct : null,
+  };
+};
+
+export function summarizeOutcomeDistributionForMkAgent(similarPattern) {
+  if (!hasSpbSimilarPatternContract(similarPattern)) return null;
+  const distribution = similarPattern.outcomeDistribution;
+  if (!distribution || typeof distribution !== 'object') return null;
+  return {
+    d5: describeOutcomeBucket(distribution.d5),
+    d20: describeOutcomeBucket(distribution.d20),
+  };
+}
+
+export function summarizePatternQualityForMkAgent(similarPattern) {
+  if (!hasSpbSimilarPatternContract(similarPattern)) return null;
+  const quality = similarPattern.patternQuality;
+  if (!quality || typeof quality !== 'object') return null;
+  const sanitizeList = (list) => (Array.isArray(list) ? list.filter((item) => typeof item === 'string' && item.trim().length > 0) : []);
+  return {
+    label: textValue(quality.label, '확인 제한'),
+    score: Number.isFinite(quality.score) ? quality.score : null,
+    reasons: sanitizeList(quality.reasons),
+    warnings: sanitizeList(quality.warnings),
+    limitations: sanitizeList(quality.limitations),
+  };
+}
+
+export function summarizeMatchReasonTagsForMkAgent(similarPattern) {
+  if (!hasSpbSimilarPatternContract(similarPattern)) return [];
+  const matches = Array.isArray(similarPattern.matches) ? similarPattern.matches : [];
+  const topMatch = matches[0];
+  if (!topMatch || !Array.isArray(topMatch.matchReasonTags)) return [];
+  return topMatch.matchReasonTags.filter((tag) => typeof tag === 'string' && tag.trim().length > 0);
+}
+
 export function createMkAgentDisclaimer() {
   return '이 분석은 참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다. 최종 투자 판단의 책임은 이용자 본인에게 있습니다.';
 }
@@ -191,8 +261,50 @@ const supportResistanceText = (observations) => {
     .join(', ');
 };
 
+const buildSpbHistoryBullets = ({ spbContractSummary, outcomeDistribution, matchReasonTags }) => {
+  if (!spbContractSummary) return [];
+  const bullets = [];
+  const confidenceScoreText = Number.isFinite(spbContractSummary.confidenceScore) ? ` (${spbContractSummary.confidenceScore}점)` : '';
+  bullets.push(`신뢰도는 ${spbContractSummary.confidenceLabel} 수준으로 확인됐어요${confidenceScoreText}.`);
+
+  const d5 = outcomeDistribution?.d5;
+  if (d5) {
+    bullets.push(
+      `D5 기준 평균 수익률은 ${pct(d5.averageForwardReturnPct)}, 중앙값은 ${pct(d5.medianForwardReturnPct)}이며 상승 ${d5.positiveCount}건·하락 ${d5.negativeCount}건·보합 ${d5.flatCount}건이었어요.`,
+    );
+  }
+  const d20 = outcomeDistribution?.d20;
+  if (d20) {
+    bullets.push(
+      `D20 기준 평균 수익률은 ${pct(d20.averageForwardReturnPct)}, 중앙값은 ${pct(d20.medianForwardReturnPct)}이며 상승 ${d20.positiveCount}건·하락 ${d20.negativeCount}건·보합 ${d20.flatCount}건이었어요.`,
+    );
+  }
+
+  const tagsText = matchReasonTags.length > 0 ? matchReasonTags.join(', ') : '구체적인 매치 근거 태그는 확인되지 않았어요';
+  bullets.push(`상위 매치 근거 태그: ${tagsText}.`);
+  bullets.push('과거 유사 흐름을 참고했을 뿐이며, 이 정보는 미래 성과를 보장하지 않습니다.');
+
+  return bullets;
+};
+
+const buildSpbRiskBullets = (patternQuality) => {
+  if (!patternQuality) return [];
+  const bullets = [`패턴 품질은 ${patternQuality.label}로 평가됐어요.`];
+  if (patternQuality.warnings.length > 0) {
+    bullets.push(`주의 사항: ${patternQuality.warnings.join(' ')}`);
+  }
+  if (patternQuality.limitations.length > 0) {
+    bullets.push(`제한 사항: ${patternQuality.limitations.join(' ')}`);
+  }
+  return bullets;
+};
+
 export function createDeterministicMkAgentReport(input) {
   const similarSummary = summarizeSimilarPatternForMkAgent(input.similarPattern);
+  const spbContractSummary = summarizeSpbContractForMkAgent(input.similarPattern);
+  const outcomeDistribution = summarizeOutcomeDistributionForMkAgent(input.similarPattern);
+  const patternQuality = summarizePatternQualityForMkAgent(input.similarPattern);
+  const matchReasonTags = summarizeMatchReasonTagsForMkAgent(input.similarPattern);
   const displayName = textValue(input.displayName, input.symbol);
   const supportText = supportResistanceText(input.supportResistanceObservations);
 
@@ -261,6 +373,7 @@ export function createDeterministicMkAgentReport(input) {
       bullets: [
         `Top match score label: ${similarSummary.topScoreLabel}.`,
         'historical similarity does not predict the future.',
+        ...buildSpbHistoryBullets({ spbContractSummary, outcomeDistribution, matchReasonTags }),
       ],
       confidence: 'medium',
       limitations: ['Same-symbol historical fixture only.'],
@@ -272,6 +385,7 @@ export function createDeterministicMkAgentReport(input) {
       bullets: [
         '유사 과거 흐름이 엇갈린 경우 변동성 확대 가능성을 열어둬요.',
         '이 문서는 reference only이며 not investment advice입니다.',
+        ...buildSpbRiskBullets(patternQuality),
       ],
       severity: 'caution',
       confidence: 'medium',

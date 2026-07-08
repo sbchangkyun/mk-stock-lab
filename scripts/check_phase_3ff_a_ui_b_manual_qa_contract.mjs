@@ -42,8 +42,18 @@ const SP_B_TOLERATED_FILES = [
   'docs/planning/phase_3ff_a_sp_b_result_v0.1.md',
 ];
 
+// Phase 3FF-A-MK-C's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once MK-C's SP-B contract consumption
+// pass exists on top of a32a52c (MK-C further edits the exact
+// mk-agent.mjs/.fixture.mjs paths already tolerated via MK_B_TOLERATED_FILES).
+const MK_C_TOLERATED_FILES = [
+  'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs',
+  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
+  'docs/planning/phase_3ff_a_mk_c_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -117,7 +127,7 @@ assert(changelog.includes('## Phase 3FF-A-UI-B - 2026-07-08'), 'changelog must i
 // Later QA/hardening-only phases (no runtime/API/UI change) legitimately
 // prepend their own entries above this one. Tolerate exactly this known
 // allowlist of headers above the UI-B entry, in any order/count.
-const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08'];
+const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08', '## Phase 3FF-A-MK-C - 2026-07-08'];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];
 assert(

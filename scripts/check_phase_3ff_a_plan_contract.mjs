@@ -55,6 +55,13 @@ const MK_B_RESULT = 'docs/planning/phase_3ff_a_mk_b_result_v0.1.md';
 const SP_B_SMOKE = 'scripts/smoke_phase_3ff_a_sp_b_output_contract_hardening.mjs';
 const SP_B_CHECKER = 'scripts/check_phase_3ff_a_sp_b_contract.mjs';
 const SP_B_RESULT = 'docs/planning/phase_3ff_a_sp_b_result_v0.1.md';
+// Phase 3FF-A-MK-C's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once MK-C's SP-B contract consumption
+// pass exists (MK-C further edits PHASE_3FF_A_MK_A_SOURCE/FIXTURE, already
+// allowed above).
+const MK_C_SMOKE = 'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs';
+const MK_C_CHECKER = 'scripts/check_phase_3ff_a_mk_c_contract.mjs';
+const MK_C_RESULT = 'docs/planning/phase_3ff_a_mk_c_result_v0.1.md';
 
 const allowedFiles = new Set([
   SP_DOC,
@@ -98,6 +105,9 @@ const allowedFiles = new Set([
   SP_B_SMOKE,
   SP_B_CHECKER,
   SP_B_RESULT,
+  MK_C_SMOKE,
+  MK_C_CHECKER,
+  MK_C_RESULT,
 ]);
 
 const forbiddenPaths = [

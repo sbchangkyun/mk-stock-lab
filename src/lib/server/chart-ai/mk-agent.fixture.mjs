@@ -81,3 +81,56 @@ export function createUnsafeMkAgentDraftForSanitizerFixture() {
     disclaimer: 'test-only',
   };
 }
+
+const SPB_ONLY_TOP_LEVEL_FIELDS = [
+  'contractVersion',
+  'confidenceScore',
+  'confidenceLabel',
+  'patternQuality',
+  'outcomeDistribution',
+  'contractSummary',
+];
+
+const stripMatchReasonTags = (matches) => (
+  Array.isArray(matches)
+    ? matches.map((match) => {
+      const clonedMatch = { ...match };
+      delete clonedMatch.matchReasonTags;
+      return clonedMatch;
+    })
+    : matches
+);
+
+const stripSpbFields = (similarPattern) => {
+  if (!similarPattern || typeof similarPattern !== 'object') return similarPattern;
+  const clone = { ...similarPattern };
+  for (const field of SPB_ONLY_TOP_LEVEL_FIELDS) {
+    delete clone[field];
+  }
+  clone.matches = stripMatchReasonTags(clone.matches);
+  return clone;
+};
+
+export function createMkAgentSpbContractFixtureInput() {
+  return createMkAgentFixtureInput({
+    similarPattern: createDefaultSimilarPattern(),
+  });
+}
+
+export function createMkAgentLegacySimilarPatternFixtureInput() {
+  return createMkAgentFixtureInput({
+    similarPattern: stripSpbFields(createDefaultSimilarPattern()),
+  });
+}
+
+export function createMkAgentPartialSpbContractFixtureInput() {
+  const base = createDefaultSimilarPattern();
+  const partial = { ...base };
+  delete partial.outcomeDistribution;
+  delete partial.patternQuality;
+  delete partial.contractSummary;
+  partial.matches = stripMatchReasonTags(partial.matches);
+  return createMkAgentFixtureInput({
+    similarPattern: partial,
+  });
+}

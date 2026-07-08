@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-MK-C - 2026-07-08
+
+### MK Agent Consumption of SP-B Similar Pattern Contract, No LLM, No Live KIS, No Public Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `a1e2d7f`.
+- **Purpose**: update the deterministic fixture-only MK Agent so it consumes the hardened Similar Pattern Agent SP-B contract fields (`similar-pattern-agent.v0.2`) and reflects them in the MK Agent report output, while remaining fully compatible with legacy SP-A-shaped Similar Pattern output.
+- **Implemented scope**: `hasSpbSimilarPatternContract` gate that detects the `similar-pattern-agent.v0.2` contract via `contractVersion`; `summarizeSpbContractForMkAgent` (confidence score/label, pattern-quality label, contract summary line); `summarizeOutcomeDistributionForMkAgent` (D5/D20 평균/중앙값/최고/최저, positive/negative/flat counts); `summarizePatternQualityForMkAgent` (패턴 품질 label, reasons, warnings, limitations, always stating that historical similarity does not predict or guarantee future results); `summarizeMatchReasonTagsForMkAgent` (top-match reason tags roll-up). All four summarizers are woven into `createDeterministicMkAgentReport`'s `similarHistory`/`riskCheck` bullet lists via additive array-spread. Three new deterministic fixtures added to `mk-agent.fixture.mjs`: `createMkAgentSpbContractFixtureInput` (full SP-B contract), `createMkAgentLegacySimilarPatternFixtureInput` (SP-A-shaped input with no SP-B fields), `createMkAgentPartialSpbContractFixtureInput` (partial/malformed SP-B fields). New smoke script and static checker; result document; package scripts.
+- **Legacy fallback**: every new summarizer gates on `hasSpbSimilarPatternContract` and returns `null`/`[]` safely when the SP-B contract fields are absent or malformed, so legacy SP-A-shaped Similar Pattern output produces byte-identical MK Agent report output to before this phase.
+- **Backward compatibility**: every pre-existing MK Agent export, field, section key, safety flag, the 8-phrase `detectForbiddenInvestmentLanguage` list, and the Korean topic-particle helpers (`hasKoreanFinalConsonant`, `chooseKoreanTopicParticle`, `withKoreanTopicParticle`) are unchanged; new fields/bullets are additive only.
+- **Preserved policy**: no UI file change, no API route change, no Similar Pattern Agent source/fixture change, no KIS provider module change, no live KIS, no LLM, no Supabase/DB/env/session/JWT, no public/beta activation, no dependency/lockfile change, no deploy/push.
+- **Recommended next step**: a UI consumption pass to surface the new SP-B-derived MK Agent bullets in the owner-local panel, or further owner-local manual QA.
+
 ## Phase 3FF-A-SP-B - 2026-07-08
 
 ### Similar Pattern Output Contract Hardening, No Live KIS, No LLM, No Public Activation (Implemented)
