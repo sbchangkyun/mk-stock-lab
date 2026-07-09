@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FG-A - 2026-07-09
+
+### Guarded Productization Scaffold, All Gates Off (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `176893e`.
+- **Purpose**: create the first guarded productization scaffold for Chart AI on top of the verified Phase 3FG-A-PLAN baseline, adding isolated deterministic scaffold modules and tests/checkers while keeping every real productization gate off by default.
+- **Implemented scope**: deterministic, server-only scaffold module `src/lib/server/chart-ai/guarded-productization-scaffold.mjs` (`DEFAULT_GUARDED_PRODUCTIZATION_FLAGS` with all 15 gates false, `evaluateGuardedProductizationAccess`, `createFailClosedDecision`, `assertNoRuntimeActivation`); fixture module `guarded-productization-scaffold.fixture.mjs` with 7 deterministic request builders (owner-local, beta, public, live-KIS attempt, LLM attempt, real-auth attempt); orthogonal audience tier (owner-local/internal-qa/beta/public), provider mode (synthetic_fixture/kis_ohlc_fixture/live_kis), and agent mode (deterministic_fixture/llm) gate dimensions; a single "narrowest safe path" reachable `allowed: true` outcome requiring owner-local audience, fixture-only provider/agent modes, every other gate false, and an explicit `scaffoldOnlyAcknowledged` acknowledgment; fail-closed default decisions with required-approval labels per blocked boundary; smoke test `scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs` (268 assertions covering all blocked scenarios and safety copy); static contract checker `scripts/check_phase_3fg_a_contract.mjs`; result document `docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md`; two package scripts (`smoke:phase-3fg-a`, `check:phase-3fg-a`); no wiring into `src/pages/chart-ai.astro`, no API route created, no Supabase/DB/auth/session/JWT touched.
+- **Preserved policy**: no UI wiring; no API runtime activation; no live KIS; no LLM activation; no MK AI route activation; no public/beta activation; no Supabase/DB real runtime; no env/session/JWT/cookie/header parsing; no usage deduction; no paid entitlement; no ad unlock; no deploy; no push; no dependency/lockfile change.
+- **Recommended next step**: Phase 3FG-B — Owner-local Guarded Productization QA, All Real Gates Off.
+
 ## Phase 3FG-A-PLAN - 2026-07-09
 
 ### Guarded Productization Planning, No Live KIS, No LLM, No Public Activation (Prepared)

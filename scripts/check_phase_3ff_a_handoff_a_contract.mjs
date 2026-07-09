@@ -42,7 +42,25 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_plan_contract.mjs',
 ];
 
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS]);
+// Files delivered by later phases (Phase 3FG-A-PLAN and Phase 3FG-A) built on
+// top of this baseline (dcb6724) that legitimately exist in the working tree
+// without being part of this phase's own deliverables. Tolerated here only
+// because they were reviewed and validated by their own phase's checker
+// (check_phase_3fg_a_plan_contract.mjs / check_phase_3fg_a_contract.mjs); no
+// protective assertion below (forbidden diff, mojibake, forbidden language)
+// is weakened by their presence.
+const TOLERATED_LATER_PHASE_FILES = [
+  'docs/planning/phase_3fg_a_plan_guarded_productization_v0.1.md',
+  'docs/planning/phase_3fg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3fg_a_plan_contract.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs',
+  'scripts/check_phase_3fg_a_contract.mjs',
+  'docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md',
+];
+
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...TOLERATED_LATER_PHASE_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.claude/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 

@@ -42,6 +42,20 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
 ];
 
+// Files delivered by Phase 3FG-A (a later phase built on top of this
+// baseline) that legitimately exist in the working tree without being part
+// of this phase's own deliverables. Tolerated here only because they were
+// reviewed and validated by their own phase's checker
+// (scripts/check_phase_3fg_a_contract.mjs); no protective assertion in this
+// file is weakened by their presence.
+const TOLERATED_LATER_PHASE_FILES = [
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs',
+  'scripts/check_phase_3fg_a_contract.mjs',
+  'docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md',
+];
+
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
   '.claude/',
@@ -197,11 +211,20 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
 
-// --- 5b. Changelog entry is the newest entry (prepended above prior top entry) ---
+// --- 5b. Changelog entry is present, tolerating only known later-phase
+// headers prepended above it (not a strict "must be the top entry" check,
+// since Phase 3FG-A legitimately added its own header above this one) ---
+const TOLERATED_HEADERS_ABOVE_3FG_A_PLAN = ['## Phase 3FG-A - 2026-07-09'];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-A-PLAN - 2026-07-09');
-const firstPhaseHeaderIndex = changelog.indexOf('## Phase ');
-assert(phaseHeaderIndex >= 0 && firstPhaseHeaderIndex === phaseHeaderIndex,
-  'Phase 3FG-A-PLAN changelog entry must be the first "## Phase " entry in the file');
+assert(phaseHeaderIndex >= 0, 'Phase 3FG-A-PLAN changelog entry must exist');
+const precedingHeaders = phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
+const unexpectedPrecedingHeaders = precedingHeaders.filter(
+  (header) => !TOLERATED_HEADERS_ABOVE_3FG_A_PLAN.includes(header.trim()),
+);
+assert(
+  unexpectedPrecedingHeaders.length === 0,
+  `Phase 3FG-A-PLAN changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders.join(', ')}`,
+);
 const nextHeaderIndex = phaseHeaderIndex >= 0
   ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1)
   : -1;
@@ -230,7 +253,12 @@ const relevantStatusFiles = statusFiles.filter(
   (file) => !KNOWN_UNTOUCHED_PATHS.some((known) => file === known || file.startsWith(known)),
 );
 const allChanged = [...new Set([...changedFiles, ...relevantStatusFiles])];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...MODIFIED_FILES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([
+  ...CORE_DELIVERABLES,
+  ...MODIFIED_FILES,
+  ...PATCHED_SIBLING_CHECKERS,
+  ...TOLERATED_LATER_PHASE_FILES,
+]);
 const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
 assert(unexpected.length === 0, `Unexpected changed files since baseline: ${unexpected.join(', ')}`);
 

@@ -47,8 +47,24 @@ const HANDOFF_A_FILES = [
   'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
 ];
 
+// Phase 3FG-A-PLAN's and Phase 3FG-A's own deliverables, committed/added
+// after this checker's baseline. Tolerated here (not required) so this
+// checker keeps passing once later validation runs it against a HEAD that
+// includes those commits. No protective assertion below (forbidden diff,
+// mojibake, forbidden language) is weakened by this addition.
+const PLAN_AND_SCAFFOLD_FILES = [
+  'docs/planning/phase_3fg_a_plan_guarded_productization_v0.1.md',
+  'docs/planning/phase_3fg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3fg_a_plan_contract.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs',
+  'scripts/check_phase_3fg_a_contract.mjs',
+  'docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_CHECKERS, ...HANDOFF_A_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_CHECKERS, ...HANDOFF_A_FILES, ...PLAN_AND_SCAFFOLD_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
