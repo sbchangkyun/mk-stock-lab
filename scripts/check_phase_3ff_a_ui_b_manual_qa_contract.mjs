@@ -61,8 +61,18 @@ const UI_C_TOLERATED_FILES = [
   'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
 ];
 
+// Phase 3FF-A-HOUSEKEEPING-A patches stale historical checkers and adds its own
+// housekeeping checker/result deliverables. Tolerated here, not required, so
+// this checker's git-diff scope check does not fail once that cleanup exists on
+// top of a32a52c.
+const HOUSEKEEPING_A_TOLERATED_FILES = [
+  'scripts/check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs',
+  'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
+  'docs/planning/phase_3ff_a_housekeeping_a_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES, ...UI_C_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES, ...UI_C_TOLERATED_FILES, ...HOUSEKEEPING_A_TOLERATED_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -136,7 +146,7 @@ assert(changelog.includes('## Phase 3FF-A-UI-B - 2026-07-08'), 'changelog must i
 // Later QA/hardening-only phases (no runtime/API/UI change) legitimately
 // prepend their own entries above this one. Tolerate exactly this known
 // allowlist of headers above the UI-B entry, in any order/count.
-const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08', '## Phase 3FF-A-MK-C - 2026-07-08', '## Phase 3FF-A-UI-C - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08', '## Phase 3FF-A-MK-C - 2026-07-08', '## Phase 3FF-A-UI-C - 2026-07-09', '## Phase 3FF-A-HOUSEKEEPING-A - 2026-07-09'];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];
 assert(

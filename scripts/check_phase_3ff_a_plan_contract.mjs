@@ -108,6 +108,12 @@ const allowedFiles = new Set([
   MK_C_SMOKE,
   MK_C_CHECKER,
   MK_C_RESULT,
+  'docs/planning/phase_3ff_a_ui_c_manual_qa_checklist_v0.1.md',
+  'docs/planning/phase_3ff_a_ui_c_manual_qa_result_v0.1.md',
+  'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
+  'scripts/check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs',
+  'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
+  'docs/planning/phase_3ff_a_housekeeping_a_result_v0.1.md',
 ]);
 
 const forbiddenPaths = [

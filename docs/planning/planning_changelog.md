@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FF-A-HOUSEKEEPING-A - 2026-07-09
+
+### Historical Checker Scope Cleanup, No Runtime Change (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `07cd405`.
+- **Purpose**: clean up stale historical checker changelog-slice/top-entry assumptions after many later phases were prepended to `docs/planning/planning_changelog.md`, so historical phase checkers stay stable when newer phases are legitimately added above them.
+- **Fixed issue**: `check:phase-3fd-j-handoff-chart-ai-new-chat-package` no longer fails only because the older Phase 3FD-J-HANDOFF entry is no longer near the top of `planning_changelog.md`. Its primary checker (`scripts/check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs`) previously asserted the entry existed inside a fixed `changelog.slice(0, 3000)` top-of-file window; it now locates the Phase 3FD-J-HANDOFF entry by its own `## Phase` header and scopes the checks to that section, while still verifying the handoff package files/manifest, the required package script, and the no-runtime-change boundary.
+- **Implemented scope**: primary historical checker patched (`check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs`); the latest checker (`check_phase_3ff_a_ui_c_manual_qa_contract.mjs`) relaxed from a "must be the top phase entry" assertion to a known-allowlist tolerance so it does not fail once this HOUSEKEEPING-A entry is prepended above it; UI-A/UI-B sibling checkers extended to tolerate this phase's changelog header and files where the validation chain required it; housekeeping static checker (`check_phase_3ff_a_housekeeping_a_contract.mjs`); result document; package script.
+- **Preserved policy**: no UI change; no API route change; no MK Agent source/fixture change; no Similar Pattern Agent source/fixture change; no KIS provider change; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3FF-A-HANDOFF-A for a current-state handoff package, or Phase 3FG-A-PLAN for guarded productization planning.
+
 ## Phase 3FF-A-UI-C - 2026-07-09
 
 ### Owner-local Browser QA for SP-B/MK-C Improved Deterministic Panel Output, No Live KIS, No LLM, No Public Activation (Executed)

@@ -251,8 +251,17 @@ assertIncludesAll(resultDoc, [
   'Recommended:',
 ], 'Result doc');
 
-const topEntry = changelog.slice(0, 3000);
-assert(includes(topEntry, '## Phase 3FD-J-HANDOFF - 2026-07-04'), 'Changelog top entry missing Phase 3FD-J-HANDOFF');
+// Historical stability: this entry is no longer near the top of the changelog
+// because later phases are legitimately prepended above it. Locate the
+// Phase 3FD-J-HANDOFF section by its own header and scope the checks to that
+// section (header -> next `## Phase ` header), instead of assuming it stays in
+// a fixed-size top-of-file slice.
+const handoffEntryStart = changelog.indexOf('## Phase 3FD-J-HANDOFF - 2026-07-04');
+const handoffNextHeader = changelog.indexOf('\n## Phase ', handoffEntryStart + 1);
+const topEntry = handoffEntryStart >= 0
+  ? changelog.slice(handoffEntryStart, handoffNextHeader > handoffEntryStart ? handoffNextHeader : undefined)
+  : '';
+assert(includes(topEntry, '## Phase 3FD-J-HANDOFF - 2026-07-04'), 'Changelog entry missing Phase 3FD-J-HANDOFF');
 assert(includes(topEntry, 'Chart AI New Chat Handoff Package, No Runtime Change (Implemented)'), 'Changelog title missing');
 assert(includes(topEntry, 'No source, route, UI, server runtime, provider, data, KIS, LLM, Supabase, database, environment, session/JWT, dependency, lockfile, deploy, or push changes occurred.'), 'Changelog no runtime statement missing');
 assert(includes(topEntry, 'Phase 3FE-A — KIS OHLC Provider Owner-local Integration'), 'Changelog next phase missing');

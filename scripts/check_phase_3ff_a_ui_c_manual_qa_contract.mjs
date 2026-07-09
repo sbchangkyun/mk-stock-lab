@@ -13,8 +13,25 @@ const PACKAGE_JSON = 'package.json';
 // existing on top of their respective baselines.
 const PATCHED_SIBLING_CHECKERS = ['scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs', 'scripts/check_phase_3ff_a_ui_a_contract.mjs'];
 
+// Phase 3FF-A-HOUSEKEEPING-A patches stale historical checkers (including this
+// UI-C checker's own changelog-position assertion) and adds its own
+// housekeeping checker/result deliverables. Tolerated here, not required, so
+// this checker's git-diff scope check does not fail once that cleanup exists on
+// top of 86050be.
+const HOUSEKEEPING_A_TOLERATED_FILES = [
+  'scripts/check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs',
+  'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
+  'docs/planning/phase_3ff_a_housekeeping_a_result_v0.1.md',
+  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  'scripts/check_phase_3ff_a_plan_contract.mjs',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...HOUSEKEEPING_A_TOLERATED_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -92,13 +109,18 @@ for (const token of REQUIRED_TOKENS) {
   assert(result.includes(token), `result doc must include required token: ${token}`);
 }
 
-// --- 4. Changelog must include the Phase 3FF-A-UI-C entry, at the top ---
+// --- 4. Changelog must include the Phase 3FF-A-UI-C entry ---
+// Historical stability: later housekeeping/hardening-only phases legitimately
+// prepend their own entries above this one, so this checker asserts the entry
+// exists and that only a known allowlist of later-phase headers appears above
+// it, rather than requiring UI-C to remain the very first phase entry.
 assert(changelog.includes('## Phase 3FF-A-UI-C - 2026-07-09'), 'changelog must include the Phase 3FF-A-UI-C entry header.');
+const TOLERATED_HEADERS_ABOVE_UI_C = ['## Phase 3FF-A-HOUSEKEEPING-A - 2026-07-09'];
 const uiCEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-C - 2026-07-09');
-const firstOtherPhaseHeaderIndex = changelog.search(/^## Phase (?!3FF-A-UI-C - 2026-07-09)/m);
+const headersAboveUiC = changelog.slice(0, uiCEntryIndex).match(/^## Phase .+$/gm) ?? [];
 assert(
-  uiCEntryIndex >= 0 && (firstOtherPhaseHeaderIndex === -1 || uiCEntryIndex < firstOtherPhaseHeaderIndex),
-  'changelog Phase 3FF-A-UI-C entry must appear above every other phase entry (document-level title above it is tolerated).',
+  uiCEntryIndex >= 0 && headersAboveUiC.every((header) => TOLERATED_HEADERS_ABOVE_UI_C.includes(header)),
+  'changelog Phase 3FF-A-UI-C entry must be at the top, tolerating only a known allowlist of later-phase entries above it.',
 );
 
 // --- 5. Only allowed files may have changed since baseline ---

@@ -45,8 +45,20 @@ const MK_C_TOLERATED_FILES = [
   'docs/planning/phase_3ff_a_mk_c_result_v0.1.md',
 ];
 
+// Later QA/housekeeping-only phases (3FF-A-UI-C, 3FF-A-HOUSEKEEPING-A) legitimately
+// add their own docs/checkers and patch stale historical checkers on top of this
+// phase's baseline. Tolerated here, not required.
+const LATER_PHASE_TOLERATED_FILES = [
+  'docs/planning/phase_3ff_a_ui_c_manual_qa_checklist_v0.1.md',
+  'docs/planning/phase_3ff_a_ui_c_manual_qa_result_v0.1.md',
+  'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
+  'scripts/check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs',
+  'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
+  'docs/planning/phase_3ff_a_housekeeping_a_result_v0.1.md',
+];
+
 const CORE_DELIVERABLES = [SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES, ...LATER_PHASE_TOLERATED_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
