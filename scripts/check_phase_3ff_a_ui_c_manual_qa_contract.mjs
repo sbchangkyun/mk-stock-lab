@@ -30,8 +30,30 @@ const HOUSEKEEPING_A_TOLERATED_FILES = [
   'scripts/check_phase_3ff_a_plan_contract.mjs',
 ];
 
+// Phase 3FF-A-HANDOFF-A adds a documentation-only current-state handoff
+// package plus its own result doc and static checker. Tolerated here, not
+// required, so this checker's git-diff scope check does not fail once that
+// package exists on top of 86050be.
+const HANDOFF_A_TOLERATED_FILES = [
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/README.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/01_CURRENT_STATE.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/02_COMPLETED_PHASE_HISTORY.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/03_ARCHITECTURE_AND_GUARDS.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/04_VALIDATION_COMMANDS.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/05_NEXT_PHASE_BRIEF_3FG_A_PLAN.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/06_NEW_CHAT_START_PROMPT.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/07_MANIFEST.json',
+  'docs/planning/phase_3ff_a_handoff_a_result_v0.1.md',
+  'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...HOUSEKEEPING_A_TOLERATED_FILES]);
+const allowedFiles = new Set([
+  ...CORE_DELIVERABLES,
+  ...PATCHED_SIBLING_CHECKERS,
+  ...HOUSEKEEPING_A_TOLERATED_FILES,
+  ...HANDOFF_A_TOLERATED_FILES,
+]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -115,7 +137,10 @@ for (const token of REQUIRED_TOKENS) {
 // exists and that only a known allowlist of later-phase headers appears above
 // it, rather than requiring UI-C to remain the very first phase entry.
 assert(changelog.includes('## Phase 3FF-A-UI-C - 2026-07-09'), 'changelog must include the Phase 3FF-A-UI-C entry header.');
-const TOLERATED_HEADERS_ABOVE_UI_C = ['## Phase 3FF-A-HOUSEKEEPING-A - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_UI_C = [
+  '## Phase 3FF-A-HOUSEKEEPING-A - 2026-07-09',
+  '## Phase 3FF-A-HANDOFF-A - 2026-07-09',
+];
 const uiCEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-C - 2026-07-09');
 const headersAboveUiC = changelog.slice(0, uiCEntryIndex).match(/^## Phase .+$/gm) ?? [];
 assert(

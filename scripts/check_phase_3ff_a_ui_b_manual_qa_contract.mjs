@@ -71,8 +71,34 @@ const HOUSEKEEPING_A_TOLERATED_FILES = [
   'docs/planning/phase_3ff_a_housekeeping_a_result_v0.1.md',
 ];
 
+// Phase 3FF-A-HANDOFF-A adds a documentation-only current-state handoff
+// package plus its own result doc and static checker. Tolerated here, not
+// required, so this checker's git-diff scope check does not fail once that
+// package exists on top of a32a52c.
+const HANDOFF_A_TOLERATED_FILES = [
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/README.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/01_CURRENT_STATE.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/02_COMPLETED_PHASE_HISTORY.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/03_ARCHITECTURE_AND_GUARDS.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/04_VALIDATION_COMMANDS.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/05_NEXT_PHASE_BRIEF_3FG_A_PLAN.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/06_NEW_CHAT_START_PROMPT.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/07_MANIFEST.json',
+  'docs/planning/phase_3ff_a_handoff_a_result_v0.1.md',
+  'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...MK_B_TOLERATED_FILES, ...SP_B_TOLERATED_FILES, ...MK_C_TOLERATED_FILES, ...UI_C_TOLERATED_FILES, ...HOUSEKEEPING_A_TOLERATED_FILES]);
+const allowedFiles = new Set([
+  ...CORE_DELIVERABLES,
+  ...PATCHED_SIBLING_CHECKERS,
+  ...MK_B_TOLERATED_FILES,
+  ...SP_B_TOLERATED_FILES,
+  ...MK_C_TOLERATED_FILES,
+  ...UI_C_TOLERATED_FILES,
+  ...HOUSEKEEPING_A_TOLERATED_FILES,
+  ...HANDOFF_A_TOLERATED_FILES,
+]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 
@@ -146,7 +172,14 @@ assert(changelog.includes('## Phase 3FF-A-UI-B - 2026-07-08'), 'changelog must i
 // Later QA/hardening-only phases (no runtime/API/UI change) legitimately
 // prepend their own entries above this one. Tolerate exactly this known
 // allowlist of headers above the UI-B entry, in any order/count.
-const TOLERATED_HEADERS_ABOVE_UI_B = ['## Phase 3FF-A-SP-B - 2026-07-08', '## Phase 3FF-A-MK-B - 2026-07-08', '## Phase 3FF-A-MK-C - 2026-07-08', '## Phase 3FF-A-UI-C - 2026-07-09', '## Phase 3FF-A-HOUSEKEEPING-A - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_UI_B = [
+  '## Phase 3FF-A-SP-B - 2026-07-08',
+  '## Phase 3FF-A-MK-B - 2026-07-08',
+  '## Phase 3FF-A-MK-C - 2026-07-08',
+  '## Phase 3FF-A-UI-C - 2026-07-09',
+  '## Phase 3FF-A-HOUSEKEEPING-A - 2026-07-09',
+  '## Phase 3FF-A-HANDOFF-A - 2026-07-09',
+];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];
 assert(
