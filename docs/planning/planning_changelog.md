@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FG-E - 2026-07-09
+
+### Owner-local Guarded Productization Static Shell Browser QA, All Real Gates Off (Executed)
+
+- **Status**: Executed.
+- **Baseline**: `e4414e5`.
+- **Purpose**: perform owner-local Browser QA for the Phase 3FG-D guarded productization static UI shell added to `/chart-ai`, verifying default-hidden state, owner-local opt-in visible state, coexistence with the pre-existing deterministic agents panel, PC/mobile viewport rendering, static state-card content, Korean safety copy, absence of forbidden CTA/investment language, console cleanliness, network boundary, DOM/source boundary, and default-flow regression.
+- **QA scope**: 12 browser QA cases executed via DOM/CSS/console/network introspection (not screenshot-only inspection). 11 of 12 cases passed. Case 1 (default `/chart-ai` hidden state) **failed**: the `hidden` DOM attribute is correctly set, but a CSS `display: grid` cascade-origin defect in the Phase 3FG-D style block causes the shell to render visibly anyway. This is a genuine UI defect, fully root-caused and documented in the result document; it is not fixed in this phase per the forbidden-changes boundary (`src/pages/chart-ai.astro` was not modified). Deliverables: QA checklist `docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md`; QA result `docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md`; static contract checker `scripts/check_phase_3fg_e_contract.mjs`; one package script (`check:phase-3fg-e`).
+- **Preserved policy**: no source/UI code change; no `chart-ai.astro` change; no API route activation; no scaffold source change; no MK Agent source/fixture change; no Similar Pattern Agent source/fixture change; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3FG-D-HF1 — Static Shell Browser QA Fixes, Hidden by Default, No Runtime Activation (required because this QA phase found a genuine UI defect in Case 1).
+
 ## Phase 3FG-D - 2026-07-09
 
 ### Owner-local Guarded Productization UI Static Shell, Hidden by Default, No Runtime Activation (Implemented)

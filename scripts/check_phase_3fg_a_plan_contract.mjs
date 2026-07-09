@@ -66,6 +66,11 @@ const TOLERATED_LATER_PHASE_FILES = [
   'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
   'scripts/check_phase_3fg_d_contract.mjs',
   'src/pages/chart-ai.astro',
+  // Files legitimately added by the later Phase 3FG-E browser QA pass
+  // (validator-compatibility only; no protective assertion weakened).
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_e_contract.mjs',
 ];
 
 // Phase 3FG-D is the specific, documented, approved later phase authorized
@@ -238,6 +243,7 @@ const TOLERATED_HEADERS_ABOVE_3FG_A_PLAN = [
   '## Phase 3FG-B - 2026-07-09',
   '## Phase 3FG-C - 2026-07-09',
   '## Phase 3FG-D - 2026-07-09',
+  '## Phase 3FG-E - 2026-07-09',
 ];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-A-PLAN - 2026-07-09');
 assert(phaseHeaderIndex >= 0, 'Phase 3FG-A-PLAN changelog entry must exist');

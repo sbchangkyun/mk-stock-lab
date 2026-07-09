@@ -48,6 +48,15 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_plan_contract.mjs',
 ];
 
+// Files legitimately added by the later Phase 3FG-E browser QA pass. Tolerated
+// here only so this checker keeps passing against a HEAD that already includes
+// that phase's deliverables; no protective assertion below is weakened.
+const TOLERATED_LATER_PHASE_FILES = [
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_e_contract.mjs',
+];
+
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
   '.claude/',
@@ -267,11 +276,19 @@ const changelog = read(CHANGELOG);
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
+// Tolerates only the known later Phase 3FG-E header prepended above this
+// entry (not a strict "must be the top entry" check, since Phase 3FG-E
+// legitimately added its own header above this one).
+const TOLERATED_HEADERS_ABOVE_3FG_D = ['## Phase 3FG-E - 2026-07-09'];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-D - 2026-07-09');
-const firstPhaseHeaderIndex = changelog.indexOf('## Phase ');
+const precedingHeaders =
+  phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
+const unexpectedPrecedingHeaders = precedingHeaders.filter(
+  (header) => !TOLERATED_HEADERS_ABOVE_3FG_D.includes(header.trim()),
+);
 assert(
-  phaseHeaderIndex >= 0 && firstPhaseHeaderIndex === phaseHeaderIndex,
-  'Phase 3FG-D changelog entry must be the first "## Phase " entry in the file',
+  phaseHeaderIndex >= 0 && unexpectedPrecedingHeaders.length === 0,
+  `Phase 3FG-D changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders.join(', ')}`,
 );
 const nextHeaderIndex = phaseHeaderIndex >= 0 ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1) : -1;
 assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3FG-D changelog section');
@@ -297,7 +314,12 @@ const relevantStatusFiles = statusFiles.filter(
   (file) => !KNOWN_UNTOUCHED_PATHS.some((known) => file === known || file.startsWith(known)),
 );
 const allChanged = [...new Set([...changedFiles, ...relevantStatusFiles])];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...MODIFIED_FILES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([
+  ...CORE_DELIVERABLES,
+  ...MODIFIED_FILES,
+  ...PATCHED_SIBLING_CHECKERS,
+  ...TOLERATED_LATER_PHASE_FILES,
+]);
 const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
 assert(unexpected.length === 0, `Unexpected changed files since baseline: ${unexpected.join(', ')}`);
 
