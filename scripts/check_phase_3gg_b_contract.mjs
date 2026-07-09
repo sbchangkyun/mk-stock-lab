@@ -1,9 +1,9 @@
-// Phase 3GG-A-PLAN contract checker.
-// Verifies the Live KIS / LLM approval and runtime-binding plan (planning-
-// only, no live KIS, no LLM, no public/beta activation, no API route, no
-// scaffold/source change) is present, internally consistent, and has not
-// touched any forbidden runtime/source path since the Phase 3FG-D-HF1
-// baseline.
+// Phase 3GG-B contract checker.
+// Verifies the Live KIS Approval Gate Checklist (owner-reviewable,
+// documentation/checker only, no live KIS, no LLM, no public/beta
+// activation, no API route, no scaffold/provider source change) is
+// present, internally consistent, and has not touched any forbidden
+// runtime/source path since the Phase 3GG-A-PLAN baseline.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -11,48 +11,32 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BASELINE = '6fda354ced5281e08ccbcbea1aa9b76894304874';
+const BASELINE = '3d3bc4fa92d30030e0a2687a55af35166e100705';
 
-const PLANNING_DOC = 'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md';
-const RESULT_DOC = 'docs/planning/phase_3gg_a_plan_result_v0.1.md';
-const CHECKER_SELF = 'scripts/check_phase_3gg_a_plan_contract.mjs';
+const CHECKLIST_DOC = 'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md';
+const RESULT_DOC = 'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md';
+const CHECKER_SELF = 'scripts/check_phase_3gg_b_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
-const CORE_DELIVERABLES = [PLANNING_DOC, RESULT_DOC, CHECKER_SELF];
+const CORE_DELIVERABLES = [CHECKLIST_DOC, RESULT_DOC, CHECKER_SELF];
 const MODIFIED_FILES = [CHANGELOG, PACKAGE_JSON];
 
 // Sibling phase checkers patched during this phase so they keep passing
-// against a HEAD that already includes this phase's own changes. Populated
-// only if the validation chain surfaces a cascade failure; every patch is
-// additive-only (no protective assertion weakened or removed).
+// against a HEAD that already includes this phase's own changes. Every
+// patch is additive-only (no protective assertion weakened or removed):
+// each sibling's TOLERATED_LATER_PHASE_FILES / TOLERATED_HEADERS_ABOVE_*
+// allowlist was extended to recognize this phase's 3 new deliverables and
+// changelog header.
 const PATCHED_SIBLING_CHECKERS = [
-  'scripts/check_phase_3fg_e_contract.mjs',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
   'scripts/check_phase_3fg_d_hf1_contract.mjs',
+  'scripts/check_phase_3fg_e_contract.mjs',
   'scripts/check_phase_3fg_d_contract.mjs',
   'scripts/check_phase_3fg_c_contract.mjs',
   'scripts/check_phase_3fg_b_contract.mjs',
   'scripts/check_phase_3fg_a_contract.mjs',
   'scripts/check_phase_3fg_a_plan_contract.mjs',
-  'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
-  'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
-  'scripts/check_phase_3ff_a_ui_a_contract.mjs',
-  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
-  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
-];
-
-// Files legitimately created by a later phase (Phase 3GG-B; documentation/
-// checker only, no runtime/source change) that this checker must tolerate
-// seeing in the diff/status without treating them as unexpected. Pure
-// additive allowlist.
-const TOLERATED_LATER_PHASE_FILES = [
-  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
-  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
-  'scripts/check_phase_3gg_b_contract.mjs',
-  // Phase 3GG-B additively patched these sibling checkers' own scope-tolerance
-  // arrays so the full validation chain runs cleanly once 3GG-B's deliverables
-  // exist on top of this checker's baseline. No protective assertion in any
-  // of them was weakened; each patch only added new tolerated file entries.
   'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
   'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
   'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
@@ -63,6 +47,12 @@ const TOLERATED_LATER_PHASE_FILES = [
   'scripts/check_phase_3ff_a_ui_a_contract.mjs',
   'scripts/check_phase_3ff_a_plan_contract.mjs',
 ];
+
+// No later phase exists on top of this baseline yet, so this list starts
+// empty. A future phase that legitimately adds files on top of this one
+// should extend this array in its own patch to this checker, not remove
+// any existing assertion.
+const TOLERATED_LATER_PHASE_FILES = [];
 
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
@@ -92,56 +82,68 @@ const REQUIRED_FORBIDDEN_DIFF_PATHS = [
   '.env.local',
 ];
 
-const PLANNING_DOC_REQUIRED_TOKENS = [
-  'Phase 3GG-A-PLAN',
-  '6fda354ced5281e08ccbcbea1aa9b76894304874',
-  'Phase 3FG-D-HF1',
-  'planning-only',
-  'No Activation',
-  'owner-local',
-  'beta',
-  'public',
-  'Live KIS approval',
-  'LLM approval',
-  'fail-closed',
-  'Live KIS remains blocked',
-  'LLM is not active',
-  '참고용',
-  '매수·매도 추천이 아닙니다',
-  '투자 자문이 아닙니다',
-  '과거 유사 흐름은 미래 성과를 보장하지 않습니다',
+// Literal candidate paths named in the work order. None of these exist in
+// the repo at this baseline -- the real KIS provider tree lives under
+// src/lib/server/providers/kis/ and several other src/lib/server/**/*kis*
+// files. Checked literally for completeness, and supplemented below by a
+// broad case-insensitive scan (assertion block 8b) over every changed file,
+// since the literal list does not match the actual provider location.
+const KIS_PROVIDER_CANDIDATE_PATHS = [
+  'src/lib/server/kis',
+  'src/lib/kis',
+  'src/server/kis',
+  'src/lib/server/chart-ai/kis',
+];
+
+const CHECKLIST_DOC_REQUIRED_TOKENS = [
   'Phase 3GG-B',
-  'Phase 3FG-F',
-  'postponed',
-  'No live KIS',
-  'No LLM',
-  'No public/beta activation',
+  '3d3bc4fa92d30030e0a2687a55af35166e100705',
+  'Phase 3GG-A-PLAN',
+  'Live KIS',
+  'Owner-reviewable',
+  'No Activation',
+  'Pending Owner Review',
+  'liveKisEnabled',
+  'providerMode: live_kis',
+  'Credential scope',
+  'Endpoint allowlist',
+  'Rate limit and quota ceiling',
+  'Cost/budget ceiling',
+  'Caching policy',
+  'First activation audience',
+  'Fail-closed behavior',
+  'Response sanitization',
+  'Audit and logging policy',
+  'Rollback plan',
+  'Commit-specific activation sign-off',
+  'No account/trading/order/balance API',
+  'Not ready — all gates pending owner review',
 ];
 
 const RESULT_DOC_REQUIRED_TOKENS = [
   'Status: Prepared.',
-  'Baseline: 6fda354ced5281e08ccbcbea1aa9b76894304874.',
-  'Phase 3FG-D-HF1',
+  'Baseline: 3d3bc4fa92d30030e0a2687a55af35166e100705.',
   'Phase 3GG-A-PLAN',
-  'Phase 3GG-B',
+  'Owner-reviewable',
+  'Pending Owner Review',
+  'Live KIS is still blocked',
+  'No source changes.',
+  'No chart-ai.astro change.',
+  'No API route changed.',
+  'No scaffold source changed.',
+  'No provider source changed.',
   'No live KIS.',
   'No LLM.',
   'No public/beta activation.',
-  'No API route activation.',
-  'No scaffold source change.',
-  'No deploy.',
-  'No push.',
-  'Runtime binding sequence summary',
-  'Live KIS approval plan summary',
+  'forbidden diff: empty',
 ];
 
 const CHANGELOG_REQUIRED_TOKENS = [
-  '## Phase 3GG-A-PLAN - 2026-07-09',
-  'Live KIS / LLM Approval',
+  '## Phase 3GG-B - 2026-07-09',
+  'Live KIS Approval Gate Checklist',
+  'Owner-reviewable',
   'No Activation',
-  '6fda354',
-  'Phase 3GG-B',
-  'Prepared',
+  '3d3bc4fa92d30030e0a2687a55af35166e100705',
 ];
 
 const FORBIDDEN_INVESTMENT_PHRASES = [
@@ -166,13 +168,14 @@ const SECRET_LIKE_CHECKS = [
   { name: '"service_role" literal', regex: /service_role/i },
 ];
 
-// Phrases that would falsely claim a real activation occurred. None of
-// these may appear anywhere in the planning or result document, even in a
+// Phrases that would falsely claim an activation occurred. None of these
+// may appear anywhere in the checklist or result document, even in a
 // hypothetical/future-tense framing, since this phase performs no
-// activation of any kind.
+// activation of any kind and approves no gate.
 const FALSE_ACTIVATION_CLAIMS = [
   'live KIS is now active',
   'live KIS has been activated',
+  'live KIS is approved',
   'LLM is now active',
   'LLM has been activated',
   'public access is now available',
@@ -180,6 +183,9 @@ const FALSE_ACTIVATION_CLAIMS = [
   'API route is now live',
   'API route has been activated',
   'deployed to production',
+  'usage has been deducted',
+  'paid entitlement unlocked',
+  'ad unlock occurred',
 ];
 
 // Constructed from numeric code points (not written as a literal mojibake
@@ -236,14 +242,14 @@ for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON]) {
 // --- 2. package.json contains the exact phase script ---
 const pkg = JSON.parse(read(PACKAGE_JSON));
 assert(
-  pkg.scripts && pkg.scripts['check:phase-3gg-a-plan'] === 'node scripts/check_phase_3gg_a_plan_contract.mjs',
-  'package.json is missing the exact "check:phase-3gg-a-plan" script entry',
+  pkg.scripts && pkg.scripts['check:phase-3gg-b'] === 'node scripts/check_phase_3gg_b_contract.mjs',
+  'package.json is missing the exact "check:phase-3gg-b" script entry',
 );
 
-// --- 3. Planning doc contains all required tokens ---
-const planningDoc = read(PLANNING_DOC);
-for (const token of PLANNING_DOC_REQUIRED_TOKENS) {
-  assert(planningDoc.includes(token), `Planning doc missing required token: ${token}`);
+// --- 3. Checklist doc contains all required tokens ---
+const checklistDoc = read(CHECKLIST_DOC);
+for (const token of CHECKLIST_DOC_REQUIRED_TOKENS) {
+  assert(checklistDoc.includes(token), `Checklist doc missing required token: ${token}`);
 }
 
 // --- 4. Result doc contains all required tokens ---
@@ -259,30 +265,19 @@ const changelog = read(CHANGELOG);
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
-// Tolerates only the known later Phase 3GG-B header prepended above this
-// entry (not a strict "must be the first entry" check, since Phase 3GG-B
-// legitimately added its own header above this one).
-const TOLERATED_HEADERS_ABOVE_3GG_A_PLAN = ['## Phase 3GG-B - 2026-07-09'];
-const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-A-PLAN - 2026-07-09');
-assert(phaseHeaderIndex >= 0, 'Phase 3GG-A-PLAN changelog entry must exist');
-const precedingHeaders3ggAPlan =
-  phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
-const unexpectedPrecedingHeaders3ggAPlan = precedingHeaders3ggAPlan.filter(
-  (header) => !TOLERATED_HEADERS_ABOVE_3GG_A_PLAN.includes(header.trim()),
-);
-assert(
-  unexpectedPrecedingHeaders3ggAPlan.length === 0,
-  `Phase 3GG-A-PLAN changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders3ggAPlan.join(', ')}`,
-);
+const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-B - 2026-07-09');
+assert(phaseHeaderIndex >= 0, 'Phase 3GG-B changelog entry must exist');
+assert(phaseHeaderIndex === 0 || changelog.slice(0, phaseHeaderIndex).trim() === '# MK Stock Lab Planning Changelog',
+  'Phase 3GG-B changelog entry must be the topmost phase entry');
 const nextHeaderIndex = phaseHeaderIndex >= 0
   ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1)
   : -1;
-assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3GG-A-PLAN changelog section');
+assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3GG-B changelog section');
 const changelogSection = phaseHeaderIndex >= 0 && nextHeaderIndex > phaseHeaderIndex
   ? changelog.slice(phaseHeaderIndex, nextHeaderIndex)
   : '';
-assert(changelogSection.includes('Phase 3FG-D-HF1') || changelogSection.includes('6fda354'),
-  'Phase 3GG-A-PLAN changelog entry must reference the Phase 3FG-D-HF1 / 6fda354 baseline');
+assert(changelogSection.includes('Phase 3GG-A-PLAN') || changelogSection.includes('3d3bc4f'),
+  'Phase 3GG-B changelog entry must reference the Phase 3GG-A-PLAN / 3d3bc4f baseline');
 
 // --- 6. HEAD is a descendant of the expected baseline ---
 let isDescendant = true;
@@ -324,9 +319,28 @@ for (const known of KNOWN_UNTOUCHED_PATHS) {
 const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
 assert(forbiddenDiff.length === 0, `Forbidden diff paths changed since baseline: ${forbiddenDiff.join(', ')}`);
 
-// --- 8. No mojibake patterns in new/changed docs ---
+// --- 8. No KIS provider module changed since baseline (literal candidates)
+// -- none of these paths exist in this repo, so this is expected to always
+// return empty; it is kept as a literal check per the work order in
+// addition to the broad scan in 8b below.
+const kisLiteralDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...KIS_PROVIDER_CANDIDATE_PATHS]);
+assert(kisLiteralDiff.length === 0, `KIS provider literal-candidate path changed since baseline: ${kisLiteralDiff.join(', ')}`);
+
+// --- 8b. Broad defensive scan: no changed file with "kis" anywhere in its
+// path (case-insensitive), other than this phase's own allowed deliverables
+// (the checklist/result docs and this checker legitimately discuss "KIS" by
+// name). This covers the actual provider tree (src/lib/server/providers/kis/,
+// src/lib/server/kisClient.ts, src/lib/server/chartAiKisOhlcProviderBoundary*,
+// src/lib/server/chartSimilarity/*Kis*), which does not match any of the 4
+// literal candidate paths above.
+const kisLikeChanged = allChanged.filter(
+  (file) => /kis/i.test(file) && !allowedFiles.has(file),
+);
+assert(kisLikeChanged.length === 0, `Possible KIS provider path changed since baseline: ${kisLikeChanged.join(', ')}`);
+
+// --- 9. No mojibake patterns in new docs/checker ---
 for (const [label, text] of [
-  [PLANNING_DOC, planningDoc],
+  [CHECKLIST_DOC, checklistDoc],
   [RESULT_DOC, resultDoc],
 ]) {
   for (const marker of MOJIBAKE_MARKERS) {
@@ -334,23 +348,11 @@ for (const [label, text] of [
   }
 }
 
-// --- 9. No forbidden investment language present as approved text ---
-// The planning doc's Section 15 is required (by spec) to enumerate the
-// exact forbidden phrase list as reference policy content, mirroring the
-// established repo convention (e.g. phase_3ff_a_plan_mk_agent_design_v0.1.md
-// lines 134-138: "These examples are forbidden and may appear only in this
-// explicit forbidden-phrasing section"). That doc is intentionally excluded
-// from this literal-absence scan, but is instead checked to ensure the list
-// is framed as forbidden, not approved, copy. The result doc and changelog
-// summarize outcomes and must never need to quote the forbidden phrases
-// verbatim, so they remain scanned. (This checker's own source is also
-// excluded: it must contain these phrases literally as pattern-match
-// strings.)
-assert(
-  planningDoc.includes('8 forbidden phrases') && planningDoc.includes('must never appear as approved output copy'),
-  'Planning doc Section 15 must frame its forbidden-phrase list as forbidden, not approved, copy',
-);
+// --- 10. No forbidden investment language present as approved text (this
+// checker's own source is excluded: it must contain these phrases literally
+// as pattern-match strings) ---
 for (const [label, text] of [
+  [CHECKLIST_DOC, checklistDoc],
   [RESULT_DOC, resultDoc],
   [CHANGELOG, changelogSection],
 ]) {
@@ -359,9 +361,9 @@ for (const [label, text] of [
   }
 }
 
-// --- 10. No secrets / PII present ---
+// --- 11. No secrets / PII present ---
 for (const [label, text] of [
-  [PLANNING_DOC, planningDoc],
+  [CHECKLIST_DOC, checklistDoc],
   [RESULT_DOC, resultDoc],
   [CHANGELOG, changelogSection],
 ]) {
@@ -370,9 +372,9 @@ for (const [label, text] of [
   }
 }
 
-// --- 11. No false-activation claim present ---
+// --- 12. No false-activation claim present ---
 for (const [label, text] of [
-  [PLANNING_DOC, planningDoc],
+  [CHECKLIST_DOC, checklistDoc],
   [RESULT_DOC, resultDoc],
   [CHANGELOG, changelogSection],
 ]) {
@@ -381,31 +383,41 @@ for (const [label, text] of [
   }
 }
 
-// --- 12. Plan recommends Phase 3GG-B next, not Phase 3FG-F ---
+// --- 13. No Live KIS gate is marked Approved; all 11 remain Pending Owner
+// Review ---
 assert(
-  planningDoc.includes('next recommended phase is **Phase 3GG-B**') || planningDoc.includes('The next recommended phase is **Phase 3GG-B**'),
-  'Planning doc must explicitly recommend Phase 3GG-B as the next phase',
+  !checklistDoc.includes('| Approved |') && !/Decision:\s*Approved(?!\s*\/)/.test(checklistDoc),
+  'Checklist doc must not mark any gate as Approved',
 );
-assert(
-  planningDoc.includes('Phase 3FG-F is postponed'),
-  'Planning doc must explicitly state that Phase 3FG-F is postponed (not recommended next)',
+const gateSummaryTable = checklistDoc.slice(
+  checklistDoc.indexOf('## 6. Live KIS approval checklist summary'),
+  checklistDoc.indexOf('## 7. Gate 1'),
 );
+const pendingCount = (gateSummaryTable.match(/Pending Owner Review/g) || []).length;
+assert(pendingCount >= 11, `Expected all 11 gates marked Pending Owner Review in the summary table, found ${pendingCount}`);
 assert(
-  resultDoc.includes('Phase 3GG-B — Live KIS Approval Gate Checklist') || resultDoc.includes('Phase 3GG-B'),
-  'Result doc must name Phase 3GG-B as the next recommended phase',
-);
-assert(
-  !resultDoc.includes('Next recommended phase: Phase 3FG-F') && !resultDoc.includes('Next Recommended Phase\n\nPhase 3FG-F'),
-  'Result doc must not recommend Phase 3FG-F as the next phase',
+  resultDoc.includes('All 11 Live KIS approval gates are **Pending Owner Review**'),
+  'Result doc must state all 11 gates are Pending Owner Review',
 );
 
-// --- 13. Final result ---
+// --- 14. Checklist recommends owner review/sign-off next, not
+// implementation ---
+assert(
+  checklistDoc.includes('Phase 3GG-B-REVIEW'),
+  'Checklist doc must recommend Phase 3GG-B-REVIEW (owner review) as a next-step option',
+);
+assert(
+  checklistDoc.includes('The next actionable step is owner review/sign-off, not implementation.'),
+  'Checklist doc decision summary must state the next actionable step is owner review, not implementation',
+);
+
+// --- 15. Final result ---
 if (failures.length) {
-  console.error(`Phase 3GG-A-PLAN check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
+  console.error(`Phase 3GG-B check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
   for (const failure of failures) {
     console.error(` - ${failure}`);
   }
   process.exit(1);
 } else {
-  console.log(`Phase 3GG-A-PLAN check PASS: ${assertions}/${assertions} assertions passed.`);
+  console.log(`Phase 3GG-B check PASS: ${assertions}/${assertions} assertions passed.`);
 }

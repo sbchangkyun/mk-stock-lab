@@ -74,6 +74,10 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
   'docs/planning/phase_3gg_a_plan_result_v0.1.md',
   'scripts/check_phase_3gg_a_plan_contract.mjs',
+  // Phase 3GG-B (documentation/checker-only; no runtime/source change).
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
+  'scripts/check_phase_3gg_b_contract.mjs',
 ];
 
 // Phase 3FG-D is the specific, documented, approved later phase authorized
@@ -271,6 +275,7 @@ const TOLERATED_HEADERS_ABOVE_3FG_C = [
   '## Phase 3FG-E - 2026-07-09',
   '## Phase 3FG-D-HF1 - 2026-07-09',
   '## Phase 3GG-A-PLAN - 2026-07-09',
+  '## Phase 3GG-B - 2026-07-09',
 ];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-C - 2026-07-09');
 const precedingHeaders =

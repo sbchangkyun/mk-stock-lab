@@ -135,6 +135,20 @@ const BROWSER_QA_AND_HOTFIX_FILES = [
   'scripts/check_phase_3fg_d_hf1_contract.mjs',
 ];
 
+// Phase 3GG-A-PLAN (Live KIS/LLM approval & runtime binding plan,
+// planning-only) and Phase 3GG-B (Live KIS approval gate checklist,
+// owner-reviewable, no activation) add planning-only deliverables, no source
+// or runtime change. Tolerated here, not required, for the same reason as
+// the groups above; no protective assertion below is weakened.
+const LIVE_KIS_APPROVAL_FILES = [
+  'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
+  'docs/planning/phase_3gg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
+  'scripts/check_phase_3gg_b_contract.mjs',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
 const allowedFiles = new Set([
   ...CORE_DELIVERABLES,
@@ -148,6 +162,7 @@ const allowedFiles = new Set([
   ...PLAN_AND_SCAFFOLD_TOLERATED_FILES,
   ...GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES,
   ...BROWSER_QA_AND_HOTFIX_FILES,
+  ...LIVE_KIS_APPROVAL_FILES,
 ]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
@@ -237,6 +252,7 @@ const TOLERATED_HEADERS_ABOVE_UI_B = [
   '## Phase 3FG-E - 2026-07-09',
   '## Phase 3FG-D-HF1 - 2026-07-09',
   '## Phase 3GG-A-PLAN - 2026-07-09',
+  '## Phase 3GG-B - 2026-07-09',
 ];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];

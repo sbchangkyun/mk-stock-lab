@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-B - 2026-07-09
+
+### Live KIS Approval Gate Checklist, Owner-reviewable, No Activation (Prepared)
+
+- **Status**: Prepared.
+- **Baseline**: `3d3bc4fa92d30030e0a2687a55af35166e100705` (Phase 3GG-A-PLAN).
+- **Purpose**: convert the Phase 3GG-A-PLAN Live KIS approval plan (Section 7, 11 gates) into a formal, individually-reviewable, owner-reviewable checklist.
+- **Scope**: 22-section checklist document (`docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md`) covering status, purpose, baseline, source of truth, owner review rules, an 11-gate summary table, one dedicated section per gate (credential scope, endpoint allowlist, rate limit and quota ceiling, cost/budget ceiling, caching policy, first activation audience, fail-closed behavior, response sanitization, audit and logging policy, rollback plan, commit-specific activation sign-off), a non-goals list, an owner sign-off template, an activation readiness decision, recommended next phases, and a decision summary; a result document; a static contract checker (`scripts/check_phase_3gg_b_contract.mjs`); one new `check:phase-3gg-b` package script. All 11 gates are Pending Owner Review; none are approved.
+- **Preserved policy**: no source change; no `chart-ai.astro` change; no API route created or activated; no scaffold/agent/provider source or fixture change; no live KIS; no LLM; no MK AI route activation; no Supabase/DB real runtime; no env/session/JWT/cookie/header parsing; no public/beta activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy; no push.
+- **Recommended next step**: Phase 3GG-B-REVIEW - Owner Review of Live KIS Approval Gates, No Activation.
+
 ## Phase 3GG-A-PLAN - 2026-07-09
 
 ### Live KIS / LLM Approval & Runtime Binding Plan, No Activation (Prepared)

@@ -85,6 +85,16 @@ const TOLERATED_LATER_PHASE_FILES = [
   // result doc and checker. Tolerated for the same reason.
   'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
   'scripts/check_phase_3fg_d_hf1_contract.mjs',
+  // Phase 3GG-A-PLAN (Live KIS/LLM approval & runtime binding plan,
+  // planning-only) and Phase 3GG-B (Live KIS approval gate checklist,
+  // owner-reviewable, no activation) add planning-only deliverables, no
+  // source or runtime change. Tolerated for the same reason.
+  'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
+  'docs/planning/phase_3gg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
+  'scripts/check_phase_3gg_b_contract.mjs',
 ];
 
 // Phase 3FG-D is the specific, documented, approved later phase authorized

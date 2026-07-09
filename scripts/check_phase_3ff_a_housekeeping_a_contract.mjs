@@ -99,6 +99,19 @@ const HOTFIX_FILES = [
   'scripts/check_phase_3fg_d_hf1_contract.mjs',
 ];
 
+// Phase 3GG-A-PLAN (Live KIS/LLM approval & runtime binding plan, planning-only)
+// and Phase 3GG-B (Live KIS approval gate checklist, owner-reviewable, no
+// activation) add planning-only deliverables, no source or runtime change.
+// Tolerated here, not required, for the same reason as the groups above.
+const LIVE_KIS_APPROVAL_FILES = [
+  'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
+  'docs/planning/phase_3gg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
+  'scripts/check_phase_3gg_b_contract.mjs',
+];
+
 // Phase 3FG-D is the specific, documented, approved later phase authorized
 // to modify src/pages/chart-ai.astro (an additive-only static UI shell).
 // This checker's forbidden-diff assertion is patched to tolerate exactly
@@ -115,6 +128,7 @@ const allowedFiles = new Set([
   ...GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES,
   ...BROWSER_QA_FILES,
   ...HOTFIX_FILES,
+  ...LIVE_KIS_APPROVAL_FILES,
 ]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];

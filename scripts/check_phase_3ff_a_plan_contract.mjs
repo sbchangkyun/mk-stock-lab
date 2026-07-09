@@ -173,6 +173,17 @@ const allowedFiles = new Set([
   PHASE_3FG_E_CHECKER,
   PHASE_3FG_D_HF1_RESULT,
   PHASE_3FG_D_HF1_CHECKER,
+  // Phase 3GG-A-PLAN (Live KIS/LLM approval & runtime binding plan,
+  // planning-only) and Phase 3GG-B (Live KIS approval gate checklist,
+  // owner-reviewable, no activation) add planning-only deliverables, no
+  // source or runtime change. Tolerated here, not required, for the same
+  // reason as the groups above; no protective assertion below is weakened.
+  'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
+  'docs/planning/phase_3gg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
+  'scripts/check_phase_3gg_b_contract.mjs',
 ]);
 
 const forbiddenPaths = [
