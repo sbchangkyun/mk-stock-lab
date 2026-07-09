@@ -51,6 +51,15 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_ui_a_contract.mjs',
   'scripts/check_phase_3ff_a_mk_a_contract.mjs',
   'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  // Pre-existing gap discovered (not caused) by Phase 3GG-A-PLAN's validation run: these 6
+  // checkers were legitimately patched by earlier phases after this phase's own e4414e5
+  // baseline, but this allowlist was never updated to tolerate them. Additive-only fix.
+  'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
+  'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
+  'scripts/check_phase_3ff_a_plan_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
 ];
 
 // Files legitimately created or modified by a later phase (Phase 3FG-D-HF1) that this checker
@@ -61,6 +70,10 @@ const TOLERATED_LATER_PHASE_FILES = [
   'scripts/check_phase_3fg_d_hf1_contract.mjs',
   'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
   CHART_AI_PAGE,
+  // Phase 3GG-A-PLAN (planning-only; no runtime/source change).
+  'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
+  'docs/planning/phase_3gg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -262,7 +275,10 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 // Tolerates only the known later Phase 3FG-D-HF1 header prepended above this entry (not a strict
 // "must be the top entry" check, since Phase 3FG-D-HF1 legitimately added its own header above
 // this one). Matches the established pattern in scripts/check_phase_3fg_d_contract.mjs.
-const TOLERATED_HEADERS_ABOVE_3FG_E = ['## Phase 3FG-D-HF1 - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_3FG_E = [
+  '## Phase 3FG-D-HF1 - 2026-07-09',
+  '## Phase 3GG-A-PLAN - 2026-07-09',
+];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-E - 2026-07-09');
 const precedingHeaders =
   phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];

@@ -58,6 +58,11 @@ const TOLERATED_LATER_PHASE_FILES = [
   // Phase 3FG-D-HF1's deliverables, tolerated for the same reason.
   'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
   'scripts/check_phase_3fg_d_hf1_contract.mjs',
+  // Phase 3GG-A-PLAN's deliverables (planning-only; no runtime/source change), tolerated for
+  // the same reason.
+  'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
+  'docs/planning/phase_3gg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -282,7 +287,11 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 // Tolerates only the known later Phase 3FG-E header prepended above this
 // entry (not a strict "must be the top entry" check, since Phase 3FG-E
 // legitimately added its own header above this one).
-const TOLERATED_HEADERS_ABOVE_3FG_D = ['## Phase 3FG-E - 2026-07-09', '## Phase 3FG-D-HF1 - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_3FG_D = [
+  '## Phase 3FG-E - 2026-07-09',
+  '## Phase 3FG-D-HF1 - 2026-07-09',
+  '## Phase 3GG-A-PLAN - 2026-07-09',
+];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-D - 2026-07-09');
 const precedingHeaders =
   phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];

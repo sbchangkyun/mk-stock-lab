@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-A-PLAN - 2026-07-09
+
+### Live KIS / LLM Approval & Runtime Binding Plan, No Activation (Prepared)
+
+- **Status**: Prepared.
+- **Baseline**: `6fda354` (Phase 3FG-D-HF1).
+- **Purpose**: create a goal-first, planning-only approval and runtime-binding plan for progressing Chart AI from the current owner-local static shell / deterministic fixture state toward guarded runtime binding, live KIS approval, and LLM approval. Per the owner's explicit goal-first direction, this phase consolidates the full approval structure into one planning-only document instead of spreading it across further nonessential handoff/freeze-style phases.
+- **Scope**: 20-section planning document (`docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md`) covering the current verified foundation, the goal-first shortened path, six productization lanes, an 11-gate Live KIS approval plan, an 11-gate LLM approval plan, a 7-stage API route activation plan, an 11-step runtime binding sequence, a 4-tier x 9-capability approval matrix, flag/configuration policy, auth/usage/cache/audit ordering, data minimization policy, safety/Korean-copy policy, a 13-condition fail-closed failure mode table, a minimum validation plan, recommended next phases, a 12-item non-goals list, and a decision summary; a result document; a static contract checker (`scripts/check_phase_3gg_a_plan_contract.mjs`); one new `check:phase-3gg-a-plan` package script.
+- **Preserved policy**: no runtime binding implemented; no live KIS; no LLM; no MK AI route activation; no public/beta activation; no API route created or activated; no `chart-ai.astro` change; no scaffold/agent/provider source or fixture change; no Supabase/DB real runtime; no env/session/JWT/cookie/header parsing; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy; no push.
+- **Recommended next step**: Phase 3GG-B - Live KIS Approval Gate Checklist (owner-reviewable, planning-only, no activation). Phase 3FG-F remains postponed.
+
 ## Phase 3FG-D-HF1 - 2026-07-09
 
 ### Static Shell Browser QA Fixes, Hidden by Default, No Runtime Activation (Implemented)
