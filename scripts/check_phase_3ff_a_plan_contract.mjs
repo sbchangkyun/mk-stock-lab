@@ -127,6 +127,22 @@ const allowedFiles = new Set([
   'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/07_MANIFEST.json',
   'docs/planning/phase_3ff_a_handoff_a_result_v0.1.md',
   'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
+  // Phase 3FG-A-PLAN and Phase 3FG-A's own deliverables, tolerated here so
+  // this checker's git-diff scope check does not fail once those later
+  // phases' planning docs, static checkers, scaffold module/fixture, and
+  // smoke test exist on top of this phase's baseline.
+  'docs/planning/phase_3fg_a_plan_guarded_productization_v0.1.md',
+  'docs/planning/phase_3fg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3fg_a_plan_contract.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs',
+  'scripts/check_phase_3fg_a_contract.mjs',
+  'docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md',
+  // Phase 3FG-B's own deliverables (QA docs/checker only, no source change).
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_b_contract.mjs',
 ]);
 
 const forbiddenPaths = [
@@ -257,6 +273,11 @@ const allowedCommittedRuntimeArtifacts = new Set([
   PHASE_3FF_A_MK_A_SOURCE,
   PHASE_3FF_A_MK_A_FIXTURE,
   'src/pages/chart-ai.astro',
+  // Phase 3FG-A's guarded productization scaffold module/fixture, tolerated
+  // here so this checker's forbidden-path diff does not fail once that
+  // later phase's scaffold exists under src/lib on top of this baseline.
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
 ]);
 const forbiddenDiff = [
   ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),

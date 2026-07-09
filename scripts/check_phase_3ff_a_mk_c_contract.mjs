@@ -245,9 +245,17 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty. Found: ${forbiddenDiff.join(', ')}`);
 
-// --- 9. Allowed source diff under src/lib/server/chart-ai must be exactly SOURCE/FIXTURE ---
+// --- 9. Allowed source diff under src/lib/server/chart-ai must be exactly
+// SOURCE/FIXTURE, tolerating the Phase 3FG-A guarded productization scaffold
+// module/fixture that later legitimately landed under the same directory ---
+const SCAFFOLD_TOLERATED_CHART_AI_FILES = [
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+];
 const allowedSourceDiff = gitLines(['diff', '--name-only', BASELINE, '--', 'src/lib/server/chart-ai']);
-const unexpectedSource = allowedSourceDiff.filter((file) => ![SOURCE, FIXTURE].includes(file));
+const unexpectedSource = allowedSourceDiff.filter(
+  (file) => ![SOURCE, FIXTURE, ...SCAFFOLD_TOLERATED_CHART_AI_FILES].includes(file),
+);
 assert(unexpectedSource.length === 0, `Only MK Agent source files may change under chart-ai. Unexpected: ${unexpectedSource.join(', ')}`);
 
 // --- 10. Similar Pattern Agent source/fixture must not change at all in Phase 3FF-A-MK-C ---

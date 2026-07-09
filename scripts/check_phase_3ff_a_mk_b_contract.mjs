@@ -231,8 +231,17 @@ assert(forbiddenDiff.length === 0, `Forbidden diff must be empty. Found: ${forbi
 // --- 8. Allowed source diff under src/lib/server/chart-ai must be exactly SOURCE/FIXTURE
 // (Similar Pattern Agent source/fixture tolerated: Phase 3FF-A-SP-B legitimately
 // hardens those files on top of this f25a7fc baseline; not required by MK-B.) ---
+// Phase 3FG-A's guarded productization scaffold module/fixture later
+// legitimately landed under the same directory; tolerated here, not
+// required by MK-B itself.
+const SCAFFOLD_TOLERATED_CHART_AI_FILES = [
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+];
 const allowedSourceDiff = gitLines(['diff', '--name-only', BASELINE, '--', 'src/lib/server/chart-ai']);
-const unexpectedSource = allowedSourceDiff.filter((file) => ![SOURCE, FIXTURE, SP_A_SOURCE, SP_A_FIXTURE].includes(file));
+const unexpectedSource = allowedSourceDiff.filter(
+  (file) => ![SOURCE, FIXTURE, SP_A_SOURCE, SP_A_FIXTURE, ...SCAFFOLD_TOLERATED_CHART_AI_FILES].includes(file),
+);
 assert(unexpectedSource.length === 0, `Only MK Agent source files may change under chart-ai. Unexpected: ${unexpectedSource.join(', ')}`);
 
 // --- 9. No Similar Pattern Agent source/fixture diff required by MK-B itself

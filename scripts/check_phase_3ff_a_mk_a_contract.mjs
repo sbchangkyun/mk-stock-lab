@@ -163,10 +163,19 @@ for (const pathName of forbiddenPaths) {
   assert(diff.length === 0, `Forbidden path must be unchanged: ${pathName}`);
 }
 
+// Phase 3FG-A's guarded productization scaffold module/fixture later
+// legitimately landed under the same directory; tolerated here, not
+// required by MK-A itself.
+const SCAFFOLD_TOLERATED_CHART_AI_FILES = [
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+];
 const allowedSourceDiff = runGit(['diff', '--name-only', BASELINE, '--', 'src/lib/server/chart-ai'])
   .split(/\r?\n/)
   .filter(Boolean);
-const unexpectedSource = [...new Set(allowedSourceDiff)].filter((file) => ![SOURCE, FIXTURE, SP_A_SOURCE, SP_A_FIXTURE].includes(file));
+const unexpectedSource = [...new Set(allowedSourceDiff)].filter(
+  (file) => ![SOURCE, FIXTURE, SP_A_SOURCE, SP_A_FIXTURE, ...SCAFFOLD_TOLERATED_CHART_AI_FILES].includes(file),
+);
 assert(unexpectedSource.length === 0, `Only MK Agent source files may change under chart-ai. Unexpected: ${unexpectedSource.join(', ')}`);
 
 const forbiddenSourcePatterns = [

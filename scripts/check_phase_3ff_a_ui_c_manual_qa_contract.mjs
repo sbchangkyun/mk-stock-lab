@@ -61,6 +61,9 @@ const PLAN_AND_SCAFFOLD_TOLERATED_FILES = [
   'scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs',
   'scripts/check_phase_3fg_a_contract.mjs',
   'docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_b_contract.mjs',
 ];
 
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
@@ -159,6 +162,7 @@ const TOLERATED_HEADERS_ABOVE_UI_C = [
   '## Phase 3FF-A-HANDOFF-A - 2026-07-09',
   '## Phase 3FG-A-PLAN - 2026-07-09',
   '## Phase 3FG-A - 2026-07-09',
+  '## Phase 3FG-B - 2026-07-09',
 ];
 const uiCEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-C - 2026-07-09');
 const headersAboveUiC = changelog.slice(0, uiCEntryIndex).match(/^## Phase .+$/gm) ?? [];

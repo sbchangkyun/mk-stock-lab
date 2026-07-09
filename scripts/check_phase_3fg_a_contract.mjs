@@ -43,6 +43,27 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_sp_a_contract.mjs',
 ];
 
+// Files legitimately added by the later Phase 3FG-B QA pass. Tolerated here
+// only so this checker keeps passing against a HEAD that already includes
+// that phase's deliverables; no protective assertion is weakened.
+const TOLERATED_LATER_PHASE_FILES = [
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_b_contract.mjs',
+  // Sibling checkers patched as part of Phase 3FG-B's own validation chain
+  // (validator-compatibility only; no protective assertion weakened).
+  'scripts/check_phase_3fg_a_plan_contract.mjs',
+  'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
+  'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
+  'scripts/check_phase_3ff_a_ui_a_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  'scripts/check_phase_3ff_a_plan_contract.mjs',
+];
+
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
   '.claude/',
@@ -281,12 +302,18 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
 
-// --- 8b. Changelog entry is the newest entry (prepended above prior top entry) ---
+// --- 8b. Changelog entry is present, tolerating only known later-phase
+// headers prepended above it (not a strict "must be the top entry" check,
+// since Phase 3FG-B legitimately added its own header above this one) ---
+const TOLERATED_HEADERS_ABOVE_3FG_A = ['## Phase 3FG-B - 2026-07-09'];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-A - 2026-07-09');
-const firstPhaseHeaderIndex = changelog.indexOf('## Phase ');
+const precedingHeaders = phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
+const unexpectedPrecedingHeaders = precedingHeaders.filter(
+  (header) => !TOLERATED_HEADERS_ABOVE_3FG_A.includes(header.trim()),
+);
 assert(
-  phaseHeaderIndex >= 0 && firstPhaseHeaderIndex === phaseHeaderIndex,
-  'Phase 3FG-A changelog entry must be the first "## Phase " entry in the file',
+  phaseHeaderIndex >= 0 && unexpectedPrecedingHeaders.length === 0,
+  `Phase 3FG-A changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders.join(', ')}`,
 );
 const nextHeaderIndex = phaseHeaderIndex >= 0 ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1) : -1;
 assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3FG-A changelog section');
@@ -312,7 +339,12 @@ const relevantStatusFiles = statusFiles.filter(
   (file) => !KNOWN_UNTOUCHED_PATHS.some((known) => file === known || file.startsWith(known)),
 );
 const allChanged = [...new Set([...changedFiles, ...relevantStatusFiles])];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...MODIFIED_FILES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([
+  ...CORE_DELIVERABLES,
+  ...MODIFIED_FILES,
+  ...PATCHED_SIBLING_CHECKERS,
+  ...TOLERATED_LATER_PHASE_FILES,
+]);
 const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
 assert(unexpected.length === 0, `Unexpected changed files since baseline: ${unexpected.join(', ')}`);
 

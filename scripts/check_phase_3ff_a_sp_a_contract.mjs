@@ -171,12 +171,21 @@ const forbiddenDiff = [
 ];
 assert([...new Set(forbiddenDiff)].length === 0, 'Forbidden pages/API/UI/provider/data/supabase/lockfile/env diff must be empty.');
 
+// Phase 3FG-A's guarded productization scaffold module/fixture later
+// legitimately landed under the same directory; tolerated here, not
+// required by SP-A itself.
+const SCAFFOLD_TOLERATED_CHART_AI_FILES = [
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+];
 const allowedSourceDiff = [
   ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
   ...runGit(['diff', '--name-only', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
   ...runGit(['diff', '--cached', '--name-only', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
 ];
-const unexpectedSource = [...new Set(allowedSourceDiff)].filter((file) => ![SOURCE, FIXTURE, MK_A_SOURCE, MK_A_FIXTURE].includes(file));
+const unexpectedSource = [...new Set(allowedSourceDiff)].filter(
+  (file) => ![SOURCE, FIXTURE, MK_A_SOURCE, MK_A_FIXTURE, ...SCAFFOLD_TOLERATED_CHART_AI_FILES].includes(file),
+);
 assert(unexpectedSource.length === 0, `Only allowed chart-ai source files may change. Unexpected: ${unexpectedSource.join(', ')}`);
 
 for (const token of [

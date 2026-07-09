@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FG-B - 2026-07-09
+
+### Owner-local Guarded Productization QA, All Real Gates Off (Executed)
+
+- **Status**: Executed.
+- **Baseline**: `7a3ed70`.
+- **Purpose**: perform owner-local command-line QA for the guarded productization scaffold added in Phase 3FG-A.
+- **QA scope**: default fail-closed decision; owner-local fixture without scaffoldOnlyAcknowledged blocked; owner-local fixture with explicit scaffoldOnlyAcknowledged allowed only as scaffold-only path; beta attempt blocked; public attempt blocked; live KIS attempt blocked; LLM attempt blocked; real auth attempt blocked; assertNoRuntimeActivation; deterministic output; safety copy; forbidden language check; source boundary check. All 13 QA cases passed with no deviation.
+- **Preserved policy**: no runtime source change; no UI wiring; no API route activation; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3FG-C — Owner-local Guarded Productization UI Readiness Plan, No Runtime Wiring.
+
 ## Phase 3FG-A - 2026-07-09
 
 ### Guarded Productization Scaffold, All Gates Off (Implemented)

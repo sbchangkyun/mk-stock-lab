@@ -198,6 +198,7 @@ const TOLERATED_HEADERS_ABOVE_UI_B = [
   '## Phase 3FF-A-HANDOFF-A - 2026-07-09',
   '## Phase 3FG-A-PLAN - 2026-07-09',
   '## Phase 3FG-A - 2026-07-09',
+  '## Phase 3FG-B - 2026-07-09',
 ];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];
@@ -229,9 +230,15 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 
 // --- 6. Forbidden paths must be unchanged, including chart-ai.astro itself ---
 // (src/lib/server/chart-ai stays forbidden for everything except the exact
-// MK-B and SP-B source/fixture files explicitly tolerated above.)
+// MK-B and SP-B source/fixture files explicitly tolerated above, plus the
+// Phase 3FG-A guarded productization scaffold module/fixture that later
+// legitimately landed under the same directory.)
 const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).filter(
-  (file) => !MK_B_TOLERATED_FILES.includes(file) && !SP_B_TOLERATED_FILES.includes(file),
+  (file) =>
+    !MK_B_TOLERATED_FILES.includes(file) &&
+    !SP_B_TOLERATED_FILES.includes(file) &&
+    file !== 'src/lib/server/chart-ai/guarded-productization-scaffold.mjs' &&
+    file !== 'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
 );
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty except explicitly tolerated later-phase files. Found: ${forbiddenDiff.join(', ')}`);
 
