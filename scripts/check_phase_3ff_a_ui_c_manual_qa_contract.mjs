@@ -64,7 +64,27 @@ const PLAN_AND_SCAFFOLD_TOLERATED_FILES = [
   'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md',
   'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md',
   'scripts/check_phase_3fg_b_contract.mjs',
+  // Phase 3FG-C adds its own UI readiness planning/result docs and static
+  // checker; Phase 3FG-D adds the owner-local static UI shell (touching
+  // src/pages/chart-ai.astro additively) plus its own smoke/checker/result
+  // deliverables. Tolerated here, not required, so this checker's git-diff
+  // scope check does not fail once those phases exist on top of 86050be. No
+  // protective assertion below is weakened by this addition.
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md',
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md',
+  'scripts/check_phase_3fg_c_contract.mjs',
+  'docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md',
+  'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
+  'scripts/check_phase_3fg_d_contract.mjs',
+  'src/pages/chart-ai.astro',
 ];
+
+// Phase 3FG-D is the specific, documented, approved later phase authorized
+// to modify src/pages/chart-ai.astro (an additive-only static UI shell).
+// This checker's forbidden-diff assertion is patched to tolerate exactly
+// that one known path while still failing if any other forbidden path
+// changes.
+const TOLERATED_FORBIDDEN_DIFF_EXCEPTIONS = ['src/pages/chart-ai.astro'];
 
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
 const allowedFiles = new Set([
@@ -164,6 +184,7 @@ const TOLERATED_HEADERS_ABOVE_UI_C = [
   '## Phase 3FG-A - 2026-07-09',
   '## Phase 3FG-B - 2026-07-09',
   '## Phase 3FG-C - 2026-07-09',
+  '## Phase 3FG-D - 2026-07-09',
 ];
 const uiCEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-C - 2026-07-09');
 const headersAboveUiC = changelog.slice(0, uiCEntryIndex).match(/^## Phase .+$/gm) ?? [];
@@ -194,7 +215,9 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 }
 
 // --- 6. Forbidden paths must be unchanged ---
-const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
+const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).filter(
+  (file) => !TOLERATED_FORBIDDEN_DIFF_EXCEPTIONS.includes(file),
+);
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty. Found: ${forbiddenDiff.join(', ')}`);
 
 // --- 7. No mojibake pattern in the new docs/checker ---

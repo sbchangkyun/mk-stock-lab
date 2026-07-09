@@ -143,6 +143,18 @@ const allowedFiles = new Set([
   'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md',
   'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md',
   'scripts/check_phase_3fg_b_contract.mjs',
+  // Phase 3FG-C's own deliverables (UI readiness plan/result docs and static
+  // checker; no runtime wiring). Tolerated here so this checker's git-diff
+  // scope check does not fail once those files exist on top of this baseline.
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md',
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md',
+  'scripts/check_phase_3fg_c_contract.mjs',
+  // Phase 3FG-D's own deliverables (owner-local static UI shell result doc,
+  // smoke, and checker; the src/pages/chart-ai.astro change itself is already
+  // tolerated above and in allowedCommittedRuntimeArtifacts below).
+  'docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md',
+  'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
+  'scripts/check_phase_3fg_d_contract.mjs',
 ]);
 
 const forbiddenPaths = [

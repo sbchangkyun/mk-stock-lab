@@ -47,6 +47,24 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_sp_a_contract.mjs',
 ];
 
+// Files legitimately added/modified by the later Phase 3FG-D static UI
+// shell. Tolerated here only so this checker keeps passing against a HEAD
+// that already includes Phase 3FG-D's own files; no protective assertion
+// below is weakened for any other path.
+const TOLERATED_LATER_PHASE_FILES = [
+  'docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md',
+  'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
+  'scripts/check_phase_3fg_d_contract.mjs',
+  'src/pages/chart-ai.astro',
+];
+
+// Phase 3FG-D is the specific, documented, approved later phase authorized
+// to modify src/pages/chart-ai.astro (an additive-only static UI shell).
+// This checker's forbidden-diff assertion is patched to tolerate exactly
+// that one known path while still failing if any other forbidden path
+// (scaffold source, API routes, Supabase, lockfiles, .env, etc.) changes.
+const TOLERATED_FORBIDDEN_DIFF_EXCEPTIONS = ['src/pages/chart-ai.astro'];
+
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
   '.claude/',
@@ -227,11 +245,19 @@ const changelog = read(CHANGELOG);
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
+// Tolerates only the known later Phase 3FG-D header prepended above this
+// entry (not a strict "must be the top entry" check, since Phase 3FG-D
+// legitimately added its own header above this one).
+const TOLERATED_HEADERS_ABOVE_3FG_C = ['## Phase 3FG-D - 2026-07-09'];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-C - 2026-07-09');
-const firstPhaseHeaderIndex = changelog.indexOf('## Phase ');
+const precedingHeaders =
+  phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
+const unexpectedPrecedingHeaders = precedingHeaders.filter(
+  (header) => !TOLERATED_HEADERS_ABOVE_3FG_C.includes(header.trim()),
+);
 assert(
-  phaseHeaderIndex >= 0 && firstPhaseHeaderIndex === phaseHeaderIndex,
-  'Phase 3FG-C changelog entry must be the first "## Phase " entry in the file',
+  phaseHeaderIndex >= 0 && unexpectedPrecedingHeaders.length === 0,
+  `Phase 3FG-C changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders.join(', ')}`,
 );
 const nextHeaderIndex = phaseHeaderIndex >= 0 ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1) : -1;
 assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3FG-C changelog section');
@@ -257,7 +283,12 @@ const relevantStatusFiles = statusFiles.filter(
   (file) => !KNOWN_UNTOUCHED_PATHS.some((known) => file === known || file.startsWith(known)),
 );
 const allChanged = [...new Set([...changedFiles, ...relevantStatusFiles])];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...MODIFIED_FILES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([
+  ...CORE_DELIVERABLES,
+  ...MODIFIED_FILES,
+  ...PATCHED_SIBLING_CHECKERS,
+  ...TOLERATED_LATER_PHASE_FILES,
+]);
 const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
 assert(unexpected.length === 0, `Unexpected changed files since baseline: ${unexpected.join(', ')}`);
 
@@ -270,7 +301,9 @@ for (const known of KNOWN_UNTOUCHED_PATHS) {
 }
 
 // --- 9. Forbidden diff paths are empty since baseline (scaffold source, UI, API, Supabase, KIS/MK agents, lockfiles, .env) ---
-const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
+const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).filter(
+  (file) => !TOLERATED_FORBIDDEN_DIFF_EXCEPTIONS.includes(file),
+);
 assert(forbiddenDiff.length === 0, `Forbidden diff paths changed since baseline: ${forbiddenDiff.join(', ')}`);
 
 // --- 10. No mojibake patterns in new docs/checker ---

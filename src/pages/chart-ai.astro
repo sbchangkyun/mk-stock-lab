@@ -126,6 +126,134 @@ const ownerLocalDeterministicMkAgentView = {
   usageNotice: mkDeterministicReport?.usageNotice ?? '오픈베타에서는 계정당 하루 3회까지 사용할 수 있어요.',
   disclaimer: mkDeterministicReport?.disclaimer ?? '이 분석은 참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다. 최종 투자 판단의 책임은 이용자 본인에게 있습니다.',
 };
+
+// Phase 3FG-D: owner-local, hidden-by-default static UI shell for the guarded productization
+// scaffold's decision states (Phase 3FG-A/3FG-B/3FG-C). Purely static copy — no scaffold
+// import, no scaffold execution, no fetch, no API route call. Mirrors the 8-state mapping from
+// docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md
+// (Section 8). Visibility is gated purely client-side (see setup() below) behind an explicit
+// localhost + query-param opt-in, mirroring the ownerLocalDeterministicAgents panel above.
+type GuardedProductizationStaticShellState = {
+  id: string;
+  stateLabel: string;
+  koreanLabel: string;
+  allowed: boolean;
+  staticStatus: string;
+  explanation: string;
+  requiredApproval: string | null;
+  safetyNote: string;
+  noExecutionStatement: string;
+};
+
+const GUARDED_PRODUCTIZATION_STATIC_SHELL_STATES: GuardedProductizationStaticShellState[] = [
+  {
+    id: 'default-fail-closed',
+    stateLabel: 'Default fail-closed',
+    koreanLabel: '기본 차단 상태',
+    allowed: false,
+    staticStatus: '차단됨 (Blocked)',
+    explanation: '현재 단계에서는 실제 분석 실행이 아니라 안전 경계 확인용 화면입니다. 모든 실제 상품화 게이트는 꺼져 있습니다.',
+    requiredApproval: null,
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다.',
+    noExecutionStatement: '이 상태에서는 실제 실행이 전혀 발생하지 않습니다.',
+  },
+  {
+    id: 'owner-local-without-acknowledgement',
+    stateLabel: 'Owner-local without scaffoldOnlyAcknowledged',
+    koreanLabel: '소유자-로컬 승인 대기',
+    allowed: false,
+    staticStatus: '차단됨 (Blocked)',
+    explanation: '이 화면은 명시적 승인(scaffoldOnlyAcknowledged) 전까지 차단 상태입니다.',
+    requiredApproval: null,
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다.',
+    noExecutionStatement: '이 상태에서는 실제 실행이 전혀 발생하지 않습니다.',
+  },
+  {
+    id: 'owner-local-scaffold-only-allowed',
+    stateLabel: 'Owner-local with explicit scaffoldOnlyAcknowledged',
+    koreanLabel: '스캐폴드 전용 허용 상태 (실제 실행 아님)',
+    allowed: true,
+    staticStatus: '스캐폴드 전용 허용 (실제 실행 아님)',
+    explanation: '이 상태는 실제 상품화 실행이 아니라 스캐폴드 전용 경계 확인 결과입니다.',
+    requiredApproval: null,
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다. 과거 유사 흐름은 미래 성과를 보장하지 않습니다.',
+    noExecutionStatement:
+      '실제 런타임 활성화가 아닙니다. 퍼블릭/베타 접근을 활성화하지 않습니다. 실시간 KIS를 활성화하지 않습니다. LLM을 활성화하지 않습니다. 사용량을 차감하지 않습니다. 유료/광고 권한을 해제하지 않습니다.',
+  },
+  {
+    id: 'beta-attempt-blocked',
+    stateLabel: 'Beta attempt blocked',
+    koreanLabel: '베타 차단',
+    allowed: false,
+    staticStatus: '차단됨 (Blocked)',
+    explanation: '베타 활성화는 아직 승인되지 않았습니다.',
+    requiredApproval: 'Beta/public activation approval',
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다.',
+    noExecutionStatement: '이 상태에서는 실제 실행이 전혀 발생하지 않습니다.',
+  },
+  {
+    id: 'public-attempt-blocked',
+    stateLabel: 'Public attempt blocked',
+    koreanLabel: '퍼블릭 차단',
+    allowed: false,
+    staticStatus: '차단됨 (Blocked)',
+    explanation: '퍼블릭 활성화는 아직 승인되지 않았습니다.',
+    requiredApproval: 'Beta/public activation approval',
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다.',
+    noExecutionStatement: '이 상태에서는 실제 실행이 전혀 발생하지 않습니다.',
+  },
+  {
+    id: 'live-kis-attempt-blocked',
+    stateLabel: 'Live KIS attempt blocked',
+    koreanLabel: '실시간 KIS 차단',
+    allowed: false,
+    staticStatus: '차단됨 (Blocked)',
+    explanation: '실시간 시세 연동은 아직 승인되지 않았습니다.',
+    requiredApproval: 'Live KIS approval',
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다.',
+    noExecutionStatement: '이 상태에서는 실제 실행이 전혀 발생하지 않습니다.',
+  },
+  {
+    id: 'llm-attempt-blocked',
+    stateLabel: 'LLM attempt blocked',
+    koreanLabel: 'LLM 차단',
+    allowed: false,
+    staticStatus: '차단됨 (Blocked)',
+    explanation: 'LLM 기반 분석은 아직 승인되지 않았습니다.',
+    requiredApproval: 'LLM approval',
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다.',
+    noExecutionStatement: '이 상태에서는 실제 실행이 전혀 발생하지 않습니다.',
+  },
+  {
+    id: 'real-auth-attempt-blocked',
+    stateLabel: 'Real auth attempt blocked',
+    koreanLabel: '실제 인증 차단',
+    allowed: false,
+    staticStatus: '차단됨 (Blocked)',
+    explanation: '실제 인증 런타임은 아직 승인되지 않았습니다.',
+    requiredApproval: 'Real auth runtime approval',
+    safetyNote: '참고용이며 매수·매도 추천이 아닙니다. 투자 자문이 아닙니다.',
+    noExecutionStatement: '이 상태에서는 실제 실행이 전혀 발생하지 않습니다.',
+  },
+];
+
+const GUARDED_PRODUCTIZATION_STATIC_SHELL_SAFETY_NOTICES = [
+  '참고용',
+  '매수·매도 추천이 아닙니다',
+  '투자 자문이 아닙니다',
+  '과거 유사 흐름은 미래 성과를 보장하지 않습니다.',
+  '현재 단계에서는 실제 분석 실행이 아니라 안전 경계 확인용 화면입니다.',
+  '모든 실제 상품화 게이트는 꺼져 있습니다.',
+];
+
+const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
+  'No live KIS',
+  'No LLM',
+  'No public/beta activation',
+  'No API route activation',
+  'No Supabase/DB real runtime',
+  'No env/session/JWT/cookie/header parsing',
+];
 ---
 
 <Layout title="종목 차트 | MK Stock Lab" activePath="/chart-ai">
@@ -518,6 +646,67 @@ const ownerLocalDeterministicMkAgentView = {
               MK 에이전트 결과를 사용할 수 없습니다. (fixture 기반 owner-local 검증용, 실제 KIS 데이터 아님)
             </p>
           )}
+        </div>
+      </section>
+
+      <!--
+        Phase 3FG-D: owner-local, hidden-by-default static UI shell for the guarded
+        productization scaffold's decision states (Phase 3FG-A/3FG-B/3FG-C). Hidden by default.
+        Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND the URL carries
+        `?ownerLocalGuardedProductizationShell=1`. Static, read-only display of pre-written copy
+        only: no fetch, no API route call, no scaffold import/execution, no live KIS, no LLM, no
+        Supabase/DB real runtime, no env/session/JWT/cookie/header parsing, no usage deduction,
+        no paid/ad unlock, no deploy/push. Separate from, and does not alter,
+        #chartAiOwnerLocalDeterministicAgentsPanel above.
+      -->
+      <section
+        id="chartAiOwnerLocalGuardedProductizationStaticShell"
+        class="chart-owner-local-guarded-productization-shell"
+        aria-labelledby="chart-owner-local-guarded-productization-shell-heading"
+        hidden
+      >
+        <div class="chart-owner-local-guarded-productization-shell-heading">
+          <p class="eyebrow">오너 로컬 전용 · 정적 화면 · 베타/퍼블릭 기능 아님</p>
+          <h3 id="chart-owner-local-guarded-productization-shell-heading">상품화 게이트 상태 (정적 화면)</h3>
+          <p class="chart-owner-local-guarded-productization-shell-guide">
+            현재 단계에서는 실제 분석 실행이 아니라 안전 경계 확인용 화면입니다. 모든 실제 상품화 게이트는 꺼져 있습니다.
+          </p>
+          <ul class="chart-owner-local-guarded-productization-shell-boundary-list">
+            {GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES.map((boundary) => (
+              <li>{boundary}</li>
+            ))}
+          </ul>
+          <ul class="chart-owner-local-guarded-productization-shell-safety-list">
+            {GUARDED_PRODUCTIZATION_STATIC_SHELL_SAFETY_NOTICES.map((notice) => (
+              <li>{notice}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="chart-owner-local-guarded-productization-shell-cards">
+          {GUARDED_PRODUCTIZATION_STATIC_SHELL_STATES.map((state) => (
+            <div class="chart-owner-local-guarded-productization-shell-card" data-allowed={String(state.allowed)}>
+              <div class="chart-owner-local-guarded-productization-shell-card-head">
+                <span class={`chart-owner-local-guarded-productization-shell-badge ${state.allowed ? 'is-allowed' : 'is-blocked'}`}>
+                  {state.staticStatus}
+                </span>
+                <h4>{state.stateLabel}</h4>
+              </div>
+              <p class="chart-owner-local-guarded-productization-shell-korean-label">{state.koreanLabel}</p>
+              <p class="chart-owner-local-guarded-productization-shell-explanation">{state.explanation}</p>
+              {state.requiredApproval ? (
+                <p class="chart-owner-local-guarded-productization-shell-approval">
+                  <strong>필요 승인 (미승인):</strong> {state.requiredApproval}
+                </p>
+              ) : (
+                <p class="chart-owner-local-guarded-productization-shell-approval chart-owner-local-guarded-productization-shell-approval-none">
+                  <strong>필요 승인:</strong> 해당 없음
+                </p>
+              )}
+              <p class="chart-owner-local-guarded-productization-shell-safety-note">{state.safetyNote}</p>
+              <p class="chart-owner-local-guarded-productization-shell-no-exec">{state.noExecutionStatement}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -977,6 +1166,24 @@ const ownerLocalDeterministicMkAgentView = {
       const ownerLocalDeterministicAgentsPanel = document.getElementById('chartAiOwnerLocalDeterministicAgentsPanel');
       if (ownerLocalDeterministicAgentsPanel) {
         ownerLocalDeterministicAgentsPanel.hidden = !ownerLocalDeterministicAgentsEnabled;
+      }
+
+      // Owner-local guarded productization static shell (Phase 3FG-D). Local-only, explicit
+      // opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the URL carries
+      // `?ownerLocalGuardedProductizationShell=1`. All card content is pre-rendered
+      // server-side from static copy above — this only toggles visibility. No fetch, no API
+      // call, no scaffold import/execution, ever, for this shell.
+      const ownerLocalGuardedProductizationShellOptIn =
+        chartAiQuery.get('ownerLocalGuardedProductizationShell') === '1';
+      const ownerLocalGuardedProductizationShellEnabled =
+        mockedChartAiAccess.capabilities.canAccessChartAi &&
+        isLocalOwnerHostname() &&
+        ownerLocalGuardedProductizationShellOptIn;
+      const ownerLocalGuardedProductizationShellPanel = document.getElementById(
+        'chartAiOwnerLocalGuardedProductizationStaticShell',
+      );
+      if (ownerLocalGuardedProductizationShellPanel) {
+        ownerLocalGuardedProductizationShellPanel.hidden = !ownerLocalGuardedProductizationShellEnabled;
       }
 
       authGateCta?.addEventListener('click', () => {
@@ -3795,6 +4002,120 @@ const ownerLocalDeterministicMkAgentView = {
       color: var(--text-muted);
       font-size: 0.78rem;
       line-height: 1.5;
+    }
+
+    .chart-owner-local-guarded-productization-shell {
+      margin: 1.25rem 0;
+      padding: 1.1rem 1.25rem;
+      border-radius: 14px;
+      border: 1px dashed color-mix(in srgb, var(--primary) 45%, var(--chart-shell-border));
+      background: color-mix(in srgb, var(--primary) 6%, transparent);
+      display: grid;
+      gap: 1rem;
+    }
+
+    .chart-owner-local-guarded-productization-shell-heading h3 {
+      margin: 0.2rem 0 0.4rem;
+      font-size: 1rem;
+    }
+
+    .chart-owner-local-guarded-productization-shell-guide {
+      margin: 0 0 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .chart-owner-local-guarded-productization-shell-boundary-list,
+    .chart-owner-local-guarded-productization-shell-safety-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0 0 0.5rem;
+      padding: 0;
+      list-style: none;
+    }
+
+    .chart-owner-local-guarded-productization-shell-boundary-list li,
+    .chart-owner-local-guarded-productization-shell-safety-list li {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--chart-shell-border);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: var(--surface, transparent);
+    }
+
+    .chart-owner-local-guarded-productization-shell-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .chart-owner-local-guarded-productization-shell-card {
+      border: 1px solid var(--chart-shell-border);
+      border-radius: 12px;
+      padding: 0.85rem;
+      display: grid;
+      gap: 0.4rem;
+      min-width: 0;
+    }
+
+    .chart-owner-local-guarded-productization-shell-card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .chart-owner-local-guarded-productization-shell-card-head h4 {
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    .chart-owner-local-guarded-productization-shell-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      border: 1px solid currentColor;
+      white-space: nowrap;
+    }
+
+    .chart-owner-local-guarded-productization-shell-badge.is-blocked {
+      color: var(--danger, #b3261e);
+    }
+
+    .chart-owner-local-guarded-productization-shell-badge.is-allowed {
+      color: var(--primary);
+    }
+
+    .chart-owner-local-guarded-productization-shell-korean-label,
+    .chart-owner-local-guarded-productization-shell-explanation,
+    .chart-owner-local-guarded-productization-shell-approval,
+    .chart-owner-local-guarded-productization-shell-safety-note,
+    .chart-owner-local-guarded-productization-shell-no-exec {
+      margin: 0;
+      font-size: 0.76rem;
+      line-height: 1.5;
+      color: var(--text-muted);
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+
+    .chart-owner-local-guarded-productization-shell-approval-none {
+      opacity: 0.75;
+    }
+
+    @media (max-width: 420px) {
+      .chart-owner-local-guarded-productization-shell {
+        padding: 0.9rem 1rem;
+      }
+
+      .chart-owner-local-guarded-productization-shell-cards {
+        grid-template-columns: 1fr;
+      }
     }
 
     .chart-company-placeholder small {

@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FG-D - 2026-07-09
+
+### Owner-local Guarded Productization UI Static Shell, Hidden by Default, No Runtime Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `99cd694`.
+- **Purpose**: add a hidden-by-default owner-local static UI shell for future guarded productization decision-state display on `/chart-ai`, building on the Phase 3FG-C UI readiness plan. Static/read-only only: no scaffold import, no scaffold execution, no API route call, no live KIS, no LLM.
+- **Implemented scope**: additive-only static shell in `src/pages/chart-ai.astro`; new `ownerLocalGuardedProductizationShell=1` local opt-in query param, ANDed with the existing `isLocalOwnerHostname()` localhost guard; new `chartAiOwnerLocalGuardedProductizationStaticShell` section, hidden by default, separate from and non-disruptive to the pre-existing `chartAiOwnerLocalDeterministicAgentsPanel`; 8 static decision-state cards (Default fail-closed; Owner-local without scaffoldOnlyAcknowledged; Owner-local with explicit scaffoldOnlyAcknowledged scaffold-only allowed; Beta attempt blocked; Public attempt blocked; Live KIS attempt blocked; LLM attempt blocked; Real auth attempt blocked) mirroring the Phase 3FG-C plan's Section 8 mapping table; required Korean safety copy and blocked-boundary copy; no execution CTA, no button, no fetch, no scaffold import; smoke script `scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs`; static contract checker `scripts/check_phase_3fg_d_contract.mjs`; result document `docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md`; two package scripts (`smoke:phase-3fg-d`, `check:phase-3fg-d`).
+- **Preserved policy**: no API route activation; no scaffold source change; no MK Agent source/fixture change; no Similar Pattern Agent source/fixture change; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3FG-E — Owner-local Guarded Productization Static Shell Browser QA, All Real Gates Off.
+
 ## Phase 3FG-C - 2026-07-09
 
 ### Owner-local Guarded Productization UI Readiness Plan, No Runtime Wiring (Prepared)

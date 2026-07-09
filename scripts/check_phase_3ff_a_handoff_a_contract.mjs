@@ -64,7 +64,23 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md',
   'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md',
   'scripts/check_phase_3fg_c_contract.mjs',
+  // Phase 3FG-D adds the owner-local static UI shell (touching
+  // src/pages/chart-ai.astro additively) plus its own smoke/checker/result
+  // deliverables. Tolerated here, not required, so this checker's git-diff
+  // scope check does not fail once that phase exists on top of this
+  // checker's own baseline. No protective assertion below is weakened.
+  'docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md',
+  'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
+  'scripts/check_phase_3fg_d_contract.mjs',
+  'src/pages/chart-ai.astro',
 ];
+
+// Phase 3FG-D is the specific, documented, approved later phase authorized
+// to modify src/pages/chart-ai.astro (an additive-only static UI shell).
+// This checker's forbidden-diff assertion is patched to tolerate exactly
+// that one known path while still failing if any other forbidden path
+// changes.
+const TOLERATED_FORBIDDEN_DIFF_EXCEPTIONS = ['src/pages/chart-ai.astro'];
 
 const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...TOLERATED_LATER_PHASE_FILES]);
 
@@ -276,7 +292,9 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 }
 
 // --- 17. Forbidden runtime/source paths must be unchanged since baseline ---
-const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
+const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).filter(
+  (file) => !TOLERATED_FORBIDDEN_DIFF_EXCEPTIONS.includes(file),
+);
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty. Found: ${forbiddenDiff.join(', ')}`);
 
 // --- 18. No mojibake pattern in new docs/checker ---

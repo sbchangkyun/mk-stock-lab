@@ -110,6 +110,18 @@ const PLAN_AND_SCAFFOLD_TOLERATED_FILES = [
   'scripts/check_phase_3fg_c_contract.mjs',
 ];
 
+// Phase 3FG-D adds the owner-local static UI shell (additively touching
+// src/pages/chart-ai.astro) plus its own smoke/checker/result deliverables.
+// Tolerated here, not required, so this checker's git-diff scope check does
+// not fail once that phase exists on top of a32a52c. No protective assertion
+// below is weakened by this addition.
+const GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES = [
+  'docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md',
+  'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
+  'scripts/check_phase_3fg_d_contract.mjs',
+  'src/pages/chart-ai.astro',
+];
+
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
 const allowedFiles = new Set([
   ...CORE_DELIVERABLES,
@@ -121,6 +133,7 @@ const allowedFiles = new Set([
   ...HOUSEKEEPING_A_TOLERATED_FILES,
   ...HANDOFF_A_TOLERATED_FILES,
   ...PLAN_AND_SCAFFOLD_TOLERATED_FILES,
+  ...GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES,
 ]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
@@ -206,6 +219,7 @@ const TOLERATED_HEADERS_ABOVE_UI_B = [
   '## Phase 3FG-A - 2026-07-09',
   '## Phase 3FG-B - 2026-07-09',
   '## Phase 3FG-C - 2026-07-09',
+  '## Phase 3FG-D - 2026-07-09',
 ];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];
@@ -239,13 +253,16 @@ for (const knownPath of KNOWN_UNTOUCHED_PATHS) {
 // (src/lib/server/chart-ai stays forbidden for everything except the exact
 // MK-B and SP-B source/fixture files explicitly tolerated above, plus the
 // Phase 3FG-A guarded productization scaffold module/fixture that later
-// legitimately landed under the same directory.)
+// legitimately landed under the same directory. src/pages/chart-ai.astro
+// itself stays forbidden for UI-B's own scope, except for the one later,
+// documented, approved Phase 3FG-D additive static UI shell change.)
 const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).filter(
   (file) =>
     !MK_B_TOLERATED_FILES.includes(file) &&
     !SP_B_TOLERATED_FILES.includes(file) &&
     file !== 'src/lib/server/chart-ai/guarded-productization-scaffold.mjs' &&
-    file !== 'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+    file !== 'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs' &&
+    file !== 'src/pages/chart-ai.astro',
 );
 assert(forbiddenDiff.length === 0, `Forbidden diff must be empty except explicitly tolerated later-phase files. Found: ${forbiddenDiff.join(', ')}`);
 
