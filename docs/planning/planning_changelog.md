@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FG-C - 2026-07-09
+
+### Owner-local Guarded Productization UI Readiness Plan, No Runtime Wiring (Prepared)
+
+- **Status**: Prepared.
+- **Baseline**: `172e146`.
+- **Purpose**: prepare a planning-only UI readiness package defining how a future phase may safely expose the Phase 3FG-A guarded productization scaffold decision states in UI, building on the Phase 3FG-B command-line QA that verified the scaffold's fail-closed behavior.
+- **Planned scope**: 17-section UI readiness plan covering current verified foundation, UI readiness objective, proposed future UI placement (hidden-by-default panel section), future UI guard model, an 8-state UI mapping table for every scaffold decision outcome, Korean safety copy guidance, UX guardrails, data/payload policy, accessibility/responsive readiness, fail-closed failure/empty states, non-goals, and a recommended next implementation phase. No UI file changed. No API route changed. No scaffold source changed.
+- **Preserved policy**: no UI wiring; no API route activation; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3FG-D — Owner-local Guarded Productization UI Static Shell, Hidden by Default, No Runtime Activation.
+
 ## Phase 3FG-B - 2026-07-09
 
 ### Owner-local Guarded Productization QA, All Real Gates Off (Executed)

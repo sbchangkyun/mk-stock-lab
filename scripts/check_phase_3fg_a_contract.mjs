@@ -62,6 +62,10 @@ const TOLERATED_LATER_PHASE_FILES = [
   'scripts/check_phase_3ff_a_mk_a_contract.mjs',
   'scripts/check_phase_3ff_a_sp_a_contract.mjs',
   'scripts/check_phase_3ff_a_plan_contract.mjs',
+  // Files legitimately added by the later Phase 3FG-C UI readiness plan.
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md',
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md',
+  'scripts/check_phase_3fg_c_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -305,7 +309,7 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 // --- 8b. Changelog entry is present, tolerating only known later-phase
 // headers prepended above it (not a strict "must be the top entry" check,
 // since Phase 3FG-B legitimately added its own header above this one) ---
-const TOLERATED_HEADERS_ABOVE_3FG_A = ['## Phase 3FG-B - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_3FG_A = ['## Phase 3FG-B - 2026-07-09', '## Phase 3FG-C - 2026-07-09'];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-A - 2026-07-09');
 const precedingHeaders = phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
 const unexpectedPrecedingHeaders = precedingHeaders.filter(

@@ -1,10 +1,12 @@
-// Phase 3FG-B contract checker.
-// Verifies the owner-local guarded productization QA checklist and result
-// documents exist, contain the required tokens, are free of forbidden
-// investment language / mojibake / secret-like tokens, and that no
-// forbidden runtime/source path has changed since the Phase 3FG-A baseline.
-// This phase is QA/documentation/checker only: it does not modify scaffold
-// source, does not wire the scaffold into UI, and activates no real gate.
+// Phase 3FG-C contract checker.
+// Verifies the owner-local guarded productization UI readiness plan and
+// result documents exist, contain the required tokens, are free of
+// forbidden investment language / mojibake / secret-like tokens / forbidden
+// implementation authorization language, and that no forbidden
+// runtime/source path has changed since the Phase 3FG-B baseline. This
+// phase is planning/documentation/checker only: it does not wire anything
+// into `/chart-ai`, does not create an API route, and does not modify any
+// scaffold source.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -12,47 +14,25 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BASELINE = '7a3ed70';
+const BASELINE = '172e146';
 
-const CHECKLIST_DOC = 'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md';
-const RESULT_DOC = 'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md';
-const CHECKER_SELF = 'scripts/check_phase_3fg_b_contract.mjs';
+const PLAN_DOC = 'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md';
+const RESULT_DOC = 'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md';
+const CHECKER_SELF = 'scripts/check_phase_3fg_c_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
-const CORE_DELIVERABLES = [CHECKLIST_DOC, RESULT_DOC, CHECKER_SELF];
+const CORE_DELIVERABLES = [PLAN_DOC, RESULT_DOC, CHECKER_SELF];
 const MODIFIED_FILES = [CHANGELOG, PACKAGE_JSON];
 
 // Sibling checkers patched during this phase so they keep passing against a
 // HEAD that already includes this phase's files/changelog header. No
 // protective assertion in any of these files may be weakened; each patch
 // may only extend an existing tolerance allowlist. Populated only if
-// validation surfaces a genuine compatibility gap (see the Phase 3FG-A
-// precedent for the pattern).
+// validation surfaces a genuine compatibility gap (see the Phase 3FG-A /
+// Phase 3FG-B precedent for the pattern).
 const PATCHED_SIBLING_CHECKERS = [
-  'scripts/check_phase_3fg_a_contract.mjs',
-  'scripts/check_phase_3fg_a_plan_contract.mjs',
-  'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
-  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
-  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
-  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
-  'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
-  'scripts/check_phase_3ff_a_ui_a_contract.mjs',
-  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
-  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
-  'scripts/check_phase_3ff_a_plan_contract.mjs',
-];
-
-// Files legitimately added by the later Phase 3FG-C UI readiness plan.
-// Tolerated here only so this checker keeps passing against a HEAD that
-// already includes that phase's deliverables; no protective assertion is
-// weakened.
-const TOLERATED_LATER_PHASE_FILES = [
-  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md',
-  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md',
-  'scripts/check_phase_3fg_c_contract.mjs',
-  // Sibling checkers patched as part of Phase 3FG-C's own validation chain
-  // (validator-compatibility only; no protective assertion weakened).
+  'scripts/check_phase_3fg_b_contract.mjs',
   'scripts/check_phase_3fg_a_contract.mjs',
   'scripts/check_phase_3fg_a_plan_contract.mjs',
   'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
@@ -95,50 +75,47 @@ const REQUIRED_FORBIDDEN_DIFF_PATHS = [
   '.env.local',
 ];
 
-const CHECKLIST_REQUIRED_TOKENS = [
+const PLAN_DOC_REQUIRED_TOKENS = [
+  'Phase 3FG-C',
+  '172e146',
   'Phase 3FG-B',
-  '7a3ed70',
-  'Phase 3FG-A',
-  'command-line QA only',
-  'no UI wiring',
-  'no API route activation',
+  'Planning-only',
+  'No Runtime Wiring',
+  'owner-local',
+  'guarded productization',
+  'UI readiness',
+  'hidden-by-default',
+  'fail-closed',
+  'scaffoldOnlyAcknowledged',
   'No live KIS',
   'No LLM',
-  'all real gates off',
-  'owner-local',
-  'scaffoldOnlyAcknowledged',
-  'fail-closed',
-  'beta attempt',
-  'public attempt',
-  'live KIS attempt',
-  'LLM attempt',
-  'real auth attempt',
-  'deterministic',
+  'No public/beta activation',
+  'no API route activation',
+  'no UI wiring',
+  '과거 유사 흐름은 미래 성과를 보장하지 않습니다',
+  '매수·매도 추천이 아닙니다',
+  '투자 자문이 아닙니다',
 ];
 
 const RESULT_DOC_REQUIRED_TOKENS = [
-  'Status: Executed.',
-  'Baseline: 7a3ed70.',
-  'Phase 3FG-A',
-  'owner-local fixture without scaffoldOnlyAcknowledged',
-  'owner-local fixture with explicit scaffoldOnlyAcknowledged',
-  'beta attempt',
-  'public attempt',
-  'live KIS attempt',
-  'LLM attempt',
-  'real auth attempt',
-  'No runtime source changed.',
+  'Status: Prepared.',
+  'Baseline: 172e146.',
+  'Phase 3FG-B',
+  'No Runtime Wiring',
+  'No UI file changed.',
+  'No API route changed.',
+  'No scaffold source changed.',
   'No live KIS.',
   'No LLM.',
   'No public/beta activation.',
-  'forbidden diff: empty',
+  'forbidden diff: empty.',
 ];
 
 const CHANGELOG_REQUIRED_TOKENS = [
-  '## Phase 3FG-B - 2026-07-09',
-  'Owner-local Guarded Productization QA',
-  'All Real Gates Off',
-  '7a3ed70',
+  '## Phase 3FG-C - 2026-07-09',
+  'Owner-local Guarded Productization UI Readiness Plan',
+  'No Runtime Wiring',
+  '172e146',
 ];
 
 const FORBIDDEN_INVESTMENT_PHRASES = [
@@ -150,6 +127,26 @@ const FORBIDDEN_INVESTMENT_PHRASES = [
   '강력 추천',
   '상승이 확정',
   '하락이 확정',
+];
+
+// Phrases that would authorize forbidden implementation work "in this
+// phase" — this phase must remain planning-only, so none of these
+// authorization statements may appear in the plan or result docs.
+const FORBIDDEN_AUTHORIZATION_PHRASES = [
+  'modify chart-ai.astro in this phase',
+  'modify src/pages/chart-ai.astro in this phase',
+  'create an API route in this phase',
+  'create the API route in this phase',
+  'enable live KIS in this phase',
+  'activate live KIS in this phase',
+  'enable the LLM in this phase',
+  'activate the LLM in this phase',
+  'enable public/beta in this phase',
+  'activate public/beta in this phase',
+  'enable beta/public in this phase',
+  'connect to Supabase in this phase',
+  'enable real DB runtime in this phase',
+  'enable Supabase/DB real runtime in this phase',
 ];
 
 // Constructed from a numeric code point so this checker's own text can
@@ -209,14 +206,14 @@ for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON]) {
 // --- 2. package.json contains the exact phase script ---
 const pkg = JSON.parse(read(PACKAGE_JSON));
 assert(
-  pkg.scripts && pkg.scripts['check:phase-3fg-b'] === 'node scripts/check_phase_3fg_b_contract.mjs',
-  'package.json is missing the exact "check:phase-3fg-b" script entry',
+  pkg.scripts && pkg.scripts['check:phase-3fg-c'] === 'node scripts/check_phase_3fg_c_contract.mjs',
+  'package.json is missing the exact "check:phase-3fg-c" script entry',
 );
 
-// --- 3. Checklist doc contains all required tokens ---
-const checklistDoc = read(CHECKLIST_DOC);
-for (const token of CHECKLIST_REQUIRED_TOKENS) {
-  assert(checklistDoc.includes(token), `Checklist doc missing required token: ${token}`);
+// --- 3. Plan doc contains all required tokens ---
+const planDoc = read(PLAN_DOC);
+for (const token of PLAN_DOC_REQUIRED_TOKENS) {
+  assert(planDoc.includes(token), `Plan doc missing required token: ${token}`);
 }
 
 // --- 4. Result doc contains all required tokens ---
@@ -230,24 +227,17 @@ const changelog = read(CHANGELOG);
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
-// Tolerates only the known later Phase 3FG-C header prepended above this
-// entry (not a strict "must be the top entry" check, since Phase 3FG-C
-// legitimately added its own header above this one).
-const TOLERATED_HEADERS_ABOVE_3FG_B = ['## Phase 3FG-C - 2026-07-09'];
-const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-B - 2026-07-09');
-const precedingHeaders = phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
-const unexpectedPrecedingHeaders = precedingHeaders.filter(
-  (header) => !TOLERATED_HEADERS_ABOVE_3FG_B.includes(header.trim()),
-);
+const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-C - 2026-07-09');
+const firstPhaseHeaderIndex = changelog.indexOf('## Phase ');
 assert(
-  phaseHeaderIndex >= 0 && unexpectedPrecedingHeaders.length === 0,
-  `Phase 3FG-B changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders.join(', ')}`,
+  phaseHeaderIndex >= 0 && firstPhaseHeaderIndex === phaseHeaderIndex,
+  'Phase 3FG-C changelog entry must be the first "## Phase " entry in the file',
 );
 const nextHeaderIndex = phaseHeaderIndex >= 0 ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1) : -1;
-assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3FG-B changelog section');
+assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3FG-C changelog section');
 const changelogSection =
   phaseHeaderIndex >= 0 && nextHeaderIndex > phaseHeaderIndex ? changelog.slice(phaseHeaderIndex, nextHeaderIndex) : '';
-assert(changelogSection.includes('7a3ed70'), 'Phase 3FG-B changelog entry must reference the 7a3ed70 baseline');
+assert(changelogSection.includes('172e146'), 'Phase 3FG-C changelog entry must reference the 172e146 baseline');
 
 // --- 6. HEAD is a descendant of the expected baseline ---
 let isDescendant = true;
@@ -267,12 +257,7 @@ const relevantStatusFiles = statusFiles.filter(
   (file) => !KNOWN_UNTOUCHED_PATHS.some((known) => file === known || file.startsWith(known)),
 );
 const allChanged = [...new Set([...changedFiles, ...relevantStatusFiles])];
-const allowedFiles = new Set([
-  ...CORE_DELIVERABLES,
-  ...MODIFIED_FILES,
-  ...PATCHED_SIBLING_CHECKERS,
-  ...TOLERATED_LATER_PHASE_FILES,
-]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...MODIFIED_FILES, ...PATCHED_SIBLING_CHECKERS]);
 const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
 assert(unexpected.length === 0, `Unexpected changed files since baseline: ${unexpected.join(', ')}`);
 
@@ -290,7 +275,7 @@ assert(forbiddenDiff.length === 0, `Forbidden diff paths changed since baseline:
 
 // --- 10. No mojibake patterns in new docs/checker ---
 for (const [label, text] of [
-  [CHECKLIST_DOC, checklistDoc],
+  [PLAN_DOC, planDoc],
   [RESULT_DOC, resultDoc],
 ]) {
   for (const marker of MOJIBAKE_MARKERS) {
@@ -303,7 +288,7 @@ for (const [label, text] of [
 // these phrases literally as pattern-match strings in order to test that
 // they never appear in real output.)
 for (const [label, text] of [
-  [CHECKLIST_DOC, checklistDoc],
+  [PLAN_DOC, planDoc],
   [RESULT_DOC, resultDoc],
   [CHANGELOG, changelogSection],
 ]) {
@@ -312,22 +297,25 @@ for (const [label, text] of [
   }
 }
 
-// --- 12. New QA docs/checker must not contain raw secrets, emails, JWT-like values, or secret-token keywords ---
+// --- 12. No implementation instructions authorizing forbidden work "in this phase"; no raw secrets/emails/JWT-like values ---
 for (const [label, text] of [
-  [CHECKLIST_DOC, checklistDoc],
+  [PLAN_DOC, planDoc],
   [RESULT_DOC, resultDoc],
 ]) {
+  for (const phrase of FORBIDDEN_AUTHORIZATION_PHRASES) {
+    assert(!text.includes(phrase), `Forbidden implementation authorization phrase found in ${label}: ${phrase}`);
+  }
   for (const pattern of SECRET_LIKE_PATTERNS) {
     assert(!pattern.test(text), `Secret-like or private-identifier pattern found in ${label}: ${pattern}`);
   }
 }
 
 if (failures.length) {
-  console.error(`Phase 3FG-B check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
+  console.error(`Phase 3FG-C check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
   for (const failure of failures) {
     console.error(` - ${failure}`);
   }
   process.exit(1);
 } else {
-  console.log(`Phase 3FG-B check PASS: ${assertions}/${assertions} assertions passed.`);
+  console.log(`Phase 3FG-C check PASS: ${assertions}/${assertions} assertions passed.`);
 }

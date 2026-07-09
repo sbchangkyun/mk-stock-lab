@@ -58,6 +58,12 @@ const TOLERATED_LATER_PHASE_FILES = [
   'scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs',
   'scripts/check_phase_3fg_a_contract.mjs',
   'docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_b_contract.mjs',
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md',
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md',
+  'scripts/check_phase_3fg_c_contract.mjs',
 ];
 
 const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS, ...TOLERATED_LATER_PHASE_FILES]);
