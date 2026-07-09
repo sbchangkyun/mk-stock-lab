@@ -67,6 +67,9 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
   'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
   'scripts/check_phase_3gg_b_contract.mjs',
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_v0.1.md',
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_result_v0.1.md',
+  'scripts/check_phase_3gg_b_audit_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -310,7 +313,11 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 // strict "must be the first entry" check, since Phase 3GG-A-PLAN legitimately added its own
 // header above this one). Matches the established pattern in
 // scripts/check_phase_3fg_e_contract.mjs.
-const TOLERATED_HEADERS_ABOVE_3FG_D_HF1 = ['## Phase 3GG-A-PLAN - 2026-07-09', '## Phase 3GG-B - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_3FG_D_HF1 = [
+  '## Phase 3GG-A-PLAN - 2026-07-09',
+  '## Phase 3GG-B - 2026-07-09',
+  '## Phase 3GG-B-AUDIT - 2026-07-09',
+];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-D-HF1 - 2026-07-09');
 const precedingHeaders =
   phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];

@@ -95,6 +95,16 @@ const PLAN_AND_SCAFFOLD_TOLERATED_FILES = [
   'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
   'docs/planning/phase_3gg_a_plan_result_v0.1.md',
   'scripts/check_phase_3gg_a_plan_contract.mjs',
+  // Phase 3GG-B's own deliverables (owner-reviewable Live KIS approval gate
+  // checklist; no runtime/source change), tolerated for the same reason.
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
+  'scripts/check_phase_3gg_b_contract.mjs',
+  // Phase 3GG-B-AUDIT's own deliverables (documentation/checker-only; no
+  // runtime/source change), tolerated for the same reason.
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_v0.1.md',
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_result_v0.1.md',
+  'scripts/check_phase_3gg_b_audit_contract.mjs',
 ];
 const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, HF1_RESULT, CHANGELOG, PACKAGE_JSON, PHASE_3FF_A_PLAN_CHECKER, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, SP_A_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, 'src/pages/chart-ai.astro', UI_B_CHECKLIST, UI_B_RESULT, UI_B_CHECKER, UI_A_RESULT, UI_A_CHECKER, UI_A_SMOKE, MK_B_SMOKE, MK_B_CHECKER, MK_B_RESULT, SP_A_SOURCE, SP_A_FIXTURE, SP_B_SMOKE, SP_B_CHECKER, SP_B_RESULT, MK_C_SMOKE, MK_C_CHECKER, MK_C_RESULT, 'docs/planning/phase_3ff_a_ui_c_manual_qa_checklist_v0.1.md', 'docs/planning/phase_3ff_a_ui_c_manual_qa_result_v0.1.md', 'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs', 'scripts/check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs', 'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs', 'docs/planning/phase_3ff_a_housekeeping_a_result_v0.1.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/README.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/01_CURRENT_STATE.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/02_COMPLETED_PHASE_HISTORY.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/03_ARCHITECTURE_AND_GUARDS.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/04_VALIDATION_COMMANDS.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/05_NEXT_PHASE_BRIEF_3FG_A_PLAN.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/06_NEW_CHAT_START_PROMPT.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/07_MANIFEST.json', 'docs/planning/phase_3ff_a_handoff_a_result_v0.1.md', 'scripts/check_phase_3ff_a_handoff_a_contract.mjs', ...PLAN_AND_SCAFFOLD_TOLERATED_FILES]);
 const forbiddenPaths = [
