@@ -29,8 +29,26 @@ const PATCHED_CHECKERS = [
   'scripts/check_phase_3ff_a_plan_contract.mjs',
 ];
 
+// Phase 3FF-A-HANDOFF-A's own deliverables, committed after this checker's
+// baseline. Tolerated here (not required) so this checker keeps passing once
+// later validation runs it against a HEAD that includes the HANDOFF-A commit.
+// No protective assertion below (forbidden diff, mojibake, forbidden
+// language) is weakened by this addition.
+const HANDOFF_A_FILES = [
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/README.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/01_CURRENT_STATE.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/02_COMPLETED_PHASE_HISTORY.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/03_ARCHITECTURE_AND_GUARDS.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/04_VALIDATION_COMMANDS.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/05_NEXT_PHASE_BRIEF_3FG_A_PLAN.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/06_NEW_CHAT_START_PROMPT.md',
+  'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/07_MANIFEST.json',
+  'docs/planning/phase_3ff_a_handoff_a_result_v0.1.md',
+  'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
+];
+
 const CORE_DELIVERABLES = [RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_CHECKERS]);
+const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_CHECKERS, ...HANDOFF_A_FILES]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
 

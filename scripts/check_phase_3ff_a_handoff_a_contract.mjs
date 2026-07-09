@@ -22,11 +22,24 @@ const CORE_DELIVERABLES = [...HANDOFF_FILES, RESULT, CHECKER, CHANGELOG, PACKAGE
 // Sibling checker files patched, only if the full validation chain required it,
 // so their own git-diff scope/changelog-position checks tolerate this phase's
 // documentation-only deliverables existing on top of their respective baselines.
+//
+// The 6 entries below were further modified after this baseline (dcb6724) by
+// the later Phase 3FG-A-PLAN, which added HANDOFF-A scope-tolerance patches to
+// them (a pre-existing gap left by this phase). Tolerated here so this
+// checker's own "only Phase 3FF-A-HANDOFF-A files may change" scan does not
+// flag content changes this phase did not itself make. No protective
+// assertion below (forbidden diff, mojibake, forbidden language) is weakened.
 const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
   'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
   'scripts/check_phase_3ff_a_ui_a_contract.mjs',
   'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
+  'scripts/check_phase_3ff_a_plan_contract.mjs',
 ];
 
 const allowedFiles = new Set([...CORE_DELIVERABLES, ...PATCHED_SIBLING_CHECKERS]);

@@ -94,6 +94,7 @@
     "check:phase-3ff-a-ui-c-manual-qa": "node scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs",
     "check:phase-3ff-a-housekeeping-a": "node scripts/check_phase_3ff_a_housekeeping_a_contract.mjs",
     "check:phase-3ff-a-handoff-a": "node scripts/check_phase_3ff_a_handoff_a_contract.mjs",
+    "check:phase-3fg-a-plan": "node scripts/check_phase_3fg_a_plan_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

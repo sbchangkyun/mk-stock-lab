@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FG-A-PLAN - 2026-07-09
+
+### Guarded Productization Planning, No Live KIS, No LLM, No Public Activation (Prepared)
+
+- **Status**: Prepared.
+- **Baseline**: `dc36043`.
+- **Purpose**: define the guarded productization path and approval boundaries for Chart AI after the verified SP-B/MK-C/UI-C/HOUSEKEEPING/HANDOFF-A baseline, planning-only; no runtime implementation.
+- **Planned scope**: real auth boundary plan (anonymous/authenticated/owner-admin-master, role/capability resolver, auth subject resolver); feature flag/environment separation plan (owner-local, internal QA, beta, public; provider mode; agent mode); usage/cooldown/cache/cost/audit policy design; provider boundary plan (fixture, KIS OHLC fixture, live-KIS approval gap); MK Agent deterministic-vs-LLM approval gap; public/beta readiness criteria; failure mode/fail-closed policy; legal/safety copy and no-investment-advice constraints; proposed next implementation phases and approval gates.
+- **Preserved policy**: no live KIS; no LLM; no public/beta activation; no deploy; no push; no Supabase/DB real runtime; no env/session/JWT/cookie/header parsing; no usage deduction; no paid entitlement; no ad unlock; no runtime source file changed; no API route created or changed; no package installed.
+- **Recommended next step**: Phase 3FG-A — Guarded Productization Scaffold, All Gates Off.
+
 ## Phase 3FF-A-HANDOFF-A - 2026-07-09
 
 ### Chart AI SP-B/MK-C/UI-C/HOUSEKEEPING Current State Handoff Package, No Runtime Change (Implemented)
