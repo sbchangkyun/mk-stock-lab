@@ -144,6 +144,20 @@ const GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES = [
   'scripts/check_phase_3fg_d_contract.mjs',
 ];
 
+// Phase 3FG-E adds owner-local Browser QA documentation for the 3FG-D static
+// shell, and Phase 3FG-D-HF1 is the narrow, approved hotfix that further
+// modifies src/pages/chart-ai.astro (already a core deliverable here via
+// PAGE) plus its own result doc and checker. Tolerated here, not required,
+// for the same reason as the group above; no protective assertion below is
+// weakened.
+const BROWSER_QA_AND_HOTFIX_FILES = [
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_e_contract.mjs',
+  'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
+  'scripts/check_phase_3fg_d_hf1_contract.mjs',
+];
+
 const CORE_DELIVERABLES = [PAGE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
 const allowedFiles = new Set([
   ...CORE_DELIVERABLES,
@@ -157,6 +171,7 @@ const allowedFiles = new Set([
   ...HANDOFF_A_TOLERATED_FILES,
   ...PLAN_AND_SCAFFOLD_TOLERATED_FILES,
   ...GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES,
+  ...BROWSER_QA_AND_HOTFIX_FILES,
 ]);
 
 // Exact required forbidden-diff path list (Phase 3FF-A-UI-A task spec).
@@ -420,6 +435,7 @@ const TOLERATED_HEADERS_ABOVE_UI_A = [
   '## Phase 3FG-C - 2026-07-09',
   '## Phase 3FG-D - 2026-07-09',
   '## Phase 3FG-E - 2026-07-09',
+  '## Phase 3FG-D-HF1 - 2026-07-09',
 ];
 const uiAEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-A - 2026-07-08');
 const headersAboveUiA = changelog.slice(0, uiAEntryIndex).match(/^## .+$/gm) ?? [];

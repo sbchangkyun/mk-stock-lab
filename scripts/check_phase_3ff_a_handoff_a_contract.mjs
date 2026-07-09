@@ -73,6 +73,18 @@ const TOLERATED_LATER_PHASE_FILES = [
   'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
   'scripts/check_phase_3fg_d_contract.mjs',
   'src/pages/chart-ai.astro',
+  // Phase 3FG-E adds owner-local Browser QA documentation for the 3FG-D static
+  // shell (checklist, result doc, checker); no source or runtime change.
+  // Tolerated for the same reason as the 3FG-A through 3FG-D entries above.
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_e_contract.mjs',
+  // Phase 3FG-D-HF1 is the narrow, documented, approved hotfix that further
+  // modifies src/pages/chart-ai.astro (already tolerated above) to fix the
+  // hidden-by-default CSS defect found by 3FG-E's Browser QA, plus its own
+  // result doc and checker. Tolerated for the same reason.
+  'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
+  'scripts/check_phase_3fg_d_hf1_contract.mjs',
 ];
 
 // Phase 3FG-D is the specific, documented, approved later phase authorized

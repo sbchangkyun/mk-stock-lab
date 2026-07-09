@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3FG-D-HF1 - 2026-07-09
+
+### Static Shell Browser QA Fixes, Hidden by Default, No Runtime Activation (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `4b620d2`.
+- **Purpose**: fix the Phase 3FG-E confirmed Case 1 browser QA defect where the owner-local guarded productization static shell rendered visibly on default `/chart-ai` despite carrying the `hidden` attribute, because the Phase 3FG-D style block's unconditional `display: grid` declaration (normal author-stylesheet priority) always overrides the UA stylesheet's `[hidden] { display: none }` rule (also normal priority), per CSS cascade origin rules. Narrow hotfix only: no static shell content, decision-card, safety-copy, scaffold-source, API-route, or runtime-behavior change.
+- **Defect**: `#chartAiOwnerLocalGuardedProductizationStaticShell` rendered with non-zero layout and `getComputedStyle().display: "grid"` on default `/chart-ai`, even though `hidden` was correctly present in markup and as a DOM property.
+- **Fix**: added a single higher-specificity id+attribute rule, `#chartAiOwnerLocalGuardedProductizationStaticShell[hidden] { display: none; }`, immediately after the existing `.chart-owner-local-guarded-productization-shell` class rule in `src/pages/chart-ai.astro`. Specificity 1-1-0 beats the class rule's 0-1-0 within the same author-stylesheet origin, restoring hidden-by-default behavior without touching the grid layout used once the section is shown. No other source, markup, script, or copy changed.
+- **Browser QA**: six cases (A-F) re-verified owner-local via multi-signal DOM/CSS/console/network introspection (`getComputedStyle().display`, `getBoundingClientRect()`, `offsetParent`, `hidden` attribute/property, interactive-element queries, text-context extraction): default hidden-state regression fixed; owner-local opt-in visible state unchanged (8 cards, Korean safety copy, blocked-boundary copy, no execution CTA); pre-existing `chartAiOwnerLocalDeterministicAgentsPanel` flow and coexistence with the static shell unaffected; PC (1280x900) and mobile (375x812) viewports both clean with no overflow; console and full network history clean with zero forbidden-call matches.
+- **Deliverables**: static contract checker `scripts/check_phase_3fg_d_hf1_contract.mjs`; result document `docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md`; one package script (`check:phase-3fg-d-hf1`).
+- **Preserved policy**: no scaffold source change; no MK Agent source/fixture change; no Similar Pattern Agent source/fixture change; no API route created or activated; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3FG-E-HF1 — re-run owner-local Browser QA to confirm the Case 1 defect is closed and record a clean 12/12 QA result.
+
 ## Phase 3FG-E - 2026-07-09
 
 ### Owner-local Guarded Productization Static Shell Browser QA, All Real Gates Off (Executed)

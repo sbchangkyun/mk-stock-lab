@@ -81,6 +81,24 @@ const GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES = [
   'src/pages/chart-ai.astro',
 ];
 
+// Phase 3FG-E adds owner-local Browser QA documentation for the 3FG-D static
+// shell (checklist, result doc, checker); no source or runtime change.
+// Tolerated here, not required, for the same reason as the groups above.
+const BROWSER_QA_FILES = [
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_e_contract.mjs',
+];
+
+// Phase 3FG-D-HF1 is the narrow, documented, approved hotfix that further
+// modifies src/pages/chart-ai.astro (already tolerated below) to fix the
+// hidden-by-default CSS defect found by 3FG-E's Browser QA, plus its own
+// result doc and checker. Tolerated here, not required, for the same reason.
+const HOTFIX_FILES = [
+  'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
+  'scripts/check_phase_3fg_d_hf1_contract.mjs',
+];
+
 // Phase 3FG-D is the specific, documented, approved later phase authorized
 // to modify src/pages/chart-ai.astro (an additive-only static UI shell).
 // This checker's forbidden-diff assertion is patched to tolerate exactly
@@ -95,6 +113,8 @@ const allowedFiles = new Set([
   ...HANDOFF_A_FILES,
   ...PLAN_AND_SCAFFOLD_FILES,
   ...GUARDED_PRODUCTIZATION_UI_STATIC_SHELL_FILES,
+  ...BROWSER_QA_FILES,
+  ...HOTFIX_FILES,
 ]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];

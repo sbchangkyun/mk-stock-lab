@@ -4014,6 +4014,18 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
       gap: 1rem;
     }
 
+    /*
+      Phase 3FG-D-HF1: the class rule above sets `display: grid` at normal author
+      priority, which always beats the UA stylesheet's `[hidden] { display: none }`
+      rule (also normal priority) regardless of selector order or specificity, per
+      CSS cascade origin rules. This id+attribute rule (specificity 1-1-0, higher
+      than the class rule's 0-1-0) restores hidden-by-default behavior without
+      touching the grid layout used once the section is shown.
+    */
+    #chartAiOwnerLocalGuardedProductizationStaticShell[hidden] {
+      display: none;
+    }
+
     .chart-owner-local-guarded-productization-shell-heading h3 {
       margin: 0.2rem 0 0.4rem;
       font-size: 1rem;

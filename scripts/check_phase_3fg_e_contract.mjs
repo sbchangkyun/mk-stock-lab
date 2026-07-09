@@ -16,6 +16,13 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASELINE = 'e4414e5';
+// Phase 3FG-E's own completion commit. Assertions that verify what THIS phase itself guaranteed
+// about src/pages/chart-ai.astro (namely: 3FG-E made zero changes to it) are pinned to this frozen
+// historical range instead of live HEAD/working tree, because Phase 3FG-D-HF1 legitimately must
+// change that file afterward (3FG-E's own changelog entry named HF1 as the required next step).
+// Pinning to a frozen range restores what 3FG-E actually promised, without incorrectly extending
+// that promise to forbid every later phase from ever touching the file again.
+const FROZEN_HEAD_FOR_3FG_E = '4b620d2';
 
 const CHART_AI_PAGE = 'src/pages/chart-ai.astro';
 const CHECKLIST_DOC =
@@ -44,6 +51,16 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3ff_a_ui_a_contract.mjs',
   'scripts/check_phase_3ff_a_mk_a_contract.mjs',
   'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+];
+
+// Files legitimately created or modified by a later phase (Phase 3FG-D-HF1) that this checker
+// must tolerate seeing in the diff/status without treating them as unexpected. This does not
+// weaken any protective assertion: it is a pure additive allowlist, matching the established
+// TOLERATED_LATER_PHASE_FILES pattern already used by scripts/check_phase_3fg_d_contract.mjs.
+const TOLERATED_LATER_PHASE_FILES = [
+  'scripts/check_phase_3fg_d_hf1_contract.mjs',
+  'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
+  CHART_AI_PAGE,
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -242,11 +259,19 @@ const changelog = read(CHANGELOG);
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
+// Tolerates only the known later Phase 3FG-D-HF1 header prepended above this entry (not a strict
+// "must be the top entry" check, since Phase 3FG-D-HF1 legitimately added its own header above
+// this one). Matches the established pattern in scripts/check_phase_3fg_d_contract.mjs.
+const TOLERATED_HEADERS_ABOVE_3FG_E = ['## Phase 3FG-D-HF1 - 2026-07-09'];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-E - 2026-07-09');
-const firstPhaseHeaderIndex = changelog.indexOf('## Phase ');
+const precedingHeaders =
+  phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
+const unexpectedPrecedingHeaders = precedingHeaders.filter(
+  (header) => !TOLERATED_HEADERS_ABOVE_3FG_E.includes(header.trim()),
+);
 assert(
-  phaseHeaderIndex >= 0 && firstPhaseHeaderIndex === phaseHeaderIndex,
-  'Phase 3FG-E changelog entry must be the first "## Phase " entry in the file',
+  phaseHeaderIndex >= 0 && unexpectedPrecedingHeaders.length === 0,
+  `Phase 3FG-E changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders.join(', ')}`,
 );
 const nextHeaderIndex = phaseHeaderIndex >= 0 ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1) : -1;
 assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3FG-E changelog section');
@@ -274,7 +299,12 @@ const relevantStatusFiles = statusFiles.filter(
   (file) => !KNOWN_UNTOUCHED_PATHS.some((known) => file === known || file.startsWith(known)),
 );
 const allChanged = [...new Set([...changedFiles, ...relevantStatusFiles])];
-const allowedFiles = new Set([...CORE_DELIVERABLES, ...MODIFIED_FILES, ...PATCHED_SIBLING_CHECKERS]);
+const allowedFiles = new Set([
+  ...CORE_DELIVERABLES,
+  ...MODIFIED_FILES,
+  ...PATCHED_SIBLING_CHECKERS,
+  ...TOLERATED_LATER_PHASE_FILES,
+]);
 const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
 assert(unexpected.length === 0, `Unexpected changed files since baseline: ${unexpected.join(', ')}`);
 
@@ -286,13 +316,18 @@ for (const known of KNOWN_UNTOUCHED_PATHS) {
   );
 }
 
-// --- 9. Controlled chart-ai diff is empty (this phase makes zero changes to chart-ai.astro) ---
-const chartAiDiff = gitLines(['diff', '--name-only', BASELINE, '--', CHART_AI_PAGE]);
+// --- 9. Controlled chart-ai diff is empty across what Phase 3FG-E itself actually committed ---
+// (baseline through 3FG-E's own completion commit). This is pinned to the frozen historical range
+// rather than live HEAD/working tree because Phase 3FG-D-HF1 legitimately changes this file
+// afterward; see FROZEN_HEAD_FOR_3FG_E above.
+const chartAiDiff = gitLines(['diff', '--name-only', BASELINE, FROZEN_HEAD_FOR_3FG_E, '--', CHART_AI_PAGE]);
 assert(chartAiDiff.length === 0, `Controlled chart-ai diff must be empty, got: ${chartAiDiff.join(', ')}`);
 
-// --- 10. Forbidden diff paths are empty since baseline (chart-ai.astro, scaffold source, API, ---
-// --- Supabase, lockfiles, .env) ---
-const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]);
+// --- 10. Forbidden diff paths are empty since baseline (scaffold source, API, Supabase, ---
+// --- lockfiles, .env). chart-ai.astro is checked separately above against the frozen range, ---
+// --- since Phase 3FG-D-HF1 legitimately changes it after 3FG-E's own completion commit. ---
+const forbiddenDiffPathsExcludingChartAi = REQUIRED_FORBIDDEN_DIFF_PATHS.filter((p) => p !== CHART_AI_PAGE);
+const forbiddenDiff = gitLines(['diff', '--name-only', BASELINE, '--', ...forbiddenDiffPathsExcludingChartAi]);
 assert(forbiddenDiff.length === 0, `Forbidden diff paths changed since baseline: ${forbiddenDiff.join(', ')}`);
 
 // --- 11. No mojibake patterns in new docs/checker ---

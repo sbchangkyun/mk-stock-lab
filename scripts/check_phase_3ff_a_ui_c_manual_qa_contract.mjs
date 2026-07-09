@@ -79,6 +79,19 @@ const PLAN_AND_SCAFFOLD_TOLERATED_FILES = [
   'src/pages/chart-ai.astro',
 ];
 
+// Phase 3FG-E adds owner-local Browser QA documentation for the 3FG-D static
+// shell, and Phase 3FG-D-HF1 is the narrow, approved hotfix that further
+// modifies src/pages/chart-ai.astro (already tolerated above) plus its own
+// result doc and checker. Tolerated here, not required, for the same reason
+// as the group above; no protective assertion below is weakened.
+const BROWSER_QA_AND_HOTFIX_FILES = [
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_e_contract.mjs',
+  'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
+  'scripts/check_phase_3fg_d_hf1_contract.mjs',
+];
+
 // Phase 3FG-D is the specific, documented, approved later phase authorized
 // to modify src/pages/chart-ai.astro (an additive-only static UI shell).
 // This checker's forbidden-diff assertion is patched to tolerate exactly
@@ -93,6 +106,7 @@ const allowedFiles = new Set([
   ...HOUSEKEEPING_A_TOLERATED_FILES,
   ...HANDOFF_A_TOLERATED_FILES,
   ...PLAN_AND_SCAFFOLD_TOLERATED_FILES,
+  ...BROWSER_QA_AND_HOTFIX_FILES,
 ]);
 
 const KNOWN_UNTOUCHED_PATHS = ['.agents/', '.vscode/settings.json', 'docs/handoff/codex_state_inspection/', 'skills-lock.json'];
@@ -186,6 +200,7 @@ const TOLERATED_HEADERS_ABOVE_UI_C = [
   '## Phase 3FG-C - 2026-07-09',
   '## Phase 3FG-D - 2026-07-09',
   '## Phase 3FG-E - 2026-07-09',
+  '## Phase 3FG-D-HF1 - 2026-07-09',
 ];
 const uiCEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-C - 2026-07-09');
 const headersAboveUiC = changelog.slice(0, uiCEntryIndex).match(/^## Phase .+$/gm) ?? [];

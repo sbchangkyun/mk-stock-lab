@@ -76,6 +76,10 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
   'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
   'scripts/check_phase_3fg_e_contract.mjs',
+  // Phase 3FG-D-HF1's own deliverables (validator-compatibility only; no
+  // protective assertion weakened).
+  'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
+  'scripts/check_phase_3fg_d_hf1_contract.mjs',
 ];
 
 // Phase 3FG-D is the specific, documented, approved later phase authorized
@@ -255,6 +259,7 @@ const TOLERATED_HEADERS_ABOVE_3FG_B = [
   '## Phase 3FG-C - 2026-07-09',
   '## Phase 3FG-D - 2026-07-09',
   '## Phase 3FG-E - 2026-07-09',
+  '## Phase 3FG-D-HF1 - 2026-07-09',
 ];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-B - 2026-07-09');
 const precedingHeaders = phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];

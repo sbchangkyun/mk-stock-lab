@@ -62,6 +62,19 @@ const SP_B_RESULT = 'docs/planning/phase_3ff_a_sp_b_result_v0.1.md';
 const MK_C_SMOKE = 'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs';
 const MK_C_CHECKER = 'scripts/check_phase_3ff_a_mk_c_contract.mjs';
 const MK_C_RESULT = 'docs/planning/phase_3ff_a_mk_c_result_v0.1.md';
+// Phase 3FG-E's own deliverables (owner-local Browser QA checklist/result
+// docs and static checker for the 3FG-D static shell; no source or runtime
+// change). Tolerated here so this checker's git-diff scope check does not
+// fail once 3FG-E's documentation exists on top of this phase's baseline.
+const PHASE_3FG_E_CHECKLIST = 'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md';
+const PHASE_3FG_E_RESULT = 'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md';
+const PHASE_3FG_E_CHECKER = 'scripts/check_phase_3fg_e_contract.mjs';
+// Phase 3FG-D-HF1's own deliverables (the narrow, documented, approved
+// hotfix that further modifies src/pages/chart-ai.astro, already tolerated
+// above, to fix the hidden-by-default CSS defect found by 3FG-E's Browser
+// QA), plus its own result doc and checker. Tolerated for the same reason.
+const PHASE_3FG_D_HF1_RESULT = 'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md';
+const PHASE_3FG_D_HF1_CHECKER = 'scripts/check_phase_3fg_d_hf1_contract.mjs';
 
 const allowedFiles = new Set([
   SP_DOC,
@@ -155,6 +168,11 @@ const allowedFiles = new Set([
   'docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md',
   'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
   'scripts/check_phase_3fg_d_contract.mjs',
+  PHASE_3FG_E_CHECKLIST,
+  PHASE_3FG_E_RESULT,
+  PHASE_3FG_E_CHECKER,
+  PHASE_3FG_D_HF1_RESULT,
+  PHASE_3FG_D_HF1_CHECKER,
 ]);
 
 const forbiddenPaths = [
