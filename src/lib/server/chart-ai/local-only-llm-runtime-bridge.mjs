@@ -4,6 +4,11 @@
 // EMPTY_LLM_OUTPUT are no longer opaque. Diagnostics never include the raw OpenAI error message
 // text, the raw response body, or the model's raw output text -- only short, allowlisted,
 // enum-like fields.
+// Phase 3GG-J-FAST: main model is now resolved via the model tier policy module
+// (CHART_AI_LLM_MAIN_MODEL, falling back to the legacy CHART_AI_LLM_MODEL for backward
+// compatibility). On a fallback-eligible classified failure, exactly one fallback call is
+// attempted against a distinct CHART_AI_LLM_FALLBACK_MODEL, if present. Model names are never
+// exposed in the response -- only the existing allowlisted warnings/diagnostics fields.
 //
 // Converts an already-sanitized Chart AI KIS current_price context (Phase 3GG-E-INTEGRATE)
 // into an LLM-safe Korean prompt, calls the OpenAI Responses API via raw fetch (no SDK, no new
@@ -11,6 +16,13 @@
 // strictly allowlisted, sanitized summary response. Fails closed at every gate: disabled flag,
 // missing API key, missing model, call failure/timeout, or forbidden investment language in the
 // model output. Never reads, prints, logs, returns, or documents the OPENAI_API_KEY value.
+
+import {
+  buildLocalOnlyLlmModelPolicy,
+  resolveLlmModelForRole,
+  shouldAttemptFallbackForLlmFailure,
+  LLM_MODEL_ROLES,
+} from './local-only-llm-model-policy.mjs';
 
 export const LOCAL_ONLY_LLM_RUNTIME_BRIDGE_CONTRACT_VERSION = 'local-only-llm-runtime-bridge.v0.1';
 
@@ -285,13 +297,16 @@ function extractOpenAiErrorDiagnostics(httpStatus, parsedBody) {
   const errorCode = safeShortString(errorObj && errorObj.code);
   const errorParam = safeShortString(errorObj && errorObj.param);
   const openAiErrorMessageClass = classifyOpenAiError({ httpStatus, errorType, errorCode });
-  return buildDiagnostics({
-    httpStatus,
-    openAiErrorType: errorType,
-    openAiErrorCode: errorCode,
-    openAiErrorParam: errorParam,
-    openAiErrorMessageClass,
-  });
+  return {
+    diagnostics: buildDiagnostics({
+      httpStatus,
+      openAiErrorType: errorType,
+      openAiErrorCode: errorCode,
+      openAiErrorParam: errorParam,
+      openAiErrorMessageClass,
+    }),
+    errorClass: openAiErrorMessageClass,
+  };
 }
 
 function callWithTimeout(promiseFactory, timeoutMs, deps) {
@@ -343,6 +358,55 @@ function buildResponse(base) {
   return response;
 }
 
+async function callOpenAiModelOnce({ modelName, systemPrompt, userPrompt, env, fetchImpl, timeoutMs, deps }) {
+  return callWithTimeout(
+    async () => {
+      const response = await fetchImpl(OPENAI_RESPONSES_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: modelName,
+          input: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+        }),
+      });
+      const responseText = await response.text();
+      let parsedBody = null;
+      let parseFailed = false;
+      try {
+        parsedBody = responseText ? JSON.parse(responseText) : null;
+      } catch {
+        parseFailed = true;
+      }
+      if (!response.ok) {
+        const { diagnostics, errorClass } = extractOpenAiErrorDiagnostics(response.status, parsedBody);
+        const err = new Error('llm-http-error');
+        err.diagnostics = diagnostics;
+        err.errorClass = errorClass;
+        throw err;
+      }
+      if (parseFailed) {
+        const err = new Error('llm-invalid-json');
+        err.diagnostics = buildDiagnostics({
+          httpStatus: response.status,
+          responseShapeKind: RESPONSE_SHAPE_KINDS.INVALID_JSON,
+          outputTextPresent: false,
+        });
+        err.errorClass = null;
+        throw err;
+      }
+      return parsedBody;
+    },
+    timeoutMs,
+    deps,
+  );
+}
+
 export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
   const context = input && typeof input === 'object' ? input.context : null;
   const env = input && typeof input === 'object' && input.env ? input.env : {};
@@ -379,8 +443,12 @@ export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
   }
 
   const hasApiKey = typeof env.OPENAI_API_KEY === 'string' && env.OPENAI_API_KEY.trim().length > 0;
-  const hasModel = typeof env.CHART_AI_LLM_MODEL === 'string' && env.CHART_AI_LLM_MODEL.trim().length > 0;
+  const modelPolicy = buildLocalOnlyLlmModelPolicy(env);
+  const mainModel = resolveLlmModelForRole(modelPolicy, LLM_MODEL_ROLES.MAIN_SUMMARY);
+  const fallbackModel = resolveLlmModelForRole(modelPolicy, LLM_MODEL_ROLES.FALLBACK_SUMMARY);
+  const hasModel = Boolean(mainModel);
   const modelPresent = hasModel;
+  const fallbackEligibleAndPresent = Boolean(fallbackModel) && fallbackModel !== mainModel;
 
   if (!hasApiKey || !hasModel) {
     return buildResponse({
@@ -394,60 +462,39 @@ export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
   const { systemPrompt, userPrompt } = buildLlmSafeCurrentPricePrompt(safeContext);
 
   let rawBody;
+  let usedFallback = false;
   try {
-    rawBody = await callWithTimeout(
-      async () => {
-        const response = await fetchImpl(OPENAI_RESPONSES_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: env.CHART_AI_LLM_MODEL,
-            input: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt },
-            ],
-          }),
+    rawBody = await callOpenAiModelOnce({ modelName: mainModel, systemPrompt, userPrompt, env, fetchImpl, timeoutMs, deps });
+  } catch (mainError) {
+    const isTimeout = mainError instanceof Error && mainError.message === 'llm-call-timeout';
+    const mainDiagnostics = !isTimeout && mainError && typeof mainError === 'object' ? mainError.diagnostics : undefined;
+    const mainErrorClass = !isTimeout && mainError && typeof mainError === 'object' ? mainError.errorClass : null;
+
+    if (!isTimeout && fallbackEligibleAndPresent && shouldAttemptFallbackForLlmFailure(mainErrorClass)) {
+      try {
+        rawBody = await callOpenAiModelOnce({ modelName: fallbackModel, systemPrompt, userPrompt, env, fetchImpl, timeoutMs, deps });
+        usedFallback = true;
+      } catch (fallbackError) {
+        const fallbackIsTimeout = fallbackError instanceof Error && fallbackError.message === 'llm-call-timeout';
+        const fallbackDiagnostics =
+          !fallbackIsTimeout && fallbackError && typeof fallbackError === 'object' ? fallbackError.diagnostics : undefined;
+        return buildResponse({
+          ...baseFields,
+          modelPresent,
+          sanitizedErrorCode: fallbackIsTimeout ? SANITIZED_LLM_ERROR_CODES.LLM_TIMEOUT : SANITIZED_LLM_ERROR_CODES.LLM_CALL_FAILED,
+          warnings: [fallbackIsTimeout ? 'llm-timeout' : 'llm-call-failed', 'llm-fallback-failed'],
+          diagnostics: fallbackDiagnostics ?? mainDiagnostics,
         });
-        const responseText = await response.text();
-        let parsedBody = null;
-        let parseFailed = false;
-        try {
-          parsedBody = responseText ? JSON.parse(responseText) : null;
-        } catch {
-          parseFailed = true;
-        }
-        if (!response.ok) {
-          const err = new Error('llm-http-error');
-          err.diagnostics = extractOpenAiErrorDiagnostics(response.status, parsedBody);
-          throw err;
-        }
-        if (parseFailed) {
-          const err = new Error('llm-invalid-json');
-          err.diagnostics = buildDiagnostics({
-            httpStatus: response.status,
-            responseShapeKind: RESPONSE_SHAPE_KINDS.INVALID_JSON,
-            outputTextPresent: false,
-          });
-          throw err;
-        }
-        return parsedBody;
-      },
-      timeoutMs,
-      deps,
-    );
-  } catch (error) {
-    const isTimeout = error instanceof Error && error.message === 'llm-call-timeout';
-    const diagnostics = !isTimeout && error && typeof error === 'object' ? error.diagnostics : undefined;
-    return buildResponse({
-      ...baseFields,
-      modelPresent,
-      sanitizedErrorCode: isTimeout ? SANITIZED_LLM_ERROR_CODES.LLM_TIMEOUT : SANITIZED_LLM_ERROR_CODES.LLM_CALL_FAILED,
-      warnings: [isTimeout ? 'llm-timeout' : 'llm-call-failed'],
-      diagnostics,
-    });
+      }
+    } else {
+      return buildResponse({
+        ...baseFields,
+        modelPresent,
+        sanitizedErrorCode: isTimeout ? SANITIZED_LLM_ERROR_CODES.LLM_TIMEOUT : SANITIZED_LLM_ERROR_CODES.LLM_CALL_FAILED,
+        warnings: [isTimeout ? 'llm-timeout' : 'llm-call-failed'],
+        diagnostics: mainDiagnostics,
+      });
+    }
   }
 
   const extracted = extractResponseText(rawBody);
@@ -465,7 +512,10 @@ export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
       ...baseFields,
       modelPresent,
       sanitizedErrorCode: sanitized.sanitizedErrorCode,
-      warnings: [sanitized.sanitizedErrorCode === SANITIZED_LLM_ERROR_CODES.FORBIDDEN_LANGUAGE_DETECTED ? 'forbidden-language-detected' : 'empty-llm-output'],
+      warnings: [
+        sanitized.sanitizedErrorCode === SANITIZED_LLM_ERROR_CODES.FORBIDDEN_LANGUAGE_DETECTED ? 'forbidden-language-detected' : 'empty-llm-output',
+        ...(usedFallback ? ['llm-fallback-used'] : []),
+      ],
       diagnostics: shapeDiagnostics,
     });
   }
@@ -475,6 +525,7 @@ export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
     ...baseFields,
     llmStatus: 'ok',
     summaryText: sanitized.text,
+    warnings: usedFallback ? ['llm-fallback-used'] : [],
     modelPresent,
   });
 }

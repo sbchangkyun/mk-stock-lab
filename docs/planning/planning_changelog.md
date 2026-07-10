@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-J-FAST - 2026-07-11
+
+### Model Tier and Fallback Policy for Chart AI Local-only LLM
+
+- **Status**: Implemented. Deterministic smoke (15 cases, 32 assertions) passed; static contract checker passed; `npm run build` passed.
+- **Baseline**: `444481268d97576b1af78acafcb5b6aa29b00f12` (Phase 3GG-I-QA).
+- **Goal**: stabilize model selection and fallback behavior before improving summary quality. Not a feature-expansion phase.
+- **New module**: `src/lib/server/chart-ai/local-only-llm-model-policy.mjs` — pure, dependency-free, injected-env-only model tier policy. Defines roles `main_summary`, `fallback_summary`, `test_summary`, plus future-metadata roles `moderation_future` and `embedding_future`. Resolves model names from `CHART_AI_LLM_MAIN_MODEL` (new), `CHART_AI_LLM_FALLBACK_MODEL` (new), `CHART_AI_LLM_TEST_MODEL` (new), `CHART_AI_LLM_MODERATION_MODEL` (new, unused this phase), `CHART_AI_LLM_EMBEDDING_MODEL` (new, unused this phase), and the legacy `CHART_AI_LLM_MODEL`.
+- **Backward compatibility**: `CHART_AI_LLM_MODEL` continues to resolve the `main_summary` role when `CHART_AI_LLM_MAIN_MODEL` is absent; `CHART_AI_LLM_MAIN_MODEL` takes precedence when both are set.
+- **Fallback behavior**: on a main-model call failure classified as `model_not_found`, `permission_denied`, `quota_or_rate_limit`, `billing_or_quota`, or `server_error` (never `bad_request`, never a timeout, never `FORBIDDEN_LANGUAGE_DETECTED`, never missing input/config), exactly one fallback call is attempted against a distinct, present `CHART_AI_LLM_FALLBACK_MODEL`. Fallback success returns `ok: true` with the existing `llm-fallback-used` warning; fallback failure fails closed with `LLM_CALL_FAILED` and the existing `llm-fallback-failed` warning, preferring the fallback failure's diagnostics.
+- **Response contract preserved**: no new top-level response fields added; model names are never exposed in `warnings`, `diagnostics`, or any other response field.
+- **UI / API route**: unchanged this phase — `src/pages/chart-ai.astro` and `src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts` were not modified.
+- **Activation status**: no public activation; no beta activation; no internal QA activation; no KIS endpoint expansion.
+- **Preserved policy**: not pushed; not deployed.
+- **Recommended next step**: continue stabilizing LLM summary quality/model observability, or proceed to another owner-approved QA/review phase.
+
 ## Phase 3GG-I-QA - 2026-07-11
 
 ### Owner-local Browser QA for Chart AI KIS + LLM Summary UI
