@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-C - 2026-07-09
+
+### Live KIS Activation Decision Record, No Activation (Prepared)
+
+- **Status**: Prepared.
+- **Baseline**: `1ab8c8ba478fef909761c059e013cb2ab63ecd29` (Phase 3GG-B-REVIEW-RECORD).
+- **Purpose**: record the formal decision state after Phase 3GG-B-REVIEW-RECORD confirmed all 11 Live KIS gates as Approved or Approved with condition.
+- **Scope**: 12-section Live KIS Activation Decision Record (`docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md`) covering status, purpose, baseline, source of truth, owner review state, preserved owner conditions, important interpretation of approval, activation decision, required next implementation constraints, candidate next phases, non-goals, and a decision summary; a result document; a static contract checker (`scripts/check_phase_3gg_c_contract.mjs`); one new `check:phase-3gg-c` package script. Records: gate review status summary; owner condition summary; activation interpretation; no-activation implementation readiness decision (conditionally ready for next no-activation implementation planning); next-phase constraints; non-goals.
+- **Preserved policy**: no source change; no `chart-ai.astro` change; no API route activation; no scaffold source change; no provider source change; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3GG-D-PLAN - Local-only Live KIS Provider Binding Plan, No Activation.
+
 ## Phase 3GG-B-REVIEW-RECORD - 2026-07-09
 
 ### Record Owner Review of Live KIS Gates, No Activation (Recorded)

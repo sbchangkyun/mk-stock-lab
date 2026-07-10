@@ -1,10 +1,9 @@
-// Phase 3GG-B-REVIEW-RECORD contract checker.
-// Verifies the owner's recorded review decisions for the 11 Live KIS
-// approval gates (owner review record only, no live KIS, no LLM, no
-// public/beta activation, no API route, no scaffold/provider source
-// change, no live KIS activation) are present, internally consistent, and
-// have not touched any forbidden runtime/source path since the
-// Phase 3GG-B-AUDIT baseline.
+// Phase 3GG-C contract checker.
+// Verifies the Live KIS Activation Decision Record (decision-record only,
+// no live KIS, no LLM, no public/beta activation, no API route, no
+// scaffold/provider source change, no live KIS activation) is present,
+// internally consistent, and has not touched any forbidden runtime/source
+// path since the Phase 3GG-B-REVIEW-RECORD baseline.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -12,38 +11,34 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BASELINE = 'ab44382a623d17243082af8cf899719789a98742';
+const BASELINE = '1ab8c8ba478fef909761c059e013cb2ab63ecd29';
 
-const REVIEW_DOC = 'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md';
-const RESULT_DOC = 'docs/planning/phase_3gg_b_review_record_result_v0.1.md';
-const CHECKER_SELF = 'scripts/check_phase_3gg_b_review_record_contract.mjs';
+const DECISION_DOC = 'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md';
+const RESULT_DOC = 'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md';
+const CHECKER_SELF = 'scripts/check_phase_3gg_c_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
-const CORE_DELIVERABLES = [REVIEW_DOC, RESULT_DOC, CHECKER_SELF];
+const CORE_DELIVERABLES = [DECISION_DOC, RESULT_DOC, CHECKER_SELF];
 const MODIFIED_FILES = [CHANGELOG, PACKAGE_JSON];
 
 // Sibling phase checkers patched during this phase so they keep passing
 // against a HEAD that already includes this phase's own changes. Every
 // patch is additive-only (no protective assertion weakened or removed):
-// each sibling's TOLERATED_LATER_PHASE_FILES / TOLERATED_HEADERS_ABOVE_*
-// allowlist was extended to recognize this phase's 3 new deliverables and
-// changelog header. Populated only with checkers an actual validation run
-// demonstrated needed a patch -- see the phase result doc for the exact
-// list applied.
+// each sibling's TOLERATED_LATER_PHASE_FILES allowlist was extended to
+// recognize this phase's 3 new deliverables. Populated only with checkers
+// an actual validation run demonstrated needed a patch -- see the phase
+// result doc for the exact list applied.
 const PATCHED_SIBLING_CHECKERS = [
+  'scripts/check_phase_3gg_b_review_record_contract.mjs',
   'scripts/check_phase_3gg_b_audit_contract.mjs',
   'scripts/check_phase_3gg_b_contract.mjs',
   'scripts/check_phase_3gg_a_plan_contract.mjs',
-  'scripts/check_phase_3ff_a_handoff_a_contract.mjs',
-  'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs',
   'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs',
-  'scripts/check_phase_3ff_a_mk_c_contract.mjs',
-  'scripts/check_phase_3ff_a_sp_b_contract.mjs',
-  'scripts/check_phase_3ff_a_mk_b_contract.mjs',
   'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs',
   'scripts/check_phase_3ff_a_ui_a_contract.mjs',
-  'scripts/check_phase_3ff_a_plan_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
   'scripts/check_phase_3fg_a_plan_contract.mjs',
   'scripts/check_phase_3fg_a_contract.mjs',
   'scripts/check_phase_3fg_b_contract.mjs',
@@ -53,15 +48,11 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3fg_d_hf1_contract.mjs',
 ];
 
-// A future phase that legitimately adds files on top of this one should
-// extend this array in its own patch to this checker, not remove any
-// existing assertion. Phase 3GG-C added its 3 deliverables on top of this
-// baseline; see docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md.
-const TOLERATED_LATER_PHASE_FILES = [
-  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
-  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
-  'scripts/check_phase_3gg_c_contract.mjs',
-];
+// No later phase exists on top of this baseline yet, so this list starts
+// empty. A future phase that legitimately adds files on top of this one
+// should extend this array in its own patch to this checker, not remove
+// any existing assertion.
+const TOLERATED_LATER_PHASE_FILES = [];
 
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
@@ -91,10 +82,8 @@ const REQUIRED_FORBIDDEN_DIFF_PATHS = [
   '.env.local',
 ];
 
-// Literal candidate paths named in the work order. src/lib/server/providers/kis
-// is the real, pre-existing provider tree and is included here (unlike the
-// prior phase's checker) per the work order's explicit instruction to add
-// this 5th path. None of the other 4 are expected to exist in the repo.
+// Literal candidate paths named in the work order.
+// src/lib/server/providers/kis is the real, pre-existing provider tree.
 const KIS_PROVIDER_CANDIDATE_PATHS = [
   'src/lib/server/kis',
   'src/lib/kis',
@@ -103,69 +92,34 @@ const KIS_PROVIDER_CANDIDATE_PATHS = [
   'src/lib/server/providers/kis',
 ];
 
-// --- 3. Review record doc required literal tokens (exhaustive) ---
-const REVIEW_DOC_REQUIRED_TOKENS = [
+// --- 3. Decision record doc required literal tokens (exhaustive) ---
+const DECISION_DOC_REQUIRED_TOKENS = [
+  'Phase 3GG-C',
+  '1ab8c8b',
   'Phase 3GG-B-REVIEW-RECORD',
-  'ab44382a623d17243082af8cf899719789a98742',
-  'Phase 3GG-B-AUDIT',
-  'Owner review record',
+  'Live KIS',
+  'Activation Decision Record',
   'No Activation',
-  'Live KIS remains blocked',
-  'Gate 1',
-  'Gate 2',
-  'Gate 3',
-  'Gate 4',
-  'Gate 5',
-  'Gate 6',
-  'Gate 7',
-  'Gate 8',
-  'Gate 9',
-  'Gate 10',
-  'Gate 11',
   'Approved with condition',
   'Approved',
-  '현재가',
-  '일봉/주봉/월봉/년봉',
-  '분봉',
-  '거래량',
-  '호가/예상체결',
-  '종목 기본정보',
-  '업종/지수 정보',
-  '투자자 매매동향',
-  '외국인/기관 매매동향',
-  '공매도',
-  '프로그램 매매',
-  '시가총액/거래량/등락률',
-  '재무비율',
-  '증권사 투자의견',
-  '주문/정정/취소',
-  '계좌',
-  '잔고',
-  '예수금',
-  '매수가능금액',
-  '매도가능수량',
-  '입출금',
-  'raw KIS payload',
-  'sanitized summary',
-  'local only',
-  'cache TTL을 300초',
-  '1분 최대 5회',
-  '1시간 최대 30회',
-  '1일 최대 100회',
-  'fail-closed',
-  'Phase 3GG-C',
+  'general local only',
+  'Live KIS remains blocked',
+  'no gate remains Pending',
+  'no gate remains Rejected',
+  'no gate remains Needs revision',
+  'conditionally ready for next no-activation implementation planning',
+  'actual activation requires separate future commit/PR sign-off',
+  'Phase 3GG-D-PLAN',
 ];
 
 // --- 4. Result doc required tokens ---
 const RESULT_DOC_REQUIRED_TOKENS = [
-  'Status: Recorded.',
-  'Baseline: ab44382a623d17243082af8cf899719789a98742.',
-  'Phase 3GG-B-AUDIT',
-  'Owner review summary',
-  'Gate decision summary',
-  'Gate 2 expanded endpoint decision',
-  'Activation readiness assessment',
-  'Live KIS remains inactive',
+  'Status: Prepared.',
+  'Baseline: 1ab8c8b',
+  'Phase 3GG-B-REVIEW-RECORD',
+  'Gate review status summary',
+  'Owner condition summary',
+  'Live KIS remains blocked',
   'No source changes.',
   'No chart-ai.astro change.',
   'No API route changed.',
@@ -179,10 +133,10 @@ const RESULT_DOC_REQUIRED_TOKENS = [
 
 // --- 5. Changelog required tokens ---
 const CHANGELOG_REQUIRED_TOKENS = [
-  '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
-  'Record Owner Review of Live KIS Gates',
+  '## Phase 3GG-C - 2026-07-09',
+  'Live KIS Activation Decision Record',
   'No Activation',
-  'ab44382a623d17243082af8cf899719789a98742',
+  '1ab8c8b',
 ];
 
 const FORBIDDEN_INVESTMENT_PHRASES = [
@@ -208,10 +162,10 @@ const SECRET_LIKE_CHECKS = [
 ];
 
 // Phrases that would falsely claim an activation, approval, or unlock
-// occurred. None of these may appear anywhere in the review or result
+// occurred. None of these may appear anywhere in the decision or result
 // document, even in a hypothetical/future-tense framing, since this phase
-// performs no activation of any kind -- it only records owner review
-// decisions as approval criteria.
+// performs no activation of any kind -- it only records the decision state
+// after owner review.
 const FALSE_ACTIVATION_CLAIMS = [
   'live KIS is now active',
   'live KIS has been activated',
@@ -231,13 +185,15 @@ const FALSE_ACTIVATION_CLAIMS = [
   'deployed to production',
 ];
 
-// Phrases that would recommend immediate implementation rather than the
-// Phase 3GG-C activation decision record.
+// Phrases that would recommend immediate implementation/activation rather
+// than the safer Phase 3GG-D-PLAN planning phase.
 const IMMEDIATE_IMPLEMENTATION_CLAIMS = [
   'implement live KIS now',
   'begin live KIS implementation immediately',
   'start implementation now',
   'proceed directly to implementation',
+  'activate live KIS now',
+  'activate live KIS immediately',
 ];
 
 // Constructed from numeric code points (not written as a literal mojibake
@@ -294,14 +250,14 @@ for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON]) {
 // --- 2. package.json contains the exact phase script ---
 const pkg = JSON.parse(read(PACKAGE_JSON));
 assert(
-  pkg.scripts && pkg.scripts['check:phase-3gg-b-review-record'] === 'node scripts/check_phase_3gg_b_review_record_contract.mjs',
-  'package.json is missing the exact "check:phase-3gg-b-review-record" script entry',
+  pkg.scripts && pkg.scripts['check:phase-3gg-c'] === 'node scripts/check_phase_3gg_c_contract.mjs',
+  'package.json is missing the exact "check:phase-3gg-c" script entry',
 );
 
-// --- 3. Review record doc contains all required tokens ---
-const reviewDoc = read(REVIEW_DOC);
-for (const token of REVIEW_DOC_REQUIRED_TOKENS) {
-  assert(reviewDoc.includes(token), `Review record doc missing required token: ${token}`);
+// --- 3. Decision record doc contains all required tokens ---
+const decisionDoc = read(DECISION_DOC);
+for (const token of DECISION_DOC_REQUIRED_TOKENS) {
+  assert(decisionDoc.includes(token), `Decision record doc missing required token: ${token}`);
 }
 
 // --- 4. Result doc contains all required tokens ---
@@ -311,34 +267,25 @@ for (const token of RESULT_DOC_REQUIRED_TOKENS) {
 }
 
 // --- 5. Changelog contains all required tokens and its entry sits at the
-// top, tolerating only headers of later phases that legitimately landed on
-// top of this baseline (additive allowlist, same pattern as sibling
-// checkers) ---
+// top (this is the newest phase in the repository as of its own baseline,
+// so no "tolerated headers above" allowance is needed) ---
 const changelog = read(CHANGELOG);
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
-const TOLERATED_HEADERS_ABOVE_3GG_B_REVIEW_RECORD = ['## Phase 3GG-C - 2026-07-09'];
-const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-B-REVIEW-RECORD - 2026-07-09');
-assert(phaseHeaderIndex >= 0, 'Phase 3GG-B-REVIEW-RECORD changelog entry must exist');
-const precedingHeaders3ggBReviewRecord =
-  phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex).match(/^## Phase .*$/gm) || [] : [];
-const unexpectedPrecedingHeaders3ggBReviewRecord = precedingHeaders3ggBReviewRecord.filter(
-  (header) => !TOLERATED_HEADERS_ABOVE_3GG_B_REVIEW_RECORD.includes(header.trim()),
-);
-assert(
-  unexpectedPrecedingHeaders3ggBReviewRecord.length === 0,
-  `Phase 3GG-B-REVIEW-RECORD changelog entry has unexpected headers above it: ${unexpectedPrecedingHeaders3ggBReviewRecord.join(', ')}`,
-);
+const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-C - 2026-07-09');
+assert(phaseHeaderIndex >= 0, 'Phase 3GG-C changelog entry must exist');
+assert(phaseHeaderIndex === 0 || changelog.slice(0, phaseHeaderIndex).trim() === '# MK Stock Lab Planning Changelog',
+  'Phase 3GG-C changelog entry must be the topmost phase entry');
 const nextHeaderIndex = phaseHeaderIndex >= 0
   ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1)
   : -1;
-assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3GG-B-REVIEW-RECORD changelog section');
+assert(nextHeaderIndex > phaseHeaderIndex, 'Could not locate the end of the Phase 3GG-C changelog section');
 const changelogSection = phaseHeaderIndex >= 0 && nextHeaderIndex > phaseHeaderIndex
   ? changelog.slice(phaseHeaderIndex, nextHeaderIndex)
   : '';
-assert(changelogSection.includes('Phase 3GG-B-AUDIT') || changelogSection.includes('ab44382'),
-  'Phase 3GG-B-REVIEW-RECORD changelog entry must reference the Phase 3GG-B-AUDIT / ab44382 baseline');
+assert(changelogSection.includes('Phase 3GG-B-REVIEW-RECORD') || changelogSection.includes('1ab8c8b'),
+  'Phase 3GG-C changelog entry must reference the Phase 3GG-B-REVIEW-RECORD / 1ab8c8b baseline');
 
 // --- 6. Changed files since baseline are restricted to the allowed set ---
 let isDescendant = true;
@@ -401,7 +348,7 @@ assert(envTouched.length === 0, `.env/.env.local unexpectedly present in changed
 // --- 10. No mojibake patterns in new docs/checker ---
 const checkerSelfSource = read(CHECKER_SELF);
 for (const [label, text] of [
-  [REVIEW_DOC, reviewDoc],
+  [DECISION_DOC, decisionDoc],
   [RESULT_DOC, resultDoc],
   [CHECKER_SELF, checkerSelfSource],
 ]) {
@@ -412,7 +359,7 @@ for (const [label, text] of [
 
 // --- 11. No forbidden investment language present as approved text ---
 for (const [label, text] of [
-  [REVIEW_DOC, reviewDoc],
+  [DECISION_DOC, decisionDoc],
   [RESULT_DOC, resultDoc],
   [CHANGELOG, changelogSection],
 ]) {
@@ -425,10 +372,9 @@ for (const [label, text] of [
 // CHECKER_SELF is intentionally excluded: this checker's own source
 // necessarily contains the literal strings it scans for (e.g. the regex
 // source text "access_token"), matching the established precedent in
-// check_phase_3gg_b_audit_contract.mjs, which likewise only scans the
-// phase doc, result doc, and changelog section.
+// check_phase_3gg_b_review_record_contract.mjs.
 for (const [label, text] of [
-  [REVIEW_DOC, reviewDoc],
+  [DECISION_DOC, decisionDoc],
   [RESULT_DOC, resultDoc],
   [CHANGELOG, changelogSection],
 ]) {
@@ -439,7 +385,7 @@ for (const [label, text] of [
 
 // --- 13. No false-activation claim present ---
 for (const [label, text] of [
-  [REVIEW_DOC, reviewDoc],
+  [DECISION_DOC, decisionDoc],
   [RESULT_DOC, resultDoc],
   [CHANGELOG, changelogSection],
 ]) {
@@ -448,37 +394,41 @@ for (const [label, text] of [
   }
 }
 
-// --- 14. Review record must not state that live KIS is currently active
+// --- 14. Decision record must not state that live KIS is currently active
 // (covered by the "live KIS is currently active" / "live KIS is now
 // active" / "live KIS has been activated" entries in assertion 13 above;
-// re-asserted directly here per the work order's explicit numbered
-// requirement) ---
+// re-asserted directly here per the work order's spirit, mirroring the
+// Phase 3GG-B-REVIEW-RECORD checker's precedent) ---
 assert(
-  !reviewDoc.includes('live KIS is currently active') && !reviewDoc.includes('Live KIS is currently active'),
-  'Review record must not state that live KIS is currently active',
+  !decisionDoc.includes('live KIS is currently active') && !decisionDoc.includes('Live KIS is currently active'),
+  'Decision record must not state that live KIS is currently active',
 );
 assert(
-  reviewDoc.includes('Live KIS remains blocked'),
-  'Review record must affirmatively state Live KIS remains blocked',
+  decisionDoc.includes('Live KIS remains blocked'),
+  'Decision record must affirmatively state Live KIS remains blocked',
 );
 
-// --- 15. Review record must not recommend direct implementation
-// immediately ---
+// --- 15. Decision record must not recommend direct implementation
+// activation; it must recommend Phase 3GG-D-PLAN first ---
 for (const claim of IMMEDIATE_IMPLEMENTATION_CLAIMS) {
-  assert(!reviewDoc.includes(claim), `Review record must not recommend immediate implementation: "${claim}"`);
+  assert(!decisionDoc.includes(claim), `Decision record must not recommend immediate activation: "${claim}"`);
 }
 assert(
-  reviewDoc.includes('Do not recommend direct live KIS implementation immediately'),
-  'Review record must explicitly state that direct implementation is not recommended immediately',
+  decisionDoc.includes('Do not recommend direct activation'),
+  'Decision record must explicitly state that direct activation is not recommended',
+);
+assert(
+  decisionDoc.includes('Phase 3GG-D-PLAN'),
+  'Decision record must recommend Phase 3GG-D-PLAN as the chosen safer next phase',
 );
 
 // --- 16. Final result ---
 if (failures.length) {
-  console.error(`Phase 3GG-B-REVIEW-RECORD check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
+  console.error(`Phase 3GG-C check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
   for (const failure of failures) {
     console.error(` - ${failure}`);
   }
   process.exit(1);
 } else {
-  console.log(`Phase 3GG-B-REVIEW-RECORD check PASS: ${assertions}/${assertions} assertions passed.`);
+  console.log(`Phase 3GG-C check PASS: ${assertions}/${assertions} assertions passed.`);
 }

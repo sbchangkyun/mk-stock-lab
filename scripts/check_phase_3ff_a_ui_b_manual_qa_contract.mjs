@@ -265,6 +265,7 @@ const TOLERATED_HEADERS_ABOVE_UI_B = [
   '## Phase 3GG-B - 2026-07-09',
   '## Phase 3GG-B-AUDIT - 2026-07-09',
   '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
+  '## Phase 3GG-C - 2026-07-09',
 ];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];

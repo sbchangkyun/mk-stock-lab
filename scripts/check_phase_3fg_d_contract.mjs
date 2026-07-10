@@ -75,6 +75,10 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md',
   'docs/planning/phase_3gg_b_review_record_result_v0.1.md',
   'scripts/check_phase_3gg_b_review_record_contract.mjs',
+  // Phase 3GG-C (documentation/checker-only; no runtime/source change).
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
+  'scripts/check_phase_3gg_c_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -306,6 +310,7 @@ const TOLERATED_HEADERS_ABOVE_3FG_D = [
   '## Phase 3GG-B - 2026-07-09',
   '## Phase 3GG-B-AUDIT - 2026-07-09',
   '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
+  '## Phase 3GG-C - 2026-07-09',
 ];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3FG-D - 2026-07-09');
 const precedingHeaders =

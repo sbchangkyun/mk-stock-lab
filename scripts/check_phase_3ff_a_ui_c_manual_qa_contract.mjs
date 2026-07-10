@@ -114,6 +114,10 @@ const LIVE_KIS_APPROVAL_FILES = [
   'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md',
   'docs/planning/phase_3gg_b_review_record_result_v0.1.md',
   'scripts/check_phase_3gg_b_review_record_contract.mjs',
+  // Phase 3GG-C (documentation/checker-only; no runtime/source change).
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
+  'scripts/check_phase_3gg_c_contract.mjs',
 ];
 
 // Phase 3FG-D is the specific, documented, approved later phase authorized
@@ -230,6 +234,7 @@ const TOLERATED_HEADERS_ABOVE_UI_C = [
   '## Phase 3GG-B - 2026-07-09',
   '## Phase 3GG-B-AUDIT - 2026-07-09',
   '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
+  '## Phase 3GG-C - 2026-07-09',
 ];
 const uiCEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-C - 2026-07-09');
 const headersAboveUiC = changelog.slice(0, uiCEntryIndex).match(/^## Phase .+$/gm) ?? [];
