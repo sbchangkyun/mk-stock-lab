@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-I-FAST - 2026-07-11
+
+### Chart AI UI KIS + LLM Summary Wiring (Implemented)
+
+- **Status**: Implemented. Static smoke (`smoke:phase-3gg-i-fast`) and static contract checker (`check:phase-3gg-i-fast`) both pass; manual owner-local browser QA is a separate owner action (see result doc).
+- **Baseline**: `722995a539a8e6e1580fc2fedc1f5555eb88a138` (Phase 3GG-H-HF1).
+- **Owner-confirmed precondition**: G-FAST smoke PASS (`symbol=005930`, `sourceStatus=ok`, `currentPricePresent=true`, `volumePresent=true`, `sanitized=true`); H-FAST/H-HF1 smoke PASS (`symbol=005930`, `llmStatus=ok`, `summaryPresent=true`, `currentPricePresent=true`, `sanitized=true`); model `gpt-5.5`; a real owner-local LLM network call occurred.
+- **Purpose**: wires the already-working local-only KIS `current_price` + LLM summary route (Phase 3GG-H-FAST / 3GG-H-HF1) into the Chart AI page UI, so the owner can open `/chart-ai` locally with an explicit opt-in query, click a button, and see a sanitized Korean LLM summary — without any auto-run, without exposing credentials, the raw prompt, the raw KIS payload, the raw OpenAI response, or the actual `currentPrice` numeric value.
+- **Scope**: UI-only change to `src/pages/chart-ai.astro` — a new owner-local panel (`chartAiOwnerLocalKisLlmSummaryPanel`, hidden by default), a client-side visibility gate (local hostname AND `ownerLocalKisLlm=1` query opt-in, no server auth/Supabase/session/cookie/JWT required), and a click-only handler that calls `GET /api/chart-ai/local-only-kis-llm-summary.json?ownerLocalKisLlm=1&symbol=005930` with `credentials: 'omit'` and an 15s abort timeout. No changes to the H route, the LLM bridge, the H-FAST owner smoke script/checker, or any KIS provider module.
+- **Rendering allowlist**: success renders only `summaryText`, `symbol`, `market`, `llmStatus`, `currentPricePresent`/`volumePresent` as booleans, and a sanitized note — never the numeric `currentPrice`, never the raw KIS payload, never the raw LLM response, never the prompt, never the model name, never a credential. Blocked/unavailable renders only `sanitizedErrorCode`, `sourceStatus`, and a UI-facing diagnostics allowlist restricted to `httpStatus`/`openAiErrorMessageClass`/`responseShapeKind`/`outputTextPresent` (deliberately narrower than the bridge's server-side diagnostics allowlist — `openAiErrorType`/`openAiErrorCode`/`openAiErrorParam` are never rendered).
+- **New scripts**: `scripts/smoke_phase_3gg_i_fast_chart_ai_ui_kis_llm_summary_wiring.mjs` (static source assertions, no network call); `scripts/check_phase_3gg_i_fast_contract.mjs` (static contract checker, including forbidden-diff and KIS-provider-diff checks against the baseline); two new package scripts (`smoke:phase-3gg-i-fast`, `check:phase-3gg-i-fast`).
+- **Endpoint used**: `current_price` only, unchanged from Phase 3GG-E-INTEGRATE / 3GG-F-FAST / 3GG-G-FAST / 3GG-H-FAST / 3GG-H-HF1. No KIS endpoint expansion.
+- **Activation status**: no public activation; no beta activation; no internal QA activation; no deploy; no push.
+- **Preserved policy**: no order endpoint; no cancel/modify order endpoint; no account endpoint; no balance endpoint; no funds endpoint; no buying power endpoint; no sellable quantity endpoint; no profit/loss endpoint; no deposit/withdrawal endpoint; no trading history endpoint; no portfolio/holdings endpoint; no personal endpoint; no raw KIS payload exposure; no credential exposure; no raw LLM response exposure; no currentPrice numeric exposure; no MK Agent/Similar Pattern auto-run; no new dependency; no lockfile change; no Supabase change; no existing KIS provider module change; `.env`/`.env.local` not touched; not pushed; not deployed.
+- **Recommended next step**: Phase 3GG-I-QA - Owner-local Browser QA for Chart AI KIS + LLM Summary UI.
+
 ## Phase 3GG-H-HF1 - 2026-07-11
 
 ### LLM_CALL_FAILED Safe Diagnostics for Local-only LLM Runtime Bridge

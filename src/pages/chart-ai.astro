@@ -773,6 +773,45 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         ></div>
       </section>
 
+      <!--
+        Phase 3GG-I-FAST: local-only, explicit opt-in owner-local KIS current_price + LLM summary
+        UI wiring panel. Hidden by default. Only unhidden client-side when hostname is
+        localhost/127.0.0.1/::1 AND the URL carries `?ownerLocalKisLlm=1`. Never auto-runs; the
+        request only happens on an explicit button click, to
+        `/api/chart-ai/local-only-kis-llm-summary.json?ownerLocalKisLlm=1&symbol=005930` (Phase
+        3GG-H-FAST / 3GG-H-HF1), which itself fails closed unless local-only + opt-in + the local
+        LLM env gate all allow it. Renders only the sanitized summary fields (summaryText, symbol,
+        market, llmStatus, currentPricePresent, volumePresent) on success, or sanitized
+        diagnostics (sanitizedErrorCode, sourceStatus, diagnostics.*) on failure -- never the raw
+        KIS payload, never the actual currentPrice numeric value, never the prompt, never the raw
+        OpenAI response, never credentials. Not investment advice.
+      -->
+      <section
+        id="chartAiOwnerLocalKisLlmSummaryPanel"
+        class="chart-owner-local-kis-llm-summary-panel"
+        aria-labelledby="chart-owner-local-kis-llm-summary-heading"
+        hidden
+      >
+        <div class="chart-owner-local-kis-llm-summary-heading">
+          <p class="eyebrow">소유자 로컬 테스트 전용</p>
+          <h3 id="chart-owner-local-kis-llm-summary-heading">로컬 전용 KIS + LLM 요약</h3>
+          <p class="chart-owner-local-kis-llm-summary-guide">
+            페이지 로드시 자동 실행되지 않습니다. 버튼 클릭 시에만 현재가 기반 요약을 요청합니다.
+            투자 자문이 아니며 매수·매도 추천을 제공하지 않습니다.
+          </p>
+        </div>
+        <button type="button" id="chartAiOwnerLocalKisLlmSummaryButton" class="chart-owner-local-kis-llm-summary-run-btn">
+          로컬 전용 KIS + LLM 요약 요청 (005930)
+        </button>
+        <p id="chartAiOwnerLocalKisLlmSummaryStatus" class="chart-owner-local-kis-llm-summary-status" aria-live="polite">대기 중</p>
+        <div
+          id="chartAiOwnerLocalKisLlmSummaryOutput"
+          class="chart-owner-local-kis-llm-summary-output"
+          hidden
+          aria-live="polite"
+        ></div>
+      </section>
+
       <div class="chart-analysis-book">
         <div class="chart-analysis-tags" role="tablist" aria-label="차트 분석 보기 선택">
           <button
@@ -1261,6 +1300,17 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const ownerLocalKisIntegrationPanel = document.getElementById('chartAiOwnerLocalKisIntegrationPanel');
       if (ownerLocalKisIntegrationPanel) {
         ownerLocalKisIntegrationPanel.hidden = !ownerLocalKisIntegrationEnabled;
+      }
+
+      // Phase 3GG-I-FAST: hidden by default. Only unhidden client-side when hostname is local AND
+      // the URL carries `?ownerLocalKisLlm=1`. Visibility only -- the actual request only happens
+      // on an explicit button click, handled further below.
+      const ownerLocalKisLlmOptIn = chartAiQuery.get('ownerLocalKisLlm') === '1';
+      const ownerLocalKisLlmEnabled =
+        mockedChartAiAccess.capabilities.canAccessChartAi && isLocalOwnerHostname() && ownerLocalKisLlmOptIn;
+      const ownerLocalKisLlmPanel = document.getElementById('chartAiOwnerLocalKisLlmSummaryPanel');
+      if (ownerLocalKisLlmPanel) {
+        ownerLocalKisLlmPanel.hidden = !ownerLocalKisLlmEnabled;
       }
 
       authGateCta?.addEventListener('click', () => {
@@ -2804,6 +2854,218 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         });
       }
 
+      // Owner-local KIS current_price + LLM summary execution panel (Phase 3GG-I-FAST).
+      // Local-only, explicit opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the
+      // URL carries `?ownerLocalKisLlm=1`. Never auto-runs; the request only happens on an
+      // explicit click, to
+      // `/api/chart-ai/local-only-kis-llm-summary.json?ownerLocalKisLlm=1&symbol=005930` (Phase
+      // 3GG-H-FAST / 3GG-H-HF1), which itself fails closed unless local-only + opt-in + the
+      // local LLM env gate all allow it. Renders only sanitized summary fields on success, or a
+      // narrow, explicitly-allowlisted diagnostics subset on failure -- never the raw KIS
+      // payload, never the actual currentPrice numeric value, never the prompt, never the raw
+      // OpenAI response, never credentials.
+      const ownerLocalKisLlmSummaryButton = document.getElementById(
+        'chartAiOwnerLocalKisLlmSummaryButton',
+      ) as HTMLButtonElement | null;
+      const ownerLocalKisLlmSummaryOutput = document.getElementById('chartAiOwnerLocalKisLlmSummaryOutput');
+      const ownerLocalKisLlmSummaryStatus = document.getElementById('chartAiOwnerLocalKisLlmSummaryStatus');
+      if (ownerLocalKisLlmSummaryOutput) ownerLocalKisLlmSummaryOutput.tabIndex = -1;
+
+      const OWNER_LOCAL_KIS_LLM_SUMMARY_TIMEOUT_MS = 15000;
+      let ownerLocalKisLlmSummaryRequestInFlight = false;
+
+      // UI-facing diagnostics display allowlist -- deliberately narrower than the bridge's
+      // server-side ALLOWED_LLM_DIAGNOSTICS_FIELDS (Phase 3GG-H-HF1); openAiErrorType /
+      // openAiErrorCode / openAiErrorParam are never rendered here.
+      const OWNER_LOCAL_KIS_LLM_SUMMARY_DIAGNOSTICS_UI_ALLOWLIST = [
+        'httpStatus',
+        'openAiErrorMessageClass',
+        'responseShapeKind',
+        'outputTextPresent',
+      ];
+
+      const showOwnerLocalKisLlmSummaryMessage = (
+        text: string,
+        variant: 'loading' | 'unavailable' = 'unavailable',
+      ) => {
+        if (ownerLocalKisLlmSummaryStatus) ownerLocalKisLlmSummaryStatus.textContent = text;
+        if (variant === 'loading') {
+          if (ownerLocalKisLlmSummaryOutput) {
+            ownerLocalKisLlmSummaryOutput.hidden = true;
+            ownerLocalKisLlmSummaryOutput.replaceChildren();
+          }
+          return;
+        }
+        if (!ownerLocalKisLlmSummaryOutput) return;
+        ownerLocalKisLlmSummaryOutput.hidden = false;
+        ownerLocalKisLlmSummaryOutput.replaceChildren();
+        const message = document.createElement('p');
+        message.className = `chart-owner-local-kis-llm-summary-msg chart-owner-local-kis-llm-summary-msg-${variant}`;
+        message.textContent = text;
+        ownerLocalKisLlmSummaryOutput.append(message);
+      };
+
+      type OwnerLocalKisLlmSummary = {
+        ok: boolean;
+        symbol: string | null;
+        market: string | null;
+        llmStatus: string | null;
+        summaryText: string | null;
+        sanitizedErrorCode: string | null;
+        sourceStatus: string;
+        currentPricePresent: boolean | null;
+        volumePresent: boolean | null;
+        diagnostics: Record<string, unknown> | null;
+      };
+
+      // Response shape guard: validates the parsed body is exactly the sanitized LLM summary
+      // response shape before anything is rendered. Any missing or wrong-typed field falls
+      // through to the safe static "unexpected response" path below -- never a partial render.
+      const isOwnerLocalKisLlmSummaryResponse = (
+        value: unknown,
+      ): value is { ok: true; summary: OwnerLocalKisLlmSummary } => {
+        if (!value || typeof value !== 'object') return false;
+        const record = value as Record<string, unknown>;
+        if (record.ok !== true) return false;
+        const summary = record.summary;
+        if (!summary || typeof summary !== 'object') return false;
+        const s = summary as Record<string, unknown>;
+        if (typeof s.ok !== 'boolean') return false;
+        if (typeof s.sourceStatus !== 'string') return false;
+        return true;
+      };
+
+      const renderOwnerLocalKisLlmSummarySuccess = (summary: OwnerLocalKisLlmSummary) => {
+        if (!ownerLocalKisLlmSummaryOutput) return;
+        ownerLocalKisLlmSummaryOutput.hidden = false;
+        ownerLocalKisLlmSummaryOutput.replaceChildren();
+
+        const summaryText = document.createElement('p');
+        summaryText.className = 'chart-owner-local-kis-llm-summary-text';
+        summaryText.textContent = typeof summary.summaryText === 'string' ? summary.summaryText : '-';
+        ownerLocalKisLlmSummaryOutput.append(summaryText);
+
+        const summaryList = document.createElement('dl');
+        summaryList.className = 'chart-owner-local-kis-llm-summary-dl';
+        const rows: Array<[string, string]> = [
+          ['종목', summary.symbol ?? '-'],
+          ['시장', summary.market ?? '-'],
+          ['LLM 상태', summary.llmStatus ?? '-'],
+          ['현재가 반영 여부', summary.currentPricePresent === true ? '반영됨' : '반영 안 됨'],
+          ['거래량 반영 여부', summary.volumePresent === true ? '반영됨' : '반영 안 됨'],
+        ];
+        for (const [label, value] of rows) {
+          const dt = document.createElement('dt');
+          dt.textContent = label;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          summaryList.append(dt, dd);
+        }
+        ownerLocalKisLlmSummaryOutput.append(summaryList);
+
+        const sanitizedNote = document.createElement('p');
+        sanitizedNote.className = 'chart-owner-local-kis-llm-summary-sanitized-note';
+        sanitizedNote.textContent =
+          '민감 정보(실제 현재가 수치, 원문 응답, 프롬프트, 자격 증명 등)는 표시되지 않습니다. (sanitized=true)';
+        ownerLocalKisLlmSummaryOutput.append(sanitizedNote);
+
+        const disclaimer = document.createElement('p');
+        disclaimer.className = 'chart-owner-local-kis-llm-summary-disclaimer';
+        disclaimer.textContent = '투자 자문이 아니며 매수·매도 추천을 제공하지 않습니다.';
+        ownerLocalKisLlmSummaryOutput.append(disclaimer);
+      };
+
+      const renderOwnerLocalKisLlmSummaryBlocked = (summary: OwnerLocalKisLlmSummary) => {
+        if (!ownerLocalKisLlmSummaryOutput) return;
+        ownerLocalKisLlmSummaryOutput.hidden = false;
+        ownerLocalKisLlmSummaryOutput.replaceChildren();
+
+        const summaryList = document.createElement('dl');
+        summaryList.className = 'chart-owner-local-kis-llm-summary-dl';
+        const rows: Array<[string, string]> = [
+          ['소스 상태', summary.sourceStatus ?? '-'],
+          ['오류 코드', summary.sanitizedErrorCode ?? '-'],
+        ];
+        const diagnostics = summary.diagnostics;
+        if (diagnostics && typeof diagnostics === 'object') {
+          const d = diagnostics as Record<string, unknown>;
+          for (const key of OWNER_LOCAL_KIS_LLM_SUMMARY_DIAGNOSTICS_UI_ALLOWLIST) {
+            if (d[key] !== undefined) rows.push([key, String(d[key])]);
+          }
+        }
+        for (const [label, value] of rows) {
+          const dt = document.createElement('dt');
+          dt.textContent = label;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          summaryList.append(dt, dd);
+        }
+        ownerLocalKisLlmSummaryOutput.append(summaryList);
+
+        const msg = document.createElement('p');
+        msg.className = 'chart-owner-local-kis-llm-summary-msg chart-owner-local-kis-llm-summary-msg-unavailable';
+        msg.textContent = '로컬 전용 KIS + LLM 요약을 사용할 수 없습니다. 로컬 환경 설정을 확인해 주세요.';
+        ownerLocalKisLlmSummaryOutput.append(msg);
+      };
+
+      if (ownerLocalKisLlmSummaryButton && ownerLocalKisLlmEnabled) {
+        ownerLocalKisLlmSummaryButton.addEventListener('click', async () => {
+          if (ownerLocalKisLlmSummaryRequestInFlight) return;
+          ownerLocalKisLlmSummaryRequestInFlight = true;
+          ownerLocalKisLlmSummaryButton.disabled = true;
+          if (ownerLocalKisLlmSummaryOutput) ownerLocalKisLlmSummaryOutput.setAttribute('aria-busy', 'true');
+          showOwnerLocalKisLlmSummaryMessage('불러오는 중… (로컬 전용 KIS + LLM 요약, current_price 기반)', 'loading');
+
+          const abortController = new AbortController();
+          const timeoutId = window.setTimeout(
+            () => abortController.abort(),
+            OWNER_LOCAL_KIS_LLM_SUMMARY_TIMEOUT_MS,
+          );
+
+          try {
+            const response = await fetch(
+              '/api/chart-ai/local-only-kis-llm-summary.json?ownerLocalKisLlm=1&symbol=005930',
+              { method: 'GET', signal: abortController.signal, credentials: 'omit' },
+            );
+            let parsedResponse: unknown = null;
+            try {
+              parsedResponse = await response.json();
+            } catch {
+              parsedResponse = null;
+            }
+            if (isOwnerLocalKisLlmSummaryResponse(parsedResponse)) {
+              if (parsedResponse.summary.ok) {
+                if (ownerLocalKisLlmSummaryStatus) ownerLocalKisLlmSummaryStatus.textContent = '완료';
+                renderOwnerLocalKisLlmSummarySuccess(parsedResponse.summary);
+              } else {
+                if (ownerLocalKisLlmSummaryStatus) ownerLocalKisLlmSummaryStatus.textContent = '사용 불가';
+                renderOwnerLocalKisLlmSummaryBlocked(parsedResponse.summary);
+              }
+            } else {
+              showOwnerLocalKisLlmSummaryMessage(
+                '로컬 전용 KIS + LLM 요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
+                'unavailable',
+              );
+            }
+          } catch (thrownError) {
+            if (thrownError instanceof DOMException && thrownError.name === 'AbortError') {
+              showOwnerLocalKisLlmSummaryMessage('요청 시간이 초과되었습니다. 다시 실행 버튼으로 재시도해 주세요.', 'unavailable');
+            } else {
+              showOwnerLocalKisLlmSummaryMessage(
+                '로컬 전용 KIS + LLM 요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
+                'unavailable',
+              );
+            }
+          } finally {
+            window.clearTimeout(timeoutId);
+            ownerLocalKisLlmSummaryRequestInFlight = false;
+            ownerLocalKisLlmSummaryButton.disabled = false;
+            ownerLocalKisLlmSummaryButton.textContent = '다시 실행';
+            if (ownerLocalKisLlmSummaryOutput) ownerLocalKisLlmSummaryOutput.removeAttribute('aria-busy');
+          }
+        });
+      }
+
       // Owner-local auth/usage runtime bridge verification panel (Phase 3FB-E).
       // Local-only, explicit opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the
       // URL carries `?ownerLocalAuthUsageBridge=1`. Never auto-runs; the API call only happens on
@@ -4055,6 +4317,99 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
     .chart-owner-local-mocked-result[aria-busy='true'] {
       opacity: 0.85;
+    }
+
+    .chart-owner-local-kis-llm-summary-panel {
+      margin-bottom: 1rem;
+      padding: 0.85rem 1rem;
+      border: 1px dashed color-mix(in srgb, var(--primary) 40%, var(--border));
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+    }
+
+    .chart-owner-local-kis-llm-summary-panel h3 {
+      margin: 0.15rem 0 0.35rem;
+      font-size: 0.95rem;
+    }
+
+    .chart-owner-local-kis-llm-summary-guide {
+      margin: 0 0 0.65rem;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .chart-owner-local-kis-llm-summary-run-btn {
+      min-height: 38px;
+      padding: 0.42rem 0.75rem;
+      border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+      color: var(--primary);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .chart-owner-local-kis-llm-summary-run-btn:disabled {
+      border-color: var(--border);
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .chart-owner-local-kis-llm-summary-status {
+      margin: 0.5rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+    }
+
+    .chart-owner-local-kis-llm-summary-output {
+      margin-top: 0.75rem;
+    }
+
+    .chart-owner-local-kis-llm-summary-output[aria-busy='true'] {
+      opacity: 0.85;
+    }
+
+    .chart-owner-local-kis-llm-summary-text {
+      margin: 0 0 0.6rem;
+      padding: 0.6rem 0.7rem;
+      border-radius: 8px;
+      background: var(--surface-muted);
+      font-size: 0.82rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .chart-owner-local-kis-llm-summary-dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.28rem 0.75rem;
+      margin: 0 0 0.6rem;
+    }
+
+    .chart-owner-local-kis-llm-summary-dl dt {
+      color: var(--text-muted);
+      font-size: 0.74rem;
+    }
+
+    .chart-owner-local-kis-llm-summary-dl dd {
+      margin: 0;
+      font-size: 0.8rem;
+      font-weight: 750;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .chart-owner-local-kis-llm-summary-sanitized-note,
+    .chart-owner-local-kis-llm-summary-disclaimer,
+    .chart-owner-local-kis-llm-summary-msg {
+      margin: 0 0 0.4rem;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
     }
 
     .chart-owner-local-auth-usage-bridge-panel {
