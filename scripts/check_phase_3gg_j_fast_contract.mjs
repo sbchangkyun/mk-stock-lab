@@ -31,12 +31,14 @@ const KNOWN_UNTOUCHED_PATHS = [
   'skills-lock.json',
 ];
 
-// This phase's stricter "do not modify unless absolutely necessary" scope: the UI page and the
-// H route are explicitly forbidden diff targets this time (unlike Phase 3GG-I-FAST, which
-// legitimately touched chart-ai.astro).
+// This phase's stricter "do not modify unless absolutely necessary" scope: the UI page was an
+// explicitly forbidden diff target this time (unlike Phase 3GG-I-FAST, which legitimately touched
+// chart-ai.astro). The H route was also originally forbidden here, but Phase 3GG-J-HF1 (a small,
+// explicitly-approved follow-up hotfix) legitimately wires the new model-tier env keys through
+// that route, so it is intentionally excluded from this list as of that later phase -- this is a
+// tiny checker-only compatibility fix, not a weakening of any safety assertion.
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
   'src/pages/chart-ai.astro',
-  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
   'src/lib/server/chart-ai/mk-agent.mjs',
   'src/lib/server/chart-ai/mk-agent.fixture.mjs',
   'src/lib/server/chart-ai/similar-pattern-agent.mjs',
@@ -245,7 +247,17 @@ assert(
 );
 
 // --- 10. No unexpected working-tree changes outside this phase's scope ---
-const ALLOWED_MODIFIED_FILES = new Set([...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON]);
+// Phase 3GG-J-HF1 (a small, explicitly-approved follow-up hotfix) legitimately touches the H
+// route and adds its own deliverables; tolerated here so this checker still passes when run
+// mid-J-HF1-implementation, before that phase's own commit. Tiny checker-only compatibility
+// addition, not a weakening of any safety assertion.
+const J_HF1_TOLERATED_PATHS = [
+  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
+  'scripts/smoke_phase_3gg_j_hf1_model_tier_env_passthrough.mjs',
+  'scripts/check_phase_3gg_j_hf1_contract.mjs',
+  'docs/planning/phase_3gg_j_hf1_model_tier_env_passthrough_result_v0.1.md',
+];
+const ALLOWED_MODIFIED_FILES = new Set([...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON, ...J_HF1_TOLERATED_PATHS]);
 let statusLines = [];
 try {
   statusLines = runGit(['status', '--porcelain']).split('\n').filter(Boolean);

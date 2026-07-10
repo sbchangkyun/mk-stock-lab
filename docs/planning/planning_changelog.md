@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-J-HF1 - 2026-07-11
+
+### Model Tier Env Passthrough for Local-only H Route
+
+- **Status**: Implemented. Deterministic smoke (22 cases) passed; static contract checker passed; `npm run build` passed.
+- **Baseline**: `8fa1501886a0dc7e5e0c57c050b8018b80002db2` (Phase 3GG-J-FAST).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: pure integration hotfix — wire the Phase 3GG-J-FAST model tier/fallback policy's new env keys through the existing local-only H route so the already-implemented bridge logic can actually receive them via a real route call. Not a feature-expansion phase.
+- **Files changed**: `src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts` (env passthrough object only); `scripts/check_phase_3gg_j_fast_contract.mjs` (tiny checker-only compatibility fix, not a weakening of any safety assertion — narrows a stale forbidden-diff scope that predates this authorized phase).
+- **Env keys now passed through**: `CHART_AI_LLM_MAIN_MODEL`, `CHART_AI_LLM_FALLBACK_MODEL`, `CHART_AI_LLM_TEST_MODEL`, `CHART_AI_LLM_MODERATION_MODEL`, `CHART_AI_LLM_EMBEDDING_MODEL` — alongside the pre-existing `CHART_AI_ENABLE_LOCAL_LLM`, `OPENAI_API_KEY`, and legacy `CHART_AI_LLM_MODEL`.
+- **Backward compatibility**: `CHART_AI_LLM_MODEL` continues to be passed unchanged; no existing env key was removed or renamed.
+- **Response contract preserved**: no new top-level response fields; model names never exposed in the route response.
+- **UI unchanged**: `src/pages/chart-ai.astro` was not modified this phase.
+- **Model policy / bridge unchanged**: `src/lib/server/chart-ai/local-only-llm-model-policy.mjs` and `src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs` carry no diff this phase.
+- **Activation status**: no public activation; no beta activation; no internal QA activation; no KIS endpoint expansion.
+- **Preserved policy**: not pushed; not deployed.
+- **Recommended next step**: Phase 3GG-K-FAST — Chart AI Summary Quality Upgrade.
+
 ## Phase 3GG-J-FAST - 2026-07-11
 
 ### Model Tier and Fallback Policy for Chart AI Local-only LLM
