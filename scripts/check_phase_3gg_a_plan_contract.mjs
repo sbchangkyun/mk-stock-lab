@@ -69,6 +69,14 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_v0.1.md',
   'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_result_v0.1.md',
   'scripts/check_phase_3gg_b_audit_contract.mjs',
+  // Phase 3GG-B-REVIEW-RECORD additively patched this checker's own
+  // scope-tolerance arrays so the full validation chain runs cleanly once
+  // 3GG-B-REVIEW-RECORD's deliverables exist on top of this checker's
+  // baseline. No protective assertion was weakened; only new tolerated
+  // file entries were added.
+  'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md',
+  'docs/planning/phase_3gg_b_review_record_result_v0.1.md',
+  'scripts/check_phase_3gg_b_review_record_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -269,7 +277,11 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 // Tolerates only the known later Phase 3GG-B header prepended above this
 // entry (not a strict "must be the first entry" check, since Phase 3GG-B
 // legitimately added its own header above this one).
-const TOLERATED_HEADERS_ABOVE_3GG_A_PLAN = ['## Phase 3GG-B - 2026-07-09', '## Phase 3GG-B-AUDIT - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_3GG_A_PLAN = [
+  '## Phase 3GG-B - 2026-07-09',
+  '## Phase 3GG-B-AUDIT - 2026-07-09',
+  '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
+];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-A-PLAN - 2026-07-09');
 assert(phaseHeaderIndex >= 0, 'Phase 3GG-A-PLAN changelog entry must exist');
 const precedingHeaders3ggAPlan =

@@ -184,6 +184,16 @@ const allowedFiles = new Set([
   'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
   'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
   'scripts/check_phase_3gg_b_contract.mjs',
+  // Phase 3GG-B-AUDIT (evidence audit, no activation) and Phase
+  // 3GG-B-REVIEW-RECORD (owner review record, no activation) add further
+  // planning-only deliverables, no source or runtime change. Tolerated for
+  // the same reason.
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_v0.1.md',
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_result_v0.1.md',
+  'scripts/check_phase_3gg_b_audit_contract.mjs',
+  'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md',
+  'docs/planning/phase_3gg_b_review_record_result_v0.1.md',
+  'scripts/check_phase_3gg_b_review_record_contract.mjs',
 ]);
 
 const forbiddenPaths = [

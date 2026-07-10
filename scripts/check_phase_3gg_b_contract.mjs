@@ -56,6 +56,18 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_v0.1.md',
   'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_result_v0.1.md',
   'scripts/check_phase_3gg_b_audit_contract.mjs',
+  // Phase 3GG-B-AUDIT's own cascade patch (commit ab44382) additively
+  // extended these two downstream checkers' tolerance lists to recognize
+  // Phase 3GG-B's and Phase 3GG-B-AUDIT's own deliverables; this checker's
+  // own tolerance list was not updated at that time, so both files are
+  // tolerated retroactively here (pure additive, no assertion removed).
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  // Phase 3GG-B-REVIEW-RECORD's own deliverables (documentation/checker
+  // only; no runtime/source change), tolerated for the same reason.
+  'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md',
+  'docs/planning/phase_3gg_b_review_record_result_v0.1.md',
+  'scripts/check_phase_3gg_b_review_record_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -272,7 +284,10 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 // Tolerates only the known later Phase 3GG-B-AUDIT header prepended above
 // this entry (not a strict "must be the first entry" check, since Phase
 // 3GG-B-AUDIT legitimately added its own header above this one).
-const TOLERATED_HEADERS_ABOVE_3GG_B = ['## Phase 3GG-B-AUDIT - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_3GG_B = [
+  '## Phase 3GG-B-AUDIT - 2026-07-09',
+  '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
+];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-B - 2026-07-09');
 assert(phaseHeaderIndex >= 0, 'Phase 3GG-B changelog entry must exist');
 const precedingHeaders3ggB =
