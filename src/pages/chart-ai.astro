@@ -254,6 +254,16 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
   'No Supabase/DB real runtime',
   'No env/session/JWT/cookie/header parsing',
 ];
+
+// Phase 3GG-F-FAST: static safety-copy list for the owner-local KIS current_price integration
+// panel (Phase 3GG-E-INTEGRATE). Text-only presentational polish -- no fetch, no scaffold
+// import, no live KIS/LLM activation logic here.
+const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
+  '로컬 전용 테스트입니다.',
+  '투자 자문이 아닙니다.',
+  'current_price(현재가) 조회만 지원합니다.',
+  '원본 응답 데이터와 인증 정보는 표시되지 않습니다.',
+];
 ---
 
 <Layout title="종목 차트 | MK Stock Lab" activePath="/chart-ai">
@@ -736,9 +746,24 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
             local-only KIS current_price integration: 로컬 환경에서만 동작하며, 실시간 KIS 연동이 꺼져 있으면
             사용 불가 상태로 표시됩니다. 매수·매도 추천 또는 투자자문이 아닙니다.
           </p>
+          <dl class="chart-owner-local-kis-integration-meta">
+            <div>
+              <dt>대상 엔드포인트</dt>
+              <dd>current_price 전용</dd>
+            </div>
+            <div>
+              <dt>기본 종목코드</dt>
+              <dd>005930</dd>
+            </div>
+          </dl>
+          <ul class="chart-owner-local-kis-integration-safety-list">
+            {OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES.map((notice) => (
+              <li>{notice}</li>
+            ))}
+          </ul>
         </div>
         <button type="button" id="chartAiOwnerLocalKisIntegrationRunBtn" class="chart-owner-local-kis-integration-run-btn">
-          로컬 전용 KIS 현재가 불러오기
+          로컬 전용 KIS 현재가 불러오기 (005930)
         </button>
         <div
           id="chartAiOwnerLocalKisIntegrationResult"
@@ -2598,15 +2623,48 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
       const OWNER_LOCAL_KIS_INTEGRATION_TIMEOUT_MS = 8000;
       let ownerLocalKisIntegrationRequestInFlight = false;
 
-      const showOwnerLocalKisIntegrationMessage = (text: string) => {
+      // Phase 3GG-F-FAST: readable state variants (loading / unavailable) for the message
+      // element -- text + class only, no additional data ever attached.
+      const showOwnerLocalKisIntegrationMessage = (
+        text: string,
+        variant: 'loading' | 'unavailable' = 'unavailable',
+      ) => {
         if (!ownerLocalKisIntegrationResult) return;
         ownerLocalKisIntegrationResult.hidden = false;
         ownerLocalKisIntegrationResult.replaceChildren();
         const message = document.createElement('p');
-        message.className = 'chart-owner-local-kis-integration-msg';
+        message.className = `chart-owner-local-kis-integration-msg chart-owner-local-kis-integration-msg-${variant}`;
         message.textContent = text;
         ownerLocalKisIntegrationResult.append(message);
       };
+
+      // Phase 3GG-F-FAST: friendly Korean text per sanitized error code (never the raw
+      // provider payload or an internal error trace). Falls back to a generic fail-closed
+      // message for any unrecognized code.
+      const OWNER_LOCAL_KIS_INTEGRATION_ERROR_MESSAGES: Record<string, string> = {
+        NON_LOCAL_REQUEST: '로컬 전용 접근 조건이 충족되지 않았습니다.',
+        MISSING_CREDENTIAL: '로컬 환경에 KIS 자격 증명이 설정되어 있지 않습니다.',
+        ENDPOINT_NOT_ALLOWLISTED: '허용되지 않은 요청입니다.',
+        ENDPOINT_FORBIDDEN: '허용되지 않은 요청입니다.',
+        INVALID_SYMBOL: '종목코드가 올바르지 않습니다.',
+        RATE_LIMITED: '요청 횟수 제한을 초과했습니다. 잠시 후 다시 시도해 주세요.',
+        PROVIDER_TIMEOUT: '응답 시간이 초과되었습니다. 다시 실행 버튼으로 재시도해 주세요.',
+        PROVIDER_UNAVAILABLE: '실시간 KIS 연동이 꺼져 있어 사용할 수 없습니다.',
+        MALFORMED_RESPONSE: '응답 형식이 올바르지 않아 표시할 수 없습니다.',
+      };
+
+      const describeOwnerLocalKisIntegrationUnavailable = (
+        code: string | null,
+        sourceStatus: string,
+      ): string => {
+        if (code && OWNER_LOCAL_KIS_INTEGRATION_ERROR_MESSAGES[code]) {
+          return OWNER_LOCAL_KIS_INTEGRATION_ERROR_MESSAGES[code];
+        }
+        return `사용할 수 없음 (${sourceStatus}). 로컬 전용 조건 또는 실시간 KIS 연동 설정을 확인해 주세요.`;
+      };
+
+      const formatOwnerLocalKisIntegrationNumber = (value: number | null): string =>
+        value !== null && Number.isFinite(value) ? value.toLocaleString('ko-KR') : '-';
 
       type OwnerLocalKisIntegrationContext = {
         symbol: string | null;
@@ -2645,7 +2703,8 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
 
         if (context.sourceStatus !== 'ok') {
           showOwnerLocalKisIntegrationMessage(
-            `사용할 수 없음 (${context.sanitizedErrorCode ?? context.sourceStatus}). 로컬 실시간 KIS 연동이 꺼져 있거나 로컬 전용 조건이 충족되지 않았을 수 있습니다.`,
+            describeOwnerLocalKisIntegrationUnavailable(context.sanitizedErrorCode, context.sourceStatus),
+            'unavailable',
           );
           return;
         }
@@ -2655,8 +2714,11 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
         const summaryRows: Array<[string, string]> = [
           ['종목', context.symbol ?? '-'],
           ['시장', context.market ?? '-'],
-          ['현재가', context.currentPrice !== null ? String(context.currentPrice) : '-'],
-          ['거래량', context.volume !== null ? String(context.volume) : '-'],
+          [
+            '현재가',
+            context.currentPrice !== null ? `${formatOwnerLocalKisIntegrationNumber(context.currentPrice)}원` : '-',
+          ],
+          ['거래량', context.volume !== null ? `${formatOwnerLocalKisIntegrationNumber(context.volume)}주` : '-'],
           ['기준 시각', context.timestamp !== null ? String(context.timestamp) : '-'],
           ['소스 상태', context.sourceStatus],
           ['캐시 상태', context.cacheStatus],
@@ -2693,7 +2755,7 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
           ownerLocalKisIntegrationRequestInFlight = true;
           ownerLocalKisIntegrationRunBtn.disabled = true;
           if (ownerLocalKisIntegrationResult) ownerLocalKisIntegrationResult.setAttribute('aria-busy', 'true');
-          showOwnerLocalKisIntegrationMessage('불러오는 중… (로컬 전용 KIS 현재가 연동)');
+          showOwnerLocalKisIntegrationMessage('불러오는 중… (로컬 전용 KIS 현재가 연동, current_price)', 'loading');
 
           const abortController = new AbortController();
           const timeoutId = window.setTimeout(
@@ -2715,13 +2777,22 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
             if (isOwnerLocalKisIntegrationResponse(parsedResponse)) {
               renderOwnerLocalKisIntegrationResult(parsedResponse.context);
             } else {
-              showOwnerLocalKisIntegrationMessage('로컬 전용 KIS 현재가 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.');
+              showOwnerLocalKisIntegrationMessage(
+                '로컬 전용 KIS 현재가 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
+                'unavailable',
+              );
             }
           } catch (thrownError) {
             if (thrownError instanceof DOMException && thrownError.name === 'AbortError') {
-              showOwnerLocalKisIntegrationMessage('요청 시간이 초과되었습니다. 다시 실행 버튼으로 재시도해 주세요.');
+              showOwnerLocalKisIntegrationMessage(
+                '요청 시간이 초과되었습니다. 다시 실행 버튼으로 재시도해 주세요.',
+                'unavailable',
+              );
             } else {
-              showOwnerLocalKisIntegrationMessage('로컬 전용 KIS 현재가 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.');
+              showOwnerLocalKisIntegrationMessage(
+                '로컬 전용 KIS 현재가 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
+                'unavailable',
+              );
             }
           } finally {
             window.clearTimeout(timeoutId);

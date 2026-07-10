@@ -312,13 +312,18 @@ assert(
 // --- 15. Known untouched paths remain untouched / no unexpected working-tree changes ---
 // scripts/check_phase_3gg_d_fast_contract.mjs is a legitimately patched sibling checker:
 // it now tolerates this phase's authorized chart-ai.astro / new-file changes instead of
-// flagging them as violations of its own earlier, narrower snapshot.
+// flagging them as violations of its own earlier, narrower snapshot. Phase 3GG-F-FAST is a
+// later, explicitly authorized follow-on phase that polishes CHART_AI_PAGE and adds its own
+// deliverable files; those are tolerated here for the same reason.
 const ALLOWED_MODIFIED_FILES = new Set([
   ...CORE_DELIVERABLES,
   CHANGELOG,
   PACKAGE_JSON,
   CHART_AI_PAGE,
   'scripts/check_phase_3gg_d_fast_contract.mjs',
+  'scripts/smoke_phase_3gg_f_fast_local_only_kis_current_price_ux.mjs',
+  'scripts/check_phase_3gg_f_fast_contract.mjs',
+  'docs/planning/phase_3gg_f_fast_local_only_kis_current_price_ux_result_v0.1.md',
 ]);
 let statusLines = [];
 try {

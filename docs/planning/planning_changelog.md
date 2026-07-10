@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-F-FAST - 2026-07-10
+
+### Local-only Chart AI KIS Current Price UX Polish and Manual QA (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `e9f47a9ccd6c5389014eb81fcafd2a923b560713` (Phase 3GG-E-INTEGRATE).
+- **Purpose**: builds on Phase 3GG-E-INTEGRATE by polishing the existing local-only Chart AI KIS `current_price` panel's presentation and performing focused local-only UX/manual QA, without broadening KIS capabilities, adding LLM integration, or adding Similar Pattern/MK Agent auto-execution.
+- **Scope**: presentational-only edits to `src/pages/chart-ai.astro` — an endpoint/symbol meta summary, a Korean safety-notice list, a distinct loading-state variant, a sanitized-error-code-to-readable-message map for the fail-closed unavailable state, and `toLocaleString('ko-KR')`-formatted `currentPrice`/`volume` with 원/주 units; a smoke script (`scripts/smoke_phase_3gg_f_fast_local_only_kis_current_price_ux.mjs`, 99 assertions) re-verifying the Phase 3GG-E-INTEGRATE gating/route/adapter contract plus the new UX content; a static contract checker (`scripts/check_phase_3gg_f_fast_contract.mjs`); a result document; two new package scripts (`smoke:phase-3gg-f-fast`, `check:phase-3gg-f-fast`). The panel remains hidden by default and stays gated behind `ownerLocalKisIntegration=1` on a local hostname; it never auto-fetches, only running on an explicit button click.
+- **Endpoint used**: `current_price` only, unchanged from Phase 3GG-E-INTEGRATE.
+- **Activation status**: no public activation; no beta activation; no internal QA activation.
+- **Preserved policy**: no order endpoint; no cancel/modify order endpoint; no account endpoint; no balance endpoint; no funds endpoint; no buying power endpoint; no sellable quantity endpoint; no profit/loss endpoint; no deposit/withdrawal endpoint; no trading history endpoint; no portfolio/holdings endpoint; no personal endpoint; no raw KIS payload exposure; no credential exposure; no LLM handoff; no Similar Pattern or MK Agent auto-run; no lockfile change; no Supabase change; no existing KIS provider module change; not pushed; not deployed.
+- **Recommended next step**: Phase 3GG-G-FAST - Local-only KIS Current Price Real Credential Smoke, Explicit Owner Run.
+
 ## Phase 3GG-E-INTEGRATE - 2026-07-10
 
 ### Local-only KIS Data to Chart AI Integration (Implemented)

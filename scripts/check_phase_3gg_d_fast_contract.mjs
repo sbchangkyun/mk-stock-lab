@@ -42,6 +42,9 @@ const KNOWN_LATER_PHASE_PATHS = [
   'scripts/smoke_phase_3gg_e_integrate_local_only_kis_chart_ai_context.mjs',
   'scripts/check_phase_3gg_e_integrate_contract.mjs',
   'docs/planning/phase_3gg_e_integrate_local_only_kis_chart_ai_result_v0.1.md',
+  'scripts/smoke_phase_3gg_f_fast_local_only_kis_current_price_ux.mjs',
+  'scripts/check_phase_3gg_f_fast_contract.mjs',
+  'docs/planning/phase_3gg_f_fast_local_only_kis_current_price_ux_result_v0.1.md',
 ];
 
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
@@ -317,10 +320,16 @@ assert(
   'Phase 3GG-D-FAST changelog entry must be prepended above the Phase 3GG-D entry',
 );
 
-// --- 10. Forbidden diff since baseline is empty ---
+// --- 10. Forbidden diff since baseline is empty (excluding paths explicitly
+// authorized by later, already-reviewed phases; see KNOWN_LATER_PHASE_PATHS) ---
 let forbiddenDiffOutput = '';
 try {
-  forbiddenDiffOutput = runGit(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).trim();
+  forbiddenDiffOutput = runGit(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS])
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .filter((filePath) => !KNOWN_LATER_PHASE_PATHS.includes(filePath))
+    .join(', ');
 } catch {
   forbiddenDiffOutput = '<git diff failed>';
 }
