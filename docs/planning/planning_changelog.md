@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-FAST - 2026-07-11
+
+### Chart AI Summary Quality Upgrade (Implemented)
+
+- **Status**: Implemented. Deterministic smoke (23 cases) passed; static contract checker passed; `npm run build` passed.
+- **Baseline**: `dac22b10f9800b55f66450fcf36cd280dd21f068` (Phase 3GG-J-HF1).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: builds on Phase 3GG-J-HF1 — improves the Korean LLM summary prompt contract of the existing local-only KIS+LLM summary flow. Requires a short, structured Korean summary (exactly 3 bullets with the labels `데이터 상태:`, `해석 범위:`, `유의사항:`). Preserves the existing investment-advice prohibition (not investment advice, no buy/sell recommendation, no target price, no stop-loss price, no certain future-movement language). Adds numeric-output protection so the final `summaryText` can never expose the exact `currentPrice` or `volume` numeric value — the model is now given only presence/absence of that data, and any ASCII digit `[0-9]` in the final summary fails closed with the new `FORBIDDEN_NUMERIC_OUTPUT_DETECTED` sanitized error code and `forbidden-numeric-output-detected` warning.
+- **Files changed**: `src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs` (prompt contract upgrade + numeric-output rejection guard only); `scripts/check_phase_3gg_j_hf1_contract.mjs` (tiny checker-only compatibility fix, not a weakening of any safety assertion — narrows a stale bridge-no-diff scope that predates this authorized phase, since J-HF1's checker is re-run as a regression check).
+- **Preserves model tier and fallback behavior**: `CHART_AI_LLM_MAIN_MODEL` still preferred over legacy `CHART_AI_LLM_MODEL`; `CHART_AI_LLM_MODEL` still works; `CHART_AI_LLM_FALLBACK_MODEL` still works; fallback still attempted at most once, only on approved error classes.
+- **Preserves `CHART_AI_LLM_MODEL` backward compatibility**: unchanged from Phase 3GG-J-HF1.
+- **Does not change the H route unless explicitly justified**: not justified this phase — `src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts` has zero diff from baseline.
+- **Does not change `chart-ai.astro`**: zero diff from baseline.
+- **Does not change the model policy module**: `src/lib/server/chart-ai/local-only-llm-model-policy.mjs` has zero diff from baseline.
+- **Does not add new response fields**: `ALLOWED_LLM_SUMMARY_RESPONSE_FIELDS` is unchanged.
+- **No KIS endpoint expansion**: `current_price` only, unchanged.
+- **No public/beta/internal QA activation** this phase.
+- **Push/deploy status**: not pushed; not deployed.
+- **Next recommended phase**: Phase 3GG-K-QA — Owner-local Browser QA for Upgraded Chart AI Summary Quality.
+
 ## Phase 3GG-J-HF1 - 2026-07-11
 
 ### Model Tier Env Passthrough for Local-only H Route

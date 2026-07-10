@@ -63,9 +63,14 @@ const KIS_PROVIDER_CANDIDATE_PATHS = [
   'src/lib/server/providers/types.ts',
 ];
 
-// The model policy module and bridge are expected to carry NO diff this phase -- this is an H
-// route wiring hotfix only. Verified via git diff, not merely "not in the allowed list".
-const NO_DIFF_EXPECTED_PATHS = [MODEL_POLICY_SRC, BRIDGE_SRC];
+// The model policy module is expected to carry NO diff this phase -- this is an H route wiring
+// hotfix only. Verified via git diff, not merely "not in the allowed list".
+// Phase 3GG-K-FAST note: the bridge (BRIDGE_SRC) was intentionally removed from this list. K-FAST
+// is a later, explicitly authorized phase that legitimately edits the bridge's prompt/sanitize
+// logic; re-running this J-HF1 checker as a regression check after K-FAST must not fail on a diff
+// this checker was never meant to police. This is a narrowing of a stale scope, not a weakening of
+// any safety assertion -- the bridge's own contract is verified by check_phase_3gg_k_fast_contract.mjs.
+const NO_DIFF_EXPECTED_PATHS = [MODEL_POLICY_SRC];
 
 const REQUIRED_ENV_KEYS = [
   'CHART_AI_ENABLE_LOCAL_LLM',
@@ -269,6 +274,13 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // own forbidden-diff scope predates this authorized phase and would otherwise reject the H
   // route edit this phase is required to make.
   'scripts/check_phase_3gg_j_fast_contract.mjs',
+  // Phase 3GG-K-FAST tolerance: this checker is re-run as a regression check after K-FAST, a
+  // later, explicitly authorized phase that legitimately edits the bridge and adds its own
+  // deliverables. These paths are policed by check_phase_3gg_k_fast_contract.mjs, not this one.
+  BRIDGE_SRC,
+  'scripts/smoke_phase_3gg_k_fast_summary_quality_upgrade.mjs',
+  'scripts/check_phase_3gg_k_fast_contract.mjs',
+  'docs/planning/phase_3gg_k_fast_summary_quality_upgrade_result_v0.1.md',
 ]);
 let statusLines = [];
 try {

@@ -128,6 +128,8 @@
     "check:phase-3gg-j-fast": "node scripts/check_phase_3gg_j_fast_contract.mjs",
     "smoke:phase-3gg-j-hf1": "node scripts/smoke_phase_3gg_j_hf1_model_tier_env_passthrough.mjs",
     "check:phase-3gg-j-hf1": "node scripts/check_phase_3gg_j_hf1_contract.mjs",
+    "smoke:phase-3gg-k-fast": "node scripts/smoke_phase_3gg_k_fast_summary_quality_upgrade.mjs",
+    "check:phase-3gg-k-fast": "node scripts/check_phase_3gg_k_fast_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

@@ -103,6 +103,9 @@ export const SANITIZED_LLM_ERROR_CODES = Object.freeze({
   LLM_TIMEOUT: 'LLM_TIMEOUT',
   FORBIDDEN_LANGUAGE_DETECTED: 'FORBIDDEN_LANGUAGE_DETECTED',
   EMPTY_LLM_OUTPUT: 'EMPTY_LLM_OUTPUT',
+  // Phase 3GG-K-FAST: the UI displays summaryText verbatim, so any ASCII digit in the final
+  // summary risks leaking the exact currentPrice/volume numeric value. Fail closed instead.
+  FORBIDDEN_NUMERIC_OUTPUT_DETECTED: 'FORBIDDEN_NUMERIC_OUTPUT_DETECTED',
 });
 
 // Fixed list of Korean investment-advice phrases that must never appear in LLM output.
@@ -146,21 +149,27 @@ export function assertNoForbiddenLlmInput(context) {
   return true;
 }
 
+// Phase 3GG-K-FAST: recommended bullet labels for the structured 3-bullet Korean summary
+// contract. Exported so the prompt and any downstream formatting stay in sync.
+export const LLM_SUMMARY_BULLET_LABELS = Object.freeze(['데이터 상태:', '해석 범위:', '유의사항:']);
+
 export function buildLlmSafeCurrentPricePrompt(context) {
   assertNoForbiddenLlmInput(context);
 
   const symbol = typeof context.symbol === 'string' ? context.symbol : '알 수 없음';
   const market = typeof context.market === 'string' ? context.market : '알 수 없음';
-  const currentPrice =
-    typeof context.currentPrice === 'number' && Number.isFinite(context.currentPrice) ? context.currentPrice : null;
-  const volume = typeof context.volume === 'number' && Number.isFinite(context.volume) ? context.volume : null;
+  const currentPriceAvailable =
+    typeof context.currentPrice === 'number' && Number.isFinite(context.currentPrice);
+  const volumeAvailable = typeof context.volume === 'number' && Number.isFinite(context.volume);
   const sourceStatus = typeof context.sourceStatus === 'string' ? context.sourceStatus : 'unavailable';
 
+  // Phase 3GG-K-FAST: the model is given only presence/absence of current_price and volume data,
+  // never the raw numeric values, so it has nothing numeric to echo back into the summary.
   const dataLines = [
     `종목코드: ${symbol}`,
     `시장: ${market}`,
-    `현재가: ${currentPrice === null ? '데이터 없음' : currentPrice}`,
-    `거래량: ${volume === null ? '데이터 없음' : volume}`,
+    `현재가 데이터 여부: ${currentPriceAvailable ? '있음' : '없음'}`,
+    `거래량 데이터 여부: ${volumeAvailable ? '있음' : '없음'}`,
     `데이터 상태: ${sourceStatus}`,
   ].join('\n');
 
@@ -168,20 +177,28 @@ export function buildLlmSafeCurrentPricePrompt(context) {
     '당신은 한국어로만 응답하는 주식 현재가 상태 요약 도우미입니다.',
     '반드시 아래 규칙을 지키세요:',
     '- 한국어로만 응답합니다.',
-    '- 최대 3개의 짧은 불릿(bullet)으로만 응답합니다.',
-    '- 제공된 현재가(current_price) 데이터가 나타내는 기본적인 상태만 설명합니다.',
-    '- 이 요약은 투자 자문이 아니라는 점을 반드시 언급합니다.',
+    '- 응답은 정확히 3개의 짧은 불릿(bullet)으로만 작성합니다.',
+    `- 첫 번째 불릿은 "${LLM_SUMMARY_BULLET_LABELS[0]}"로 시작하여 현재가/거래량 데이터가 존재하는지와 데이터 상태만 설명합니다.`,
+    `- 두 번째 불릿은 "${LLM_SUMMARY_BULLET_LABELS[1]}"로 시작하여 이 정보만으로는 투자 판단을 내리기에 충분하지 않다는 해석 범위의 한계를 설명합니다.`,
+    `- 세 번째 불릿은 "${LLM_SUMMARY_BULLET_LABELS[2]}"로 시작하여 이 요약이 투자 자문이 아니라는 점을 반드시 언급합니다.`,
+    '- 현재가(current_price)나 거래량의 정확한 숫자를 절대 출력하지 않습니다. 데이터의 존재 여부와 상태만 설명합니다.',
     '- 매수·매도 추천을 포함하지 않습니다.',
     '- 목표가를 포함하지 않습니다.',
     '- 손절가를 포함하지 않습니다.',
-    '- 미래 가격 움직임을 단정하지 않습니다.',
+    '- 매수·매도 진입 시점을 포함하지 않습니다.',
+    '- 미래 가격 움직임을 단정하거나 강한 확신을 담은 예측 표현을 사용하지 않습니다.',
     `- 다음 표현(또는 이와 동일한 의미의 표현)을 절대 사용하지 않습니다: ${FORBIDDEN_KOREAN_INVESTMENT_PHRASES.join(', ')}.`,
   ].join('\n');
 
-  const userPrompt = `다음 현재가 데이터를 기반으로 기본 상태를 요약해 주세요.\n\n${dataLines}`;
+  const userPrompt = `다음 현재가 데이터 상태를 기반으로 기본 상태를 요약해 주세요. 숫자 값은 제공되지 않으며, 데이터의 존재 여부와 상태만 설명해야 합니다.\n\n${dataLines}`;
 
   return { systemPrompt, userPrompt };
 }
+
+// Phase 3GG-K-FAST: summaryText is displayed verbatim by the UI, so any ASCII digit could leak
+// the exact currentPrice/volume numeric value. This check never inspects or reports which digit
+// was found -- it only decides safe/unsafe.
+const ASCII_DIGIT_PATTERN = /[0-9]/;
 
 export function sanitizeLlmSummaryText(rawText) {
   if (typeof rawText !== 'string' || rawText.trim().length === 0) {
@@ -191,6 +208,9 @@ export function sanitizeLlmSummaryText(rawText) {
   const hasForbiddenPhrase = FORBIDDEN_KOREAN_INVESTMENT_PHRASES.some((phrase) => trimmed.includes(phrase));
   if (hasForbiddenPhrase) {
     return { safe: false, text: null, sanitizedErrorCode: SANITIZED_LLM_ERROR_CODES.FORBIDDEN_LANGUAGE_DETECTED };
+  }
+  if (ASCII_DIGIT_PATTERN.test(trimmed)) {
+    return { safe: false, text: null, sanitizedErrorCode: SANITIZED_LLM_ERROR_CODES.FORBIDDEN_NUMERIC_OUTPUT_DETECTED };
   }
   return { safe: true, text: trimmed, sanitizedErrorCode: null };
 }
@@ -508,12 +528,19 @@ export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
             outputTextPresent: extracted.trim().length > 0,
           })
         : undefined;
+    // Phase 3GG-K-FAST: sanitizedErrorCode -> warning label. Never derived from or including the
+    // rejected text itself -- only a fixed, safe label per error code.
+    const sanitizeWarningByCode = {
+      [SANITIZED_LLM_ERROR_CODES.FORBIDDEN_LANGUAGE_DETECTED]: 'forbidden-language-detected',
+      [SANITIZED_LLM_ERROR_CODES.FORBIDDEN_NUMERIC_OUTPUT_DETECTED]: 'forbidden-numeric-output-detected',
+      [SANITIZED_LLM_ERROR_CODES.EMPTY_LLM_OUTPUT]: 'empty-llm-output',
+    };
     return buildResponse({
       ...baseFields,
       modelPresent,
       sanitizedErrorCode: sanitized.sanitizedErrorCode,
       warnings: [
-        sanitized.sanitizedErrorCode === SANITIZED_LLM_ERROR_CODES.FORBIDDEN_LANGUAGE_DETECTED ? 'forbidden-language-detected' : 'empty-llm-output',
+        sanitizeWarningByCode[sanitized.sanitizedErrorCode] ?? 'empty-llm-output',
         ...(usedFallback ? ['llm-fallback-used'] : []),
       ],
       diagnostics: shapeDiagnostics,

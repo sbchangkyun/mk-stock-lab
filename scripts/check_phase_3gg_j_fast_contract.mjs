@@ -257,7 +257,23 @@ const J_HF1_TOLERATED_PATHS = [
   'scripts/check_phase_3gg_j_hf1_contract.mjs',
   'docs/planning/phase_3gg_j_hf1_model_tier_env_passthrough_result_v0.1.md',
 ];
-const ALLOWED_MODIFIED_FILES = new Set([...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON, ...J_HF1_TOLERATED_PATHS]);
+// Phase 3GG-K-FAST (a small, explicitly-approved follow-up quality upgrade) legitimately touches
+// the runtime bridge and adds its own deliverables; tolerated here so this checker still passes
+// when run mid-K-FAST-implementation, before that phase's own commit. Tiny checker-only
+// compatibility addition, not a weakening of any safety assertion.
+const K_FAST_TOLERATED_PATHS = [
+  BRIDGE_SRC,
+  'scripts/smoke_phase_3gg_k_fast_summary_quality_upgrade.mjs',
+  'scripts/check_phase_3gg_k_fast_contract.mjs',
+  'docs/planning/phase_3gg_k_fast_summary_quality_upgrade_result_v0.1.md',
+];
+const ALLOWED_MODIFIED_FILES = new Set([
+  ...CORE_DELIVERABLES,
+  CHANGELOG,
+  PACKAGE_JSON,
+  ...J_HF1_TOLERATED_PATHS,
+  ...K_FAST_TOLERATED_PATHS,
+]);
 let statusLines = [];
 try {
   statusLines = runGit(['status', '--porcelain']).split('\n').filter(Boolean);
