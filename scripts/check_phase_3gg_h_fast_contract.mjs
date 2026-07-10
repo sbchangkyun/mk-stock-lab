@@ -17,10 +17,11 @@ const ROUTE_SRC = 'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts';
 const OWNER_SMOKE_SCRIPT = 'scripts/owner_smoke_phase_3gg_h_fast_local_only_llm_runtime_bridge.mjs';
 const CHECKER_SELF = 'scripts/check_phase_3gg_h_fast_contract.mjs';
 const RESULT_DOC = 'docs/planning/phase_3gg_h_fast_local_only_llm_runtime_bridge_result_v0.1.md';
+const HF1_RESULT_DOC = 'docs/planning/phase_3gg_h_hf1_llm_call_failed_safe_diagnostics_result_v0.1.md';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
-const CORE_DELIVERABLES = [BRIDGE_SRC, ROUTE_SRC, OWNER_SMOKE_SCRIPT, CHECKER_SELF, RESULT_DOC];
+const CORE_DELIVERABLES = [BRIDGE_SRC, ROUTE_SRC, OWNER_SMOKE_SCRIPT, CHECKER_SELF, RESULT_DOC, HF1_RESULT_DOC];
 
 const OWNER_APPROVAL_FLAG = '--owner-approved-local-llm-smoke';
 const ROUTE_OPT_IN_PARAM = 'ownerLocalKisLlm=1';
@@ -69,6 +70,10 @@ const FORBIDDEN_ACTIVATION_TOKENS = [
   'PUBLIC_ACTIVATION=1',
   'BETA_ACTIVATION=1',
 ];
+
+// Mirrors the owner smoke script's own forbidden-raw-LLM-response pattern, used only for a local
+// sanity check that the new diagnostics label does not false-positive against it.
+const FORBIDDEN_RAW_LLM_RESPONSE_PATTERN = /"output_text"|"output"\s*:\s*\[|"usage"\s*:\s*\{|"model"\s*:\s*"gpt|response\.created/i;
 
 const REQUIRED_RAW_PAYLOAD_TOKENS = ['rt_cd', 'stck_prpr', 'acml_vol', 'prdy_vrss', 'prdy_ctrt'];
 const REQUIRED_CREDENTIAL_TOKENS = ['KIS_APP_KEY', 'access_token', 'appsecret', 'appkey', 'jwt', 'password', 'OPENAI_API_KEY'];
@@ -157,6 +162,22 @@ for (const phrase of REQUIRED_FORBIDDEN_PHRASE_TOKENS) {
   assert(bridgeSrc.includes(phrase), `Bridge must reference forbidden Korean investment phrase for filtering: ${phrase}`);
 }
 
+// --- 3b. HF1 safe diagnostics content checks ---
+assert(bridgeSrc.includes('ALLOWED_LLM_DIAGNOSTICS_FIELDS'), 'Bridge must export ALLOWED_LLM_DIAGNOSTICS_FIELDS.');
+assert(bridgeSrc.includes('OPENAI_ERROR_MESSAGE_CLASSES'), 'Bridge must export OPENAI_ERROR_MESSAGE_CLASSES.');
+assert(bridgeSrc.includes('RESPONSE_SHAPE_KINDS'), 'Bridge must export RESPONSE_SHAPE_KINDS.');
+assert(bridgeSrc.includes('function classifyOpenAiError'), 'Bridge must define classifyOpenAiError.');
+assert(bridgeSrc.includes('function classifyResponseShape'), 'Bridge must define classifyResponseShape.');
+assert(bridgeSrc.includes('function buildDiagnostics'), 'Bridge must define buildDiagnostics.');
+assert(bridgeSrc.includes('response.text()'), 'Bridge must read the OpenAI response body as text before branching on status.');
+assert(bridgeSrc.includes('err.diagnostics'), 'Bridge must attach safe diagnostics to the thrown error on OpenAI HTTP failure.');
+assert(
+  !/error\.message\b.*openAiErrorMessageClass|openAiErrorMessageClass.*=.*error\.message\b/.test(bridgeSrc),
+  'Bridge must never derive openAiErrorMessageClass from a raw free-text error message.',
+);
+assert(!/console\.(log|error)\([^)]*parsedBody/.test(bridgeSrc), 'Bridge must never print the raw parsed OpenAI response body.');
+assert(!/console\.(log|error)\([^)]*rawBody/.test(bridgeSrc), 'Bridge must never print the raw OpenAI response body.');
+
 // --- 4. API route source content checks ---
 const routeSrc = exists(ROUTE_SRC) ? read(ROUTE_SRC) : '';
 assert(
@@ -195,6 +216,21 @@ for (const token of FORBIDDEN_ACTIVATION_TOKENS) {
   assert(!smokeSrc.includes(token), `Owner smoke script must not contain an activation token: ${token}`);
 }
 
+// --- 5b. HF1 owner smoke safe diagnostics printing checks ---
+assert(smokeSrc.includes('ALLOWED_DIAGNOSTICS_FIELDS'), 'Owner smoke script must define an allowlist for diagnostics fields.');
+assert(smokeSrc.includes('httpStatus'), 'Owner smoke script must be able to print httpStatus diagnostics.');
+assert(smokeSrc.includes('openAiErrorMessageClass'), 'Owner smoke script must be able to print openAiErrorMessageClass diagnostics.');
+assert(smokeSrc.includes('responseShapeKind'), 'Owner smoke script must be able to print responseShapeKind diagnostics.');
+assert(smokeSrc.includes('outputTextPresent'), 'Owner smoke script must be able to print outputTextPresent diagnostics.');
+assert(
+  !/error\.type|error\.code|error\.param|error\.message/.test(smokeSrc),
+  'Owner smoke script must never read raw OpenAI error.message/type/code/param fields directly -- only the bridge\'s classified diagnostics.',
+);
+assert(
+  FORBIDDEN_RAW_LLM_RESPONSE_PATTERN.test('"output_text_present"') === false,
+  'Sanity check: the forbidden raw-LLM-response pattern must not false-positive on the safe responseShapeKind label "output_text_present".',
+);
+
 // --- 6. No KIS provider module changed ---
 let kisDiffLines = [];
 try {
@@ -228,6 +264,30 @@ assert(
   'Result doc must truthfully state Owner LLM smoke as Passed, Blocked, or Pending -- never an unverified claim.',
 );
 
+// --- 8b. HF1 result doc required sections/claims ---
+const HF1_RESULT_DOC_REQUIRED_TOKENS = [
+  `Baseline: 4806d29aad5e5cb6948ecd31137c12269bf8b74d`,
+  'Branch: rebuild/phase-1-ia-shell',
+  'Files changed',
+  'Previous failure',
+  'New safe diagnostics',
+  'Owner smoke result',
+  'Actual LLM network call',
+  'Credential exposure status',
+  'Raw KIS payload exposure status',
+  'Raw LLM response exposure status',
+  'Validation results',
+  'Next recommended phase',
+];
+const hf1ResultDoc = exists(HF1_RESULT_DOC) ? read(HF1_RESULT_DOC) : '';
+for (const token of HF1_RESULT_DOC_REQUIRED_TOKENS) {
+  assert(hf1ResultDoc.includes(token), `HF1 result doc missing required token: ${token}`);
+}
+assert(
+  !/OPENAI_API_KEY\s*=\s*sk-|Authorization:\s*Bearer\s+\S/.test(hf1ResultDoc),
+  'HF1 result doc must never contain a raw credential or Authorization header value.',
+);
+
 // --- 9. Changelog entry present, prepended above the baseline phase entry ---
 const changelog = read(CHANGELOG);
 const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-H-FAST - 2026-07-10');
@@ -241,6 +301,27 @@ const gFastHeaderIndex = changelog.indexOf('## Phase 3GG-G-FAST - 2026-07-10');
 assert(
   gFastHeaderIndex === -1 || changelogHeaderIndex < gFastHeaderIndex,
   'Phase 3GG-H-FAST changelog entry must be prepended above the Phase 3GG-G-FAST entry',
+);
+
+// --- 9b. HF1 changelog entry present, prepended above the Phase 3GG-H-FAST entry ---
+const HF1_CHANGELOG_REQUIRED_TOKENS = [
+  '## Phase 3GG-H-HF1 - 2026-07-11',
+  '### LLM_CALL_FAILED Safe Diagnostics for Local-only LLM Runtime Bridge',
+  'LLM_CALL_FAILED',
+  'diagnostics',
+];
+const hf1ChangelogHeaderIndex = changelog.indexOf('## Phase 3GG-H-HF1 - 2026-07-11');
+assert(hf1ChangelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-H-HF1 entry header');
+const hf1ChangelogSection =
+  hf1ChangelogHeaderIndex === -1
+    ? ''
+    : changelog.slice(hf1ChangelogHeaderIndex, changelog.indexOf('\n## ', hf1ChangelogHeaderIndex + 1));
+for (const token of HF1_CHANGELOG_REQUIRED_TOKENS) {
+  assert(hf1ChangelogSection.includes(token), `HF1 changelog entry missing required token: ${token}`);
+}
+assert(
+  hf1ChangelogHeaderIndex !== -1 && changelogHeaderIndex !== -1 && hf1ChangelogHeaderIndex < changelogHeaderIndex,
+  'Phase 3GG-H-HF1 changelog entry must be prepended above the Phase 3GG-H-FAST entry',
 );
 
 // --- 10. No unexpected working-tree changes outside this phase's scope ---

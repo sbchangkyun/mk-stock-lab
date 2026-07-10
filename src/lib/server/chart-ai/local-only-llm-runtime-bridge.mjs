@@ -1,4 +1,9 @@
 // Phase 3GG-H-FAST local-only LLM runtime bridge.
+// Phase 3GG-H-HF1: added safe OpenAI failure diagnostics (httpStatus/errorType/errorCode/
+// errorParam/classified error label) and response-shape diagnostics, so LLM_CALL_FAILED /
+// EMPTY_LLM_OUTPUT are no longer opaque. Diagnostics never include the raw OpenAI error message
+// text, the raw response body, or the model's raw output text -- only short, allowlisted,
+// enum-like fields.
 //
 // Converts an already-sanitized Chart AI KIS current_price context (Phase 3GG-E-INTEGRATE)
 // into an LLM-safe Korean prompt, calls the OpenAI Responses API via raw fetch (no SDK, no new
@@ -38,7 +43,44 @@ export const ALLOWED_LLM_SUMMARY_RESPONSE_FIELDS = Object.freeze([
   'currentPricePresent',
   'volumePresent',
   'warnings',
+  'diagnostics',
 ]);
+
+// Phase 3GG-H-HF1: safe diagnostic fields only -- never the raw OpenAI error message text, never
+// the raw response body, never the raw model output text.
+export const ALLOWED_LLM_DIAGNOSTICS_FIELDS = Object.freeze([
+  'httpStatus',
+  'openAiErrorType',
+  'openAiErrorCode',
+  'openAiErrorParam',
+  'openAiErrorMessageClass',
+  'responseShapeKind',
+  'outputTextPresent',
+]);
+
+// Phase 3GG-H-HF1: classified OpenAI failure labels. Never derived from or exposing the raw
+// human-readable OpenAI error message -- classification uses only httpStatus + error.type/code.
+export const OPENAI_ERROR_MESSAGE_CLASSES = Object.freeze({
+  INVALID_API_KEY: 'invalid_api_key',
+  MODEL_NOT_FOUND: 'model_not_found',
+  PERMISSION_DENIED: 'permission_denied',
+  QUOTA_OR_RATE_LIMIT: 'quota_or_rate_limit',
+  BILLING_OR_QUOTA: 'billing_or_quota',
+  SERVER_ERROR: 'server_error',
+  BAD_REQUEST: 'bad_request',
+  UNKNOWN_OPENAI_ERROR: 'unknown_openai_error',
+});
+
+// Phase 3GG-H-HF1: classified response-shape labels for when the OpenAI call succeeds (2xx) but
+// no usable summary text could be extracted from the body.
+export const RESPONSE_SHAPE_KINDS = Object.freeze({
+  OUTPUT_TEXT_PRESENT: 'output_text_present',
+  OUTPUT_ARRAY_TEXT_PRESENT: 'output_array_text_present',
+  MESSAGE_CONTENT_TEXT_PRESENT: 'message_content_text_present',
+  NO_TEXT_OUTPUT_FOUND: 'no_text_output_found',
+  INVALID_JSON: 'invalid_json',
+  UNKNOWN_SHAPE: 'unknown_shape',
+});
 
 export const SANITIZED_LLM_ERROR_CODES = Object.freeze({
   LLM_DISABLED: 'LLM_DISABLED',
@@ -141,21 +183,115 @@ export function sanitizeLlmSummaryText(rawText) {
   return { safe: true, text: trimmed, sanitizedErrorCode: null };
 }
 
+function extractTextFromContentItem(contentItem) {
+  if (!contentItem || typeof contentItem !== 'object') return null;
+  if (typeof contentItem.text === 'string') return contentItem.text;
+  if (contentItem.text && typeof contentItem.text.value === 'string') return contentItem.text.value;
+  return null;
+}
+
 function extractResponseText(body) {
   if (!body || typeof body !== 'object') return '';
-  if (typeof body.output_text === 'string') return body.output_text;
+  if (typeof body.output_text === 'string' && body.output_text.trim().length > 0) return body.output_text;
   if (Array.isArray(body.output)) {
     for (const item of body.output) {
       if (item && Array.isArray(item.content)) {
         for (const contentItem of item.content) {
-          if (contentItem && typeof contentItem.text === 'string') {
-            return contentItem.text;
-          }
+          const text = extractTextFromContentItem(contentItem);
+          if (text) return text;
         }
       }
     }
   }
+  if (Array.isArray(body.choices)) {
+    for (const choice of body.choices) {
+      const content = choice && choice.message && choice.message.content;
+      if (typeof content === 'string' && content.trim().length > 0) return content;
+    }
+  }
   return '';
+}
+
+function classifyResponseShape(body) {
+  if (body === null || typeof body !== 'object') return RESPONSE_SHAPE_KINDS.UNKNOWN_SHAPE;
+  if (typeof body.output_text === 'string' && body.output_text.trim().length > 0) {
+    return RESPONSE_SHAPE_KINDS.OUTPUT_TEXT_PRESENT;
+  }
+  if (Array.isArray(body.output)) {
+    for (const item of body.output) {
+      if (item && Array.isArray(item.content)) {
+        for (const contentItem of item.content) {
+          if (extractTextFromContentItem(contentItem)) return RESPONSE_SHAPE_KINDS.OUTPUT_ARRAY_TEXT_PRESENT;
+        }
+      }
+    }
+  }
+  if (Array.isArray(body.choices)) {
+    for (const choice of body.choices) {
+      const content = choice && choice.message && choice.message.content;
+      if (typeof content === 'string' && content.trim().length > 0) return RESPONSE_SHAPE_KINDS.MESSAGE_CONTENT_TEXT_PRESENT;
+    }
+  }
+  return RESPONSE_SHAPE_KINDS.NO_TEXT_OUTPUT_FOUND;
+}
+
+function safeShortString(value, maxLen = 80) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, maxLen).replace(/[\r\n]+/g, ' ');
+}
+
+function classifyOpenAiError({ httpStatus, errorType, errorCode }) {
+  const type = typeof errorType === 'string' ? errorType.toLowerCase() : '';
+  const code = typeof errorCode === 'string' ? errorCode.toLowerCase() : '';
+  if (httpStatus === 401 || code.includes('invalid_api_key') || code.includes('invalid_authentication')) {
+    return OPENAI_ERROR_MESSAGE_CLASSES.INVALID_API_KEY;
+  }
+  if (httpStatus === 404 || code.includes('model_not_found') || code.includes('unknown_model')) {
+    return OPENAI_ERROR_MESSAGE_CLASSES.MODEL_NOT_FOUND;
+  }
+  if (httpStatus === 403 || code.includes('permission') || type.includes('permission')) {
+    return OPENAI_ERROR_MESSAGE_CLASSES.PERMISSION_DENIED;
+  }
+  if (httpStatus === 429 || code.includes('rate_limit') || type.includes('rate_limit')) {
+    return OPENAI_ERROR_MESSAGE_CLASSES.QUOTA_OR_RATE_LIMIT;
+  }
+  if (code.includes('quota') || code.includes('billing')) {
+    return OPENAI_ERROR_MESSAGE_CLASSES.BILLING_OR_QUOTA;
+  }
+  if (typeof httpStatus === 'number' && httpStatus >= 500) {
+    return OPENAI_ERROR_MESSAGE_CLASSES.SERVER_ERROR;
+  }
+  if (httpStatus === 400 || type.includes('invalid_request')) {
+    return OPENAI_ERROR_MESSAGE_CLASSES.BAD_REQUEST;
+  }
+  return OPENAI_ERROR_MESSAGE_CLASSES.UNKNOWN_OPENAI_ERROR;
+}
+
+function buildDiagnostics(fields) {
+  const diagnostics = { ...fields };
+  for (const key of Object.keys(diagnostics)) {
+    if (!ALLOWED_LLM_DIAGNOSTICS_FIELDS.includes(key)) {
+      delete diagnostics[key];
+    }
+  }
+  return diagnostics;
+}
+
+function extractOpenAiErrorDiagnostics(httpStatus, parsedBody) {
+  const errorObj = parsedBody && typeof parsedBody === 'object' ? parsedBody.error : null;
+  const errorType = safeShortString(errorObj && errorObj.type);
+  const errorCode = safeShortString(errorObj && errorObj.code);
+  const errorParam = safeShortString(errorObj && errorObj.param);
+  const openAiErrorMessageClass = classifyOpenAiError({ httpStatus, errorType, errorCode });
+  return buildDiagnostics({
+    httpStatus,
+    openAiErrorType: errorType,
+    openAiErrorCode: errorCode,
+    openAiErrorParam: errorParam,
+    openAiErrorMessageClass,
+  });
 }
 
 function callWithTimeout(promiseFactory, timeoutMs, deps) {
@@ -275,21 +411,42 @@ export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
             ],
           }),
         });
-        if (!response.ok) {
-          throw new Error(`llm-http-${response.status}`);
+        const responseText = await response.text();
+        let parsedBody = null;
+        let parseFailed = false;
+        try {
+          parsedBody = responseText ? JSON.parse(responseText) : null;
+        } catch {
+          parseFailed = true;
         }
-        return response.json();
+        if (!response.ok) {
+          const err = new Error('llm-http-error');
+          err.diagnostics = extractOpenAiErrorDiagnostics(response.status, parsedBody);
+          throw err;
+        }
+        if (parseFailed) {
+          const err = new Error('llm-invalid-json');
+          err.diagnostics = buildDiagnostics({
+            httpStatus: response.status,
+            responseShapeKind: RESPONSE_SHAPE_KINDS.INVALID_JSON,
+            outputTextPresent: false,
+          });
+          throw err;
+        }
+        return parsedBody;
       },
       timeoutMs,
       deps,
     );
   } catch (error) {
     const isTimeout = error instanceof Error && error.message === 'llm-call-timeout';
+    const diagnostics = !isTimeout && error && typeof error === 'object' ? error.diagnostics : undefined;
     return buildResponse({
       ...baseFields,
       modelPresent,
       sanitizedErrorCode: isTimeout ? SANITIZED_LLM_ERROR_CODES.LLM_TIMEOUT : SANITIZED_LLM_ERROR_CODES.LLM_CALL_FAILED,
       warnings: [isTimeout ? 'llm-timeout' : 'llm-call-failed'],
+      diagnostics,
     });
   }
 
@@ -297,11 +454,19 @@ export async function runLocalOnlyLlmRuntimeBridge(input, deps = {}) {
   const sanitized = sanitizeLlmSummaryText(extracted);
 
   if (!sanitized.safe) {
+    const shapeDiagnostics =
+      sanitized.sanitizedErrorCode === SANITIZED_LLM_ERROR_CODES.EMPTY_LLM_OUTPUT
+        ? buildDiagnostics({
+            responseShapeKind: classifyResponseShape(rawBody),
+            outputTextPresent: extracted.trim().length > 0,
+          })
+        : undefined;
     return buildResponse({
       ...baseFields,
       modelPresent,
       sanitizedErrorCode: sanitized.sanitizedErrorCode,
       warnings: [sanitized.sanitizedErrorCode === SANITIZED_LLM_ERROR_CODES.FORBIDDEN_LANGUAGE_DETECTED ? 'forbidden-language-detected' : 'empty-llm-output'],
+      diagnostics: shapeDiagnostics,
     });
   }
 

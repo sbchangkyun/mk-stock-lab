@@ -26,7 +26,28 @@ const ALLOWED_SUMMARY_FIELDS = Object.freeze([
   'currentPricePresent',
   'volumePresent',
   'warnings',
+  'diagnostics',
 ]);
+
+// Phase 3GG-H-HF1: safe diagnostic fields only -- never the raw OpenAI error message text, never
+// the raw response body, never the raw model output text.
+const ALLOWED_DIAGNOSTICS_FIELDS = Object.freeze([
+  'httpStatus',
+  'openAiErrorType',
+  'openAiErrorCode',
+  'openAiErrorParam',
+  'openAiErrorMessageClass',
+  'responseShapeKind',
+  'outputTextPresent',
+]);
+
+function formatSanitizedDiagnostics(diagnostics) {
+  if (!diagnostics || typeof diagnostics !== 'object') return '';
+  return Object.keys(diagnostics)
+    .filter((key) => ALLOWED_DIAGNOSTICS_FIELDS.includes(key))
+    .map((key) => `${key}=${diagnostics[key]}`)
+    .join(' ');
+}
 
 // rt_cd / output / stck_prpr / acml_vol / prdy_vrss / prdy_ctrt: raw KIS payload field names.
 const FORBIDDEN_RAW_PAYLOAD_PATTERN = /\brt_cd\b|\bstck_prpr\b|\bacml_vol\b|\bprdy_vrss\b|\bprdy_ctrt\b/i;
@@ -130,12 +151,28 @@ async function main() {
     return;
   }
 
+  // 4b. If present, diagnostics must also contain only allowlisted safe fields -- nothing more.
+  if (summary.diagnostics !== undefined) {
+    if (typeof summary.diagnostics !== 'object' || summary.diagnostics === null) {
+      failClosed('diagnostics-shape-mismatch');
+      return;
+    }
+    const diagnosticsKeys = Object.keys(summary.diagnostics);
+    const hasOnlyAllowedDiagnosticsFields = diagnosticsKeys.every((key) => ALLOWED_DIAGNOSTICS_FIELDS.includes(key));
+    if (!hasOnlyAllowedDiagnosticsFields) {
+      failClosed('diagnostics-field-allowlist-mismatch');
+      return;
+    }
+  }
+
   // 5. If local LLM env is missing on the server, the route fails closed truthfully -- report
   // that as a blocker, never a pass.
   if (summary.ok !== true) {
+    const diagnosticsSuffix = formatSanitizedDiagnostics(summary.diagnostics);
     logSanitized(
       `Phase 3GG-H-FAST owner local LLM runtime bridge smoke BLOCKED: reason=llm-not-available ` +
-        `sourceStatus=${summary.sourceStatus} sanitizedErrorCode=${summary.sanitizedErrorCode ?? 'null'} sanitized=true`,
+        `sourceStatus=${summary.sourceStatus} sanitizedErrorCode=${summary.sanitizedErrorCode ?? 'null'}` +
+        `${diagnosticsSuffix ? ` ${diagnosticsSuffix}` : ''} sanitized=true`,
     );
     process.exitCode = 1;
     return;
