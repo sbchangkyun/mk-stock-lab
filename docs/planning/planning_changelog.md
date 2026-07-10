@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-H-FAST - 2026-07-10
+
+### Local-only LLM Runtime Bridge for Chart AI (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `94f152f5788fb4ae3978fbed0268e48efebef5fe` (Phase 3GG-G-FAST).
+- **Purpose**: builds on Phase 3GG-G-FAST by adding the first local-only LLM runtime bridge for Chart AI: it converts the already-sanitized KIS `current_price` context into an LLM-safe Korean prompt, calls an LLM only in owner-local explicit opt-in mode, and returns a sanitized Korean summary. Not a public activation, not a beta activation, not deployment, not a KIS endpoint expansion, not MK Agent/Similar Pattern wiring.
+- **Scope**: a new local-only LLM runtime bridge module (`src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs`) calling the OpenAI Responses API (`POST https://api.openai.com/v1/responses`) via raw `fetch` (no SDK, no new dependency, no lockfile change); a new local-only API route (`src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts`, GET only, requires `ownerLocalKisLlm=1`, requires a local hostname, fails closed in any deployed/production runtime) that reuses the existing local-only KIS `current_price` binding/context path and then calls the new LLM bridge; an owner-gated smoke script (`scripts/owner_smoke_phase_3gg_h_fast_local_only_llm_runtime_bridge.mjs`, requires the explicit `--owner-approved-local-llm-smoke` CLI flag); a lightweight static contract checker (`scripts/check_phase_3gg_h_fast_contract.mjs`); a result document; two new package scripts (`owner-smoke:phase-3gg-h-fast`, `check:phase-3gg-h-fast`).
+- **Local runtime requirements**: `CHART_AI_ENABLE_LOCAL_LLM=true`, `OPENAI_API_KEY`, and `CHART_AI_LLM_MODEL` must all be present in the local runtime; the bridge fails closed (never inventing a default model name) if any is missing.
+- **Sanitization**: does not print `currentPrice` in smoke or result-doc output (presence booleans only); does not expose credentials (never reads/prints `OPENAI_API_KEY`); does not expose raw KIS payload; does not expose the raw LLM response (extracts and sanitizes text only); filters forbidden Korean investment-advice phrases from LLM output and fails closed or substitutes a safe blocked summary if detected.
+- **Endpoint used**: `current_price` only, unchanged from Phase 3GG-E-INTEGRATE / 3GG-F-FAST / 3GG-G-FAST.
+- **Activation status**: no public activation; no beta activation; no internal QA activation.
+- **Preserved policy**: no order endpoint; no cancel/modify order endpoint; no account endpoint; no balance endpoint; no funds endpoint; no buying power endpoint; no sellable quantity endpoint; no profit/loss endpoint; no deposit/withdrawal endpoint; no trading history endpoint; no portfolio/holdings endpoint; no personal endpoint; no raw KIS payload exposure; no credential exposure; no raw LLM response exposure; no MK Agent/Similar Pattern auto-run; no lockfile change; no Supabase change; no existing KIS provider module change; not pushed; not deployed.
+- **Recommended next step**: Phase 3GG-I-FAST - Chart AI UI KIS + LLM Summary Wiring.
+
 ## Phase 3GG-G-FAST - 2026-07-10
 
 ### Local-only KIS Current Price Real Credential Smoke, Explicit Owner Run (Implemented)
