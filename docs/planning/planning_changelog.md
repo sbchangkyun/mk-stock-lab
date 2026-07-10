@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-D-FAST - 2026-07-10
+
+### Local-only Live KIS Minimal End-to-End, Single Market Endpoint, No Public Route (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `cdd9bd18a6b8993d8a9320b2c7a80c5d6bb5b110` (Phase 3GG-D).
+- **Purpose**: move from the completed Phase 3GG-D scaffold (all gates off, no live call) directly to a minimal local-only Live KIS read-only market-data implementation, superseding/extending Phase 3GG-D's scaffold design with a real, working, local-only, single-endpoint path.
+- **Scope**: pure dependency-free binding module (`src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs`) implementing a local-only guard, a single-entry `current_price` endpoint allowlist, a server-only boolean/masked credential presence check, a sliding-window rate limiter (5/min, 30/hour, 100/day), a 300-second in-process cache, a timeout-wrapped injectable provider-call transport delegating to the existing, already-verified `kisClient.ts`, a sanitizer emitting only 8 allowed response fields, and a logger emitting only 8 allowed log fields; a deterministic fixture module; a smoke script covering all 11 required cases including one real-transport-wired local call attempt against the actual `kisClient.ts`; a static contract checker (`scripts/check_phase_3gg_d_fast_contract.mjs`); a result document; two new package scripts (`smoke:phase-3gg-d-fast`, `check:phase-3gg-d-fast`).
+- **Endpoint selected**: `current_price` only (KR domestic quote via `kisClient.getKisDomesticQuoteSnapshot()`), symbol `005930` used for smoke validation.
+- **Live call outcome**: no outbound network request occurred in this environment — `kisClient.ts`'s own `KIS_ENABLE_LIVE_QUOTES` readiness gate returns `CONFIG_MISSING`/`disabled` before any `fetch()` call, so the real-transport smoke scenario safely fails closed (`sourceStatus: unavailable`, `sanitizedErrorCode: PROVIDER_UNAVAILABLE`). `KIS_ENABLE_LIVE_QUOTES` was intentionally not set to `'true'` in this phase.
+- **Preserved policy**: no order endpoint; no cancel/modify order endpoint; no account endpoint; no balance endpoint; no funds endpoint; no buying power endpoint; no sellable quantity endpoint; no profit/loss endpoint; no deposit/withdrawal endpoint; no trading history endpoint; no portfolio/holdings endpoint; no personal endpoint; no public route; no beta route; no internal QA activation; no deploy; no push; no LLM handoff; no raw KIS payload in UI/logs/docs/checker output; no credential value in UI/logs/docs/checker output; no existing KIS provider module changed; no `chart-ai.astro` change; no API route created or activated; no client component change; no Supabase change; no lockfile change.
+- **Recommended next step**: Phase 3GG-E-INTEGRATE - Local-only KIS Data to Chart AI Integration.
+
 ## Phase 3GG-D - 2026-07-10
 
 ### Local-only Live KIS Provider Binding Scaffold, All Gates Off, No Live Call (Implemented)
