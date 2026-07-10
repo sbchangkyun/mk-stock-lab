@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-D-PLAN - 2026-07-09
+
+### Local-only Live KIS Provider Binding Plan, No Activation (Prepared)
+
+- **Status**: Prepared.
+- **Baseline**: `600317ea0c95e02135e89c8b03f0659ce26b1777` (Phase 3GG-C).
+- **Purpose**: plan a future local-only Live KIS provider binding path, converting Phase 3GG-C's decision record into an implementation-readiness plan without implementing provider binding, calling Live KIS, reading credentials, or activating routes.
+- **Scope**: 22-section local-only Live KIS provider binding plan (`docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_v0.1.md`) covering status, purpose, baseline, source of truth, current verified state, owner conditions preserved from Phase 3GG-C, the local-only definition, future binding architecture plan, future file-boundary proposal, endpoint allowlist plan, credential and environment policy, rate limit and quota plan, cache plan, cost plan, sanitization and response contract plan, audit/logging plan, fail-closed plan, rollback plan, future validation plan, future implementation phase proposal, non-goals, and a decision summary; a result document; a static contract checker (`scripts/check_phase_3gg_d_plan_contract.mjs`); one new `check:phase-3gg-d-plan` package script. Preserves all 11 owner conditions from Phase 3GG-C verbatim; plans (without implementing) an 11-layer future binding architecture; proposes candidate future file names without creating them; recommends Phase 3GG-D as the next scaffold phase, all gates off, no live call.
+- **Preserved policy**: no source change; no `chart-ai.astro` change; no API route creation or activation; no scaffold source change; no provider source change; no live KIS; no LLM; no MK AI route activation; no Supabase/DB/env/session/JWT; no public/beta/internal QA activation; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy/push.
+- **Recommended next step**: Phase 3GG-D - Local-only Live KIS Provider Binding Scaffold, All Gates Off, No Live Call.
+
 ## Phase 3GG-C - 2026-07-09
 
 ### Live KIS Activation Decision Record, No Activation (Prepared)

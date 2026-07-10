@@ -180,6 +180,17 @@ const LIVE_KIS_APPROVAL_FILES = [
   'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md',
   'docs/planning/phase_3gg_b_review_record_result_v0.1.md',
   'scripts/check_phase_3gg_b_review_record_contract.mjs',
+  // Phase 3GG-C (Live KIS activation decision record, decision: not yet
+  // activated) and Phase 3GG-D-PLAN (local-only Live KIS provider binding
+  // plan, documentation/checker-only, no activation) add further
+  // planning-only deliverables, no source or runtime change. Tolerated for
+  // the same reason.
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
+  'scripts/check_phase_3gg_c_contract.mjs',
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_v0.1.md',
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_d_plan_contract.mjs',
 ];
 
 const CORE_DELIVERABLES = [PAGE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON];
@@ -466,6 +477,7 @@ const TOLERATED_HEADERS_ABOVE_UI_A = [
   '## Phase 3GG-B-AUDIT - 2026-07-09',
   '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
   '## Phase 3GG-C - 2026-07-09',
+  '## Phase 3GG-D-PLAN - 2026-07-09',
 ];
 const uiAEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-A - 2026-07-08');
 const headersAboveUiA = changelog.slice(0, uiAEntryIndex).match(/^## .+$/gm) ?? [];

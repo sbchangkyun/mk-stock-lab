@@ -68,6 +68,10 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
   'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
   'scripts/check_phase_3gg_c_contract.mjs',
+  // Phase 3GG-D-PLAN legitimately added these 3 files on top of this baseline.
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_v0.1.md',
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_d_plan_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -291,6 +295,7 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 const TOLERATED_HEADERS_ABOVE_3GG_B_AUDIT = [
   '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
   '## Phase 3GG-C - 2026-07-09',
+  '## Phase 3GG-D-PLAN - 2026-07-09',
 ];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-B-AUDIT - 2026-07-09');
 assert(phaseHeaderIndex >= 0, 'Phase 3GG-B-AUDIT changelog entry must exist');

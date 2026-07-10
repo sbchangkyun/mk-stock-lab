@@ -84,6 +84,13 @@ const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
   'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
   'scripts/check_phase_3gg_c_contract.mjs',
+  // Phase 3GG-D-PLAN additively patched this checker's own scope-tolerance
+  // arrays so the full validation chain runs cleanly once 3GG-D-PLAN's
+  // deliverables exist on top of this checker's baseline. No protective
+  // assertion was weakened; only new tolerated file entries were added.
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_v0.1.md',
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_d_plan_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -289,6 +296,7 @@ const TOLERATED_HEADERS_ABOVE_3GG_A_PLAN = [
   '## Phase 3GG-B-AUDIT - 2026-07-09',
   '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
   '## Phase 3GG-C - 2026-07-09',
+  '## Phase 3GG-D-PLAN - 2026-07-09',
 ];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-A-PLAN - 2026-07-09');
 assert(phaseHeaderIndex >= 0, 'Phase 3GG-A-PLAN changelog entry must exist');

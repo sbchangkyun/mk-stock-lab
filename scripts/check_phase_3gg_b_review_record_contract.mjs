@@ -57,10 +57,21 @@ const PATCHED_SIBLING_CHECKERS = [
 // extend this array in its own patch to this checker, not remove any
 // existing assertion. Phase 3GG-C added its 3 deliverables on top of this
 // baseline; see docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md.
+// Phase 3GG-C's own commit also cascade-patched two Phase 3FF-A sibling
+// checkers (check_phase_3ff_a_mk_a_contract.mjs, check_phase_3ff_a_sp_a_contract.mjs)
+// to tolerate 3GG-C's deliverables -- a legitimate additive patch this
+// checker's baseline predates, so both are tolerated here too. Phase
+// 3GG-D-PLAN further added its own 3 deliverables on top of this baseline;
+// see docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_result_v0.1.md.
 const TOLERATED_LATER_PHASE_FILES = [
   'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
   'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
   'scripts/check_phase_3gg_c_contract.mjs',
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_v0.1.md',
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_d_plan_contract.mjs',
 ];
 
 const KNOWN_UNTOUCHED_PATHS = [
@@ -318,7 +329,7 @@ const changelog = read(CHANGELOG);
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelog.includes(token), `Changelog missing required token: ${token}`);
 }
-const TOLERATED_HEADERS_ABOVE_3GG_B_REVIEW_RECORD = ['## Phase 3GG-C - 2026-07-09'];
+const TOLERATED_HEADERS_ABOVE_3GG_B_REVIEW_RECORD = ['## Phase 3GG-C - 2026-07-09', '## Phase 3GG-D-PLAN - 2026-07-09'];
 const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-B-REVIEW-RECORD - 2026-07-09');
 assert(phaseHeaderIndex >= 0, 'Phase 3GG-B-REVIEW-RECORD changelog entry must exist');
 const precedingHeaders3ggBReviewRecord =
