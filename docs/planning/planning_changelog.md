@@ -1,5 +1,19 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-I-QA - 2026-07-11
+
+### Owner-local Browser QA for Chart AI KIS + LLM Summary UI
+
+- **Status**: Executed. All 6 required QA cases passed with no defects found.
+- **Baseline**: `5e51712e34081e5cf5aaf2f810af2b155baba8a1` (Phase 3GG-I-FAST).
+- **Builds on**: Phase 3GG-I-FAST's owner-local KIS + LLM summary panel wiring; this is a QA phase, not a re-implementation.
+- **Purpose**: browser QA executed against the owner-local UI in a real running dev server (`npm run dev`), using the Claude Browser MCP tool suite for DOM/network/console inspection rather than static source analysis.
+- **Checks performed**: default `/chart-ai` hidden-state checked; `?ownerLocalKisLlm=1` visible idle state checked; no auto-fetch before click checked; button click H route execution checked; sanitized summary display checked; credential exposure checked (not exposed); raw KIS payload exposure checked (not exposed); raw LLM response exposure checked (not exposed); prompt exposure checked (not exposed); currentPrice numeric exposure checked (not exposed); mobile viewport (~375px) checked; network boundary checked (only the H route called, no forbidden route).
+- **Case 4 note**: the sandboxed session's dev server naturally lacked owner-local KIS/LLM credentials by design (the project's "Explicit Owner Run" pattern), which produced a genuine `sourceStatus: unavailable` / `sanitizedErrorCode: SOURCE_UNAVAILABLE` blocked response — used as real evidence for both Case 3 (request shape/click-only execution/sanitized rendering) and Case 4 (blocked-state display), without any simulation or `.env` edit.
+- **Activation status**: no public activation; no beta activation; no internal QA activation; no KIS endpoint expansion.
+- **Preserved policy**: not pushed; not deployed.
+- **Recommended next step**: Phase 3GG-J-FAST — Model Tier and Fallback Policy.
+
 ## Phase 3GG-I-FAST - 2026-07-11
 
 ### Chart AI UI KIS + LLM Summary Wiring (Implemented)
