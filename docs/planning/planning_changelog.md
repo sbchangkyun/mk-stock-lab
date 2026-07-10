@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-G-FAST - 2026-07-10
+
+### Local-only KIS Current Price Real Credential Smoke, Explicit Owner Run (Implemented)
+
+- **Status**: Implemented. Owner real smoke passed: real outbound KIS `current_price` call returned `sourceStatus=ok`, `currentPricePresent=true`, `volumePresent=true`. See result doc for the full sanitized evidence.
+- **Baseline**: `0a6c73cb2ce34d7f45b55b7d2d330cbc4451990a` (Phase 3GG-F-FAST).
+- **Purpose**: builds on Phase 3GG-F-FAST by adding an explicit owner-gated real current_price smoke command that verifies the already-integrated local-only Chart AI KIS `current_price` route can return a real sanitized `current_price` context when local KIS credentials and `KIS_ENABLE_LIVE_QUOTES=true` are present. Not a public activation, not a beta activation, not deployment, not LLM integration, not multi-endpoint expansion.
+- **Scope**: a new owner-gated smoke script (`scripts/owner_smoke_phase_3gg_g_fast_real_kis_current_price.mjs`) that requires an explicit `--owner-approved-real-kis-smoke` CLI flag before any network call is attempted, calls only the existing local route `/api/chart-ai/local-only-kis-current-price.json` with `ownerLocalKisIntegration=1`, requires a local dev server, and requires local credentials configured outside chat; a static contract checker (`scripts/check_phase_3gg_g_fast_contract.mjs`, manual-gated for the real run behind `OWNER_RUN_REAL_KIS_SMOKE=1`); a result document; two new package scripts (`owner-smoke:phase-3gg-g-fast`, `check:phase-3gg-g-fast`). Does not print the actual `currentPrice` value in the CLI or the result doc — only `currentPricePresent=true`/`false`. Does not expose credentials. Does not expose raw KIS payload fields.
+- **Endpoint used**: `current_price` only, unchanged from Phase 3GG-E-INTEGRATE / 3GG-F-FAST.
+- **Activation status**: no public activation; no beta activation; no internal QA activation.
+- **Preserved policy**: no order endpoint; no cancel/modify order endpoint; no account endpoint; no balance endpoint; no funds endpoint; no buying power endpoint; no sellable quantity endpoint; no profit/loss endpoint; no deposit/withdrawal endpoint; no trading history endpoint; no portfolio/holdings endpoint; no personal endpoint; no raw KIS payload exposure; no credential exposure; no LLM handoff; no Similar Pattern or MK Agent auto-run; no lockfile change; no Supabase change; no existing KIS provider module change; not pushed; not deployed.
+- **Recommended next step**: Phase 3GG-H-FAST - Local-only KIS Current Price to Deterministic Chart AI Summary.
+
 ## Phase 3GG-F-FAST - 2026-07-10
 
 ### Local-only Chart AI KIS Current Price UX Polish and Manual QA (Implemented)

@@ -45,6 +45,9 @@ const KNOWN_LATER_PHASE_PATHS = [
   'scripts/smoke_phase_3gg_f_fast_local_only_kis_current_price_ux.mjs',
   'scripts/check_phase_3gg_f_fast_contract.mjs',
   'docs/planning/phase_3gg_f_fast_local_only_kis_current_price_ux_result_v0.1.md',
+  'scripts/owner_smoke_phase_3gg_g_fast_real_kis_current_price.mjs',
+  'scripts/check_phase_3gg_g_fast_contract.mjs',
+  'docs/planning/phase_3gg_g_fast_real_kis_current_price_owner_smoke_result_v0.1.md',
 ];
 
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [

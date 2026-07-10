@@ -286,6 +286,9 @@ const ALLOWED_MODIFIED_FILES = new Set([
   ADAPTER_FILE,
   'scripts/check_phase_3gg_d_fast_contract.mjs',
   'scripts/check_phase_3gg_e_integrate_contract.mjs',
+  'scripts/owner_smoke_phase_3gg_g_fast_real_kis_current_price.mjs',
+  'scripts/check_phase_3gg_g_fast_contract.mjs',
+  'docs/planning/phase_3gg_g_fast_real_kis_current_price_owner_smoke_result_v0.1.md',
 ]);
 let statusLines = [];
 try {
