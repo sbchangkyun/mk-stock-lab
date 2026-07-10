@@ -51,13 +51,29 @@ const PATCHED_SIBLING_CHECKERS = [
   'scripts/check_phase_3gg_b_contract.mjs',
   'scripts/check_phase_3gg_b_review_record_contract.mjs',
   'scripts/check_phase_3gg_c_contract.mjs',
+  // Phase 3GG-D's own sibling-checker cascade additionally patched these
+  // two checkers (each additive-only, same reason as the group above).
+  'scripts/check_phase_3ff_a_mk_a_contract.mjs',
+  'scripts/check_phase_3ff_a_sp_a_contract.mjs',
 ];
 
-// No later phase exists on top of this baseline yet, so this list starts
-// empty. A future phase that legitimately adds files on top of this one
-// should extend this array in its own patch to this checker, not remove
-// any existing assertion.
-const TOLERATED_LATER_PHASE_FILES = [];
+// Phase 3GG-D (local-only Live KIS provider binding scaffold; all gates
+// off, no live call; scaffold/fixture/smoke/checker/result only) legitimately
+// adds these files on top of this checker's baseline. Additive-only: no
+// existing assertion is weakened or removed.
+const TOLERATED_LATER_PHASE_FILES = [
+  'src/lib/server/chart-ai/local-only-live-kis-provider-binding-scaffold.mjs',
+  'src/lib/server/chart-ai/local-only-live-kis-provider-binding-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3gg_d_local_only_live_kis_provider_binding_scaffold.mjs',
+  'scripts/check_phase_3gg_d_contract.mjs',
+  'docs/planning/phase_3gg_d_local_only_live_kis_provider_binding_scaffold_result_v0.1.md',
+];
+
+// Changelog headers legitimately allowed to sit above this phase's own
+// entry once a later phase's changelog entry is prepended on top of it.
+const TOLERATED_HEADERS_ABOVE_3GG_D_PLAN = [
+  '## Phase 3GG-D - 2026-07-10',
+];
 
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
@@ -285,8 +301,17 @@ for (const token of CHANGELOG_REQUIRED_TOKENS) {
 }
 const phaseHeaderIndex = changelog.indexOf('## Phase 3GG-D-PLAN - 2026-07-09');
 assert(phaseHeaderIndex >= 0, 'Phase 3GG-D-PLAN changelog entry must exist');
-assert(phaseHeaderIndex === 0 || changelog.slice(0, phaseHeaderIndex).trim() === '# MK Stock Lab Planning Changelog',
-  'Phase 3GG-D-PLAN changelog entry must be the topmost phase entry');
+const headerTextAbove3ggDPlan = phaseHeaderIndex >= 0 ? changelog.slice(0, phaseHeaderIndex) : '';
+const headersAbove3ggDPlan = headerTextAbove3ggDPlan.match(/^## Phase .+$/gm) || [];
+const untoleratedHeadersAbove3ggDPlan = headersAbove3ggDPlan.filter(
+  (header) => !TOLERATED_HEADERS_ABOVE_3GG_D_PLAN.includes(header),
+);
+assert(
+  phaseHeaderIndex === 0
+    || headerTextAbove3ggDPlan.trim() === '# MK Stock Lab Planning Changelog'
+    || untoleratedHeadersAbove3ggDPlan.length === 0,
+  `Phase 3GG-D-PLAN changelog entry has unexpected headers above it: ${untoleratedHeadersAbove3ggDPlan.join(', ')}`,
+);
 const nextHeaderIndex = phaseHeaderIndex >= 0
   ? changelog.indexOf('\n## Phase ', phaseHeaderIndex + 1)
   : -1;

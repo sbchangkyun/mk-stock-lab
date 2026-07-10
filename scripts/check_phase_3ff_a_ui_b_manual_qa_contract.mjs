@@ -168,6 +168,14 @@ const LIVE_KIS_APPROVAL_FILES = [
   'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_v0.1.md',
   'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_result_v0.1.md',
   'scripts/check_phase_3gg_d_plan_contract.mjs',
+  // Phase 3GG-D (local-only Live KIS provider binding scaffold; all gates
+  // off, no live call; scaffold/fixture/smoke/checker/result only), tolerated
+  // for the same reason.
+  'src/lib/server/chart-ai/local-only-live-kis-provider-binding-scaffold.mjs',
+  'src/lib/server/chart-ai/local-only-live-kis-provider-binding-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3gg_d_local_only_live_kis_provider_binding_scaffold.mjs',
+  'scripts/check_phase_3gg_d_contract.mjs',
+  'docs/planning/phase_3gg_d_local_only_live_kis_provider_binding_scaffold_result_v0.1.md',
 ];
 
 const CORE_DELIVERABLES = [CHECKLIST, RESULT, CHECKER, CHANGELOG, PACKAGE_JSON];
@@ -278,6 +286,7 @@ const TOLERATED_HEADERS_ABOVE_UI_B = [
   '## Phase 3GG-B-REVIEW-RECORD - 2026-07-09',
   '## Phase 3GG-C - 2026-07-09',
   '## Phase 3GG-D-PLAN - 2026-07-09',
+  '## Phase 3GG-D - 2026-07-10',
 ];
 const uiBEntryIndex = changelog.indexOf('## Phase 3FF-A-UI-B - 2026-07-08');
 const headersAboveUiB = changelog.slice(0, uiBEntryIndex).match(/^## .+$/gm) ?? [];

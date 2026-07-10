@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-D - 2026-07-10
+
+### Local-only Live KIS Provider Binding Scaffold, All Gates Off, No Live Call (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `2490e3be6e8429f7b7f33d2e684ddac6f5f9942c` (Phase 3GG-D-PLAN).
+- **Purpose**: implement an isolated, deterministic, server-only scaffold for a future local-only Live KIS provider binding path, with no real provider call, no live KIS call, no credential/`.env` read, and no API route creation or activation.
+- **Scope**: pure dependency-free scaffold source (`src/lib/server/chart-ai/local-only-live-kis-provider-binding-scaffold.mjs`, 20 exports including the 13-key all-`false` `DEFAULT_LOCAL_ONLY_LIVE_KIS_BINDING_FLAGS`, the 21-category approved / 12-category forbidden endpoint allowlists, local-only guard, rate/cache/cost policy defaults, sanitizer, audit-log builder, fail-closed decision builder, rollback decision builder, main evaluator, and runtime-activation assertion); a deterministic fixture module with all 14 required request-builder fixtures; a smoke test exercising 30 required safety cases; a static contract checker; a result document. `providerCallAllowed` is always `false` in this phase, including on the narrowest safe `"scaffold_only"` acknowledged local path.
+- **Preserved policy**: no live KIS call; no real provider call; no credential read; no `.env` read; no environment-variable-based credential read; `liveKisEnabled` remains `false`; `providerMode live_kis` remains blocked; no existing KIS provider module changed; no API route created or activated; no LLM activation; no MK AI route activation; no public/beta/internal QA activation; no Supabase/DB real runtime; no env/session/JWT/cookie/header parsing; no usage deduction; no paid entitlement; no ad unlock; no dependency/lockfile change; no deploy; no push.
+- **Recommended next step**: Phase 3GG-E-PLAN - Local-only Credential Presence and Secret Handling Plan, No Credential Read.
+
 ## Phase 3GG-D-PLAN - 2026-07-09
 
 ### Local-only Live KIS Provider Binding Plan, No Activation (Prepared)
