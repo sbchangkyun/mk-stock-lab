@@ -710,6 +710,44 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
         </div>
       </section>
 
+      <!--
+        Phase 3GG-E-INTEGRATE: local-only, explicit opt-in owner-local KIS current_price ->
+        Chart AI context integration panel. Hidden by default. Only unhidden client-side when
+        hostname is localhost/127.0.0.1/::1 AND the URL carries `?ownerLocalKisIntegration=1`.
+        Never auto-runs; the request only happens on an explicit button click, to
+        `/api/chart-ai/local-only-kis-current-price.json?ownerLocalKisIntegration=1` (Phase
+        3GG-E-INTEGRATE), which itself fails closed unless local-only + opt-in + the Phase
+        3GG-D-FAST live-KIS gate all allow it. Renders only the sanitized Chart AI context
+        fields (symbol, market, currentPrice, volume, timestamp, sourceStatus, cacheStatus,
+        sanitizedErrorCode, warnings) -- never raw provider payload, never credential values,
+        never account/order/balance data. Not investment advice. Isolated from every other
+        panel on this page; does not affect default /chart-ai behavior.
+      -->
+      <section
+        id="chartAiOwnerLocalKisIntegrationPanel"
+        class="chart-owner-local-kis-integration-panel"
+        aria-labelledby="chart-owner-local-kis-integration-heading"
+        hidden
+      >
+        <div class="chart-owner-local-kis-integration-heading">
+          <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
+          <h3 id="chart-owner-local-kis-integration-heading">로컬 전용 KIS 현재가 연동 (Chart AI)</h3>
+          <p class="chart-owner-local-kis-integration-guide">
+            local-only KIS current_price integration: 로컬 환경에서만 동작하며, 실시간 KIS 연동이 꺼져 있으면
+            사용 불가 상태로 표시됩니다. 매수·매도 추천 또는 투자자문이 아닙니다.
+          </p>
+        </div>
+        <button type="button" id="chartAiOwnerLocalKisIntegrationRunBtn" class="chart-owner-local-kis-integration-run-btn">
+          로컬 전용 KIS 현재가 불러오기
+        </button>
+        <div
+          id="chartAiOwnerLocalKisIntegrationResult"
+          class="chart-owner-local-kis-integration-result"
+          hidden
+          aria-live="polite"
+        ></div>
+      </section>
+
       <div class="chart-analysis-book">
         <div class="chart-analysis-tags" role="tablist" aria-label="차트 분석 보기 선택">
           <button
@@ -1184,6 +1222,20 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
       );
       if (ownerLocalGuardedProductizationShellPanel) {
         ownerLocalGuardedProductizationShellPanel.hidden = !ownerLocalGuardedProductizationShellEnabled;
+      }
+
+      // Owner-local KIS current_price -> Chart AI context panel (Phase 3GG-E-INTEGRATE).
+      // Local-only, explicit opt-in: hidden unless hostname is localhost/127.0.0.1/::1 AND the
+      // URL carries `?ownerLocalKisIntegration=1`. Visibility only -- the actual request only
+      // happens on an explicit button click, handled further below.
+      const ownerLocalKisIntegrationOptIn = chartAiQuery.get('ownerLocalKisIntegration') === '1';
+      const ownerLocalKisIntegrationEnabled =
+        mockedChartAiAccess.capabilities.canAccessChartAi &&
+        isLocalOwnerHostname() &&
+        ownerLocalKisIntegrationOptIn;
+      const ownerLocalKisIntegrationPanel = document.getElementById('chartAiOwnerLocalKisIntegrationPanel');
+      if (ownerLocalKisIntegrationPanel) {
+        ownerLocalKisIntegrationPanel.hidden = !ownerLocalKisIntegrationEnabled;
       }
 
       authGateCta?.addEventListener('click', () => {
@@ -2525,6 +2577,158 @@ const GUARDED_PRODUCTIZATION_STATIC_SHELL_BOUNDARIES = [
             ownerLocalMockedRunBtn.disabled = false;
             ownerLocalMockedRunBtn.textContent = '다시 실행';
             if (ownerLocalMockedResult) ownerLocalMockedResult.removeAttribute('aria-busy');
+          }
+        });
+      }
+
+      // Owner-local KIS current_price -> Chart AI context execution panel (Phase
+      // 3GG-E-INTEGRATE). Local-only, explicit opt-in: hidden unless hostname is
+      // localhost/127.0.0.1/::1 AND the URL carries `?ownerLocalKisIntegration=1`. Never
+      // auto-runs; the request only happens on an explicit click, to
+      // `/api/chart-ai/local-only-kis-current-price.json?ownerLocalKisIntegration=1`, which
+      // itself fails closed unless local-only + opt-in + the Phase 3GG-D-FAST live-KIS gate
+      // all allow it. Renders only sanitized Chart AI context fields -- never raw provider
+      // payload, credential flags, headers, account/order/balance data, or investment advice.
+      const ownerLocalKisIntegrationRunBtn = document.getElementById(
+        'chartAiOwnerLocalKisIntegrationRunBtn',
+      ) as HTMLButtonElement | null;
+      const ownerLocalKisIntegrationResult = document.getElementById('chartAiOwnerLocalKisIntegrationResult');
+      if (ownerLocalKisIntegrationResult) ownerLocalKisIntegrationResult.tabIndex = -1;
+
+      const OWNER_LOCAL_KIS_INTEGRATION_TIMEOUT_MS = 8000;
+      let ownerLocalKisIntegrationRequestInFlight = false;
+
+      const showOwnerLocalKisIntegrationMessage = (text: string) => {
+        if (!ownerLocalKisIntegrationResult) return;
+        ownerLocalKisIntegrationResult.hidden = false;
+        ownerLocalKisIntegrationResult.replaceChildren();
+        const message = document.createElement('p');
+        message.className = 'chart-owner-local-kis-integration-msg';
+        message.textContent = text;
+        ownerLocalKisIntegrationResult.append(message);
+      };
+
+      type OwnerLocalKisIntegrationContext = {
+        symbol: string | null;
+        market: string | null;
+        currentPrice: number | null;
+        volume: number | null;
+        timestamp: string | number | null;
+        sourceStatus: string;
+        cacheStatus: string;
+        sanitizedErrorCode: string | null;
+        warnings: string[];
+      };
+
+      // Response shape guard: validates the parsed body is exactly the sanitized Chart AI KIS
+      // context shape before anything is rendered. Any missing or wrong-typed field falls
+      // through to the safe static error path below -- never a partial/best-effort render.
+      const isOwnerLocalKisIntegrationResponse = (
+        value: unknown,
+      ): value is { ok: true; context: OwnerLocalKisIntegrationContext } => {
+        if (!value || typeof value !== 'object') return false;
+        const record = value as Record<string, unknown>;
+        if (record.ok !== true) return false;
+        const context = record.context;
+        if (!context || typeof context !== 'object') return false;
+        const c = context as Record<string, unknown>;
+        if (typeof c.sourceStatus !== 'string') return false;
+        if (typeof c.cacheStatus !== 'string') return false;
+        if (!Array.isArray(c.warnings)) return false;
+        return true;
+      };
+
+      const renderOwnerLocalKisIntegrationResult = (context: OwnerLocalKisIntegrationContext) => {
+        if (!ownerLocalKisIntegrationResult) return;
+        ownerLocalKisIntegrationResult.hidden = false;
+        ownerLocalKisIntegrationResult.replaceChildren();
+
+        if (context.sourceStatus !== 'ok') {
+          showOwnerLocalKisIntegrationMessage(
+            `사용할 수 없음 (${context.sanitizedErrorCode ?? context.sourceStatus}). 로컬 실시간 KIS 연동이 꺼져 있거나 로컬 전용 조건이 충족되지 않았을 수 있습니다.`,
+          );
+          return;
+        }
+
+        const summaryList = document.createElement('dl');
+        summaryList.className = 'chart-owner-local-kis-integration-dl';
+        const summaryRows: Array<[string, string]> = [
+          ['종목', context.symbol ?? '-'],
+          ['시장', context.market ?? '-'],
+          ['현재가', context.currentPrice !== null ? String(context.currentPrice) : '-'],
+          ['거래량', context.volume !== null ? String(context.volume) : '-'],
+          ['기준 시각', context.timestamp !== null ? String(context.timestamp) : '-'],
+          ['소스 상태', context.sourceStatus],
+          ['캐시 상태', context.cacheStatus],
+        ];
+        for (const [label, value] of summaryRows) {
+          const dt = document.createElement('dt');
+          dt.textContent = label;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          summaryList.append(dt, dd);
+        }
+        ownerLocalKisIntegrationResult.append(summaryList);
+
+        if (context.warnings.length > 0) {
+          const warningList = document.createElement('ul');
+          warningList.className = 'chart-owner-local-kis-integration-warning-list';
+          for (const warning of context.warnings) {
+            const li = document.createElement('li');
+            li.textContent = warning;
+            warningList.append(li);
+          }
+          ownerLocalKisIntegrationResult.append(warningList);
+        }
+
+        const disclaimer = document.createElement('p');
+        disclaimer.className = 'chart-owner-local-kis-integration-disclaimer';
+        disclaimer.textContent = '실시간 시세 참고용 정보이며, 매수·매도 추천 또는 투자자문이 아닙니다.';
+        ownerLocalKisIntegrationResult.append(disclaimer);
+      };
+
+      if (ownerLocalKisIntegrationRunBtn && ownerLocalKisIntegrationEnabled) {
+        ownerLocalKisIntegrationRunBtn.addEventListener('click', async () => {
+          if (ownerLocalKisIntegrationRequestInFlight) return;
+          ownerLocalKisIntegrationRequestInFlight = true;
+          ownerLocalKisIntegrationRunBtn.disabled = true;
+          if (ownerLocalKisIntegrationResult) ownerLocalKisIntegrationResult.setAttribute('aria-busy', 'true');
+          showOwnerLocalKisIntegrationMessage('불러오는 중… (로컬 전용 KIS 현재가 연동)');
+
+          const abortController = new AbortController();
+          const timeoutId = window.setTimeout(
+            () => abortController.abort(),
+            OWNER_LOCAL_KIS_INTEGRATION_TIMEOUT_MS,
+          );
+
+          try {
+            const response = await fetch(
+              '/api/chart-ai/local-only-kis-current-price.json?ownerLocalKisIntegration=1&symbol=005930',
+              { method: 'GET', signal: abortController.signal },
+            );
+            let parsedResponse: unknown = null;
+            try {
+              parsedResponse = await response.json();
+            } catch {
+              parsedResponse = null;
+            }
+            if (isOwnerLocalKisIntegrationResponse(parsedResponse)) {
+              renderOwnerLocalKisIntegrationResult(parsedResponse.context);
+            } else {
+              showOwnerLocalKisIntegrationMessage('로컬 전용 KIS 현재가 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.');
+            }
+          } catch (thrownError) {
+            if (thrownError instanceof DOMException && thrownError.name === 'AbortError') {
+              showOwnerLocalKisIntegrationMessage('요청 시간이 초과되었습니다. 다시 실행 버튼으로 재시도해 주세요.');
+            } else {
+              showOwnerLocalKisIntegrationMessage('로컬 전용 KIS 현재가 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.');
+            }
+          } finally {
+            window.clearTimeout(timeoutId);
+            ownerLocalKisIntegrationRequestInFlight = false;
+            ownerLocalKisIntegrationRunBtn.disabled = false;
+            ownerLocalKisIntegrationRunBtn.textContent = '다시 실행';
+            if (ownerLocalKisIntegrationResult) ownerLocalKisIntegrationResult.removeAttribute('aria-busy');
           }
         });
       }

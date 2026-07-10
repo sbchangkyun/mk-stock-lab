@@ -1,5 +1,18 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-E-INTEGRATE - 2026-07-10
+
+### Local-only KIS Data to Chart AI Integration (Implemented)
+
+- **Status**: Implemented.
+- **Baseline**: `bb2569401a2d6190174f53c9f8a4813dde8be8bc` (Phase 3GG-D-FAST).
+- **Purpose**: builds on Phase 3GG-D-FAST's local-only Live KIS `current_price` market-data path by integrating its sanitized output into the Chart AI local-only flow, so sanitized KIS current-price data is available inside Chart AI in a local-only, opt-in, non-public way.
+- **Scope**: a pure, dependency-free Chart AI context adapter (`src/lib/server/chart-ai/kis-market-data-to-chart-ai-context.mjs`) mapping sanitized Phase 3GG-D-FAST binding output onto a fixed 11-field allowlisted Chart AI market-data context (never carrying through raw provider payload or credential-shaped keys, regardless of input); a local-only, fail-closed API route (`src/pages/api/chart-ai/local-only-kis-current-price.json.ts`) that only ever returns a non-blocked context when the request resolves to a local hostname AND carries the explicit `ownerLocalKisIntegration=1` opt-in, and is otherwise blocked (including in any Vercel/deployed/production runtime, regardless of hostname); a minimal owner-local, hidden-by-default UI panel added to `chart-ai.astro`, gated by the same local-only + opt-in AND-condition; an integration smoke script (113 assertions) covering adapter behavior, end-to-end binding-to-adapter wiring, and static source checks of the route and page; a static contract checker (`scripts/check_phase_3gg_e_integrate_contract.mjs`); a result document; two new package scripts (`smoke:phase-3gg-e-integrate`, `check:phase-3gg-e-integrate`).
+- **Endpoint used**: `current_price` only, via the Phase 3GG-D-FAST binding's existing `runLocalOnlyLiveKisMarketDataRequest`; no other endpoint category is reachable through the adapter, route, or panel.
+- **Activation status**: no public activation; no beta activation; no internal QA activation. The panel is hidden by default and only becomes visible on `localhost`/`127.0.0.1`/`::1` with the explicit `?ownerLocalKisIntegration=1` query opt-in.
+- **Preserved policy**: no order endpoint; no cancel/modify order endpoint; no account endpoint; no balance endpoint; no funds endpoint; no buying power endpoint; no sellable quantity endpoint; no profit/loss endpoint; no deposit/withdrawal endpoint; no trading history endpoint; no portfolio/holdings endpoint; no personal endpoint; no raw KIS payload exposure; no credential exposure; no LLM handoff; no lockfile change; no Supabase change; no MK Agent/Similar Pattern Agent source change; not pushed; not deployed.
+- **Recommended next step**: Phase 3GG-F-FAST - Local-only Chart AI KIS Current Price UX Polish and Manual QA.
+
 ## Phase 3GG-D-FAST - 2026-07-10
 
 ### Local-only Live KIS Minimal End-to-End, Single Market Endpoint, No Public Route (Implemented)

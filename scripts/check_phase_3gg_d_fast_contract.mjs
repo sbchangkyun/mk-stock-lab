@@ -30,8 +30,21 @@ const KNOWN_UNTOUCHED_PATHS = [
   'skills-lock.json',
 ];
 
-const REQUIRED_FORBIDDEN_DIFF_PATHS = [
+// Phase 3GG-E-INTEGRATE (a later, explicitly authorized follow-on phase) is permitted to
+// modify src/pages/chart-ai.astro and to add its own deliverable files; this checker's
+// working-tree-purity scan (see below) tolerates exactly those known later-phase paths so
+// this D-FAST checker keeps validating D-FAST's own binding module without re-litigating a
+// later phase's already-authorized, already-reviewed changes.
+const KNOWN_LATER_PHASE_PATHS = [
   'src/pages/chart-ai.astro',
+  'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
+  'src/lib/server/chart-ai/kis-market-data-to-chart-ai-context.mjs',
+  'scripts/smoke_phase_3gg_e_integrate_local_only_kis_chart_ai_context.mjs',
+  'scripts/check_phase_3gg_e_integrate_contract.mjs',
+  'docs/planning/phase_3gg_e_integrate_local_only_kis_chart_ai_result_v0.1.md',
+];
+
+const REQUIRED_FORBIDDEN_DIFF_PATHS = [
   'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
   'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
   'src/lib/server/chart-ai/mk-agent.mjs',
@@ -339,7 +352,9 @@ try {
 }
 for (const line of statusLines) {
   const filePath = line.slice(3).trim();
-  const isKnown = KNOWN_UNTOUCHED_PATHS.some((p) => filePath === p || filePath.startsWith(p));
+  const isKnown =
+    KNOWN_UNTOUCHED_PATHS.some((p) => filePath === p || filePath.startsWith(p)) ||
+    KNOWN_LATER_PHASE_PATHS.includes(filePath);
   const isThisPhaseFile =
     CORE_DELIVERABLES.includes(filePath) || filePath === CHANGELOG || filePath === PACKAGE_JSON;
   if (isKnown) {
