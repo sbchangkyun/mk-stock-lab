@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-L-BETA-ACTIVATE - 2026-07-11
+
+### Protected Preview-only Chart AI Beta Activation
+
+- **Status**: Source activation implemented and locally verified fail-closed. Classification `PASS_SOURCE_READY_OWNER_VERCEL_ACTION_REQUIRED` — the protected Vercel Preview deploy is blocked on owner-gated Vercel link + Deployment Protection + Preview env setup; the beta path is inert until then.
+- **Baseline**: `6892478` (Phase 3GG-L-FAST).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-L-FAST. L-FAST regression harness passed. Activates real KIS + LLM Chart AI only for protected Vercel Preview beta. Preserves localhost owner flow. Adds explicit `chartAiBetaPreview=1` opt-in for Preview beta. Requires `CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA=true`. Requires VERCEL_ENV=preview. Production remains fail-closed. No production deploy. No public activation. No push. No KIS endpoint expansion. current_price only. No prompt rewrite. No model name exposure. No credential/OpenAI key/raw KIS/raw OpenAI/prompt/currentPrice numeric/volume numeric exposure. Deployment Protection must be verified before sharing the Preview URL.
+- **Result**: New server-only fail-closed guard `evaluateProtectedPreviewBetaAccess`; H route gained a beta authorization path alongside the unchanged localhost owner path; `chart-ai.astro` reveals the panel for `chartAiBetaPreview=1` on a deployed host and sends the matching H route query. Local verification: owner regression PASS, beta query fails closed on localhost (`NON_LOCAL_REQUEST`), beta panel hidden on localhost. Deploy blocked: Vercel project not linked; documented owner action (link + protection + Preview envs, incl. KIS_ENABLE_PREVIEW_LIVE_QUOTES=true which kisClient requires on Preview).
+- **Next recommended phase**: Phase 3GG-L-BETA-DEPLOY — Protected Preview Beta Deploy Execution (after owner completes link + Deployment Protection + Preview env setup). Production remains prohibited.
+
 ## Phase 3GG-L-FAST - 2026-07-11
 
 ### Owner-local LLM Quality Regression Harness and Protected Preview Deploy Prep

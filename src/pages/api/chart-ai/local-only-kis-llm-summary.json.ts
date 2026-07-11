@@ -8,6 +8,7 @@ import {
 } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
 import { createChartAiKisMarketDataContext } from '../../../lib/server/chart-ai/kis-market-data-to-chart-ai-context.mjs';
 import { runLocalOnlyLlmRuntimeBridge } from '../../../lib/server/chart-ai/local-only-llm-runtime-bridge.mjs';
+import { evaluateProtectedPreviewBetaAccess } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { getKisDomesticQuoteSnapshot } from '../../../lib/server/providers/kisClient';
 
 export const prerender = false;
@@ -82,9 +83,28 @@ const blockedSummaryResponse = (sanitizedErrorCode: string) => ({
 });
 
 export const GET: APIRoute = async ({ url, request }) => {
+  // Path 1 (unchanged): localhost owner flow -- requires a local hostname AND ?ownerLocalKisLlm=1.
   const ownerLocalKisLlmOptIn = url.searchParams.get('ownerLocalKisLlm') === '1';
   const resolvedHostname = resolveLocalHostname(url, request);
-  if (!ownerLocalKisLlmOptIn || !resolvedHostname) {
+  const localOwnerAllowed = ownerLocalKisLlmOptIn && Boolean(resolvedHostname);
+
+  // Path 2 (Phase 3GG-L-BETA-ACTIVATE): protected Vercel Preview beta flow. Fail-closed guard --
+  // grants access ONLY on a Vercel Preview deployment (VERCEL_ENV=preview, not production) with the
+  // owner flag CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA=true AND the explicit ?chartAiBetaPreview=1
+  // opt-in. Production and every missing/unknown condition fail closed. Deployment Protection
+  // (Vercel Authentication / Password Protection) is an additional owner-configured layer in front
+  // of the whole deployment and is required before the Preview URL is shared.
+  const betaPreviewOptIn = url.searchParams.get('chartAiBetaPreview') === '1';
+  const betaAccess = evaluateProtectedPreviewBetaAccess({
+    betaQueryOptIn: betaPreviewOptIn,
+    env: {
+      VERCEL_ENV: readServerEnvValue('VERCEL_ENV'),
+      NODE_ENV: readServerEnvValue('NODE_ENV'),
+      CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA: readServerEnvValue('CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA'),
+    },
+  });
+
+  if (!localOwnerAllowed && !betaAccess.allowed) {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse(SANITIZED_ERROR_CODES.NON_LOCAL_REQUEST) });
   }
 
@@ -94,10 +114,22 @@ export const GET: APIRoute = async ({ url, request }) => {
   }
   const symbol = symbolParam.length > 0 ? symbolParam : DEFAULT_SYMBOL;
 
+  // The market-data binding's local-only guard rejects non-local hostnames and deployed environments.
+  // The localhost owner path passes its real hostname + real runtime env (so it still fails closed on
+  // a deployed/production runtime). An authorized protected-preview-beta request has already been
+  // verified above (Preview + owner flag + explicit opt-in + not-production), so the route vouches for
+  // it as a local-equivalent request to the binding; downstream defense-in-depth remains in force
+  // (endpoint allowlist is current_price-only, symbol validation, credential presence, rate limiting,
+  // and kisClient's own Vercel-Preview readiness gate).
+  const bindingHostname = localOwnerAllowed ? (resolvedHostname as string) : 'localhost';
+  const bindingEnv = localOwnerAllowed
+    ? { NODE_ENV: process.env.NODE_ENV, VERCEL_ENV: process.env.VERCEL_ENV, VERCEL: process.env.VERCEL }
+    : {};
+
   const sanitizedKis = await runLocalOnlyLiveKisMarketDataRequest(
     {
-      hostname: resolvedHostname,
-      env: { NODE_ENV: process.env.NODE_ENV, VERCEL_ENV: process.env.VERCEL_ENV, VERCEL: process.env.VERCEL },
+      hostname: bindingHostname,
+      env: bindingEnv,
       symbol,
       category: 'current_price',
       nowMs: Date.now(),

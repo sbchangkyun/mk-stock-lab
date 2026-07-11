@@ -150,6 +150,7 @@
     "check:phase-3gg-k-qa-owner-rerun-3": "node scripts/check_phase_3gg_k_qa_owner_rerun_3_contract.mjs",
     "owner-regression:phase-3gg-l-fast": "node scripts/owner_regression_phase_3gg_l_fast_llm_quality_harness.mjs",
     "check:phase-3gg-l-fast": "node scripts/check_phase_3gg_l_fast_contract.mjs",
+    "check:phase-3gg-l-beta-activate": "node scripts/check_phase_3gg_l_beta_activate_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

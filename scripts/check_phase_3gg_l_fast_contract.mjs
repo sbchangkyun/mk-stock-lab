@@ -39,14 +39,16 @@ const KNOWN_UNTOUCHED_PATHS = [
 ];
 
 // This is a harness/QA-only phase: every source file below must remain zero-diff vs the baseline.
+// Phase 3GG-L-BETA-ACTIVATE checker-compatibility tolerance (documented): the LLM summary H route and
+// chart-ai.astro are intentionally excluded from L-FAST's zero-diff assertion because that phase is
+// explicitly authorized to add the protected-preview-beta activation to those two files. Every other
+// source file below remains protected by L-FAST's zero-diff guard.
 const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
   'src/lib/server/providers/kisClient.ts',
   'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
   'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
-  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
   'src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs',
   'src/lib/server/chart-ai/local-only-llm-model-policy.mjs',
-  'src/pages/chart-ai.astro',
 ];
 
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
@@ -299,6 +301,15 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // order): RERUN-3's checker needed a small, documented ALLOWED_MODIFIED_FILES patch to tolerate
   // this phase's new files. Allow that sibling patch here too.
   'scripts/check_phase_3gg_k_qa_owner_rerun_3_contract.mjs',
+  // Phase 3GG-L-BETA-ACTIVATE checker-compatibility tolerance (documented): that phase adds the
+  // protected-preview-beta guard + activation to chart-ai.astro and the LLM summary route (both
+  // authorized there and excluded from L-FAST's zero-diff list above), plus its own new deliverables;
+  // tolerate their presence in L-FAST's working-tree-purity scan.
+  'src/pages/chart-ai.astro',
+  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
+  'src/lib/server/chart-ai/protected-preview-beta-guard.mjs',
+  'scripts/check_phase_3gg_l_beta_activate_contract.mjs',
+  'docs/planning/phase_3gg_l_beta_activate_protected_preview_chart_ai_beta_result_v0.1.md',
 ]);
 let statusLines = [];
 try {

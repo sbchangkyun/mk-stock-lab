@@ -1308,9 +1308,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const ownerLocalKisLlmOptIn = chartAiQuery.get('ownerLocalKisLlm') === '1';
       const ownerLocalKisLlmEnabled =
         mockedChartAiAccess.capabilities.canAccessChartAi && isLocalOwnerHostname() && ownerLocalKisLlmOptIn;
+      // Phase 3GG-L-BETA-ACTIVATE: on a deployed (non-local) host, an explicit `?chartAiBetaPreview=1`
+      // opt-in may reveal the same panel for protected Vercel Preview beta testers. Visibility only --
+      // the server H route independently enforces VERCEL_ENV=preview + CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA
+      // + the beta query + not-production before any KIS/LLM call, and fails closed otherwise. (The two
+      // modes are mutually exclusive: local requires a local hostname, beta requires a non-local one.)
+      const chartAiBetaPreviewOptIn = chartAiQuery.get('chartAiBetaPreview') === '1';
+      const chartAiBetaPreviewEnabled =
+        mockedChartAiAccess.capabilities.canAccessChartAi && !isLocalOwnerHostname() && chartAiBetaPreviewOptIn;
+      const ownerLocalKisLlmSummaryPanelEnabled = ownerLocalKisLlmEnabled || chartAiBetaPreviewEnabled;
+      const ownerLocalKisLlmSummaryRequestQuery = ownerLocalKisLlmEnabled ? 'ownerLocalKisLlm=1' : 'chartAiBetaPreview=1';
       const ownerLocalKisLlmPanel = document.getElementById('chartAiOwnerLocalKisLlmSummaryPanel');
       if (ownerLocalKisLlmPanel) {
-        ownerLocalKisLlmPanel.hidden = !ownerLocalKisLlmEnabled;
+        ownerLocalKisLlmPanel.hidden = !ownerLocalKisLlmSummaryPanelEnabled;
       }
 
       authGateCta?.addEventListener('click', () => {
@@ -3008,7 +3018,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         ownerLocalKisLlmSummaryOutput.append(msg);
       };
 
-      if (ownerLocalKisLlmSummaryButton && ownerLocalKisLlmEnabled) {
+      if (ownerLocalKisLlmSummaryButton && ownerLocalKisLlmSummaryPanelEnabled) {
         ownerLocalKisLlmSummaryButton.addEventListener('click', async () => {
           if (ownerLocalKisLlmSummaryRequestInFlight) return;
           ownerLocalKisLlmSummaryRequestInFlight = true;
@@ -3024,7 +3034,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
           try {
             const response = await fetch(
-              '/api/chart-ai/local-only-kis-llm-summary.json?ownerLocalKisLlm=1&symbol=005930',
+              `/api/chart-ai/local-only-kis-llm-summary.json?${ownerLocalKisLlmSummaryRequestQuery}&symbol=005930`,
               { method: 'GET', signal: abortController.signal, credentials: 'omit' },
             );
             let parsedResponse: unknown = null;
