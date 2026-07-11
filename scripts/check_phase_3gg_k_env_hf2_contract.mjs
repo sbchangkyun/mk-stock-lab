@@ -277,6 +277,10 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'scripts/check_phase_3gg_k_qa_contract.mjs',
   'scripts/check_phase_3gg_k_fast_contract.mjs',
   'scripts/check_phase_3gg_j_hf1_contract.mjs',
+  // Phase 3GG-K-ENV-HF3 checker-compatibility tolerance (documented per that phase's work order):
+  'docs/planning/phase_3gg_k_env_hf3_kis_provider_network_base_url_diagnostic_result_v0.1.md',
+  'scripts/owner_diagnostic_phase_3gg_k_env_hf3_kis_provider_network_readiness.mjs',
+  'scripts/check_phase_3gg_k_env_hf3_contract.mjs',
 ]);
 // Note: the sibling checkers above are tolerated only if they were themselves patched with small
 // documented tolerance blocks for this phase's new files (same convention used across every prior

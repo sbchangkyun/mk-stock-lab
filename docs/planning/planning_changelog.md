@@ -1,5 +1,21 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF3 - 2026-07-11
+
+### Owner-local KIS Provider Network/Base URL Diagnostic
+
+- **Status**: Still blocked. Classification `NETWORK_OK_CURRENT_PRICE_PROVIDER_UNAVAILABLE`.
+- **Baseline**: `8c31b1b` (Phase 3GG-K-ENV-HF2).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF2. Diagnoses the provider network/base URL blocker after env-missing was resolved. Adds an owner-gated provider network diagnostic script. Does not print KIS_BASE_URL raw value. Does not print .env/.env.local contents. Does not modify .env/.env.local. Does not stage or commit .env/.env.local. Uses only sanitized DNS/TCP/TLS/HTTP status classes. Uses the existing local current_price route for the only market-data endpoint check. No source feature changes. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS provider change. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Files changed**: `scripts/owner_diagnostic_phase_3gg_k_env_hf3_kis_provider_network_readiness.mjs`, `scripts/check_phase_3gg_k_env_hf3_contract.mjs`, `docs/planning/phase_3gg_k_env_hf3_kis_provider_network_base_url_diagnostic_result_v0.1.md` (new); `package.json`, `docs/planning/planning_changelog.md` (modified).
+- **Diagnostic method**: new owner-gated Node script requiring `--owner-approved-kis-provider-network-diagnostic`, probing DNS/TCP/TLS/HTTP reachability of `KIS_BASE_URL` (read internally, never printed) plus the existing local current_price route; corroborated with the existing Phase 3GG-G-FAST owner smoke.
+- **Provider base URL diagnostic summary**: baseUrlPresent=true, baseUrlParseOk=true, baseUrlProtocolKind=https, baseUrlHostKind=kis-real-like, baseUrlPortKind=explicit, dnsLookupOk=true, dnsAddressFamily=IPv4, tcpConnectOk=true, tlsHandshakeOk=true, tlsAuthorized=true, httpBaseProbeOk=true, httpBaseProbeStatusClass=2xx.
+- **currentPriceRouteReachable**: true. **sourceStatus**: `unavailable`. **sanitizedErrorCode**: `PROVIDER_UNAVAILABLE`. **currentPricePresent / volumePresent**: both false.
+- **Not pushed**.
+- **Not deployed**.
+- **Next recommended phase**: Phase 3GG-K-ENV-HF4 — Owner-local KIS Provider Auth/Token Diagnostic, since base network reachability (DNS/TCP/TLS/HTTP) is now fully confirmed OK and the remaining blocker narrows to the KIS provider's token/auth or quote-endpoint response layer.
+
 ## Phase 3GG-K-ENV-HF2 - 2026-07-11
 
 ### Owner-delegated KIS_ENABLE_LIVE_QUOTES Env Correction and Readiness Verification
