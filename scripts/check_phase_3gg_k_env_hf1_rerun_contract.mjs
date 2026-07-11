@@ -234,6 +234,12 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'scripts/check_phase_3gg_k_qa_contract.mjs',
   'scripts/check_phase_3gg_k_fast_contract.mjs',
   'scripts/check_phase_3gg_j_hf1_contract.mjs',
+  // Phase 3GG-K-ENV-HF1-RERUN-2 tolerance: this checker is re-run as a regression check after
+  // K-ENV-HF1-RERUN-2, a later, explicitly authorized diagnostic-rerun-only phase that adds its
+  // own result doc/checker/package.json/changelog deliverables and reuses this phase's diagnostic
+  // script unchanged. Policed by check_phase_3gg_k_env_hf1_rerun_2_contract.mjs, not this one.
+  'docs/planning/phase_3gg_k_env_hf1_rerun_2_owner_local_kis_runtime_readiness_result_v0.1.md',
+  'scripts/check_phase_3gg_k_env_hf1_rerun_2_contract.mjs',
 ]);
 // Note: the sibling checkers above are tolerated only if they were themselves patched with small
 // documented tolerance blocks for this phase's new files (same convention used across every prior

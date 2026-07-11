@@ -1,5 +1,14 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF1-RERUN-2 - 2026-07-11
+
+### Confirm Owner-local KIS Runtime Readiness After Full Dev Server Restart
+
+- **Status**: Still blocked. Classification `STILL_BLOCKED_DEV_SERVER_ENV_STALE`. Zero defects found.
+- **Baseline**: `d946eeb` (Phase 3GG-K-ENV-HF1-RERUN).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF1-RERUN — re-runs the safe owner-local KIS runtime diagnostic after a full dev server restart instruction. Reuses the existing owner-gated diagnostic script unchanged. Does not open or modify `.env`/`.env.local`. Records only env presence booleans/status fields, never secret values. No source feature changes. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation. Not pushed. Not deployed.
+
 ## Phase 3GG-K-ENV-HF1-RERUN - 2026-07-11
 
 ### Confirm Owner-local KIS Runtime Readiness After Env Correction
