@@ -1,9 +1,9 @@
-// Phase 3GG-K-ENV-HF1-RERUN-2 contract checker.
-// Verifies the rerun-2 result doc + this checker + package.json/changelog wiring are present, that
+// Phase 3GG-K-ENV-HF1-RERUN-3 contract checker.
+// Verifies the rerun-3 result doc + this checker + package.json/changelog wiring are present, that
 // the existing owner-gated KIS runtime readiness diagnostic script is reused unchanged and remains
 // safe, and that this diagnostic-rerun-only phase introduced no source feature diff, no KIS
 // provider diff, no forbidden diff, and no lockfile/.env diff, measured against the Phase
-// 3GG-K-ENV-HF1-RERUN baseline.
+// 3GG-K-ENV-HF1-RERUN-2 baseline.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -11,11 +11,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BASELINE = 'd946eeb';
+const BASELINE = '62d888c';
 
 const DIAGNOSTIC_SCRIPT = 'scripts/owner_diagnostic_phase_3gg_k_env_hf1_kis_runtime_readiness.mjs';
-const RESULT_DOC = 'docs/planning/phase_3gg_k_env_hf1_rerun_2_owner_local_kis_runtime_readiness_result_v0.1.md';
-const CHECKER_SELF = 'scripts/check_phase_3gg_k_env_hf1_rerun_2_contract.mjs';
+const RESULT_DOC = 'docs/planning/phase_3gg_k_env_hf1_rerun_3_owner_local_kis_runtime_readiness_result_v0.1.md';
+const CHECKER_SELF = 'scripts/check_phase_3gg_k_env_hf1_rerun_3_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
@@ -74,6 +74,7 @@ const RESULT_DOC_REQUIRED_TOKENS = [
   'KIS_ENABLE_LIVE_QUOTES',
   'Env presence boolean summary',
   'Dev server reachability',
+  'Dev server listening on 4321',
   'Dev server freshness after owner restart',
   'currentPricePresent',
   'volumePresent',
@@ -84,11 +85,10 @@ const RESULT_DOC_REQUIRED_TOKENS = [
 ];
 
 const CHANGELOG_REQUIRED_TOKENS = [
-  '## Phase 3GG-K-ENV-HF1-RERUN-2 - 2026-07-11',
-  '### Confirm Owner-local KIS Runtime Readiness After Full Dev Server Restart',
-  'Builds on Phase 3GG-K-ENV-HF1-RERUN',
+  '## Phase 3GG-K-ENV-HF1-RERUN-3 - 2026-07-11',
+  '### Confirm Owner-local KIS Runtime Readiness After Verified Port 4321 Restart',
+  'Builds on Phase 3GG-K-ENV-HF1-RERUN-2',
   're-runs the safe owner-local KIS runtime diagnostic',
-  'full dev server restart',
   'existing owner-gated diagnostic script',
   'Does not open or modify',
   'env presence booleans',
@@ -132,8 +132,8 @@ for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON, DIAGNOSTIC_SC
 // --- 2. package.json script wiring ---
 const pkg = JSON.parse(read(PACKAGE_JSON));
 assert(
-  pkg.scripts && pkg.scripts['check:phase-3gg-k-env-hf1-rerun-2'] === `node ${CHECKER_SELF}`,
-  'package.json is missing the exact "check:phase-3gg-k-env-hf1-rerun-2" script entry',
+  pkg.scripts && pkg.scripts['check:phase-3gg-k-env-hf1-rerun-3'] === `node ${CHECKER_SELF}`,
+  'package.json is missing the exact "check:phase-3gg-k-env-hf1-rerun-3" script entry',
 );
 assert(
   pkg.scripts && pkg.scripts['owner-diagnostic:phase-3gg-k-env-hf1'] === `node ${DIAGNOSTIC_SCRIPT}`,
@@ -209,19 +209,19 @@ assert(
   'Result doc must never contain a literal volume numeric value.',
 );
 
-// --- 8. Changelog entry present, prepended above the K-ENV-HF1-RERUN entry ---
+// --- 8. Changelog entry present, prepended above the K-ENV-HF1-RERUN-2 entry ---
 const changelog = read(CHANGELOG);
-const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-K-ENV-HF1-RERUN-2 - 2026-07-11');
-assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-K-ENV-HF1-RERUN-2 entry header');
+const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-K-ENV-HF1-RERUN-3 - 2026-07-11');
+assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-K-ENV-HF1-RERUN-3 entry header');
 const changelogSection =
   changelogHeaderIndex === -1 ? '' : changelog.slice(changelogHeaderIndex, changelog.indexOf('\n## ', changelogHeaderIndex + 1));
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelogSection.includes(token), `Changelog entry missing required token: ${token}`);
 }
-const rerun1HeaderIndex = changelog.indexOf('## Phase 3GG-K-ENV-HF1-RERUN - 2026-07-11');
+const rerun2HeaderIndex = changelog.indexOf('## Phase 3GG-K-ENV-HF1-RERUN-2 - 2026-07-11');
 assert(
-  rerun1HeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < rerun1HeaderIndex),
-  'Phase 3GG-K-ENV-HF1-RERUN-2 changelog entry must be prepended above the Phase 3GG-K-ENV-HF1-RERUN entry',
+  rerun2HeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < rerun2HeaderIndex),
+  'Phase 3GG-K-ENV-HF1-RERUN-3 changelog entry must be prepended above the Phase 3GG-K-ENV-HF1-RERUN-2 entry',
 );
 
 // --- 9. No unexpected working-tree changes outside this phase's scope ---
@@ -232,16 +232,14 @@ const ALLOWED_MODIFIED_FILES = new Set([
   CHANGELOG,
   PACKAGE_JSON,
   'docs/planning/phase_3gg_k_env_hf1_rerun_owner_local_kis_runtime_readiness_result_v0.1.md',
+  'docs/planning/phase_3gg_k_env_hf1_rerun_2_owner_local_kis_runtime_readiness_result_v0.1.md',
   'scripts/check_phase_3gg_k_env_hf1_rerun_contract.mjs',
+  'scripts/check_phase_3gg_k_env_hf1_rerun_2_contract.mjs',
   'scripts/check_phase_3gg_k_env_hf1_contract.mjs',
   'scripts/check_phase_3gg_k_qa_owner_rerun_contract.mjs',
   'scripts/check_phase_3gg_k_qa_contract.mjs',
   'scripts/check_phase_3gg_k_fast_contract.mjs',
   'scripts/check_phase_3gg_j_hf1_contract.mjs',
-  // Phase 3GG-K-ENV-HF1-RERUN-3 checker-compatibility tolerance: its 2 new files are not
-  // protected/forbidden-diff paths for this checker, so they are tolerated here.
-  'docs/planning/phase_3gg_k_env_hf1_rerun_3_owner_local_kis_runtime_readiness_result_v0.1.md',
-  'scripts/check_phase_3gg_k_env_hf1_rerun_3_contract.mjs',
 ]);
 // Note: the sibling checkers above are tolerated only if they were themselves patched with small
 // documented tolerance blocks for this phase's new files (same convention used across every prior
@@ -275,11 +273,11 @@ for (const file of [RESULT_DOC]) {
 
 // --- 11. Final result ---
 if (failures.length) {
-  console.error(`Phase 3GG-K-ENV-HF1-RERUN-2 check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
+  console.error(`Phase 3GG-K-ENV-HF1-RERUN-3 check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
   for (const failure of failures) {
     console.error(` - ${failure}`);
   }
   process.exit(1);
 } else {
-  console.log(`Phase 3GG-K-ENV-HF1-RERUN-2 check PASS: ${assertions}/${assertions} assertions passed.`);
+  console.log(`Phase 3GG-K-ENV-HF1-RERUN-3 check PASS: ${assertions}/${assertions} assertions passed.`);
 }

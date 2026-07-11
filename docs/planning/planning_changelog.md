@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF1-RERUN-3 - 2026-07-11
+
+### Confirm Owner-local KIS Runtime Readiness After Verified Port 4321 Restart
+
+- **Status**: Still blocked. Classification `STILL_BLOCKED_ENV_MISSING`. Zero defects found.
+- **Baseline**: `62d888c` (Phase 3GG-K-ENV-HF1-RERUN-2).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF1-RERUN-2 — re-runs the safe owner-local KIS runtime diagnostic after the owner confirmed localhost:4321 is listening following a verified full dev server restart (old processes killed, ports 4321/5173/5174 confirmed empty beforehand). Reuses the existing owner-gated diagnostic script unchanged. Does not open or modify `.env`/`.env.local`. Records only env presence booleans/status fields, never secret values. No source feature changes. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Files changed**: `docs/planning/phase_3gg_k_env_hf1_rerun_3_owner_local_kis_runtime_readiness_result_v0.1.md`, `scripts/check_phase_3gg_k_env_hf1_rerun_3_contract.mjs` (new); `package.json`, `docs/planning/planning_changelog.md` (modified).
+- **Diagnostic method**: reused the existing owner-gated Node script (`owner-diagnostic:phase-3gg-k-env-hf1`), run against the confirmed live `npm run dev` server on port 4321; corroborated with the existing Phase 3GG-G-FAST owner smoke and sanitized OS-level process/port metadata (PID, creation timestamp, listening ports only).
+- **Dev server reachability**: true. **Dev server listening on 4321**: true. **Dev server freshness after owner restart**: true.
+- **Env presence boolean summary**: `KIS_APP_KEY`, `KIS_APP_SECRET`, `KIS_BASE_URL` all present; `KIS_ACCOUNT_NO` absent.
+- **KIS_ENABLE_LIVE_QUOTES exactly true**: false — now corroborated by the live route itself, not just the diagnostic's isolated process env.
+- **currentPricePresent / volumePresent**: both false.
+- **Not pushed**.
+- **Not deployed**.
+- **Next recommended phase**: owner re-verifies the exact `.env`/`.env.local` line (`KIS_ENABLE_LIVE_QUOTES=true`, no typo/quotes/comment), saves, fully restarts `npm run dev` again (env changes require a restart), then repeats this same diagnostic; once `PASS_CURRENT_PRICE_READY` is confirmed, proceed to Phase 3GG-K-QA-OWNER-RERUN-2 — Verify Success-path Summary Quality After KIS Runtime Correction.
+
 ## Phase 3GG-K-ENV-HF1-RERUN-2 - 2026-07-11
 
 ### Confirm Owner-local KIS Runtime Readiness After Full Dev Server Restart
