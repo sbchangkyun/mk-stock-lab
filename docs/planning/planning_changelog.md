@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF1 - 2026-07-11
+
+### Owner-local KIS Runtime Environment Correction
+
+- **Status**: Blocked. Classification `BLOCKED_ENV_MISSING`. Zero defects found.
+- **Baseline**: `0833007` (Phase 3GG-K-QA-OWNER-RERUN).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-QA-OWNER-RERUN — diagnoses why the owner-local KIS current_price path reports `SOURCE_UNAVAILABLE` at the KIS source layer before the LLM bridge is ever invoked. Adds an explicit owner-gated safe diagnostic script. Does not open or modify `.env`/`.env.local`. Records only env presence booleans, never secret values. No source feature changes. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation.
+- **Files changed**: `scripts/owner_diagnostic_phase_3gg_k_env_hf1_kis_runtime_readiness.mjs`, `scripts/check_phase_3gg_k_env_hf1_contract.mjs`, `docs/planning/phase_3gg_k_env_hf1_owner_local_kis_runtime_correction_result_v0.1.md` (new); `package.json`, `docs/planning/planning_changelog.md` (modified).
+- **Diagnostic method**: owner-gated Node script requiring `--owner-approved-kis-runtime-diagnostic`, run against a real `npm run dev` server; corroborated with the existing Phase 3GG-G-FAST owner smoke.
+- **Env presence boolean summary**: `KIS_APP_KEY`, `KIS_APP_SECRET`, `KIS_BASE_URL` all present; `KIS_ACCOUNT_NO` absent.
+- **KIS_ENABLE_LIVE_QUOTES exactly true**: false — identified as the most likely proximate cause of `SOURCE_UNAVAILABLE`.
+- **currentPricePresent / volumePresent**: both false.
+- **Not pushed**.
+- **Not deployed**.
+- **Next recommended phase**: repeat Phase 3GG-K-ENV-HF1 after the owner performs a safe local correction (verify `KIS_ENABLE_LIVE_QUOTES=true` in `.env`/`.env.local` and restart `npm run dev`); once corrected, proceed to Phase 3GG-K-QA-OWNER-RERUN-2.
+
 ## Phase 3GG-K-QA-OWNER-RERUN - 2026-07-11
 
 ### Owner-run Success-path QA for Upgraded Chart AI Summary Quality

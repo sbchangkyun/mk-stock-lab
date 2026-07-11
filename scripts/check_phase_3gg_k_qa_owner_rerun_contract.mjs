@@ -212,6 +212,11 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'scripts/check_phase_3gg_k_qa_contract.mjs',
   'scripts/check_phase_3gg_k_fast_contract.mjs',
   'scripts/check_phase_3gg_j_hf1_contract.mjs',
+  // Same tolerance pattern, extended for the authorized Phase 3GG-K-ENV-HF1 environment
+  // diagnostic phase's new deliverable files.
+  'docs/planning/phase_3gg_k_env_hf1_owner_local_kis_runtime_correction_result_v0.1.md',
+  'scripts/check_phase_3gg_k_env_hf1_contract.mjs',
+  'scripts/owner_diagnostic_phase_3gg_k_env_hf1_kis_runtime_readiness.mjs',
 ]);
 let statusLines = [];
 try {

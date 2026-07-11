@@ -226,6 +226,12 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // Policed by check_phase_3gg_k_qa_owner_rerun_contract.mjs, not this one.
   'docs/planning/phase_3gg_k_qa_owner_rerun_success_path_result_v0.1.md',
   'scripts/check_phase_3gg_k_qa_owner_rerun_contract.mjs',
+  // Phase 3GG-K-ENV-HF1 tolerance: same pattern, extended for the later, explicitly authorized
+  // owner-local KIS runtime environment diagnostic phase's own deliverables. Policed by
+  // check_phase_3gg_k_env_hf1_contract.mjs, not this one.
+  'docs/planning/phase_3gg_k_env_hf1_owner_local_kis_runtime_correction_result_v0.1.md',
+  'scripts/check_phase_3gg_k_env_hf1_contract.mjs',
+  'scripts/owner_diagnostic_phase_3gg_k_env_hf1_kis_runtime_readiness.mjs',
 ]);
 let statusLines = [];
 try {
