@@ -45,7 +45,10 @@ const KNOWN_UNTOUCHED_PATHS = [
 const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
   'scripts/owner_diagnostic_phase_3gg_k_env_hf1_kis_runtime_readiness.mjs',
   'scripts/owner_diagnostic_phase_3gg_k_env_hf3_kis_provider_network_readiness.mjs',
-  'src/lib/server/providers/kisClient.ts',
+  // Phase 3GG-K-ENV-HF5 checker-compatibility tolerance (documented): kisClient.ts is intentionally
+  // excluded from HF4's zero-diff-vs-baseline assertion because Phase 3GG-K-ENV-HF5 is explicitly
+  // authorized to apply the minimal local-provider runtime-env fix to that single file. Every other
+  // source file below remains protected by HF4's zero-diff guard.
   'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
   'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
   'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
@@ -60,7 +63,8 @@ const KIS_PROVIDER_CANDIDATE_PATHS = [
   'src/server/kis',
   'src/lib/server/chart-ai/kis',
   'src/lib/server/providers/kis',
-  'src/lib/server/providers/kisClient.ts',
+  // kisClient.ts excluded here for the same documented Phase 3GG-K-ENV-HF5 reason as above (that
+  // phase is authorized to apply the minimal runtime-env fix to it).
   'src/lib/server/providers/providerErrors.ts',
   'src/lib/server/providers/serverOnly.ts',
   'src/lib/server/providers/types.ts',
@@ -355,6 +359,13 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // work order): HF3's checker required a small, documented ALLOWED_MODIFIED_FILES patch to
   // tolerate HF4's new files. Allow that sibling patch here too.
   'scripts/check_phase_3gg_k_env_hf3_contract.mjs',
+  // Phase 3GG-K-ENV-HF5 checker-compatibility tolerance (documented): HF5 adds its own new
+  // deliverables and applies the authorized minimal runtime-env fix to kisClient.ts; tolerate their
+  // presence in HF4's working-tree-purity scan.
+  'docs/planning/phase_3gg_k_env_hf5_minimal_local_provider_binding_fix_result_v0.1.md',
+  'scripts/owner_diagnostic_phase_3gg_k_env_hf5_local_provider_runtime_env_readiness.mjs',
+  'scripts/check_phase_3gg_k_env_hf5_contract.mjs',
+  'src/lib/server/providers/kisClient.ts',
 ]);
 let statusLines = [];
 try {

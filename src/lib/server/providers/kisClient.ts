@@ -83,6 +83,28 @@ let accessTokenCache: KisAccessTokenCache | null = null;
 
 const normalizeString = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
 
+type ImportMetaWithEnv = ImportMeta & {
+  env?: Record<string, string | undefined>;
+};
+
+const getImportMetaEnv = (): Record<string, string | undefined> =>
+  (import.meta as ImportMetaWithEnv).env ?? {};
+
+// Reads an env value from the Astro/Vite runtime source (import.meta.env, where `.env`
+// file values are exposed during `astro dev`/SSR) first, then falls back to process.env
+// (where an owner-run Node harness or OS-level exported vars supply them). Mirrors the
+// dual-source resolver already established in supabaseAdmin.ts. This exists because
+// `.env`-only values such as KIS_ENABLE_LIVE_QUOTES are NOT visible through process.env
+// inside the Astro dev/SSR runtime. Only the source of each value changes here -- every
+// readiness/guard decision and its fail-closed behavior below is unchanged.
+const readEnvValue = (name: string): string | undefined => {
+  const fromImportMeta = getImportMetaEnv()[name];
+  if (typeof fromImportMeta === 'string' && fromImportMeta.trim().length > 0) {
+    return fromImportMeta;
+  }
+  return process.env[name];
+};
+
 type KisRuntimeClass =
   | 'local'
   | 'vercel-preview'
@@ -92,8 +114,8 @@ type KisRuntimeClass =
   | 'unknown';
 
 const classifyRuntime = (): KisRuntimeClass => {
-  const vercelEnv = normalizeString(process.env.VERCEL_ENV).toLowerCase();
-  const nodeEnv = normalizeString(process.env.NODE_ENV).toLowerCase();
+  const vercelEnv = normalizeString(readEnvValue('VERCEL_ENV')).toLowerCase();
+  const nodeEnv = normalizeString(readEnvValue('NODE_ENV')).toLowerCase();
   if (vercelEnv === 'production') return 'vercel-production';
   if (vercelEnv === 'preview') return 'vercel-preview';
   if (vercelEnv === 'development') return 'vercel-development';
@@ -102,14 +124,14 @@ const classifyRuntime = (): KisRuntimeClass => {
   return 'local';
 };
 
-const hasValue = (name: string) => normalizeString(process.env[name]).length > 0;
+const hasValue = (name: string) => normalizeString(readEnvValue(name)).length > 0;
 
 const getMissingEnvNames = () => requiredEnvNames.filter((name) => !hasValue(name));
 
 const getRuntimeConfig = (): KisRuntimeConfig | null => {
-  const appKey = normalizeString(process.env.KIS_APP_KEY);
-  const appSecret = normalizeString(process.env.KIS_APP_SECRET);
-  const baseUrl = normalizeString(process.env.KIS_BASE_URL).replace(/\/+$/, '');
+  const appKey = normalizeString(readEnvValue('KIS_APP_KEY'));
+  const appSecret = normalizeString(readEnvValue('KIS_APP_SECRET'));
+  const baseUrl = normalizeString(readEnvValue('KIS_BASE_URL')).replace(/\/+$/, '');
   if (!appKey || !appSecret || !baseUrl) return null;
   return { appKey, appSecret, baseUrl };
 };
@@ -117,7 +139,7 @@ const getRuntimeConfig = (): KisRuntimeConfig | null => {
 export const getKisQuoteConfigReadiness = (): KisQuoteConfigReadiness => {
   assertServerRuntime(moduleName);
   const missingEnvNames = getMissingEnvNames();
-  const flagEnabled = process.env[featureFlagEnvName] === 'true';
+  const flagEnabled = readEnvValue(featureFlagEnvName) === 'true';
   const runtimeClass = classifyRuntime();
 
   const base = { provider, requiredEnvNames, missingEnvNames, optionalEnvNames, featureFlagEnvName, productionAllowed: false } as const;
@@ -133,7 +155,7 @@ export const getKisQuoteConfigReadiness = (): KisQuoteConfigReadiness => {
   }
 
   // Vercel Preview requires explicit Preview opt-in guard
-  if (runtimeClass === 'vercel-preview' && process.env[previewGuardFlagEnvName] !== 'true') {
+  if (runtimeClass === 'vercel-preview' && readEnvValue(previewGuardFlagEnvName) !== 'true') {
     return { ...base, ready: false, reason: 'preview_guard_required' };
   }
 

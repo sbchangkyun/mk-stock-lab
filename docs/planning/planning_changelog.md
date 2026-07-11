@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF5 - 2026-07-11
+
+### Minimal Local Provider Binding Fix
+
+- **Status**: Fixed. Classification `FIXED_RUNTIME_FLAG_INJECTION_CURRENT_PRICE_READY`. The local current_price route now returns `sourceStatus=ok` with `currentPricePresent=true` and `volumePresent=true`, and the G-FAST owner smoke passes with the same sanitized success shape.
+- **Baseline**: `c7e1789` (Phase 3GG-K-ENV-HF4).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF4. HF4 proved OAuth token exchange and direct current_price quote both succeed with real credentials while the local route still failed; the remaining blocker was isolated to local provider binding / kisClient runtime wiring. Implements the minimum safe fix for the local current_price route: kisClient.ts now resolves env from the Astro/Vite runtime source `import.meta.env` first (where `.env` file values such as `KIS_ENABLE_LIVE_QUOTES` are exposed during `astro dev`/SSR) and falls back to `process.env`, mirroring the dual-source resolver already established in supabaseAdmin.ts. Does not print KIS_BASE_URL raw value. Does not print credentials. Does not print tokens. Does not print Authorization headers. Does not print raw KIS request or response body. Does not print currentPrice/volume numeric values. Does not print .env/.env.local contents. Does not modify .env/.env.local. Does not stage or commit .env/.env.local. Preserves localhost-only guard. Preserves ownerLocalKisIntegration=1 gate. Preserves deployed/production fail-closed behavior. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS endpoint expansion. current_price only for market data. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Result**: Root cause confirmed as the `KIS_ENABLE_LIVE_QUOTES` runtime env mismatch — kisClient read the feature flag only from `process.env`, but the flag lived only in `.env` (exposed via `import.meta.env` in the Astro SSR runtime), while credentials reached the runtime via OS-level env. HF5 diagnostic PASS (`route-ready`, `shellKisLiveQuotesExactlyTrue=false`, `suspectedRuntimeEnvMismatch=false`); G-FAST owner smoke PASS.
+- **Next recommended phase**: Phase 3GG-K-QA-OWNER-RERUN-2 — Verify Success-path Summary Quality After KIS Runtime Correction. (If the local route later regresses, fall back to Phase 3GG-K-ENV-HF6 — Narrow Local Route Provider Failure.)
+
 ## Phase 3GG-K-ENV-HF4 - 2026-07-11
 
 ### Owner-local KIS Provider Auth/Token Diagnostic
