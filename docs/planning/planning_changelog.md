@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF6 - 2026-07-11
+
+### LLM Runtime Readiness Rerun or Safe Diagnostics
+
+- **Status**: Fixed. Classification `FIXED_LLM_RUNTIME_ENV_READY`. The owner-local KIS + LLM summary H route now returns `summary.ok=true` with `llmStatus=ok`, a valid sanitized 3-bullet Korean summary (all required labels, no ASCII digits, no forbidden investment phrasing), while the KIS side stays `sourceStatus=ok`.
+- **Baseline**: `536450e` (Phase 3GG-K-QA-OWNER-RERUN-2).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-QA-OWNER-RERUN-2. KIS side is confirmed working through the H route. Diagnoses the LLM_DISABLED blocker. Adds an owner-gated LLM runtime env diagnostic script. If fixed, applies the minimum safe import.meta.env-first / process.env-fallback env resolver to the owner-local LLM route path. Does not print OPENAI_API_KEY. Does not print model names. Does not print prompt text. Does not print raw OpenAI request or response. Does not print currentPrice/volume numeric values. Does not print .env/.env.local contents. Does not modify .env/.env.local. Does not stage or commit .env/.env.local. Preserves localhost-only guard. Preserves ownerLocalKisLlm=1 gate. Preserves deployed/production fail-closed behavior. No UI change. No prompt rewrite. No summary contract rewrite. No KIS provider change. No current_price route change. No KIS endpoint expansion. current_price only for KIS market data. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Result**: Root cause confirmed — the LLM summary H route read `CHART_AI_ENABLE_LOCAL_LLM`/`OPENAI_API_KEY`/model vars only from `process.env`, but those `.env` values are exposed via `import.meta.env` in the Astro SSR runtime (the same class HF5 fixed for KIS). Route-only fix: a `readServerEnvValue` dual-source resolver; the LLM bridge and model policy were left unchanged (they already consume the injected env object). HF6 diagnostic before fix `LLM_DISABLED`, after fix `route-ready` / PASS; G-FAST smoke PASS.
+- **Next recommended phase**: If FIXED_LLM_RUNTIME_ENV_READY: Phase 3GG-K-QA-OWNER-RERUN-3 — Verify Success-path Summary Quality After LLM Runtime Correction. If the LLM provider/model call is still blocked: Phase 3GG-K-ENV-HF7 — LLM Provider Call Safe Diagnostics. If LLM env is not configured: owner config correction outside chat, then rerun HF6.
+
 ## Phase 3GG-K-QA-OWNER-RERUN-2 - 2026-07-11
 
 ### Verify Success-path Summary Quality After KIS Runtime Correction

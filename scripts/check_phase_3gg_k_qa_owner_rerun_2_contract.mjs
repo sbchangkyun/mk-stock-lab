@@ -41,7 +41,10 @@ const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
   'src/lib/server/providers/kisClient.ts',
   'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
   'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
-  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
+  // Phase 3GG-K-ENV-HF6 checker-compatibility tolerance (documented): the LLM summary H route is
+  // intentionally excluded from RERUN-2's zero-diff assertion because Phase 3GG-K-ENV-HF6 is
+  // explicitly authorized to apply the minimal LLM runtime-env fix to that single route file. Every
+  // other source file below remains protected by RERUN-2's zero-diff guard.
   'src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs',
   'src/lib/server/chart-ai/local-only-llm-model-policy.mjs',
   'src/pages/chart-ai.astro',
@@ -244,6 +247,13 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // phase's work order): HF5's checker needed a small, documented ALLOWED_MODIFIED_FILES patch to
   // tolerate this phase's 2 new QA files. Allow that sibling patch here too.
   'scripts/check_phase_3gg_k_env_hf5_contract.mjs',
+  // Phase 3GG-K-ENV-HF6 checker-compatibility tolerance (documented): HF6 adds its own new
+  // deliverables and applies the authorized minimal LLM runtime-env fix to the LLM summary H route;
+  // tolerate their presence in RERUN-2's working-tree-purity scan.
+  'docs/planning/phase_3gg_k_env_hf6_llm_runtime_readiness_result_v0.1.md',
+  'scripts/owner_diagnostic_phase_3gg_k_env_hf6_llm_runtime_env_readiness.mjs',
+  'scripts/check_phase_3gg_k_env_hf6_contract.mjs',
+  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
 ]);
 let statusLines = [];
 try {

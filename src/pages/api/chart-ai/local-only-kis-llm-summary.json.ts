@@ -36,6 +36,28 @@ const hasEnvValue = (name: string): boolean => {
   return typeof value === 'string' && value.trim().length > 0;
 };
 
+type ImportMetaWithEnv = ImportMeta & {
+  env?: Record<string, string | undefined>;
+};
+
+const getImportMetaEnv = (): Record<string, string | undefined> =>
+  (import.meta as ImportMetaWithEnv).env ?? {};
+
+// Reads a server-only env value from the Astro/Vite runtime source (import.meta.env, where `.env`
+// file values are exposed during `astro dev`/SSR) first, then falls back to process.env (owner-run
+// Node harness / OS-level exported vars). Mirrors the dual-source resolver established in
+// kisClient.ts (Phase 3GG-K-ENV-HF5) and supabaseAdmin.ts. Exists because `.env`-only LLM values
+// such as CHART_AI_ENABLE_LOCAL_LLM are NOT visible through process.env inside the Astro dev/SSR
+// runtime. Only the read source changes here -- the fail-closed LLM readiness/guard logic in the
+// bridge is unchanged, and this is a server-only route module (never shipped to the client).
+const readServerEnvValue = (name: string): string | undefined => {
+  const fromImportMeta = getImportMetaEnv()[name];
+  if (typeof fromImportMeta === 'string' && fromImportMeta.trim().length > 0) {
+    return fromImportMeta;
+  }
+  return process.env[name];
+};
+
 const fetchQuote = async ({ symbol }: { symbol: string; category: string }) => {
   const result = await getKisDomesticQuoteSnapshot({ market: 'KR', symbol });
   if (!result.ok) return { ok: false as const, code: 'PROVIDER_UNAVAILABLE' };
@@ -99,14 +121,14 @@ export const GET: APIRoute = async ({ url, request }) => {
         integrationMode: kisContext.integrationMode,
       },
       env: {
-        CHART_AI_ENABLE_LOCAL_LLM: process.env.CHART_AI_ENABLE_LOCAL_LLM,
-        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-        CHART_AI_LLM_MODEL: process.env.CHART_AI_LLM_MODEL,
-        CHART_AI_LLM_MAIN_MODEL: process.env.CHART_AI_LLM_MAIN_MODEL,
-        CHART_AI_LLM_FALLBACK_MODEL: process.env.CHART_AI_LLM_FALLBACK_MODEL,
-        CHART_AI_LLM_TEST_MODEL: process.env.CHART_AI_LLM_TEST_MODEL,
-        CHART_AI_LLM_MODERATION_MODEL: process.env.CHART_AI_LLM_MODERATION_MODEL,
-        CHART_AI_LLM_EMBEDDING_MODEL: process.env.CHART_AI_LLM_EMBEDDING_MODEL,
+        CHART_AI_ENABLE_LOCAL_LLM: readServerEnvValue('CHART_AI_ENABLE_LOCAL_LLM'),
+        OPENAI_API_KEY: readServerEnvValue('OPENAI_API_KEY'),
+        CHART_AI_LLM_MODEL: readServerEnvValue('CHART_AI_LLM_MODEL'),
+        CHART_AI_LLM_MAIN_MODEL: readServerEnvValue('CHART_AI_LLM_MAIN_MODEL'),
+        CHART_AI_LLM_FALLBACK_MODEL: readServerEnvValue('CHART_AI_LLM_FALLBACK_MODEL'),
+        CHART_AI_LLM_TEST_MODEL: readServerEnvValue('CHART_AI_LLM_TEST_MODEL'),
+        CHART_AI_LLM_MODERATION_MODEL: readServerEnvValue('CHART_AI_LLM_MODERATION_MODEL'),
+        CHART_AI_LLM_EMBEDDING_MODEL: readServerEnvValue('CHART_AI_LLM_EMBEDDING_MODEL'),
       },
     },
     { timeoutMs: 12000 },
