@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-QA-OWNER-RERUN - 2026-07-11
+
+### Owner-run Success-path QA for Upgraded Chart AI Summary Quality
+
+- **Status**: Blocked. The route returned `sanitizedErrorCode: SOURCE_UNAVAILABLE` (KIS source layer failed closed before the LLM bridge was invoked) rather than a clean `summary.ok=true` success or a clean numeric-rejection. Zero defects found.
+- **Baseline**: `e056d4b` (Phase 3GG-K-QA).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-QA — re-runs the previously blocked owner-local success-path QA with real local KIS + LLM env available. No source feature changes. No UI change. No H route change. No model policy change. No KIS endpoint expansion. No public/beta/internal QA activation.
+- **Files changed**: `docs/planning/phase_3gg_k_qa_owner_rerun_success_path_result_v0.1.md`, `scripts/check_phase_3gg_k_qa_owner_rerun_contract.mjs` (new); `package.json`, `docs/planning/planning_changelog.md` (modified).
+- **Browser QA method**: real running `npm run dev` server, driven via the Claude Browser MCP tool suite.
+- **H route click behavior checked**: 0 calls before click, exactly 1 call after a single click to the exact expected H route URL, no forbidden route call, no console error.
+- **3-bullet Korean summary quality checked**: not executed — `summary.ok` was `false`, so the label/quality checks could not run this rerun.
+- **ASCII digit absence checked**: not executed for the same reason.
+- **Numeric-output rejection result recorded**: not naturally triggered — `sanitizedErrorCode` was `SOURCE_UNAVAILABLE`, not `FORBIDDEN_NUMERIC_OUTPUT_DETECTED`.
+- **Credential/raw KIS/raw LLM/prompt/model/currentPrice exposure checked**: all Not exposed.
+- **Mobile checked**: 375px viewport — panel/button/status visible and readable, no horizontal overflow, no console error.
+- **Not pushed**.
+- **Not deployed**.
+- **Next recommended phase**: since the result was blocked with `SOURCE_UNAVAILABLE`, recommend a focused environment/runtime correction (verifying owner-local KIS credential presence and connectivity) before Phase 3GG-L-FAST — Owner-local LLM Quality Regression Harness.
+
 ## Phase 3GG-K-QA - 2026-07-11
 
 ### Owner-local Browser QA for Upgraded Chart AI Summary Quality

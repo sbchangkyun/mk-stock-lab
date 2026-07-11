@@ -1,7 +1,7 @@
-// Phase 3GG-K-QA contract checker.
-// Verifies the owner-local browser QA checklist/result docs and this checker's own wiring are
+// Phase 3GG-K-QA-OWNER-RERUN contract checker.
+// Verifies the owner-run success-path QA rerun result doc and this checker's own wiring are
 // present -- and that this QA-only phase introduced no source feature diff, no KIS provider diff,
-// no forbidden diff, and no lockfile/.env diff, measured against the Phase 3GG-K-FAST baseline.
+// no forbidden diff, and no lockfile/.env diff, measured against the Phase 3GG-K-QA baseline.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -9,15 +9,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BASELINE = '37e892e';
+const BASELINE = 'e056d4b';
 
-const CHECKLIST_DOC = 'docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_checklist_v0.1.md';
-const RESULT_DOC = 'docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_result_v0.1.md';
-const CHECKER_SELF = 'scripts/check_phase_3gg_k_qa_contract.mjs';
+const RESULT_DOC = 'docs/planning/phase_3gg_k_qa_owner_rerun_success_path_result_v0.1.md';
+const CHECKER_SELF = 'scripts/check_phase_3gg_k_qa_owner_rerun_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
-const CORE_DELIVERABLES = [CHECKLIST_DOC, RESULT_DOC, CHECKER_SELF];
+const CORE_DELIVERABLES = [RESULT_DOC, CHECKER_SELF];
 
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
@@ -66,45 +65,44 @@ const REQUIRED_FORBIDDEN_DIFF_PATHS = [
 const RESULT_DOC_REQUIRED_TOKENS = [
   `Baseline: ${BASELINE}`,
   'Branch: rebuild/phase-1-ia-shell',
-  'default hidden state',
-  'ownerLocalKisLlm=1',
-  'visible idle state',
-  'no fetch before click',
-  'H route',
+  'Owner-run Success-path QA',
+  'H route call count',
+  'summary.ok',
   '3-bullet',
   'ASCII digit',
   'forbidden investment phrase',
-  'Numeric-output protection browser result',
-  'Credential exposure status',
-  'Raw KIS payload exposure status',
-  'Raw LLM response exposure status',
-  'Prompt exposure status',
-  'Model name exposure status',
-  'currentPrice numeric exposure status',
+  'numericRejectionObserved',
+  'Credential exposure status: **Not exposed**',
+  'Raw KIS payload exposure status: **Not exposed**',
+  'Raw LLM response exposure status: **Not exposed**',
+  'Prompt exposure status: **Not exposed**',
+  'Model name exposure status: **Not exposed**',
+  'currentPrice numeric exposure status: **Not exposed**',
   'Mobile result',
+  'Console result',
   'Not pushed',
   'Not deployed',
 ];
 
 const CHANGELOG_REQUIRED_TOKENS = [
-  '## Phase 3GG-K-QA - 2026-07-11',
-  '### Owner-local Browser QA for Upgraded Chart AI Summary Quality',
-  'builds on Phase 3GG-K-FAST',
-  'Browser QA method',
-  'Default hidden state checked',
-  'Opt-in visible idle state checked',
-  'no auto-fetch',
-  'H route',
-  '3-bullet',
-  'ASCII digit',
-  'Forbidden investment phrase',
-  'Numeric-output protection',
-  'Exposure checks',
-  'Mobile checked',
-  'No activation',
+  '## Phase 3GG-K-QA-OWNER-RERUN - 2026-07-11',
+  '### Owner-run Success-path QA for Upgraded Chart AI Summary Quality',
+  'Builds on Phase 3GG-K-QA',
+  're-runs the previously blocked owner-local success-path QA',
+  'No source feature changes',
+  'No UI change',
+  'No H route change',
+  'No model policy change',
   'No KIS endpoint expansion',
-  'not pushed',
-  'not deployed',
+  'No public/beta/internal QA activation',
+  'H route click behavior checked',
+  '3-bullet Korean summary quality checked',
+  'ASCII digit absence checked',
+  'Numeric-output rejection result recorded',
+  'Credential/raw KIS/raw LLM/prompt/model/currentPrice exposure checked',
+  'Mobile checked',
+  'Not pushed',
+  'Not deployed',
 ];
 
 const failures = [];
@@ -135,18 +133,11 @@ for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON]) {
 // --- 2. package.json script wiring ---
 const pkg = JSON.parse(read(PACKAGE_JSON));
 assert(
-  pkg.scripts && pkg.scripts['check:phase-3gg-k-qa'] === `node ${CHECKER_SELF}`,
-  'package.json is missing the exact "check:phase-3gg-k-qa" script entry',
+  pkg.scripts && pkg.scripts['check:phase-3gg-k-qa-owner-rerun'] === `node ${CHECKER_SELF}`,
+  'package.json is missing the exact "check:phase-3gg-k-qa-owner-rerun" script entry',
 );
 
-// --- 3. Checklist doc content checks ---
-const checklistDoc = exists(CHECKLIST_DOC) ? read(CHECKLIST_DOC) : '';
-assert(checklistDoc.includes(`Baseline**: ${BASELINE}`), 'Checklist doc must reference the correct baseline.');
-for (let i = 1; i <= 8; i += 1) {
-  assert(checklistDoc.includes(`Case ${i}`), `Checklist doc must cover Case ${i}.`);
-}
-
-// --- 4. No source feature file changed ---
+// --- 3. No source feature file changed ---
 let sourceDiffLines = [];
 try {
   sourceDiffLines = runGit(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES])
@@ -158,7 +149,7 @@ try {
 }
 assert(sourceDiffLines.length === 0, `Source feature diff must be empty: ${sourceDiffLines.join(', ')}`);
 
-// --- 5. No KIS provider module changed ---
+// --- 4. No KIS provider module changed ---
 let kisDiffLines = [];
 try {
   kisDiffLines = runGit(['diff', '--name-only', BASELINE, '--', ...KIS_PROVIDER_CANDIDATE_PATHS])
@@ -170,7 +161,7 @@ try {
 }
 assert(kisDiffLines.length === 0, `KIS provider diff must be empty: ${kisDiffLines.join(', ')}`);
 
-// --- 6. No UI / MK Agent / scaffold / Supabase / data / lockfile / env change ---
+// --- 5. No UI / MK Agent / scaffold / Supabase / data / lockfile / env change ---
 let forbiddenDiffOutput = '';
 try {
   forbiddenDiffOutput = runGit(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_PATHS]).trim();
@@ -179,7 +170,7 @@ try {
 }
 assert(forbiddenDiffOutput === '', `Forbidden diff is not empty: ${forbiddenDiffOutput}`);
 
-// --- 7. Result doc required sections/claims ---
+// --- 6. Result doc required content ---
 const resultDoc = exists(RESULT_DOC) ? read(RESULT_DOC) : '';
 for (const token of RESULT_DOC_REQUIRED_TOKENS) {
   assert(resultDoc.includes(token), `Result doc missing required token: ${token}`);
@@ -193,39 +184,34 @@ assert(
   'Result doc must never contain a literal currentPrice numeric value.',
 );
 
-// --- 8. Changelog entry present, prepended above the Phase 3GG-K-FAST entry ---
+// --- 7. Changelog entry present, prepended above the Phase 3GG-K-QA entry ---
 const changelog = read(CHANGELOG);
-const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-K-QA - 2026-07-11');
-assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-K-QA entry header');
+const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-K-QA-OWNER-RERUN - 2026-07-11');
+assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-K-QA-OWNER-RERUN entry header');
 const changelogSection =
   changelogHeaderIndex === -1 ? '' : changelog.slice(changelogHeaderIndex, changelog.indexOf('\n## ', changelogHeaderIndex + 1));
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelogSection.includes(token), `Changelog entry missing required token: ${token}`);
 }
-const kFastHeaderIndex = changelog.indexOf('## Phase 3GG-K-FAST - 2026-07-11');
+const kQaHeaderIndex = changelog.indexOf('## Phase 3GG-K-QA - 2026-07-11');
 assert(
-  kFastHeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < kFastHeaderIndex),
-  'Phase 3GG-K-QA changelog entry must be prepended above the Phase 3GG-K-FAST entry',
+  kQaHeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < kQaHeaderIndex),
+  'Phase 3GG-K-QA-OWNER-RERUN changelog entry must be prepended above the Phase 3GG-K-QA entry',
 );
 
-// --- 9. No unexpected working-tree changes outside this phase's scope ---
+// --- 8. No unexpected working-tree changes outside this phase's scope ---
 const ALLOWED_MODIFIED_FILES = new Set([
   ...CORE_DELIVERABLES,
   CHANGELOG,
   PACKAGE_JSON,
-  // Tiny checker-only compatibility fix, explicitly permitted by the K-QA work order: these
-  // siblings' working-tree-scope allowlists predate this authorized QA-only phase and would
-  // otherwise reject its new docs/checker files as "unexpected" when re-run as a regression
-  // check. Not a weakening of any safety assertion -- both siblings still assert zero diff on
-  // their own protected source files.
-  'scripts/check_phase_3gg_j_hf1_contract.mjs',
+  // Tiny checker-only compatibility fix, explicitly permitted by the K-QA-OWNER-RERUN work order:
+  // this sibling's working-tree-scope allowlist predates this authorized QA-only phase and would
+  // otherwise reject its new result-doc/checker files as "unexpected" when re-run as a regression
+  // check. Not a weakening of any safety assertion -- the sibling still asserts zero diff on its
+  // own protected source files.
+  'scripts/check_phase_3gg_k_qa_contract.mjs',
   'scripts/check_phase_3gg_k_fast_contract.mjs',
-  // Phase 3GG-K-QA-OWNER-RERUN tolerance: this checker is re-run as a regression check after
-  // K-QA-OWNER-RERUN, a later, explicitly authorized narrow QA rerun phase that adds its own
-  // result doc/checker/package.json/changelog deliverables and makes no source feature changes.
-  // Policed by check_phase_3gg_k_qa_owner_rerun_contract.mjs, not this one.
-  'docs/planning/phase_3gg_k_qa_owner_rerun_success_path_result_v0.1.md',
-  'scripts/check_phase_3gg_k_qa_owner_rerun_contract.mjs',
+  'scripts/check_phase_3gg_j_hf1_contract.mjs',
 ]);
 let statusLines = [];
 try {
@@ -243,8 +229,8 @@ for (const line of statusLines) {
   }
 }
 
-// --- 10. No deploy/push/activation marker in the new docs ---
-for (const file of [CHECKLIST_DOC, RESULT_DOC]) {
+// --- 9. No deploy/push/activation marker in the new docs ---
+for (const file of [RESULT_DOC]) {
   const src = exists(file) ? read(file) : '';
   assert(!/vercel deploy|git push/i.test(src), `${file} must not contain a deploy/push marker.`);
   assert(
@@ -253,13 +239,13 @@ for (const file of [CHECKLIST_DOC, RESULT_DOC]) {
   );
 }
 
-// --- 11. Final result ---
+// --- 10. Final result ---
 if (failures.length) {
-  console.error(`Phase 3GG-K-QA check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
+  console.error(`Phase 3GG-K-QA-OWNER-RERUN check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
   for (const failure of failures) {
     console.error(` - ${failure}`);
   }
   process.exit(1);
 } else {
-  console.log(`Phase 3GG-K-QA check PASS: ${assertions}/${assertions} assertions passed.`);
+  console.log(`Phase 3GG-K-QA-OWNER-RERUN check PASS: ${assertions}/${assertions} assertions passed.`);
 }

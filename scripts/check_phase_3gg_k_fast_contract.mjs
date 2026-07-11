@@ -320,6 +320,12 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_checklist_v0.1.md',
   'docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_result_v0.1.md',
   'scripts/check_phase_3gg_k_qa_contract.mjs',
+  // Phase 3GG-K-QA-OWNER-RERUN tolerance: this checker is re-run as a regression check after
+  // K-QA-OWNER-RERUN, a later, explicitly authorized narrow QA rerun phase that adds its own
+  // result doc/checker/package.json/changelog deliverables and makes no source feature changes.
+  // Policed by check_phase_3gg_k_qa_owner_rerun_contract.mjs, not this one.
+  'docs/planning/phase_3gg_k_qa_owner_rerun_success_path_result_v0.1.md',
+  'scripts/check_phase_3gg_k_qa_owner_rerun_contract.mjs',
 ]);
 let statusLines = [];
 try {
