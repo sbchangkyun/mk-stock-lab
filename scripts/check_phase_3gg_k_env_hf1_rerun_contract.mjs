@@ -1,8 +1,9 @@
-// Phase 3GG-K-ENV-HF1 contract checker.
-// Verifies the owner-gated KIS runtime readiness diagnostic (diagnostic script + this checker +
-// result doc + package.json/changelog wiring) is present, scoped exactly as authorized, and safe.
-// This phase makes no source feature change -- it only diagnoses why the owner-local KIS
-// current_price path reports SOURCE_UNAVAILABLE before the LLM bridge is invoked.
+// Phase 3GG-K-ENV-HF1-RERUN contract checker.
+// Verifies the rerun result doc + this checker + package.json/changelog wiring are present, that
+// the existing owner-gated KIS runtime readiness diagnostic script is reused unchanged and remains
+// safe, and that this diagnostic-rerun-only phase introduced no source feature diff, no KIS
+// provider diff, no forbidden diff, and no lockfile/.env diff, measured against the Phase
+// 3GG-K-ENV-HF1 baseline.
 
 import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -10,19 +11,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BASELINE = '0833007';
+const BASELINE = '1b5b1c2';
 
 const DIAGNOSTIC_SCRIPT = 'scripts/owner_diagnostic_phase_3gg_k_env_hf1_kis_runtime_readiness.mjs';
-const CHECKER_SELF = 'scripts/check_phase_3gg_k_env_hf1_contract.mjs';
-const RESULT_DOC = 'docs/planning/phase_3gg_k_env_hf1_owner_local_kis_runtime_correction_result_v0.1.md';
+const RESULT_DOC = 'docs/planning/phase_3gg_k_env_hf1_rerun_owner_local_kis_runtime_readiness_result_v0.1.md';
+const CHECKER_SELF = 'scripts/check_phase_3gg_k_env_hf1_rerun_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
-const CORE_DELIVERABLES = [DIAGNOSTIC_SCRIPT, CHECKER_SELF, RESULT_DOC];
+const CORE_DELIVERABLES = [RESULT_DOC, CHECKER_SELF];
 
 const OWNER_APPROVAL_FLAG = '--owner-approved-kis-runtime-diagnostic';
-const DEFAULT_BASE_URL = 'http://localhost:4321';
-const CURRENT_PRICE_ROUTE_PATH = '/api/chart-ai/local-only-kis-current-price.json?ownerLocalKisIntegration=1&symbol=005930';
 
 const KNOWN_UNTOUCHED_PATHS = [
   '.agents/',
@@ -33,6 +32,7 @@ const KNOWN_UNTOUCHED_PATHS = [
 ];
 
 const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
+  DIAGNOSTIC_SCRIPT,
   'src/lib/server/providers/kisClient.ts',
   'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
   'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
@@ -71,25 +71,23 @@ const REQUIRED_FORBIDDEN_DIFF_PATHS = [
 const RESULT_DOC_REQUIRED_TOKENS = [
   `Baseline: ${BASELINE}`,
   'Branch: rebuild/phase-1-ia-shell',
-  'SOURCE_UNAVAILABLE',
-  'Env presence boolean summary',
   'KIS_ENABLE_LIVE_QUOTES',
+  'Env presence boolean summary',
+  'Dev server reachability',
   'currentPricePresent',
   'volumePresent',
   'Classification',
-  'BLOCKED_ENV_MISSING',
-  'Owner-safe correction instructions',
+  'Owner-safe next action',
   'Not pushed',
   'Not deployed',
 ];
 
 const CHANGELOG_REQUIRED_TOKENS = [
-  '## Phase 3GG-K-ENV-HF1 - 2026-07-11',
-  '### Owner-local KIS Runtime Environment Correction',
-  'Phase 3GG-K-QA-OWNER-RERUN',
-  'SOURCE_UNAVAILABLE',
-  'KIS source layer',
-  'owner-gated safe diagnostic script',
+  '## Phase 3GG-K-ENV-HF1-RERUN - 2026-07-11',
+  '### Confirm Owner-local KIS Runtime Readiness After Env Correction',
+  'Builds on Phase 3GG-K-ENV-HF1',
+  're-runs the safe owner-local KIS runtime diagnostic',
+  'existing owner-gated diagnostic script',
   'Does not open or modify',
   'env presence booleans',
   'never secret values',
@@ -125,27 +123,24 @@ function runGit(args) {
 }
 
 // --- 1. Required files exist ---
-for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON]) {
+for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON, DIAGNOSTIC_SCRIPT]) {
   assert(exists(file), `Required file missing: ${file}`);
 }
 
 // --- 2. package.json script wiring ---
 const pkg = JSON.parse(read(PACKAGE_JSON));
 assert(
-  pkg.scripts && pkg.scripts['owner-diagnostic:phase-3gg-k-env-hf1'] === `node ${DIAGNOSTIC_SCRIPT}`,
-  'package.json is missing the exact "owner-diagnostic:phase-3gg-k-env-hf1" script entry',
+  pkg.scripts && pkg.scripts['check:phase-3gg-k-env-hf1-rerun'] === `node ${CHECKER_SELF}`,
+  'package.json is missing the exact "check:phase-3gg-k-env-hf1-rerun" script entry',
 );
 assert(
-  pkg.scripts && pkg.scripts['check:phase-3gg-k-env-hf1'] === `node ${CHECKER_SELF}`,
-  'package.json is missing the exact "check:phase-3gg-k-env-hf1" script entry',
+  pkg.scripts && pkg.scripts['owner-diagnostic:phase-3gg-k-env-hf1'] === `node ${DIAGNOSTIC_SCRIPT}`,
+  'package.json must still wire the existing owner-diagnostic:phase-3gg-k-env-hf1 script (reused, not reauthored)',
 );
 
-// --- 3. Diagnostic script source content checks ---
+// --- 3. Existing diagnostic script content checks (reused, must remain safe/unchanged) ---
 const diagSrc = exists(DIAGNOSTIC_SCRIPT) ? read(DIAGNOSTIC_SCRIPT) : '';
-
-assert(diagSrc.includes(OWNER_APPROVAL_FLAG), 'Diagnostic script must require the explicit owner-approval CLI flag.');
-assert(diagSrc.includes(CURRENT_PRICE_ROUTE_PATH), 'Diagnostic script must call the exact local current_price route path.');
-assert(diagSrc.includes(DEFAULT_BASE_URL), 'Diagnostic script must default to http://localhost:4321.');
+assert(diagSrc.includes(OWNER_APPROVAL_FLAG), 'Diagnostic script must still require the explicit owner-approval CLI flag.');
 assert(!/readFileSync\(.*\.env/.test(diagSrc), 'Diagnostic script must not read .env/.env.local directly.');
 assert(!/['"]\.env(\.local)?['"]/.test(diagSrc), 'Diagnostic script must not reference a .env/.env.local file path.');
 assert(
@@ -160,23 +155,8 @@ assert(
   !/\$\{volume\}|\$\{context\.volume\}/.test(diagSrc),
   'Diagnostic script must never interpolate the actual volume value into a printed message.',
 );
-assert(diagSrc.includes('current_price') || diagSrc.includes('CURRENT_PRICE'), 'Diagnostic script must mention current_price scope.');
-assert(diagSrc.includes('currentPricePresent'), 'Diagnostic script must report currentPricePresent instead of the numeric value.');
-assert(diagSrc.includes('volumePresent'), 'Diagnostic script must report volumePresent instead of the numeric value.');
 
-// --- 4. No KIS provider module changed ---
-let kisDiffLines = [];
-try {
-  kisDiffLines = runGit(['diff', '--name-only', BASELINE, '--', ...KIS_PROVIDER_CANDIDATE_PATHS])
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
-} catch {
-  kisDiffLines = ['<git diff failed>'];
-}
-assert(kisDiffLines.length === 0, `KIS provider diff must be empty: ${kisDiffLines.join(', ')}`);
-
-// --- 5. No source feature file changed ---
+// --- 4. No source feature file / existing diagnostic script changed ---
 let sourceDiffLines = [];
 try {
   sourceDiffLines = runGit(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES])
@@ -187,6 +167,18 @@ try {
   sourceDiffLines = ['<git diff failed>'];
 }
 assert(sourceDiffLines.length === 0, `Source feature diff must be empty: ${sourceDiffLines.join(', ')}`);
+
+// --- 5. No KIS provider module changed ---
+let kisDiffLines = [];
+try {
+  kisDiffLines = runGit(['diff', '--name-only', BASELINE, '--', ...KIS_PROVIDER_CANDIDATE_PATHS])
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+} catch {
+  kisDiffLines = ['<git diff failed>'];
+}
+assert(kisDiffLines.length === 0, `KIS provider diff must be empty: ${kisDiffLines.join(', ')}`);
 
 // --- 6. No UI / MK Agent / scaffold / Supabase / data / lockfile / env change ---
 let forbiddenDiffOutput = '';
@@ -215,19 +207,19 @@ assert(
   'Result doc must never contain a literal volume numeric value.',
 );
 
-// --- 8. Changelog entry present, prepended above the K-QA-OWNER-RERUN entry ---
+// --- 8. Changelog entry present, prepended above the K-ENV-HF1 entry ---
 const changelog = read(CHANGELOG);
-const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-K-ENV-HF1 - 2026-07-11');
-assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-K-ENV-HF1 entry header');
+const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-K-ENV-HF1-RERUN - 2026-07-11');
+assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-K-ENV-HF1-RERUN entry header');
 const changelogSection =
   changelogHeaderIndex === -1 ? '' : changelog.slice(changelogHeaderIndex, changelog.indexOf('\n## ', changelogHeaderIndex + 1));
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelogSection.includes(token), `Changelog entry missing required token: ${token}`);
 }
-const kQaOwnerRerunHeaderIndex = changelog.indexOf('## Phase 3GG-K-QA-OWNER-RERUN - 2026-07-11');
+const kEnvHf1HeaderIndex = changelog.indexOf('## Phase 3GG-K-ENV-HF1 - 2026-07-11');
 assert(
-  kQaOwnerRerunHeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < kQaOwnerRerunHeaderIndex),
-  'Phase 3GG-K-ENV-HF1 changelog entry must be prepended above the Phase 3GG-K-QA-OWNER-RERUN entry',
+  kEnvHf1HeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < kEnvHf1HeaderIndex),
+  'Phase 3GG-K-ENV-HF1-RERUN changelog entry must be prepended above the Phase 3GG-K-ENV-HF1 entry',
 );
 
 // --- 9. No unexpected working-tree changes outside this phase's scope ---
@@ -237,21 +229,16 @@ const ALLOWED_MODIFIED_FILES = new Set([
   ...CORE_DELIVERABLES,
   CHANGELOG,
   PACKAGE_JSON,
+  'scripts/check_phase_3gg_k_env_hf1_contract.mjs',
   'scripts/check_phase_3gg_k_qa_owner_rerun_contract.mjs',
   'scripts/check_phase_3gg_k_qa_contract.mjs',
   'scripts/check_phase_3gg_k_fast_contract.mjs',
   'scripts/check_phase_3gg_j_hf1_contract.mjs',
-  // Phase 3GG-K-ENV-HF1-RERUN tolerance: this checker is re-run as a regression check after
-  // K-ENV-HF1-RERUN, a later, explicitly authorized diagnostic-rerun-only phase that adds its own
-  // result doc/checker/package.json/changelog deliverables and reuses this phase's diagnostic
-  // script unchanged. Policed by check_phase_3gg_k_env_hf1_rerun_contract.mjs, not this one.
-  'docs/planning/phase_3gg_k_env_hf1_rerun_owner_local_kis_runtime_readiness_result_v0.1.md',
-  'scripts/check_phase_3gg_k_env_hf1_rerun_contract.mjs',
 ]);
-// Note: the sibling checkers above are themselves patched with small documented tolerance
-// blocks for this phase's new files (same convention used across every prior 3GG phase) --
-// none of them are protected/forbidden-diff paths, so this checker never asserts zero-diff on
-// any of them.
+// Note: the sibling checkers above are tolerated only if they were themselves patched with small
+// documented tolerance blocks for this phase's new files (same convention used across every prior
+// 3GG phase) -- none of them are protected/forbidden-diff paths, so this checker never asserts
+// zero-diff on any of them.
 let statusLines = [];
 try {
   statusLines = runGit(['status', '--porcelain']).split('\n').filter(Boolean);
@@ -280,11 +267,11 @@ for (const file of [RESULT_DOC]) {
 
 // --- 11. Final result ---
 if (failures.length) {
-  console.error(`Phase 3GG-K-ENV-HF1 check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
+  console.error(`Phase 3GG-K-ENV-HF1-RERUN check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
   for (const failure of failures) {
     console.error(` - ${failure}`);
   }
   process.exit(1);
 } else {
-  console.log(`Phase 3GG-K-ENV-HF1 check PASS: ${assertions}/${assertions} assertions passed.`);
+  console.log(`Phase 3GG-K-ENV-HF1-RERUN check PASS: ${assertions}/${assertions} assertions passed.`);
 }

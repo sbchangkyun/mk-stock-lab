@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF1-RERUN - 2026-07-11
+
+### Confirm Owner-local KIS Runtime Readiness After Env Correction
+
+- **Status**: Still blocked. Classification `STILL_BLOCKED_ENV_MISSING`. Zero defects found.
+- **Baseline**: `1b5b1c2` (Phase 3GG-K-ENV-HF1).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF1 — re-runs the safe owner-local KIS runtime diagnostic after the owner was asked to correct the local runtime environment. Reuses the existing owner-gated diagnostic script unchanged. Does not open or modify `.env`/`.env.local`. Records only env presence booleans/status fields, never secret values. No source feature changes. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation.
+- **Files changed**: `docs/planning/phase_3gg_k_env_hf1_rerun_owner_local_kis_runtime_readiness_result_v0.1.md`, `scripts/check_phase_3gg_k_env_hf1_rerun_contract.mjs` (new); `package.json`, `docs/planning/planning_changelog.md` (modified).
+- **Diagnostic method**: reused the existing owner-gated Node script (`owner-diagnostic:phase-3gg-k-env-hf1`), run against a real restarted `npm run dev` server; corroborated with the existing Phase 3GG-G-FAST owner smoke.
+- **Env presence boolean summary**: `KIS_APP_KEY`, `KIS_APP_SECRET`, `KIS_BASE_URL` all present; `KIS_ACCOUNT_NO` absent.
+- **KIS_ENABLE_LIVE_QUOTES exactly true**: false — unchanged from Phase 3GG-K-ENV-HF1.
+- **currentPricePresent / volumePresent**: both false.
+- **Not pushed**.
+- **Not deployed**.
+- **Next recommended phase**: repeat the focused owner-local environment correction (fully stop and restart `npm run dev` after re-confirming `KIS_ENABLE_LIVE_QUOTES=true`), then re-run this same rerun diagnostic; once `PASS_CURRENT_PRICE_READY` is confirmed, proceed to Phase 3GG-K-QA-OWNER-RERUN-2 — Verify Success-path Summary Quality After KIS Runtime Correction.
+
 ## Phase 3GG-K-ENV-HF1 - 2026-07-11
 
 ### Owner-local KIS Runtime Environment Correction
