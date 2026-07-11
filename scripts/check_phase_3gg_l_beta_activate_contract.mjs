@@ -251,6 +251,11 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // adds its own new result doc + checker; tolerate their presence in this checker's working-tree scan.
   'docs/planning/phase_3gg_l_beta_deploy_protected_preview_beta_deploy_result_v0.1.md',
   'scripts/check_phase_3gg_l_beta_deploy_contract.mjs',
+  // Phase 3GG-L-BETA-DEPLOY-RERUN checker-compatibility tolerance (documented): the rerun phase adds
+  // its own new result doc + checker (and patches sibling checkers); tolerate them here too.
+  'docs/planning/phase_3gg_l_beta_deploy_rerun_protected_preview_beta_deploy_result_v0.1.md',
+  'scripts/check_phase_3gg_l_beta_deploy_rerun_contract.mjs',
+  'scripts/check_phase_3gg_l_beta_deploy_contract.mjs',
 ]);
 let statusLines = [];
 try {
