@@ -144,6 +144,7 @@
     "check:phase-3gg-k-env-hf4": "node scripts/check_phase_3gg_k_env_hf4_contract.mjs",
     "owner-diagnostic:phase-3gg-k-env-hf5": "node scripts/owner_diagnostic_phase_3gg_k_env_hf5_local_provider_runtime_env_readiness.mjs",
     "check:phase-3gg-k-env-hf5": "node scripts/check_phase_3gg_k_env_hf5_contract.mjs",
+    "check:phase-3gg-k-qa-owner-rerun-2": "node scripts/check_phase_3gg_k_qa_owner_rerun_2_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

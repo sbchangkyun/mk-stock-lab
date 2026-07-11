@@ -349,6 +349,10 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // (kisClient.ts), so HF4's checker needed a small, documented patch to exclude kisClient.ts from
   // its zero-diff-vs-baseline assertion and to tolerate HF5's new files. Allow that sibling patch.
   'scripts/check_phase_3gg_k_env_hf4_contract.mjs',
+  // Phase 3GG-K-QA-OWNER-RERUN-2 sibling checker-compatibility tolerance (documented): that QA-only
+  // phase adds its own new result doc + checker; tolerate their presence in HF5's working-tree scan.
+  'docs/planning/phase_3gg_k_qa_owner_rerun_2_success_path_after_kis_runtime_correction_result_v0.1.md',
+  'scripts/check_phase_3gg_k_qa_owner_rerun_2_contract.mjs',
 ]);
 let statusLines = [];
 try {

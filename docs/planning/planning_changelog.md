@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-QA-OWNER-RERUN-2 - 2026-07-11
+
+### Verify Success-path Summary Quality After KIS Runtime Correction
+
+- **Status**: Blocked on the LLM layer only. Classification `BLOCKED_LLM_ENV_MISSING`. The KIS current_price side now works end-to-end through the H route (`sourceStatus=ok`), but the local LLM feature is disabled in the runtime (`sanitizedErrorCode=LLM_DISABLED`), so `summary.ok=false` and the panel rendered a sanitized Korean "unavailable" message.
+- **Baseline**: `b34d850` (Phase 3GG-K-ENV-HF5).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF5. HF5 fixed the local current_price route. Re-runs the previously blocked success-path QA. Verifies owner-local Chart AI KIS + LLM summary success path. Verifies click-only H route execution (0 requests before click, exactly 1 to `/api/chart-ai/local-only-kis-llm-summary.json?ownerLocalKisLlm=1&symbol=005930` after). Verifies summary.ok=true if passed; here summary.ok=false due to LLM_DISABLED. Would verify exactly 3 Korean labeled bullets (데이터 상태:, 해석 범위:, 유의사항:) — not reached because the LLM layer is disabled. Verifies no ASCII digits in summary text (the rendered blocked message has none). Verifies no forbidden investment-advice phrasing (none present). Verifies no credential/raw KIS/raw LLM/prompt/model/currentPrice numeric/volume numeric exposure. Verifies mobile 375px usability (panel visible, button usable, no horizontal overflow, no console error). No source feature changes. No KIS provider change. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Result**: Root cause (read-only diagnosis) is the same runtime-env mismatch class HF5 fixed for KIS — the LLM summary H route reads `CHART_AI_ENABLE_LOCAL_LLM`/`OPENAI_API_KEY`/model vars only from `process.env`, and the flag is not visible as `'true'` in the SSR runtime; the LLM bridge returns `LLM_DISABLED` fail-closed before any OpenAI call. No source fix applied (the H route/bridge are forbidden diffs this phase).
+- **Next recommended phase**: Phase 3GG-K-ENV-HF6 — LLM Runtime Readiness Rerun or Safe Diagnostics.
+
 ## Phase 3GG-K-ENV-HF5 - 2026-07-11
 
 ### Minimal Local Provider Binding Fix
