@@ -1,5 +1,29 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-QA - 2026-07-11
+
+### Owner-local Browser QA for Upgraded Chart AI Summary Quality
+
+- **Status**: Executed / Partial. Browser QA cases 1, 2, 3, 6, 7, 8 passed with real evidence; Case 4 (success path) blocked by environment; Case 5 (numeric-output rejection) not naturally triggered. Zero defects found.
+- **Baseline**: `37e892e` (Phase 3GG-K-FAST).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: builds on Phase 3GG-K-FAST — perform owner-local browser QA for the upgraded Chart AI KIS + LLM summary quality contract. QA-only phase, no source feature changes.
+- **Files changed**: `docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_checklist_v0.1.md`, `docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_result_v0.1.md`, `scripts/check_phase_3gg_k_qa_contract.mjs` (new); `package.json`, `docs/planning/planning_changelog.md` (modified).
+- **Browser QA method**: real running `npm run dev` server, driven via the Claude Browser MCP tool suite.
+- **Default hidden state checked**: `/chart-ai` — panel hidden/absent, no H route fetch, no console error (Case 1, PASS).
+- **Opt-in visible idle state checked**: `/chart-ai?ownerLocalKisLlm=1` — panel/button visible, Korean safety copy visible, no auto-fetch, no fetch before click (Case 2, PASS).
+- **Click H-route-execution checked**: exactly one GET request to the exact expected H route URL, no forbidden route call, no console error (Case 3, PASS).
+- **3-bullet summary quality checked if available**: not independently re-verified live (blocked by environment); covered deterministically by Phase 3GG-K-FAST's smoke script (23/23 PASS).
+- **ASCII digit absence checked**: not naturally triggered live; covered deterministically by Phase 3GG-K-FAST's smoke script.
+- **Forbidden investment phrase absence checked**: not naturally triggered live (Case 4/5 blocked by environment); no live LLM output was produced to inspect.
+- **Numeric-output protection recorded**: `FORBIDDEN_NUMERIC_OUTPUT_DETECTED` not naturally triggered in browser this session — KIS layer failed closed with `SOURCE_UNAVAILABLE` before the LLM bridge was ever invoked.
+- **Exposure checks**: no credential, no raw KIS payload, no raw LLM response, no prompt, no model name, no currentPrice numeric value exposed anywhere in DOM, network, or console (Cases 3, 6).
+- **Mobile checked**: 375×812 viewport — no horizontal overflow, panel/button usable, no console error (Case 7, PASS).
+- **No activation**: no public activation; no beta activation; no internal QA activation this phase.
+- **No KIS endpoint expansion**: `current_price` only, unchanged.
+- **Push/deploy status**: not pushed; not deployed.
+- **Next recommended phase**: owner-run success-path QA rerun (real KIS + `OPENAI_API_KEY` + `CHART_AI_LLM_MODEL`) before Phase 3GG-L-FAST — Owner-local LLM Quality Regression Harness.
+
 ## Phase 3GG-K-FAST - 2026-07-11
 
 ### Chart AI Summary Quality Upgrade (Implemented)

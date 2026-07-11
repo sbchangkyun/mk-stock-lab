@@ -313,6 +313,13 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // own bridge-no-diff assertion predates this authorized phase and would otherwise reject the
   // bridge edit this phase is required to make.
   'scripts/check_phase_3gg_j_hf1_contract.mjs',
+  // Phase 3GG-K-QA tolerance: this checker is re-run as a regression check after K-QA, a later,
+  // explicitly authorized QA-only phase that adds its own docs/checker/package.json/changelog
+  // deliverables and makes no source feature changes. Policed by
+  // check_phase_3gg_k_qa_contract.mjs, not this one.
+  'docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3gg_k_qa_owner_local_summary_quality_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3gg_k_qa_contract.mjs',
 ]);
 let statusLines = [];
 try {
