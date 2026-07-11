@@ -361,6 +361,10 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // as zero-diff; that sibling checker needed a small, documented patch to exclude the route and
   // tolerate HF6's new files. Allow that sibling patch here too.
   'scripts/check_phase_3gg_k_qa_owner_rerun_2_contract.mjs',
+  // Phase 3GG-K-QA-OWNER-RERUN-3 sibling checker-compatibility tolerance (documented): that QA-only
+  // phase adds its own new result doc + checker; tolerate their presence in HF6's working-tree scan.
+  'docs/planning/phase_3gg_k_qa_owner_rerun_3_success_path_after_llm_runtime_correction_result_v0.1.md',
+  'scripts/check_phase_3gg_k_qa_owner_rerun_3_contract.mjs',
 ]);
 let statusLines = [];
 try {

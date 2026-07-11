@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-QA-OWNER-RERUN-3 - 2026-07-11
+
+### Verify Success-path Summary Quality After LLM Runtime Correction
+
+- **Status**: Passed. Classification `PASS_SUCCESS_PATH_VERIFIED`. The owner-local Chart AI KIS + LLM summary success path renders end-to-end in the browser: one click → exactly one H route request → `summary.ok=true`, `sourceStatus=ok`, `llmStatus=ok`, and a rendered sanitized 3-bullet Korean summary with all required labels, no ASCII digits, no forbidden investment phrasing, and no exposure.
+- **Baseline**: `4a37f05` (Phase 3GG-K-ENV-HF6).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF6. HF6 fixed the LLM runtime env readiness issue. Re-runs the owner-local browser success-path QA. Verifies KIS + LLM summary success path. Verifies click-only H route execution (0 requests before click, exactly 1 to `/api/chart-ai/local-only-kis-llm-summary.json?ownerLocalKisLlm=1&symbol=005930` after). Verifies summary.ok=true. Verifies sourceStatus=ok and llmStatus=ok. Verifies exactly 3 Korean labeled bullets (데이터 상태:, 해석 범위:, 유의사항:). Verifies no ASCII digits in summary text. Verifies no forbidden investment-advice phrasing. Verifies no credential/OpenAI key/raw KIS/raw OpenAI/prompt/model/currentPrice numeric/volume numeric exposure. Verifies mobile 375px usability. No source feature changes. No KIS provider change. No UI change. No H route change. No LLM bridge change. No model policy change. No prompt rewrite. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Result**: Full browser QA passed on both desktop (1280×720) and mobile (375×812): default hidden state, opt-in idle state (no auto-fetch), click-only success path, rendered 3-bullet summary quality, zero exposure, no forbidden route, no console errors, no horizontal overflow. Preflight HF5/G-FAST/HF6 all PASS.
+- **Next recommended phase**: If passed: Phase 3GG-L-FAST — Owner-local LLM Quality Regression Harness. If blocked: next phase according to classification.
+
 ## Phase 3GG-K-ENV-HF6 - 2026-07-11
 
 ### LLM Runtime Readiness Rerun or Safe Diagnostics
