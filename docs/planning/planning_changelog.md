@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF2 - 2026-07-11
+
+### Owner-delegated KIS_ENABLE_LIVE_QUOTES Env Correction and Readiness Verification
+
+- **Status**: Still blocked. Classification `STILL_BLOCKED_PROVIDER_NETWORK` — a change from every prior phase in this family, which all classified as `STILL_BLOCKED_ENV_MISSING`.
+- **Baseline**: `f6f5dd7` (Phase 3GG-K-ENV-HF1-RERUN-3).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF1-RERUN-3. Converts repeated manual RERUN failure into an owner-delegated targeted env correction — this session was explicitly authorized to correct only the non-secret runtime flag `KIS_ENABLE_LIVE_QUOTES=true`, and no other env key, restart the dev server, and verify readiness. Authorized edit limited to `KIS_ENABLE_LIVE_QUOTES=true only` — no other env key was modified. Does not print .env/.env.local contents at any point. Does not stage or commit .env/.env.local. Reuses the existing owner-gated diagnostic script unchanged. No source feature changes. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS provider change. No KIS endpoint expansion. current_price only. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Files changed**: `docs/planning/phase_3gg_k_env_hf2_owner_delegated_kis_live_quotes_env_correction_result_v0.1.md`, `scripts/check_phase_3gg_k_env_hf2_contract.mjs` (new); `package.json`, `docs/planning/planning_changelog.md` (modified). `.env` was corrected locally (already had the exact correct line — no change was necessary) and remains untracked/uncommitted.
+- **Root-cause finding**: the existing owner-gated diagnostic script classifies `KIS_ENABLE_LIVE_QUOTES` presence from its own invoking shell's `process.env`, never from `.env`, which is why every prior HF1/RERUN/RERUN-2/RERUN-3 run reported `STILL_BLOCKED_ENV_MISSING` even once `.env` was already correct. An ephemeral, non-persisted, non-printed single-invocation shell override was used to isolate the true live-server signal, corroborated independently by the existing Phase 3GG-G-FAST owner smoke.
+- **Dev server reachability**: true. **Dev server listening on 4321**: true. **Dev server freshness after env correction**: true.
+- **Env presence boolean summary**: `KIS_APP_KEY`, `KIS_APP_SECRET`, `KIS_BASE_URL` all present; `KIS_ACCOUNT_NO` absent; `KIS_ENABLE_LIVE_QUOTES` exactly true in `.env`: true.
+- **currentPricePresent / volumePresent**: both false.
+- **Not pushed**.
+- **Not deployed**.
+- **Next recommended phase**: Phase 3GG-K-ENV-HF3 — Owner-local KIS Provider Network/Base URL Diagnostic, to determine whether `KIS_BASE_URL` connectivity, DNS/TLS reachability, or KIS API-side network availability is the specific cause of the `PROVIDER_UNAVAILABLE` fail-closed result now that env presence and the live/dev feature-flag gate are both confirmed correct.
+
 ## Phase 3GG-K-ENV-HF1-RERUN-3 - 2026-07-11
 
 ### Confirm Owner-local KIS Runtime Readiness After Verified Port 4321 Restart
