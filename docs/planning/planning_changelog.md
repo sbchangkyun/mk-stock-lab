@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-K-ENV-HF4 - 2026-07-11
+
+### Owner-local KIS Provider Auth/Token Diagnostic
+
+- **Status**: Still blocked (local route only). Classification `TOKEN_AND_DIRECT_QUOTE_OK_LOCAL_ROUTE_UNAVAILABLE`.
+- **Baseline**: `1ba4652` (Phase 3GG-K-ENV-HF3).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-ENV-HF3. Diagnoses the KIS OAuth token / current_price quote authorization layer after base network reachability was confirmed OK. Adds an owner-gated auth/token diagnostic script. Uses KIS OAuth token endpoint only for auth diagnosis. Uses current_price quote endpoint only for quote diagnosis. Does not print KIS_BASE_URL raw value. Does not print credentials. Does not print tokens. Does not print Authorization headers. Does not print raw KIS request or response body. Does not print currentPrice/volume numeric values. Does not print .env/.env.local contents. Does not modify .env/.env.local. Does not stage or commit .env/.env.local. No source feature changes. No UI change. No H route change. No LLM bridge change. No model policy change. No KIS provider source change. No KIS endpoint expansion beyond OAuth token endpoint and current_price quote endpoint. current_price only for market data. No public/beta/internal QA activation. Not pushed. Not deployed.
+- **Result**: Direct KIS OAuth token exchange and direct current_price quote call both succeeded with real owner-supplied credentials (token obtained, quote returned `rt_cd == '0'` with price and volume present), but the existing local current_price route still returned `sourceStatus=unavailable` / `sanitizedErrorCode=PROVIDER_UNAVAILABLE`. This isolates the blocker to the local provider binding/kisClient/local route handling layer, not KIS external auth or network.
+- **Next recommended phase**: Phase 3GG-K-ENV-HF5 — Minimal Local Provider Binding Fix (since direct token + direct quote succeeded but the local route remains unavailable). If a future rerun instead shows PASS_CURRENT_PRICE_READY, proceed to Phase 3GG-K-QA-OWNER-RERUN-2 — Verify Success-path Summary Quality After KIS Runtime Correction. If a future rerun shows token/auth blocked, correct the owner-local KIS credential/app authorization outside chat, then rerun HF4. If quote request-shape/permission blocked, Phase 3GG-K-ENV-HF5 — Owner-local KIS Current Price Request-shape Diagnostic or Minimal Provider Fix Plan.
+
 ## Phase 3GG-K-ENV-HF3 - 2026-07-11
 
 ### Owner-local KIS Provider Network/Base URL Diagnostic

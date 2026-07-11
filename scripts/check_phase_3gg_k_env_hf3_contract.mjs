@@ -284,6 +284,12 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // work order): HF2's checker's working-tree-purity scan required a small, documented
   // ALLOWED_MODIFIED_FILES patch to tolerate HF3's new files. Allow that sibling patch here too.
   'scripts/check_phase_3gg_k_env_hf2_contract.mjs',
+  // Phase 3GG-K-ENV-HF4 sibling checker-compatibility tolerance (documented per that phase's
+  // work order): HF4 added its own new deliverables (auth/token diagnostic script, checker,
+  // result doc); tolerate their presence in HF3's working-tree-purity scan.
+  'docs/planning/phase_3gg_k_env_hf4_kis_provider_auth_token_diagnostic_result_v0.1.md',
+  'scripts/owner_diagnostic_phase_3gg_k_env_hf4_kis_provider_auth_token_readiness.mjs',
+  'scripts/check_phase_3gg_k_env_hf4_contract.mjs',
 ]);
 let statusLines = [];
 try {
