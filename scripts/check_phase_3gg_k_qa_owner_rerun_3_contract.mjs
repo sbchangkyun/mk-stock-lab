@@ -248,6 +248,13 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // needed a small, documented ALLOWED_MODIFIED_FILES patch to tolerate this phase's 2 new QA files.
   // Allow that sibling patch here too.
   'scripts/check_phase_3gg_k_env_hf6_contract.mjs',
+  // Phase 3GG-L-FAST sibling checker-compatibility tolerance (documented): that phase adds its own
+  // regression harness, checker, result docs, and package/changelog wiring; tolerate their presence
+  // in RERUN-3's working-tree-purity scan.
+  'scripts/owner_regression_phase_3gg_l_fast_llm_quality_harness.mjs',
+  'scripts/check_phase_3gg_l_fast_contract.mjs',
+  'docs/planning/phase_3gg_l_fast_owner_local_llm_quality_regression_harness_result_v0.1.md',
+  'docs/planning/phase_3gg_l_fast_vercel_preview_beta_deploy_result_v0.1.md',
 ]);
 let statusLines = [];
 try {

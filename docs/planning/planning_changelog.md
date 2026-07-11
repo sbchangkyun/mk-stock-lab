@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-L-FAST - 2026-07-11
+
+### Owner-local LLM Quality Regression Harness and Protected Preview Deploy Prep
+
+- **Status**: Lane A passed. Classification `PASS_LLM_QUALITY_REGRESSION`. Lane B (protected Vercel Preview beta deploy) recorded separately.
+- **Baseline**: `7669123` (Phase 3GG-K-QA-OWNER-RERUN-3).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-K-QA-OWNER-RERUN-3. The browser success path is already verified. Adds a repeatable owner-local LLM quality regression harness (probes only the H route, `--repeat` default 1, max 3). Verifies summary.ok=true. Verifies sourceStatus=ok and llmStatus=ok. Verifies exactly 3 Korean labeled bullets (데이터 상태:, 해석 범위:, 유의사항:). Verifies no ASCII digits in summary text. Verifies no forbidden investment-advice phrasing. Verifies no credential/OpenAI key/raw KIS/raw OpenAI/prompt/model/currentPrice numeric/volume numeric exposure. No source feature changes. No KIS provider change. No UI change. No H route change. No LLM bridge change. No model policy change. No prompt rewrite. No KIS endpoint expansion. current_price only. No production deployment. No push. Protected Vercel Preview beta deploy is the next lane after local validation.
+- **Result**: Harness PASS on first run (runCount=1, passCount=1, failCount=0, all quality fields green, exposureDetected=false). Preflight HF5/G-FAST/HF6 all PASS.
+- **Next lane**: Protected Vercel Preview beta deploy (Preview only; production prohibited).
+
 ## Phase 3GG-K-QA-OWNER-RERUN-3 - 2026-07-11
 
 ### Verify Success-path Summary Quality After LLM Runtime Correction
