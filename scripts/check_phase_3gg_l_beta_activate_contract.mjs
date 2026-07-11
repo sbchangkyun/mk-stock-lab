@@ -247,6 +247,10 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // guarded chart-ai.astro / the LLM summary route as zero-diff; that sibling checker needed a small,
   // documented patch to exclude those two files (authorized here) and tolerate this phase's new files.
   'scripts/check_phase_3gg_l_fast_contract.mjs',
+  // Phase 3GG-L-BETA-DEPLOY checker-compatibility tolerance (documented): that deploy-execution phase
+  // adds its own new result doc + checker; tolerate their presence in this checker's working-tree scan.
+  'docs/planning/phase_3gg_l_beta_deploy_protected_preview_beta_deploy_result_v0.1.md',
+  'scripts/check_phase_3gg_l_beta_deploy_contract.mjs',
 ]);
 let statusLines = [];
 try {

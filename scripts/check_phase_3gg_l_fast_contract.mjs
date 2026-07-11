@@ -310,6 +310,11 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'src/lib/server/chart-ai/protected-preview-beta-guard.mjs',
   'scripts/check_phase_3gg_l_beta_activate_contract.mjs',
   'docs/planning/phase_3gg_l_beta_activate_protected_preview_chart_ai_beta_result_v0.1.md',
+  // Phase 3GG-L-BETA-DEPLOY checker-compatibility tolerance (documented): the deploy-execution phase
+  // adds its own new result doc + checker (and patches the BETA-ACTIVATE sibling checker); tolerate
+  // their presence in L-FAST's working-tree scan.
+  'docs/planning/phase_3gg_l_beta_deploy_protected_preview_beta_deploy_result_v0.1.md',
+  'scripts/check_phase_3gg_l_beta_deploy_contract.mjs',
 ]);
 let statusLines = [];
 try {

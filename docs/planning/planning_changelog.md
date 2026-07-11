@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-L-BETA-DEPLOY - 2026-07-11
+
+### Protected Preview Beta Deploy Execution
+
+- **Status**: Blocked on owner-gated Vercel project link. Classification `BLOCKED_VERCEL_PROJECT_NOT_LINKED`. The app is deploy-ready (local regression + npm build pass) but the repo is not linked to a Vercel project, so the protected Preview deploy could not be executed.
+- **Baseline**: `fecf44e` (Phase 3GG-L-BETA-ACTIVATE).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-L-BETA-ACTIVATE. Source activation was already ready. Executes protected Vercel Preview deploy only. Verifies Deployment Protection before live beta testing. Verifies Preview env name presence as booleans only. Runs local regression before deploy. Runs `vercel build` for Preview only. Runs `vercel deploy --prebuilt --yes` for Preview only if allowed. Does not deploy production. Does not promote to production. Does not push. Does not print Vercel env values. Does not print secrets. Does not print model names. Does not print prompt text. Does not print raw OpenAI/KIS payloads. Does not print currentPrice/volume numeric values. Does not commit `.vercel`. current_price only. H route only. No KIS endpoint expansion.
+- **Result**: Vercel CLI present (54.9.1) and authenticated, but the repo is not linked (no `.vercel/project.json`); `vercel link` requires interactive owner project/scope selection (hard blocker #2), cascading to Deployment Protection (#3) and Preview env checks (#4). Local regression preflight all PASS and `npm run build` PASS (deploy-ready). No deploy performed; not pushed; `.vercel` not committed.
+- **Next recommended phase**: Re-run Phase 3GG-L-BETA-DEPLOY after the owner completes `vercel link` + Deployment Protection + Preview env setup (incl. `KIS_ENABLE_PREVIEW_LIVE_QUOTES=true` and `CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA=true`). Production remains prohibited.
+
 ## Phase 3GG-L-BETA-ACTIVATE - 2026-07-11
 
 ### Protected Preview-only Chart AI Beta Activation
