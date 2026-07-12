@@ -14,7 +14,7 @@ degraded core.
 
 - **Baseline**: `2e7dc90` (Phase 3GG-S-FAST). **Branch**: `rebuild/phase-1-ia-shell`. **HEAD before**: `2e7dc90`.
 - **Method version**: `market-intel-v1-deterministic`.
-- **Source commit**: _(filled at commit: `Phase 3GG-T-FAST: add Market and Cross-Asset Intelligence`)_.
+- **Source commit**: `35037e9` (`Phase 3GG-T-FAST: add Market and Cross-Asset Intelligence`).
 - **Deploy-record commit**: the commit adding the Deploy & Production QA findings
   (message `Phase 3GG-T-FAST: record Market Intelligence production deploy`).
 
@@ -123,16 +123,32 @@ recommendation wording.
 
 _Deploy method_: `vercel deploy --prod --yes` (Vercel cloud build).
 
-- **Deploy outcome**: _(filled after deploy)_.
+- **Deploy outcome**: **PASS.** Deployment `dpl_3TiPAmkt95QAzjP9FzeqqoQFxtsK`
+  (`mkstocklab-qbuooda5k-*`), `readyState: READY`, `target: production`, aliased to
+  `https://mkstocklab.vercel.app`.
 - **Production URL**: https://mkstocklab.vercel.app/chart-ai
-- **005930 (삼성전자, KR)**: _(filled after QA)_.
-- **069500 (KODEX 200, KR self-benchmark)**: _(filled after QA)_.
-- **AAPL (US, QQQ + tech sector)**: _(filled after QA)_.
-- **SPY (US self-benchmark)**: _(filled after QA)_.
-- **Honest unavailable (rates / breadth)**: _(filled after QA)_.
-- **Click-only / stale-reset**: _(filled after QA)_.
-- **Mobile QA (375px)**: _(filled after QA)_.
-- **Console / network / exposure**: _(filled after QA)_.
+- **005930 (삼성전자, KR)**: **PASS.** Benchmark **KODEX 200** (correct KOSPI mapping); regime **위험회피**
+  (completeness 90) with real factor chips; relative strength 1m −2.06%p / 3m −0.72%p / 6m **+19.92%p**;
+  real **USD/KRW 1504.92원** (−1.01%, ECB delayed); commodity gold −3.52% / oil −17.21%; broad + single
+  volatility (매우 높음); one `market-intelligence.json` 200 call.
+- **069500 (KODEX 200, KR self-benchmark)**: **PASS.** Selected instrument *is* the KOSPI benchmark, so it
+  cross-checks to **KODEX 코스닥150** (opposite broad benchmark); relative strength renders (뚜렷한 상대
+  강세). No fabricated self-comparison.
+- **AAPL (US, QQQ + tech sector)**: **PASS.** Benchmark **Invesco QQQ** (NASDAQ100); **sector proxy
+  comparison present** (기술 섹터 → 업종 프록시 대비 뚜렷한 상대 약세); regime 중립 (completeness 90);
+  relative strength 1m +5.91%p / 3m +2.13%p / 6m +4.81%p.
+- **Honest unavailable (rates / breadth / KR sector)**: **PASS.** Availability panel shows 금리 미제공,
+  시장 폭(breadth) 미제공 on every symbol, and 업종 비교 미제공 for KR — stated plainly, never fabricated
+  or zero-filled.
+- **Click-only / stale-reset**: **PASS.** **0** `market-intelligence` calls before clicking 시장
+  인텔리전스 분석; exactly **1** call per symbol (no storm). Changing the selected symbol reset the section
+  to `idle`, hid prior results, and re-pointed the head (삼성전자 → Apple) — no stale data shown.
+- **Mobile QA (375px)**: **PASS.** `scrollWidth === innerWidth === 375` (no page-level horizontal
+  overflow); the section stays within the viewport; context cards fall to a 2-column grid.
+- **Console / network / exposure**: **PASS.** Zero console errors across all runs. Only the expected
+  chart-ai routes were hit (`instruments/search`, `market/ohlcv`, `market-intelligence.json`); **no**
+  order/account/balance/funds/trading endpoint; no credentials/tokens/model names/raw payloads on the
+  client.
 
 ## No-account/trading boundary
 
