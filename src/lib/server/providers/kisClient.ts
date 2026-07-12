@@ -565,13 +565,16 @@ const isValidUsExchangeCode = (code: string) => US_EXCHANGE_CODES.includes(code)
  * permission; when it does not, the request fails closed with a sanitized error.
  */
 export const getKisOverseasDailyOhlcSeries = async (
-  input: { symbol: string; exchangeCode: string },
+  input: { symbol: string; exchangeCode: string; bymd?: string },
   options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
 ): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
   assertServerRuntime(moduleName);
 
   const symbol = normalizeUsSymbol(input.symbol);
   const exchangeCode = (input.exchangeCode ?? '').trim().toUpperCase();
+  // Phase 3GG-Q-FAST: optional BYMD (base date, YYYYMMDD) lets the long-history pager walk backward
+  // one ~100-row page at a time. Empty = most recent page. Still read-only market data.
+  const bymd = /^\d{8}$/.test((input.bymd ?? '').trim()) ? (input.bymd ?? '').trim() : '';
   if (!isValidUsSymbol(symbol) || !isValidUsExchangeCode(exchangeCode)) {
     return createProviderError('VALIDATION_FAILED', 'US OHLC request requires a valid ticker and exchange code.', {
       provider,
@@ -595,7 +598,7 @@ export const getKisOverseasDailyOhlcSeries = async (
     EXCD: exchangeCode,
     SYMB: symbol,
     GUBN: '0',
-    BYMD: '',
+    BYMD: bymd,
     MODP: '1',
   });
 

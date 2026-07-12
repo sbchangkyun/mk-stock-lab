@@ -77,7 +77,8 @@ const PAGE_REQUIRED_TOKENS = [
   'productionRealChartEnabled',
   'chartAiRealChartState',
   '실시간 지연 시세',
-  '실제 유사 패턴 분석은 다음 단계에서 연결됩니다.',
+  // Phase 3GG-Q-FAST replaced the similarity preparing copy with the real analysis UI; the extended
+  // MK AI preparing copy remains.
   'OHLCV와 유사 패턴 결과를 결합한 확장 분석은 다음 단계에서 제공됩니다.',
   'data-chart-ai-production-default',
   'chartAiProdBeta=1',
@@ -225,9 +226,10 @@ const isTolerated = (f) =>
   KNOWN_UNTOUCHED_PREFIXES.some((p) => f === p || f.startsWith(p)) ||
   f === '.gitignore' ||
   // This phase's own new source areas (git may report untracked directories collapsed with a trailing slash).
+  // Also tolerate later Phase 3GG-Q-FAST chart-ai/similarity artifacts (documented sibling tolerance).
   /^src\/data\/chart-ai\//.test(f) ||
-  /^src\/lib\/server\/chart-ai\/universal/.test(f) ||
-  /^src\/pages\/api\/chart-ai\/(instruments|market)\//.test(f) ||
+  /^src\/lib\/server\/chart-ai\/(universal|similarity-engine)/.test(f) ||
+  /^src\/pages\/api\/chart-ai\/(instruments\/|market\/|similarity\.json)/.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 

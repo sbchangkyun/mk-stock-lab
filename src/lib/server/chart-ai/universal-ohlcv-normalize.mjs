@@ -120,3 +120,39 @@ export const normalizeOhlcvRows = (rawRows, range) => {
 
 /** A renderable series needs at least two clean candles. */
 export const isRenderableCandleSeries = (candles) => Array.isArray(candles) && candles.length >= 2;
+
+/**
+ * Phase 3GG-Q-FAST: normalize raw daily rows into a clean candle array WITHOUT the range window cap.
+ * Used by the long-history pager (similarity needs multi-year depth). Same validation/dedupe/sort as
+ * normalizeOhlcvRows: drop bad timestamps/prices, reject malformed candles, dedupe by timestamp
+ * (last wins), sort ascending. No fabricated candles.
+ */
+export const normalizeOhlcvRowsFull = (rawRows) => {
+  const rows = Array.isArray(rawRows) ? rawRows : [];
+  let rejectedCount = 0;
+  const byTimestamp = new Map();
+  for (const row of rows) {
+    const timestamp = normalizeTimestamp(row?.timestamp ?? row?.dateTime ?? row?.date);
+    if (!timestamp) {
+      rejectedCount += 1;
+      continue;
+    }
+    const candle = {
+      timestamp,
+      open: toFiniteNumber(row?.open),
+      high: toFiniteNumber(row?.high),
+      low: toFiniteNumber(row?.low),
+      close: toFiniteNumber(row?.close),
+      volume: toFiniteNumber(row?.volume) ?? 0,
+    };
+    if (!isValidCandle(candle)) {
+      rejectedCount += 1;
+      continue;
+    }
+    byTimestamp.set(candle.timestamp, candle);
+  }
+  const candles = [...byTimestamp.values()].sort((a, b) =>
+    a.timestamp < b.timestamp ? -1 : a.timestamp > b.timestamp ? 1 : 0,
+  );
+  return { candles, candleCount: candles.length, rejectedCount };
+};

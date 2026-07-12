@@ -74,10 +74,10 @@ const isOpFastArtifact = (f) =>
   f === 'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts' ||
   f === 'src/lib/market-data/instrument.ts' ||
   /^src\/data\/chart-ai\//.test(f) ||
-  /^src\/lib\/server\/chart-ai\/universal/.test(f) ||
-  /^src\/pages\/api\/chart-ai\/(instruments|market)\//.test(f) ||
-  /^scripts\/(smoke|check|owner_smoke)_phase_3gg_op_fast_/.test(f) ||
-  /^docs\/planning\/phase_3gg_op_fast_/.test(f);
+  /^src\/lib\/server\/chart-ai\/(universal|similarity-engine)/.test(f) ||
+  /^src\/pages\/api\/chart-ai\/(instruments\/|market\/|similarity\.json)/.test(f) ||
+  /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
+  /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 
 const ALLOWED_REPORT_FIELDS = [
   'runCount',

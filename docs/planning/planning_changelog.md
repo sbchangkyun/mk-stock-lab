@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-Q-FAST - 2026-07-12
+
+### Real Similar Pattern Analysis on Selected Instrument OHLCV
+
+- **Builds on Phase 3GG-OP-FAST**, using the normalized selected-instrument state and the real KR/US
+  OHLCV interface it introduced.
+- **Uses normalized selected instrument and real KR/US OHLCV** — no synthetic, sample, mocked, or fixed
+  historical results in Production.
+- Adds a deterministic **sliding-window similarity** engine (native JS port of the Phase 3EX engine:
+  correlation 0.45 / RMSE 0.35 / direction 0.20, clamped 0..100) with a new Top-K minimum-gap
+  de-duplication so adjacent windows don't fill the Top 5.
+- Adds real **Top 5** historical matches with real dates, similarity scores, and forward outcomes.
+- Adds a real base-100 **normalized overlay** (current window + top historical windows).
+- Adds **forward historical outcomes** — 5-day, 20-day, and 60-day returns where data exists, plus max
+  drawdown and max rise — computed only from real OHLCV, strictly after each candidate window (no
+  look-ahead leakage).
+- Adds a paginated **long-history** OHLCV mode (~3 years of daily bars) through the provider-neutral
+  abstraction (real KIS domestic date-window paging + KIS overseas BYMD paging), cached; no new raw
+  provider endpoint is exposed.
+- Adds **honest insufficient-history / no-candidate / provider-unavailable / unsupported** states.
+- **Removes the remaining Production similarity preparing state** and replaces it with real analysis UI
+  (controls, current-pattern summary, Top 5 cards, normalized overlay, aggregate outcomes).
+- **No mock/synthetic/fixed results.** No sample OHLCV fallback. **No LLM used for similarity scoring**
+  (no OpenAI call from the similarity route). No trading/account endpoint. No investment recommendation,
+  target price, or guaranteed forecast — only descriptive historical statistics with an honest
+  disclaimer.
+- OHLCV chart route and the new analytical similarity route may return numeric data; the existing
+  three-line LLM summary contract is unchanged.
+- Production deploy and browser QA included (005930, 069500, AAPL, SPY).
+- **Next: Phase 3GG-R-FAST** — Real MK AI Analysis Using Selected Instrument, OHLCV and Similarity
+  Results.
+
 ## Phase 3GG-OP-FAST - 2026-07-12
 
 ### Universal KR/US Stock·ETF Search, Real OHLCV Chart and Production Verification

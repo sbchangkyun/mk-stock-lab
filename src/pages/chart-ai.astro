@@ -939,10 +939,32 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       </div>
 
       {isVercelProductionRuntime ? (
-        <div class="chart-analysis-preparing-state" role="status">
-          <p class="chart-analysis-trigger-kicker">유사 패턴 분석</p>
-          <strong>유사 패턴 분석</strong>
-          <p>실제 유사 패턴 분석은 다음 단계에서 연결됩니다.</p>
+        <div class="chart-similarity-real" id="chartAiSimilarityReal" data-state="idle">
+          <div class="chart-similarity-controls">
+            <div class="chart-similarity-window-select" role="group" aria-label="분석 구간 길이 선택">
+              <span class="chart-similarity-window-label">분석 구간</span>
+              <button type="button" class="chart-similarity-window-btn active" data-sim-window="20" aria-pressed="true">최근 20거래일</button>
+              <button type="button" class="chart-similarity-window-btn" data-sim-window="60" aria-pressed="false">최근 60거래일</button>
+            </div>
+            <button type="button" id="chartAiSimilarityStartBtn" class="chart-similarity-start-btn">유사 패턴 분석 시작</button>
+          </div>
+          <p class="chart-similarity-disclaimer">과거 유사 구간의 이후 움직임을 참고용으로 비교합니다. 미래 성과를 예측하거나 보장하지 않습니다.</p>
+
+          <p class="chart-similarity-status" id="chartAiSimilarityStatus" role="status" aria-live="polite" hidden></p>
+
+          <div class="chart-similarity-results" id="chartAiSimilarityResults" hidden>
+            <div class="chart-similarity-current" id="chartAiSimilarityCurrent" aria-live="polite"></div>
+
+            <figure class="chart-similarity-overlay-figure">
+              <figcaption class="chart-similarity-overlay-caption">정규화 오버레이 · 시작값 100 기준 비교</figcaption>
+              <svg class="chart-similarity-overlay-svg" id="chartAiSimilarityOverlaySvg" viewBox="0 0 720 260" preserveAspectRatio="none" role="img" aria-label="현재 구간과 상위 유사 과거 구간의 정규화 가격 경로 비교"></svg>
+              <div class="chart-similarity-legend" id="chartAiSimilarityLegend" aria-hidden="false"></div>
+            </figure>
+
+            <div class="chart-similarity-matches" id="chartAiSimilarityMatches" role="list" aria-label="상위 유사 과거 구간"></div>
+
+            <div class="chart-similarity-aggregate" id="chartAiSimilarityAggregate" aria-live="polite"></div>
+          </div>
         </div>
       ) : (
         <Fragment>
@@ -1310,6 +1332,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       let resetQuotePreview: () => void = () => {};
       let resetOhlcPreview: () => void = () => {};
       let resetAnalysisTriggers: () => void = () => {};
+      // Phase 3GG-Q-FAST: reassigned by the production similarity block; stub keeps updateSelection safe.
+      let resetSelectedSimilarity: () => void = () => {};
       let ownerLocalConnected = false;
       let selectedRecord: ClientSafeSymbolSearchRecord | null = records.find((r) => r.symbol === selectedSymbol) ?? null;
       const mkAiBulletsEl = document.getElementById('chartAiMkAiBullets');
@@ -1979,6 +2003,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         closeDropdown();
         try { resetOhlcPreview(); } catch {}
         try { resetSelectedSummary(); } catch {}
+        try { resetSelectedSimilarity(); } catch {}
         if (productionRealChartEnabled) {
           updateProductionUrlState();
           loadRealChart();
@@ -2156,6 +2181,254 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           updateSelection(DEFAULT_INSTRUMENT);
         }
       };
+
+      // ===== Phase 3GG-Q-FAST: real similar-pattern analysis (Production) =====
+      {
+        const simRoot = document.getElementById('chartAiSimilarityReal');
+        const simStartBtn = document.getElementById('chartAiSimilarityStartBtn') as HTMLButtonElement | null;
+        const simWindowBtns = Array.from(document.querySelectorAll<HTMLButtonElement>('.chart-similarity-window-btn'));
+        const simStatus = document.getElementById('chartAiSimilarityStatus');
+        const simResults = document.getElementById('chartAiSimilarityResults');
+        const simCurrent = document.getElementById('chartAiSimilarityCurrent');
+        const simOverlay = document.getElementById('chartAiSimilarityOverlaySvg');
+        const simLegend = document.getElementById('chartAiSimilarityLegend');
+        const simMatches = document.getElementById('chartAiSimilarityMatches');
+        const simAggregate = document.getElementById('chartAiSimilarityAggregate');
+
+        let activeSimWindow = 20;
+        let simSeq = 0;
+        let simAbort: AbortController | null = null;
+        let simInFlight = false;
+        const SIM_TIMEOUT_MS = 20000;
+        const OVERLAY_COLORS = ['#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#0ea5e9'];
+        const SVG_NS = 'http://www.w3.org/2000/svg';
+
+        const fmtPct = (v: any) =>
+          typeof v === 'number' && isFinite(v) ? `${v >= 0 ? '+' : ''}${(v * 100).toFixed(2)}%` : '데이터 부족';
+        const fmtScore = (v: any) => (typeof v === 'number' && isFinite(v) ? v.toFixed(1) : '—');
+        const setSimState = (state: string) => { if (simRoot) simRoot.dataset.state = state; };
+        const showSimStatus = (text: string) => { if (simStatus) { simStatus.textContent = text; simStatus.hidden = !text; } };
+
+        const resetSim = () => {
+          simSeq += 1;
+          if (simAbort) { simAbort.abort(); simAbort = null; }
+          simInFlight = false;
+          if (simResults) simResults.hidden = true;
+          showSimStatus('');
+          setSimState('idle');
+          if (simStartBtn) { simStartBtn.disabled = false; simStartBtn.textContent = '유사 패턴 분석 시작'; }
+          [simMatches, simAggregate, simCurrent, simOverlay, simLegend].forEach((el) => el && el.replaceChildren());
+        };
+        resetSelectedSimilarity = resetSim;
+
+        const renderCurrent = (sim: any) => {
+          if (!simCurrent) return;
+          simCurrent.replaceChildren();
+          const aw = sim.analysisWindow;
+          const title = document.createElement('p');
+          title.className = 'chart-similarity-current-title';
+          title.textContent = '현재 분석 구간';
+          const range = document.createElement('p');
+          range.className = 'chart-similarity-current-range';
+          range.textContent = `${aw.startDate} ~ ${aw.endDate} · ${aw.barCount}거래일`;
+          const meta = document.createElement('p');
+          meta.className = 'chart-similarity-current-meta';
+          meta.textContent = `결정적 유사도 분석(가격 상관·거리·방향) · 과거 데이터 ${sim.historyBarCount}거래일 · 비교 구간 ${sim.candidateCount}개`;
+          const note = document.createElement('p');
+          note.className = 'chart-similarity-current-note';
+          note.textContent = '실제 지연 시세 기반의 과거 구간 비교이며, 외부 AI를 사용하지 않습니다.';
+          simCurrent.append(title, range, meta, note);
+        };
+
+        const renderOverlay = (sim: any) => {
+          if (!simOverlay || !simLegend) return;
+          simOverlay.replaceChildren();
+          simLegend.replaceChildren();
+          const paths: Array<{ label: string; values: number[]; color: string; current: boolean }> = [
+            { label: '현재 구간', values: sim.currentNormalizedPath || [], color: '#111827', current: true },
+          ];
+          (sim.matches || []).slice(0, 5).forEach((m: any, i: number) => {
+            paths.push({ label: `#${m.rank} ${m.startDate}`, values: m.normalizedPath || [], color: OVERLAY_COLORS[i % OVERLAY_COLORS.length], current: false });
+          });
+          const allVals = paths.flatMap((p) => p.values).filter((v) => typeof v === 'number' && isFinite(v));
+          if (allVals.length < 2) return;
+          const min = Math.min(...allVals);
+          const max = Math.max(...allVals);
+          const span = Math.max(1e-6, max - min);
+          const W = 720, H = 260, padX = 10, padY = 18;
+          const len = Math.max(...paths.map((p) => p.values.length), 2);
+          const xAt = (i: number) => padX + (i / Math.max(1, len - 1)) * (W - 2 * padX);
+          const yAt = (v: number) => padY + (1 - (v - min) / span) * (H - 2 * padY);
+          const baseLine = document.createElementNS(SVG_NS, 'line');
+          baseLine.setAttribute('x1', String(padX)); baseLine.setAttribute('x2', String(W - padX));
+          baseLine.setAttribute('y1', yAt(100).toFixed(1)); baseLine.setAttribute('y2', yAt(100).toFixed(1));
+          baseLine.setAttribute('stroke', '#9ca3af'); baseLine.setAttribute('stroke-dasharray', '4 4'); baseLine.setAttribute('stroke-width', '1');
+          simOverlay.append(baseLine);
+          paths.forEach((p) => {
+            const pts = p.values.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ');
+            const pl = document.createElementNS(SVG_NS, 'polyline');
+            pl.setAttribute('points', pts);
+            pl.setAttribute('fill', 'none');
+            pl.setAttribute('stroke', p.color);
+            pl.setAttribute('stroke-width', p.current ? '2.6' : '1.4');
+            pl.setAttribute('stroke-opacity', p.current ? '1' : '0.72');
+            pl.setAttribute('stroke-linejoin', 'round');
+            simOverlay.append(pl);
+          });
+          paths.forEach((p) => {
+            const item = document.createElement('span');
+            item.className = 'chart-similarity-legend-item';
+            const sw = document.createElement('span');
+            sw.className = 'chart-similarity-legend-swatch';
+            sw.style.background = p.color;
+            const lbl = document.createElement('span');
+            lbl.textContent = p.label;
+            item.append(sw, lbl);
+            simLegend.append(item);
+          });
+        };
+
+        const renderMatches = (sim: any) => {
+          if (!simMatches) return;
+          simMatches.replaceChildren();
+          (sim.matches || []).forEach((m: any) => {
+            const card = document.createElement('div');
+            card.className = 'chart-similarity-match-card';
+            card.setAttribute('role', 'listitem');
+            const head = document.createElement('div');
+            head.className = 'chart-similarity-match-head';
+            const rank = document.createElement('span');
+            rank.className = 'chart-similarity-match-rank';
+            rank.textContent = `#${m.rank}`;
+            const score = document.createElement('span');
+            score.className = 'chart-similarity-match-score';
+            score.textContent = `유사도 ${fmtScore(m.similarityScore)}`;
+            head.append(rank, score);
+            const dates = document.createElement('p');
+            dates.className = 'chart-similarity-match-dates';
+            dates.textContent = `${m.startDate} ~ ${m.endDate}`;
+            const dl = document.createElement('dl');
+            dl.className = 'chart-similarity-match-metrics';
+            const addRow = (k: string, v: string) => {
+              const dt = document.createElement('dt'); dt.textContent = k;
+              const dd = document.createElement('dd'); dd.textContent = v;
+              dl.append(dt, dd);
+            };
+            addRow('이후 5일', fmtPct(m.forwardReturns.d5));
+            addRow('이후 20일', fmtPct(m.forwardReturns.d20));
+            addRow('이후 60일', fmtPct(m.forwardReturns.d60));
+            addRow('최대 낙폭', fmtPct(m.maxDrawdownPct));
+            addRow('최대 상승', fmtPct(m.maxUpsidePct));
+            card.append(head, dates, dl);
+            if (m.dataComplete && !m.dataComplete.d60) {
+              const inc = document.createElement('p');
+              inc.className = 'chart-similarity-match-incomplete';
+              inc.textContent = '일부 이후 구간 데이터가 아직 완성되지 않았습니다.';
+              card.append(inc);
+            }
+            simMatches.append(card);
+          });
+        };
+
+        const renderAggregate = (sim: any) => {
+          if (!simAggregate) return;
+          simAggregate.replaceChildren();
+          const agg = sim.aggregate || {};
+          const title = document.createElement('p');
+          title.className = 'chart-similarity-aggregate-title';
+          title.textContent = '상위 유사 구간의 과거 이후 성과 (참고용)';
+          const dl = document.createElement('dl');
+          dl.className = 'chart-similarity-aggregate-metrics';
+          const addRow = (k: string, v: string) => {
+            const dt = document.createElement('dt'); dt.textContent = k;
+            const dd = document.createElement('dd'); dd.textContent = v;
+            dl.append(dt, dd);
+          };
+          addRow('20일 후 상승 마감 구간', `${agg.positiveCountByWindow?.d20 ?? 0} / ${agg.matchCount ?? 0}`);
+          addRow('평균 이후 5일', fmtPct(agg.averageForwardReturnByWindow?.d5));
+          addRow('중앙값 이후 5일', fmtPct(agg.medianForwardReturnByWindow?.d5));
+          addRow('평균 이후 20일', fmtPct(agg.averageForwardReturnByWindow?.d20));
+          addRow('중앙값 이후 20일', fmtPct(agg.medianForwardReturnByWindow?.d20));
+          addRow('평균 최대 낙폭', fmtPct(agg.averageMaxDrawdownPct));
+          const disc = document.createElement('p');
+          disc.className = 'chart-similarity-aggregate-disclaimer';
+          disc.textContent = sim.disclaimer || '과거 유사 구간의 이후 움직임을 참고용으로 비교합니다. 미래 성과를 예측하거나 보장하지 않습니다.';
+          simAggregate.append(title, dl, disc);
+        };
+
+        const honestStateMessage = (code: string) => {
+          switch (code) {
+            case 'INSUFFICIENT_HISTORY': return '유사 패턴 분석에 필요한 과거 데이터가 충분하지 않습니다.';
+            case 'NO_VALID_CANDIDATES': return '비교할 수 있는 과거 구간을 찾지 못했습니다.';
+            case 'UNSUPPORTED_INSTRUMENT': return '이 종목은 아직 유사 패턴 분석을 지원하지 않습니다.';
+            case 'PROVIDER_UNAVAILABLE': return '시세 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+            default: return '유사 패턴 분석을 완료하지 못했습니다. 다시 시도해 주세요.';
+          }
+        };
+
+        const runSimilarity = async () => {
+          if (!productionRealChartEnabled || simInFlight) return;
+          simInFlight = true;
+          const seq = ++simSeq;
+          if (simAbort) simAbort.abort();
+          simAbort = new AbortController();
+          const signal = simAbort.signal;
+          const sym = selectedSymbol;
+          const ctry = selectedCountry;
+          setSimState('loading');
+          if (simResults) simResults.hidden = true;
+          showSimStatus(`${selectedName} 최근 ${activeSimWindow}거래일 기준 과거 유사 구간을 분석하는 중입니다…`);
+          if (simStartBtn) simStartBtn.disabled = true;
+          const timeoutId = window.setTimeout(() => simAbort?.abort(), SIM_TIMEOUT_MS);
+          try {
+            const url = `/api/chart-ai/similarity.json?${marketDataRequestQuery}&country=${ctry}&symbol=${encodeURIComponent(sym)}&window=${activeSimWindow}&topK=5`;
+            const res = await fetch(url, { method: 'GET', signal, credentials: 'omit' });
+            const data = await res.json();
+            if (seq !== simSeq) return;
+            const sim = data && data.similarity;
+            if (!sim || sim.sourceStatus === 'blocked' || sim.sanitizedErrorCode !== 'NONE' || sim.ok !== true) {
+              showSimStatus(honestStateMessage(sim ? sim.sanitizedErrorCode : 'INTERNAL'));
+              setSimState('error');
+              if (simStartBtn) simStartBtn.textContent = '다시 시도';
+              return;
+            }
+            showSimStatus('');
+            renderCurrent(sim);
+            renderOverlay(sim);
+            renderMatches(sim);
+            renderAggregate(sim);
+            if (simResults) simResults.hidden = false;
+            setSimState('ready');
+            if (simStartBtn) simStartBtn.textContent = '다시 분석';
+          } catch (err) {
+            if (seq !== simSeq) return;
+            if (err && (err as any).name === 'AbortError') return;
+            showSimStatus('네트워크 상태를 확인한 뒤 다시 시도해 주세요.');
+            setSimState('error');
+            if (simStartBtn) simStartBtn.textContent = '다시 시도';
+          } finally {
+            window.clearTimeout(timeoutId);
+            simInFlight = false;
+            if (simStartBtn) simStartBtn.disabled = false;
+          }
+        };
+
+        simWindowBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const w = Number(btn.dataset.simWindow);
+            if (w !== 20 && w !== 60) return;
+            activeSimWindow = w;
+            simWindowBtns.forEach((b) => {
+              const active = b === btn;
+              b.classList.toggle('active', active);
+              b.setAttribute('aria-pressed', String(active));
+            });
+          });
+        });
+        if (simStartBtn && productionRealChartEnabled) {
+          simStartBtn.addEventListener('click', runSimilarity);
+        }
+      }
 
       // Chart analysis workspace page-swap: local class/attribute toggling only, no network/storage.
       const similarityTab = document.getElementById('chartAiSimilarityTab') as HTMLButtonElement | null;
@@ -4417,6 +4690,72 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       border-radius: 10px;
       background: var(--surface-muted);
       color: var(--chart-shell-muted);
+    }
+
+    /* Phase 3GG-Q-FAST real similarity UI */
+    .chart-similarity-real { display: grid; gap: 0.9rem; }
+    .chart-similarity-controls {
+      display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between;
+    }
+    .chart-similarity-window-select { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+    .chart-similarity-window-label { font-size: 0.78rem; color: var(--chart-shell-muted); margin-right: 0.2rem; }
+    .chart-similarity-window-btn {
+      font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface); color: var(--chart-shell-muted); cursor: pointer;
+    }
+    .chart-similarity-window-btn.active { background: var(--accent, #2563eb); color: #fff; border-color: transparent; }
+    .chart-similarity-start-btn {
+      font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1.1rem; border-radius: 10px;
+      border: 1px solid transparent; background: var(--accent, #2563eb); color: #fff; cursor: pointer;
+    }
+    .chart-similarity-start-btn:disabled { opacity: 0.6; cursor: default; }
+    .chart-similarity-disclaimer { font-size: 0.76rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-similarity-status {
+      font-size: 0.82rem; padding: 0.7rem 0.9rem; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface-muted); color: var(--chart-shell-muted);
+    }
+    .chart-similarity-results { display: grid; gap: 1rem; }
+    .chart-similarity-current { display: grid; gap: 0.25rem; }
+    .chart-similarity-current-title { font-weight: 700; font-size: 0.9rem; margin: 0; }
+    .chart-similarity-current-range { font-size: 0.86rem; margin: 0; }
+    .chart-similarity-current-meta, .chart-similarity-current-note { font-size: 0.76rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-similarity-overlay-figure { margin: 0; display: grid; gap: 0.5rem; }
+    .chart-similarity-overlay-caption { font-size: 0.78rem; color: var(--chart-shell-muted); }
+    .chart-similarity-overlay-svg {
+      width: 100%; height: auto; max-height: 260px; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); box-sizing: border-box;
+    }
+    .chart-similarity-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; }
+    .chart-similarity-legend-item { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; color: var(--chart-shell-muted); }
+    .chart-similarity-legend-swatch { width: 0.85rem; height: 0.28rem; border-radius: 2px; display: inline-block; }
+    .chart-similarity-matches { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .chart-similarity-match-card {
+      display: grid; gap: 0.4rem; padding: 0.75rem 0.85rem; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--surface);
+    }
+    .chart-similarity-match-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+    .chart-similarity-match-rank { font-weight: 700; font-size: 0.95rem; }
+    .chart-similarity-match-score { font-size: 0.8rem; color: var(--chart-shell-muted); }
+    .chart-similarity-match-dates { font-size: 0.8rem; margin: 0; }
+    .chart-similarity-match-metrics {
+      display: grid; grid-template-columns: auto auto; gap: 0.15rem 0.5rem; margin: 0; font-size: 0.78rem;
+    }
+    .chart-similarity-match-metrics dt { color: var(--chart-shell-muted); }
+    .chart-similarity-match-metrics dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+    .chart-similarity-match-incomplete { font-size: 0.72rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-similarity-aggregate {
+      display: grid; gap: 0.45rem; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--surface-muted);
+    }
+    .chart-similarity-aggregate-title { font-weight: 700; font-size: 0.86rem; margin: 0; }
+    .chart-similarity-aggregate-metrics { display: grid; grid-template-columns: auto auto; gap: 0.2rem 0.6rem; margin: 0; font-size: 0.8rem; }
+    .chart-similarity-aggregate-metrics dt { color: var(--chart-shell-muted); }
+    .chart-similarity-aggregate-metrics dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+    .chart-similarity-aggregate-disclaimer { font-size: 0.74rem; color: var(--chart-shell-muted); margin: 0; }
+    @media (max-width: 420px) {
+      .chart-similarity-controls { flex-direction: column; align-items: stretch; }
+      .chart-similarity-start-btn { width: 100%; }
+      .chart-similarity-matches { grid-template-columns: 1fr; }
     }
 
     .chart-analysis-preparing-state strong,
