@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-L-BETA-DEPLOY-RERUN-3 - 2026-07-12
+
+### Protected Preview Beta Deploy Execution Rerun 3
+
+- **Status**: Deployment Protection is now owner-confirmed enabled (Vercel Authentication, Require Log In ON, Standard Protection, confirmed via a Vercel Dashboard screenshot) — the prior rerun's blocker is resolved. However, a new, unrelated blocker was found: `vercel build --yes` (Preview) fails reproducibly in this local OneDrive-synced workspace. Classification `BLOCKED_VERCEL_BUILD_FAILED`. Deploy not attempted (no valid build output); not pushed; `.vercel` not committed.
+- **Baseline**: `a61fd3b` (Phase 3GG-L-BETA-DEPLOY-RERUN-2).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-L-BETA-DEPLOY-RERUN-2. Deployment Protection is now owner-confirmed via Vercel Authentication with Require Log In ON. Does not attempt raw Vercel API calls to re-verify Deployment Protection. Runs local regression before deploy. Runs vercel build for Preview only. Runs vercel deploy for Preview only if allowed. Does not deploy production. Does not promote to production. Does not push. Does not print Vercel env values. Does not print secrets. Does not print model names. Does not print prompt text. Does not print raw OpenAI/KIS payloads. Does not print currentPrice/volume numeric values. Does not commit `.vercel`. current_price only. H route only. No KIS endpoint expansion.
+- **Result**: Vercel CLI present (54.9.1) + authenticated; project link and all required Preview env names confirmed present (booleans only); `KIS_ACCOUNT_NO` correctly absent. Local regression preflight all PASS and plain `npm run build` PASS (app is code-ready). `vercel build --yes` (Preview) failed twice identically with exit code 3221226505 (`0xC0000409` / `STATUS_STACK_BUFFER_OVERRUN`). Root cause diagnosed and triple-reproduced: `vercel build` forces `process.env.VERCEL=1`, which disables this project's existing OneDrive-safety `outDir` redirect in `astro.config.mjs`, causing the Astro server bundle to be written into the OneDrive-synced `dist/` directory where the `@astrojs/vercel` adapter's esbuild bundling step crashes. This is a local build-environment limitation, not a Deployment Protection, Preview env, or source-code defect; not expected to reproduce on Vercel's own cloud build infrastructure. No deploy performed (no valid `.vercel/output`); not pushed; `.vercel` not committed; `.gitignore`'s CLI-appended `.env*` rule left unstaged.
+- **Next recommended phase**: Either (a) deploy via a Vercel-native build context unaffected by this local OneDrive limitation (e.g. a Vercel-triggered cloud build, or a non-OneDrive-synced local clone), or (b) a follow-up phase explicitly authorized to adjust `astro.config.mjs`'s OneDrive detection so it is not disabled by `VERCEL=1` when invoked locally, then re-run the protected Preview deploy. Production remains prohibited.
+
 ## Phase 3GG-L-BETA-DEPLOY-RERUN-2 - 2026-07-11
 
 ### Protected Preview Beta Deploy Execution Rerun 2
