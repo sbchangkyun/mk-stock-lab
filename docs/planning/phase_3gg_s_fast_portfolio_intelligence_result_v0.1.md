@@ -8,7 +8,7 @@ summary, local export/import) built entirely on browser localStorage, integrated
 locally verified, built, deployed to Production, and browser-QA'd.
 
 - **Baseline**: `85858fc` (Phase 3GG-R-FAST). **Branch**: `rebuild/phase-1-ia-shell`. **HEAD before**: `85858fc`.
-- **Source commit**: `__SOURCE_COMMIT__`.
+- **Source commit**: `5ff0a2a`.
 - **Deploy-record commit**: the commit adding the Deploy & Production QA findings
   (message `Phase 3GG-S-FAST: record Portfolio Intelligence production deploy`).
 
@@ -101,19 +101,34 @@ wording.
 
 ## Deploy and Production QA
 
-_Deploy method_: `vercel deploy --prod --yes` (cloud build). _(Filled after deploy.)_
+_Deploy method_: `vercel deploy --prod --yes` (Vercel cloud build).
 
-- **Deploy outcome**: __DEPLOY_OUTCOME__
+- **Deploy outcome**: **PASS.** Deployment `mkstocklab-d5umo75w2-*`, `readyState: READY`,
+  `target: production`, aliased to `https://mkstocklab.vercel.app`.
 - **Production URL**: https://mkstocklab.vercel.app/chart-ai
-- **Watchlist**: __WATCHLIST_QA__
-- **Recent**: __RECENT_QA__
-- **Saved analyses**: __SAVED_QA__
-- **Manual portfolio**: __PORTFOLIO_QA__
-- **Comparison / risk**: __COMPARE_QA__
-- **Provider-call behavior**: __PROVIDER_QA__
-- **Storage persistence / corruption**: __STORAGE_QA__
-- **Mobile QA (375px)**: __MOBILE_QA__
-- **Console / network / exposure**: __CONSOLE_QA__
+- **Watchlist**: **PASS.** Added 005930 + AAPL; duplicate add prevented (2 stored); select updates the
+  instrument/chart; persists after reload (2 rows).
+- **Recent**: **PASS.** Selecting instruments records recent (2 persisted), most-recent-first, dedupe.
+- **Saved analyses**: **PASS.** Ran MK AI then saved a snapshot; card labeled `저장된 분석` + `실시간
+  아님`; saving triggered **0** API calls; persists after reload (1 snapshot).
+- **Manual portfolio**: **PASS.** Added a KR (005930) and a US (AAPL) holding; validation enforced;
+  **separate KRW/USD totals** (USD 투자원금 1,000 / 평가액 1,576.6; KRW 투자원금 700,000 / 평가액
+  2,850,000) — never combined; price basis labeled (`가격 새로고침 필요` → latest daily close after
+  refresh); persists after reload (2 holdings).
+- **Comparison / risk**: **PASS.** Comparison shows real scores only for the instrument whose MK AI was
+  run (삼성전자); AAPL honestly shows `분석 필요` (no fabricated score). Risk summary renders concentration
+  notices + neutral disclaimer, no rebalance/recommendation.
+- **Provider-call behavior**: **PASS.** Rendering the workspace made **0** provider calls; watchlist/
+  saved/compare actions made 0 calls; the only calls were the chart OHLCV, the click-triggered MK AI, and
+  the explicit price refresh (batch = 2 ohlcv calls). No request storm; no forbidden endpoint.
+- **Storage persistence / corruption**: **PASS.** All four namespaces survive reload; an injected
+  corrupted `savedAnalyses` namespace recovers to an empty state without crashing the page; no secret /
+  prompt / model / raw payload / full OHLCV in localStorage.
+- **Mobile QA (375px)**: **PASS.** `scrollWidth === innerWidth === 375` (no horizontal overflow) before
+  and after tab switching; tabs/forms/cards usable.
+- **Console / network / exposure**: **PASS.** Zero console errors. Only the expected routes hit
+  (`instruments/search`, `market/ohlcv`, `mk-analysis`, `similarity`); no order/account/balance/trading
+  endpoint; no prohibited recommendation wording in the workspace; no credentials/tokens/model names.
 
 ## No-account/trading boundary
 
