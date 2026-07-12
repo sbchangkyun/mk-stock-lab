@@ -9,8 +9,9 @@ KR + US OHLCV candlestick/volume charts are implemented, locally verified agains
 - **Baseline**: `69b09e1` (Phase 3GG-N-FAST).
 - **Branch**: `rebuild/phase-1-ia-shell`.
 - **HEAD before**: `69b09e1`.
-- **Source commit**: `__SOURCE_COMMIT__`.
-- **Deploy-record commit**: `__DEPLOY_COMMIT__`.
+- **Source commit**: `dba5386` (feature) + `099147e` (init TDZ fix + selection hardening).
+- **Deploy-record commit**: the commit that adds these Deploy & Production QA findings (see git log,
+  message `Phase 3GG-OP-FAST: record real OHLCV chart production deploy`).
 
 ## Goal
 
@@ -141,20 +142,41 @@ this superseding change; kisClient/summary/src/data extended under the same scop
 
 ## Deploy and Production QA
 
-_Deploy method_: `vercel deploy --prod --yes` (cloud build). _(Filled after deploy.)_
+_Deploy method_: `vercel deploy --prod --yes` (Vercel cloud build). An initial deploy
+(`dpl_7Si4rAJCqeUCgsBXkQ3ASGJUfZSp`) surfaced a client init bug in Production QA (the real chart didn't
+render — a temporal-dead-zone `ReferenceError` because the initial selection ran mid-`setup()` before a
+later-declared const was initialized). Fixed in `099147e` (defer init to end of `setup()` + isolate
+peripheral updates) and redeployed.
 
-- **Deploy outcome**: __DEPLOY_OUTCOME__
+- **Deploy outcome**: **PASS.** Final deployment `dpl_4u9ourRozjkBmH2GW6vypzD7wYCA`, `readyState: READY`,
+  `target: production`, aliased to `https://mkstocklab.vercel.app`.
 - **Production URL**: https://mkstocklab.vercel.app/chart-ai
-- **Desktop QA**: __DESKTOP_QA__
-- **KR stock result**: __KR_STOCK__
-- **KR ETF result**: __KR_ETF__
-- **US stock result**: __US_STOCK__
-- **US ETF result**: __US_ETF__
-- **Candlestick / volume / range controls**: __CHART_QA__
-- **Selected-symbol state / summary behavior**: __SUMMARY_QA__
-- **Mobile QA (375px)**: __MOBILE_QA__
-- **Console / network**: __CONSOLE_NETWORK__
-- **Sample/mock absence**: __SAMPLE_ABSENCE__
+- **Desktop QA**: **PASS.** `data-chart-ai-production-default="true"`; heading `실시간 종목 차트`; search
+  heading `국내·미국 주식 및 ETF 검색`; placeholder `종목명, 티커 또는 종목코드를 입력하세요`. Default
+  instrument Samsung Electronics `005930` loads a real chart automatically (`stateMode="ready"`, 62
+  candlesticks + 62 volume bars, `asOf` timestamp in KRW). No developer/owner-local UI; no console error.
+- **KR stock result**: **PASS.** `005930` 삼성전자 / KOSPI / KRW → 62 real candles.
+- **KR ETF result**: **PASS.** `069500` KODEX 200 / ETF / KRW → 62 real candles.
+- **US stock result**: **PASS.** `AAPL` Apple / NASDAQ / USD → 66 real candles (KIS overseas).
+- **US ETF result**: **PASS.** `SPY` / ETF / USD → 66 real candles (KIS overseas, AMS exchange).
+- **Candlestick / volume / range controls**: **PASS.** Real candlesticks (wick + body) and volume bars.
+  Range change SPY 3개월 → 1개월 re-fetched (66 → 23 candles, chart geometry changed — not stale, not
+  identical sample data). No stale prior-symbol chart on switch; URL updates to `?symbol=&country=`.
+- **Selected-symbol state / summary behavior**: **PASS.** The MK AI 시세 요약 follows the selected symbol.
+  KR `005930` → exactly ONE H-route call (`?chartAiProdBeta=1&country=KR&symbol=005930`) → real 3-line
+  summary (`데이터 상태:` / `해석 범위:` / `유의사항:`), no ASCII digits in the summary body, "실제 시세
+  수치와 원문 응답은 표시되지 않습니다" present, investment-advice disclaimer present. US `SPY` → exactly
+  ONE H-route call (`country=US&symbol=SPY`) → honest sanitized unavailable state (no faked US summary, no
+  silent fallback to `005930`). Click-only, one request per click, no auto-fetch.
+- **Mobile QA (375px)**: **PASS.** `document.documentElement.scrollWidth === window.innerWidth === 375`
+  (no horizontal overflow); real chart visible (62 candles + volume); no forbidden strings.
+- **Console / network**: **PASS.** Zero console errors. Only the three expected API routes are hit
+  (`instruments/search.json`, `market/ohlcv.json`, `local-only-kis-llm-summary.json`); no
+  order/account/balance/funds/portfolio/trading endpoint; no request storm; no auto-fetch of the LLM
+  summary.
+- **Sample/mock absence**: **PASS.** No mock trigger cards (`[data-chart-ai-analysis-state]`) in the
+  Production DOM; no sample OHLCV; forbidden strings (`오너 로컬`, `modelPresent`, `sanitized=true`,
+  `KIS_BASE_URL`, `Authorization: Bearer`, `OPENAI_API_KEY`) absent from the rendered HTML.
 
 ## Exposure status
 
