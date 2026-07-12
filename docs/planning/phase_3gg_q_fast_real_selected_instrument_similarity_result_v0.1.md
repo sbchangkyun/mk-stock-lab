@@ -8,7 +8,7 @@ instrument's real OHLCV is implemented, locally verified against the real KIS pr
 
 - **Baseline**: `b2edefb` (Phase 3GG-OP-FAST). **Branch**: `rebuild/phase-1-ia-shell`.
 - **HEAD before**: `b2edefb`.
-- **Source commit**: `__SOURCE_COMMIT__`.
+- **Source commit**: `931355f` (feature) + `7c041df` (production-honest analysis-workspace copy).
 - **Deploy-record commit**: the commit adding the Deploy & Production QA findings
   (message `Phase 3GG-Q-FAST: record real similarity analysis production deploy`).
 
@@ -120,20 +120,34 @@ dates, aggregate present, base-100 overlay shape valid. Only sanitized fields pr
 
 ## Deploy and Production QA
 
-_Deploy method_: `vercel deploy --prod --yes` (cloud build). _(Filled after deploy.)_
+_Deploy method_: `vercel deploy --prod --yes` (cloud build). Two production deploys: the feature
+deploy (`dpl_7Jv8oTzENsUf61WGfyQ5BVvvofP5`), then a redeploy after a Production-QA finding — two leftover
+"샘플 데이터" workspace/disclaimer copies were now false on the real Production screen; fixed in `7c041df`
+and redeployed (`mkstocklab-nn23g0je5-*`, aliased to `https://mkstocklab.vercel.app`).
 
-- **Deploy outcome**: __DEPLOY_OUTCOME__
+- **Deploy outcome**: **PASS.** Final deployment `readyState: READY`, `target: production`, aliased to
+  `https://mkstocklab.vercel.app`.
 - **Production URL**: https://mkstocklab.vercel.app/chart-ai
-- **KR stock result (005930)**: __KR_STOCK__
-- **KR ETF result (069500)**: __KR_ETF__
-- **US stock result (AAPL)**: __US_STOCK__
-- **US ETF result (SPY)**: __US_ETF__
-- **Top 5 / overlay / forward / drawdown / aggregate**: __ANALYSIS_QA__
-- **Selected-symbol reset behavior**: __RESET_QA__
-- **Desktop QA**: __DESKTOP_QA__
-- **Mobile QA (375px)**: __MOBILE_QA__
-- **Console / network**: __CONSOLE_NETWORK__
-- **Mock absence**: __MOCK_ABSENCE__
+- **KR stock result (005930)**: **PASS.** Real analysis; 5 matches, e.g. #1 2026-01-23~2026-02-24, score
+  54.2, forward 5d −13.90% / 20d −5.50% / 60d +46.25%, max drawdown −16.40%, max rise +49.75%.
+- **KR ETF result (069500)**: **PASS.** Real analysis; 5 matches with real dates (e.g. 2025-07-24~2025-08-21).
+- **US stock result (AAPL)**: **PASS.** Real analysis; 5 matches with real dates (e.g. 2025-08-08~2025-09-05).
+- **US ETF result (SPY)**: **PASS.** Real analysis; 5 matches with real dates (e.g. 2024-03-20~2024-04-17).
+- **Top 5 / overlay / forward / drawdown / aggregate**: **PASS.** 5 real match cards; base-100 overlay SVG
+  with 6 polylines (current + 5) + legend; forward 5/20/60-day, max drawdown/rise per card; aggregate with a
+  historical `상승 마감` count (`N / M`, not a probability) and the honest disclaimer.
+- **Selected-symbol reset behavior**: **PASS.** Selecting a new instrument resets the panel to `idle`,
+  hides prior results, and fires **no** auto-analysis (0 calls on select); the next click analyzes the new
+  symbol. Exactly one similarity request per click; no request storm; no stale-result race.
+- **Desktop QA**: **PASS.** Analysis runs click-only; results belong to the selected symbol; no console
+  error; the analysis-workspace guide now reads honest real-data copy (no "샘플 데이터").
+- **Mobile QA (375px)**: **PASS.** `scrollWidth === innerWidth === 375` (no horizontal overflow) before and
+  after analysis; Top 5 render as stacked cards; overlay visible; disclaimer readable.
+- **Console / network**: **PASS.** Zero console errors. Only the expected routes are hit
+  (`instruments/search.json`, `market/ohlcv.json`, `similarity.json`, plus `local-only-kis-llm-summary.json`
+  only on the summary click); no order/account/balance/funds/portfolio/trading endpoint.
+- **Mock absence**: **PASS.** No `SYNTH001`, `Mocked`, `샘플 데이터`, `샘플 화면`, or fixed historical
+  values in the Production DOM; no secrets/tokens/Authorization/model names.
 
 ## Exposure status
 
