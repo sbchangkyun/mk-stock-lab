@@ -2,15 +2,14 @@
 
 ## Status
 
-Source hotfix implemented and locally validated. Vercel cloud Production deploy and Production URL
-live verification results are recorded in the "Vercel cloud production deploy result" and downstream
-sections below (updated after the deploy step).
+Source hotfix implemented, locally validated, committed, deployed to the real Vercel Production URL via
+cloud build, and verified live end-to-end. Complete.
 
 ## Classification
 
-`PASS_SOURCE_READY_PRODUCTION_DEPLOY_REQUIRED` (pre-deploy state; upgraded to
-`PASS_PRODUCTION_CHART_AI_BETA_DEPLOYED` after a successful Production URL live verification — see the
-post-deploy update section).
+`PASS_PRODUCTION_CHART_AI_BETA_DEPLOYED` — the Production URL `/chart-ai?chartAiProdBeta=1` returns the
+real live KIS + LLM summary (`summary.ok=true`, `sourceStatus=ok`, `llmStatus=ok`), and generic
+production KIS use remains fail-closed.
 
 ## Baseline
 
@@ -26,11 +25,11 @@ post-deploy update section).
 
 ## HEAD after source commit
 
-Recorded in the post-commit update below.
+`43923fd915c3e216c7e4da98dd9445191e6eaab5` (`Phase 3GG-M-PROD-HF1: allow guarded production Chart AI quotes`).
 
 ## HEAD after deploy doc commit if any
 
-Recorded in the post-deploy update below.
+Recorded in the "Post-deploy update" section's final line below (this doc update commit).
 
 ## Purpose
 
@@ -168,19 +167,38 @@ All four local diagnostics PASS against `http://localhost:4321` after the source
 
 ## Vercel cloud production deploy result
 
-Recorded in the post-deploy update section below.
+`vercel deploy --prod --yes` (cloud build, not local `vercel build`): **deploymentSucceeded=true**,
+`deploymentEnvironment=production` (`target: "production"`), `readyState=READY`. Deployment id
+`dpl_993VnAUtwkKvegWhKFUWEvu1aCQi`. Generated URL
+`https://mkstocklab-3lz1ctdpe-sbchangkyun-2946s-projects.vercel.app`, aliased to the canonical
+production domain `https://mkstocklab.vercel.app`. `promotedToProduction`: not applicable — Vercel
+reported the deployment as `production` directly (no separate `vercel promote` was run). No
+`vercel build --prod` was run.
 
 ## Production URL present true/false
 
-Recorded in the post-deploy update section below.
+**true** — `https://mkstocklab.vercel.app` (canonical production alias; the generated deployment URL is
+behind Deployment Protection / Vercel Authentication, the canonical production domain is public).
 
 ## Production `/chart-ai?chartAiProdBeta=1` result
 
-Recorded in the post-deploy update section below.
+Page reachable; beta panel visible (`panelHidden=false`); summary button visible and enabled; **no
+auto-fetch** before click (H route resource count = 0 pre-click); no console error. One button click
+produced **exactly one** H route request to
+`/api/chart-ai/local-only-kis-llm-summary.json?chartAiProdBeta=1&symbol=005930`; the status line showed
+`완료` and the summary rendered. Only the H route API was contacted; forbidden-route count = 0.
 
 ## H route production beta result
 
-Recorded in the post-deploy update section below.
+Live (via both direct probe and the browser click): **HTTP 200**, `summary.ok=true`, `sourceStatus=ok`,
+`llmStatus=ok`, `sanitizedErrorCode=null`, `currentPricePresent=true`, `volumePresent=true`,
+`summaryTextPresent=true`, `summaryLineCount=3`, `requiredLabelsPresent=true` (데이터 상태:/해석 범위:/유의사항:),
+`asciiDigitPresentInSummary=false`, `forbiddenInvestmentPhrasePresent=false`, `modelPresent=true`
+(boolean only). The response carries no `currentPrice`/`volume` numeric field at all. Negative controls
+on Production confirm scoping: the same H route **without** `chartAiProdBeta=1` returns
+`sourceStatus=blocked` / `NON_LOCAL_REQUEST`, and the generic `local-only-kis-current-price.json` route
+returns `sourceStatus=blocked` / `NON_LOCAL_REQUEST` with null price/volume — i.e. generic production KIS
+use stays fail-closed.
 
 ## Exposure status
 
@@ -215,8 +233,9 @@ line, carried over from prior phases). It was left unstaged and not committed th
 
 ## Push/deploy status
 
-Recorded in the post-deploy update section below. No `git push` unless the Production deploy path
-requires it.
+Production deploy: **succeeded** (`vercel deploy --prod --yes`, cloud build). `git push`: **not
+performed** — the cloud deploy uploads the working directory directly and did not require a push; the
+commit `43923fd` remains local on `rebuild/phase-1-ia-shell`.
 
 ## Next recommended phase
 
@@ -229,4 +248,20 @@ allowlist), a narrow Production KIS runtime diagnostic phase. Otherwise, monitor
 
 ## Post-deploy update
 
-(Filled in after Step 11–13.)
+- **Deploy**: `vercel deploy --prod --yes` → `target=production`, `readyState=READY`, deployment id
+  `dpl_993VnAUtwkKvegWhKFUWEvu1aCQi`, aliased to `https://mkstocklab.vercel.app`.
+- **Production live verification** (canonical production alias): `/chart-ai?chartAiProdBeta=1` panel
+  visible, no auto-fetch, one click → one H route request → HTTP 200, `summary.ok=true`,
+  `sourceStatus=ok`, `llmStatus=ok`, 3 Korean summary lines with all required labels, no ASCII digit in
+  the summary, no forbidden investment phrase in the LLM summary, no numeric price/volume field, no
+  console error, forbidden-route count = 0. The only rendered digit token is the 6-digit input ticker;
+  the app's static "not investment advice / no buy-sell recommendation" disclaimer is a fixed negation,
+  not model output.
+- **Negative controls on Production**: H route without `chartAiProdBeta=1` → blocked (`NON_LOCAL_REQUEST`);
+  generic `local-only-kis-current-price.json` → blocked (`NON_LOCAL_REQUEST`, null price/volume). Generic
+  production KIS use remains fail-closed; the exception is scoped to the explicit opt-in path only.
+- **Exposure**: none. No secret, token, Authorization header, model name, prompt, raw OpenAI/KIS payload,
+  or currentPrice/volume numeric was printed anywhere during deploy or verification.
+- **Final classification**: `PASS_PRODUCTION_CHART_AI_BETA_DEPLOYED`.
+- **HEAD after this deploy-doc commit**: recorded in the changelog/commit log as the
+  `Phase 3GG-M-PROD-HF1: record production deployment result` commit (immediately follows `43923fd`).
