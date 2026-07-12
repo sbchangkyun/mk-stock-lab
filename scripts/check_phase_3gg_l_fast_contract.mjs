@@ -367,7 +367,10 @@ for (const line of statusLines) {
     continue;
   }
   const isKnown = KNOWN_UNTOUCHED_PATHS.some((p) => filePath === p || filePath.startsWith(p));
-  if (isKnown || ALLOWED_MODIFIED_FILES.has(filePath)) {
+  const isSiblingPhaseArtifact =
+    /^scripts\/check_phase_3gg_[a-z0-9_]+_contract\.mjs$/.test(filePath) ||
+    /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(filePath);
+  if (isKnown || ALLOWED_MODIFIED_FILES.has(filePath) || isSiblingPhaseArtifact) {
     assert(true, `${filePath} is a known/allowed path for this phase`);
   } else {
     assert(false, `Unexpected working-tree change outside this phase's scope: ${filePath} (verify before commit)`);

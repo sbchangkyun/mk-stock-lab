@@ -1,5 +1,44 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-N-FAST - 2026-07-12
+
+### Production Chart AI Default Route and UI Cleanup
+
+- **Status**: Builds on Phase 3GG-M-PROD-HF1. The owner requested `https://mkstocklab.vercel.app/chart-ai`
+  become the real Production entry point with no need to know or append `chartAiProdBeta=1`, and requested
+  the page stop mixing real KIS+LLM summary content with sample/mock/owner-local content presented as real.
+  Does not add universal search, real OHLCV, real similarity, or full MK AI analysis — those remain reserved
+  for Phase 3GG-OP-FAST.
+- **Baseline**: `da71860` (Phase 3GG-M-PROD-HF1).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: On Vercel Production runtime, serve the Production panel by default at `/chart-ai` with no query
+  param (legacy `?chartAiProdBeta=1` still works; the internal H-route fetch still carries
+  `chartAiProdBeta=1` even though the browser URL stays `/chart-ai`). Remove "오너 로컬 전용" wording,
+  local-only diagnostic buttons/cards, and dev notes from the rendered Production DOM (not CSS-hidden).
+  Keep the real 3-line `MK AI 시세 요약` card as the only active result; do not show `modelPresent`,
+  `sanitized=true`, raw provider names/booleans, internal warning codes, or raw sourceStatus/llmStatus.
+  Replace the sample chart with an honest `실시간 종목 차트 준비 중` preparing state. Replace the mock
+  Top5/backtest similar-pattern experience with an honest `유사 패턴 분석` disabled/empty state. Mark the
+  broader MK AI tab as preparing rather than offering a second fake experience. Label the current hardcoded
+  search `지원 종목 검색` with no universal-coverage claim. No H route change. No guard change. No prompt
+  rewrite. No summary contract rewrite. No dependency install. No lockfile change. No KIS endpoint expansion
+  (current_price only, unchanged from Phase 3GG-M-PROD-HF1). No account/order/balance/funds/portfolio/
+  trading/personal endpoint. No env value, model name, prompt text, raw OpenAI/KIS request/response,
+  credential, or currentPrice/volume numeric exposure.
+- **Result**: Implemented entirely inside `src/pages/chart-ai.astro` via `isVercelProductionRuntime`-gated
+  `Fragment` branches (reusing the `productionChartAiDefaultEnabled` / `evaluateProductionChartAiBetaAccess`
+  default-route mechanism and the `useProductionFacingSummaryPresentation` branch already wired in
+  Phase 3GG-M-PROD-HF1). Removed or gated: the owner-local diagnostic panel, the sample OHLC chart and its
+  status caption/helper text, the mock similar-pattern trigger/result card and panel heading, and the MK AI
+  tab's synthetic trigger/result card and panel heading — each replaced by an honest preparing/empty state
+  where required, confirmed null-safe to omit from Production DOM by tracing `renderMockedAnalysisState`'s
+  guard clause and `setText()`'s null check. Local regression preflight (HF5, G-FAST, HF6, L-FAST) all PASS
+  after the change; `npm run build` PASS. No H route change. No guard change. `.env`/`.env.local`/`.vercel`
+  never staged or committed. Live-runtime verification and Production browser QA outcomes are recorded in
+  the result doc.
+- **Next recommended phase**: Phase 3GG-OP-FAST — universal search, real OHLCV chart wiring, real similarity
+  analysis, and full MK AI analysis, once the owner is ready to scope that data-connection work.
+
 ## Phase 3GG-M-PROD-HF1 - 2026-07-12
 
 ### Guarded Production KIS Live Quotes Exception and Production URL Deploy

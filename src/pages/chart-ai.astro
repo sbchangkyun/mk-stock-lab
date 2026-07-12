@@ -8,6 +8,29 @@ import { runSimilarPatternAgent } from '../lib/server/chart-ai/similar-pattern-a
 import { createSimilarPatternFixtureInput } from '../lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
 import { runMkAgent } from '../lib/server/chart-ai/mk-agent.mjs';
 import { createMkAgentFixtureInput } from '../lib/server/chart-ai/mk-agent.fixture.mjs';
+import { evaluateProductionChartAiBetaAccess } from '../lib/server/chart-ai/protected-preview-beta-guard.mjs';
+
+// Phase 3GG-N-FAST: server-side Production runtime detection, using the same dual-source
+// (import.meta.env then process.env) read order already used by kisClient.ts and the H route, so
+// this reflects the real deployed runtime rather than a client-guessable value. Reuses the
+// existing, already-authorized production beta guard (unchanged) rather than duplicating its
+// VERCEL_ENV + flag conditions -- betaQueryOptIn is fixed to true here because this decides the
+// Production *default page visibility*, not an individual request's query opt-in.
+type ImportMetaWithEnv = ImportMeta & { env?: Record<string, string | undefined> };
+const readServerEnvValue = (name: string): string | undefined => {
+  const fromImportMeta = (import.meta as ImportMetaWithEnv).env?.[name];
+  if (typeof fromImportMeta === 'string' && fromImportMeta.trim().length > 0) return fromImportMeta;
+  return process.env[name];
+};
+const isVercelProductionRuntime = readServerEnvValue('VERCEL_ENV') === 'production';
+const productionChartAiDefaultAccess = evaluateProductionChartAiBetaAccess({
+  betaQueryOptIn: true,
+  env: {
+    VERCEL_ENV: readServerEnvValue('VERCEL_ENV'),
+    CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA: readServerEnvValue('CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA'),
+  },
+});
+const productionChartAiDefaultEnabled = productionChartAiDefaultAccess.allowed === true;
 
 const clientSafeDomesticSymbols = getClientSafeDomesticSymbolRecords();
 const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols)
@@ -272,12 +295,17 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     data-chart-ai-auth-state="authenticated"
     data-chart-ai-master-mode="false"
     data-chart-ai-cooldown-bypass="false"
+    data-chart-ai-production-default={String(productionChartAiDefaultEnabled)}
   >
   <header class="page-header chart-lookup-page-header">
     <div>
       <p class="eyebrow">국내/미국 주식·ETF</p>
       <h1>종목 차트</h1>
-      <p class="lead">종목을 조회하고 차트 중심의 기본 정보를 확인하세요. 현재 화면은 안전한 샘플 데이터로 구성되어 있습니다.</p>
+      <p class="lead">
+        {isVercelProductionRuntime
+          ? '종목을 조회하고 차트 중심의 기본 정보를 확인하세요. 실제 시장 데이터 기능은 순차적으로 연결되고 있습니다.'
+          : '종목을 조회하고 차트 중심의 기본 정보를 확인하세요. 현재 화면은 안전한 샘플 데이터로 구성되어 있습니다.'}
+      </p>
     </div>
   </header>
 
@@ -308,7 +336,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     <section class="chart-lookup-search" aria-labelledby="chart-lookup-search-heading">
       <div class="chart-ai-symbol-row">
         <label class="chart-search-shell chart-lookup-search-field" for="chartAiInput">
-          <span id="chart-lookup-search-heading">종목 검색</span>
+          <span id="chart-lookup-search-heading">지원 종목 검색</span>
           <input
             id="chartAiInput"
             type="search"
@@ -356,7 +384,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <div class="chart-market-summary">
             <div class="chart-market-heading-group">
               <p class="chart-market-kicker">차트</p>
-              <h2 id="chart-market-heading">샘플 차트</h2>
+              <h2 id="chart-market-heading">{isVercelProductionRuntime ? '실시간 종목 차트 준비 중' : '샘플 차트'}</h2>
             </div>
             <div class="chart-market-identity-row" aria-label="선택 종목 기본 정보" aria-live="polite">
               <strong id="chartAiSelectedName">삼성전자</strong>
@@ -366,11 +394,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               <span class="chart-identity-chip" id="chartAiSelectedCurrency">KRW</span>
             </div>
           </div>
+          {!isVercelProductionRuntime && (
           <div class="chart-market-status">
             <span id="chartAiChartStatus">샘플 OHLC·거래량 데이터</span>
             <strong id="chartAiChartStatusStrong">실제 시세 아님</strong>
           </div>
+          )}
+          {!isVercelProductionRuntime && (
           <p class="chart-market-sample-helper">현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 실제 투자 판단용 정보가 아닙니다.</p>
+          )}
         </div>
 
         <div class="chart-period-controls" role="group" aria-label="차트 기간 선택">
@@ -386,6 +418,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           id="chartAiMarketChart"
           role="img"
           aria-label="선택 종목의 샘플 캔들 차트와 거래량"
+          hidden={isVercelProductionRuntime}
         >
           <div class="chart-plot-heading" aria-hidden="true">
             <span id="chartAiChartPeriodLabel">1일 샘플</span>
@@ -402,6 +435,13 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             <span>실제 시세 아님 · 투자 참고용</span>
           </div>
         </div>
+
+        {isVercelProductionRuntime && (
+          <div class="chart-market-preparing-state" role="status">
+            <strong>실시간 종목 차트 준비 중</strong>
+            <p>검색 종목의 실제 OHLCV 차트는 다음 업데이트에서 연결됩니다.</p>
+          </div>
+        )}
 
       </section>
 
@@ -443,21 +483,23 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <small>샘플 정보 · 실제 투자 판단용 정보가 아닙니다.</small>
         </section>
 
-        <section class="panel chart-quote-preview" id="chartAiQuotePreview" aria-labelledby="chart-quote-preview-heading">
-          <div class="chart-sidebar-heading">
-            <p class="eyebrow" id="chartAiQuotePreviewEyebrow">오너 로컬 전용</p>
-            <h2 id="chart-quote-preview-heading">KIS 연결 프리뷰</h2>
-          </div>
-          <p class="chart-quote-preview-guide" id="chartAiQuotePreviewGuide">공개 화면은 샘플 모드입니다. KIS 연결 프리뷰는 오너 로컬 환경에서만 사용할 수 있습니다.</p>
-          <div class="chart-preview-actions">
-            <button class="chart-quote-preview-btn" id="chartAiQuotePreviewBtn" type="button" disabled>KIS 시세 프리뷰 확인</button>
-            <button class="chart-ohlc-preview-btn" id="chartAiOhlcPreviewBtn" type="button" disabled>KIS 차트 프리뷰 확인</button>
-          </div>
-          <div class="chart-quote-preview-result" id="chartAiQuotePreviewResult" hidden aria-live="polite"></div>
-          <p class="chart-ohlc-preview-message" id="chartAiOhlcPreviewMessage" hidden aria-live="polite"></p>
-          <span class="chart-ohlc-preview-tag" id="chartAiOhlcPreviewTag" hidden>지연 시세 · KIS OHLC · KRW</span>
-          <small>지연 시세 · 오너 로컬 전용 · 실제 투자 판단용 아님</small>
-        </section>
+        {!isVercelProductionRuntime && (
+          <section class="panel chart-quote-preview" id="chartAiQuotePreview" aria-labelledby="chart-quote-preview-heading">
+            <div class="chart-sidebar-heading">
+              <p class="eyebrow" id="chartAiQuotePreviewEyebrow">오너 로컬 전용</p>
+              <h2 id="chart-quote-preview-heading">KIS 연결 프리뷰</h2>
+            </div>
+            <p class="chart-quote-preview-guide" id="chartAiQuotePreviewGuide">공개 화면은 샘플 모드입니다. KIS 연결 프리뷰는 오너 로컬 환경에서만 사용할 수 있습니다.</p>
+            <div class="chart-preview-actions">
+              <button class="chart-quote-preview-btn" id="chartAiQuotePreviewBtn" type="button" disabled>KIS 시세 프리뷰 확인</button>
+              <button class="chart-ohlc-preview-btn" id="chartAiOhlcPreviewBtn" type="button" disabled>KIS 차트 프리뷰 확인</button>
+            </div>
+            <div class="chart-quote-preview-result" id="chartAiQuotePreviewResult" hidden aria-live="polite"></div>
+            <p class="chart-ohlc-preview-message" id="chartAiOhlcPreviewMessage" hidden aria-live="polite"></p>
+            <span class="chart-ohlc-preview-tag" id="chartAiOhlcPreviewTag" hidden>지연 시세 · KIS OHLC · KRW</span>
+            <small>지연 시세 · 오너 로컬 전용 · 실제 투자 판단용 아님</small>
+          </section>
+        )}
 
         <p class="chart-sidebar-analysis-note">분석 결과는 차트 하단의 차트 분석 영역에서 확인할 수 있습니다.</p>
       </aside>
@@ -470,95 +512,101 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         <p class="chart-analysis-header-guide">샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.</p>
       </div>
 
-      <section
-        class="chart-ai-owner-local-similar-pattern-route-notice"
-        data-chart-ai-owner-local-similar-pattern-route
-        aria-live="polite"
-        hidden
-      >
-        <strong>오너 로컬 유사 패턴 라우트 검증 모드입니다.</strong>
-        <span data-chart-ai-owner-local-similar-pattern-route-status>실행 대기</span>
-        <div data-chart-ai-owner-local-similar-pattern-route-result hidden></div>
-      </section>
+      {!isVercelProductionRuntime && (
+        <Fragment>
+          <section
+            class="chart-ai-owner-local-similar-pattern-route-notice"
+            data-chart-ai-owner-local-similar-pattern-route
+            aria-live="polite"
+            hidden
+          >
+            <strong>오너 로컬 유사 패턴 라우트 검증 모드입니다.</strong>
+            <span data-chart-ai-owner-local-similar-pattern-route-status>실행 대기</span>
+            <div data-chart-ai-owner-local-similar-pattern-route-result hidden></div>
+          </section>
 
-      <!--
-        Phase 3FB-C: local-only, explicit opt-in owner-local mocked similarity API execution panel.
-        Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
-        the URL carries `?ownerLocalMocked=1`. Never auto-runs; the API call only happens on an
-        explicit button click. Calls the existing owner-local mocked branch of
-        `/api/chart-ai/similarity` (Phase 3FB-B) and renders only sanitized, bucketed fields. This
-        is not real auth, not production authorization, and not live KIS data.
-      -->
-      <section
-        id="chartAiOwnerLocalMockedPanel"
-        class="chart-owner-local-mocked-panel"
-        aria-labelledby="chart-owner-local-mocked-heading"
-        hidden
-      >
-        <div class="chart-owner-local-mocked-heading">
-          <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
-          <h3 id="chart-owner-local-mocked-heading">Owner-local mocked 실행</h3>
-          <p class="chart-owner-local-mocked-guide">
-            실제 KIS 데이터가 아닌 mocked/sample 데이터입니다. 실서비스 인증·사용량·실시간 시세 연동 전 단계입니다.
-          </p>
-        </div>
-        <button type="button" id="chartAiOwnerLocalMockedRunBtn" class="chart-owner-local-mocked-run-btn">
-          Owner-local mocked 실행
-        </button>
-        <div
-          id="chartAiOwnerLocalMockedResult"
-          class="chart-owner-local-mocked-result"
-          hidden
-          aria-live="polite"
-        ></div>
-      </section>
+          <!--
+            Phase 3FB-C: local-only, explicit opt-in owner-local mocked similarity API execution panel.
+            Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
+            the URL carries `?ownerLocalMocked=1`. Never auto-runs; the API call only happens on an
+            explicit button click. Calls the existing owner-local mocked branch of
+            `/api/chart-ai/similarity` (Phase 3FB-B) and renders only sanitized, bucketed fields. This
+            is not real auth, not production authorization, and not live KIS data.
+          -->
+          <section
+            id="chartAiOwnerLocalMockedPanel"
+            class="chart-owner-local-mocked-panel"
+            aria-labelledby="chart-owner-local-mocked-heading"
+            hidden
+          >
+            <div class="chart-owner-local-mocked-heading">
+              <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
+              <h3 id="chart-owner-local-mocked-heading">Owner-local mocked 실행</h3>
+              <p class="chart-owner-local-mocked-guide">
+                실제 KIS 데이터가 아닌 mocked/sample 데이터입니다. 실서비스 인증·사용량·실시간 시세 연동 전 단계입니다.
+              </p>
+            </div>
+            <button type="button" id="chartAiOwnerLocalMockedRunBtn" class="chart-owner-local-mocked-run-btn">
+              Owner-local mocked 실행
+            </button>
+            <div
+              id="chartAiOwnerLocalMockedResult"
+              class="chart-owner-local-mocked-result"
+              hidden
+              aria-live="polite"
+            ></div>
+          </section>
 
-      <!--
-        Phase 3FB-E: local-only, explicit opt-in owner-local auth/usage bridge verification panel.
-        Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
-        the URL carries `?ownerLocalAuthUsageBridge=1`. Never auto-runs; the API call only happens
-        on an explicit scenario button click. Calls the owner-local-auth-usage-bridge branch of
-        `/api/chart-ai/similarity` (Phase 3FB-C-ALT), which evaluates mock auth/usage state
-        against the existing execution guard before allowing mocked execution. Renders only
-        sanitized, bucketed fields. This is not real auth, not a real session, not real usage
-        persistence, and not live KIS data.
-      -->
-      <section
-        id="chartAiOwnerLocalAuthUsageBridgePanel"
-        class="chart-owner-local-auth-usage-bridge-panel"
-        aria-labelledby="chart-owner-local-auth-usage-bridge-heading"
-        hidden
-      >
-        <div class="chart-owner-local-auth-usage-bridge-heading">
-          <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
-          <h3 id="chart-owner-local-auth-usage-bridge-heading">Owner-local auth/usage bridge 실행</h3>
-          <p class="chart-owner-local-auth-usage-bridge-guide">
-            mock auth/usage 상태를 이용해 guard 평가 후 mocked 실행을 확인합니다.
-            실제 로그인, 세션, 사용량 저장, KIS 데이터가 아닙니다. 투자 판단용 정보가 아닙니다.
-          </p>
-        </div>
-        <div class="chart-owner-local-auth-usage-bridge-scenarios" role="group" aria-label="auth/usage bridge 시나리오 선택">
-          <button type="button" id="chartAiAuthUsageBridgeAllowedBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="allowed">
-            허용 시나리오 (Owner)
-          </button>
-          <button type="button" id="chartAiAuthUsageBridgeAnonymousBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="anonymous">
-            익명 차단 시나리오
-          </button>
-          <button type="button" id="chartAiAuthUsageBridgeUsageLimitedBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="usage-limited">
-            사용량 초과 시나리오
-          </button>
-          <button type="button" id="chartAiAuthUsageBridgeInvalidBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="invalid">
-            잘못된 요청 시나리오
-          </button>
-        </div>
-        <div
-          id="chartAiOwnerLocalAuthUsageBridgeResult"
-          class="chart-owner-local-auth-usage-bridge-result"
-          hidden
-          aria-live="polite"
-        ></div>
-      </section>
+          <!--
+            Phase 3FB-E: local-only, explicit opt-in owner-local auth/usage bridge verification panel.
+            Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
+            the URL carries `?ownerLocalAuthUsageBridge=1`. Never auto-runs; the API call only happens
+            on an explicit scenario button click. Calls the owner-local-auth-usage-bridge branch of
+            `/api/chart-ai/similarity` (Phase 3FB-C-ALT), which evaluates mock auth/usage state
+            against the existing execution guard before allowing mocked execution. Renders only
+            sanitized, bucketed fields. This is not real auth, not a real session, not real usage
+            persistence, and not live KIS data.
+          -->
+          <section
+            id="chartAiOwnerLocalAuthUsageBridgePanel"
+            class="chart-owner-local-auth-usage-bridge-panel"
+            aria-labelledby="chart-owner-local-auth-usage-bridge-heading"
+            hidden
+          >
+            <div class="chart-owner-local-auth-usage-bridge-heading">
+              <p class="eyebrow">오너 로컬 전용 · 로컬 개발 검증용</p>
+              <h3 id="chart-owner-local-auth-usage-bridge-heading">Owner-local auth/usage bridge 실행</h3>
+              <p class="chart-owner-local-auth-usage-bridge-guide">
+                mock auth/usage 상태를 이용해 guard 평가 후 mocked 실행을 확인합니다.
+                실제 로그인, 세션, 사용량 저장, KIS 데이터가 아닙니다. 투자 판단용 정보가 아닙니다.
+              </p>
+            </div>
+            <div class="chart-owner-local-auth-usage-bridge-scenarios" role="group" aria-label="auth/usage bridge 시나리오 선택">
+              <button type="button" id="chartAiAuthUsageBridgeAllowedBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="allowed">
+                허용 시나리오 (Owner)
+              </button>
+              <button type="button" id="chartAiAuthUsageBridgeAnonymousBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="anonymous">
+                익명 차단 시나리오
+              </button>
+              <button type="button" id="chartAiAuthUsageBridgeUsageLimitedBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="usage-limited">
+                사용량 초과 시나리오
+              </button>
+              <button type="button" id="chartAiAuthUsageBridgeInvalidBtn" class="chart-owner-local-auth-usage-bridge-btn" data-scenario="invalid">
+                잘못된 요청 시나리오
+              </button>
+            </div>
+            <div
+              id="chartAiOwnerLocalAuthUsageBridgeResult"
+              class="chart-owner-local-auth-usage-bridge-result"
+              hidden
+              aria-live="polite"
+            ></div>
+          </section>
+        </Fragment>
+      )}
 
+      {!isVercelProductionRuntime && (
+      <Fragment>
       <!--
         Phase 3FF-A-UI-A: local-only, explicit opt-in owner-local deterministic agent UI panel.
         Hidden by default. Only unhidden client-side when hostname is localhost/127.0.0.1/::1 AND
@@ -772,6 +820,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           aria-live="polite"
         ></div>
       </section>
+      </Fragment>
+      )}
 
       <!--
         Phase 3GG-I-FAST: local-only, explicit opt-in owner-local KIS current_price + LLM summary
@@ -793,15 +843,28 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         hidden
       >
         <div class="chart-owner-local-kis-llm-summary-heading">
-          <p class="eyebrow">소유자 로컬 테스트 전용</p>
-          <h3 id="chart-owner-local-kis-llm-summary-heading">로컬 전용 KIS + LLM 요약</h3>
-          <p class="chart-owner-local-kis-llm-summary-guide">
-            페이지 로드시 자동 실행되지 않습니다. 버튼 클릭 시에만 현재가 기반 요약을 요청합니다.
-            투자 자문이 아니며 매수·매도 추천을 제공하지 않습니다.
-          </p>
+          {isVercelProductionRuntime ? (
+            <Fragment>
+              <p class="eyebrow">실시간 요약</p>
+              <h3 id="chart-owner-local-kis-llm-summary-heading">MK AI 시세 요약</h3>
+              <p class="chart-owner-local-kis-llm-summary-guide">
+                현재 조회된 시장 데이터를 기반으로 핵심 상태를 요약합니다.
+                투자 자문이 아니며 매수·매도 추천을 제공하지 않습니다.
+              </p>
+            </Fragment>
+          ) : (
+            <Fragment>
+              <p class="eyebrow">소유자 로컬 테스트 전용</p>
+              <h3 id="chart-owner-local-kis-llm-summary-heading">로컬 전용 KIS + LLM 요약</h3>
+              <p class="chart-owner-local-kis-llm-summary-guide">
+                페이지 로드시 자동 실행되지 않습니다. 버튼 클릭 시에만 현재가 기반 요약을 요청합니다.
+                투자 자문이 아니며 매수·매도 추천을 제공하지 않습니다.
+              </p>
+            </Fragment>
+          )}
         </div>
         <button type="button" id="chartAiOwnerLocalKisLlmSummaryButton" class="chart-owner-local-kis-llm-summary-run-btn">
-          로컬 전용 KIS + LLM 요약 요청 (005930)
+          {isVercelProductionRuntime ? 'MK AI 시세 요약 요청 (005930)' : '로컬 전용 KIS + LLM 요약 요청 (005930)'}
         </button>
         <p id="chartAiOwnerLocalKisLlmSummaryStatus" class="chart-owner-local-kis-llm-summary-status" aria-live="polite">대기 중</p>
         <div
@@ -836,16 +899,33 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         <div class="chart-analysis-page-canvas">
       <div id="chartAiSimilarityPanel" class="chart-analysis-page active" role="tabpanel" aria-labelledby="chartAiSimilarityTab" tabindex="0">
       <div class="chart-similarity-panel-heading">
-        <p class="eyebrow">유사 패턴 분석</p>
-        <h2 id="chart-similarity-panel-heading">유사 패턴 분석 결과</h2>
-        <div class="chart-similarity-status-row">
-          <span class="chart-identity-chip">샘플 데이터</span>
-          <span class="chart-identity-chip">실제 KIS 데이터 아님</span>
-          <span class="chart-identity-chip">매수·매도 추천 또는 투자자문이 아님</span>
-        </div>
-        <p class="chart-similarity-panel-guide">결정적 유사도 엔진을 합성 샘플 OHLC 데이터에 적용한 결과이며, 외부 AI를 호출하지 않습니다.</p>
+        {isVercelProductionRuntime ? (
+          <Fragment>
+            <p class="eyebrow">유사 패턴 분석</p>
+            <h2 id="chart-similarity-panel-heading">유사 패턴 분석</h2>
+          </Fragment>
+        ) : (
+          <Fragment>
+            <p class="eyebrow">유사 패턴 분석</p>
+            <h2 id="chart-similarity-panel-heading">유사 패턴 분석 결과</h2>
+            <div class="chart-similarity-status-row">
+              <span class="chart-identity-chip">샘플 데이터</span>
+              <span class="chart-identity-chip">실제 KIS 데이터 아님</span>
+              <span class="chart-identity-chip">매수·매도 추천 또는 투자자문이 아님</span>
+            </div>
+            <p class="chart-similarity-panel-guide">결정적 유사도 엔진을 합성 샘플 OHLC 데이터에 적용한 결과이며, 외부 AI를 호출하지 않습니다.</p>
+          </Fragment>
+        )}
       </div>
 
+      {isVercelProductionRuntime ? (
+        <div class="chart-analysis-preparing-state" role="status">
+          <p class="chart-analysis-trigger-kicker">유사 패턴 분석</p>
+          <strong>유사 패턴 분석</strong>
+          <p>검색 종목의 실제 과거 OHLCV 데이터 연결 후 분석할 수 있습니다.</p>
+        </div>
+      ) : (
+        <Fragment>
       <section
         class="chart-analysis-trigger-card"
         data-chart-ai-analysis-state="similar-pattern"
@@ -980,15 +1060,33 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         </ul>
       </section>
       </div>
+        </Fragment>
+      )}
       </div>
 
       <div id="chartAiMkAiPanel" class="chart-analysis-page" role="tabpanel" aria-labelledby="chartAiMkAiTab" hidden tabindex="0">
         <div class="chart-mk-ai-panel-heading">
           <p class="eyebrow">MK AI</p>
           <h3 id="chart-mk-ai-heading">MK AI 해석</h3>
-          <p class="chart-mk-ai-subheading">AI 분석 미리보기</p>
-          <p class="chart-mk-ai-intro">아래 해석은 샘플·합성 데이터를 결정적 로직으로 분석한 결과이며, 외부 AI를 호출하지 않습니다.</p>
+          {isVercelProductionRuntime ? (
+            <p class="chart-mk-ai-subheading">확장 분석 준비 중</p>
+          ) : (
+            <Fragment>
+              <p class="chart-mk-ai-subheading">AI 분석 미리보기</p>
+              <p class="chart-mk-ai-intro">아래 해석은 샘플·합성 데이터를 결정적 로직으로 분석한 결과이며, 외부 AI를 호출하지 않습니다.</p>
+            </Fragment>
+          )}
         </div>
+        {isVercelProductionRuntime && (
+          <div class="chart-analysis-preparing-state" role="status">
+            <p class="chart-analysis-trigger-kicker">MK AI 확장 분석</p>
+            <strong>MK AI 확장 분석 준비 중</strong>
+            <p>실제 OHLCV 및 유사 패턴 데이터 연결 후 확장 분석이 제공됩니다.</p>
+            <p>현재 페이지의 실시간 시세 요약은 위 &ldquo;MK AI 시세 요약&rdquo; 카드에서 확인할 수 있습니다.</p>
+          </div>
+        )}
+        {!isVercelProductionRuntime && (
+        <Fragment>
         <section
           class="chart-analysis-trigger-card"
           data-chart-ai-analysis-state="mk-ai"
@@ -1106,6 +1204,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <p>실제 투자 판단용 정보가 아니며 매수·매도 추천이 아닙니다.</p>
         </div>
         </div>
+        </Fragment>
+        )}
       </div>
         </div>
       </div>
@@ -1321,11 +1421,25 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // H route independently enforces VERCEL_ENV=production + CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA
       // + the explicit query before any KIS/LLM call, and fails closed otherwise. Hidden by default;
       // no auto-fetch; button click only, same as the Preview beta and localhost owner paths.
+      // Phase 3GG-N-FAST: `productionChartAiDefaultEnabled` is a server-computed signal (Astro
+      // frontmatter, VERCEL_ENV=production + the Production flag) smuggled in via the auth shell's
+      // dataset, not a client-guessable query param. It only ever ORs the panel into visibility here;
+      // the H route's own guard (below) still independently requires `chartAiProdBeta=1` on the
+      // internal fetch request regardless of how this page-visibility flag was derived.
+      const productionChartAiDefaultEnabled = authShell?.dataset.chartAiProductionDefault === 'true';
       const chartAiProdBetaOptIn = chartAiQuery.get('chartAiProdBeta') === '1';
       const chartAiProdBetaEnabled =
-        mockedChartAiAccess.capabilities.canAccessChartAi && !isLocalOwnerHostname() && chartAiProdBetaOptIn;
+        mockedChartAiAccess.capabilities.canAccessChartAi &&
+        !isLocalOwnerHostname() &&
+        (chartAiProdBetaOptIn || productionChartAiDefaultEnabled);
       const ownerLocalKisLlmSummaryPanelEnabled =
         ownerLocalKisLlmEnabled || chartAiBetaPreviewEnabled || chartAiProdBetaEnabled;
+      // Phase 3GG-N-FAST: the Production Chart AI beta path (default route or legacy
+      // `?chartAiProdBeta=1`) always reaches real end users, unlike the localhost owner and Preview
+      // tester paths -- so it renders a stripped-down, user-facing summary card instead of the
+      // owner-local diagnostics view (no `sanitized=true`, no raw llmStatus/sourceStatus labels, no
+      // internal warning codes/diagnostics allowlist fields).
+      const useProductionFacingSummaryPresentation = chartAiProdBetaEnabled;
       const ownerLocalKisLlmSummaryRequestQuery = ownerLocalKisLlmEnabled
         ? 'ownerLocalKisLlm=1'
         : chartAiBetaPreviewEnabled
@@ -2970,13 +3084,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         const summaryList = document.createElement('dl');
         summaryList.className = 'chart-owner-local-kis-llm-summary-dl';
-        const rows: Array<[string, string]> = [
-          ['종목', summary.symbol ?? '-'],
-          ['시장', summary.market ?? '-'],
-          ['LLM 상태', summary.llmStatus ?? '-'],
-          ['현재가 반영 여부', summary.currentPricePresent === true ? '반영됨' : '반영 안 됨'],
-          ['거래량 반영 여부', summary.volumePresent === true ? '반영됨' : '반영 안 됨'],
-        ];
+        const rows: Array<[string, string]> = useProductionFacingSummaryPresentation
+          ? [
+              ['종목', summary.symbol ?? '-'],
+              ['시장', summary.market ?? '-'],
+              ['분석 상태', '완료'],
+            ]
+          : [
+              ['종목', summary.symbol ?? '-'],
+              ['시장', summary.market ?? '-'],
+              ['LLM 상태', summary.llmStatus ?? '-'],
+              ['현재가 반영 여부', summary.currentPricePresent === true ? '반영됨' : '반영 안 됨'],
+              ['거래량 반영 여부', summary.volumePresent === true ? '반영됨' : '반영 안 됨'],
+            ];
         for (const [label, value] of rows) {
           const dt = document.createElement('dt');
           dt.textContent = label;
@@ -2988,8 +3108,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         const sanitizedNote = document.createElement('p');
         sanitizedNote.className = 'chart-owner-local-kis-llm-summary-sanitized-note';
-        sanitizedNote.textContent =
-          '민감 정보(실제 현재가 수치, 원문 응답, 프롬프트, 자격 증명 등)는 표시되지 않습니다. (sanitized=true)';
+        sanitizedNote.textContent = useProductionFacingSummaryPresentation
+          ? '실제 시세 수치와 원문 응답은 표시되지 않습니다.'
+          : '민감 정보(실제 현재가 수치, 원문 응답, 프롬프트, 자격 증명 등)는 표시되지 않습니다. (sanitized=true)';
         ownerLocalKisLlmSummaryOutput.append(sanitizedNote);
 
         const disclaimer = document.createElement('p');
@@ -3002,6 +3123,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         if (!ownerLocalKisLlmSummaryOutput) return;
         ownerLocalKisLlmSummaryOutput.hidden = false;
         ownerLocalKisLlmSummaryOutput.replaceChildren();
+
+        if (useProductionFacingSummaryPresentation) {
+          const msg = document.createElement('p');
+          msg.className = 'chart-owner-local-kis-llm-summary-msg chart-owner-local-kis-llm-summary-msg-unavailable';
+          msg.textContent = '지금은 시세 요약을 완료하지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.';
+          ownerLocalKisLlmSummaryOutput.append(msg);
+
+          const disclaimer = document.createElement('p');
+          disclaimer.className = 'chart-owner-local-kis-llm-summary-disclaimer';
+          disclaimer.textContent = '투자 자문이 아니며 매수·매도 추천을 제공하지 않습니다.';
+          ownerLocalKisLlmSummaryOutput.append(disclaimer);
+          return;
+        }
 
         const summaryList = document.createElement('dl');
         summaryList.className = 'chart-owner-local-kis-llm-summary-dl';
@@ -3037,7 +3171,10 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           ownerLocalKisLlmSummaryRequestInFlight = true;
           ownerLocalKisLlmSummaryButton.disabled = true;
           if (ownerLocalKisLlmSummaryOutput) ownerLocalKisLlmSummaryOutput.setAttribute('aria-busy', 'true');
-          showOwnerLocalKisLlmSummaryMessage('불러오는 중… (로컬 전용 KIS + LLM 요약, current_price 기반)', 'loading');
+          showOwnerLocalKisLlmSummaryMessage(
+            useProductionFacingSummaryPresentation ? '불러오는 중…' : '불러오는 중… (로컬 전용 KIS + LLM 요약, current_price 기반)',
+            'loading',
+          );
 
           const abortController = new AbortController();
           const timeoutId = window.setTimeout(
@@ -3066,7 +3203,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               }
             } else {
               showOwnerLocalKisLlmSummaryMessage(
-                '로컬 전용 KIS + LLM 요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
+                useProductionFacingSummaryPresentation
+                  ? '요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.'
+                  : '로컬 전용 KIS + LLM 요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
                 'unavailable',
               );
             }
@@ -3075,7 +3214,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               showOwnerLocalKisLlmSummaryMessage('요청 시간이 초과되었습니다. 다시 실행 버튼으로 재시도해 주세요.', 'unavailable');
             } else {
               showOwnerLocalKisLlmSummaryMessage(
-                '로컬 전용 KIS + LLM 요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
+                useProductionFacingSummaryPresentation
+                  ? '요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.'
+                  : '로컬 전용 KIS + LLM 요약 결과를 불러오지 못했습니다. 다시 실행 버튼으로 재시도해 주세요.',
                 'unavailable',
               );
             }
@@ -4004,6 +4145,37 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     .chart-mk-ai-status {
       display: inline-block;
       margin: 0.3rem 0 0.6rem;
+    }
+
+    .chart-analysis-preparing-state,
+    .chart-market-preparing-state {
+      display: grid;
+      gap: 0.4rem;
+      padding: 0.9rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-muted);
+      color: var(--chart-shell-muted);
+    }
+
+    .chart-analysis-preparing-state strong,
+    .chart-market-preparing-state strong {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .chart-analysis-preparing-state p,
+    .chart-market-preparing-state p {
+      margin: 0;
+      font-size: 0.74rem;
+      line-height: 1.5;
+    }
+
+    .chart-analysis-preparing-state .chart-analysis-trigger-kicker {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     .chart-mk-ai-bullets,
