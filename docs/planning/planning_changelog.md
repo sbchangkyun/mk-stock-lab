@@ -1,5 +1,43 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-FAST - 2026-07-13
+
+### Market and Cross-Asset Intelligence
+
+- Builds on Phase 3GG-S-FAST, reusing the normalized instrument + real OHLCV provider and the
+  deterministic scoring engine (`sma`/`smaSlope`/`annualizedVolatility`/`trendScore`) from MK AI;
+  integrated into the Chart AI page as a production-gated, click-triggered `시장 인텔리전스` section
+  without degrading the single-symbol Chart/similarity/MK-AI/Portfolio experience.
+- Resolves a **real, representative benchmark** per instrument (KR → KODEX 200 / KODEX 코스닥150 by
+  exchange; US → QQQ for NASDAQ-listed else SPY), with a labeled broad-market cross-check when the
+  selected instrument *is* the benchmark. No fabricated index mappings.
+- Computes deterministic **relative strength** (selected vs benchmark and, where a verified US GICS
+  sector proxy exists, vs sector) over 1m/3m/6m windows on common trading dates; honest
+  currency-mismatch / insufficient-overlap handling (never compared across currencies without an FX
+  method).
+- Adds a real **USD/KRW** context from the free ECB-backed Frankfurter API (delayed, no secret,
+  fail-safe honest-unavailable). No hardcoded FX rate.
+- Adds **commodity / risk-asset** context (gold via GLD, oil via USO — real OHLCV) and a broad + single
+  instrument **volatility** read.
+- Classifies a deterministic **market regime** (risk-on / neutral / risk-off / high-volatility-transition
+  / data-insufficient) from documented fixed thresholds + weights; confidence reflects DATA COMPLETENESS
+  and factor agreement, explicitly NOT a forecast.
+- **Real data only.** No synthetic/sample/mock/fixed market data or FX in Production. **Interest-rate**
+  data is honestly reported as not sourced this phase (no reliable free official source), and **market
+  breadth** is marked unavailable — missing datasets are shown, never fabricated or zero-filled.
+- Partial success is first-class: one failed source does not fail the whole response; a data-completeness
+  percentage and per-dataset availability list are surfaced.
+- Reuses the exact same guard as the OHLCV/similarity/MK-AI routes (localhost owner opt-in / protected
+  Preview beta / production beta), forwarding the scoped live-quote exception only on the production-beta
+  path. No weakening of existing local/Preview/Production guards.
+- **No investment recommendation.** No buy/sell, entry/exit, target price, stop-loss, target allocation,
+  probability, or guaranteed return. Descriptive market-environment intelligence only, with the standard
+  참고용 disclaimer.
+- No trading/account/order/balance/funds/portfolio/personal endpoint. No LLM call while rendering. No
+  Supabase schema change. No new dependency or lockfile change.
+- Production deploy and desktop + mobile browser QA included.
+- Next recommended phase: Phase 3GG-U-FAST — News, Filings and Macro Event Intelligence.
+
 ## Phase 3GG-S-FAST - 2026-07-12
 
 ### Portfolio Intelligence

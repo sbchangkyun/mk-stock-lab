@@ -1261,6 +1261,30 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     </section>
 
     {isVercelProductionRuntime && (
+      <details id="chartAiMarketIntel" class="chart-market-intel" data-state="idle">
+        <summary class="chart-market-intel-summary">
+          <span class="eyebrow">시장 인텔리전스</span>
+          <span class="chart-market-intel-summary-title">시장·환율·변동성 종합 환경 분석</span>
+        </summary>
+        <div class="chart-market-intel-body">
+          <div class="chart-market-intel-header">
+            <p class="chart-market-intel-head-line" id="chartAiMiHead">선택 종목과 벤치마크를 종합 분석합니다.</p>
+            <button type="button" id="chartAiMiStartBtn" class="chart-market-intel-btn">시장 인텔리전스 분석</button>
+          </div>
+          <p class="chart-market-intel-disclaimer">시장·환율·금리·변동성 데이터를 종합한 참고용 환경 분석입니다. 미래 성과를 예측하거나 보장하지 않습니다.</p>
+          <p class="chart-market-intel-status" id="chartAiMiStatus" role="status" aria-live="polite" hidden></p>
+          <div class="chart-market-intel-results" id="chartAiMiResults" hidden>
+            <div class="chart-market-intel-regime" id="chartAiMiRegime" aria-live="polite"></div>
+            <div class="chart-market-intel-rs" id="chartAiMiRs"></div>
+            <div class="chart-market-intel-cards" id="chartAiMiCards"></div>
+            <div class="chart-market-intel-availability" id="chartAiMiAvailability"></div>
+            <div class="chart-market-intel-conclusion" id="chartAiMiConclusion" aria-live="polite"></div>
+          </div>
+        </div>
+      </details>
+    )}
+
+    {isVercelProductionRuntime && (
       <section id="chartAiPortfolioWorkspace" class="chart-portfolio-workspace" aria-labelledby="chart-portfolio-heading">
         <div class="chart-portfolio-header">
           <p class="eyebrow">포트폴리오 인텔리전스</p>
@@ -1434,6 +1458,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       let resetSelectedSimilarity: () => void = () => {};
       // Phase 3GG-R-FAST: reassigned by the production MK AI analysis block.
       let resetSelectedMkAi: () => void = () => {};
+      // Phase 3GG-T-FAST: reassigned by the production Market Intelligence block.
+      let resetSelectedMarketIntel: () => void = () => {};
       // Phase 3GG-S-FAST: portfolio-intelligence hooks (assigned by the portfolio block).
       let recordSelectionForPortfolio: (record: any) => void = () => {};
       let cacheAnalysisScores: (key: string, scores: any) => void = () => {};
@@ -2110,6 +2136,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try { resetSelectedSummary(); } catch {}
         try { resetSelectedSimilarity(); } catch {}
         try { resetSelectedMkAi(); } catch {}
+        try { resetSelectedMarketIntel(); } catch {}
         try { recordSelectionForPortfolio(record); } catch {}
         if (productionRealChartEnabled) {
           updateProductionUrlState();
@@ -2732,6 +2759,184 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         if (mkaiStartBtn && productionRealChartEnabled) {
           mkaiStartBtn.addEventListener('click', runMkai);
+        }
+      }
+
+      // ===== Phase 3GG-T-FAST: Market & Cross-Asset Intelligence (Production, click-triggered) =====
+      {
+        const miRoot = document.getElementById('chartAiMarketIntel');
+        const miStartBtn = document.getElementById('chartAiMiStartBtn') as HTMLButtonElement | null;
+        const miHead = document.getElementById('chartAiMiHead');
+        const miStatus = document.getElementById('chartAiMiStatus');
+        const miResults = document.getElementById('chartAiMiResults');
+        const miRegime = document.getElementById('chartAiMiRegime');
+        const miRs = document.getElementById('chartAiMiRs');
+        const miCards = document.getElementById('chartAiMiCards');
+        const miAvailability = document.getElementById('chartAiMiAvailability');
+        const miConclusion = document.getElementById('chartAiMiConclusion');
+
+        let miSeq = 0;
+        let miAbort: AbortController | null = null;
+        let miInFlight = false;
+        const MI_TIMEOUT_MS = 25000;
+        const elx = (tag: string, cls?: string, text?: string) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+        const setMiState = (s: string) => { if (miRoot) miRoot.dataset.state = s; };
+        const showMiStatus = (t: string) => { if (miStatus) { miStatus.textContent = t; miStatus.hidden = !t; } };
+
+        const resetMi = () => {
+          miSeq += 1;
+          if (miAbort) { miAbort.abort(); miAbort = null; }
+          miInFlight = false;
+          if (miResults) miResults.hidden = true;
+          showMiStatus('');
+          setMiState('idle');
+          if (miStartBtn) { miStartBtn.disabled = false; miStartBtn.textContent = '시장 인텔리전스 분석'; }
+          [miRegime, miRs, miCards, miAvailability, miConclusion].forEach((el) => el && el.replaceChildren());
+          if (miHead) miHead.textContent = `${selectedName || '선택 종목'} 기준 시장 환경을 분석합니다.`;
+        };
+        resetSelectedMarketIntel = resetMi;
+
+        const tiltLabel = (t: string) => (t === 'risk-on' ? '위험선호' : t === 'risk-off' ? '위험회피' : '중립');
+
+        const renderMi = (mi: any) => {
+          if (miHead) miHead.textContent = `${mi.instrument?.displayName ?? ''} · 벤치마크 ${mi.benchmark?.displayName ?? '—'} · 데이터 기준 ${mi.asOf ?? '—'}`;
+          // Regime card
+          if (miRegime) {
+            miRegime.replaceChildren();
+            const reg = mi.marketRegime || {};
+            const card = elx('div', 'chart-market-intel-regime-card');
+            card.append(elx('span', 'chart-market-intel-regime-badge', '시장 국면'));
+            card.append(elx('strong', 'chart-market-intel-regime-label', reg.regimeLabel ?? '—'));
+            card.append(elx('span', 'chart-market-intel-regime-conf', `데이터 완성도 ${typeof reg.confidence === 'number' ? reg.confidence : '—'}점`));
+            const chips = elx('div', 'chart-market-intel-chips');
+            (reg.factors || []).forEach((fac: any) => {
+              const chip = elx('span', `chart-market-intel-chip tilt-${fac.tilt}`);
+              chip.textContent = `${fac.label}: ${tiltLabel(fac.tilt)}`;
+              chips.append(chip);
+            });
+            card.append(chips);
+            card.append(elx('p', 'chart-market-intel-note', '국면 분류는 결정적 규칙 기반의 환경 설명이며, 예측이나 매매 권유가 아닙니다.'));
+            miRegime.append(card);
+          }
+          // Relative strength
+          if (miRs) {
+            miRs.replaceChildren();
+            const rs = mi.relativeStrength?.vsBenchmark;
+            const box = elx('div', 'chart-market-intel-rs-box');
+            box.append(elx('p', 'chart-market-intel-rs-title', '상대 강도 (벤치마크 대비)'));
+            if (rs && rs.available) {
+              box.append(elx('p', 'chart-market-intel-rs-class', rs.classificationLabel));
+              const dl = elx('dl', 'chart-market-intel-rs-metrics');
+              [['1개월', 21], ['3개월', 63], ['6개월', 126]].forEach(([lbl, w]: any) => {
+                const win = rs.windows?.[w];
+                dl.append(elx('dt', '', lbl));
+                dl.append(elx('dd', '', win && win.available && typeof win.diffPct === 'number' ? `${win.diffPct >= 0 ? '+' : ''}${win.diffPct}%p` : '데이터 없음'));
+              });
+              box.append(dl);
+              const vsS = mi.relativeStrength?.vsSector;
+              box.append(elx('p', 'chart-market-intel-rs-sector', vsS && vsS.available ? `업종 프록시 대비: ${vsS.classificationLabel}` : '업종 비교: 제공되지 않음'));
+            } else {
+              box.append(elx('p', 'chart-market-intel-empty', `상대 강도를 계산할 수 없습니다. (${rs?.reasonText || '데이터 부족'})`));
+            }
+            miRs.append(box);
+          }
+          // Context cards
+          if (miCards) {
+            miCards.replaceChildren();
+            const addCard = (title: string, avail: boolean, lines: string[]) => {
+              const c = elx('div', 'chart-market-intel-card');
+              c.append(elx('p', 'chart-market-intel-card-title', title));
+              if (avail) lines.forEach((l) => c.append(elx('p', 'chart-market-intel-card-line', l)));
+              else c.append(elx('p', 'chart-market-intel-card-unavailable', lines[0] || '데이터 미제공'));
+              miCards.append(c);
+            };
+            const eq = mi.equityContext || {};
+            addCard('광의 시장', eq.available, [`추세 점수 ${eq.trendScore ?? '—'}`, `1개월 ${eq.momentum1mPct ?? '—'}% · 3개월 ${eq.momentum3mPct ?? '—'}%`, `연율 변동성 ${eq.annualizedVolatilityPct ?? '—'}%`]);
+            const fx = mi.currencyContext || {};
+            addCard('환율 USD/KRW', fx.available, [`${fx.rate ?? '—'}원`, `1개월 ${typeof fx.change1mPct === 'number' ? (fx.change1mPct >= 0 ? '+' : '') + fx.change1mPct + '%' : '—'}`, '지연 시세(ECB 참고)']);
+            const rt = mi.rateContext || {};
+            addCard('금리', rt.available, [rt.note || '이번 단계에서 제공되지 않습니다.']);
+            const vo = mi.volatilityContext || {};
+            addCard('변동성', vo.available, [`광의 ${vo.broadLabel ?? '—'} (연율 ${vo.broadAnnualizedVolatilityPct ?? '—'}%)`, vo.instrumentLabel ? `종목 ${vo.instrumentLabel} (연율 ${vo.instrumentAnnualizedVolatilityPct}%)` : '']);
+            const co = mi.commodityContext || {};
+            addCard('원자재·리스크 자산', co.available, [`금 1개월 ${co.gold?.available ? (co.gold.change1mPct >= 0 ? '+' : '') + co.gold.change1mPct + '%' : '없음'}`, `원유 1개월 ${co.oil?.available ? (co.oil.change1mPct >= 0 ? '+' : '') + co.oil.change1mPct + '%' : '없음'}`]);
+          }
+          // Availability
+          if (miAvailability) {
+            miAvailability.replaceChildren();
+            miAvailability.append(elx('p', 'chart-market-intel-avail-title', '데이터 제공 현황'));
+            const list = elx('div', 'chart-market-intel-avail-list');
+            (mi.formatted?.availability || []).forEach((a: any) => {
+              const item = elx('span', `chart-market-intel-avail-item ${a.available ? 'is-on' : 'is-off'}`);
+              item.textContent = `${a.dataset}: ${a.available ? '제공' : '미제공'}`;
+              list.append(item);
+            });
+            miAvailability.append(list);
+          }
+          if (miConclusion) {
+            miConclusion.replaceChildren();
+            miConclusion.append(elx('p', 'chart-market-intel-conclusion-title', '종합'));
+            miConclusion.append(elx('p', 'chart-market-intel-conclusion-body', mi.formatted?.conclusion || ''));
+            miConclusion.append(elx('p', 'chart-market-intel-conclusion-disc', mi.formatted?.disclaimer || ''));
+          }
+          if (miResults) miResults.hidden = false;
+          setMiState('ready');
+        };
+
+        const miHonestMsg = (code: string) => {
+          switch (code) {
+            case 'PROVIDER_UNAVAILABLE': return '시장 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+            case 'INSUFFICIENT_DATA': return '분석에 필요한 시장 데이터가 충분하지 않습니다.';
+            case 'UNSUPPORTED_INSTRUMENT': return '이 종목은 아직 시장 인텔리전스를 지원하지 않습니다.';
+            default: return '시장 인텔리전스 분석을 완료하지 못했습니다. 다시 시도해 주세요.';
+          }
+        };
+
+        const runMi = async () => {
+          if (!productionRealChartEnabled || miInFlight) return;
+          miInFlight = true;
+          const seq = ++miSeq;
+          if (miAbort) miAbort.abort();
+          miAbort = new AbortController();
+          const signal = miAbort.signal;
+          const sym = selectedSymbol;
+          const ctry = selectedCountry;
+          setMiState('loading');
+          if (miResults) miResults.hidden = true;
+          showMiStatus(`${selectedName} 기준 시장·환율·변동성 환경을 분석하는 중입니다…`);
+          if (miStartBtn) miStartBtn.disabled = true;
+          const timeoutId = window.setTimeout(() => miAbort?.abort(), MI_TIMEOUT_MS);
+          try {
+            const url = `/api/chart-ai/market-intelligence.json?${marketDataRequestQuery}&country=${ctry}&symbol=${encodeURIComponent(sym)}`;
+            const res = await fetch(url, { method: 'GET', signal, credentials: 'omit' });
+            const data = await res.json();
+            if (seq !== miSeq) return;
+            const mi = data && data.marketIntel;
+            const hardFail = !mi || !mi.formatted || mi.sourceStatus === 'blocked' || mi.sourceStatus === 'no-data' || mi.sourceStatus === 'error';
+            if (hardFail) {
+              showMiStatus(miHonestMsg(mi ? mi.sanitizedErrorCode : 'INTERNAL'));
+              setMiState('error');
+              if (miStartBtn) miStartBtn.textContent = '다시 시도';
+              return;
+            }
+            showMiStatus('');
+            renderMi(mi);
+            if (miStartBtn) miStartBtn.textContent = '다시 분석';
+          } catch (err) {
+            if (seq !== miSeq) return;
+            if (err && (err as any).name === 'AbortError') return;
+            showMiStatus('네트워크 상태를 확인한 뒤 다시 시도해 주세요.');
+            setMiState('error');
+            if (miStartBtn) miStartBtn.textContent = '다시 시도';
+          } finally {
+            window.clearTimeout(timeoutId);
+            miInFlight = false;
+            if (miStartBtn) miStartBtn.disabled = false;
+          }
+        };
+
+        if (miStartBtn && productionRealChartEnabled) {
+          miStartBtn.addEventListener('click', runMi);
         }
       }
 
@@ -5472,6 +5677,67 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     }
 
     /* Phase 3GG-S-FAST Portfolio Intelligence */
+    /* Phase 3GG-T-FAST: Market & Cross-Asset Intelligence */
+    .chart-market-intel {
+      margin-top: 1.25rem; border: 1px solid var(--border); border-radius: 14px;
+      background: var(--surface); min-width: 0; overflow: hidden;
+    }
+    .chart-market-intel-summary {
+      list-style: none; cursor: pointer; padding: 0.9rem 1rem; display: grid; gap: 0.2rem;
+      background: var(--surface-muted);
+    }
+    .chart-market-intel-summary::-webkit-details-marker { display: none; }
+    .chart-market-intel-summary .eyebrow { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--chart-shell-muted); }
+    .chart-market-intel-summary-title { font-size: 0.95rem; font-weight: 650; }
+    .chart-market-intel-body { display: grid; gap: 0.8rem; padding: 1rem; }
+    .chart-market-intel-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; }
+    .chart-market-intel-head-line { margin: 0; font-size: 0.85rem; color: var(--chart-shell-fg, inherit); }
+    .chart-market-intel-btn {
+      font-size: 0.82rem; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid transparent;
+      background: var(--accent, #2563eb); color: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .chart-market-intel-btn:disabled { opacity: 0.6; cursor: default; }
+    .chart-market-intel-disclaimer { margin: 0; font-size: 0.72rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-status { margin: 0; font-size: 0.82rem; color: var(--chart-shell-muted); padding: 0.5rem 0.7rem; border: 1px dashed var(--border); border-radius: 8px; }
+    .chart-market-intel-results { display: grid; gap: 0.85rem; }
+    .chart-market-intel-regime-card { display: grid; gap: 0.4rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-muted); }
+    .chart-market-intel-regime-badge { font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--chart-shell-muted); }
+    .chart-market-intel-regime-label { font-size: 1.15rem; }
+    .chart-market-intel-regime-conf { font-size: 0.75rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .chart-market-intel-chip { font-size: 0.72rem; padding: 0.22rem 0.55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); }
+    .chart-market-intel-chip.tilt-risk-on { border-color: #16a34a; color: #16a34a; }
+    .chart-market-intel-chip.tilt-risk-off { border-color: #dc2626; color: #dc2626; }
+    .chart-market-intel-chip.tilt-neutral { color: var(--chart-shell-muted); }
+    .chart-market-intel-note, .chart-market-intel-empty { margin: 0; font-size: 0.72rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-rs-box { display: grid; gap: 0.4rem; padding: 0.8rem; border: 1px solid var(--border); border-radius: 12px; }
+    .chart-market-intel-rs-title { margin: 0; font-size: 0.78rem; font-weight: 650; }
+    .chart-market-intel-rs-class { margin: 0; font-size: 0.95rem; }
+    .chart-market-intel-rs-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin: 0.2rem 0 0; }
+    .chart-market-intel-rs-metrics dt { font-size: 0.7rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-rs-metrics dd { margin: 0; font-size: 0.85rem; font-weight: 600; }
+    .chart-market-intel-rs-sector { margin: 0; font-size: 0.75rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; }
+    .chart-market-intel-card { display: grid; gap: 0.3rem; padding: 0.7rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); }
+    .chart-market-intel-card-title { margin: 0; font-size: 0.74rem; font-weight: 650; color: var(--chart-shell-muted); }
+    .chart-market-intel-card-line { margin: 0; font-size: 0.82rem; }
+    .chart-market-intel-card-unavailable { margin: 0; font-size: 0.76rem; color: var(--chart-shell-muted); font-style: italic; }
+    .chart-market-intel-availability { display: grid; gap: 0.4rem; }
+    .chart-market-intel-avail-title { margin: 0; font-size: 0.74rem; font-weight: 650; color: var(--chart-shell-muted); }
+    .chart-market-intel-avail-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .chart-market-intel-avail-item { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 999px; border: 1px solid var(--border); }
+    .chart-market-intel-avail-item.is-on { color: #16a34a; border-color: #16a34a; }
+    .chart-market-intel-avail-item.is-off { color: var(--chart-shell-muted); }
+    .chart-market-intel-conclusion { display: grid; gap: 0.3rem; padding: 0.8rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-muted); }
+    .chart-market-intel-conclusion-title { margin: 0; font-size: 0.74rem; font-weight: 650; color: var(--chart-shell-muted); }
+    .chart-market-intel-conclusion-body { margin: 0; font-size: 0.85rem; line-height: 1.5; }
+    .chart-market-intel-conclusion-disc { margin: 0; font-size: 0.7rem; color: var(--chart-shell-muted); }
+    @media (max-width: 480px) {
+      .chart-market-intel-cards { grid-template-columns: 1fr 1fr; }
+      .chart-market-intel-header { flex-direction: column; align-items: stretch; }
+      .chart-market-intel-btn { width: 100%; }
+    }
+
     .chart-portfolio-workspace {
       margin-top: 1.25rem; display: grid; gap: 0.85rem; padding: 1rem;
       border: 1px solid var(--border); border-radius: 14px; background: var(--surface); min-width: 0;

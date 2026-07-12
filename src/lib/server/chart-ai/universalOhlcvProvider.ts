@@ -248,13 +248,18 @@ const buildLongDomesticQuery = (symbol: string, startDate: Date, endDate: Date):
  * is sufficient).
  */
 export const fetchLongHistoryOhlcv = async (
-  input: { instrument: NormalizedInstrument; allowProductionChartAiBetaLiveQuotes?: boolean },
+  input: { instrument: NormalizedInstrument; allowProductionChartAiBetaLiveQuotes?: boolean; targetBars?: number },
   deps: { now?: () => number } = {},
 ): Promise<LongHistoryOhlcvResult> => {
   const now = deps.now ?? (() => Date.now());
   const instrument = input.instrument;
   const nowIso = new Date(now()).toISOString();
   const allow = input.allowProductionChartAiBetaLiveQuotes === true;
+  // Callers that only need ~6-12 months (e.g. market-intelligence relative strength) can request fewer
+  // bars so fewer paginated KIS calls are made per instrument (default = the full ~3-year target).
+  const targetBars = Number.isFinite(input.targetBars) && (input.targetBars as number) > 0
+    ? Math.min(LONG_HISTORY_TARGET_BARS, input.targetBars as number)
+    : LONG_HISTORY_TARGET_BARS;
 
   if (!instrument || (instrument.country !== 'KR' && instrument.country !== 'US')) {
     return {
@@ -272,7 +277,7 @@ export const fetchLongHistoryOhlcv = async (
     };
   }
 
-  const cacheKey = `${instrument.country}:${instrument.symbol}`;
+  const cacheKey = `${instrument.country}:${instrument.symbol}:${targetBars}`;
   const cached = longHistoryCache.get(cacheKey);
   if (cached && now() - cached.storedAtMs < LONG_HISTORY_TTL_MS) {
     return { ...cached.result, cached: true };
@@ -284,7 +289,7 @@ export const fetchLongHistoryOhlcv = async (
   let firstPageFailed = false;
 
   for (let page = 0; page < LONG_HISTORY_MAX_PAGES; page += 1) {
-    if (rawRows.length >= LONG_HISTORY_TARGET_BARS) break;
+    if (rawRows.length >= targetBars) break;
 
     let result: Awaited<ReturnType<typeof getKisDomesticDailyOhlcSeries>>;
     if (instrument.country === 'KR') {
