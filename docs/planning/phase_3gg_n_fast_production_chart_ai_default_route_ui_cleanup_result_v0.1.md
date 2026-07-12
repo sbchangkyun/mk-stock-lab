@@ -2,9 +2,9 @@
 
 ## Classification
 
-`PASS_LOCAL_VALIDATION` — source change complete, local build and regression preflight all PASS.
-Cloud deploy and Production browser QA are recorded in the "Deploy and Production QA" section below and
-are appended after the deploy step of this phase runs.
+`PASS_PRODUCTION_VERIFIED` — source change complete, local build and regression preflight all PASS, cloud
+deploy to the real Production URL succeeded, and live Production browser QA (desktop + mobile 375px)
+confirms the default route, the UI cleanup, and the real KIS+LLM `MK AI 시세 요약` fetch all work correctly.
 
 ## Baseline
 
@@ -145,13 +145,37 @@ The temporary server was torn down after verification; no `.env.local` was modif
 
 ## Deploy and Production QA
 
-_Recorded after the `Phase 3GG-N-FAST: record Production UI cleanup deploy` commit._
-
 - **Deploy method**: Vercel cloud production deploy (`vercel deploy --prod --yes`) — never local
-  `vercel build --prod`, per the known OneDrive/`VERCEL=1` build-path crash.
-- **Deploy outcome**: _pending_.
-- **Production browser QA (desktop)**: _pending_.
-- **Production browser QA (mobile, 375px)**: _pending_.
+  `vercel build --prod`, per the known OneDrive/`VERCEL=1` build-path crash. The Vercel CLI (54.9.1) was
+  available and already authenticated in this environment.
+- **Deploy outcome**: **PASS.** Deployment `dpl_429Z2PUhpaWeGSoWVNZeGBHc9gdP` built successfully in the
+  Vercel cloud (project `sbchangkyun-2946s-projects/mkstocklab`), `readyState: "READY"`, `target:
+  "production"`, aliased to `https://mkstocklab.vercel.app`.
+- **Production browser QA (desktop)**: **PASS.**
+  - `GET https://mkstocklab.vercel.app/chart-ai` (no query param) → `200`, served the `chart-ai.astro`
+    bundle directly (confirmed via network requests, not a redirect).
+  - `document.querySelector('[data-chart-ai-production-default]')` → `"true"`.
+  - Zero forbidden strings found in rendered HTML (`오너 로컬`, `modelPresent`, `sanitized=true`, model
+    names, `OPENAI_API_KEY`, `KIS_BASE_URL`, `Authorization: Bearer`).
+  - `[data-chart-ai-analysis-state="similar-pattern"]` and `[data-chart-ai-analysis-state="mk-ai"]` (the
+    mock trigger/result cards) are absent from the DOM — confirmed via `querySelector` returning `null`.
+  - Legacy route `GET https://mkstocklab.vercel.app/chart-ai?chartAiProdBeta=1` confirmed via
+    `window.location.href`/`search` to load with the query param intact, rendering identically to the
+    default route.
+  - Triggered the real `MK AI 시세 요약` fetch by clicking `#chartAiOwnerLocalKisLlmSummaryButton`: network
+    request `GET /api/chart-ai/local-only-kis-llm-summary.json?chartAiProdBeta=1&symbol=005930` → `200`
+    (confirms the internal H-route fetch still carries `chartAiProdBeta=1` even though the browser URL has
+    no query param). The rendered result is the exact 3-line Korean summary contract (`데이터 상태:` /
+    `해석 범위:` / `유의사항:` labels), states "실제 시세 수치와 원문 응답은 표시되지 않습니다"
+    (actual price values and raw responses are not shown), includes the investment-advice disclaimer, and
+    contains no raw `sourceStatus`/`llmStatus`/`sanitized=true`/`modelPresent`/`currentPrice`/`volume`
+    numeric exposure.
+  - Sample chart preparing state (`실시간 종목 차트 준비 중`), similar-pattern honest empty state
+    (`검색 종목의 실제 과거 OHLCV 데이터 연결 후 분석할 수 있습니다.`), and search label
+    (`지원 종목 검색`) all render as specified.
+- **Production browser QA (mobile, 375px)**: **PASS.** Resized viewport to 375x812; re-verified the same
+  default-route marker (`"true"`) and zero forbidden strings; `document.documentElement.scrollWidth` (375)
+  equals `window.innerWidth` (375) — no horizontal overflow; page text content matches the desktop render.
 
 ## Next recommended phase
 
