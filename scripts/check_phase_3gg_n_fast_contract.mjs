@@ -65,8 +65,8 @@ const isOpFastArtifact = (f) =>
   f === 'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts' ||
   f === 'src/lib/market-data/instrument.ts' ||
   /^src\/data\/chart-ai\//.test(f) ||
-  /^src\/lib\/server\/chart-ai\/(universal|similarity-engine)/.test(f) ||
-  /^src\/pages\/api\/chart-ai\/(instruments\/|market\/|similarity\.json)/.test(f) ||
+  /^src\/lib\/server\/chart-ai\/(universal|similarity-engine|mkAiAnalysis\/)/.test(f) ||
+  /^src\/pages\/api\/chart-ai\/(instruments\/|market\/|similarity\.json|mk-analysis\.json)/.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 
@@ -83,9 +83,8 @@ const SOURCE_REQUIRED_TOKENS = [
   // + real-OHLCV experience; the checker follows the current honest copy so it stays meaningful.
   '국내·미국 주식 및 ETF 검색',
   '유사 패턴 분석',
-  // Phase 3GG-Q-FAST replaced the similarity preparing-state copy with the real analysis UI; the
-  // extended MK AI preparing copy remains (that phase left it untouched).
-  'OHLCV와 유사 패턴 결과를 결합한 확장 분석은 다음 단계에서 제공됩니다.',
+  // Phase 3GG-R-FAST replaced the MK AI preparing copy with the real deterministic MK AI analysis UI.
+  'MK AI 분석 시작',
   '현재 조회된 시장 데이터를 기반으로 핵심 상태를 요약합니다.',
   "chartAiProdBeta=1",
 ];

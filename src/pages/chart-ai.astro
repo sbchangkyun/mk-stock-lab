@@ -1111,7 +1111,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <p class="eyebrow">MK AI</p>
           <h3 id="chart-mk-ai-heading">MK AI 해석</h3>
           {isVercelProductionRuntime ? (
-            <p class="chart-mk-ai-subheading">확장 분석 준비 중</p>
+            <p class="chart-mk-ai-subheading">실시간 지연 시세와 유사 패턴을 결합한 결정적 분석입니다. 외부 AI를 호출하지 않습니다.</p>
           ) : (
             <Fragment>
               <p class="chart-mk-ai-subheading">AI 분석 미리보기</p>
@@ -1120,11 +1120,18 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           )}
         </div>
         {isVercelProductionRuntime && (
-          <div class="chart-analysis-preparing-state" role="status">
-            <p class="chart-analysis-trigger-kicker">MK AI 확장 분석</p>
-            <strong>MK AI 확장 분석 준비 중</strong>
-            <p>OHLCV와 유사 패턴 결과를 결합한 확장 분석은 다음 단계에서 제공됩니다.</p>
-            <p>현재 페이지의 실시간 시세 요약은 위 &ldquo;MK AI 시세 요약&rdquo; 카드에서 확인할 수 있습니다.</p>
+          <div class="chart-mkai-real" id="chartAiMkAiReal" data-state="idle">
+            <div class="chart-mkai-controls">
+              <button type="button" id="chartAiMkAiStartBtn" class="chart-mkai-start-btn">MK AI 분석 시작</button>
+            </div>
+            <p class="chart-mkai-disclaimer">실제 지연 시세와 과거 유사 구간 통계를 결정적 규칙으로 정리한 참고용 정보이며, 매매 추천이나 투자 자문이 아닙니다.</p>
+            <p class="chart-mkai-status" id="chartAiMkAiRealStatus" role="status" aria-live="polite" hidden></p>
+            <div class="chart-mkai-results" id="chartAiMkAiResults" hidden>
+              <div class="chart-mkai-scores" id="chartAiMkAiScores" aria-label="분석 점수 요약"></div>
+              <div class="chart-mkai-sections" id="chartAiMkAiSections"></div>
+              <div class="chart-mkai-technical" id="chartAiMkAiTechnical"></div>
+              <div class="chart-mkai-conclusion" id="chartAiMkAiConclusion" aria-live="polite"></div>
+            </div>
           </div>
         )}
         {!isVercelProductionRuntime && (
@@ -1334,6 +1341,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       let resetAnalysisTriggers: () => void = () => {};
       // Phase 3GG-Q-FAST: reassigned by the production similarity block; stub keeps updateSelection safe.
       let resetSelectedSimilarity: () => void = () => {};
+      // Phase 3GG-R-FAST: reassigned by the production MK AI analysis block.
+      let resetSelectedMkAi: () => void = () => {};
       let ownerLocalConnected = false;
       let selectedRecord: ClientSafeSymbolSearchRecord | null = records.find((r) => r.symbol === selectedSymbol) ?? null;
       const mkAiBulletsEl = document.getElementById('chartAiMkAiBullets');
@@ -2004,6 +2013,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try { resetOhlcPreview(); } catch {}
         try { resetSelectedSummary(); } catch {}
         try { resetSelectedSimilarity(); } catch {}
+        try { resetSelectedMkAi(); } catch {}
         if (productionRealChartEnabled) {
           updateProductionUrlState();
           loadRealChart();
@@ -2427,6 +2437,155 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         });
         if (simStartBtn && productionRealChartEnabled) {
           simStartBtn.addEventListener('click', runSimilarity);
+        }
+      }
+
+      // ===== Phase 3GG-R-FAST: real deterministic MK AI analysis (Production) =====
+      {
+        const mkaiRoot = document.getElementById('chartAiMkAiReal');
+        const mkaiStartBtn = document.getElementById('chartAiMkAiStartBtn') as HTMLButtonElement | null;
+        const mkaiStatus = document.getElementById('chartAiMkAiRealStatus');
+        const mkaiResults = document.getElementById('chartAiMkAiResults');
+        const mkaiScores = document.getElementById('chartAiMkAiScores');
+        const mkaiSections = document.getElementById('chartAiMkAiSections');
+        const mkaiTechnical = document.getElementById('chartAiMkAiTechnical');
+        const mkaiConclusion = document.getElementById('chartAiMkAiConclusion');
+
+        let mkaiSeq = 0;
+        let mkaiAbort: AbortController | null = null;
+        let mkaiInFlight = false;
+        const MKAI_TIMEOUT_MS = 20000;
+
+        const setMkaiState = (state: string) => { if (mkaiRoot) mkaiRoot.dataset.state = state; };
+        const showMkaiStatus = (text: string) => { if (mkaiStatus) { mkaiStatus.textContent = text; mkaiStatus.hidden = !text; } };
+
+        const resetMkai = () => {
+          mkaiSeq += 1;
+          if (mkaiAbort) { mkaiAbort.abort(); mkaiAbort = null; }
+          mkaiInFlight = false;
+          if (mkaiResults) mkaiResults.hidden = true;
+          showMkaiStatus('');
+          setMkaiState('idle');
+          if (mkaiStartBtn) { mkaiStartBtn.disabled = false; mkaiStartBtn.textContent = 'MK AI 분석 시작'; }
+          [mkaiScores, mkaiSections, mkaiTechnical, mkaiConclusion].forEach((el) => el && el.replaceChildren());
+        };
+        resetSelectedMkAi = resetMkai;
+
+        const scoreChip = (label: string, value: any) => {
+          const chip = document.createElement('span');
+          chip.className = 'chart-mkai-score-chip';
+          const l = document.createElement('span'); l.className = 'chart-mkai-score-label'; l.textContent = label;
+          const v = document.createElement('strong'); v.className = 'chart-mkai-score-value';
+          v.textContent = typeof value === 'number' && isFinite(value) ? String(value) : '—';
+          chip.append(l, v);
+          return chip;
+        };
+
+        const renderMkai = (mkai: any) => {
+          const f = mkai.formatted;
+          // Scores
+          if (mkaiScores) {
+            mkaiScores.replaceChildren();
+            mkaiScores.append(
+              scoreChip('추세', mkai.scores?.trend),
+              scoreChip('모멘텀', mkai.scores?.momentum),
+              scoreChip('변동성 안정도', mkai.scores?.volatilityStability),
+              scoreChip('유사도', mkai.scores?.similarity),
+              scoreChip('리스크', mkai.scores?.risk),
+              scoreChip('데이터 완성도', mkai.dataCompletenessConfidence),
+            );
+          }
+          // Collapsible sections (first open)
+          if (mkaiSections) {
+            mkaiSections.replaceChildren();
+            (f.sections || []).forEach((s: any, i: number) => {
+              const det = document.createElement('details');
+              det.className = 'chart-mkai-section';
+              if (i === 0) det.open = true;
+              const sum = document.createElement('summary');
+              sum.className = 'chart-mkai-section-title';
+              sum.textContent = s.title;
+              const p = document.createElement('p');
+              p.className = 'chart-mkai-section-body';
+              p.textContent = s.body;
+              det.append(sum, p);
+              mkaiSections.append(det);
+            });
+          }
+          // Technical bullets
+          if (mkaiTechnical) {
+            mkaiTechnical.replaceChildren();
+            const title = document.createElement('p'); title.className = 'chart-mkai-technical-title'; title.textContent = '기술 요약';
+            const ul = document.createElement('ul'); ul.className = 'chart-mkai-technical-list';
+            (f.technicalBullets || []).forEach((b: string) => { const li = document.createElement('li'); li.textContent = b; ul.append(li); });
+            mkaiTechnical.append(title, ul);
+          }
+          // Conclusion + confidence note + disclaimer
+          if (mkaiConclusion) {
+            mkaiConclusion.replaceChildren();
+            const cTitle = document.createElement('p'); cTitle.className = 'chart-mkai-conclusion-title'; cTitle.textContent = '종합';
+            const c = document.createElement('p'); c.className = 'chart-mkai-conclusion-body'; c.textContent = f.conclusion || '';
+            const conf = document.createElement('p'); conf.className = 'chart-mkai-conclusion-note'; conf.textContent = f.confidenceNote || '';
+            const disc = document.createElement('p'); disc.className = 'chart-mkai-conclusion-disclaimer'; disc.textContent = f.disclaimer || '';
+            mkaiConclusion.append(cTitle, c, conf, disc);
+          }
+          if (mkaiResults) mkaiResults.hidden = false;
+          setMkaiState('ready');
+        };
+
+        const mkaiHonestMessage = (code: string) => {
+          switch (code) {
+            case 'INSUFFICIENT_HISTORY': return 'MK AI 분석에 필요한 과거 데이터가 충분하지 않습니다.';
+            case 'UNSUPPORTED_INSTRUMENT': return '이 종목은 아직 MK AI 분석을 지원하지 않습니다.';
+            case 'PROVIDER_UNAVAILABLE': return '시세 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+            default: return 'MK AI 분석을 완료하지 못했습니다. 다시 시도해 주세요.';
+          }
+        };
+
+        const runMkai = async () => {
+          if (!productionRealChartEnabled || mkaiInFlight) return;
+          mkaiInFlight = true;
+          const seq = ++mkaiSeq;
+          if (mkaiAbort) mkaiAbort.abort();
+          mkaiAbort = new AbortController();
+          const signal = mkaiAbort.signal;
+          const sym = selectedSymbol;
+          const ctry = selectedCountry;
+          setMkaiState('loading');
+          if (mkaiResults) mkaiResults.hidden = true;
+          showMkaiStatus(`${selectedName} 실시간 지연 시세와 유사 패턴을 결정적 규칙으로 분석하는 중입니다…`);
+          if (mkaiStartBtn) mkaiStartBtn.disabled = true;
+          const timeoutId = window.setTimeout(() => mkaiAbort?.abort(), MKAI_TIMEOUT_MS);
+          try {
+            const url = `/api/chart-ai/mk-analysis.json?${marketDataRequestQuery}&country=${ctry}&symbol=${encodeURIComponent(sym)}`;
+            const res = await fetch(url, { method: 'GET', signal, credentials: 'omit' });
+            const data = await res.json();
+            if (seq !== mkaiSeq) return;
+            const mkai = data && data.mkai;
+            if (!mkai || mkai.sourceStatus === 'blocked' || mkai.sanitizedErrorCode !== 'NONE' || mkai.ok !== true || !mkai.formatted || mkai.formatted.ok !== true) {
+              showMkaiStatus(mkaiHonestMessage(mkai ? mkai.sanitizedErrorCode : 'INTERNAL'));
+              setMkaiState('error');
+              if (mkaiStartBtn) mkaiStartBtn.textContent = '다시 시도';
+              return;
+            }
+            showMkaiStatus('');
+            renderMkai(mkai);
+            if (mkaiStartBtn) mkaiStartBtn.textContent = '다시 분석';
+          } catch (err) {
+            if (seq !== mkaiSeq) return;
+            if (err && (err as any).name === 'AbortError') return;
+            showMkaiStatus('네트워크 상태를 확인한 뒤 다시 시도해 주세요.');
+            setMkaiState('error');
+            if (mkaiStartBtn) mkaiStartBtn.textContent = '다시 시도';
+          } finally {
+            window.clearTimeout(timeoutId);
+            mkaiInFlight = false;
+            if (mkaiStartBtn) mkaiStartBtn.disabled = false;
+          }
+        };
+
+        if (mkaiStartBtn && productionRealChartEnabled) {
+          mkaiStartBtn.addEventListener('click', runMkai);
         }
       }
 
@@ -4756,6 +4915,49 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       .chart-similarity-controls { flex-direction: column; align-items: stretch; }
       .chart-similarity-start-btn { width: 100%; }
       .chart-similarity-matches { grid-template-columns: 1fr; }
+    }
+
+    /* Phase 3GG-R-FAST real MK AI analysis UI */
+    .chart-mkai-real { display: grid; gap: 0.85rem; }
+    .chart-mkai-controls { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .chart-mkai-start-btn {
+      font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1.1rem; border-radius: 10px;
+      border: 1px solid transparent; background: var(--accent, #2563eb); color: #fff; cursor: pointer;
+    }
+    .chart-mkai-start-btn:disabled { opacity: 0.6; cursor: default; }
+    .chart-mkai-disclaimer { font-size: 0.76rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-mkai-status {
+      font-size: 0.82rem; padding: 0.7rem 0.9rem; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface-muted); color: var(--chart-shell-muted);
+    }
+    .chart-mkai-results { display: grid; gap: 0.85rem; }
+    .chart-mkai-scores { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .chart-mkai-score-chip {
+      display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.6rem; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface); font-size: 0.76rem;
+    }
+    .chart-mkai-score-label { color: var(--chart-shell-muted); }
+    .chart-mkai-score-value { font-variant-numeric: tabular-nums; }
+    .chart-mkai-sections { display: grid; gap: 0.4rem; }
+    .chart-mkai-section {
+      border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 0.15rem 0.75rem;
+    }
+    .chart-mkai-section-title { font-weight: 600; font-size: 0.86rem; cursor: pointer; padding: 0.55rem 0; }
+    .chart-mkai-section-body { font-size: 0.82rem; margin: 0 0 0.6rem; line-height: 1.55; }
+    .chart-mkai-technical {
+      border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); padding: 0.7rem 0.9rem;
+    }
+    .chart-mkai-technical-title { font-weight: 700; font-size: 0.84rem; margin: 0 0 0.4rem; }
+    .chart-mkai-technical-list { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; font-size: 0.8rem; }
+    .chart-mkai-conclusion {
+      border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 0.8rem 0.9rem; display: grid; gap: 0.35rem;
+    }
+    .chart-mkai-conclusion-title { font-weight: 700; font-size: 0.86rem; margin: 0; }
+    .chart-mkai-conclusion-body { font-size: 0.84rem; margin: 0; line-height: 1.55; }
+    .chart-mkai-conclusion-note, .chart-mkai-conclusion-disclaimer { font-size: 0.74rem; color: var(--chart-shell-muted); margin: 0; }
+    @media (max-width: 420px) {
+      .chart-mkai-controls { flex-direction: column; align-items: stretch; }
+      .chart-mkai-start-btn { width: 100%; }
     }
 
     .chart-analysis-preparing-state strong,

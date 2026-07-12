@@ -1,5 +1,34 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-R-FAST - 2026-07-12
+
+### Real MK AI Analysis Using Selected Instrument, OHLCV and Similarity Results
+
+- **Builds on Phase 3GG-Q-FAST**, consuming its real OHLCV + real similarity outputs (and the OP-FAST
+  normalized instrument) — no news, filings, internet search, or external data.
+- Adds the first complete Production **deterministic MK AI analysis** engine
+  (`src/lib/server/chart-ai/mkAiAnalysis/`: analysisTypes/analysisScoring/analysisEngine/analysisFormatter)
+  with the eight required sections — trend, momentum, volatility, historical similarity, historical
+  scenario, risk, technical summary, neutral conclusion — plus deterministic per-dimension scores and a
+  data-completeness confidence (NOT prediction confidence).
+- New guarded GET route `/api/chart-ai/mk-analysis.json` composes real long-history OHLCV → real
+  similarity engine → deterministic analysis engine + formatter; honest loading/insufficient/
+  unavailable/error states; cached.
+- **keeps the existing 3-line** KIS + LLM summary card exactly as-is (route, bridge, and model policy
+  unchanged) and adds the MK AI Analysis as a separate card — the simple-summary limitation is removed
+  by ADDITION, not replacement.
+- **No LLM** is called by the analysis (deterministic calculation only; the LLM stays the presentation
+  layer for the untouched 3-line summary). **No prompt rewrite. No prompt/model/raw-provider/secret
+  exposure.**
+- **No investment recommendation**, target price, buy/sell/entry/exit, stop-loss, probability-of-gain,
+  guarantee, or future prediction — descriptive historical statistics with an honest disclaimer only.
+- No synthetic/sample/mocked/fabricated analysis. No trading/account/order/balance endpoint. No new
+  provider endpoint. No new dependency.
+- Removes the Production MK AI preparing state and replaces it with the real, collapsible analysis UI.
+- Production deploy and browser QA included (005930, 069500, AAPL, SPY).
+- **Next: Phase 3GG-S-FAST** — Portfolio Intelligence (watchlist, recent symbols, saved analyses,
+  portfolio-aware comparison) on the existing normalized instrument architecture.
+
 ## Phase 3GG-Q-FAST - 2026-07-12
 
 ### Real Similar Pattern Analysis on Selected Instrument OHLCV
