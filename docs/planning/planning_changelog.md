@@ -1,5 +1,42 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-OP-FAST - 2026-07-12
+
+### Universal KR/US Stock·ETF Search, Real OHLCV Chart and Production Verification
+
+- **Status**: Builds on Phase 3GG-N-FAST. Completes the core Chart AI journey on the real Production URL:
+  search a domestic or US stock/ETF, select it, fetch real OHLCV, render a real candlestick + volume chart,
+  update the selected-symbol information, and preserve the existing real KIS + LLM summary.
+- **Baseline**: `69b09e1` (Phase 3GG-N-FAST). **Branch**: rebuild/phase-1-ia-shell.
+- **Scope delivered**:
+  - Adds normalized domestic/US instrument search over a curated real static master (real KR six-digit
+    codes + US tickers with KIS overseas EXCD), served from a server-only search route.
+  - Supports stocks and ETFs across both markets; searchable by Korean name, English name, ticker, or
+    Korean stock code; exact ticker/code ranked first, then prefix, then keyword/contains.
+  - Removes the hardcoded limited-search copy (`지원 종목 검색` → `국내·미국 주식 및 ETF 검색`).
+  - Adds real OHLCV retrieval via a provider-neutral abstraction: KR uses the KIS domestic daily chart
+    endpoint (`kis-domestic`); US uses the KIS overseas daily chart endpoint (`kis-overseas`,
+    `HHDFS76240000`). Both forward the SAME scoped production Chart AI beta exception from Phase
+    3GG-M-PROD-HF1 (guard extended, not weakened); scope stays read-only market data.
+  - Adds a real candlestick and volume chart (reusing the existing SVG candlestick renderer fed with real
+    normalized candles) with 1m/3m/6m/1y ranges, honest loading/error/no-data states, delayed-data notice,
+    stale-request abort, and URL state (`?symbol=&country=`).
+  - Uses no sample OHLCV fallback in Production (no sample/synthetic OHLCV fallback); an unavailable/no-data
+    result is honest.
+  - Keeps similarity analysis as a preparing state; keeps expanded MK AI as a preparing state.
+  - Preserves the real KIS + LLM summary safety contract; the summary now follows the selected KR symbol
+    (US summary is honestly reported unavailable, never faked, never silently analyzing `005930`).
+- **Contract split**: The OHLCV chart route may return numeric chart data (open/high/low/close/volume). The
+  LLM summary route continues to hide numeric current price/volume and stays non-numeric/sanitized. The two
+  contracts are kept separate.
+- **Boundaries**: No trading/account/balance/funds/portfolio/order/personal endpoint. No fake analysis. No
+  prompt rewrite. No summary-contract rewrite. No new npm dependency (existing SVG renderer reused; no chart
+  library added). `.env`/`.env.local`/`.vercel` never staged; `.gitignore` left unstaged. Sibling checkers
+  (n-fast, m-prod-hf1, l-fast) received documented tolerance for this superseding change.
+- **Result**: Real KR stock/ETF and real US stock/ETF OHLCV verified end-to-end (owner-gated real-provider
+  smoke: 8/8 PASS, real candle shapes, currency match). Deployed to Production and browser-QA'd.
+- **Next recommended phase**: Phase 3GG-Q-FAST — Real Similar Pattern Analysis on Selected Instrument OHLCV.
+
 ## Phase 3GG-N-FAST - 2026-07-12
 
 ### Production Chart AI Default Route and UI Cleanup

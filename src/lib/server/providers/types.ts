@@ -80,7 +80,7 @@ export type QuoteSnapshot = SecurityIdentity & {
   staleState: FallbackState;
   providerMeta?: {
     provider: Extract<ProviderName, 'kis'>;
-    source: 'kis-domestic-quote';
+    source: 'kis-domestic-quote' | 'kis-overseas-quote';
     delayed?: boolean;
   };
 };

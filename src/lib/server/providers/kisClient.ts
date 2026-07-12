@@ -25,6 +25,16 @@ const dailyOhlcPath = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchar
 const tokenPath = '/oauth2/tokenP';
 const domesticQuoteTrId = 'FHKST01010100';
 const domesticDailyOhlcTrId = 'FHKST03010100';
+// Phase 3GG-OP-FAST: KIS overseas (US) read-only market-data endpoints. Historical OHLCV +
+// current price only -- no account/order/balance endpoint is referenced here. These sit behind
+// the same fail-closed readiness gate as the domestic quote/OHLC transports (quote scope,
+// KIS_ACCOUNT_NO must be absent) and forward the same narrowly-scoped production Chart AI beta
+// exception. US market data additionally requires the KIS account to hold overseas data
+// permission; when it does not, the provider fails closed with a sanitized PROVIDER_UNAVAILABLE.
+const overseasDailyOhlcPath = '/uapi/overseas-price/v1/quotations/dailyprice';
+const overseasDailyOhlcTrId = 'HHDFS76240000';
+const overseasQuotePath = '/uapi/overseas-price/v1/quotations/price';
+const overseasQuoteTrId = 'HHDFS00000300';
 const tokenCacheSkewMs = 60_000;
 
 type KisQuoteConfigReadiness = ProviderConfigReadiness & {
@@ -432,10 +442,13 @@ export const getKisQuoteSnapshot = async (input: SecurityIdentity): Promise<Prov
  * other raw KIS field. Reuses the same token/readiness/error-mapping conventions as the quote
  * transport above; does not call account/trading APIs and never reads KIS_ACCOUNT_NO.
  */
-export const getKisDomesticDailyOhlcSeries = async (input: {
-  symbol: string;
-  query: Record<string, string>;
-}): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
+export const getKisDomesticDailyOhlcSeries = async (
+  input: {
+    symbol: string;
+    query: Record<string, string>;
+  },
+  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
   assertServerRuntime(moduleName);
 
   const symbol = normalizeKrSymbol(input.symbol);
@@ -446,7 +459,13 @@ export const getKisDomesticDailyOhlcSeries = async (input: {
     });
   }
 
-  const readiness = getKisQuoteConfigReadiness();
+  // Phase 3GG-OP-FAST: forward the same scoped production Chart AI beta signal the current_price
+  // path uses (Phase 3GG-M-PROD-HF1). historical OHLCV is an explicitly in-scope read; the scope
+  // stays quote-level (no KIS_ACCOUNT_NO, no order/account endpoint). kisClient re-verifies the
+  // Production flag before lifting its hard block, so this remains fail-closed.
+  const readiness = getKisQuoteConfigReadiness({
+    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+  });
   if (!readiness.ready) return readinessToError(readiness);
 
   const config = getRuntimeConfig();
@@ -507,6 +526,228 @@ export const getKisDomesticDailyOhlcSeries = async (input: {
       .filter((point) => point.dateTime.length > 0);
 
     return { ok: true, data: { symbol, points }, staleState: 'fresh' };
+  } catch (error) {
+    return sanitizeUnknownError(error, provider);
+  }
+};
+
+type KisOverseasDailyRow = {
+  xymd?: unknown;
+  open?: unknown;
+  high?: unknown;
+  low?: unknown;
+  clos?: unknown;
+  tvol?: unknown;
+};
+
+type KisOverseasDailyResponse = {
+  rt_cd?: unknown;
+  output2?: KisOverseasDailyRow[];
+};
+
+type KisOverseasQuoteResponse = {
+  rt_cd?: unknown;
+  output?: { last?: unknown; tvol?: unknown };
+};
+
+const US_SYMBOL_PATTERN = /^[A-Z][A-Z0-9.\-]{0,9}$/;
+const US_EXCHANGE_CODES = ['NAS', 'NYS', 'AMS'];
+
+const normalizeUsSymbol = (symbol: string) => symbol.trim().toUpperCase();
+const isValidUsSymbol = (symbol: string) => US_SYMBOL_PATTERN.test(normalizeUsSymbol(symbol));
+const isValidUsExchangeCode = (code: string) => US_EXCHANGE_CODES.includes(code);
+
+/**
+ * Narrow KIS overseas (US) daily OHLCV transport (Phase 3GG-OP-FAST). Read-only historical chart
+ * data via the overseas dailyprice endpoint; never calls an account/order/balance API and never
+ * reads KIS_ACCOUNT_NO. Reuses the same token/readiness/error-mapping conventions and forwards the
+ * scoped production Chart AI beta exception. Requires the KIS account to hold overseas data
+ * permission; when it does not, the request fails closed with a sanitized error.
+ */
+export const getKisOverseasDailyOhlcSeries = async (
+  input: { symbol: string; exchangeCode: string },
+  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
+  assertServerRuntime(moduleName);
+
+  const symbol = normalizeUsSymbol(input.symbol);
+  const exchangeCode = (input.exchangeCode ?? '').trim().toUpperCase();
+  if (!isValidUsSymbol(symbol) || !isValidUsExchangeCode(exchangeCode)) {
+    return createProviderError('VALIDATION_FAILED', 'US OHLC request requires a valid ticker and exchange code.', {
+      provider,
+      staleState: 'unavailable',
+    });
+  }
+
+  const readiness = getKisQuoteConfigReadiness({
+    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+  });
+  if (!readiness.ready) return readinessToError(readiness);
+
+  const config = getRuntimeConfig();
+  if (!config) return readinessToError(readiness);
+
+  const tokenResult = await getKisAccessToken(config);
+  if (!tokenResult.ok) return tokenResult;
+
+  const params = new URLSearchParams({
+    AUTH: '',
+    EXCD: exchangeCode,
+    SYMB: symbol,
+    GUBN: '0',
+    BYMD: '',
+    MODP: '1',
+  });
+
+  try {
+    const response = await fetch(`${config.baseUrl}${overseasDailyOhlcPath}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/plain',
+        charset: 'UTF-8',
+        authorization: `Bearer ${tokenResult.data.accessToken}`,
+        appkey: config.appKey,
+        appsecret: config.appSecret,
+        tr_id: overseasDailyOhlcTrId,
+        custtype: 'P',
+        tr_cont: '',
+      },
+    });
+
+    if (response.status === 429) {
+      return createProviderError('PROVIDER_RATE_LIMITED', 'KIS overseas OHLC request was rate limited.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    if (!response.ok) {
+      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS overseas OHLC request failed safely.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    const payload = (await response.json()) as KisOverseasDailyResponse;
+    if (payload.rt_cd !== '0' || !Array.isArray(payload.output2)) {
+      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS overseas OHLC provider rejected the request.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    const points: KisDailyOhlcPoint[] = payload.output2
+      .map((row) => ({
+        dateTime: normalizeString(row.xymd),
+        open: parseNumericText(row.open),
+        high: parseNumericText(row.high),
+        low: parseNumericText(row.low),
+        close: parseNumericText(row.clos),
+        volume: parseNumericText(row.tvol),
+      }))
+      .filter((point) => point.dateTime.length > 0);
+
+    return { ok: true, data: { symbol, points }, staleState: 'fresh' };
+  } catch (error) {
+    return sanitizeUnknownError(error, provider);
+  }
+};
+
+/**
+ * Narrow KIS overseas (US) current-price snapshot (Phase 3GG-OP-FAST). Used so the LLM summary can
+ * follow a selected US instrument with real data; never fabricates a US price. Read-only quote
+ * scope, same guards as above.
+ */
+export const getKisOverseasQuoteSnapshot = async (
+  input: { symbol: string; exchangeCode: string },
+  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+): Promise<ProviderResult<QuoteSnapshot>> => {
+  assertServerRuntime(moduleName);
+
+  const symbol = normalizeUsSymbol(input.symbol);
+  const exchangeCode = (input.exchangeCode ?? '').trim().toUpperCase();
+  if (!isValidUsSymbol(symbol) || !isValidUsExchangeCode(exchangeCode)) {
+    return createProviderError('VALIDATION_FAILED', 'US quote request requires a valid ticker and exchange code.', {
+      provider,
+      staleState: 'unavailable',
+    });
+  }
+
+  const readiness = getKisQuoteConfigReadiness({
+    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+  });
+  if (!readiness.ready) return readinessToError(readiness);
+
+  const config = getRuntimeConfig();
+  if (!config) return readinessToError(readiness);
+
+  const tokenResult = await getKisAccessToken(config);
+  if (!tokenResult.ok) return tokenResult;
+
+  const params = new URLSearchParams({ AUTH: '', EXCD: exchangeCode, SYMB: symbol });
+
+  try {
+    const response = await fetch(`${config.baseUrl}${overseasQuotePath}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'text/plain',
+        charset: 'UTF-8',
+        authorization: `Bearer ${tokenResult.data.accessToken}`,
+        appkey: config.appKey,
+        appsecret: config.appSecret,
+        tr_id: overseasQuoteTrId,
+        custtype: 'P',
+        tr_cont: '',
+      },
+    });
+
+    if (response.status === 429) {
+      return createProviderError('PROVIDER_RATE_LIMITED', 'KIS overseas quote request was rate limited.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    if (!response.ok) {
+      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS overseas quote request failed safely.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    const payload = (await response.json()) as KisOverseasQuoteResponse;
+    if (payload.rt_cd !== '0' || !payload.output) {
+      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS overseas quote provider rejected the request.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    const price = parseNumericText(payload.output.last);
+    if (price === null) {
+      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS overseas quote response did not include a usable price.', {
+        provider,
+        staleState: 'unavailable',
+      });
+    }
+
+    const quote: QuoteSnapshot = {
+      market: 'US',
+      symbol,
+      price,
+      currency: 'USD',
+      change: null,
+      changePct: null,
+      volume: parseNumericText(payload.output.tvol) ?? undefined,
+      marketState: 'unknown',
+      asOf: new Date().toISOString(),
+      staleState: 'fresh',
+      providerMeta: { provider, source: 'kis-overseas-quote' },
+    };
+
+    return { ok: true, data: quote, staleState: 'fresh' };
   } catch (error) {
     return sanitizeUnknownError(error, provider);
   }

@@ -336,12 +336,12 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     <section class="chart-lookup-search" aria-labelledby="chart-lookup-search-heading">
       <div class="chart-ai-symbol-row">
         <label class="chart-search-shell chart-lookup-search-field" for="chartAiInput">
-          <span id="chart-lookup-search-heading">지원 종목 검색</span>
+          <span id="chart-lookup-search-heading">국내·미국 주식 및 ETF 검색</span>
           <input
             id="chartAiInput"
             type="search"
-            placeholder="종목명 또는 종목코드 입력"
-            aria-label="종목명 또는 종목코드 입력"
+            placeholder="종목명, 티커 또는 종목코드를 입력하세요"
+            aria-label="종목명, 티커 또는 종목코드를 입력하세요"
             aria-controls="chartAiSearchResults"
             aria-autocomplete="list"
             aria-expanded="false"
@@ -370,7 +370,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           class="chart-ai-search-results"
           id="chartAiSearchResults"
           role="listbox"
-          aria-label="국내 종목 검색 결과"
+          aria-label="국내·미국 종목 검색 결과"
         ></div>
         <p class="chart-ai-empty-state" id="chartAiEmptyState" hidden aria-live="polite">
           검색 결과가 없습니다. 종목명이나 종목코드를 다시 확인해 주세요.
@@ -384,7 +384,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <div class="chart-market-summary">
             <div class="chart-market-heading-group">
               <p class="chart-market-kicker">차트</p>
-              <h2 id="chart-market-heading">{isVercelProductionRuntime ? '실시간 종목 차트 준비 중' : '샘플 차트'}</h2>
+              <h2 id="chart-market-heading">{isVercelProductionRuntime ? '실시간 종목 차트' : '샘플 차트'}</h2>
             </div>
             <div class="chart-market-identity-row" aria-label="선택 종목 기본 정보" aria-live="polite">
               <strong id="chartAiSelectedName">삼성전자</strong>
@@ -406,11 +406,22 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         </div>
 
         <div class="chart-period-controls" role="group" aria-label="차트 기간 선택">
-          <button type="button" data-period="1d" aria-pressed="true" class="active">1일</button>
-          <button type="button" data-period="1w" aria-pressed="false">1주</button>
-          <button type="button" data-period="1m" aria-pressed="false">1개월</button>
-          <button type="button" data-period="3m" aria-pressed="false">3개월</button>
-          <button type="button" data-period="1y" aria-pressed="false">1년</button>
+          {isVercelProductionRuntime ? (
+            <Fragment>
+              <button type="button" data-range="1m" aria-pressed="false">1개월</button>
+              <button type="button" data-range="3m" aria-pressed="true" class="active">3개월</button>
+              <button type="button" data-range="6m" aria-pressed="false">6개월</button>
+              <button type="button" data-range="1y" aria-pressed="false">1년</button>
+            </Fragment>
+          ) : (
+            <Fragment>
+              <button type="button" data-period="1d" aria-pressed="true" class="active">1일</button>
+              <button type="button" data-period="1w" aria-pressed="false">1주</button>
+              <button type="button" data-period="1m" aria-pressed="false">1개월</button>
+              <button type="button" data-period="3m" aria-pressed="false">3개월</button>
+              <button type="button" data-period="1y" aria-pressed="false">1년</button>
+            </Fragment>
+          )}
         </div>
 
         <div
@@ -431,15 +442,24 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             aria-hidden="true"
           ></svg>
           <div class="chart-safety-note">
-            <strong>샘플 OHLC·거래량 데이터</strong>
-            <span>실제 시세 아님 · 투자 참고용</span>
+            {isVercelProductionRuntime ? (
+              <Fragment>
+                <strong id="chartAiRealChartSourceNote">실시간 지연 시세 · KIS</strong>
+                <span id="chartAiRealChartAsOf">데이터 기준 시각 확인 중</span>
+              </Fragment>
+            ) : (
+              <Fragment>
+                <strong>샘플 OHLC·거래량 데이터</strong>
+                <span>실제 시세 아님 · 투자 참고용</span>
+              </Fragment>
+            )}
           </div>
         </div>
 
         {isVercelProductionRuntime && (
-          <div class="chart-market-preparing-state" role="status">
-            <strong>실시간 종목 차트 준비 중</strong>
-            <p>검색 종목의 실제 OHLCV 차트는 다음 업데이트에서 연결됩니다.</p>
+          <div class="chart-market-preparing-state" id="chartAiRealChartState" role="status" aria-live="polite">
+            <strong id="chartAiRealChartStateTitle">실시간 종목 차트를 불러오는 중입니다.</strong>
+            <p id="chartAiRealChartStateMessage">선택한 종목의 실제 지연 OHLCV 데이터를 불러오고 있습니다.</p>
           </div>
         )}
 
@@ -922,7 +942,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         <div class="chart-analysis-preparing-state" role="status">
           <p class="chart-analysis-trigger-kicker">유사 패턴 분석</p>
           <strong>유사 패턴 분석</strong>
-          <p>검색 종목의 실제 과거 OHLCV 데이터 연결 후 분석할 수 있습니다.</p>
+          <p>실제 유사 패턴 분석은 다음 단계에서 연결됩니다.</p>
         </div>
       ) : (
         <Fragment>
@@ -1081,7 +1101,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <div class="chart-analysis-preparing-state" role="status">
             <p class="chart-analysis-trigger-kicker">MK AI 확장 분석</p>
             <strong>MK AI 확장 분석 준비 중</strong>
-            <p>실제 OHLCV 및 유사 패턴 데이터 연결 후 확장 분석이 제공됩니다.</p>
+            <p>OHLCV와 유사 패턴 결과를 결합한 확장 분석은 다음 단계에서 제공됩니다.</p>
             <p>현재 페이지의 실시간 시세 요약은 위 &ldquo;MK AI 시세 요약&rdquo; 카드에서 확인할 수 있습니다.</p>
           </div>
         )}
@@ -1273,7 +1293,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const emptyState = document.getElementById('chartAiEmptyState');
       const searchHint = document.getElementById('chartAiSearchHint');
       const filterButtons = document.querySelectorAll<HTMLButtonElement>('.chart-ai-filter-btn');
-      const periodButtons = document.querySelectorAll<HTMLButtonElement>('[data-period]');
+      const periodButtons = document.querySelectorAll<HTMLButtonElement>('.chart-period-controls button');
       const chart = document.getElementById('chartAiMarketChart');
       const chartSvg = document.getElementById('chartAiMarketSvg') as SVGSVGElement | null;
       const records = parseClientSafeRecords();
@@ -1281,8 +1301,12 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       let selectedSymbol = '005930';
       let selectedName = '삼성전자';
       let selectedAssetType: DomesticAssetType = 'stock';
+      // Phase 3GG-OP-FAST: universal selected-instrument state (KR default) and the active real-chart
+      // range. `activePeriod` still drives the non-production sample chart unchanged.
+      let selectedCountry: 'KR' | 'US' = 'KR';
+      let activeRange = '3m';
       let activePeriod: ChartPeriodKey = '1d';
-      let visibleRecords: ClientSafeSymbolSearchRecord[] = [];
+      let visibleRecords: any[] = [];
       let resetQuotePreview: () => void = () => {};
       let resetOhlcPreview: () => void = () => {};
       let resetAnalysisTriggers: () => void = () => {};
@@ -1445,6 +1469,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         : chartAiBetaPreviewEnabled
           ? 'chartAiBetaPreview=1'
           : 'chartAiProdBeta=1';
+      // Phase 3GG-OP-FAST: the real OHLCV chart is driven only on the Production deployment (the
+      // production-facing markup). Owner-local/Preview keep the existing sample chart. The OHLCV
+      // route carries the same access opt-in the summary route does.
+      const productionRealChartEnabled = chartAiProdBetaEnabled;
+      const marketDataRequestQuery = ownerLocalKisLlmEnabled
+        ? 'ownerLocalOhlcv=1'
+        : chartAiBetaPreviewEnabled
+          ? 'chartAiBetaPreview=1'
+          : 'chartAiProdBeta=1';
       const ownerLocalKisLlmPanel = document.getElementById('chartAiOwnerLocalKisLlmSummaryPanel');
       if (ownerLocalKisLlmPanel) {
         ownerLocalKisLlmPanel.hidden = !ownerLocalKisLlmSummaryPanelEnabled;
@@ -1575,15 +1608,14 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         input.setAttribute('aria-expanded', 'false');
       };
 
-      const buildSelectedSymbolOverview = (record: ClientSafeSymbolSearchRecord): string => {
+      const buildSelectedSymbolOverview = (record: any): string => {
         const particle = getTopicParticle(record.nameKo);
-        if (record.assetType === 'stock') {
-          return `${record.nameKo}${particle} ${record.exchange}에 상장된 국내 주식입니다. 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.`;
-        }
-        if (record.assetType === 'etf') {
-          return `${record.nameKo}${particle} ${record.exchange}에 상장된 국내 ETF입니다. 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.`;
-        }
-        return `${record.nameKo}${particle} 선택된 국내 종목입니다. 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.`;
+        const marketWord = record.country === 'US' ? '미국' : '국내';
+        const kind = record.assetType === 'etf' ? 'ETF' : '주식';
+        const detail = productionRealChartEnabled
+          ? '실시간 지연 시세 기반의 실제 OHLCV 캔들·거래량 차트를 제공합니다.'
+          : '현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 제공합니다.';
+        return `${record.nameKo}${particle} ${record.exchange}에 상장된 ${marketWord} ${kind}입니다. ${detail}`;
       };
 
       const updateOverviewDataStatus = () => {
@@ -1775,10 +1807,154 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         }
       };
 
-      const updateSelection = (record: ClientSafeSymbolSearchRecord) => {
+      // Phase 3GG-OP-FAST: map a universal search API result to the client record shape reused by
+      // the identity/overview UI (nameKo aliases displayName; country/market added).
+      const mapApiResult = (r: any) => ({
+        symbol: String(r.symbol ?? ''),
+        nameKo: String(r.displayName ?? r.symbol ?? ''),
+        englishName: r.englishName,
+        country: r.country === 'US' ? 'US' : 'KR',
+        exchange: String(r.exchange ?? ''),
+        market: String(r.market ?? ''),
+        assetType: r.assetType === 'etf' ? 'etf' : 'stock',
+        currency: String(r.currency ?? (r.country === 'US' ? 'USD' : 'KRW')),
+      });
+
+      const RANGE_LABELS: Record<string, string> = { '1m': '1개월', '3m': '3개월', '6m': '6개월', '1y': '1년' };
+
+      // ----- Real OHLCV chart (Production only) -----
+      let realChartSeq = 0;
+      let realChartAbort: AbortController | null = null;
+      const REAL_CHART_TIMEOUT_MS = 12000;
+
+      const setRealChartState = (title: string, message: string, mode: string) => {
+        const stateEl = document.getElementById('chartAiRealChartState');
+        const titleEl = document.getElementById('chartAiRealChartStateTitle');
+        const messageEl = document.getElementById('chartAiRealChartStateMessage');
+        if (titleEl && title) titleEl.textContent = title;
+        if (messageEl) messageEl.textContent = message;
+        if (stateEl) {
+          stateEl.hidden = mode === 'ready';
+          stateEl.dataset.state = mode;
+        }
+        // Reveal the real chart host only when data is ready; otherwise keep it hidden behind the state.
+        if (chart) chart.hidden = mode !== 'ready';
+      };
+
+      const updateRealChartMeta = (ohlcv: any) => {
+        const noteEl = document.getElementById('chartAiRealChartSourceNote');
+        const asOfEl = document.getElementById('chartAiRealChartAsOf');
+        if (noteEl) noteEl.textContent = ohlcv?.isDelayed === false ? '실시간 시세 · KIS' : '실시간 지연 시세 · KIS';
+        if (asOfEl) {
+          const currency = ohlcv?.instrument?.currency ?? '';
+          const parsed = ohlcv?.asOf ? new Date(ohlcv.asOf) : null;
+          asOfEl.textContent = parsed && !Number.isNaN(parsed.getTime())
+            ? `데이터 기준: ${parsed.toLocaleString('ko-KR')}${currency ? ` · ${currency}` : ''}`
+            : (currency ? `통화: ${currency}` : '실시간 지연 시세');
+        }
+      };
+
+      const renderRealChart = (ohlcv: any): boolean => {
+        const rawPoints = (Array.isArray(ohlcv?.candles) ? ohlcv.candles : []).map((c: any) => ({
+          dateTime: c.timestamp,
+          open: c.open,
+          high: c.high,
+          low: c.low,
+          close: c.close,
+          volume: c.volume,
+        }));
+        const points = toMockedOhlcPoints(rawPoints);
+        if (!isValidMockedOhlcSeries(points)) return false;
+        // buildMockedChartGeometry uses activePeriod only for date-label formatting; align it with the
+        // active daily range so labels render as dates (not intraday times).
+        activePeriod = (activeRange === '1y' ? '1y' : activeRange === '1m' ? '1m' : '3m') as ChartPeriodKey;
+        const rangeLabel = RANGE_LABELS[activeRange] ?? activeRange;
+        renderChartFromPoints(
+          points,
+          `${rangeLabel} · 실시간 지연 시세`,
+          `${selectedName} ${selectedSymbol}, ${rangeLabel} 실제 지연 OHLCV 캔들 차트와 거래량. 지연 시세, 투자 참고용.`,
+        );
+        return true;
+      };
+
+      function loadRealChart() {
+        if (!productionRealChartEnabled) return;
+        const seq = ++realChartSeq;
+        if (realChartAbort) realChartAbort.abort();
+        realChartAbort = new AbortController();
+        const signal = realChartAbort.signal;
+        setRealChartState(
+          '실시간 종목 차트를 불러오는 중입니다.',
+          `${selectedName} ${selectedSymbol}의 실제 지연 OHLCV 데이터를 불러오고 있습니다.`,
+          'loading',
+        );
+        const params = new URLSearchParams();
+        params.set('country', selectedCountry);
+        params.set('symbol', selectedSymbol);
+        params.set('range', activeRange);
+        const timeoutId = window.setTimeout(() => realChartAbort?.abort(), REAL_CHART_TIMEOUT_MS);
+        fetch(`/api/chart-ai/market/ohlcv.json?${marketDataRequestQuery}&${params.toString()}`, {
+          method: 'GET',
+          signal,
+          credentials: 'omit',
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (seq !== realChartSeq) return;
+            const ohlcv = data && data.ohlcv;
+            if (!ohlcv || ohlcv.sourceStatus === 'blocked') {
+              setRealChartState('차트를 표시할 수 없습니다.', '실시간 시세 접근 권한을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.', 'error');
+              return;
+            }
+            if (ohlcv.sourceStatus === 'no-data' || !Array.isArray(ohlcv.candles) || ohlcv.candles.length < 2) {
+              setRealChartState('표시할 시세 데이터가 없습니다.', `${selectedName} ${selectedSymbol}의 해당 기간 실제 OHLCV 데이터가 아직 제공되지 않습니다.`, 'no-data');
+              return;
+            }
+            if (ohlcv.sourceStatus !== 'ok') {
+              setRealChartState('실시간 시세를 불러오지 못했습니다.', '잠시 후 다시 시도해 주세요.', 'unavailable');
+              return;
+            }
+            if (!renderRealChart(ohlcv)) {
+              setRealChartState('차트를 표시할 수 없습니다.', '유효한 시세 데이터를 확인하지 못했습니다.', 'error');
+              return;
+            }
+            updateRealChartMeta(ohlcv);
+            setRealChartState('', '', 'ready');
+          })
+          .catch((error) => {
+            if (seq !== realChartSeq) return;
+            if (error && (error as any).name === 'AbortError') return;
+            setRealChartState('실시간 시세를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', 'unavailable');
+          })
+          .finally(() => window.clearTimeout(timeoutId));
+      }
+
+      const resetSelectedSummary = () => {
+        const out = document.getElementById('chartAiOwnerLocalKisLlmSummaryOutput');
+        const status = document.getElementById('chartAiOwnerLocalKisLlmSummaryStatus');
+        const btn = document.getElementById('chartAiOwnerLocalKisLlmSummaryButton');
+        if (out) { out.hidden = true; out.replaceChildren(); }
+        if (status) status.textContent = '대기 중';
+        if (btn && useProductionFacingSummaryPresentation) {
+          btn.textContent = `MK AI 시세 요약 요청 (${selectedSymbol})`;
+        }
+      };
+
+      const updateProductionUrlState = () => {
+        if (!productionRealChartEnabled) return;
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('symbol', selectedSymbol);
+          url.searchParams.set('country', selectedCountry);
+          window.history.replaceState({}, '', url.toString());
+        } catch {}
+      };
+
+      const updateSelection = (record: any) => {
         selectedSymbol = record.symbol;
         selectedName = record.nameKo;
         selectedAssetType = record.assetType;
+        selectedCountry = record.country === 'US' ? 'US' : 'KR';
         setText('chartAiSelectedName', record.nameKo);
         setText('chartAiSelectedSymbol', record.symbol);
         setText('chartAiSelectedExchange', record.exchange);
@@ -1800,24 +1976,17 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         if (searchHint) searchHint.hidden = true;
         closeDropdown();
         resetOhlcPreview();
-        renderChart();
+        resetSelectedSummary();
+        if (productionRealChartEnabled) {
+          updateProductionUrlState();
+          loadRealChart();
+        } else {
+          renderChart();
+        }
         resetQuotePreview();
       };
 
-      const renderResults = (open = true) => {
-        if (searchHint) searchHint.hidden = true;
-        const query = input.value.trim();
-        if (!query) {
-          closeDropdown();
-          return;
-        }
-
-        visibleRecords = searchClientSafeDomesticSymbols(records, {
-          query,
-          limit: 15,
-          assetTypes: activeFilter === 'all' ? undefined : [activeFilter],
-          includeStatuses: ['active'],
-        });
+      const renderResultButtons = (open: boolean) => {
         resultsEl.replaceChildren();
         resultCount.textContent = `${visibleRecords.length}개`;
         emptyState.hidden = visibleRecords.length > 0;
@@ -1840,13 +2009,52 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           name.textContent = record.nameKo;
           const metadata = document.createElement('span');
           metadata.className = 'chart-ai-search-result-meta';
-          metadata.textContent = record.assetType === 'etf'
-            ? `${record.symbol} · ${record.exchange} · ${record.currency}`
-            : `${record.symbol} · ${record.exchange} · ${assetTypeLabel(record.assetType)}`;
+          const countryTag = record.country === 'US' ? '미국' : '국내';
+          const kindTag = record.assetType === 'etf' ? 'ETF' : assetTypeLabel(record.assetType);
+          metadata.textContent = `${record.symbol} · ${countryTag} · ${record.exchange} · ${kindTag}`;
           button.append(name, metadata);
           button.addEventListener('click', () => updateSelection(record));
           resultsEl.append(button);
         }
+      };
+
+      // Phase 3GG-OP-FAST: universal search via the server route, with stale-response protection.
+      let searchSeq = 0;
+      let searchAbort: AbortController | null = null;
+      const runSearch = async (open = true) => {
+        if (searchHint) searchHint.hidden = true;
+        const query = input.value.trim();
+        if (!query) {
+          closeDropdown();
+          return;
+        }
+        const seq = ++searchSeq;
+        if (searchAbort) searchAbort.abort();
+        searchAbort = new AbortController();
+        const params = new URLSearchParams({ q: query });
+        if (activeFilter !== 'all') params.set('assetType', activeFilter);
+        try {
+          const response = await fetch(`/api/chart-ai/instruments/search.json?${params.toString()}`, {
+            method: 'GET',
+            signal: searchAbort.signal,
+            credentials: 'omit',
+          });
+          const data = await response.json();
+          if (seq !== searchSeq) return;
+          visibleRecords = Array.isArray(data?.results) ? data.results.map(mapApiResult) : [];
+          renderResultButtons(open);
+        } catch (error) {
+          if (seq !== searchSeq) return;
+          if (error && (error as any).name === 'AbortError') return;
+          visibleRecords = [];
+          renderResultButtons(open);
+        }
+      };
+
+      let searchDebounceId = 0;
+      const debouncedSearch = () => {
+        window.clearTimeout(searchDebounceId);
+        searchDebounceId = window.setTimeout(() => runSearch(true), 180);
       };
 
       filterButtons.forEach((button) => {
@@ -1859,12 +2067,14 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             candidate.classList.toggle('active', active);
             candidate.setAttribute('aria-pressed', String(active));
           });
-          renderResults(true);
+          runSearch(true);
         });
       });
 
-      input.addEventListener('focus', () => renderResults(true));
-      input.addEventListener('input', () => renderResults(true));
+      input.addEventListener('focus', () => {
+        if (input.value.trim()) runSearch(true);
+      });
+      input.addEventListener('input', debouncedSearch);
       input.addEventListener('keydown', (event: KeyboardEvent) => {
         if (event.key === 'Enter') {
           event.preventDefault();
@@ -1879,18 +2089,29 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         }
         if (event.key === 'Escape') closeDropdown();
       });
-      runBtn.addEventListener('click', () => {
+      runBtn.addEventListener('click', async () => {
         if (!input.value.trim()) {
           if (searchHint) searchHint.hidden = false;
           closeDropdown();
           return;
         }
-        renderResults(true);
+        await runSearch(true);
         if (visibleRecords[0]) updateSelection(visibleRecords[0]);
       });
 
       periodButtons.forEach((button) => {
         button.addEventListener('click', () => {
+          const range = button.dataset.range;
+          if (productionRealChartEnabled && (range === '1m' || range === '3m' || range === '6m' || range === '1y')) {
+            activeRange = range;
+            periodButtons.forEach((candidate) => {
+              const active = candidate === button;
+              candidate.classList.toggle('active', active);
+              candidate.setAttribute('aria-pressed', String(active));
+            });
+            loadRealChart();
+            return;
+          }
           if (!isChartPeriodKey(button.dataset.period)) return;
           activePeriod = button.dataset.period;
           periodButtons.forEach((candidate) => {
@@ -1903,6 +2124,39 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           renderChart();
         });
       });
+
+      // Phase 3GG-OP-FAST: on Production, resolve the initial instrument from the URL (default Samsung
+      // Electronics) via the search route, then select it -- which loads the real chart.
+      const DEFAULT_INSTRUMENT = {
+        symbol: '005930', nameKo: '삼성전자', englishName: 'Samsung Electronics',
+        country: 'KR', exchange: 'KOSPI', market: '국내', assetType: 'stock', currency: 'KRW',
+      };
+      const initProductionInstrument = async () => {
+        if (!productionRealChartEnabled) return;
+        const sym = (chartAiQuery.get('symbol') || '').trim();
+        const ctry = (chartAiQuery.get('country') || '').trim().toUpperCase();
+        if (!sym) {
+          updateSelection(DEFAULT_INSTRUMENT);
+          return;
+        }
+        try {
+          const params = new URLSearchParams({ q: sym });
+          if (ctry === 'KR' || ctry === 'US') params.set('country', ctry);
+          const response = await fetch(`/api/chart-ai/instruments/search.json?${params.toString()}`, {
+            method: 'GET',
+            credentials: 'omit',
+          });
+          const data = await response.json();
+          const results = Array.isArray(data?.results) ? data.results : [];
+          const exact = results.find((r: any) => String(r.symbol).toUpperCase() === sym.toUpperCase()) || results[0];
+          updateSelection(exact ? mapApiResult(exact) : DEFAULT_INSTRUMENT);
+        } catch {
+          updateSelection(DEFAULT_INSTRUMENT);
+        }
+      };
+      if (productionRealChartEnabled) {
+        initProductionInstrument();
+      }
 
       // Chart analysis workspace page-swap: local class/attribute toggling only, no network/storage.
       const similarityTab = document.getElementById('chartAiSimilarityTab') as HTMLButtonElement | null;
@@ -3184,7 +3438,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
           try {
             const response = await fetch(
-              `/api/chart-ai/local-only-kis-llm-summary.json?${ownerLocalKisLlmSummaryRequestQuery}&symbol=005930`,
+              `/api/chart-ai/local-only-kis-llm-summary.json?${ownerLocalKisLlmSummaryRequestQuery}&country=${selectedCountry}&symbol=${encodeURIComponent(selectedSymbol)}`,
               { method: 'GET', signal: abortController.signal, credentials: 'omit' },
             );
             let parsedResponse: unknown = null;
@@ -3523,7 +3777,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         });
       }
 
-      renderChart();
+      // Phase 3GG-OP-FAST: on Production the real chart is driven by initProductionInstrument()
+      // above; only the non-production sample chart renders here.
+      if (!productionRealChartEnabled) {
+        renderChart();
+      }
     };
 
     document.addEventListener('astro:page-load', setup);

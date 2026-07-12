@@ -138,6 +138,15 @@ export const GET: APIRoute = async ({ url, request }) => {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse(SANITIZED_ERROR_CODES.NON_LOCAL_REQUEST) });
   }
 
+  // Phase 3GG-OP-FAST: the summary now follows the selected instrument. KR six-digit codes get the
+  // real KIS current_price + LLM summary. US instruments are honestly reported as summary-unavailable
+  // for now (the real US OHLCV chart is served separately) -- never faked, and never silently falling
+  // back to the default KR symbol while a US instrument is selected.
+  const countryParam = (url.searchParams.get('country') ?? '').trim().toUpperCase();
+  if (countryParam === 'US') {
+    return jsonResponse({ ok: true, summary: blockedSummaryResponse('US_SUMMARY_UNSUPPORTED') });
+  }
+
   const symbolParam = (url.searchParams.get('symbol') ?? '').trim();
   if (symbolParam.length > 0 && !SYMBOL_PATTERN.test(symbolParam)) {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse(SANITIZED_ERROR_CODES.INVALID_SYMBOL) });
