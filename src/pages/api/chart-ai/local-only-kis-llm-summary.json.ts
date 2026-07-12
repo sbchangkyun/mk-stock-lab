@@ -62,8 +62,22 @@ const readServerEnvValue = (name: string): string | undefined => {
   return process.env[name];
 };
 
-const fetchQuote = async ({ symbol }: { symbol: string; category: string }) => {
-  const result = await getKisDomesticQuoteSnapshot({ market: 'KR', symbol });
+const fetchQuote = async ({
+  symbol,
+  allowProductionChartAiBetaLiveQuotes,
+}: {
+  symbol: string;
+  category: string;
+  allowProductionChartAiBetaLiveQuotes?: boolean;
+}) => {
+  // Phase 3GG-M-PROD-HF1: forward the scoped production Chart AI beta signal to the provider client.
+  // It is true only when the GET handler's production beta guard (VERCEL_ENV=production +
+  // CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true + ?chartAiProdBeta=1) has already passed; kisClient
+  // re-checks the Production flag itself before lifting its hard block, and the scope stays current_price.
+  const result = await getKisDomesticQuoteSnapshot(
+    { market: 'KR', symbol },
+    { allowProductionChartAiBetaLiveQuotes: allowProductionChartAiBetaLiveQuotes === true },
+  );
   if (!result.ok) return { ok: false as const, code: 'PROVIDER_UNAVAILABLE' };
   return {
     ok: true as const,
@@ -142,6 +156,13 @@ export const GET: APIRoute = async ({ url, request }) => {
     ? { NODE_ENV: process.env.NODE_ENV, VERCEL_ENV: process.env.VERCEL_ENV, VERCEL: process.env.VERCEL }
     : {};
 
+  // Phase 3GG-M-PROD-HF1: the scoped production KIS live-quote exception is enabled ONLY for an
+  // authorized production beta request (prodBetaAccess.allowed). The localhost owner path and the
+  // Preview beta path leave this false, so their behavior is unchanged (and on those runtimes
+  // kisClient's production hard block does not apply anyway). kisClient independently re-verifies the
+  // Production flag before honoring the signal, so this remains fail-closed and current_price-scoped.
+  const allowProductionChartAiBetaLiveQuotes = prodBetaAccess.allowed === true;
+
   const sanitizedKis = await runLocalOnlyLiveKisMarketDataRequest(
     {
       hostname: bindingHostname,
@@ -149,6 +170,7 @@ export const GET: APIRoute = async ({ url, request }) => {
       symbol,
       category: 'current_price',
       nowMs: Date.now(),
+      allowProductionChartAiBetaLiveQuotes,
     },
     { rateLimiter, cache, hasEnvValue, fetchQuote, now: () => Date.now(), timeoutMs: 8000 },
   );

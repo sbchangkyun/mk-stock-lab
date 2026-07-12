@@ -34,8 +34,9 @@ const KNOWN_UNTOUCHED_PATHS = [
 // chart-ai.astro to add a production beta guard. Excluded here so this checker keeps asserting only
 // this rerun's own (doc-only) scope, not diffs introduced by later, separately-approved phases.
 const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
-  'src/lib/server/providers/kisClient.ts',
-  'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
+  // kisClient.ts + local-only-live-kis-market-data-binding.mjs removed here: Phase 3GG-M-PROD-HF1 is a
+  // later, separately-authorized phase allowed to modify them for the scoped production KIS exception
+  // (documented tolerance, same convention this checker used for its own predecessors).
   'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
   'src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs',
   'src/lib/server/chart-ai/local-only-llm-model-policy.mjs',
@@ -223,6 +224,13 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'src/lib/server/chart-ai/protected-preview-beta-guard.mjs',
   'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
   'src/pages/chart-ai.astro',
+  // Phase 3GG-M-PROD-HF1 checker-compatibility tolerance (documented): that later phase adds its own
+  // new result doc + checker, modifies kisClient.ts + the market-data binding for the scoped production
+  // KIS exception, and patches sibling checkers (including this one). Tolerate them here too.
+  'docs/planning/phase_3gg_m_prod_hf1_guarded_production_kis_live_quotes_result_v0.1.md',
+  'scripts/check_phase_3gg_m_prod_hf1_contract.mjs',
+  'src/lib/server/providers/kisClient.ts',
+  'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
 ]);
 let statusLines = [];
 try {

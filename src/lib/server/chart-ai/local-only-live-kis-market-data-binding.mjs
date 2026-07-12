@@ -242,7 +242,19 @@ async function callWithTimeout(transportFactory, timeoutMs) {
 // ({symbol, category}) -> {ok, data|code}, logger(entry), now() clock, and
 // an optional timeoutMs override.
 export async function runLocalOnlyLiveKisMarketDataRequest(input, deps) {
-  const { hostname, env = {}, symbol, category = 'current_price', nowMs } = input;
+  const {
+    hostname,
+    env = {},
+    symbol,
+    category = 'current_price',
+    nowMs,
+    // Phase 3GG-M-PROD-HF1: scoped, per-call signal (default false) set by the Chart AI production
+    // beta summary route ONLY after its own production beta guard has passed. It is forwarded solely
+    // into the delegated fetchQuote transport (step 7 below) so the provider client can narrowly lift
+    // its Vercel Production hard block for the current_price quote scope. It does NOT relax this
+    // module's own local-only guard, endpoint allowlist, symbol, credential, or rate-limit checks.
+    allowProductionChartAiBetaLiveQuotes = false,
+  } = input;
   const {
     rateLimiter,
     cache,
@@ -321,7 +333,10 @@ export async function runLocalOnlyLiveKisMarketDataRequest(input, deps) {
   // 7. Provider call, wrapped in an explicit timeout (the delegated
   // transport has no timeout guarantee of its own).
   const startedAtMs = now();
-  const result = await callWithTimeout(() => fetchQuote({ symbol, category }), timeoutMs);
+  const result = await callWithTimeout(
+    () => fetchQuote({ symbol, category, allowProductionChartAiBetaLiveQuotes }),
+    timeoutMs,
+  );
   const latencyMs = now() - startedAtMs;
 
   if (!result || result.ok !== true) {

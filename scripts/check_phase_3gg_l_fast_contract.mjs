@@ -44,8 +44,9 @@ const KNOWN_UNTOUCHED_PATHS = [
 // explicitly authorized to add the protected-preview-beta activation to those two files. Every other
 // source file below remains protected by L-FAST's zero-diff guard.
 const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
-  'src/lib/server/providers/kisClient.ts',
-  'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
+  // kisClient.ts + local-only-live-kis-market-data-binding.mjs removed here: Phase 3GG-M-PROD-HF1 is a
+  // later, separately-authorized phase allowed to modify them for the scoped production KIS exception
+  // (documented tolerance, same convention already applied for this checker's other later siblings).
   'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
   'src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs',
   'src/lib/server/chart-ai/local-only-llm-model-policy.mjs',
@@ -333,6 +334,16 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'docs/planning/phase_3gg_m_prod_beta_deploy_production_url_chart_ai_beta_result_v0.1.md',
   'scripts/check_phase_3gg_m_prod_beta_deploy_contract.mjs',
   'scripts/check_phase_3gg_l_beta_deploy_rerun_2_contract.mjs',
+  // Phase 3GG-M-PROD-HF1 checker-compatibility tolerance (documented): that later phase adds its own
+  // new result doc + checker, modifies kisClient.ts + the market-data binding for the scoped production
+  // KIS exception (both now excluded from L-FAST's zero-diff list above), and patches sibling checkers.
+  'docs/planning/phase_3gg_m_prod_hf1_guarded_production_kis_live_quotes_result_v0.1.md',
+  'scripts/check_phase_3gg_m_prod_hf1_contract.mjs',
+  'src/lib/server/providers/kisClient.ts',
+  'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
+  'src/lib/server/chart-ai/protected-preview-beta-guard.mjs',
+  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
+  'scripts/check_phase_3gg_l_beta_deploy_rerun_3_contract.mjs',
 ]);
 let statusLines = [];
 try {

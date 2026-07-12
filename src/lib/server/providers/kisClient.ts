@@ -15,6 +15,11 @@ const requiredEnvNames = ['KIS_APP_KEY', 'KIS_APP_SECRET', 'KIS_BASE_URL'];
 const optionalEnvNames = ['KIS_ACCOUNT_NO'];
 const featureFlagEnvName = 'KIS_ENABLE_LIVE_QUOTES';
 const previewGuardFlagEnvName = 'KIS_ENABLE_PREVIEW_LIVE_QUOTES';
+// Phase 3GG-M-PROD-HF1: the non-secret Production flag that -- together with an explicit
+// per-call scoped signal from the Chart AI production beta summary route -- narrowly lifts
+// the Vercel Production hard block below for the current_price quote scope ONLY. Its mere
+// presence never opens generic production KIS usage: the scoped call option must also be set.
+const productionChartAiBetaFlagEnvName = 'CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA';
 const quotePath = '/uapi/domestic-stock/v1/quotations/inquire-price';
 const dailyOhlcPath = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice';
 const tokenPath = '/oauth2/tokenP';
@@ -136,7 +141,9 @@ const getRuntimeConfig = (): KisRuntimeConfig | null => {
   return { appKey, appSecret, baseUrl };
 };
 
-export const getKisQuoteConfigReadiness = (): KisQuoteConfigReadiness => {
+export const getKisQuoteConfigReadiness = (
+  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+): KisQuoteConfigReadiness => {
   assertServerRuntime(moduleName);
   const missingEnvNames = getMissingEnvNames();
   const flagEnabled = readEnvValue(featureFlagEnvName) === 'true';
@@ -144,8 +151,26 @@ export const getKisQuoteConfigReadiness = (): KisQuoteConfigReadiness => {
 
   const base = { provider, requiredEnvNames, missingEnvNames, optionalEnvNames, featureFlagEnvName, productionAllowed: false } as const;
 
-  // Hard block: Vercel Production, non-Vercel NODE_ENV=production, unknown VERCEL_ENV value
-  if (runtimeClass === 'vercel-production' || runtimeClass === 'node-production' || runtimeClass === 'unknown') {
+  // Phase 3GG-M-PROD-HF1: narrowly-scoped Vercel Production exception for the Chart AI production
+  // beta summary flow ONLY. All three must hold: the runtime really is Vercel Production, the caller
+  // passed the explicit per-call scoped signal (set by the H route only after its own production
+  // beta guard -- VERCEL_ENV=production + CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true +
+  // ?chartAiProdBeta=1 -- has already passed), AND the non-secret Production flag is enabled. Absent
+  // any one of these, production stays fully fail-closed. This lifts ONLY the runtime hard block; the
+  // KIS_ACCOUNT_NO-absent, KIS_ENABLE_LIVE_QUOTES=true, and credential-present checks below still run,
+  // and the scope remains current_price (the only endpoint this readiness gate serves).
+  const productionChartAiBetaExceptionAllowed =
+    runtimeClass === 'vercel-production' &&
+    options.allowProductionChartAiBetaLiveQuotes === true &&
+    readEnvValue(productionChartAiBetaFlagEnvName) === 'true';
+
+  // Hard block: Vercel Production (unless the scoped Chart AI beta exception applies),
+  // non-Vercel NODE_ENV=production, unknown VERCEL_ENV value
+  if (
+    (runtimeClass === 'vercel-production' && !productionChartAiBetaExceptionAllowed) ||
+    runtimeClass === 'node-production' ||
+    runtimeClass === 'unknown'
+  ) {
     return { ...base, ready: false, reason: 'production_not_allowed' };
   }
 
@@ -299,13 +324,21 @@ export const validateKisDomesticQuoteInput = (input: SecurityIdentity): Provider
   return null;
 };
 
-export const getKisDomesticQuoteSnapshot = async (input: SecurityIdentity): Promise<ProviderResult<QuoteSnapshot>> => {
+export const getKisDomesticQuoteSnapshot = async (
+  input: SecurityIdentity,
+  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
   const inputError = validateKisDomesticQuoteInput(input);
   if (inputError) return inputError;
 
-  const readiness = getKisQuoteConfigReadiness();
+  // Only the scoped current_price quote snapshot forwards the production Chart AI beta exception.
+  // The generic getKisQuoteSnapshot wrapper and the OHLC series path call getKisQuoteConfigReadiness()
+  // with no options, so they remain fully fail-closed on production.
+  const readiness = getKisQuoteConfigReadiness({
+    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+  });
   if (!readiness.ready) return readinessToError(readiness);
 
   const config = getRuntimeConfig();

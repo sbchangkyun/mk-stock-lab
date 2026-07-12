@@ -1,5 +1,38 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-M-PROD-HF1 - 2026-07-12
+
+### Guarded Production KIS Live Quotes Exception and Production URL Deploy
+
+- **Status**: Builds on Phase 3GG-M-PROD-BETA-DEPLOY. The owner requested the actual Production URL show
+  the real live KIS + LLM Chart AI summary, not only a protected Preview URL. Adds a minimal, fail-closed
+  production KIS live-quote exception scoped only to the explicit Chart AI production beta summary path,
+  and deploys to the real Vercel Production URL.
+- **Baseline**: `5cbfb0b` (Phase 3GG-M-PROD-BETA-DEPLOY).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Lift the `kisClient.ts` Vercel-Production hard block for the current_price quote scope only,
+  and only when all of: `VERCEL_ENV=production`, `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true`, an
+  explicit per-call scoped signal (`allowProductionChartAiBetaLiveQuotes`), and `chartAiProdBeta=1`.
+  Generic production KIS use remains fail-closed (the wrapper and OHLC path pass no scoped option).
+  current_price only. No account/order/balance/funds/portfolio/trading/personal endpoints.
+  Preserves localhost owner flow. Preserves Preview beta flow. No prompt rewrite.
+  No summary contract rewrite. No model name exposure. No raw OpenAI/KIS exposure.
+  No currentPrice/volume numeric exposure.
+- **Result**: Added the missing non-secret Production flag `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true`
+  via `vercel env add` (value over stdin, no secret printed); `vercel env ls production` confirmed the
+  name present. Implemented the scoped exception across three allowed source files (`kisClient.ts`,
+  the market-data binding, and the H route) — the readiness gate now honors the exception only when the
+  runtime is `vercel-production`, the flag is `true`, and the per-call option is strictly `true`; the H
+  route sets that option only for an authorized `chartAiProdBeta=1` production beta request. `chart-ai.astro`
+  and the beta guard were already wired in the prior phase and are unchanged. Local regression (HF5,
+  G-FAST, HF6, L-FAST) all PASS after the change; `npm run build` PASS. Local `vercel build` is skipped
+  because the OneDrive/`VERCEL=1` failure is already diagnosed; uses Vercel cloud production deploy only
+  if validation passes. No push unless the deploy path requires it and separately recorded. Deploy and
+  Production URL live-verification outcomes are recorded in the result doc.
+- **Next recommended phase**: If Production live verification passes, a Production Chart AI beta browser-QA
+  phase against the Production URL; otherwise a narrow Production KIS runtime diagnostic if the provider
+  rejects the request at runtime.
+
 ## Phase 3GG-M-PROD-BETA-DEPLOY - 2026-07-12
 
 ### Production URL Chart AI Beta Activation and Cloud Deploy
