@@ -207,6 +207,10 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'scripts/check_phase_3gg_l_beta_deploy_contract.mjs',
   'scripts/check_phase_3gg_l_beta_activate_contract.mjs',
   'scripts/check_phase_3gg_l_fast_contract.mjs',
+  // Phase 3GG-L-BETA-DEPLOY-RERUN-2 checker-compatibility tolerance (documented): the rerun-2 phase
+  // adds its own new result doc + checker (and patches sibling checkers); tolerate them here too.
+  'docs/planning/phase_3gg_l_beta_deploy_rerun_2_protected_preview_beta_deploy_result_v0.1.md',
+  'scripts/check_phase_3gg_l_beta_deploy_rerun_2_contract.mjs',
 ]);
 let statusLines = [];
 try {
@@ -217,7 +221,15 @@ try {
 for (const line of statusLines) {
   const indexStatus = line[0];
   const filePath = line.slice(3).trim();
-  if (filePath === '.env' || filePath === '.env.local' || filePath === '.vercel' || filePath.startsWith('.vercel/')) {
+  if (
+    filePath === '.env' ||
+    filePath === '.env.local' ||
+    filePath === '.vercel' ||
+    filePath.startsWith('.vercel/') ||
+    // Phase 3GG-L-BETA-DEPLOY-RERUN-2 tolerance (documented): `vercel link` appended a `.env*` line to
+    // .gitignore, left unstaged/uncommitted; tolerate it here as unstaged only, same as .env/.vercel.
+    filePath === '.gitignore'
+  ) {
     assert(indexStatus === ' ' || indexStatus === '?', `${filePath} must not be staged (index status must be unstaged/untracked)`);
     continue;
   }

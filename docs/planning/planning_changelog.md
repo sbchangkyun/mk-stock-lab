@@ -1,5 +1,16 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-L-BETA-DEPLOY-RERUN-2 - 2026-07-11
+
+### Protected Preview Beta Deploy Execution Rerun 2
+
+- **Status**: Vercel project link is now owner-approved and verified (owner completed `vercel link` interactively; this session corroborated it via `.vercel/repo.json` and `vercel project ls`). Deployment Protection could not be verified through any available non-interactive channel, so classification is `BLOCKED_DEPLOYMENT_PROTECTION_NOT_VERIFIED`. App remains deploy-ready (local regression + npm build pass; all required Preview env names present). Deploy not executed; not pushed; `.vercel` not committed.
+- **Baseline**: `5bc8142` (Phase 3GG-L-BETA-DEPLOY-RERUN).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Builds on Phase 3GG-L-BETA-DEPLOY-RERUN. Vercel project link is now owner-approved and verified. Verifies Deployment Protection before live beta testing. Verifies Preview env name presence as booleans only. Runs local regression before deploy. Runs vercel build and vercel deploy for Preview only if allowed. Does not deploy production. Does not promote to production. Does not push. Does not print Vercel env values. Does not print secrets. Does not print model names. Does not print prompt text. Does not print raw OpenAI/KIS payloads. Does not print currentPrice/volume numeric values. Does not commit `.vercel`. current_price only. H route only. No KIS endpoint expansion.
+- **Result**: Vercel CLI present (54.9.1) + authenticated; project link confirmed via `.vercel/repo.json` (repo-link format for this CLI version) corroborated by `vercel project ls`. All required Preview env names present; `KIS_ACCOUNT_NO` correctly absent. Local regression preflight all PASS and `npm run build` PASS (deploy-ready). Deployment Protection status could not be verified non-interactively (no CLI command exposes it; the one call that would have was denied by this session's own safety layer as an unauthorized raw-API escalation, and that denial was respected). No deploy performed; not pushed; `.vercel` not committed; `.gitignore`'s CLI-appended `.env*` rule left unstaged.
+- **Next recommended phase**: Re-run Phase 3GG-L-BETA-DEPLOY-RERUN-2 (or a successor rerun) once the owner confirms Deployment Protection is enabled on the Vercel Dashboard. Production remains prohibited.
+
 ## Phase 3GG-L-BETA-DEPLOY-RERUN - 2026-07-11
 
 ### Protected Preview Beta Deploy Execution Rerun

@@ -1,9 +1,7 @@
-// Phase 3GG-L-BETA-DEPLOY contract checker.
-// Verifies the deploy-execution result doc and package.json/changelog wiring are present; that this
-// deploy/documentation-only phase introduced NO source diff of any kind (KIS provider, binding, both
-// chart-ai routes, LLM bridge, model policy, the protected-preview-beta guard, chart-ai.astro, MK
-// Agent, Similar Pattern agent, guarded scaffold, components, supabase, src/data) and no lockfile
-// diff, measured against the Phase 3GG-L-BETA-ACTIVATE baseline (fecf44e); that no production-deploy
+// Phase 3GG-L-BETA-DEPLOY-RERUN-2 contract checker.
+// Verifies the rerun-2 deploy-execution result doc and package.json/changelog wiring are present; that
+// this deploy/documentation-only rerun introduced NO source diff of any kind and no lockfile diff,
+// measured against the Phase 3GG-L-BETA-DEPLOY-RERUN-2 baseline (5bc8142); that no production-deploy
 // command appears in the new doc/checker; and that .env/.env.local/.vercel are neither staged nor
 // committed.
 
@@ -13,10 +11,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const BASELINE = 'fecf44e';
+const BASELINE = '5bc8142';
 
-const RESULT_DOC = 'docs/planning/phase_3gg_l_beta_deploy_protected_preview_beta_deploy_result_v0.1.md';
-const CHECKER_SELF = 'scripts/check_phase_3gg_l_beta_deploy_contract.mjs';
+const RESULT_DOC = 'docs/planning/phase_3gg_l_beta_deploy_rerun_2_protected_preview_beta_deploy_result_v0.1.md';
+const CHECKER_SELF = 'scripts/check_phase_3gg_l_beta_deploy_rerun_2_contract.mjs';
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
@@ -30,7 +28,7 @@ const KNOWN_UNTOUCHED_PATHS = [
   'skills-lock.json',
 ];
 
-// This is a deploy/doc-only phase: every source file below must remain zero-diff vs the baseline.
+// This is a deploy/doc-only rerun phase: every source file below must remain zero-diff vs the baseline.
 const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
   'src/lib/server/providers/kisClient.ts',
   'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
@@ -56,7 +54,7 @@ const REQUIRED_FORBIDDEN_DIFF_PATHS = [
 ];
 
 const RESULT_DOC_REQUIRED_TOKENS = [
-  'BLOCKED_VERCEL_PROJECT_NOT_LINKED',
+  'BLOCKED_DEPLOYMENT_PROTECTION_NOT_VERIFIED',
   'Protected Preview',
   'Deployment Protection',
   'Preview env name presence',
@@ -64,11 +62,7 @@ const RESULT_DOC_REQUIRED_TOKENS = [
   'preview',
   'Production deploy: false',
   'Promoted to production: false',
-  'summary.ok',
-  'sourceStatus',
-  'llmStatus',
-  'currentPricePresent',
-  'volumePresent',
+  'vercelProjectLinked: true',
   'current_price only',
   'H route only',
   'No exposure',
@@ -77,18 +71,23 @@ const RESULT_DOC_REQUIRED_TOKENS = [
 ];
 
 const CHANGELOG_REQUIRED_TOKENS = [
-  '## Phase 3GG-L-BETA-DEPLOY - 2026-07-11',
-  'Protected Preview Beta Deploy Execution',
-  'Builds on Phase 3GG-L-BETA-ACTIVATE',
-  'Source activation was already ready',
-  'Executes protected Vercel Preview deploy only',
+  '## Phase 3GG-L-BETA-DEPLOY-RERUN-2 - 2026-07-11',
+  'Protected Preview Beta Deploy Execution Rerun 2',
+  'Builds on Phase 3GG-L-BETA-DEPLOY-RERUN',
+  'Vercel project link is now owner-approved and verified',
   'Verifies Deployment Protection before live beta testing',
   'Verifies Preview env name presence as booleans only',
   'Runs local regression before deploy',
+  'Runs vercel build and vercel deploy for Preview only if allowed',
   'Does not deploy production',
   'Does not promote to production',
   'Does not push',
   'Does not print Vercel env values',
+  'Does not print secrets',
+  'Does not print model names',
+  'Does not print prompt text',
+  'Does not print raw OpenAI/KIS payloads',
+  'Does not print currentPrice/volume numeric values',
   'Does not commit `.vercel`',
   'current_price only',
   'H route only',
@@ -123,8 +122,8 @@ for (const file of [...CORE_DELIVERABLES, CHANGELOG, PACKAGE_JSON]) {
 // --- 2. package.json script wiring ---
 const pkg = JSON.parse(read(PACKAGE_JSON));
 assert(
-  pkg.scripts && pkg.scripts['check:phase-3gg-l-beta-deploy'] === `node ${CHECKER_SELF}`,
-  'package.json is missing the exact "check:phase-3gg-l-beta-deploy" script entry',
+  pkg.scripts && pkg.scripts['check:phase-3gg-l-beta-deploy-rerun-2'] === `node ${CHECKER_SELF}`,
+  'package.json is missing the exact "check:phase-3gg-l-beta-deploy-rerun-2" script entry',
 );
 
 // --- 3. Result doc required content ---
@@ -148,22 +147,22 @@ const prodCommandPattern = /vercel\s+--prod\b|vercel\s+deploy\s+--prod\b|vercel\
 assert(!prodCommandPattern.test(resultDoc), 'Result doc must not contain a production-deploy command.');
 assert(!prodCommandPattern.test(read(CHECKER_SELF)), 'Checker must not contain a production-deploy command.');
 
-// --- 5. Changelog entry present, prepended above the L-BETA-ACTIVATE entry ---
+// --- 5. Changelog entry present, prepended above the L-BETA-DEPLOY-RERUN entry ---
 const changelog = read(CHANGELOG);
-const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-L-BETA-DEPLOY - 2026-07-11');
-assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-L-BETA-DEPLOY entry header');
+const changelogHeaderIndex = changelog.indexOf('## Phase 3GG-L-BETA-DEPLOY-RERUN-2 - 2026-07-11');
+assert(changelogHeaderIndex !== -1, 'planning_changelog.md is missing the Phase 3GG-L-BETA-DEPLOY-RERUN-2 entry header');
 const changelogSection =
   changelogHeaderIndex === -1 ? '' : changelog.slice(changelogHeaderIndex, changelog.indexOf('\n## ', changelogHeaderIndex + 1));
 for (const token of CHANGELOG_REQUIRED_TOKENS) {
   assert(changelogSection.includes(token), `Changelog entry missing required token: ${token}`);
 }
-const betaActivateHeaderIndex = changelog.indexOf('## Phase 3GG-L-BETA-ACTIVATE - 2026-07-11');
+const rerunHeaderIndex = changelog.indexOf('## Phase 3GG-L-BETA-DEPLOY-RERUN - 2026-07-11');
 assert(
-  betaActivateHeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < betaActivateHeaderIndex),
-  'Phase 3GG-L-BETA-DEPLOY changelog entry must be prepended above the Phase 3GG-L-BETA-ACTIVATE entry',
+  rerunHeaderIndex === -1 || (changelogHeaderIndex !== -1 && changelogHeaderIndex < rerunHeaderIndex),
+  'Phase 3GG-L-BETA-DEPLOY-RERUN-2 changelog entry must be prepended above the Phase 3GG-L-BETA-DEPLOY-RERUN entry',
 );
 
-// --- 6. No source diff (deploy/doc-only phase) ---
+// --- 6. No source diff (deploy/doc-only rerun phase) ---
 let sourceDiffLines = [];
 try {
   sourceDiffLines = runGit(['diff', '--name-only', BASELINE, '--', ...REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES])
@@ -198,25 +197,21 @@ try {
 }
 assert(!stagedFiles.includes('.env') && !stagedFiles.includes('.env.local'), '.env/.env.local must never be staged for commit.');
 assert(!stagedFiles.some((f) => f === '.vercel' || f.startsWith('.vercel/')), '.vercel must never be staged for commit.');
+assert(!stagedFiles.includes('.gitignore'), '.gitignore must never be staged for commit (owner/Vercel-CLI local change, unapproved for commit).');
 
 // --- 9. No unexpected working-tree changes outside this phase's scope ---
 const ALLOWED_MODIFIED_FILES = new Set([
   ...CORE_DELIVERABLES,
   CHANGELOG,
   PACKAGE_JSON,
-  // Phase 3GG-L-BETA-DEPLOY sibling checker-compatibility tolerance (documented per this phase's work
-  // order): the L-BETA-ACTIVATE and L-FAST checkers needed small, documented ALLOWED_MODIFIED_FILES
-  // patches to tolerate this phase's 2 new deploy files. Allow those sibling patches here too.
+  // Phase 3GG-L-BETA-DEPLOY-RERUN-2 sibling checker-compatibility tolerance (documented per this
+  // phase's work order): the L-BETA-DEPLOY-RERUN, L-BETA-DEPLOY, L-BETA-ACTIVATE, and L-FAST checkers
+  // needed small, documented ALLOWED_MODIFIED_FILES patches to tolerate this phase's 2 new rerun-2
+  // files. Allow those sibling patches here too.
+  'scripts/check_phase_3gg_l_beta_deploy_rerun_contract.mjs',
+  'scripts/check_phase_3gg_l_beta_deploy_contract.mjs',
   'scripts/check_phase_3gg_l_beta_activate_contract.mjs',
   'scripts/check_phase_3gg_l_fast_contract.mjs',
-  // Phase 3GG-L-BETA-DEPLOY-RERUN checker-compatibility tolerance (documented): the rerun phase adds
-  // its own new result doc + checker; tolerate their presence in this checker's working-tree scan.
-  'docs/planning/phase_3gg_l_beta_deploy_rerun_protected_preview_beta_deploy_result_v0.1.md',
-  'scripts/check_phase_3gg_l_beta_deploy_rerun_contract.mjs',
-  // Phase 3GG-L-BETA-DEPLOY-RERUN-2 checker-compatibility tolerance (documented): the rerun-2 phase
-  // adds its own new result doc + checker; tolerate them here too.
-  'docs/planning/phase_3gg_l_beta_deploy_rerun_2_protected_preview_beta_deploy_result_v0.1.md',
-  'scripts/check_phase_3gg_l_beta_deploy_rerun_2_contract.mjs',
 ]);
 let statusLines = [];
 try {
@@ -232,8 +227,9 @@ for (const line of statusLines) {
     filePath === '.env.local' ||
     filePath === '.vercel' ||
     filePath.startsWith('.vercel/') ||
-    // Phase 3GG-L-BETA-DEPLOY-RERUN-2 tolerance (documented): `vercel link` appended a `.env*` line to
-    // .gitignore, left unstaged/uncommitted; tolerate it here as unstaged only, same as .env/.vercel.
+    // Phase 3GG-L-BETA-DEPLOY-RERUN-2 tolerance (documented): the Vercel CLI's `vercel link` run
+    // appended a `.env*` line to .gitignore. This is left unstaged/uncommitted per this phase's
+    // explicit instructions; the working-tree scan tolerates it as unstaged only, same as .env/.vercel.
     filePath === '.gitignore'
   ) {
     assert(indexStatus === ' ' || indexStatus === '?', `${filePath} must not be staged (index status must be unstaged/untracked)`);
@@ -249,11 +245,11 @@ for (const line of statusLines) {
 
 // --- 10. Final result ---
 if (failures.length) {
-  console.error(`Phase 3GG-L-BETA-DEPLOY check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
+  console.error(`Phase 3GG-L-BETA-DEPLOY-RERUN-2 check FAIL: ${assertions - failures.length}/${assertions} assertions passed.`);
   for (const failure of failures) {
     console.error(` - ${failure}`);
   }
   process.exit(1);
 } else {
-  console.log(`Phase 3GG-L-BETA-DEPLOY check PASS: ${assertions}/${assertions} assertions passed.`);
+  console.log(`Phase 3GG-L-BETA-DEPLOY-RERUN-2 check PASS: ${assertions}/${assertions} assertions passed.`);
 }
