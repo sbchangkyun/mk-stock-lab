@@ -1969,21 +1969,23 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         setText('chartAiMkAiReadinessText', `${record.nameKo} 기준의 MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.`);
         ownerLocalConnected = false;
         selectedRecord = record;
-        updateOverviewDataStatus();
-        updateMkAiPanel();
-        resetAnalysisTriggers();
+        // Peripheral (mock/owner-local) updates are isolated so a gated-out element in the Production
+        // DOM can never block the real chart load below.
+        try { updateOverviewDataStatus(); } catch {}
+        try { updateMkAiPanel(); } catch {}
+        try { resetAnalysisTriggers(); } catch {}
         input.value = '';
         if (searchHint) searchHint.hidden = true;
         closeDropdown();
-        resetOhlcPreview();
-        resetSelectedSummary();
+        try { resetOhlcPreview(); } catch {}
+        try { resetSelectedSummary(); } catch {}
         if (productionRealChartEnabled) {
           updateProductionUrlState();
           loadRealChart();
         } else {
           renderChart();
         }
-        resetQuotePreview();
+        try { resetQuotePreview(); } catch {}
       };
 
       const renderResultButtons = (open: boolean) => {
@@ -2154,9 +2156,6 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           updateSelection(DEFAULT_INSTRUMENT);
         }
       };
-      if (productionRealChartEnabled) {
-        initProductionInstrument();
-      }
 
       // Chart analysis workspace page-swap: local class/attribute toggling only, no network/storage.
       const similarityTab = document.getElementById('chartAiSimilarityTab') as HTMLButtonElement | null;
@@ -3777,9 +3776,13 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         });
       }
 
-      // Phase 3GG-OP-FAST: on Production the real chart is driven by initProductionInstrument()
-      // above; only the non-production sample chart renders here.
-      if (!productionRealChartEnabled) {
+      // Phase 3GG-OP-FAST: run the initial selection LAST, after every setup() declaration is
+      // initialized (updateSelection transitively references consts defined throughout setup, so an
+      // earlier call would hit a temporal-dead-zone ReferenceError). Production resolves the URL/default
+      // instrument and loads the real chart; other runtimes render the non-production sample chart.
+      if (productionRealChartEnabled) {
+        initProductionInstrument();
+      } else {
         renderChart();
       }
     };
