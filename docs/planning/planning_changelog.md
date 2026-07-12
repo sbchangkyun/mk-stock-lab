@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-S-FAST - 2026-07-12
+
+### Portfolio Intelligence
+
+- Builds on Phase 3GG-R-FAST, reusing the normalized instrument + real OHLCV/similarity/MK AI
+  architecture; integrated into the Chart AI page without degrading the single-symbol experience.
+- Adds a versioned local **Watchlist** (localStorage `mkStockLab.watchlist.v1`, dedupe, capacity 50).
+- Adds **recent symbols** (`mkStockLab.recentSymbols.v1`, most-recent-first, dedupe, capacity 20;
+  recorded only after a valid selection).
+- Adds **saved analysis snapshots** (`mkStockLab.savedAnalyses.v1`, sanitized compact summary, clearly
+  labeled non-live, capacity 30).
+- Adds **manual portfolio holdings** (`mkStockLab.manualPortfolio.v1`, manual entry only, validation,
+  explicit duplicate policy, capacity 50).
+- Adds deterministic **multi-instrument comparison** (trend/momentum/volatility/risk/data-completeness
+  from cached analyses; missing = "분석 필요", never fabricated).
+- Adds a descriptive **portfolio risk summary** (market/country/currency/single-position concentration,
+  weighted volatility/risk, missing-data ratio) with neutral concentration notices.
+- Uses **manual holdings only**. **No brokerage account integration.** No account/order/balance/funds/
+  portfolio/trading/personal endpoint. No automatic position import.
+- Stores no secrets, raw provider payload, prompt, model name, raw LLM output, or full OHLCV arrays.
+- **Keeps KRW and USD totals separate** (no combined total without a real FX source; no hardcoded rate).
+  Current-price basis is labeled honestly (latest daily close, delayed) — never a daily close mislabeled
+  as live.
+- Makes **no automatic provider calls** merely to render the workspace; analyses/price refresh are
+  click-triggered (batch price refresh limited to 5 holdings).
+- **No investment recommendation.** No target allocation or rebalance instruction, target price,
+  stop-loss, probability of profit, or guaranteed return.
+- Persistence is browser localStorage only (versioned, corruption-safe, export-ready). Optional local
+  JSON export/import implemented. No Supabase schema change. No new dependency.
+- Production deploy and browser QA included.
+- Next recommended phase: Phase 3GG-T-FAST — Market and Cross-Asset Intelligence.
+
 ## Phase 3GG-R-FAST - 2026-07-12
 
 ### Real MK AI Analysis Using Selected Instrument, OHLCV and Similarity Results

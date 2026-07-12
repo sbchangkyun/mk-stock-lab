@@ -74,6 +74,7 @@ const isOpFastArtifact = (f) =>
   f === 'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts' ||
   f === 'src/lib/market-data/instrument.ts' ||
   /^src\/data\/chart-ai\//.test(f) ||
+  /^src\/lib\/chart-ai\/portfolio-intelligence\//.test(f) ||
   /^src\/lib\/server\/chart-ai\/(universal|similarity-engine|mkAiAnalysis\/)/.test(f) ||
   /^src\/pages\/api\/chart-ai\/(instruments\/|market\/|similarity\.json|mk-analysis\.json)/.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||

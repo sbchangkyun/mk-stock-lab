@@ -129,6 +129,7 @@ const tolerated = (f) =>
   f === '.gitignore' ||
   /^src\/lib\/server\/chart-ai\//.test(f) ||
   /^src\/pages\/api\/chart-ai\//.test(f) ||
+  /^src\/lib\/chart-ai\/portfolio-intelligence\//.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 let porcelain = [];

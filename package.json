@@ -167,6 +167,8 @@
     "smoke:phase-3gg-r-fast": "node scripts/smoke_phase_3gg_r_fast_mk_ai_analysis.mjs",
     "check:phase-3gg-r-fast": "node scripts/check_phase_3gg_r_fast_contract.mjs",
     "owner-smoke:phase-3gg-r-fast": "node scripts/owner_smoke_phase_3gg_r_fast_real_mk_ai_analysis.mjs",
+    "smoke:phase-3gg-s-fast": "node scripts/smoke_phase_3gg_s_fast_portfolio_intelligence.mjs",
+    "check:phase-3gg-s-fast": "node scripts/check_phase_3gg_s_fast_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

@@ -227,6 +227,7 @@ const isTolerated = (f) =>
   // This phase's own new source areas (git may report untracked directories collapsed with a trailing slash).
   // Also tolerate later Phase 3GG-Q-FAST chart-ai/similarity artifacts (documented sibling tolerance).
   /^src\/data\/chart-ai\//.test(f) ||
+  /^src\/lib\/chart-ai\/portfolio-intelligence\//.test(f) ||
   /^src\/lib\/server\/chart-ai\/(universal|similarity-engine|mkAiAnalysis\/)/.test(f) ||
   /^src\/pages\/api\/chart-ai\/(instruments\/|market\/|similarity\.json|mk-analysis\.json)/.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||

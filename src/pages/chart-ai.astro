@@ -1260,6 +1260,88 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       </div>
     </section>
 
+    {isVercelProductionRuntime && (
+      <section id="chartAiPortfolioWorkspace" class="chart-portfolio-workspace" aria-labelledby="chart-portfolio-heading">
+        <div class="chart-portfolio-header">
+          <p class="eyebrow">포트폴리오 인텔리전스</p>
+          <h2 id="chart-portfolio-heading">관심종목 · 포트폴리오</h2>
+          <p class="chart-portfolio-guide">브라우저(localStorage)에만 저장되는 개인 워크스페이스입니다. 계좌·잔고·주문 연동 없이 직접 입력한 정보만 사용하며, 매매 권유나 투자 자문이 아닙니다.</p>
+          <p class="chart-portfolio-storage-status" id="chartAiPortfolioStorageStatus" role="status" aria-live="polite" hidden></p>
+        </div>
+        <div class="chart-portfolio-tabs" role="tablist" aria-label="포트폴리오 인텔리전스 탭">
+          <button type="button" role="tab" class="chart-portfolio-tab active" data-pf-tab="watchlist" aria-selected="true">관심종목</button>
+          <button type="button" role="tab" class="chart-portfolio-tab" data-pf-tab="recent" aria-selected="false">최근 조회</button>
+          <button type="button" role="tab" class="chart-portfolio-tab" data-pf-tab="saved" aria-selected="false">저장된 분석</button>
+          <button type="button" role="tab" class="chart-portfolio-tab" data-pf-tab="portfolio" aria-selected="false">수동 포트폴리오</button>
+          <button type="button" role="tab" class="chart-portfolio-tab" data-pf-tab="compare" aria-selected="false">비교·리스크</button>
+        </div>
+
+        <div class="chart-portfolio-panel" data-pf-panel="watchlist" role="tabpanel">
+          <div class="chart-portfolio-actions">
+            <button type="button" id="chartAiPfAddWatch" class="chart-portfolio-btn">현재 종목 관심종목 추가</button>
+            <label class="chart-portfolio-sort">
+              <span>정렬</span>
+              <select id="chartAiPfWatchSort">
+                <option value="added">최근 추가순</option>
+                <option value="name">이름순</option>
+                <option value="country">국가순</option>
+                <option value="assetType">유형순</option>
+              </select>
+            </label>
+            <button type="button" id="chartAiPfClearWatch" class="chart-portfolio-btn chart-portfolio-btn-danger">전체 삭제</button>
+          </div>
+          <div id="chartAiPfWatchList" class="chart-portfolio-list" aria-live="polite"></div>
+        </div>
+
+        <div class="chart-portfolio-panel" data-pf-panel="recent" role="tabpanel" hidden>
+          <div class="chart-portfolio-actions">
+            <button type="button" id="chartAiPfClearRecent" class="chart-portfolio-btn chart-portfolio-btn-danger">최근 조회 비우기</button>
+          </div>
+          <div id="chartAiPfRecentList" class="chart-portfolio-chips" aria-live="polite"></div>
+        </div>
+
+        <div class="chart-portfolio-panel" data-pf-panel="saved" role="tabpanel" hidden>
+          <div class="chart-portfolio-actions">
+            <button type="button" id="chartAiPfSaveSim" class="chart-portfolio-btn">현재 유사 패턴 분석 저장</button>
+            <button type="button" id="chartAiPfSaveMkai" class="chart-portfolio-btn">현재 MK AI 분석 저장</button>
+            <button type="button" id="chartAiPfClearSaved" class="chart-portfolio-btn chart-portfolio-btn-danger">전체 삭제</button>
+          </div>
+          <p class="chart-portfolio-hint">저장된 분석은 저장 시점의 과거 스냅샷입니다. 실시간 분석이 아니며, 열어도 API를 다시 호출하지 않습니다.</p>
+          <div id="chartAiPfSavedList" class="chart-portfolio-list" aria-live="polite"></div>
+        </div>
+
+        <div class="chart-portfolio-panel" data-pf-panel="portfolio" role="tabpanel" hidden>
+          <form id="chartAiPfHoldingForm" class="chart-portfolio-form">
+            <p class="chart-portfolio-form-instrument" id="chartAiPfFormInstrument">현재 선택 종목을 추가합니다.</p>
+            <div class="chart-portfolio-form-row">
+              <label>수량<input type="number" id="chartAiPfQty" min="0" step="any" inputmode="decimal" required /></label>
+              <label>평균 매입가<input type="number" id="chartAiPfAvg" min="0" step="any" inputmode="decimal" required /></label>
+            </div>
+            <label class="chart-portfolio-form-note">메모(선택)<input type="text" id="chartAiPfNote" maxlength="200" /></label>
+            <button type="submit" id="chartAiPfAddHolding" class="chart-portfolio-btn">보유 종목 추가</button>
+            <p class="chart-portfolio-form-msg" id="chartAiPfHoldingMsg" role="status" aria-live="polite" hidden></p>
+          </form>
+          <div class="chart-portfolio-actions">
+            <button type="button" id="chartAiPfRefreshPrices" class="chart-portfolio-btn">최신 종가 새로고침 (최대 5)</button>
+            <button type="button" id="chartAiPfClearPortfolio" class="chart-portfolio-btn chart-portfolio-btn-danger">전체 삭제</button>
+          </div>
+          <div id="chartAiPfHoldingList" class="chart-portfolio-list" aria-live="polite"></div>
+          <div id="chartAiPfTotals" class="chart-portfolio-totals" aria-live="polite"></div>
+        </div>
+
+        <div class="chart-portfolio-panel" data-pf-panel="compare" role="tabpanel" hidden>
+          <p class="chart-portfolio-hint">분석 점수는 해당 종목의 MK AI/유사 패턴 분석을 실행한 경우에만 표시됩니다. 워크스페이스를 여는 것만으로는 어떤 API도 호출하지 않습니다.</p>
+          <div id="chartAiPfCompare" class="chart-portfolio-compare" aria-live="polite"></div>
+          <div id="chartAiPfRisk" class="chart-portfolio-risk" aria-live="polite"></div>
+          <div class="chart-portfolio-actions">
+            <button type="button" id="chartAiPfExport" class="chart-portfolio-btn">JSON 내보내기</button>
+            <label class="chart-portfolio-btn chart-portfolio-import-label">JSON 가져오기<input type="file" id="chartAiPfImport" accept="application/json,.json" hidden /></label>
+          </div>
+          <p class="chart-portfolio-form-msg" id="chartAiPfIoMsg" role="status" aria-live="polite" hidden></p>
+        </div>
+      </section>
+    )}
+
     <aside class="chart-lookup-disclaimer" aria-label="데이터 이용 안내">
       <strong>{isVercelProductionRuntime ? '이용 안내' : '샘플 화면'}</strong>
       <span>{isVercelProductionRuntime ? '실시간 지연 시세 기반의 참고용 정보이며, 투자 판단이나 매수·매도 추천이 아닙니다.' : '현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.'}</span>
@@ -1286,6 +1368,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     import { toMockedOhlcPoints, type OwnerLocalOhlcPreviewPoint } from '../lib/chart-ai/ohlcPreviewChart';
     import { searchClientSafeDomesticSymbols } from '../lib/symbol-master/clientSymbolSearch';
     import type { ClientSafeSymbolSearchRecord, DomesticAssetType } from '../lib/symbol-master/types';
+    // Phase 3GG-S-FAST: Portfolio Intelligence (localStorage only, no provider calls).
+    import { LIMITS as PF_LIMITS, instrumentKey as pfInstrumentKey, normalizeInstrument as pfNormalizeInstrument } from '../lib/chart-ai/portfolio-intelligence/schemas.mjs';
+    import { resolveStorage as pfResolveStorage } from '../lib/chart-ai/portfolio-intelligence/storage.mjs';
+    import * as pfWatchlist from '../lib/chart-ai/portfolio-intelligence/watchlist.mjs';
+    import * as pfRecent from '../lib/chart-ai/portfolio-intelligence/recentSymbols.mjs';
+    import * as pfSaved from '../lib/chart-ai/portfolio-intelligence/savedAnalyses.mjs';
+    import * as pfPortfolio from '../lib/chart-ai/portfolio-intelligence/manualPortfolio.mjs';
+    import * as pfMetrics from '../lib/chart-ai/portfolio-intelligence/portfolioMetrics.mjs';
+    import { buildExport as pfBuildExport, parseImport as pfParseImport } from '../lib/chart-ai/portfolio-intelligence/exportImport.mjs';
 
     const assetTypeLabel = (assetType: DomesticAssetType): string => {
       if (assetType === 'stock') return '주식';
@@ -1343,6 +1434,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       let resetSelectedSimilarity: () => void = () => {};
       // Phase 3GG-R-FAST: reassigned by the production MK AI analysis block.
       let resetSelectedMkAi: () => void = () => {};
+      // Phase 3GG-S-FAST: portfolio-intelligence hooks (assigned by the portfolio block).
+      let recordSelectionForPortfolio: (record: any) => void = () => {};
+      let cacheAnalysisScores: (key: string, scores: any) => void = () => {};
+      let lastSimilaritySummaryForSave: any = null;
+      let lastMkAiSummaryForSave: any = null;
       let ownerLocalConnected = false;
       let selectedRecord: ClientSafeSymbolSearchRecord | null = records.find((r) => r.symbol === selectedSymbol) ?? null;
       const mkAiBulletsEl = document.getElementById('chartAiMkAiBullets');
@@ -2014,6 +2110,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try { resetSelectedSummary(); } catch {}
         try { resetSelectedSimilarity(); } catch {}
         try { resetSelectedMkAi(); } catch {}
+        try { recordSelectionForPortfolio(record); } catch {}
         if (productionRealChartEnabled) {
           updateProductionUrlState();
           loadRealChart();
@@ -2410,6 +2507,27 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             if (simResults) simResults.hidden = false;
             setSimState('ready');
             if (simStartBtn) simStartBtn.textContent = '다시 분석';
+            // Phase 3GG-S-FAST: capture a compact sanitized summary for "저장된 분석" + cache the match count.
+            try {
+              const inst = pfNormalizeInstrument(selectedRecord);
+              if (inst) {
+                lastSimilaritySummaryForSave = {
+                  instrument: inst,
+                  analysisType: 'similarity',
+                  methodVersion: sim.methodVersion || '',
+                  summary: {
+                    matchCount: (sim.matches || []).length,
+                    scoreRange: sim.summary && sim.summary.scoreRange ? sim.summary.scoreRange : null,
+                    averageForward20: sim.aggregate ? sim.aggregate.averageForwardReturnByWindow?.d20 ?? null : null,
+                    positive20: sim.aggregate ? sim.aggregate.positiveCountByWindow?.d20 ?? null : null,
+                  },
+                  dataAsOf: sim.asOf || '',
+                  sourceStatus: sim.sourceStatus || 'ok',
+                  dataCompleteness: typeof sim.candidateCount === 'number' && sim.candidateCount > 0 ? 100 : null,
+                };
+                cacheAnalysisScores(pfInstrumentKey(inst), { similarityMatchCount: (sim.matches || []).length });
+              }
+            } catch {}
           } catch (err) {
             if (seq !== simSeq) return;
             if (err && (err as any).name === 'AbortError') return;
@@ -2571,6 +2689,34 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             showMkaiStatus('');
             renderMkai(mkai);
             if (mkaiStartBtn) mkaiStartBtn.textContent = '다시 분석';
+            // Phase 3GG-S-FAST: capture a compact sanitized MK AI summary + cache scores for compare/risk.
+            try {
+              const inst = pfNormalizeInstrument(selectedRecord);
+              if (inst) {
+                lastMkAiSummaryForSave = {
+                  instrument: inst,
+                  analysisType: 'mk-ai',
+                  methodVersion: mkai.methodVersion || '',
+                  summary: {
+                    trend: mkai.dimensions?.trend?.labelText ?? null,
+                    volatility: mkai.dimensions?.volatility?.labelText ?? null,
+                    risk: mkai.dimensions?.risk?.labelText ?? null,
+                    scenario: mkai.dimensions?.scenario?.labelText ?? null,
+                    scores: mkai.scores ?? null,
+                  },
+                  dataAsOf: mkai.asOf || '',
+                  sourceStatus: mkai.sourceStatus || 'ok',
+                  dataCompleteness: mkai.dataCompletenessConfidence ?? null,
+                };
+                cacheAnalysisScores(pfInstrumentKey(inst), {
+                  trend: mkai.scores?.trend,
+                  momentum: mkai.scores?.momentum,
+                  volatilityStability: mkai.scores?.volatilityStability,
+                  risk: mkai.scores?.risk,
+                  dataCompleteness: mkai.dataCompletenessConfidence,
+                });
+              }
+            } catch {}
           } catch (err) {
             if (seq !== mkaiSeq) return;
             if (err && (err as any).name === 'AbortError') return;
@@ -2586,6 +2732,371 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         if (mkaiStartBtn && productionRealChartEnabled) {
           mkaiStartBtn.addEventListener('click', runMkai);
+        }
+      }
+
+      // ===== Phase 3GG-S-FAST: Portfolio Intelligence (localStorage; no provider calls to render) =====
+      {
+        const pfRoot = document.getElementById('chartAiPortfolioWorkspace');
+        if (pfRoot) {
+          const pfStore = pfResolveStorage();
+          const nowIso = () => new Date().toISOString();
+          const pfInstMsg = document.getElementById('chartAiPortfolioStorageStatus');
+          if (!pfStore && pfInstMsg) { pfInstMsg.textContent = '브라우저 저장소를 사용할 수 없어 이 기기에 저장되지 않습니다. 화면에서만 임시로 동작합니다.'; pfInstMsg.hidden = false; }
+
+          let watchItems = pfWatchlist.loadWatchlist(pfStore);
+          let recentItems = pfRecent.loadRecent(pfStore);
+          let savedItems = pfSaved.loadSaved(pfStore);
+          let holdingItems = pfPortfolio.loadPortfolio(pfStore);
+          let watchSort = 'added';
+          const priceMap: Record<string, any> = {};
+          const analysisScoreCache: Record<string, any> = {};
+
+          // Seed the score cache from any saved MK AI snapshots so compare/risk work after reload.
+          for (const s of savedItems) {
+            if (s.analysisType === 'mk-ai' && s.summary && s.summary.scores) {
+              analysisScoreCache[pfInstrumentKey(s.instrument)] = {
+                trend: s.summary.scores.trend, momentum: s.summary.scores.momentum,
+                volatilityStability: s.summary.scores.volatilityStability, risk: s.summary.scores.risk,
+                dataCompleteness: s.dataCompleteness,
+              };
+            }
+          }
+
+          cacheAnalysisScores = (key: string, scores: any) => {
+            analysisScoreCache[key] = { ...(analysisScoreCache[key] || {}), ...scores };
+          };
+
+          const persist = () => {
+            pfWatchlist.saveWatchlist(watchItems, pfStore, nowIso());
+            pfRecent.saveRecent(recentItems, pfStore, nowIso());
+            pfSaved.saveSaved(savedItems, pfStore, nowIso());
+            pfPortfolio.savePortfolio(holdingItems, pfStore, nowIso());
+          };
+
+          const toRecord = (inst: any) => ({
+            symbol: inst.symbol, nameKo: inst.displayName, englishName: inst.englishName,
+            country: inst.country, exchange: inst.exchange, market: inst.market,
+            assetType: inst.assetType, currency: inst.currency,
+          });
+          const pfSelectInstrument = (inst: any) => { try { updateSelection(toRecord(inst)); } catch {} };
+          const el = (tag: string, cls?: string, text?: string) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+          const showMsg = (id: string, text: string) => { const m = document.getElementById(id); if (m) { m.textContent = text; m.hidden = !text; } };
+          const fmtNum = (v: any) => (typeof v === 'number' && isFinite(v) ? v.toLocaleString('ko-KR') : '—');
+          const assetLabel = (t: string) => (t === 'etf' ? 'ETF' : '주식');
+          const countryLabel = (c: string) => (c === 'US' ? '미국' : '국내');
+
+          // ----- renderers -----
+          const renderWatchlist = () => {
+            const host = document.getElementById('chartAiPfWatchList');
+            if (!host) return;
+            host.replaceChildren();
+            const items = pfWatchlist.sortWatchlist(watchItems, watchSort);
+            if (items.length === 0) { host.append(el('p', 'chart-portfolio-empty', '관심종목이 없습니다. 종목을 선택한 뒤 "현재 종목 관심종목 추가"를 눌러 담아 보세요.')); return; }
+            for (const it of items) {
+              const inst = it.instrument;
+              const key = pfInstrumentKey(inst);
+              const row = el('div', 'chart-portfolio-row');
+              if (selectedRecord && pfInstrumentKey(pfNormalizeInstrument(selectedRecord) || {}) === key) row.classList.add('is-selected');
+              const info = el('button', 'chart-portfolio-row-main');
+              info.type = 'button';
+              info.append(el('strong', '', inst.displayName), el('span', 'chart-portfolio-row-meta', `${inst.symbol} · ${countryLabel(inst.country)} · ${inst.exchange || ''} · ${assetLabel(inst.assetType)} · ${inst.currency}`));
+              info.addEventListener('click', () => pfSelectInstrument(inst));
+              const rm = el('button', 'chart-portfolio-row-remove', '삭제');
+              rm.type = 'button'; rm.setAttribute('aria-label', `${inst.displayName} 관심종목에서 삭제`);
+              rm.addEventListener('click', () => { watchItems = pfWatchlist.removeFromWatchlist(watchItems, key); persist(); renderWatchlist(); updateWatchButton(); });
+              row.append(info, rm);
+              host.append(row);
+            }
+            const cap = el('p', 'chart-portfolio-capacity', `${items.length} / ${PF_LIMITS.watchlist}`);
+            host.append(cap);
+          };
+
+          const renderRecent = () => {
+            const host = document.getElementById('chartAiPfRecentList');
+            if (!host) return;
+            host.replaceChildren();
+            if (recentItems.length === 0) { host.append(el('p', 'chart-portfolio-empty', '최근 조회한 종목이 없습니다.')); return; }
+            for (const it of recentItems) {
+              const inst = it.instrument;
+              const chip = el('button', 'chart-portfolio-chip');
+              chip.type = 'button';
+              chip.append(el('span', 'chart-portfolio-chip-name', inst.displayName), el('span', 'chart-portfolio-chip-meta', `${inst.symbol} · ${countryLabel(inst.country)}`));
+              chip.addEventListener('click', () => pfSelectInstrument(inst));
+              host.append(chip);
+            }
+          };
+
+          const renderSaved = () => {
+            const host = document.getElementById('chartAiPfSavedList');
+            if (!host) return;
+            host.replaceChildren();
+            if (savedItems.length === 0) { host.append(el('p', 'chart-portfolio-empty', '저장된 분석이 없습니다. 유사 패턴 또는 MK AI 분석을 실행한 뒤 저장하세요.')); return; }
+            for (const s of savedItems) {
+              const card = el('div', 'chart-portfolio-saved-card');
+              const head = el('div', 'chart-portfolio-saved-head');
+              const badge = el('span', 'chart-portfolio-saved-badge', '저장된 분석');
+              const typeLabel = s.analysisType === 'mk-ai' ? 'MK AI' : s.analysisType === 'combined' ? '통합' : '유사 패턴';
+              head.append(badge, el('span', 'chart-portfolio-saved-type', typeLabel));
+              const title = el('p', 'chart-portfolio-saved-title', `${s.instrument.displayName} (${s.instrument.symbol})`);
+              const meta = el('p', 'chart-portfolio-saved-meta', `저장: ${(s.savedAt || '').slice(0, 16).replace('T', ' ')} · 데이터 기준: ${s.dataAsOf ? s.dataAsOf.slice(0, 16).replace('T', ' ') : '—'} · ${s.methodVersion || ''}`);
+              const notLive = el('p', 'chart-portfolio-saved-notlive', '실시간 아님 · 저장 시점의 과거 스냅샷');
+              const summary = el('p', 'chart-portfolio-saved-summary');
+              if (s.analysisType === 'mk-ai') summary.textContent = `추세 ${s.summary.trend ?? '—'} · 변동성 ${s.summary.volatility ?? '—'} · 리스크 ${s.summary.risk ?? '—'}`;
+              else summary.textContent = `상위 ${s.summary.matchCount ?? '—'}건 · 이후 20일 평균 ${typeof s.summary.averageForward20 === 'number' ? (s.summary.averageForward20 * 100).toFixed(2) + '%' : '—'}`;
+              const actions = el('div', 'chart-portfolio-saved-actions');
+              const open = el('button', 'chart-portfolio-btn chart-portfolio-btn-small', '이 종목 열기');
+              open.type = 'button';
+              open.addEventListener('click', () => pfSelectInstrument(s.instrument));
+              const del = el('button', 'chart-portfolio-btn chart-portfolio-btn-small chart-portfolio-btn-danger', '삭제');
+              del.type = 'button';
+              del.addEventListener('click', () => { savedItems = pfSaved.removeSavedAnalysis(savedItems, s.id); persist(); renderSaved(); });
+              actions.append(open, del);
+              card.append(head, title, meta, notLive, summary, actions);
+              host.append(card);
+            }
+          };
+
+          const renderPortfolio = () => {
+            const host = document.getElementById('chartAiPfHoldingList');
+            const totalsHost = document.getElementById('chartAiPfTotals');
+            if (!host || !totalsHost) return;
+            host.replaceChildren();
+            totalsHost.replaceChildren();
+            if (holdingItems.length === 0) { host.append(el('p', 'chart-portfolio-empty', '보유 종목이 없습니다. 종목을 선택하고 수량·평균 매입가를 입력해 추가하세요.')); return; }
+            const buckets = pfMetrics.computeCurrencyBuckets(holdingItems, priceMap);
+            for (const h of holdingItems) {
+              const pos = pfMetrics.computePosition(h, priceMap[pfInstrumentKey(h.instrument)]);
+              const card = el('div', 'chart-portfolio-holding-card');
+              card.append(el('strong', 'chart-portfolio-holding-name', `${h.instrument.displayName} (${h.instrument.symbol})`));
+              card.append(el('span', 'chart-portfolio-holding-meta', `${countryLabel(h.instrument.country)} · ${assetLabel(h.instrument.assetType)} · ${h.currency}`));
+              const dl = el('dl', 'chart-portfolio-holding-metrics');
+              const add = (k: string, v: string) => { dl.append(el('dt', '', k)); dl.append(el('dd', '', v)); };
+              add('수량', fmtNum(h.quantity));
+              add('평균가', `${fmtNum(h.averagePrice)} ${h.currency}`);
+              add('투자원금', `${fmtNum(pos.investedCost)} ${h.currency}`);
+              add('평가 기준', pos.priceBasisLabel);
+              add('평가액', pos.hasPrice ? `${fmtNum(pos.marketValue)} ${h.currency}` : '가격 새로고침 필요');
+              add('평가손익', pos.hasPrice ? `${pos.unrealizedAmount >= 0 ? '+' : ''}${fmtNum(pos.unrealizedAmount)} ${h.currency} (${pos.unrealizedPct >= 0 ? '+' : ''}${pos.unrealizedPct}%)` : '—');
+              add('비중(원금)', pos.weightPct !== undefined && buckets[h.currency] ? `${(buckets[h.currency].positions.find((p: any) => p.id === h.id)?.weightPct ?? '—')}%` : '—');
+              if (pos.dataAsOf) add('데이터 기준', String(pos.dataAsOf).slice(0, 10));
+              card.append(dl);
+              if (h.note) card.append(el('p', 'chart-portfolio-holding-note', h.note));
+              const actions = el('div', 'chart-portfolio-saved-actions');
+              const editBtn = el('button', 'chart-portfolio-btn chart-portfolio-btn-small', '수정');
+              editBtn.type = 'button';
+              editBtn.addEventListener('click', () => {
+                const q = window.prompt('수량', String(h.quantity));
+                if (q === null) return;
+                const a = window.prompt('평균 매입가', String(h.averagePrice));
+                if (a === null) return;
+                holdingItems = pfPortfolio.updateHolding(holdingItems, h.id, { quantity: Number(q), averagePrice: Number(a) }, nowIso());
+                persist(); renderPortfolio();
+              });
+              const del = el('button', 'chart-portfolio-btn chart-portfolio-btn-small chart-portfolio-btn-danger', '삭제');
+              del.type = 'button';
+              del.addEventListener('click', () => { holdingItems = pfPortfolio.removeHolding(holdingItems, h.id); delete priceMap[pfInstrumentKey(h.instrument)]; persist(); renderPortfolio(); });
+              actions.append(editBtn, del);
+              card.append(actions);
+              host.append(card);
+            }
+            // Separate KRW / USD totals (never combined)
+            for (const cur of Object.keys(buckets)) {
+              const b = buckets[cur];
+              const box = el('div', 'chart-portfolio-total-box');
+              box.append(el('strong', '', `${cur} 합계`));
+              box.append(el('span', '', `투자원금 ${fmtNum(b.totalInvestedCost)} ${cur}`));
+              box.append(el('span', '', b.totalMarketValue !== null ? `평가액 ${fmtNum(b.totalMarketValue)} ${cur}${b.allPriced ? '' : ' (일부 가격 미반영)'}` : '평가액 — (가격 새로고침 필요)'));
+              totalsHost.append(box);
+            }
+            const note = el('p', 'chart-portfolio-hint', 'KRW와 USD는 실제 환율 없이 합산하지 않습니다. 각 통화별로 따로 표시됩니다.');
+            totalsHost.append(note);
+          };
+
+          const renderCompare = () => {
+            const compHost = document.getElementById('chartAiPfCompare');
+            const riskHost = document.getElementById('chartAiPfRisk');
+            if (!compHost || !riskHost) return;
+            compHost.replaceChildren();
+            riskHost.replaceChildren();
+            const instruments = holdingItems.length > 0 ? holdingItems.map((h) => h.instrument) : watchItems.map((w) => w.instrument);
+            if (instruments.length === 0) { compHost.append(el('p', 'chart-portfolio-empty', '비교할 보유 종목이나 관심종목이 없습니다.')); return; }
+            const rows = pfMetrics.computeComparison(instruments, analysisScoreCache);
+            const table = el('div', 'chart-portfolio-compare-grid');
+            const header = el('div', 'chart-portfolio-compare-head');
+            ['종목', '추세', '모멘텀', '변동성안정도', '리스크', '데이터완성도'].forEach((h) => header.append(el('span', '', h)));
+            table.append(header);
+            for (const r of rows) {
+              const row = el('div', 'chart-portfolio-compare-row');
+              const nameBtn = el('button', 'chart-portfolio-compare-name');
+              nameBtn.type = 'button';
+              nameBtn.textContent = `${r.instrument.displayName}`;
+              nameBtn.addEventListener('click', () => pfSelectInstrument(r.instrument));
+              row.append(nameBtn);
+              if (r.needsAnalysis) {
+                const need = el('span', 'chart-portfolio-need', '분석 필요');
+                need.style.gridColumn = 'span 5';
+                row.append(need);
+              } else {
+                [r.scores.trend, r.scores.momentum, r.scores.volatilityStability, r.scores.risk, r.scores.dataCompleteness].forEach((v) => row.append(el('span', 'chart-portfolio-score', typeof v === 'number' ? String(v) : '—')));
+              }
+              table.append(row);
+            }
+            compHost.append(table);
+            // Risk summary (only meaningful for holdings)
+            if (holdingItems.length > 0) {
+              const risk = pfMetrics.computeRiskSummary(holdingItems, priceMap, analysisScoreCache);
+              const rbox = el('div', 'chart-portfolio-risk-box');
+              rbox.append(el('p', 'chart-portfolio-risk-title', '포트폴리오 리스크 요약 (참고용)'));
+              rbox.append(el('p', 'chart-portfolio-risk-line', `보유 ${risk.holdingCount}종목 · 국내 ${risk.krCount} / 미국 ${risk.usCount} · 주식 ${risk.stockCount} / ETF ${risk.etfCount}`));
+              if (risk.averageWeightedVolatility !== null) rbox.append(el('p', 'chart-portfolio-risk-line', `가중 평균 변동성(원금기준): ${risk.averageWeightedVolatility}`));
+              if (risk.averageWeightedRiskScore !== null) rbox.append(el('p', 'chart-portfolio-risk-line', `가중 평균 리스크 점수: ${risk.averageWeightedRiskScore}`));
+              rbox.append(el('p', 'chart-portfolio-risk-line', `데이터 결측 비율: ${risk.missingDataRatio}%`));
+              for (const n of risk.notices) rbox.append(el('p', 'chart-portfolio-risk-notice', n));
+              rbox.append(el('p', 'chart-portfolio-risk-line', risk.etfOverlap.note));
+              rbox.append(el('p', 'chart-portfolio-risk-disclaimer', risk.disclaimer));
+              riskHost.append(rbox);
+            }
+          };
+
+          const updateWatchButton = () => {
+            const btn = document.getElementById('chartAiPfAddWatch') as HTMLButtonElement | null;
+            if (!btn) return;
+            const inst = pfNormalizeInstrument(selectedRecord);
+            if (!inst) { btn.disabled = true; btn.textContent = '현재 종목 관심종목 추가'; return; }
+            const inList = pfWatchlist.isInWatchlist(watchItems, inst);
+            btn.disabled = false;
+            btn.textContent = inList ? '관심종목에 있음' : `${inst.displayName} 관심종목 추가`;
+          };
+          const updateFormInstrument = () => {
+            const p = document.getElementById('chartAiPfFormInstrument');
+            const inst = pfNormalizeInstrument(selectedRecord);
+            if (p) p.textContent = inst ? `추가할 종목: ${inst.displayName} (${inst.symbol}) · ${inst.currency}` : '종목을 먼저 선택하세요.';
+          };
+
+          // ----- selection hook (recent + button state) -----
+          recordSelectionForPortfolio = (record: any) => {
+            const inst = pfNormalizeInstrument(record);
+            if (inst) { recentItems = pfRecent.recordRecent(recentItems, inst, nowIso()); pfRecent.saveRecent(recentItems, pfStore, nowIso()); }
+            renderRecent(); updateWatchButton(); updateFormInstrument(); renderWatchlist();
+          };
+
+          // ----- tab switching -----
+          const tabs = Array.from(pfRoot.querySelectorAll<HTMLButtonElement>('.chart-portfolio-tab'));
+          const panels = Array.from(pfRoot.querySelectorAll<HTMLElement>('.chart-portfolio-panel'));
+          tabs.forEach((tab) => tab.addEventListener('click', () => {
+            const name = tab.dataset.pfTab;
+            tabs.forEach((t) => { const on = t === tab; t.classList.toggle('active', on); t.setAttribute('aria-selected', String(on)); });
+            panels.forEach((p) => { p.hidden = p.dataset.pfPanel !== name; });
+            if (name === 'compare') renderCompare();
+          }));
+
+          // ----- actions -----
+          document.getElementById('chartAiPfAddWatch')?.addEventListener('click', () => {
+            const inst = pfNormalizeInstrument(selectedRecord);
+            if (!inst) return;
+            const res = pfWatchlist.addToWatchlist(watchItems, inst, nowIso());
+            watchItems = res.items;
+            if (res.atCapacity) showMsg('chartAiPortfolioStorageStatus', `관심종목은 최대 ${PF_LIMITS.watchlist}개까지 담을 수 있습니다.`);
+            persist(); renderWatchlist(); updateWatchButton();
+          });
+          (document.getElementById('chartAiPfWatchSort') as HTMLSelectElement | null)?.addEventListener('change', (e) => { watchSort = (e.target as HTMLSelectElement).value; renderWatchlist(); });
+          document.getElementById('chartAiPfClearWatch')?.addEventListener('click', () => { if (window.confirm('관심종목을 모두 삭제할까요?')) { watchItems = []; pfWatchlist.clearWatchlist(pfStore); persist(); renderWatchlist(); updateWatchButton(); } });
+          document.getElementById('chartAiPfClearRecent')?.addEventListener('click', () => { if (window.confirm('최근 조회 기록을 비울까요?')) { recentItems = []; pfRecent.clearRecent(pfStore); renderRecent(); } });
+
+          document.getElementById('chartAiPfSaveSim')?.addEventListener('click', () => {
+            if (!lastSimilaritySummaryForSave) { showMsg('chartAiPortfolioStorageStatus', '저장할 유사 패턴 분석이 없습니다. 먼저 분석을 실행하세요.'); return; }
+            const r = pfSaved.addSavedAnalysis(savedItems, lastSimilaritySummaryForSave, nowIso(), String(Date.now()));
+            savedItems = r.items; persist(); renderSaved();
+            showMsg('chartAiPortfolioStorageStatus', r.saved ? '유사 패턴 분석 스냅샷을 저장했습니다.' : '스냅샷을 저장하지 못했습니다.');
+          });
+          document.getElementById('chartAiPfSaveMkai')?.addEventListener('click', () => {
+            if (!lastMkAiSummaryForSave) { showMsg('chartAiPortfolioStorageStatus', '저장할 MK AI 분석이 없습니다. 먼저 분석을 실행하세요.'); return; }
+            const r = pfSaved.addSavedAnalysis(savedItems, lastMkAiSummaryForSave, nowIso(), String(Date.now()));
+            savedItems = r.items; persist(); renderSaved();
+            showMsg('chartAiPortfolioStorageStatus', r.saved ? 'MK AI 분석 스냅샷을 저장했습니다.' : '스냅샷을 저장하지 못했습니다.');
+          });
+          document.getElementById('chartAiPfClearSaved')?.addEventListener('click', () => { if (window.confirm('저장된 분석을 모두 삭제할까요?')) { savedItems = []; pfSaved.clearSaved(pfStore); persist(); renderSaved(); } });
+
+          document.getElementById('chartAiPfHoldingForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const inst = pfNormalizeInstrument(selectedRecord);
+            if (!inst) { showMsg('chartAiPfHoldingMsg', '종목을 먼저 선택하세요.'); return; }
+            const qty = Number((document.getElementById('chartAiPfQty') as HTMLInputElement).value);
+            const avg = Number((document.getElementById('chartAiPfAvg') as HTMLInputElement).value);
+            const note = (document.getElementById('chartAiPfNote') as HTMLInputElement).value;
+            const res = pfPortfolio.addHolding(holdingItems, { instrument: inst, quantity: qty, averagePrice: avg, note }, nowIso());
+            if (res.conflict) {
+              if (window.confirm(`${inst.displayName}은(는) 이미 보유 목록에 있습니다. 새 값으로 교체할까요?`)) {
+                const merged = pfPortfolio.addHolding(holdingItems, { instrument: inst, quantity: qty, averagePrice: avg, note }, nowIso(), true);
+                holdingItems = merged.items;
+              } else return;
+            } else if (res.atCapacity) { showMsg('chartAiPfHoldingMsg', `보유 종목은 최대 ${PF_LIMITS.holdings}개까지 입력할 수 있습니다.`); return; }
+            else if (!res.added) { showMsg('chartAiPfHoldingMsg', '수량과 평균 매입가를 올바르게 입력하세요.'); return; }
+            else holdingItems = res.items;
+            (document.getElementById('chartAiPfQty') as HTMLInputElement).value = '';
+            (document.getElementById('chartAiPfAvg') as HTMLInputElement).value = '';
+            (document.getElementById('chartAiPfNote') as HTMLInputElement).value = '';
+            showMsg('chartAiPfHoldingMsg', '보유 종목을 추가했습니다.');
+            persist(); renderPortfolio();
+          });
+          document.getElementById('chartAiPfClearPortfolio')?.addEventListener('click', () => { if (window.confirm('보유 종목을 모두 삭제할까요?')) { holdingItems = []; pfPortfolio.clearPortfolio(pfStore); persist(); renderPortfolio(); } });
+
+          // Latest-close refresh via the existing OHLCV route (batch <=5, honest daily-close basis).
+          const fetchLatestClose = async (inst: any) => {
+            try {
+              const url = `/api/chart-ai/market/ohlcv.json?${marketDataRequestQuery}&country=${inst.country}&symbol=${encodeURIComponent(inst.symbol)}&range=3m`;
+              const res = await fetch(url, { method: 'GET', credentials: 'omit' });
+              const data = await res.json();
+              const candles = data && data.ohlcv && Array.isArray(data.ohlcv.candles) ? data.ohlcv.candles : [];
+              if (data?.ohlcv?.sourceStatus === 'ok' && candles.length > 0) {
+                const last = candles[candles.length - 1];
+                priceMap[pfInstrumentKey(inst)] = { price: last.close, basis: 'daily-close', asOf: last.timestamp };
+              }
+            } catch {}
+          };
+          document.getElementById('chartAiPfRefreshPrices')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            const targets = holdingItems.slice(0, 5).map((h) => h.instrument);
+            if (targets.length === 0) return;
+            btn.disabled = true; btn.textContent = '가격 불러오는 중…';
+            for (const inst of targets) { await fetchLatestClose(inst); }
+            btn.disabled = false; btn.textContent = '최신 종가 새로고침 (최대 5)';
+            if (holdingItems.length > 5) showMsg('chartAiPfHoldingMsg', '가격 새로고침은 한 번에 최대 5종목까지 적용됩니다.');
+            renderPortfolio();
+          });
+
+          // Export / import
+          document.getElementById('chartAiPfExport')?.addEventListener('click', () => {
+            const payload = pfBuildExport({ watchlist: watchItems, recent: recentItems, saved: savedItems, portfolio: holdingItems }, nowIso());
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'mkstocklab-portfolio.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+          });
+          (document.getElementById('chartAiPfImport') as HTMLInputElement | null)?.addEventListener('change', async (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+            if (file.size > 512 * 1024) { showMsg('chartAiPfIoMsg', '파일이 너무 큽니다.'); return; }
+            const text = await file.text();
+            const parsed = pfParseImport(text);
+            if (!parsed.ok) { showMsg('chartAiPfIoMsg', '가져오기에 실패했습니다: 유효한 내보내기 파일이 아닙니다.'); return; }
+            const merge = window.confirm(`가져오기: 관심 ${parsed.counts.watchlist} · 최근 ${parsed.counts.recent} · 저장 ${parsed.counts.saved} · 보유 ${parsed.counts.portfolio}\n확인=기존과 병합, 취소=중단`);
+            if (!merge) return;
+            for (const w of parsed.data.watchlist) watchItems = pfWatchlist.addToWatchlist(watchItems, w.instrument, w.addedAt || nowIso()).items;
+            for (const r of parsed.data.recent) recentItems = pfRecent.recordRecent(recentItems, r.instrument, r.viewedAt || nowIso());
+            savedItems = [...parsed.data.saved, ...savedItems].slice(0, PF_LIMITS.saved);
+            for (const h of parsed.data.portfolio) holdingItems = pfPortfolio.addHolding(holdingItems, h, nowIso(), true).items;
+            persist(); renderWatchlist(); renderRecent(); renderSaved(); renderPortfolio();
+            const skipped = parsed.skipped.watchlist + parsed.skipped.recent + parsed.skipped.saved + parsed.skipped.portfolio;
+            showMsg('chartAiPfIoMsg', `가져오기 완료.${skipped > 0 ? ` 유효하지 않은 항목 ${skipped}개는 건너뛰었습니다.` : ''}`);
+            (e.target as HTMLInputElement).value = '';
+          });
+
+          // initial render
+          renderWatchlist(); renderRecent(); renderSaved(); renderPortfolio(); updateWatchButton(); updateFormInstrument();
         }
       }
 
@@ -4958,6 +5469,77 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     @media (max-width: 420px) {
       .chart-mkai-controls { flex-direction: column; align-items: stretch; }
       .chart-mkai-start-btn { width: 100%; }
+    }
+
+    /* Phase 3GG-S-FAST Portfolio Intelligence */
+    .chart-portfolio-workspace {
+      margin-top: 1.25rem; display: grid; gap: 0.85rem; padding: 1rem;
+      border: 1px solid var(--border); border-radius: 14px; background: var(--surface); min-width: 0;
+    }
+    .chart-portfolio-header { display: grid; gap: 0.25rem; }
+    .chart-portfolio-guide { font-size: 0.78rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-portfolio-storage-status { font-size: 0.78rem; color: var(--chart-shell-muted); margin: 0.2rem 0 0; padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-muted); }
+    .chart-portfolio-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; overflow-x: auto; }
+    .chart-portfolio-tab { font-size: 0.8rem; padding: 0.4rem 0.75rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--chart-shell-muted); cursor: pointer; white-space: nowrap; }
+    .chart-portfolio-tab.active { background: var(--accent, #2563eb); color: #fff; border-color: transparent; }
+    .chart-portfolio-panel { display: grid; gap: 0.7rem; }
+    .chart-portfolio-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .chart-portfolio-btn { font-size: 0.8rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 9px; border: 1px solid transparent; background: var(--accent, #2563eb); color: #fff; cursor: pointer; }
+    .chart-portfolio-btn:disabled { opacity: 0.55; cursor: default; }
+    .chart-portfolio-btn-small { padding: 0.3rem 0.6rem; font-size: 0.74rem; }
+    .chart-portfolio-btn-danger { background: transparent; color: #b91c1c; border-color: var(--border); }
+    .chart-portfolio-sort { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: var(--chart-shell-muted); }
+    .chart-portfolio-sort select { font-size: 0.78rem; padding: 0.3rem 0.4rem; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: inherit; }
+    .chart-portfolio-list { display: grid; gap: 0.5rem; }
+    .chart-portfolio-empty, .chart-portfolio-hint { font-size: 0.8rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-portfolio-capacity { font-size: 0.72rem; color: var(--chart-shell-muted); margin: 0.1rem 0 0; text-align: right; }
+    .chart-portfolio-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+    .chart-portfolio-row.is-selected { border-color: var(--accent, #2563eb); }
+    .chart-portfolio-row-main { flex: 1; display: grid; gap: 0.15rem; text-align: left; background: none; border: none; cursor: pointer; color: inherit; padding: 0; min-width: 0; }
+    .chart-portfolio-row-meta { font-size: 0.74rem; color: var(--chart-shell-muted); overflow: hidden; text-overflow: ellipsis; }
+    .chart-portfolio-row-remove { font-size: 0.74rem; padding: 0.3rem 0.55rem; border-radius: 7px; border: 1px solid var(--border); background: transparent; color: #b91c1c; cursor: pointer; }
+    .chart-portfolio-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .chart-portfolio-chip { display: inline-grid; gap: 0.1rem; padding: 0.35rem 0.7rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; text-align: left; }
+    .chart-portfolio-chip-name { font-size: 0.8rem; font-weight: 600; }
+    .chart-portfolio-chip-meta { font-size: 0.7rem; color: var(--chart-shell-muted); }
+    .chart-portfolio-saved-card, .chart-portfolio-holding-card { display: grid; gap: 0.3rem; padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+    .chart-portfolio-saved-head { display: flex; gap: 0.4rem; align-items: center; }
+    .chart-portfolio-saved-badge { font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 999px; background: var(--surface-muted); color: var(--chart-shell-muted); }
+    .chart-portfolio-saved-type { font-size: 0.72rem; color: var(--chart-shell-muted); }
+    .chart-portfolio-saved-title { font-weight: 700; font-size: 0.86rem; margin: 0; }
+    .chart-portfolio-saved-meta, .chart-portfolio-saved-notlive, .chart-portfolio-saved-summary { font-size: 0.74rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-portfolio-saved-notlive { color: #b45309; }
+    .chart-portfolio-saved-actions { display: flex; gap: 0.4rem; margin-top: 0.2rem; }
+    .chart-portfolio-form { display: grid; gap: 0.5rem; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); }
+    .chart-portfolio-form-instrument { font-size: 0.8rem; margin: 0; font-weight: 600; }
+    .chart-portfolio-form-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .chart-portfolio-form label { display: grid; gap: 0.2rem; font-size: 0.76rem; color: var(--chart-shell-muted); flex: 1; min-width: 120px; }
+    .chart-portfolio-form input { font-size: 0.85rem; padding: 0.4rem 0.5rem; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: inherit; }
+    .chart-portfolio-form-msg, .chart-portfolio-holding-note { font-size: 0.76rem; color: var(--chart-shell-muted); margin: 0; }
+    .chart-portfolio-holding-name { font-size: 0.86rem; }
+    .chart-portfolio-holding-meta { font-size: 0.72rem; color: var(--chart-shell-muted); }
+    .chart-portfolio-holding-metrics { display: grid; grid-template-columns: auto auto; gap: 0.12rem 0.6rem; margin: 0.2rem 0; font-size: 0.78rem; }
+    .chart-portfolio-holding-metrics dt { color: var(--chart-shell-muted); }
+    .chart-portfolio-holding-metrics dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+    .chart-portfolio-totals { display: grid; gap: 0.4rem; }
+    .chart-portfolio-total-box { display: grid; gap: 0.15rem; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-muted); font-size: 0.82rem; }
+    .chart-portfolio-compare-grid { display: grid; gap: 0.35rem; overflow-x: auto; }
+    .chart-portfolio-compare-head, .chart-portfolio-compare-row { display: grid; grid-template-columns: minmax(90px, 1.4fr) repeat(5, minmax(52px, 1fr)); gap: 0.4rem; align-items: center; }
+    .chart-portfolio-compare-head { font-size: 0.72rem; color: var(--chart-shell-muted); border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+    .chart-portfolio-compare-row { font-size: 0.8rem; padding: 0.35rem 0; border-bottom: 1px solid var(--border); }
+    .chart-portfolio-compare-name { text-align: left; background: none; border: none; color: var(--accent, #2563eb); cursor: pointer; font-size: 0.8rem; padding: 0; overflow: hidden; text-overflow: ellipsis; }
+    .chart-portfolio-score { text-align: right; font-variant-numeric: tabular-nums; }
+    .chart-portfolio-need { font-size: 0.74rem; color: #b45309; }
+    .chart-portfolio-risk-box { display: grid; gap: 0.3rem; margin-top: 0.7rem; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); }
+    .chart-portfolio-risk-title { font-weight: 700; font-size: 0.84rem; margin: 0; }
+    .chart-portfolio-risk-line { font-size: 0.8rem; margin: 0; }
+    .chart-portfolio-risk-notice { font-size: 0.78rem; margin: 0; color: #b45309; }
+    .chart-portfolio-risk-disclaimer { font-size: 0.74rem; margin: 0.2rem 0 0; color: var(--chart-shell-muted); }
+    .chart-portfolio-import-label { display: inline-flex; align-items: center; cursor: pointer; }
+    @media (max-width: 420px) {
+      .chart-portfolio-actions { align-items: stretch; }
+      .chart-portfolio-form-row { flex-direction: column; }
+      .chart-portfolio-compare-head, .chart-portfolio-compare-row { grid-template-columns: minmax(80px, 1.3fr) repeat(5, minmax(44px, 1fr)); font-size: 0.72rem; }
     }
 
     .chart-analysis-preparing-state strong,
