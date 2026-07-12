@@ -8,7 +8,10 @@ import {
 } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
 import { createChartAiKisMarketDataContext } from '../../../lib/server/chart-ai/kis-market-data-to-chart-ai-context.mjs';
 import { runLocalOnlyLlmRuntimeBridge } from '../../../lib/server/chart-ai/local-only-llm-runtime-bridge.mjs';
-import { evaluateProtectedPreviewBetaAccess } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
+import {
+  evaluateProtectedPreviewBetaAccess,
+  evaluateProductionChartAiBetaAccess,
+} from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { getKisDomesticQuoteSnapshot } from '../../../lib/server/providers/kisClient';
 
 export const prerender = false;
@@ -104,7 +107,20 @@ export const GET: APIRoute = async ({ url, request }) => {
     },
   });
 
-  if (!localOwnerAllowed && !betaAccess.allowed) {
+  // Path 3 (Phase 3GG-M-PROD-BETA-DEPLOY): production Chart AI beta flow. Separate fail-closed guard
+  // -- grants access ONLY on the actual Vercel Production deployment (VERCEL_ENV=production) with the
+  // owner flag CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true AND the explicit ?chartAiProdBeta=1
+  // opt-in. Any non-production runtime (including Preview) fails closed on this path.
+  const prodBetaOptIn = url.searchParams.get('chartAiProdBeta') === '1';
+  const prodBetaAccess = evaluateProductionChartAiBetaAccess({
+    betaQueryOptIn: prodBetaOptIn,
+    env: {
+      VERCEL_ENV: readServerEnvValue('VERCEL_ENV'),
+      CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA: readServerEnvValue('CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA'),
+    },
+  });
+
+  if (!localOwnerAllowed && !betaAccess.allowed && !prodBetaAccess.allowed) {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse(SANITIZED_ERROR_CODES.NON_LOCAL_REQUEST) });
   }
 

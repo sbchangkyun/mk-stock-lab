@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-M-PROD-BETA-DEPLOY - 2026-07-12
+
+### Production URL Chart AI Beta Activation and Cloud Deploy
+
+- **Status**: Builds on Phase 3GG-L-BETA-DEPLOY-RERUN-3. Owner requested the actual Production URL
+  reflect the Chart AI beta. Implements a new, explicit `chartAiProdBeta=1` opt-in guard for
+  `VERCEL_ENV=production`, separate from and not weakening the existing Preview beta and localhost owner
+  paths. Requires `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true` on Vercel Production env, which is
+  currently absent — classification `BLOCKED_PRODUCTION_ENV_MISSING`, no deploy attempted.
+- **Baseline**: `ea60afa` (Phase 3GG-L-BETA-DEPLOY-RERUN-3).
+- **Branch**: rebuild/phase-1-ia-shell.
+- **Goal**: Adds explicit `chartAiProdBeta=1` opt-in. Requires `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true`.
+  Requires `VERCEL_ENV=production`. Preserves localhost/Preview flows unchanged. Hidden by default.
+  No auto-fetch. H route only. current_price only. No KIS endpoint expansion. No prompt rewrite.
+  No model name exposure. No raw OpenAI/KIS exposure. No currentPrice/volume numeric exposure.
+- **Result**: Production env check via `vercel env ls production` found `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA`
+  absent (all other required Production env names present; `KIS_ACCOUNT_NO` correctly absent). Local
+  regression preflight (HF5, G-FAST, HF6, L-FAST) all PASS. Implemented `evaluateProductionChartAiBetaAccess`
+  in `protected-preview-beta-guard.mjs`, wired it as a new "Path 3" in the H route
+  (`local-only-kis-llm-summary.json.ts`), and added matching client-side opt-in logic in `chart-ai.astro`
+  — all three allowed source files only, zero diff elsewhere. A compounding, read-only finding was made
+  in the forbidden-diff file `kisClient.ts`: it unconditionally hard-blocks any `VERCEL_ENV=production`
+  runtime (`reason: 'production_not_allowed'`) with no exception path, so even after the missing env var
+  is added, live KIS quotes would still not flow on Production until a separately-approved future phase
+  is authorized to modify `kisClient.ts`. Per this phase's own explicit stop instruction, no deploy was
+  attempted; not pushed; `.vercel` not committed.
+- **Next recommended phase**: (1) Owner adds `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true` to Vercel
+  Production env. (2) Owner decides scope for a follow-up phase to modify `kisClient.ts`'s Production
+  hard-block (or accepts Production will show a blocked/degraded state). Then re-run to attempt cloud
+  build + Production deploy + `/chart-ai?chartAiProdBeta=1` verification.
+
 ## Phase 3GG-L-BETA-DEPLOY-RERUN-3 - 2026-07-12
 
 ### Protected Preview Beta Deploy Execution Rerun 3

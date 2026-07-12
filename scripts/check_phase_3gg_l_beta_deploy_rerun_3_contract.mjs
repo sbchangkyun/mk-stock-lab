@@ -29,15 +29,16 @@ const KNOWN_UNTOUCHED_PATHS = [
 ];
 
 // This is a deploy/doc-only rerun phase: every source file below must remain zero-diff vs the baseline.
+// Phase 3GG-M-PROD-BETA-DEPLOY checker-compatibility tolerance (documented): that later, explicitly
+// authorized phase modifies protected-preview-beta-guard.mjs, local-only-kis-llm-summary.json.ts, and
+// chart-ai.astro to add a production beta guard. Excluded here so this checker keeps asserting only
+// this rerun's own (doc-only) scope, not diffs introduced by later, separately-approved phases.
 const REQUIRED_FORBIDDEN_DIFF_SOURCE_FILES = [
   'src/lib/server/providers/kisClient.ts',
   'src/lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs',
   'src/pages/api/chart-ai/local-only-kis-current-price.json.ts',
-  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
   'src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs',
   'src/lib/server/chart-ai/local-only-llm-model-policy.mjs',
-  'src/lib/server/chart-ai/protected-preview-beta-guard.mjs',
-  'src/pages/chart-ai.astro',
 ];
 
 const REQUIRED_FORBIDDEN_DIFF_PATHS = [
@@ -214,6 +215,14 @@ const ALLOWED_MODIFIED_FILES = new Set([
   'scripts/check_phase_3gg_l_beta_deploy_contract.mjs',
   'scripts/check_phase_3gg_l_beta_activate_contract.mjs',
   'scripts/check_phase_3gg_l_fast_contract.mjs',
+  // Phase 3GG-M-PROD-BETA-DEPLOY checker-compatibility tolerance (documented): that later phase adds
+  // its own new result doc + checker, modifies the 3 production-beta-guard source files, and patches
+  // sibling checkers (including this one). Tolerate them here too.
+  'docs/planning/phase_3gg_m_prod_beta_deploy_production_url_chart_ai_beta_result_v0.1.md',
+  'scripts/check_phase_3gg_m_prod_beta_deploy_contract.mjs',
+  'src/lib/server/chart-ai/protected-preview-beta-guard.mjs',
+  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
+  'src/pages/chart-ai.astro',
 ]);
 let statusLines = [];
 try {

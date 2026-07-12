@@ -327,6 +327,12 @@ const ALLOWED_MODIFIED_FILES = new Set([
   // adds its own new result doc + checker; tolerate them in this scan too.
   'docs/planning/phase_3gg_l_beta_deploy_rerun_3_protected_preview_beta_deploy_result_v0.1.md',
   'scripts/check_phase_3gg_l_beta_deploy_rerun_3_contract.mjs',
+  // Phase 3GG-M-PROD-BETA-DEPLOY checker-compatibility tolerance (documented): that later phase adds
+  // its own new result doc + checker, modifies the 3 production-beta-guard source files (already
+  // excluded from L-FAST's zero-diff list above), and patches sibling checkers; tolerate them here too.
+  'docs/planning/phase_3gg_m_prod_beta_deploy_production_url_chart_ai_beta_result_v0.1.md',
+  'scripts/check_phase_3gg_m_prod_beta_deploy_contract.mjs',
+  'scripts/check_phase_3gg_l_beta_deploy_rerun_2_contract.mjs',
 ]);
 let statusLines = [];
 try {

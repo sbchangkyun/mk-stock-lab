@@ -1316,8 +1316,21 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const chartAiBetaPreviewOptIn = chartAiQuery.get('chartAiBetaPreview') === '1';
       const chartAiBetaPreviewEnabled =
         mockedChartAiAccess.capabilities.canAccessChartAi && !isLocalOwnerHostname() && chartAiBetaPreviewOptIn;
-      const ownerLocalKisLlmSummaryPanelEnabled = ownerLocalKisLlmEnabled || chartAiBetaPreviewEnabled;
-      const ownerLocalKisLlmSummaryRequestQuery = ownerLocalKisLlmEnabled ? 'ownerLocalKisLlm=1' : 'chartAiBetaPreview=1';
+      // Phase 3GG-M-PROD-BETA-DEPLOY: on a deployed (non-local) host, an explicit `?chartAiProdBeta=1`
+      // opt-in may reveal the same panel for the actual Production URL. Visibility only -- the server
+      // H route independently enforces VERCEL_ENV=production + CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA
+      // + the explicit query before any KIS/LLM call, and fails closed otherwise. Hidden by default;
+      // no auto-fetch; button click only, same as the Preview beta and localhost owner paths.
+      const chartAiProdBetaOptIn = chartAiQuery.get('chartAiProdBeta') === '1';
+      const chartAiProdBetaEnabled =
+        mockedChartAiAccess.capabilities.canAccessChartAi && !isLocalOwnerHostname() && chartAiProdBetaOptIn;
+      const ownerLocalKisLlmSummaryPanelEnabled =
+        ownerLocalKisLlmEnabled || chartAiBetaPreviewEnabled || chartAiProdBetaEnabled;
+      const ownerLocalKisLlmSummaryRequestQuery = ownerLocalKisLlmEnabled
+        ? 'ownerLocalKisLlm=1'
+        : chartAiBetaPreviewEnabled
+          ? 'chartAiBetaPreview=1'
+          : 'chartAiProdBeta=1';
       const ownerLocalKisLlmPanel = document.getElementById('chartAiOwnerLocalKisLlmSummaryPanel');
       if (ownerLocalKisLlmPanel) {
         ownerLocalKisLlmPanel.hidden = !ownerLocalKisLlmSummaryPanelEnabled;
