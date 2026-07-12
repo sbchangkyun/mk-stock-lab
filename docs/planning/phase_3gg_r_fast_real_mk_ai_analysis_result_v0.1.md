@@ -7,7 +7,7 @@ implemented (deterministic, consuming real OHLCV + real similarity), locally ver
 provider (owner-gated smoke 4/4), built, deployed to Production, and browser-QA'd on the real Production URL.
 
 - **Baseline**: `a1c7c75` (Phase 3GG-Q-FAST). **Branch**: `rebuild/phase-1-ia-shell`. **HEAD before**: `a1c7c75`.
-- **Source commit**: `__SOURCE_COMMIT__`.
+- **Source commit**: `71e27d8`.
 - **Deploy-record commit**: the commit adding the Deploy & Production QA findings
   (message `Phase 3GG-R-FAST: record real MK AI analysis production deploy`).
 
@@ -106,20 +106,32 @@ sanitized fields printed.
 
 ## Deploy and Production QA
 
-_Deploy method_: `vercel deploy --prod --yes` (cloud build). _(Filled after deploy.)_
+_Deploy method_: `vercel deploy --prod --yes` (Vercel cloud build).
 
-- **Deploy outcome**: __DEPLOY_OUTCOME__
+- **Deploy outcome**: **PASS.** Deployment `mkstocklab-oybwmmurz-*`, `readyState: READY`,
+  `target: production`, aliased to `https://mkstocklab.vercel.app`.
 - **Production URL**: https://mkstocklab.vercel.app/chart-ai
-- **KR stock (005930)**: __KR_STOCK__
-- **KR ETF (069500)**: __KR_ETF__
-- **US stock (AAPL)**: __US_STOCK__
-- **US ETF (SPY)**: __US_ETF__
-- **Sections / scores / similarity integration / conclusion**: __ANALYSIS_QA__
-- **Selected-symbol reset behavior**: __RESET_QA__
-- **Desktop QA**: __DESKTOP_QA__
-- **Mobile QA (375px)**: __MOBILE_QA__
-- **Console / network**: __CONSOLE_NETWORK__
-- **Fabrication / recommendation absence**: __ABSENCE_QA__
+- **KR stock (005930)**: **PASS.** Real analysis; trend 횡보 구간, volatility 매우 높음, risk 보통; first
+  section quotes real metrics (798거래일, price vs SMA20 −11.85%).
+- **KR ETF (069500)**: **PASS.** Real analysis; moderate uptrend, extreme volatility; 6 sections.
+- **US stock (AAPL)**: **PASS.** Real analysis; 완만한 상승 추세 (price vs SMA20 +5.78%), 800거래일.
+- **US ETF (SPY)**: **PASS.** (Owner-smoke + prior QA) moderate uptrend, low volatility, low risk.
+- **Sections / scores / similarity integration / conclusion**: **PASS.** Six collapsible sections
+  (추세/모멘텀/변동성/과거 유사 패턴/과거 시나리오/리스크, first open), six score chips, technical bullets,
+  and a conclusion block with the confidence note ("예측 신뢰도가 아니라…") + disclaimer ("매매 추천이나
+  투자 자문이 아닙니다"). Similarity aggregate is consumed by the analysis.
+- **Selected-symbol reset behavior**: **PASS.** Selecting a new instrument resets the MK AI panel to
+  `idle`, hides prior results, and fires **no** auto-analysis (0 calls on select); the next click analyzes
+  the new symbol. Exactly one request per click (2 total for 2 clicks).
+- **Desktop QA**: **PASS.** Analysis runs click-only; results belong to the selected symbol; no console
+  error.
+- **Mobile QA (375px)**: **PASS.** `scrollWidth === innerWidth === 375` (no horizontal overflow) before
+  and after analysis; six sections + six score chips render; collapsible sections work.
+- **Console / network**: **PASS.** Zero console errors. Only the expected routes are hit
+  (`instruments/search.json`, `market/ohlcv.json`, `mk-analysis.json`); the 3-line LLM summary route is
+  NOT auto-called by the MK AI analysis; no order/account/balance/funds/portfolio/trading endpoint.
+- **Fabrication / recommendation absence**: **PASS.** No prohibited wording (목표가/매수/매도/손절/진입/
+  청산/상승 확률/강력 매수) in the MK AI region; no secrets/tokens/Authorization/model names in the DOM.
 
 ## Exposure status
 
