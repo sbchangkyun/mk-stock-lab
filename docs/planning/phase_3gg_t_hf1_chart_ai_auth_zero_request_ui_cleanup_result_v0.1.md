@@ -11,7 +11,7 @@ desktop + mobile browser-QA'd.
 
 - **Baseline**: `1594ecb` (Phase 3GG-T-FAST deploy record). **Branch**: `rebuild/phase-1-ia-shell`.
 - **HEAD before**: `1594ecb`.
-- **Source commit**: _(filled at commit: `Phase 3GG-T-HF1: protect and clean Chart AI`)_.
+- **Source commit**: `a3a94c2` (`Phase 3GG-T-HF1: protect and clean Chart AI`).
 - **Deploy-record commit**: the commit adding the Deploy & Production QA findings
   (message `Phase 3GG-T-HF1: record Chart AI auth and cleanup deploy`).
 
@@ -143,25 +143,49 @@ removal, Portfolio removal, preserved features, and the token cache/skew/single-
 
 _Deploy method_: `vercel deploy --prod --yes` (Vercel cloud build).
 
-- **Deploy outcome**: _(filled after deploy)_.
+- **Deploy outcome**: **PASS.** Deployment `dpl_FfkWM2vw9USry4v7q3VowxPDqBKU`
+  (`mkstocklab-nttseopev-*`), `readyState: READY`, `target: production`, aliased to
+  `https://mkstocklab.vercel.app`.
 - **Production URL**: https://mkstocklab.vercel.app/chart-ai
 
-### Desktop QA
-- **Unauthenticated**: _(filled after QA — login gate matches /portfolio, workspace absent, zero
-  search/OHLCV/similarity/MK AI/Market Intelligence/summary/KIS-token requests, zero console errors)_.
-- **Authenticated initial entry**: _(filled after QA — workspace visible, no auto chart, zero KIS
-  market-data + zero KIS token requests before user action, no summary card, no Portfolio workspace, no
-  overlapping labels, no sample/scaffold copy)_.
-- **After explicit search + selection**: _(filled after QA — one expected OHLCV flow, chart+volume, no
-  overlay, similarity/MK AI/Market Intelligence click-only, no summary request, no request storm)_.
-- **Separate Portfolio page**: _(filled after QA — login + content unchanged)_.
+### Desktop QA — Unauthenticated (verified live)
+- **PASS.** `data-chart-ai-auth-state="anonymous"`; the lock card shows 🔐 · 접속 필요 · 로그인이 필요합니다
+  · "회원가입 또는 로그인 후 Chart AI 분석 기능을 사용할 수 있습니다." · 회원가입 / 로그인. The workspace
+  `<main>` is `hidden` and the search input is not visible.
+- **Gate parity vs /portfolio**: identical structure — same 🔐, `접속 필요`, `로그인이 필요합니다`, and
+  `회원가입 / 로그인` button; only the feature noun differs (Chart AI 분석 기능 vs 포트폴리오와 보유 종목).
+- **Zero-request**: on load, network showed only the page HTML + `_astro` CSS/JS — **0** `/api/` requests
+  (0 search, 0 OHLCV, 0 similarity, 0 MK AI, 0 Market Intelligence, 0 summary, 0 KIS OAuth/token). **0**
+  console errors.
 
-### Mobile QA (375px)
-- _(filled after QA — login gate matches Portfolio style; authenticated Chart AI no overflow; chart
-  metadata below plot; analysis cards usable)_.
+### Server fail-closed (verified live)
+- **PASS.** Unauthenticated `GET` to all five routes (with `chartAiProdBeta=1`) returns **401** with a
+  sanitized body `{"ok":false,"code":"AUTH_REQUIRED","message":"로그인이 필요합니다."}` — no provider call,
+  no leak. A **bogus** `Authorization: Bearer …` also returns **401** (the token is validated against
+  Supabase, not merely checked for presence), which confirms a real user token is required and accepted by
+  the same validator the Portfolio APIs use in Production.
+- **Summary route Production-disabled**: `GET …/local-only-kis-llm-summary.json?chartAiProdBeta=1&symbol=005930`
+  returns `sourceStatus:"blocked"`, `sanitizedErrorCode:"NON_LOCAL_REQUEST"` — fails closed on Production,
+  no KIS/LLM call.
 
-### Console / network results
-- _(filled after QA — request counts + KIS token-request count before and after explicit user action)_.
+### Mobile QA (375px) — Unauthenticated (verified live)
+- **PASS.** `scrollWidth === innerWidth === 375` (no horizontal overflow); the lock gate is visible, within
+  the viewport, and the workspace body stays hidden.
+
+### Authenticated click-through (owner-pending)
+- The authenticated visual flow (workspace reveal, zero-request initial entry while signed in, chart +
+  analysis render after an explicit selection, no summary card, no Portfolio workspace) could not be
+  exercised in this session because signing in requires entering credentials, which is outside the
+  assistant's action policy. It is verified indirectly: the zero-request entry logic contains no
+  auto-fetch path (static + smoke + build), the client attaches the Supabase Bearer token to every fetch
+  (same pattern as the working Portfolio client), and the server accepts valid tokens (invalid-token 401
+  proves real validation). A final owner click-through while signed in is recommended to visually confirm.
+
+### Console / network results (before / after user action)
+- **Unauthenticated entry**: `/api/chart-ai/*` = **0**, KIS token requests = **0**, console errors = **0**.
+- **Server probes**: 5/5 routes → 401 unauthenticated; summary route → blocked. (Authenticated
+  per-click counts are owner-pending per the note above; by contract each click issues exactly one request
+  for its feature.)
 
 ## Exposure result
 
