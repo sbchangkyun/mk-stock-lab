@@ -95,7 +95,9 @@ assert(existsSync(PORTFOLIO), 'the separate /portfolio page must be preserved.')
 // --- 8. Preserved features ---
 assert(page.includes('chartAiSimilarityReal') && page.includes('/api/chart-ai/similarity.json'), 'similarity preserved.');
 assert(page.includes('chartAiMkAiReal') && page.includes('MK AI 분석 시작') && page.includes('/api/chart-ai/mk-analysis.json'), 'deterministic MK AI preserved.');
-assert(page.includes('chartAiMarketIntel') && page.includes('/api/chart-ai/market-intelligence.json'), 'Market Intelligence preserved.');
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: Market Intelligence UI is intentionally removed from the
+// Chart AI page (mobile interaction cleanup); the backend route stays preserved (see AUTHED_ROUTES).
+assert(existsSync('src/pages/api/chart-ai/market-intelligence.json.ts'), 'Market Intelligence backend route must remain.');
 assert(page.includes('loadRealChart') && page.includes('/api/chart-ai/market/ohlcv.json'), 'real OHLCV chart preserved.');
 
 // --- 9. KIS token client: authoritative reuse + single-flight ---

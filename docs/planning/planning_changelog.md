@@ -1,5 +1,35 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF4-FAST-HF1 - 2026-07-14
+
+### Mobile Chart Interaction Cleanup
+
+- Narrow follow-up to the deployed HF4-FAST chart foundation, fixing exactly five confirmed defects from
+  prior Owner QA without touching any already-PASSing behavior. Target classification
+  `PASS_SELECTED_SYMBOL_INTEGRITY_AND_CHART_FOUNDATION_PRODUCTION_VERIFIED` (assignable only after Owner QA).
+- DEFECT-1: mobile `.chart-tooltip` (max-width:640px) is now compact (165px max-width, smaller padding/font/
+  line-height/gaps) and reuses the existing theme-aware `--chart-shell-overlay` variable + `backdrop-filter:
+  blur(6px)` for a semi-transparent surface.
+- DEFECT-2: a single idempotently-registered document-level `pointerdown` listener inside
+  `attachChartInteractionHandlers()` clears the committed candle selection on outside-tap via
+  `chart.contains(event.target)` + the existing lightweight `resetChartCandleToLatest()` — display-state
+  only, never touches selection/active-chart/analysis state.
+- DEFECT-3: the preparing-state loading panel now actually collapses on chart-ready via a narrowly-scoped
+  `.chart-market-preparing-state[hidden] { display: none !important; }` override (the shared author
+  `display: grid` rule previously always beat the UA `[hidden]` default).
+- DEFECT-4: `.chart-ohlcv-strip` horizontal padding widened (desktop `0.45rem 0.9rem`, mobile `0.4rem
+  0.65rem`) so the strip no longer touches the edge.
+- DEFECT-5: Market Intelligence fully removed from the Chart AI page (markup, client IIFE, dead CSS) —
+  client-side only; the backend route (`market-intelligence.json.ts`) and engine
+  (`src\lib\server\chart-ai\marketIntelligence\`) are untouched. Chart AI now has two active analyses
+  (Similar Pattern, MK AI), both still wired through the single HF3A guard.
+- New `scripts\smoke_phase_3gg_t_hf4_fast_hf1_mobile_interaction_cleanup.mjs` (36/36) and
+  `scripts\check_phase_3gg_t_hf4_fast_hf1_contract.mjs`. Narrow, documented reconciliation of four sibling
+  checkers/smoke (`check_phase_3gg_t_fast_contract.mjs`, `check_phase_3gg_t_hf1_contract.mjs`,
+  `check_phase_3gg_t_hf3a_contract.mjs`, `smoke_phase_3gg_t_hf1_chart_ai_auth_zero_request_ui_cleanup.mjs`)
+  for the Market Intelligence removal.
+- See `docs\planning\phase_3gg_t_hf4_fast_hf1_mobile_interaction_cleanup_result_v0.1.md` for full detail.
+
 ## Phase 3GG-T-HF4-FAST - 2026-07-13
 
 ### Chart Foundation UX (Production Verify of HF3A + Real Candlestick Interaction)

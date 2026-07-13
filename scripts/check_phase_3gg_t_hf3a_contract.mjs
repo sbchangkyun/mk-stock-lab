@@ -73,15 +73,20 @@ assert(/handleExplicitChartLoad/.test(page), 'an explicit load handler must exis
 assert(/chartAiRealChartLoadBtn[\s\S]{0,200}addEventListener\('click'[\s\S]{0,80}handleExplicitChartLoad/.test(page)
   || /loadBtn\?\.addEventListener\('click'[\s\S]{0,80}handleExplicitChartLoad/.test(page), 'the load button must invoke the explicit load handler.');
 
-// --- 7. All three analyses share ONE authoritative guard + use the ACTIVE context ---
-for (const kind of ['similar-pattern', 'mk-ai', 'market-intel']) {
+// --- 7. Both remaining analyses share ONE authoritative guard + use the ACTIVE context ---
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: Market Intelligence was removed from chart-ai.astro (mobile
+// interaction cleanup); only Similar Pattern + MK AI remain wired to the shared guard. The integrity
+// module's ANALYSIS_KINDS list is untouched (kept at ['similar-pattern','mk-ai','market-intel']) since no
+// future contract depends on the removal and re-adding the caller would be lower-risk than a module edit.
+for (const kind of ['similar-pattern', 'mk-ai']) {
   assert(new RegExp(`integrity\\.beginAnalysis\\('${kind}'\\)`).test(page), `analysis '${kind}' must call the shared guard integrity.beginAnalysis.`);
 }
-assert((page.match(/integrity\.beginAnalysis\(/g) || []).length >= 3, 'all three analyses must call the shared guard.');
-assert((page.match(/integrity\.resolveAnalysis\(/g) || []).length >= 3, 'all three analyses must re-check staleness via resolveAnalysis before rendering.');
+assert(!/integrity\.beginAnalysis\('market-intel'\)/.test(page), 'market-intel must no longer call the shared guard (Market Intelligence removed from the page).');
+assert((page.match(/integrity\.beginAnalysis\(/g) || []).length >= 2, 'both remaining analyses must call the shared guard.');
+assert((page.match(/integrity\.resolveAnalysis\(/g) || []).length >= 2, 'both remaining analyses must re-check staleness via resolveAnalysis before rendering.');
 // Analyses must use the active-context instrument, not the raw pending selection variable.
 assert(!/const sym = selectedSymbol;/.test(page), 'analysis functions must not read the raw selectedSymbol (use the active context).');
-assert((page.match(/const sym = token\.instrument\.symbol;/g) || []).length >= 3, 'each analysis must derive its symbol from the active-context token.');
+assert((page.match(/const sym = token\.instrument\.symbol;/g) || []).length >= 2, 'each analysis must derive its symbol from the active-context token.');
 
 // --- 8. Guard requires chart success before enablement ---
 assert(/chartLoadStatus === 'success'/.test(mod), 'canRunAnalysis must require a successful chart load.');
@@ -91,12 +96,15 @@ assert(/beginAnalysis\(kind\)\s*\{[\s\S]*?if \(!canRunAnalysis\(\)\) return null
 
 // --- 9. Selection change clears active context + results, aborts + invalidates ---
 assert(/selectPending\(instrument\)\s*\{[\s\S]*?clearActive\(\)[\s\S]*?invalidateAnalyses\(\)/.test(mod), 'selectPending must clear active + invalidate analyses.');
-assert(/resetSelectedSimilarity\(\)/.test(updSelBody) && /resetSelectedMkAi\(\)/.test(updSelBody) && /resetSelectedMarketIntel\(\)/.test(updSelBody), 'updateSelection must clear all three analysis result panels.');
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: only two analysis result panels remain (Market Intelligence removed).
+assert(/resetSelectedSimilarity\(\)/.test(updSelBody) && /resetSelectedMkAi\(\)/.test(updSelBody), 'updateSelection must clear both remaining analysis result panels.');
 
-// --- 10. AbortController-based cancellation still present for every request ---
-for (const ac of ['realChartAbort', 'simAbort', 'mkaiAbort', 'miAbort']) {
+// --- 10. AbortController-based cancellation still present for every remaining request ---
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: miAbort no longer exists (Market Intelligence removed).
+for (const ac of ['realChartAbort', 'simAbort', 'mkaiAbort']) {
   assert(new RegExp(`${ac}[\\s\\S]{0,40}new AbortController`).test(page), `AbortController must exist for: ${ac}`);
 }
+assert(!/\bmiAbort\b/.test(page), 'miAbort must no longer exist (Market Intelligence removed from the page).');
 
 // --- 11. Sequence + revision stale protection ---
 assert(/token\.seq !== chartRequestSeq \|\| token\.revision !== selectionRevision/.test(mod), 'chart resolution must check both sequence and selection revision.');
@@ -115,7 +123,8 @@ assert(/markWorkspaceReady\(\)/.test(initBody), 'init must mark the workspace re
 assert(/'idle'/.test(initBody), 'init with no ?symbol must stay idle.');
 
 // --- 13. Analysis start buttons are disabled by default (a11y, not CSS-only) ---
-for (const id of ['chartAiSimilarityStartBtn', 'chartAiMkAiStartBtn', 'chartAiMiStartBtn']) {
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: chartAiMiStartBtn no longer exists (Market Intelligence removed).
+for (const id of ['chartAiSimilarityStartBtn', 'chartAiMkAiStartBtn']) {
   assert(new RegExp(`id="${id}"[^>]*\\bdisabled\\b`).test(page), `button ${id} must be disabled by default.`);
   assert(new RegExp(`id="${id}"[^>]*aria-disabled="true"`).test(page), `button ${id} must be aria-disabled by default.`);
 }

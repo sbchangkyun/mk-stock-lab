@@ -61,7 +61,8 @@ check('server auth reuses the existing Bearer-token validator (no new scheme)', 
 
 // ---- Client attaches the Bearer token to every Chart AI fetch ----
 check('client builds Chart AI auth headers from the session token', /chartAiAuthHeaders/.test(page) && /Authorization: `Bearer \$\{session\.access_token\}`/.test(page));
-check('ohlcv + search + similarity + mk-analysis + market-intel fetches send auth headers', (page.match(/chartAiAuthHeaders\(\)/g) || []).length >= 5);
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: market-intel's fetch call site was removed (Market Intelligence removed from the page).
+check('ohlcv + search + similarity + mk-analysis fetches send auth headers', (page.match(/chartAiAuthHeaders\(\)/g) || []).length >= 4);
 
 // ---- Zero-request entry ----
 check('idle chart copy present (no auto-load)', page.includes('종목을 검색해 선택하면 실제 차트를 불러옵니다.'));
@@ -93,7 +94,10 @@ check('separate Portfolio page is untouched by this smoke target', existsSync(PO
 // ---- Preserved features ----
 check('real similarity analysis preserved', page.includes('chartAiSimilarityReal') && page.includes('/api/chart-ai/similarity.json'));
 check('deterministic MK AI analysis preserved', page.includes('chartAiMkAiReal') && page.includes('/api/chart-ai/mk-analysis.json') && page.includes('MK AI 분석 시작'));
-check('Market Intelligence preserved', page.includes('chartAiMarketIntel') && page.includes('/api/chart-ai/market-intelligence.json'));
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: Market Intelligence UI is intentionally removed from the Chart
+// AI page (mobile interaction cleanup); the backend route stays preserved (see AUTHED_ROUTES existence below).
+check('Market Intelligence UI removed from Chart AI page', !page.includes('chartAiMarketIntel') && !page.includes('/api/chart-ai/market-intelligence.json'));
+check('Market Intelligence backend route preserved', existsSync('src/pages/api/chart-ai/market-intelligence.json.ts'));
 check('real OHLCV chart preserved', page.includes('/api/chart-ai/market/ohlcv.json') && page.includes('loadRealChart'));
 
 // ---- KIS token client: authoritative reuse + single issuance (Phase 3GG-T-HF2 durable manager) ----

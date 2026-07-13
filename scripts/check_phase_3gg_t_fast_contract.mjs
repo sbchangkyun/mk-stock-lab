@@ -106,16 +106,15 @@ assert(/evaluateProtectedPreviewBetaAccess/.test(route) && /evaluateProductionCh
 assert(/LOCAL_ONLY_ALLOWED_HOSTNAMES/.test(route), 'route must reuse the local-only hostname binding.');
 assert(/allowProductionChartAiBetaLiveQuotes/.test(route), 'route must forward the scoped production live-quote exception only.');
 
-// --- 8. UI: production-gated, click-triggered, resets on symbol change; existing routes intact ---
+// --- 8. UI: Market Intelligence removed from the page (Phase 3GG-T-HF4-FAST-HF1); backend preserved ---
+// Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED the original UI assertions below: Market Intelligence is an
+// intentional product-surface removal from chart-ai.astro (mobile interaction cleanup). The backend
+// engine/route/tests are untouched — see MODULES/ROUTE/SMOKE checks above.
 const page = read(CHART_AI_PAGE);
 for (const token of ['chartAiMarketIntel', 'chartAiMiStartBtn', 'resetSelectedMarketIntel', 'market-intelligence.json']) {
-  assert(page.includes(token), `chart-ai.astro missing market-intelligence token: ${token}`);
+  assert(!page.includes(token), `chart-ai.astro must no longer contain the removed market-intelligence token: ${token}`);
 }
-// Production-gated markup.
-assert(/isVercelProductionRuntime && \(\s*<details id="chartAiMarketIntel"/.test(page.replace(/\s+/g, ' ')) || /isVercelProductionRuntime[\s\S]{0,80}chartAiMarketIntel/.test(page), 'market-intelligence section must be production-gated.');
-// Click-only: the analyze button drives the fetch; reset is wired into updateSelection.
-assert(/miStartBtn\.addEventListener\('click', runMi\)/.test(page), 'market intelligence must be click-triggered (no auto fetch on render).');
-assert(/resetSelectedMarketIntel\(\)/.test(page), 'reset must be called on selection change.');
+assert(existsSync(ROUTE), 'Market Intelligence backend route must remain (removed from Chart AI page only).');
 // Existing analysis routes still present (unchanged scope).
 for (const r of EXISTING_ROUTES) assert(existsSync(r), `Existing route must remain: ${r}`);
 
