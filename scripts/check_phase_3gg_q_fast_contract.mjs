@@ -136,6 +136,9 @@ const tolerated = (f) =>
   /^src\/pages\/api\/chart-ai\//.test(f) ||
   /^src\/lib\/chart-ai\/portfolio-intelligence\//.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
+  /^src\/lib\/server\/providers\/kis\//.test(f) ||
+  /^supabase\/migrations\//.test(f) ||
+  f === 'scripts/kis_token_lifecycle_testsrc.ts' ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 let porcelain = [];
 try { porcelain = runGit(['status', '--porcelain']).split('\n').map((l) => l.slice(3).trim()).filter(Boolean); } catch { porcelain = []; }

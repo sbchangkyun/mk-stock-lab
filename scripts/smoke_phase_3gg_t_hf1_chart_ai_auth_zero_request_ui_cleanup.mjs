@@ -96,10 +96,11 @@ check('deterministic MK AI analysis preserved', page.includes('chartAiMkAiReal')
 check('Market Intelligence preserved', page.includes('chartAiMarketIntel') && page.includes('/api/chart-ai/market-intelligence.json'));
 check('real OHLCV chart preserved', page.includes('/api/chart-ai/market/ohlcv.json') && page.includes('loadRealChart'));
 
-// ---- KIS token client: cache + skew + single-in-flight ----
-check('token cache-until-expiry retained', /accessTokenCache/.test(kis) && /expiresAtMs - tokenCacheSkewMs > now/.test(kis));
-check('expiry safety skew retained', /tokenCacheSkewMs\s*=\s*60_000/.test(kis));
-check('single-in-flight token issuance guard added', /accessTokenInFlight/.test(kis) && /issueKisAccessTokenNow/.test(kis) && /accessTokenInFlight = issueKisAccessTokenNow\(config\)/.test(kis));
+// ---- KIS token client: authoritative reuse + single issuance (Phase 3GG-T-HF2 durable manager) ----
+// T-HF2 superseded the process-local cache/single-flight with a durable shared token manager
+// (L1 memory + L2 Supabase store + distributed lease). The reuse + single-issuance guarantee moved there.
+check('kisClient routes through the durable token manager', /createKisTokenManager/.test(kis) && /executeKisRequestWithToken/.test(kis));
+check('single authoritative /oauth2/tokenP issuer retained', /issueKisTokenFromEndpoint/.test(kis) && (kis.match(/\$\{config\.baseUrl\}\$\{tokenPath\}/g) || []).length === 1);
 check('no token/secret logging introduced', !/console\.(log|info|debug|warn|error)\([^)]*(access_token|accessToken|appsecret|Bearer)/i.test(kis));
 
 // ---- No forbidden endpoints / no recommendation regressions on the Chart AI surface ----

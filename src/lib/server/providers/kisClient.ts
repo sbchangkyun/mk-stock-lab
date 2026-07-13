@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { createProviderError, sanitizeUnknownError } from './providerErrors';
 import { assertServerRuntime } from './serverOnly';
 import type {
@@ -8,6 +9,13 @@ import type {
   QuoteSnapshot,
   SecurityIdentity,
 } from './types';
+// Phase 3GG-T-HF2: durable, shared KIS token lifecycle (L1 -> L2 durable store -> distributed lease).
+import { resolveKisDurableTokenConfig, getEncryptionKey } from './kis/kisTokenConfig';
+import { createSupabaseKisTokenDb } from './kis/kisTokenStore';
+import { createKisTokenTelemetry } from './kis/kisTokenTelemetry';
+import { createKisTokenManager } from './kis/kisTokenManager';
+import { executeKisRequestWithToken, type KisExecutorDeps } from './kis/kisRequestExecutor';
+import type { TokenIssuerResult } from './kis/kisTokenTypes';
 
 const provider = 'kis';
 const moduleName = 'kisClient';
@@ -35,7 +43,6 @@ const overseasDailyOhlcPath = '/uapi/overseas-price/v1/quotations/dailyprice';
 const overseasDailyOhlcTrId = 'HHDFS76240000';
 const overseasQuotePath = '/uapi/overseas-price/v1/quotations/price';
 const overseasQuoteTrId = 'HHDFS00000300';
-const tokenCacheSkewMs = 60_000;
 
 type KisQuoteConfigReadiness = ProviderConfigReadiness & {
   featureFlagEnvName: typeof featureFlagEnvName;
@@ -46,11 +53,6 @@ type KisRuntimeConfig = {
   appKey: string;
   appSecret: string;
   baseUrl: string;
-};
-
-type KisAccessTokenCache = {
-  accessToken: string;
-  expiresAtMs: number;
 };
 
 type KisTokenResponse = {
@@ -94,9 +96,6 @@ export type KisDailyOhlcPoint = {
   volume: number | null;
 };
 
-let accessTokenCache: KisAccessTokenCache | null = null;
-// Phase 3GG-T-HF1: single-in-flight token issuance guard (shared across concurrent callers).
-let accessTokenInFlight: Promise<ProviderResult<{ accessToken: string }>> | null = null;
 
 const normalizeString = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
 
@@ -245,18 +244,16 @@ const parseNumericText = (value: unknown): number | null => {
   return Number.isFinite(numeric) ? numeric : null;
 };
 
-const parseTokenExpiry = (payload: KisTokenResponse): number => {
-  const officialExpiry = normalizeString(payload.access_token_token_expired);
-  const parsedOfficialExpiry = officialExpiry ? Date.parse(officialExpiry.replace(' ', 'T')) : NaN;
-  if (Number.isFinite(parsedOfficialExpiry)) return parsedOfficialExpiry;
+const KIS_TOKEN_ENDPOINT_TIMEOUT_MS = 8000;
 
-  const expiresIn = parseNumericText(payload.expires_in);
-  if (expiresIn && expiresIn > 0) return Date.now() + expiresIn * 1000;
-
-  return Date.now() + 23 * 60 * 60 * 1000;
-};
-
-const issueKisAccessTokenNow = async (config: KisRuntimeConfig): Promise<ProviderResult<{ accessToken: string }>> => {
+// Phase 3GG-T-HF2: the SINGLE authoritative /oauth2/tokenP issuance. It performs no caching — the durable
+// token manager (kisTokenManager) owns L1 memory, the L2 durable store, and the distributed lease. Returns
+// a timezone-safe issuer result (issuedAtMs + expires_in seconds + the optional KST absolute string); the
+// manager computes the real expiry from expires_in (never feeds a tz-less KST string to Date.parse).
+const issueKisTokenFromEndpoint = async (config: KisRuntimeConfig | null): Promise<TokenIssuerResult> => {
+  if (!config) return { ok: false, code: 'PROVIDER_UNAVAILABLE' };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), KIS_TOKEN_ENDPOINT_TIMEOUT_MS);
   try {
     const response = await fetch(`${config.baseUrl}${tokenPath}`, {
       method: 'POST',
@@ -270,61 +267,65 @@ const issueKisAccessTokenNow = async (config: KisRuntimeConfig): Promise<Provide
         appkey: config.appKey,
         appsecret: config.appSecret,
       }),
+      signal: controller.signal,
     });
-
-    if (response.status === 429) {
-      return createProviderError('PROVIDER_RATE_LIMITED', 'KIS token request was rate limited.', {
-        provider,
-        staleState: 'unavailable',
-      });
-    }
-
-    if (!response.ok) {
-      accessTokenCache = null;
-      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS token request failed safely.', {
-        provider,
-        staleState: 'unavailable',
-      });
-    }
-
+    if (response.status === 429) return { ok: false, code: 'PROVIDER_RATE_LIMITED' };
+    if (!response.ok) return { ok: false, code: 'PROVIDER_UNAVAILABLE' };
     const payload = (await response.json()) as KisTokenResponse;
     const accessToken = normalizeString(payload.access_token);
-    if (!accessToken) {
-      accessTokenCache = null;
-      return createProviderError('PROVIDER_UNAVAILABLE', 'KIS token response was not usable.', {
-        provider,
-        staleState: 'unavailable',
-      });
-    }
-
-    accessTokenCache = {
-      accessToken,
-      expiresAtMs: parseTokenExpiry(payload),
-    };
-
-    return { ok: true, data: { accessToken }, staleState: 'fresh' };
-  } catch (error) {
-    accessTokenCache = null;
-    return sanitizeUnknownError(error, provider);
+    if (!accessToken) return { ok: false, code: 'PROVIDER_UNAVAILABLE' };
+    const issuedAtMs = Date.now();
+    const expiresInRaw = parseNumericText(payload.expires_in);
+    const expiresInSeconds = expiresInRaw && expiresInRaw > 0 ? Math.floor(expiresInRaw) : 23 * 60 * 60;
+    const absoluteExpiryKst = normalizeString(payload.access_token_token_expired) || null;
+    return { ok: true, accessToken, issuedAtMs, expiresInSeconds, absoluteExpiryKst };
+  } catch {
+    return { ok: false, code: 'PROVIDER_UNAVAILABLE' };
+  } finally {
+    clearTimeout(timeout);
   }
 };
 
-// Phase 3GG-T-HF1: cache-first + single-in-flight token accessor. The fast path returns the cached token
-// while it is valid (with the existing 60s expiry safety skew). On a cache miss, concurrent callers share
-// ONE `/oauth2/tokenP` issuance via a shared in-flight promise instead of each firing their own request —
-// preventing a token-issuance thundering herd on cold start or right after expiry. Token reuse-until-expiry
-// and the per-request reuse behavior are unchanged; only redundant concurrent issuance is removed.
-const getKisAccessToken = async (config: KisRuntimeConfig): Promise<ProviderResult<{ accessToken: string }>> => {
-  const now = Date.now();
-  if (accessTokenCache && accessTokenCache.expiresAtMs - tokenCacheSkewMs > now) {
-    return { ok: true, data: { accessToken: accessTokenCache.accessToken }, staleState: 'fresh' };
-  }
-  if (accessTokenInFlight) return accessTokenInFlight;
-  accessTokenInFlight = issueKisAccessTokenNow(config).finally(() => {
-    accessTokenInFlight = null;
+// Per-instance, non-secret identifiers for the durable lease owner + telemetry.
+const kisInstanceId = randomUUID();
+const kisDeploymentId =
+  (typeof process.env.VERCEL_DEPLOYMENT_ID === 'string' && process.env.VERCEL_DEPLOYMENT_ID) ||
+  (typeof process.env.VERCEL_GIT_COMMIT_SHA === 'string' && process.env.VERCEL_GIT_COMMIT_SHA) ||
+  null;
+
+// Lazy singleton: exactly one authoritative token manager per warm instance. When durable mode is OFF the
+// manager preserves the previous L1-only behavior (process cache + single-flight); when ON it uses the
+// durable L2 store + distributed lease so all instances share one token.
+let kisTokenRuntime: { executorDeps: KisExecutorDeps } | null = null;
+const getKisTokenRuntime = () => {
+  if (kisTokenRuntime) return kisTokenRuntime;
+  const durableConfig = resolveKisDurableTokenConfig();
+  const db = createSupabaseKisTokenDb();
+  const telemetry = createKisTokenTelemetry({
+    db,
+    enabled: durableConfig.telemetryEnabled,
+    scopeKey: durableConfig.scopeKey,
+    deploymentId: kisDeploymentId,
+    instanceId: kisInstanceId,
   });
-  return accessTokenInFlight;
+  const manager = createKisTokenManager({
+    config: durableConfig,
+    encryptionKey: durableConfig.durableReady ? getEncryptionKey() : null,
+    db,
+    telemetry,
+    issueToken: () => issueKisTokenFromEndpoint(getRuntimeConfig()),
+    now: () => Date.now(),
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    newGenerationId: () => randomUUID(),
+    leaseOwnerId: kisInstanceId,
+    instanceId: kisInstanceId,
+    deploymentId: kisDeploymentId,
+  });
+  kisTokenRuntime = { executorDeps: { manager, config: durableConfig, telemetry } };
+  return kisTokenRuntime;
 };
+
+const getKisExecutorDeps = (): KisExecutorDeps => getKisTokenRuntime().executorDeps;
 
 const normalizeKrSymbol = (symbol: string) => symbol.trim();
 
@@ -368,9 +369,7 @@ export const getKisDomesticQuoteSnapshot = async (
   const config = getRuntimeConfig();
   if (!config) return readinessToError(readiness);
 
-  const tokenResult = await getKisAccessToken(config);
-  if (!tokenResult.ok) return tokenResult;
-
+  return executeKisRequestWithToken(getKisExecutorDeps(), { routeCategory: 'domestic_quote' }, async (handle) => {
   const symbol = normalizeKrSymbol(input.symbol);
   const params = new URLSearchParams({
     FID_COND_MRKT_DIV_CODE: 'J',
@@ -384,7 +383,7 @@ export const getKisDomesticQuoteSnapshot = async (
         'Content-Type': 'application/json',
         Accept: 'text/plain',
         charset: 'UTF-8',
-        authorization: `Bearer ${tokenResult.data.accessToken}`,
+        authorization: `Bearer ${handle.accessToken}`,
         appkey: config.appKey,
         appsecret: config.appSecret,
         tr_id: domesticQuoteTrId,
@@ -444,6 +443,7 @@ export const getKisDomesticQuoteSnapshot = async (
   } catch (error) {
     return sanitizeUnknownError(error, provider);
   }
+  });
 };
 
 export const getKisQuoteSnapshot = async (input: SecurityIdentity): Promise<ProviderResult<QuoteSnapshot>> =>
@@ -485,9 +485,7 @@ export const getKisDomesticDailyOhlcSeries = async (
   const config = getRuntimeConfig();
   if (!config) return readinessToError(readiness);
 
-  const tokenResult = await getKisAccessToken(config);
-  if (!tokenResult.ok) return tokenResult;
-
+  return executeKisRequestWithToken(getKisExecutorDeps(), { routeCategory: 'domestic_ohlcv' }, async (handle) => {
   const params = new URLSearchParams(input.query);
 
   try {
@@ -497,7 +495,7 @@ export const getKisDomesticDailyOhlcSeries = async (
         'Content-Type': 'application/json',
         Accept: 'text/plain',
         charset: 'UTF-8',
-        authorization: `Bearer ${tokenResult.data.accessToken}`,
+        authorization: `Bearer ${handle.accessToken}`,
         appkey: config.appKey,
         appsecret: config.appSecret,
         tr_id: domesticDailyOhlcTrId,
@@ -543,6 +541,7 @@ export const getKisDomesticDailyOhlcSeries = async (
   } catch (error) {
     return sanitizeUnknownError(error, provider);
   }
+  });
 };
 
 type KisOverseasDailyRow = {
@@ -604,9 +603,7 @@ export const getKisOverseasDailyOhlcSeries = async (
   const config = getRuntimeConfig();
   if (!config) return readinessToError(readiness);
 
-  const tokenResult = await getKisAccessToken(config);
-  if (!tokenResult.ok) return tokenResult;
-
+  return executeKisRequestWithToken(getKisExecutorDeps(), { routeCategory: 'overseas_ohlcv' }, async (handle) => {
   const params = new URLSearchParams({
     AUTH: '',
     EXCD: exchangeCode,
@@ -623,7 +620,7 @@ export const getKisOverseasDailyOhlcSeries = async (
         'Content-Type': 'application/json',
         Accept: 'text/plain',
         charset: 'UTF-8',
-        authorization: `Bearer ${tokenResult.data.accessToken}`,
+        authorization: `Bearer ${handle.accessToken}`,
         appkey: config.appKey,
         appsecret: config.appSecret,
         tr_id: overseasDailyOhlcTrId,
@@ -669,6 +666,7 @@ export const getKisOverseasDailyOhlcSeries = async (
   } catch (error) {
     return sanitizeUnknownError(error, provider);
   }
+  });
 };
 
 /**
@@ -699,9 +697,7 @@ export const getKisOverseasQuoteSnapshot = async (
   const config = getRuntimeConfig();
   if (!config) return readinessToError(readiness);
 
-  const tokenResult = await getKisAccessToken(config);
-  if (!tokenResult.ok) return tokenResult;
-
+  return executeKisRequestWithToken(getKisExecutorDeps(), { routeCategory: 'overseas_quote' }, async (handle) => {
   const params = new URLSearchParams({ AUTH: '', EXCD: exchangeCode, SYMB: symbol });
 
   try {
@@ -711,7 +707,7 @@ export const getKisOverseasQuoteSnapshot = async (
         'Content-Type': 'application/json',
         Accept: 'text/plain',
         charset: 'UTF-8',
-        authorization: `Bearer ${tokenResult.data.accessToken}`,
+        authorization: `Bearer ${handle.accessToken}`,
         appkey: config.appKey,
         appsecret: config.appSecret,
         tr_id: overseasQuoteTrId,
@@ -768,6 +764,7 @@ export const getKisOverseasQuoteSnapshot = async (
   } catch (error) {
     return sanitizeUnknownError(error, provider);
   }
+  });
 };
 
 export const getKisChartSeries = async (

@@ -98,10 +98,13 @@ assert(page.includes('chartAiMkAiReal') && page.includes('MK AI 분석 시작') 
 assert(page.includes('chartAiMarketIntel') && page.includes('/api/chart-ai/market-intelligence.json'), 'Market Intelligence preserved.');
 assert(page.includes('loadRealChart') && page.includes('/api/chart-ai/market/ohlcv.json'), 'real OHLCV chart preserved.');
 
-// --- 9. KIS token client: cache + skew + single-in-flight ---
+// --- 9. KIS token client: authoritative reuse + single-flight ---
+// Phase 3GG-T-HF2 SUPERSEDED the process-local cache/single-flight (accessTokenInFlight/
+// issueKisAccessTokenNow/tokenCacheSkewMs) with a durable, shared token manager (L1 memory + L2
+// Supabase store + distributed lease). The reuse + single-issuance guarantee now lives in the manager.
 const kis = read(KIS_CLIENT);
-assert(/expiresAtMs - tokenCacheSkewMs > now/.test(kis) && /tokenCacheSkewMs\s*=\s*60_000/.test(kis), 'token cache-until-expiry + expiry skew retained.');
-assert(/accessTokenInFlight/.test(kis) && /issueKisAccessTokenNow/.test(kis), 'single-in-flight token issuance guard added.');
+assert(/createKisTokenManager/.test(kis) && /executeKisRequestWithToken/.test(kis), 'kisClient must route through the authoritative durable token manager (supersedes the old process guard).');
+assert(/issueKisTokenFromEndpoint/.test(kis), 'kisClient must keep exactly one authoritative /oauth2/tokenP issuer.');
 assert(!/console\.(log|info|debug|warn|error)\([^)]*(access_token|accessToken|appsecret|Bearer)/i.test(kis), 'token client must not log tokens/secrets.');
 
 // --- 10. No forbidden endpoint / no lockfile change / no Supabase schema change ---
@@ -153,6 +156,9 @@ const tolerated = (f) =>
   /^src\/pages\/api\/chart-ai\//.test(f) ||
   f === KIS_CLIENT ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
+  /^src\/lib\/server\/providers\/kis\//.test(f) ||
+  /^supabase\/migrations\//.test(f) ||
+  f === 'scripts/kis_token_lifecycle_testsrc.ts' ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 let porcelain = [];
 try { porcelain = runGit(['status', '--porcelain']).split('\n').map((l) => l.slice(3).trim()).filter(Boolean); } catch { porcelain = []; }

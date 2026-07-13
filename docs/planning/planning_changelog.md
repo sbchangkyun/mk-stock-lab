@@ -1,5 +1,28 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF2 - 2026-07-13
+
+### Durable KIS Access-Token Lifecycle
+
+- Builds on Phase 3GG-T-HF1; fixes the P0-OPS duplicate-issuance risk (process-local token cache) confirmed
+  by the T-QA-AUDIT.
+- Adds a durable, shared, server-only KIS token lifecycle: L1 process cache → L2 Supabase durable store
+  (AES-256-GCM encrypted envelope, never plaintext) → distributed DB lease with fencing + double-check →
+  one `/oauth2/tokenP` issuance only when strictly required.
+- New migration `supabase/migrations/20260713_kis_token_lifecycle.sql` (internal `kis_token_state` +
+  `kis_token_event`, 5 security-definer RPCs, RLS, service_role-only grants). **Not applied.**
+- All four KIS transports route through one authoritative token manager/executor; removes the old
+  process-local cache/single-flight and the timezone-risky expiry parse (now `expires_in` / explicit
+  `+09:00`).
+- 15-minute safety window, 10-minute issuance cooldown, secret-safe telemetry allowlist. Emergency refresh
+  implemented but disabled by default (empty token-invalid allowlist).
+- Node built-in crypto only; no new dependency; no Cron; no account/order/balance/funds/trading scope.
+- Deterministic tests (44/44) prove exactly-one issuance across simulated instances / cold starts /
+  redeploys / lease-owner crash, plus fail-closed store/lease/write failures and a secret scan. No real KIS
+  token issued during validation.
+- Migration not applied; no Production env change; no deploy; no push. Production activation pending.
+- Next recommended phase: Production activation of the durable token lifecycle, then Phase 3GG-U-FAST.
+
 ## Phase 3GG-T-HF1 - 2026-07-13
 
 ### Chart AI Authentication Gate, Zero-Request Entry and Production UI Cleanup

@@ -231,6 +231,9 @@ const isTolerated = (f) =>
   /^src\/lib\/server\/chart-ai\/(universal|similarity-engine|mkAiAnalysis\/|marketIntelligence\/)/.test(f) ||
   /^src\/pages\/api\/chart-ai\/(instruments\/|market\/|similarity\.json|mk-analysis\.json|market-intelligence\.json)/.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
+  /^src\/lib\/server\/providers\/kis\//.test(f) ||
+  /^supabase\/migrations\//.test(f) ||
+  f === 'scripts/kis_token_lifecycle_testsrc.ts' ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 
 let porcelain = [];
