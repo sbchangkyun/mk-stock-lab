@@ -1,5 +1,30 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF2-HF1 - 2026-07-13
+
+### Public PostgREST RPC Bridge for the Durable KIS Token Store
+
+- Fixes the PGRST106 activation blocker (the `internal` schema is not PostgREST-exposed, so the durable
+  token store's `.schema('internal')` calls failed closed) WITHOUT exposing `internal` and WITHOUT moving
+  token tables to `public`.
+- New additive, forward-only migration `supabase/migrations/20260714_kis_token_postgrest_rpc_bridge.sql`:
+  six `public` SECURITY DEFINER bridge functions (`kis_token_read_state`, `kis_token_acquire_lease`,
+  `kis_token_release_lease`, `kis_token_store_generation`, `kis_token_invalidate_generation`,
+  `kis_token_record_event`), each `search_path=''`, fully-qualified, delegating to the authoritative
+  `internal` objects, `revoke all` from public/anon/authenticated + `grant execute` to service_role only.
+  `read_state` returns the encrypted envelope + metadata only (no plaintext, no public token table/view).
+  The already-applied `20260713` migration is unchanged.
+- Converted `src/lib/server/providers/kis/kisTokenStore.ts` from `.schema('internal').rpc(...)`/`.from(...)`
+  to the default public bridge RPC names. All durable lifecycle logic (encryption, expiry, cooldown,
+  single issuance, lease fencing, emergency-refresh policy, telemetry allowlist) and every external Chart AI
+  API contract unchanged. Added an injectable `clientFactory` (default = real admin client) solely for the
+  offline mapping test.
+- New deterministic tests/gates: bridge RPC-mapping smoke (11/11, fake recording client — no network/creds)
+  + bridge contract checker (migration + runtime source contract + secret scan). HF2 smoke 44/44 and HF2
+  checker 160/160 still green (store conversion non-regressive; HF2 tests use an in-memory mock db).
+- Not applied remotely; no Production env change; no deploy; no push. Production activation is a re-run after
+  the bridge migration is applied. See phase_3gg_t_hf2_hf1_postgrest_rpc_bridge_result_v0.1.md.
+
 ## Phase 3GG-T-HF2-PROD-ACTIVATE - 2026-07-13
 
 ### Durable KIS Token Activation Attempt (blocked, rolled back)

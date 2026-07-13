@@ -1,9 +1,11 @@
 /**
- * Phase 3GG-T-HF2: durable L2 KIS token store (Supabase Postgres, service-role, `internal` schema).
+ * Phase 3GG-T-HF2 (+HF1 bridge): durable L2 KIS token store (Supabase Postgres, service-role).
  *
  * Defines the `KisTokenDb` port (so the manager is fully unit-testable with an in-memory mock) and the
- * real Supabase-backed adapter. All atomic writes go through the fenced security-definer RPCs from the
- * migration; state reads are a plain service-role select. Never returns or logs plaintext tokens.
+ * real Supabase-backed adapter. Reads AND writes go through the PUBLIC PostgREST RPC bridge
+ * (public.kis_token_* SECURITY DEFINER functions) which delegate to the authoritative `internal`
+ * tables/functions — so the `internal` schema does NOT need to be exposed through PostgREST. Never
+ * returns or logs plaintext tokens.
  */
 
 import { getSupabaseAdminClient } from '../../supabaseAdmin';
@@ -71,23 +73,34 @@ const rowToState = (row: Record<string, unknown>): KisTokenStateRecord => {
   };
 };
 
-/** Real Supabase adapter. Uses the service-role admin client + the `internal` schema. */
-export const createSupabaseKisTokenDb = (): KisTokenDb => {
-  const db = () => getSupabaseAdminClient().schema('internal');
+/**
+ * Real Supabase adapter (Phase 3GG-T-HF2-HF1). Uses the service-role admin client via the PUBLIC
+ * PostgREST RPC bridge (public.kis_token_* functions) which delegate to the authoritative `internal`
+ * tables/functions. This removes the dependency on exposing the `internal` schema through PostgREST
+ * (the earlier PGRST106 activation blocker). The token tables/logic stay in `internal`; only narrow,
+ * service-role-only bridge RPCs live in `public`.
+ */
+/** Minimal PostgREST client surface used by the bridge (default: the service-role admin client). The
+ *  factory is injectable so the RPC-mapping test can pass a fake recording client (no real network). */
+export type KisTokenRpcClient = {
+  rpc: (fn: string, params?: Record<string, unknown>) => Promise<{ data: any; error: { code?: string } | null }>;
+};
+
+export const createSupabaseKisTokenDb = (
+  clientFactory: () => KisTokenRpcClient = () => getSupabaseAdminClient() as unknown as KisTokenRpcClient,
+): KisTokenDb => {
+  const db = () => clientFactory();
 
   return {
     async readState(scopeKey) {
-      const { data, error } = await db()
-        .from('kis_token_state')
-        .select('*')
-        .eq('scope_key', scopeKey)
-        .maybeSingle();
+      const { data, error } = await db().rpc('kis_token_read_state', { p_scope_key: scopeKey });
       if (error) throw new Error(`KIS_TOKEN_STORE_READ_FAILED:${error.code ?? 'unknown'}`);
-      return data ? rowToState(data as Record<string, unknown>) : null;
+      const row = Array.isArray(data) ? data[0] : data;
+      return row ? rowToState(row as Record<string, unknown>) : null;
     },
 
     async acquireLease(scopeKey, leaseOwner, ttlSeconds) {
-      const { data, error } = await db().rpc('acquire_kis_token_lease', {
+      const { data, error } = await db().rpc('kis_token_acquire_lease', {
         p_scope_key: scopeKey,
         p_lease_owner: leaseOwner,
         p_lease_ttl_seconds: ttlSeconds,
@@ -102,7 +115,7 @@ export const createSupabaseKisTokenDb = (): KisTokenDb => {
     },
 
     async releaseLease(scopeKey, leaseOwner, leaseVersion) {
-      const { data, error } = await db().rpc('release_kis_token_lease', {
+      const { data, error } = await db().rpc('kis_token_release_lease', {
         p_scope_key: scopeKey,
         p_lease_owner: leaseOwner,
         p_lease_version: leaseVersion,
@@ -112,7 +125,7 @@ export const createSupabaseKisTokenDb = (): KisTokenDb => {
     },
 
     async storeGeneration(args) {
-      const { data, error } = await db().rpc('store_kis_token_generation', {
+      const { data, error } = await db().rpc('kis_token_store_generation', {
         p_scope_key: args.scopeKey,
         p_lease_owner: args.leaseOwner,
         p_lease_version: args.leaseVersion,
@@ -130,7 +143,7 @@ export const createSupabaseKisTokenDb = (): KisTokenDb => {
     },
 
     async invalidateGeneration(scopeKey, generationId) {
-      const { data, error } = await db().rpc('invalidate_kis_token_generation', {
+      const { data, error } = await db().rpc('kis_token_invalidate_generation', {
         p_scope_key: scopeKey,
         p_generation_id: generationId,
       });
@@ -139,7 +152,7 @@ export const createSupabaseKisTokenDb = (): KisTokenDb => {
     },
 
     async recordEvent(row) {
-      const { error } = await db().rpc('record_kis_token_event', {
+      const { error } = await db().rpc('kis_token_record_event', {
         p_scope_key: row.scopeKey,
         p_event_type: row.eventType,
         p_generation_id: row.generationId ?? null,

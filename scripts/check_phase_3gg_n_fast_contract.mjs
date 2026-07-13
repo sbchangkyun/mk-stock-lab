@@ -71,7 +71,7 @@ const isOpFastArtifact = (f) =>
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
   /^src\/lib\/server\/providers\/kis\//.test(f) ||
   /^supabase\/migrations\//.test(f) ||
-  f === 'scripts/kis_token_lifecycle_testsrc.ts' ||
+  /^scripts\/[a-z0-9_]+_testsrc\.ts$/.test(f) ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 
 // Structural tokens that must be present in chart-ai.astro to prove the default-route mechanism,
