@@ -1,5 +1,39 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF4-FAST-HF2 - 2026-07-14
+
+### Mobile Tooltip Refinement + Duplicate Title Cleanup
+
+- Deliberately small visual correction addressing the five defects confirmed remaining after HF4-FAST-HF1
+  Owner QA: mobile chart tooltip still too large/opaque with wasteful vertical layout, and two large black
+  duplicate headings ("유사 패턴 분석", "MK AI 해석") shown on top of the small blue eyebrow labels already
+  identifying those panels. Target classification
+  `PASS_SELECTED_SYMBOL_INTEGRITY_AND_CHART_FOUNDATION_PRODUCTION_VERIFIED` (assignable only after Owner QA).
+- DEFECT-1/2 (tooltip size + transparency): mobile `.chart-tooltip` (max-width:640px) shrinks from 165px to a
+  140px max-width, auto width/height (no fixed min-height), 6px 7px padding, 10.5px font-size, 1.25
+  line-height. Background switches from the fully-opaque shared `--chart-shell-overlay` to a new dedicated
+  `--chart-tooltip-mobile-surface` variable (light 72% alpha, dark 74% alpha) with a lighter 4px backdrop
+  blur, kept local to the Chart AI tooltip.
+- DEFECT-3 (tooltip content layout): the tooltip JS builder now renders both a `.chart-tooltip-detailed`
+  (desktop, unchanged `<dl>` markup) and a `.chart-tooltip-compact` (mobile) view in one call; CSS toggles
+  which is visible per viewport (no duplicated interaction/request logic). The compact view shows the date
+  once as a heading (no separate 날짜 label), OHLC values in a two-column CSS grid (시/고 then 저/종), and the
+  change amount/percent as the final row; compact volume view stays a concise date + 거래량 line.
+  - DEFECT-4/5 (duplicate titles): removed the large black `<h2 id="chart-similarity-panel-heading">유사
+  패턴 분석</h2>` and `<h3 id="chart-mk-ai-heading">MK AI 해석</h3>` headings from rendered markup (not
+  CSS-hidden). Each heading's `id` was moved onto the surviving small blue eyebrow `<p>` element so existing
+  `aria-labelledby` references keep resolving. Both tab labels ("유사 패턴 분석 보기", "MK AI 분석 보기") and
+  both analysis executions are unaffected. The shared `display: grid; gap: 0.5rem;` panel-heading container
+  rule needed no change — spacing collapses automatically when the grid child is removed.
+- New `scripts\smoke_phase_3gg_t_hf4_fast_hf2_mobile_tooltip_title_cleanup.mjs` (44/44) and
+  `scripts\check_phase_3gg_t_hf4_fast_hf2_contract.mjs`. Narrow, documented reconciliation of the
+  HF4-FAST-HF1 smoke/checker only: their mobile-tooltip font-size/padding/background assertions now
+  tolerate either the HF1 or HF2 generation of values (HF2 intentionally supersedes the exact 165px/
+  0.72rem/`--chart-shell-overlay` figures), and a pre-existing `String.replace` (single-occurrence) bug in
+  the turnover bare-label check was fixed to `replaceAll` now that a second correctly-labeled "추정
+  거래대금" occurrence legitimately exists in the new compact mobile view.
+- See `docs\planning\phase_3gg_t_hf4_fast_hf2_mobile_tooltip_title_cleanup_result_v0.1.md` for full detail.
+
 ## Phase 3GG-T-HF4-FAST-HF1 - 2026-07-14
 
 ### Mobile Chart Interaction Cleanup

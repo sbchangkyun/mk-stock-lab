@@ -37,12 +37,14 @@ const mobileTooltipMatch = mobileBlock.match(/\.chart-tooltip \{([\s\S]*?)\}/);
 const mobileTooltipRule = mobileTooltipMatch ? mobileTooltipMatch[1] : '';
 check('mobile .chart-tooltip override exists inside the max-width:640px media block', mobileTooltipRule.length > 0);
 check('mobile tooltip max-width is compact (<=170px)', /max-width:\s*1[0-6][0-9]px/.test(mobileTooltipRule));
-check('mobile tooltip font-size is compact (~11-12px equivalent)', /font-size:\s*0\.7[0-3]rem/.test(mobileTooltipRule));
-check('mobile tooltip padding is compact', /padding:\s*0\.[45]/.test(mobileTooltipRule));
-check('mobile tooltip reuses the theme-aware semi-transparent overlay surface', /background:\s*var\(--chart-shell-overlay\)/.test(mobileTooltipRule));
+// HF4-FAST-HF2 narrowly superseded the exact mobile font-size/padding/background values as an
+// approved visual refinement (140px/10.5px/6px 7px/dedicated translucent surface var); tolerate either.
+check('mobile tooltip font-size is compact (~11-12px equivalent)', /font-size:\s*(0\.7[0-3]rem|10\.5px)/.test(mobileTooltipRule));
+check('mobile tooltip padding is compact', /padding:\s*(0\.[45]|6px 7px)/.test(mobileTooltipRule));
+check('mobile tooltip uses a theme-aware semi-transparent surface', /background:\s*var\(--chart-shell-overlay\)|background:\s*var\(--chart-tooltip-mobile-surface\)/.test(mobileTooltipRule));
 check('mobile tooltip applies a backdrop blur for the semi-transparent effect', /backdrop-filter:\s*blur\(/.test(mobileTooltipRule));
 check('mobile tooltip stays pointer-events: none (inherited base rule, no page interference)', /\.chart-tooltip \{[\s\S]{0,200}pointer-events:\s*none/.test(page));
-check('turnover stays labeled as an estimate ("추정 거래대금"), never bare "거래대금"', page.includes('추정 거래대금') && !/[^정]거래대금/.test(page.replace('추정 거래대금', '')));
+check('turnover stays labeled as an estimate ("추정 거래대금"), never bare "거래대금"', page.includes('추정 거래대금') && !/[^정]거래대금/.test(page.replaceAll('추정 거래대금', '')));
 
 // ---- DEFECT-2: outside-tap reset handler ----
 const attachFnMatch = page.match(/const attachChartInteractionHandlers = \(\) => \{([\s\S]*?)\n {6}\};/);

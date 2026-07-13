@@ -46,12 +46,14 @@ const mobileTooltipMatch = mobileBlock.match(/\.chart-tooltip \{([\s\S]*?)\}/);
 const mobileTooltipRule = mobileTooltipMatch ? mobileTooltipMatch[1] : '';
 assert(mobileTooltipRule.length > 0, 'mobile .chart-tooltip override must exist.');
 assert(/max-width:\s*1[0-6][0-9]px/.test(mobileTooltipRule), 'mobile tooltip max-width must be compact (<=170px).');
-assert(/font-size:\s*0\.7[0-3]rem/.test(mobileTooltipRule), 'mobile tooltip font-size must be compact.');
-assert(/background:\s*var\(--chart-shell-overlay\)/.test(mobileTooltipRule), 'mobile tooltip must reuse the theme-aware semi-transparent overlay variable.');
+// HF4-FAST-HF2 narrowly superseded the exact mobile font-size/background values as an approved
+// visual refinement (140px/10.5px/dedicated translucent surface var); tolerate either generation.
+assert(/font-size:\s*(0\.7[0-3]rem|10\.5px)/.test(mobileTooltipRule), 'mobile tooltip font-size must be compact.');
+assert(/background:\s*var\(--chart-shell-overlay\)|background:\s*var\(--chart-tooltip-mobile-surface\)/.test(mobileTooltipRule), 'mobile tooltip must use a theme-aware semi-transparent surface variable.');
 assert(/backdrop-filter:\s*blur\(/.test(mobileTooltipRule), 'mobile tooltip must apply a backdrop blur.');
 assert(/pointer-events:\s*none/.test(page.match(/\.chart-tooltip \{([\s\S]*?)\}/)[1]), 'base .chart-tooltip rule must stay pointer-events: none.');
 assert(page.includes('추정 거래대금'), 'turnover must remain labeled as an estimate (추정 거래대금).');
-assert(!/[^정]거래대금/.test(page.replace('추정 거래대금', '')), 'turnover must never be presented as the bare/official label.');
+assert(!/[^정]거래대금/.test(page.replaceAll('추정 거래대금', '')), 'turnover must never be presented as the bare/official label.');
 
 // --- 3. DEFECT-2: idempotent outside-tap reset handler, reusing the existing lightweight reset ---
 const attachFnMatch = page.match(/const attachChartInteractionHandlers = \(\) => \{([\s\S]*?)\n {6}\};/);
@@ -153,6 +155,9 @@ const RECONCILED_SIBLINGS = [
   'scripts/check_phase_3gg_t_hf1_contract.mjs',
   'scripts/check_phase_3gg_t_hf3a_contract.mjs',
   'scripts/smoke_phase_3gg_t_hf1_chart_ai_auth_zero_request_ui_cleanup.mjs',
+  'scripts/smoke_phase_3gg_t_hf4_fast_hf2_mobile_tooltip_title_cleanup.mjs',
+  'scripts/check_phase_3gg_t_hf4_fast_hf2_contract.mjs',
+  'docs/planning/phase_3gg_t_hf4_fast_hf2_mobile_tooltip_title_cleanup_result_v0.1.md',
 ];
 const ALLOWED = new Set([...REQUIRED_FILES, CHANGELOG, PACKAGE_JSON, ...RECONCILED_SIBLINGS]);
 const KNOWN_PREFIXES = ['.agents/', '.claude/', '.vscode/', 'docs/handoff/', 'skills-lock.json'];

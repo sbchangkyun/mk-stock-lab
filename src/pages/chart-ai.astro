@@ -951,8 +951,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       <div class="chart-similarity-panel-heading">
         {isVercelProductionRuntime ? (
           <Fragment>
-            <p class="eyebrow">유사 패턴 분석</p>
-            <h2 id="chart-similarity-panel-heading">유사 패턴 분석</h2>
+            <p class="eyebrow" id="chart-similarity-panel-heading">유사 패턴 분석</p>
           </Fragment>
         ) : (
           <Fragment>
@@ -1138,8 +1137,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
       <div id="chartAiMkAiPanel" class="chart-analysis-page" role="tabpanel" aria-labelledby="chartAiMkAiTab" hidden tabindex="0">
         <div class="chart-mk-ai-panel-heading">
-          <p class="eyebrow">MK AI</p>
-          <h3 id="chart-mk-ai-heading">MK AI 해석</h3>
+          <p class="eyebrow" id="chart-mk-ai-heading">MK AI</p>
           {isVercelProductionRuntime ? (
             <p class="chart-mk-ai-subheading">실시간 지연 시세와 유사 패턴을 결합한 결정적 분석입니다. 외부 AI를 호출하지 않습니다.</p>
           ) : (
@@ -1855,13 +1853,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           const changeCell = datum.changeAvailable
             ? `${datum.formatted.change} (${datum.formatted.changePercent})`
             : '—';
-          const tooltipHtml = region === 'volume'
-            ? `<dl><dt>날짜</dt><dd>${datum.formatted.date}</dd><dt>거래량</dt><dd>${datum.formatted.volume}</dd></dl>${
-                datum.formatted.turnoverEstimate
-                  ? `<p class="chart-tooltip-turnover">추정 거래대금 ${datum.formatted.turnoverEstimate}</p>`
-                  : ''
-              }`
+          const turnoverHtml = datum.formatted.turnoverEstimate
+            ? `<p class="chart-tooltip-turnover">추정 거래대금 ${datum.formatted.turnoverEstimate}</p>`
+            : '';
+          const detailedHtml = region === 'volume'
+            ? `<dl><dt>날짜</dt><dd>${datum.formatted.date}</dd><dt>거래량</dt><dd>${datum.formatted.volume}</dd></dl>${turnoverHtml}`
             : `<dl><dt>날짜</dt><dd>${datum.formatted.date}</dd><dt>시</dt><dd>${datum.formatted.open}</dd><dt>고</dt><dd>${datum.formatted.high}</dd><dt>저</dt><dd>${datum.formatted.low}</dd><dt>종</dt><dd>${datum.formatted.close}</dd><dt>변동</dt><dd>${changeCell}</dd></dl>`;
+          const compactTurnoverHtml = datum.formatted.turnoverEstimate
+            ? `<p class="chart-tooltip-compact-turnover">추정 거래대금 ${datum.formatted.turnoverEstimate}</p>`
+            : '';
+          const compactHtml = region === 'volume'
+            ? `<p class="chart-tooltip-compact-date">${datum.formatted.date}</p><p class="chart-tooltip-compact-volume">거래량 ${datum.formatted.volume}</p>${compactTurnoverHtml}`
+            : `<p class="chart-tooltip-compact-date">${datum.formatted.date}</p><div class="chart-tooltip-compact-grid"><span>시 ${datum.formatted.open}</span><span>고 ${datum.formatted.high}</span><span>저 ${datum.formatted.low}</span><span>종 ${datum.formatted.close}</span><span>${datum.changeAvailable ? datum.formatted.change : '—'}</span><span>${datum.changeAvailable ? datum.formatted.changePercent : ''}</span></div>`;
+          const tooltipHtml = `<div class="chart-tooltip-detailed">${detailedHtml}</div><div class="chart-tooltip-compact">${compactHtml}</div>`;
           showChartTooltipAt(candle.x, opts.svgPoint.y, tooltipHtml);
         }
 
@@ -4904,6 +4908,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       --chart-shell-muted: #637083;
       --chart-shell-volume: #9aabc0;
       --chart-shell-overlay: rgb(255 255 255 / 90%);
+      --chart-tooltip-mobile-surface: rgb(255 255 255 / 72%);
       --chart-shell-up: #c43f3f;
       --chart-shell-down: #1f6fd6;
       --chart-shell-flat: #8a95a6;
@@ -4926,6 +4931,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       --chart-shell-muted: #91a3ba;
       --chart-shell-volume: #39506d;
       --chart-shell-overlay: rgb(13 23 40 / 90%);
+      --chart-tooltip-mobile-surface: rgb(13 23 40 / 74%);
       --chart-shell-up: #f06b74;
       --chart-shell-down: #5b9dff;
       --chart-shell-flat: #7c8aa0;
@@ -5436,6 +5442,10 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       box-shadow: var(--chart-shell-shadow);
       font-size: 0.72rem;
       line-height: 1.5;
+    }
+
+    .chart-tooltip-compact {
+      display: none;
     }
 
     .chart-tooltip dl {
@@ -7155,22 +7165,50 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       }
 
       .chart-tooltip {
-        max-width: 165px;
+        max-width: 140px;
+        width: auto;
         min-width: 0;
-        padding: 0.5rem 0.6rem;
-        font-size: 0.72rem;
-        line-height: 1.35;
-        background: var(--chart-shell-overlay);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
+        min-height: 0;
+        height: auto;
+        padding: 6px 7px;
+        font-size: 10.5px;
+        line-height: 1.25;
+        border-radius: 6px;
+        background: var(--chart-tooltip-mobile-surface);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
       }
 
-      .chart-tooltip dl {
-        gap: 0.05rem 0.35rem;
+      .chart-tooltip-detailed {
+        display: none;
       }
 
-      .chart-tooltip .chart-tooltip-turnover {
-        margin-top: 0.15rem;
+      .chart-tooltip-compact {
+        display: block;
+      }
+
+      .chart-tooltip-compact-date {
+        margin: 0 0 3px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .chart-tooltip-compact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3px 6px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .chart-tooltip-compact-volume {
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .chart-tooltip-compact-turnover {
+        margin: 3px 0 0;
+        color: var(--chart-shell-muted);
+        font-size: 9.5px;
       }
 
       .chart-header-price {
