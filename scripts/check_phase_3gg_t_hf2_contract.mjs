@@ -43,11 +43,13 @@ for (const f of [...MODULES, KIS_CLIENT, MIGRATION, TEST_SRC, SMOKE, CHECKER_SEL
 const kisClient = read(KIS_CLIENT);
 assert(kisClient.includes("const tokenPath = '/oauth2/tokenP'"), 'kisClient must declare the token path.');
 // Count actual fetch(...tokenPath) issuance sites across the whole tree — must be exactly one (kisClient).
+// Count files that actually FETCH the token endpoint (the `${config.baseUrl}${tokenPath}` construction),
+// not doc comments that merely mention `/oauth2/tokenP`. Only kisClient may issue.
 let tokenFetchFiles = [];
 try {
-  tokenFetchFiles = runGit(['grep', '-l', 'oauth2/tokenP', '--', 'src/']).split('\n').map((l) => l.trim()).filter(Boolean);
+  tokenFetchFiles = runGit(['grep', '-lF', '${config.baseUrl}${tokenPath}', '--', 'src/']).split('\n').map((l) => l.trim()).filter(Boolean);
 } catch { tokenFetchFiles = existsSync(KIS_CLIENT) ? [KIS_CLIENT] : []; }
-assert(tokenFetchFiles.length === 1 && tokenFetchFiles[0] === KIS_CLIENT, `Exactly one file may reference the token endpoint (kisClient), found: ${tokenFetchFiles.join(', ')}`);
+assert(tokenFetchFiles.length === 1 && tokenFetchFiles[0] === KIS_CLIENT, `Exactly one file may issue the token endpoint (kisClient), found: ${tokenFetchFiles.join(', ')}`);
 assert(kisClient.includes('issueKisTokenFromEndpoint'), 'kisClient must keep the single authoritative endpoint issuer.');
 assert((kisClient.match(/\$\{config\.baseUrl\}\$\{tokenPath\}/g) || []).length === 1, 'exactly one /oauth2/tokenP fetch must exist.');
 

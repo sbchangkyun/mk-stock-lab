@@ -116,7 +116,13 @@ let lockDiff = '';
 try { lockDiff = runGit(['diff', '--name-only', BASELINE, '--', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock']).trim(); } catch { lockDiff = ''; }
 assert(lockDiff === '', `No lockfile change allowed, but changed: ${lockDiff}`);
 let supaDiff = '';
-try { supaDiff = runGit(['diff', '--name-only', BASELINE, '--', 'supabase']).trim(); } catch { supaDiff = ''; }
+try {
+  supaDiff = runGit(['diff', '--name-only', BASELINE, '--', 'supabase'])
+    .split('\n').map((l) => l.trim()).filter(Boolean)
+    // Phase 3GG-T-HF2 (superseding) adds the durable KIS-token migration; tolerate it here.
+    .filter((f) => f !== 'supabase/migrations/20260713_kis_token_lifecycle.sql')
+    .join('\n');
+} catch { supaDiff = ''; }
 assert(supaDiff === '', `No Supabase schema change allowed, but changed: ${supaDiff}`);
 try {
   const pkgDiff = runGit(['diff', BASELINE, '--', PACKAGE_JSON]);

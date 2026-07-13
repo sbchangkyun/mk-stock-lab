@@ -127,9 +127,11 @@ let supaDiff = '';
 try {
   supaDiff = runGit(['diff', '--name-only', BASELINE, '--', 'supabase', 'src/lib/server/providers'])
     .split('\n').map((l) => l.trim()).filter(Boolean)
-    // Phase 3GG-T-HF1 (superseding hotfix) added a single-in-flight guard to the KIS token client;
-    // tolerate that provider change (still no Supabase schema / no new provider).
+    // Phase 3GG-T-HF1/HF2 (superseding) touched the KIS token client + added the durable token-lifecycle
+    // modules + migration; tolerate those (still no new provider, no unrelated Supabase schema change).
     .filter((f) => f !== 'src/lib/server/providers/kisClient.ts')
+    .filter((f) => !f.startsWith('src/lib/server/providers/kis/'))
+    .filter((f) => f !== 'supabase/migrations/20260713_kis_token_lifecycle.sql')
     .join('\n');
 } catch { supaDiff = ''; }
 assert(supaDiff === '', `No Supabase/provider change allowed this phase, but changed: ${supaDiff}`);

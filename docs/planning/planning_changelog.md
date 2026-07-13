@@ -1,5 +1,23 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF2-PROD-ACTIVATE - 2026-07-13
+
+### Durable KIS Token Activation Attempt (blocked, rolled back)
+
+- Applied the durable-token migration to Production (owner, Dashboard SQL Editor), set the Production env
+  vars (durable on, telemetry on, emergency off; encryption key generated + piped, never printed), and
+  deployed durable mode.
+- First authenticated market-data action failed CLOSED (zero KIS push, features unavailable): the durable
+  manager reaches Supabase via `.schema('internal')`, but `internal` is not exposed to PostgREST
+  (service-role probe → PGRST106), so the lease/store RPCs fail. No duplicate token issued; fail-closed as
+  designed; nothing leaked.
+- Rolled back `KIS_DURABLE_TOKEN_ENABLED=false` + redeployed → Production restored to working L1-only. No
+  migration object dropped.
+- Repair for the next run: expose `internal` on the exact Production Supabase project (verify PGRST202 not
+  PGRST106) OR relocate the token objects to the `public` schema. Durable code unchanged + locally verified
+  (44/44). No git push. See phase_3gg_t_hf2_prod_activate_result_v0.1.md.
+- Patched three sibling checkers to tolerate the now-committed HF2 files in their baseline diffs.
+
 ## Phase 3GG-T-HF2 - 2026-07-13
 
 ### Durable KIS Access-Token Lifecycle
