@@ -387,11 +387,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               <h2 id="chart-market-heading">{isVercelProductionRuntime ? '실시간 종목 차트' : '샘플 차트'}</h2>
             </div>
             <div class="chart-market-identity-row" aria-label="선택 종목 기본 정보" aria-live="polite">
-              <strong id="chartAiSelectedName">삼성전자</strong>
-              <span class="chart-identity-symbol" id="chartAiSelectedSymbol">005930</span>
-              <span class="chart-identity-chip" id="chartAiSelectedExchange">KOSPI</span>
-              <span class="chart-identity-chip" id="chartAiSelectedAssetType">주식</span>
-              <span class="chart-identity-chip" id="chartAiSelectedCurrency">KRW</span>
+              <strong id="chartAiSelectedName">종목 미선택</strong>
+              <span class="chart-identity-symbol" id="chartAiSelectedSymbol">—</span>
+              <span class="chart-identity-chip" id="chartAiSelectedExchange">—</span>
+              <span class="chart-identity-chip" id="chartAiSelectedAssetType">—</span>
+              <span class="chart-identity-chip" id="chartAiSelectedCurrency">—</span>
             </div>
           </div>
           {!isVercelProductionRuntime && (
@@ -470,23 +470,23 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <dl class="chart-company-fallback-fields">
             <div>
               <dt>종목명</dt>
-              <dd id="chartAiOverviewName">삼성전자</dd>
+              <dd id="chartAiOverviewName">종목 미선택</dd>
             </div>
             <div>
               <dt>종목코드</dt>
-              <dd id="chartAiOverviewSymbol">005930</dd>
+              <dd id="chartAiOverviewSymbol">—</dd>
             </div>
             <div>
               <dt>시장</dt>
-              <dd id="chartAiOverviewMarket">KOSPI</dd>
+              <dd id="chartAiOverviewMarket">—</dd>
             </div>
             <div>
               <dt>종목 유형</dt>
-              <dd id="chartAiOverviewAssetType">주식</dd>
+              <dd id="chartAiOverviewAssetType">—</dd>
             </div>
             <div>
               <dt>통화</dt>
-              <dd id="chartAiOverviewCurrency">KRW</dd>
+              <dd id="chartAiOverviewCurrency">—</dd>
             </div>
             <div>
               <dt>데이터 상태</dt>
@@ -944,7 +944,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               <button type="button" class="chart-similarity-window-btn active" data-sim-window="20" aria-pressed="true">최근 20거래일</button>
               <button type="button" class="chart-similarity-window-btn" data-sim-window="60" aria-pressed="false">최근 60거래일</button>
             </div>
-            <button type="button" id="chartAiSimilarityStartBtn" class="chart-similarity-start-btn">유사 패턴 분석 시작</button>
+            <button type="button" id="chartAiSimilarityStartBtn" class="chart-similarity-start-btn" disabled aria-disabled="true">유사 패턴 분석 시작</button>
           </div>
           <p class="chart-similarity-disclaimer">과거 유사 구간의 이후 움직임을 참고용으로 비교합니다. 미래 성과를 예측하거나 보장하지 않습니다.</p>
 
@@ -1120,7 +1120,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         {isVercelProductionRuntime && (
           <div class="chart-mkai-real" id="chartAiMkAiReal" data-state="idle">
             <div class="chart-mkai-controls">
-              <button type="button" id="chartAiMkAiStartBtn" class="chart-mkai-start-btn">MK AI 분석 시작</button>
+              <button type="button" id="chartAiMkAiStartBtn" class="chart-mkai-start-btn" disabled aria-disabled="true">MK AI 분석 시작</button>
             </div>
             <p class="chart-mkai-disclaimer">실제 지연 시세와 과거 유사 구간 통계를 결정적 규칙으로 정리한 참고용 정보이며, 매매 추천이나 투자 자문이 아닙니다.</p>
             <p class="chart-mkai-status" id="chartAiMkAiRealStatus" role="status" aria-live="polite" hidden></p>
@@ -1167,7 +1167,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
           <section class="chart-mk-ai-section" aria-labelledby="chart-mk-ai-summary-heading">
             <p class="chart-mk-ai-section-label" id="chart-mk-ai-summary-heading">요약</p>
-            <p id="chartAiMkAiSummary">삼성전자는 KOSPI 상장 국내 주식으로, 현재 화면에서는 종목 식별 정보와 샘플 차트 구조를 기준으로 분석 미리보기를 제공합니다.</p>
+            <p id="chartAiMkAiSummary">종목을 검색해 선택하고 차트를 불러오면 종목 식별 정보와 차트 구조를 기준으로 분석 미리보기를 제공합니다.</p>
           </section>
 
           <section class="chart-mk-ai-section" aria-labelledby="chart-mk-ai-key-heading">
@@ -1246,7 +1246,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           </details>
 
           <strong>MK AI 분석 준비 중</strong>
-          <p id="chartAiMkAiReadinessText">삼성전자 기준의 MK AI 분석은 차트 데이터 연동 안정화 이후 순차 제공 예정입니다.</p>
+          <p id="chartAiMkAiReadinessText">종목을 선택하고 차트를 불러오면 해당 종목 기준의 MK AI 분석을 사용할 수 있습니다.</p>
           <p>현재 분석은 샘플 로직 기반 미리보기입니다.</p>
           <p>실제 투자 판단용 정보가 아니며 매수·매도 추천이 아닙니다.</p>
         </div>
@@ -1267,7 +1267,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         <div class="chart-market-intel-body">
           <div class="chart-market-intel-header">
             <p class="chart-market-intel-head-line" id="chartAiMiHead">선택 종목과 벤치마크를 종합 분석합니다.</p>
-            <button type="button" id="chartAiMiStartBtn" class="chart-market-intel-btn">시장 인텔리전스 분석</button>
+            <button type="button" id="chartAiMiStartBtn" class="chart-market-intel-btn" disabled aria-disabled="true">시장 인텔리전스 분석</button>
           </div>
           <p class="chart-market-intel-disclaimer">시장·환율·금리·변동성 데이터를 종합한 참고용 환경 분석입니다. 미래 성과를 예측하거나 보장하지 않습니다.</p>
           <p class="chart-market-intel-status" id="chartAiMiStatus" role="status" aria-live="polite" hidden></p>
@@ -1307,6 +1307,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       type MockedOhlcPoint,
     } from '../lib/chart-ai/mockedOhlc';
     import { toMockedOhlcPoints, type OwnerLocalOhlcPreviewPoint } from '../lib/chart-ai/ohlcPreviewChart';
+    // Phase 3GG-T-HF3A: authoritative selected-symbol / active-chart integrity state machine (pure).
+    import { createSelectedSymbolIntegrityState } from '../lib/chart-ai/selected-symbol-integrity.mjs';
     import { searchClientSafeDomesticSymbols } from '../lib/symbol-master/clientSymbolSearch';
     import type { ClientSafeSymbolSearchRecord, DomesticAssetType } from '../lib/symbol-master/types';
     // Phase 3GG-T-HF1: real Supabase auth gate + authenticated Chart AI API calls, reusing the same
@@ -1352,9 +1354,13 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const chart = document.getElementById('chartAiMarketChart');
       const chartSvg = document.getElementById('chartAiMarketSvg') as SVGSVGElement | null;
       const records = parseClientSafeRecords();
+      // Phase 3GG-T-HF3A: authoritative pending/active-chart integrity state. Analyses run ONLY against
+      // the instrument whose chart was explicitly loaded successfully — never a hidden default.
+      const integrity = createSelectedSymbolIntegrityState();
       let activeFilter: DomesticAssetType | 'all' = 'all';
-      let selectedSymbol = '005930';
-      let selectedName = '삼성전자';
+      // No hidden Production default: nothing is selected until the user explicitly searches + selects.
+      let selectedSymbol = '';
+      let selectedName = '';
       let selectedAssetType: DomesticAssetType = 'stock';
       // Phase 3GG-OP-FAST: universal selected-instrument state (KR default) and the active real-chart
       // range. `activePeriod` still drives the non-production sample chart unchanged.
@@ -1372,7 +1378,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // Phase 3GG-T-FAST: reassigned by the production Market Intelligence block.
       let resetSelectedMarketIntel: () => void = () => {};
       let ownerLocalConnected = false;
-      let selectedRecord: ClientSafeSymbolSearchRecord | null = records.find((r) => r.symbol === selectedSymbol) ?? null;
+      let selectedRecord: ClientSafeSymbolSearchRecord | null = null;
       const mkAiBulletsEl = document.getElementById('chartAiMkAiBullets');
       const mkAiBasisEl = document.getElementById('chartAiMkAiBasisList');
       const mkAiEvidenceEl = document.getElementById('chartAiMkAiEvidenceList');
@@ -1650,6 +1656,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       };
 
       const renderChart = () => {
+        // Phase 3GG-T-HF3A: no hidden default — the non-production sample chart stays empty until the
+        // user explicitly selects a symbol.
+        if (!selectedSymbol) return;
         const points = createMockedOhlcSeries(selectedSymbol, activePeriod);
         if (!isValidMockedOhlcSeries(points)) return;
         setChartStatus('샘플 OHLC·거래량 데이터', '실제 시세 아님');
@@ -1921,8 +1930,57 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         if (chart) chart.hidden = mode !== 'ready';
         // The below-chart metadata row (데이터 기준 · 통화 · 지연 여부) shows only once real data is ready.
         if (metaEl) metaEl.hidden = mode !== 'ready';
-        // The "이 종목 차트 불러오기" button appears only for a URL-suggested instrument (no auto-fetch).
-        if (loadBtn) loadBtn.hidden = mode !== 'suggested';
+        // Phase 3GG-T-HF3A: the explicit "이 종목 차트 불러오기" button appears whenever an instrument is
+        // pending or a load can be retried (never on ready/idle/loading), so promotion is always explicit.
+        if (loadBtn) loadBtn.hidden = !(mode === 'suggested' || mode === 'error' || mode === 'no-data' || mode === 'unavailable');
+      };
+
+      // Phase 3GG-T-HF3A: build the canonical instrument identity from a client-safe search record.
+      const buildInstrumentFromRecord = (record: any) => ({
+        country: record?.country === 'US' ? 'US' : 'KR',
+        symbol: record?.symbol ?? '',
+        exchange: record?.exchange ?? '',
+        instrumentType: record?.assetType ?? '',
+        name: record?.nameKo ?? '',
+        currency: record?.currency ?? '',
+      });
+
+      // Phase 3GG-T-HF3A: single authoritative availability sync for ALL three analysis actions. Buttons
+      // (and their aria-disabled state) enable ONLY when a chart is actively loaded for the current
+      // selection; otherwise they are disabled with an honest instruction.
+      const ANALYSIS_CONTROLS: Array<[string, string]> = [
+        ['chartAiSimilarityStartBtn', 'chartAiSimilarityStatus'],
+        ['chartAiMkAiStartBtn', 'chartAiMkAiRealStatus'],
+        ['chartAiMiStartBtn', 'chartAiMiStatus'],
+      ];
+      const ANALYSIS_GUIDE_NO_INSTRUMENT = '먼저 종목을 검색해 차트를 불러와 주세요.';
+      const ANALYSIS_GUIDE_PENDING = '선택한 종목의 차트를 먼저 불러와 주세요.';
+      const ANALYSIS_GUIDE_LOADING = '차트를 불러오는 동안 분석 기능을 사용할 수 없습니다.';
+      const analysisGuideMessage = () => {
+        const snap = integrity.getSnapshot();
+        if (snap.chartLoadStatus === 'loading') return ANALYSIS_GUIDE_LOADING;
+        if (snap.hasPending) return ANALYSIS_GUIDE_PENDING;
+        return ANALYSIS_GUIDE_NO_INSTRUMENT;
+      };
+      const updateAnalysisAvailability = () => {
+        const enabled = integrity.canRunAnalysis();
+        const guide = analysisGuideMessage();
+        for (const [btnId, statusId] of ANALYSIS_CONTROLS) {
+          const btn = document.getElementById(btnId) as HTMLButtonElement | null;
+          if (btn) {
+            btn.disabled = !enabled;
+            btn.setAttribute('aria-disabled', String(!enabled));
+          }
+          const status = document.getElementById(statusId);
+          if (!status) continue;
+          if (!enabled) {
+            status.textContent = guide;
+            status.hidden = false;
+          } else if (status.textContent === ANALYSIS_GUIDE_NO_INSTRUMENT || status.textContent === ANALYSIS_GUIDE_PENDING || status.textContent === ANALYSIS_GUIDE_LOADING) {
+            status.textContent = '';
+            status.hidden = true;
+          }
+        }
       };
 
       const updateRealChartMeta = (ohlcv: any) => {
@@ -1963,20 +2021,34 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         return true;
       };
 
+      // Phase 3GG-T-HF3A: the ONLY path that promotes a pending instrument toward an active chart. It
+      // requires a pending instrument, and it promotes to ACTIVE only when the response is current
+      // (sequence + selection revision), successful, has ≥1 real candle, and its identity matches the
+      // requested instrument. Stale/failed/empty responses never render and never enable analyses.
       async function loadRealChart() {
         if (!productionRealChartEnabled) return;
+        const token = integrity.beginChartLoad();
+        if (!token) {
+          setRealChartState('종목을 검색해 선택하면 실제 차트를 불러옵니다.', '종목명, 티커 또는 종목코드로 검색한 뒤 결과를 선택하세요.', 'idle');
+          updateAnalysisAvailability();
+          return;
+        }
         const seq = ++realChartSeq;
         if (realChartAbort) realChartAbort.abort();
         realChartAbort = new AbortController();
         const signal = realChartAbort.signal;
+        const reqSymbol = token.instrument.symbol;
+        const reqCountry = token.instrument.country;
+        const reqName = token.instrument.name || selectedName;
         setRealChartState(
           '실시간 종목 차트를 불러오는 중입니다.',
-          `${selectedName} ${selectedSymbol}의 실제 지연 OHLCV 데이터를 불러오고 있습니다.`,
+          `${reqName} ${reqSymbol}의 실제 지연 OHLCV 데이터를 불러오고 있습니다.`,
           'loading',
         );
+        updateAnalysisAvailability();
         const params = new URLSearchParams();
-        params.set('country', selectedCountry);
-        params.set('symbol', selectedSymbol);
+        params.set('country', reqCountry);
+        params.set('symbol', reqSymbol);
         params.set('range', activeRange);
         const timeoutId = window.setTimeout(() => realChartAbort?.abort(), REAL_CHART_TIMEOUT_MS);
         const authHeaders = await chartAiAuthHeaders();
@@ -1990,29 +2062,51 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           .then((data) => {
             if (seq !== realChartSeq) return;
             const ohlcv = data && data.ohlcv;
+            const candles = Array.isArray(ohlcv?.candles) ? ohlcv.candles : [];
+            const responseSymbolKey = ohlcv?.instrument
+              ? `${String(ohlcv.instrument.country ?? '').toLowerCase()}|${String(ohlcv.instrument.symbol ?? '').toLowerCase()}`
+              : '';
+            const fail = (title: string, message: string, mode: string) => {
+              // Only render the failure if this token is still current (not superseded by a newer selection).
+              if (integrity.failChartLoad(token, 'error') === 'stale') return;
+              setRealChartState(title, message, mode);
+              updateAnalysisAvailability();
+            };
             if (!ohlcv || ohlcv.sourceStatus === 'blocked') {
-              setRealChartState('차트를 표시할 수 없습니다.', '실시간 시세 접근 권한을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.', 'error');
+              fail('차트를 표시할 수 없습니다.', '실시간 시세 접근 권한을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.', 'error');
               return;
             }
-            if (ohlcv.sourceStatus === 'no-data' || !Array.isArray(ohlcv.candles) || ohlcv.candles.length < 2) {
-              setRealChartState('표시할 시세 데이터가 없습니다.', `${selectedName} ${selectedSymbol}의 해당 기간 실제 OHLCV 데이터가 아직 제공되지 않습니다.`, 'no-data');
+            if (ohlcv.sourceStatus === 'no-data' || candles.length < 2) {
+              fail('표시할 시세 데이터가 없습니다.', `${reqName} ${reqSymbol}의 해당 기간 실제 OHLCV 데이터가 아직 제공되지 않습니다.`, 'no-data');
               return;
             }
             if (ohlcv.sourceStatus !== 'ok') {
-              setRealChartState('실시간 시세를 불러오지 못했습니다.', '잠시 후 다시 시도해 주세요.', 'unavailable');
+              fail('실시간 시세를 불러오지 못했습니다.', '잠시 후 다시 시도해 주세요.', 'unavailable');
+              return;
+            }
+            const outcome = integrity.resolveChartLoad(token, { ok: true, candleCount: candles.length, responseSymbolKey });
+            if (outcome === 'stale') return; // a newer selection/load supersedes this response — ignore it
+            if (outcome !== 'accepted') {
+              setRealChartState('차트를 표시할 수 없습니다.', '요청한 종목과 다른 응답이 확인되어 표시하지 않았습니다.', 'error');
+              updateAnalysisAvailability();
               return;
             }
             if (!renderRealChart(ohlcv)) {
+              integrity.failChartLoad(token, 'error');
               setRealChartState('차트를 표시할 수 없습니다.', '유효한 시세 데이터를 확인하지 못했습니다.', 'error');
+              updateAnalysisAvailability();
               return;
             }
             updateRealChartMeta(ohlcv);
             setRealChartState('', '', 'ready');
+            updateAnalysisAvailability();
           })
           .catch((error) => {
             if (seq !== realChartSeq) return;
             if (error && (error as any).name === 'AbortError') return;
+            if (integrity.failChartLoad(token, 'error') === 'stale') return;
             setRealChartState('실시간 시세를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', 'unavailable');
+            updateAnalysisAvailability();
           })
           .finally(() => window.clearTimeout(timeoutId));
       }
@@ -2039,6 +2133,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       };
 
       const updateSelection = (record: any) => {
+        // Phase 3GG-T-HF3A: a deliberate result selection bumps the selection revision, invalidates the
+        // previous active chart + all in-flight requests, and enters the PENDING stage (analyses disabled).
+        integrity.selectPending(buildInstrumentFromRecord(record));
         selectedSymbol = record.symbol;
         selectedName = record.nameKo;
         selectedAssetType = record.assetType;
@@ -2071,8 +2168,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try { resetSelectedMkAi(); } catch {}
         try { resetSelectedMarketIntel(); } catch {}
         if (productionRealChartEnabled) {
+          // Phase 3GG-T-HF3A: selecting a result creates a PENDING instrument only — NO OHLCV/analysis
+          // request until the user explicitly clicks "이 종목 차트 불러오기". Analyses stay disabled.
           updateProductionUrlState();
-          loadRealChart();
+          setRealChartState(
+            '선택한 종목의 차트를 먼저 불러와 주세요.',
+            `${record.nameKo} 종목을 선택했습니다. 아래 버튼을 눌러 실제 지연 OHLCV 차트를 불러오면 분석을 사용할 수 있습니다.`,
+            'suggested',
+          );
+          updateAnalysisAvailability();
         } else {
           renderChart();
         }
@@ -2224,10 +2328,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // issues a KIS/OHLCV/search request. With no ?symbol the chart stays idle; with a ?symbol (e.g.
       // arriving from the Portfolio page) we show it as a SUGGESTED selection using client-safe URL
       // labels only, and wait for an explicit "이 종목 차트 불러오기" click before any provider call.
-      const DEFAULT_INSTRUMENT = {
-        symbol: '005930', nameKo: '삼성전자', englishName: 'Samsung Electronics',
-        country: 'KR', exchange: 'KOSPI', market: '국내', assetType: 'stock', currency: 'KRW',
-      };
+      // Phase 3GG-T-HF3A: a URL ?symbol is a SUGGESTION only. There is NO Samsung/DEFAULT fallback — an
+      // unresolved suggestion honestly asks the user to search, and never silently selects another symbol.
       let suggestedInstrument: { symbol: string; name: string; country: 'KR' | 'US' } | null = null;
 
       const loadSuggestedInstrument = async () => {
@@ -2248,8 +2350,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           const data = await response.json();
           const results = Array.isArray(data?.results) ? data.results : [];
           const exact = results.find((r: any) => String(r.symbol).toUpperCase() === sym.toUpperCase()) || results[0];
+          if (!exact) {
+            suggestedInstrument = null;
+            setRealChartState('종목을 찾을 수 없습니다.', '종목명, 티커 또는 종목코드로 검색해 결과를 선택해 주세요.', 'error');
+            updateAnalysisAvailability();
+            return;
+          }
           suggestedInstrument = null;
-          updateSelection(exact ? mapApiResult(exact) : DEFAULT_INSTRUMENT);
+          updateSelection(mapApiResult(exact)); // → PENDING (no fetch)
+          await loadRealChart();                // explicit promotion (one click resolves + loads the chart)
         } catch {
           setRealChartState('종목 정보를 불러오지 못했습니다.', '잠시 후 다시 시도하거나 종목을 검색해 선택해 주세요.', 'error');
         } finally {
@@ -2257,10 +2366,22 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         }
       };
 
+      // Phase 3GG-T-HF3A: the single explicit "load chart" handler. A URL suggestion is resolved first;
+      // a search-selected pending instrument loads directly. Either way promotion is explicit.
+      const handleExplicitChartLoad = async () => {
+        if (!productionRealChartEnabled) return;
+        if (suggestedInstrument) { await loadSuggestedInstrument(); return; }
+        await loadRealChart();
+      };
+
       const initProductionInstrument = () => {
         if (!productionRealChartEnabled) return;
+        // The workspace (sole fetch owner) has now initialized; analyses may become available only after
+        // a chart is explicitly loaded. Start from NO INSTRUMENT with every analysis disabled.
+        integrity.markWorkspaceReady();
+        updateAnalysisAvailability();
         const loadBtn = document.getElementById('chartAiRealChartLoadBtn');
-        loadBtn?.addEventListener('click', () => { void loadSuggestedInstrument(); });
+        loadBtn?.addEventListener('click', () => { void handleExplicitChartLoad(); });
         const sym = (chartAiQuery.get('symbol') || '').trim();
         const name = (chartAiQuery.get('name') || '').trim();
         const ctry = (chartAiQuery.get('country') || chartAiQuery.get('market') || '').trim().toUpperCase();
@@ -2273,7 +2394,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           );
           return;
         }
-        // Suggested selection from the URL — client-safe labels only, NO fetch until the explicit click.
+        // Suggested selection from the URL — client-safe labels only, NO fetch and NO active selection
+        // until the explicit click. This is a suggestion, not a pending/active instrument.
         suggestedInstrument = { symbol: sym, name: name || sym, country: ctry === 'US' ? 'US' : 'KR' };
         setRealChartState(
           `${suggestedInstrument.name} 차트를 불러올 준비가 되었습니다.`,
@@ -2316,7 +2438,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           if (simResults) simResults.hidden = true;
           showSimStatus('');
           setSimState('idle');
-          if (simStartBtn) { simStartBtn.disabled = false; simStartBtn.textContent = '유사 패턴 분석 시작'; }
+          if (simStartBtn) { simStartBtn.disabled = !integrity.canRunAnalysis(); simStartBtn.textContent = '유사 패턴 분석 시작'; }
           [simMatches, simAggregate, simCurrent, simOverlay, simLegend].forEach((el) => el && el.replaceChildren());
         };
         resetSelectedSimilarity = resetSim;
@@ -2468,16 +2590,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         const runSimilarity = async () => {
           if (!productionRealChartEnabled || simInFlight) return;
+          // Phase 3GG-T-HF3A: shared guard — only runs against the actively-loaded chart instrument.
+          const token = integrity.beginAnalysis('similar-pattern');
+          if (!token) { setSimState('idle'); showSimStatus('먼저 종목을 검색해 차트를 불러와 주세요.'); updateAnalysisAvailability(); return; }
           simInFlight = true;
           const seq = ++simSeq;
           if (simAbort) simAbort.abort();
           simAbort = new AbortController();
           const signal = simAbort.signal;
-          const sym = selectedSymbol;
-          const ctry = selectedCountry;
+          const sym = token.instrument.symbol;
+          const ctry = token.instrument.country;
           setSimState('loading');
           if (simResults) simResults.hidden = true;
-          showSimStatus(`${selectedName} 최근 ${activeSimWindow}거래일 기준 과거 유사 구간을 분석하는 중입니다…`);
+          showSimStatus(`${token.instrument.name || selectedName} 최근 ${activeSimWindow}거래일 기준 과거 유사 구간을 분석하는 중입니다…`);
           if (simStartBtn) simStartBtn.disabled = true;
           const timeoutId = window.setTimeout(() => simAbort?.abort(), SIM_TIMEOUT_MS);
           try {
@@ -2485,6 +2610,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const res = await fetch(url, { method: 'GET', signal, credentials: 'omit', headers: { ...(await chartAiAuthHeaders()) } });
             const data = await res.json();
             if (seq !== simSeq) return;
+            // Ignore a stale response whose selection was superseded (symbol changed mid-flight).
+            if (integrity.resolveAnalysis(token) !== 'accepted') return;
             const sim = data && data.similarity;
             if (!sim || sim.sourceStatus === 'blocked' || sim.sanitizedErrorCode !== 'NONE' || sim.ok !== true) {
               showSimStatus(honestStateMessage(sim ? sim.sanitizedErrorCode : 'INTERNAL'));
@@ -2509,7 +2636,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           } finally {
             window.clearTimeout(timeoutId);
             simInFlight = false;
-            if (simStartBtn) simStartBtn.disabled = false;
+            if (simStartBtn) simStartBtn.disabled = !integrity.canRunAnalysis();
           }
         };
 
@@ -2556,7 +2683,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           if (mkaiResults) mkaiResults.hidden = true;
           showMkaiStatus('');
           setMkaiState('idle');
-          if (mkaiStartBtn) { mkaiStartBtn.disabled = false; mkaiStartBtn.textContent = 'MK AI 분석 시작'; }
+          if (mkaiStartBtn) { mkaiStartBtn.disabled = !integrity.canRunAnalysis(); mkaiStartBtn.textContent = 'MK AI 분석 시작'; }
           [mkaiScores, mkaiSections, mkaiTechnical, mkaiConclusion].forEach((el) => el && el.replaceChildren());
         };
         resetSelectedMkAi = resetMkai;
@@ -2634,16 +2761,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         const runMkai = async () => {
           if (!productionRealChartEnabled || mkaiInFlight) return;
+          // Phase 3GG-T-HF3A: shared guard — only runs against the actively-loaded chart instrument.
+          const token = integrity.beginAnalysis('mk-ai');
+          if (!token) { setMkaiState('idle'); showMkaiStatus('먼저 종목을 검색해 차트를 불러와 주세요.'); updateAnalysisAvailability(); return; }
           mkaiInFlight = true;
           const seq = ++mkaiSeq;
           if (mkaiAbort) mkaiAbort.abort();
           mkaiAbort = new AbortController();
           const signal = mkaiAbort.signal;
-          const sym = selectedSymbol;
-          const ctry = selectedCountry;
+          const sym = token.instrument.symbol;
+          const ctry = token.instrument.country;
           setMkaiState('loading');
           if (mkaiResults) mkaiResults.hidden = true;
-          showMkaiStatus(`${selectedName} 실시간 지연 시세와 유사 패턴을 결정적 규칙으로 분석하는 중입니다…`);
+          showMkaiStatus(`${token.instrument.name || selectedName} 실시간 지연 시세와 유사 패턴을 결정적 규칙으로 분석하는 중입니다…`);
           if (mkaiStartBtn) mkaiStartBtn.disabled = true;
           const timeoutId = window.setTimeout(() => mkaiAbort?.abort(), MKAI_TIMEOUT_MS);
           try {
@@ -2651,6 +2781,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const res = await fetch(url, { method: 'GET', signal, credentials: 'omit', headers: { ...(await chartAiAuthHeaders()) } });
             const data = await res.json();
             if (seq !== mkaiSeq) return;
+            if (integrity.resolveAnalysis(token) !== 'accepted') return;
             const mkai = data && data.mkai;
             if (!mkai || mkai.sourceStatus === 'blocked' || mkai.sanitizedErrorCode !== 'NONE' || mkai.ok !== true || !mkai.formatted || mkai.formatted.ok !== true) {
               showMkaiStatus(mkaiHonestMessage(mkai ? mkai.sanitizedErrorCode : 'INTERNAL'));
@@ -2670,7 +2801,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           } finally {
             window.clearTimeout(timeoutId);
             mkaiInFlight = false;
-            if (mkaiStartBtn) mkaiStartBtn.disabled = false;
+            if (mkaiStartBtn) mkaiStartBtn.disabled = !integrity.canRunAnalysis();
           }
         };
 
@@ -2707,7 +2838,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           if (miResults) miResults.hidden = true;
           showMiStatus('');
           setMiState('idle');
-          if (miStartBtn) { miStartBtn.disabled = false; miStartBtn.textContent = '시장 인텔리전스 분석'; }
+          if (miStartBtn) { miStartBtn.disabled = !integrity.canRunAnalysis(); miStartBtn.textContent = '시장 인텔리전스 분석'; }
           [miRegime, miRs, miCards, miAvailability, miConclusion].forEach((el) => el && el.replaceChildren());
           if (miHead) miHead.textContent = `${selectedName || '선택 종목'} 기준 시장 환경을 분석합니다.`;
         };
@@ -2811,16 +2942,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         const runMi = async () => {
           if (!productionRealChartEnabled || miInFlight) return;
+          // Phase 3GG-T-HF3A: shared guard — only runs against the actively-loaded chart instrument.
+          const token = integrity.beginAnalysis('market-intel');
+          if (!token) { setMiState('idle'); showMiStatus('먼저 종목을 검색해 차트를 불러와 주세요.'); updateAnalysisAvailability(); return; }
           miInFlight = true;
           const seq = ++miSeq;
           if (miAbort) miAbort.abort();
           miAbort = new AbortController();
           const signal = miAbort.signal;
-          const sym = selectedSymbol;
-          const ctry = selectedCountry;
+          const sym = token.instrument.symbol;
+          const ctry = token.instrument.country;
           setMiState('loading');
           if (miResults) miResults.hidden = true;
-          showMiStatus(`${selectedName} 기준 시장·환율·변동성 환경을 분석하는 중입니다…`);
+          showMiStatus(`${token.instrument.name || selectedName} 기준 시장·환율·변동성 환경을 분석하는 중입니다…`);
           if (miStartBtn) miStartBtn.disabled = true;
           const timeoutId = window.setTimeout(() => miAbort?.abort(), MI_TIMEOUT_MS);
           try {
@@ -2828,6 +2962,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const res = await fetch(url, { method: 'GET', signal, credentials: 'omit', headers: { ...(await chartAiAuthHeaders()) } });
             const data = await res.json();
             if (seq !== miSeq) return;
+            if (integrity.resolveAnalysis(token) !== 'accepted') return;
             const mi = data && data.marketIntel;
             const hardFail = !mi || !mi.formatted || mi.sourceStatus === 'blocked' || mi.sourceStatus === 'no-data' || mi.sourceStatus === 'error';
             if (hardFail) {
@@ -2848,7 +2983,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           } finally {
             window.clearTimeout(timeoutId);
             miInFlight = false;
-            if (miStartBtn) miStartBtn.disabled = false;
+            if (miStartBtn) miStartBtn.disabled = !integrity.canRunAnalysis();
           }
         };
 

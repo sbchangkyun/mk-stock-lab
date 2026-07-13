@@ -1,5 +1,29 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3A - 2026-07-13
+
+### Explicit Selected-Symbol / Active-Chart Integrity Guard
+
+- Fixes hidden Chart AI live defaults (`selectedSymbol='005930'`, `selectedName='삼성전자'`, `selectedRecord=
+  Samsung`, `DEFAULT_INSTRUMENT` fallback) that let Similar Pattern / MK AI / Market Intelligence run against
+  Samsung before the user explicitly selected and loaded a chart. Classification
+  `PASS_EXPLICIT_SYMBOL_SELECTION_ANALYSIS_GUARD_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_PRODUCTION_VERIFY_PENDING`.
+- New pure client-safe state machine `src/lib/chart-ai/selected-symbol-integrity.mjs`: three stages (NO
+  INSTRUMENT → PENDING → ACTIVE CHART), `selectionRevision`/`activeChartRevision`/sequence guards, and one
+  authoritative `canRunAnalysis()`/`beginAnalysis()`/`resolveAnalysis()` guard. Analyses run ONLY against
+  `activeChartInstrument` (chart loaded successfully, ≥1 candle, matching revision + identity) — never a
+  default/pending symbol.
+- `src/pages/chart-ai.astro`: removed hidden defaults (null/empty init; neutral `종목 미선택`/`—` placeholders);
+  search selection now creates PENDING only (no auto-fetch); explicit "이 종목 차트 불러오기" is the only path
+  that promotes to ACTIVE via `beginChartLoad`/`resolveChartLoad`; URL `?symbol` stays suggestion-only; all
+  three analyses gated behind the shared guard and use the active context; start buttons `disabled` +
+  `aria-disabled` until a chart is active; selection change clears active chart + all three result panels and
+  aborts in-flight requests; strengthened stale-response protection (AbortController + sequence + revision).
+- Deterministic offline smoke (50/50, no DOM/network/login/KIS) + contract checker. HF2 durable-token +
+  HF2-HF1 bridge + T-HF1/OP/Q/R/T-FAST/N-FAST checkers, `astro build`, `git diff --check` all green. Durable
+  KIS token lifecycle untouched. NOT deployed; no Supabase/env change; no real token; no push. Next:
+  Phase 3GG-T-HF3A-PROD-VERIFY. See phase_3gg_t_hf3a_selected_symbol_integrity_result_v0.1.md.
+
 ## Phase 3GG-T-HF2-PROD-ACTIVATE-RERUN - 2026-07-13
 
 ### Durable KIS Single Issuance Verified in Production
