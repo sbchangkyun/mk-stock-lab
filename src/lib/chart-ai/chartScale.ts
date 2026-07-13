@@ -9,7 +9,7 @@ export type CandleGeometry = {
   bodyWidth: number;
   volumeY: number;
   volumeHeight: number;
-  direction: 'up' | 'down';
+  direction: 'up' | 'down' | 'flat';
 };
 
 export type ChartAxisLabel = {
@@ -29,6 +29,8 @@ export type MockedChartGeometry = {
   candles: CandleGeometry[];
   priceLabels: ChartAxisLabel[];
   dateLabels: ChartAxisLabel[];
+  priceMin: number;
+  priceMax: number;
 };
 
 const WIDTH = 960;
@@ -87,7 +89,7 @@ export function buildMockedChartGeometry(
       bodyWidth,
       volumeY: VOLUME_BOTTOM - volumeHeight,
       volumeHeight,
-      direction: point.close >= point.open ? 'up' : 'down',
+      direction: point.close > point.open ? 'up' : point.close < point.open ? 'down' : 'flat',
     };
   });
 
@@ -115,5 +117,7 @@ export function buildMockedChartGeometry(
     candles,
     priceLabels,
     dateLabels,
+    priceMin,
+    priceMax,
   };
 }

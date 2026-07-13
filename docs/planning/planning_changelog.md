@@ -1,5 +1,36 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF4-FAST - 2026-07-13
+
+### Chart Foundation UX (Production Verify of HF3A + Real Candlestick Interaction)
+
+- Combines Production verification of the HF3A selected-symbol integrity guard with a real candlestick/
+  volume-chart interaction layer for chart foundation UX: hover, tap, keyboard (ArrowLeft/ArrowRight/Escape),
+  crosshair, tooltips, a dashed latest-price line, an instrument price/change header row, and an OHLCV strip.
+  Target classification `PASS_SELECTED_SYMBOL_INTEGRITY_AND_CHART_FOUNDATION_PRODUCTION_VERIFIED` (assignable
+  only after Owner QA).
+- New pure module `src\lib\chart-ai\chart-interaction-foundation.mjs` (no DOM/network/wall-clock/randomness):
+  `candleDirection`, `computeChange`, `formatPrice`, `formatSignedPrice`, `formatPercent`, `formatVolume`,
+  `formatDate`, `estimateTurnover`/`formatEstimatedTurnoverKrw` (KRW-only, always labeled "추정 거래대금"),
+  `nearestCandleIndex`, `valueToY`, `buildCandleDisplayDatum`.
+- `src\lib\chart-ai\chartScale.ts`: additive-only — `CandleGeometry.direction` widened to `'up'|'down'|'flat'`
+  (exact-equality logic), `MockedChartGeometry` now exposes `priceMin`/`priceMax` so the interaction layer
+  derives the latest-price line Y position from the same shared price domain instead of duplicating pixel math.
+- `src\pages\chart-ai.astro`: adopted the Korean chart convention (rising = red/filled, falling = blue/filled,
+  replacing the prior Western green/red hollow-down scheme) via themed `--chart-shell-up/-down/-flat` CSS
+  variables; added a Production-only price/change header row, OHLCV strip, tooltip, and `aria-live` candle
+  summary; the entire interaction layer is gated behind the Production-only `#chartAiChartTooltip` element so
+  the non-Production sample chart is unaffected; hover updates visuals only, commit (click/tap/keyboard) is
+  the sole path that writes to the `aria-live` summary, deduped against the last-announced index; every
+  non-`ready` `setRealChartState` transition calls `resetChartInteractionState()` so stale header/strip/
+  tooltip content never lingers behind a hidden or reloading chart. HF3A's pending/active-chart guard,
+  durable KIS token lifecycle, auth, protected routes, and analysis engines are untouched this phase.
+- Deterministic offline smoke (54/54, pure-module only) + contract checker (static source/regex assertions +
+  baseline diff scoping + working-tree purity). HF3A/HF2/HF2-HF1/T-HF1/OP/Q/R/T-FAST/N-FAST checkers,
+  `astro build`, and `git diff --check` all green. NOT deployed at commit time; one controlled
+  `vercel deploy --prod --yes` follows, then safe unauthenticated regression, then STOP at Owner QA. See
+  `phase_3gg_t_hf4_fast_chart_foundation_result_v0.1.md`.
+
 ## Phase 3GG-T-HF3A - 2026-07-13
 
 ### Explicit Selected-Symbol / Active-Chart Integrity Guard

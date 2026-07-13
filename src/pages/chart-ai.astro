@@ -303,7 +303,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       <h1>종목 차트</h1>
       <p class="lead">
         {isVercelProductionRuntime
-          ? '종목을 조회하고 차트 중심의 기본 정보를 확인하세요. 실제 시장 데이터 기능은 순차적으로 연결되고 있습니다.'
+          ? '종목을 조회하고 차트 중심의 기본 정보를 확인하세요.'
           : '종목을 조회하고 차트 중심의 기본 정보를 확인하세요. 현재 화면은 안전한 샘플 데이터로 구성되어 있습니다.'}
       </p>
     </div>
@@ -378,14 +378,16 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       </div>
     </section>
 
-    <div class="chart-lookup-content-grid">
-      <section class="chart-market-panel" aria-labelledby="chart-market-heading">
+    <div class={`chart-lookup-content-grid${isVercelProductionRuntime ? ' chart-lookup-content-grid--solo' : ''}`}>
+      <section class="chart-market-panel" {...(isVercelProductionRuntime ? { 'aria-label': '종목 차트' } : { 'aria-labelledby': 'chart-market-heading' })}>
         <div class="chart-market-rail">
           <div class="chart-market-summary">
+            {!isVercelProductionRuntime && (
             <div class="chart-market-heading-group">
               <p class="chart-market-kicker">차트</p>
-              <h2 id="chart-market-heading">{isVercelProductionRuntime ? '실시간 종목 차트' : '샘플 차트'}</h2>
+              <h2 id="chart-market-heading">샘플 차트</h2>
             </div>
+            )}
             <div class="chart-market-identity-row" aria-label="선택 종목 기본 정보" aria-live="polite">
               <strong id="chartAiSelectedName">종목 미선택</strong>
               <span class="chart-identity-symbol" id="chartAiSelectedSymbol">—</span>
@@ -393,6 +395,14 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               <span class="chart-identity-chip" id="chartAiSelectedAssetType">—</span>
               <span class="chart-identity-chip" id="chartAiSelectedCurrency">—</span>
             </div>
+            {isVercelProductionRuntime && (
+            <div class="chart-market-price-row" id="chartAiHeaderPriceRow" hidden>
+              <span class="chart-header-price" id="chartAiHeaderPrice">—</span>
+              <span class="chart-header-change" id="chartAiHeaderChangeAmount">—</span>
+              <span class="chart-header-change" id="chartAiHeaderChangePercent">—</span>
+              <span class="sr-only" id="chartAiHeaderPriceLabel">최근 종가</span>
+            </div>
+            )}
           </div>
           {!isVercelProductionRuntime && (
           <div class="chart-market-status">
@@ -424,11 +434,25 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           )}
         </div>
 
+        {isVercelProductionRuntime && (
+          <div class="chart-ohlcv-strip" id="chartAiOhlcvStrip" hidden>
+            <span class="chart-ohlcv-item"><b>시</b><em id="chartAiStripOpen">—</em></span>
+            <span class="chart-ohlcv-item"><b>고</b><em id="chartAiStripHigh">—</em></span>
+            <span class="chart-ohlcv-item"><b>저</b><em id="chartAiStripLow">—</em></span>
+            <span class="chart-ohlcv-item"><b>종</b><em id="chartAiStripClose">—</em></span>
+            <span class="chart-ohlcv-item chart-ohlcv-change" id="chartAiStripChangeAmount">—</span>
+            <span class="chart-ohlcv-item chart-ohlcv-change" id="chartAiStripChangePercent">—</span>
+            <span class="chart-ohlcv-item"><b>거</b><em id="chartAiStripVolume">—</em></span>
+            <span class="chart-ohlcv-item chart-ohlcv-date" id="chartAiStripDate">—</span>
+          </div>
+        )}
+
         <div
           class="chart-candlestick-ready"
           id="chartAiMarketChart"
           role="img"
           aria-label="선택 종목의 캔들 차트와 거래량"
+          tabindex={isVercelProductionRuntime ? '0' : undefined}
           hidden={isVercelProductionRuntime}
         >
           <svg
@@ -438,7 +462,13 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             preserveAspectRatio="none"
             aria-hidden="true"
           ></svg>
+          {isVercelProductionRuntime && (
+            <div class="chart-tooltip" id="chartAiChartTooltip" hidden></div>
+          )}
         </div>
+        {isVercelProductionRuntime && (
+          <p class="sr-only" id="chartAiCandleSummary" aria-live="polite"></p>
+        )}
 
         {isVercelProductionRuntime && (
           <div class="chart-market-preparing-state" id="chartAiRealChartState" role="status" aria-live="polite" data-state="idle">
@@ -461,6 +491,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
       </section>
 
+      {!isVercelProductionRuntime && (
       <aside class="chart-stock-sidebar">
         <section class="panel chart-company-placeholder" aria-labelledby="chart-company-heading">
           <div class="chart-sidebar-heading">
@@ -516,6 +547,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         <p class="chart-sidebar-analysis-note">분석 결과는 차트 하단의 차트 분석 영역에서 확인할 수 있습니다.</p>
       </aside>
+      )}
     </div>
 
     <section id="chartAiAnalysisWorkspace" class="chart-analysis-workspace" aria-labelledby="chart-analysis-workspace-heading">
@@ -1309,6 +1341,16 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     import { toMockedOhlcPoints, type OwnerLocalOhlcPreviewPoint } from '../lib/chart-ai/ohlcPreviewChart';
     // Phase 3GG-T-HF3A: authoritative selected-symbol / active-chart integrity state machine (pure).
     import { createSelectedSymbolIntegrityState } from '../lib/chart-ai/selected-symbol-integrity.mjs';
+    // Phase 3GG-T-HF4-FAST: pure chart interaction/formatting helpers (no DOM/network/time/randomness).
+    import {
+      nearestCandleIndex,
+      valueToY,
+      buildCandleDisplayDatum,
+      formatPrice,
+      formatSignedPrice,
+      formatPercent,
+      formatDate,
+    } from '../lib/chart-ai/chart-interaction-foundation.mjs';
     import { searchClientSafeDomesticSymbols } from '../lib/symbol-master/clientSymbolSearch';
     import type { ClientSafeSymbolSearchRecord, DomesticAssetType } from '../lib/symbol-master/types';
     // Phase 3GG-T-HF1: real Supabase auth gate + authenticated Chart AI API calls, reusing the same
@@ -1353,6 +1395,35 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const periodButtons = document.querySelectorAll<HTMLButtonElement>('.chart-period-controls button');
       const chart = document.getElementById('chartAiMarketChart');
       const chartSvg = document.getElementById('chartAiMarketSvg') as SVGSVGElement | null;
+      // Phase 3GG-T-HF4-FAST: chart interaction DOM (Production only; safely null off-Production).
+      const chartTooltip = document.getElementById('chartAiChartTooltip');
+      const chartHeaderPriceRow = document.getElementById('chartAiHeaderPriceRow');
+      const chartHeaderPrice = document.getElementById('chartAiHeaderPrice');
+      const chartHeaderChangeAmount = document.getElementById('chartAiHeaderChangeAmount');
+      const chartHeaderChangePercent = document.getElementById('chartAiHeaderChangePercent');
+      const chartOhlcvStrip = document.getElementById('chartAiOhlcvStrip');
+      const chartCandleSummary = document.getElementById('chartAiCandleSummary');
+      const stripEls = {
+        open: document.getElementById('chartAiStripOpen'),
+        high: document.getElementById('chartAiStripHigh'),
+        low: document.getElementById('chartAiStripLow'),
+        close: document.getElementById('chartAiStripClose'),
+        changeAmount: document.getElementById('chartAiStripChangeAmount'),
+        changePercent: document.getElementById('chartAiStripChangePercent'),
+        volume: document.getElementById('chartAiStripVolume'),
+        date: document.getElementById('chartAiStripDate'),
+      };
+      // Closure state for the currently rendered chart's interaction layer.
+      let chartInteractionPoints: MockedOhlcPoint[] = [];
+      let chartInteractionGeometry: ReturnType<typeof buildMockedChartGeometry> | null = null;
+      let chartInteractionCurrency: 'KRW' | 'USD' = 'KRW';
+      let chartSelectedIndex = -1;
+      let chartAnnouncedIndex = -1;
+      let chartOverlayLayer: SVGGElement | null = null;
+      let chartCrosshairLine: SVGLineElement | null = null;
+      let chartPriceLine: SVGLineElement | null = null;
+      let chartPriceLineLabel: SVGTextElement | null = null;
+      let chartHighlightRect: SVGRectElement | null = null;
       const records = parseClientSafeRecords();
       // Phase 3GG-T-HF3A: authoritative pending/active-chart integrity state. Analyses run ONLY against
       // the instrument whose chart was explicitly loaded successfully — never a hidden default.
@@ -1626,7 +1697,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         });
 
         geometry.candles.forEach((candle) => {
-          const directionClass = candle.direction === 'up' ? 'is-up' : 'is-down';
+          const directionClass = candle.direction === 'up' ? 'is-up' : candle.direction === 'down' ? 'is-down' : 'is-flat';
           candleLayer.append(createSvgElement('line', {
             x1: candle.x,
             y1: candle.wickTop,
@@ -1653,6 +1724,261 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         chartSvg.replaceChildren(gridLayer, volumeLayer, candleLayer, axisLayer);
         setText('chartAiChartPeriodLabel', periodLabel);
         chart.setAttribute('aria-label', ariaLabel);
+
+        // Phase 3GG-T-HF4-FAST: chart interaction layer (Production only — chartTooltip only exists
+        // in the Production-rendered DOM, so this safely no-ops for the non-Production sample chart).
+        chartInteractionPoints = points;
+        chartInteractionGeometry = geometry;
+        chartInteractionCurrency = selectedRecord?.currency === 'USD' ? 'USD' : 'KRW';
+        chartSelectedIndex = points.length - 1;
+        chartAnnouncedIndex = -1;
+        if (chartTooltip) {
+          buildChartOverlayLayer(geometry);
+          attachChartInteractionHandlers();
+          selectChartCandle(points.length - 1, { commit: false });
+        }
+      };
+
+      const clientToSvgPoint = (clientX: number, clientY: number): { x: number; y: number } | null => {
+        if (!chartSvg) return null;
+        const rect = chartSvg.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return null;
+        const viewBox = chartSvg.viewBox.baseVal;
+        return {
+          x: ((clientX - rect.left) / rect.width) * viewBox.width,
+          y: ((clientY - rect.top) / rect.height) * viewBox.height,
+        };
+      };
+
+      const buildChartOverlayLayer = (geometry: ReturnType<typeof buildMockedChartGeometry>) => {
+        if (!chartSvg) return;
+        const overlay = createSvgElement('g', {}, 'chart-svg-overlay chart-overlay-layer');
+        const highlight = createSvgElement('rect', {
+          x: 0, y: geometry.priceTop, width: 0, height: geometry.volumeBottom - geometry.priceTop,
+        }, 'chart-candle-highlight');
+        highlight.setAttribute('fill', 'currentColor');
+        highlight.setAttribute('opacity', '0.08');
+        const crosshair = createSvgElement('line', {
+          x1: 0, y1: geometry.priceTop, x2: 0, y2: geometry.volumeBottom,
+        }, 'chart-crosshair-line');
+        const latestClose = chartInteractionPoints.length
+          ? chartInteractionPoints[chartInteractionPoints.length - 1].close
+          : NaN;
+        const priceLineY = valueToY(
+          latestClose, geometry.priceMin, geometry.priceMax, geometry.priceTop, geometry.priceBottom - geometry.priceTop,
+        );
+        const clampedLabelY = Math.min(geometry.priceBottom - 4, Math.max(geometry.priceTop + 10, priceLineY));
+        const priceLine = createSvgElement('line', {
+          x1: geometry.plotLeft, y1: priceLineY, x2: geometry.plotRight, y2: priceLineY,
+        }, 'chart-price-line');
+        const priceLabel = createSvgElement('text', {
+          x: geometry.plotRight + 6, y: clampedLabelY + 4,
+        }, 'chart-price-line-label');
+        priceLabel.textContent = formatPrice(latestClose, chartInteractionCurrency);
+        overlay.append(highlight, crosshair, priceLine, priceLabel);
+        chartSvg.append(overlay);
+        chartOverlayLayer = overlay;
+        chartHighlightRect = highlight;
+        chartCrosshairLine = crosshair;
+        chartPriceLine = priceLine;
+        chartPriceLineLabel = priceLabel;
+      };
+
+      const updateChartHeaderPrice = (datum: ReturnType<typeof buildCandleDisplayDatum>) => {
+        if (!datum || !chartHeaderPriceRow) return;
+        chartHeaderPriceRow.hidden = false;
+        if (chartHeaderPrice) chartHeaderPrice.textContent = datum.formatted.close;
+        if (chartHeaderChangeAmount) {
+          chartHeaderChangeAmount.textContent = datum.changeAvailable ? datum.formatted.change : '변동 없음';
+          chartHeaderChangeAmount.classList.toggle('is-up', datum.changeAvailable && datum.direction === 'up');
+          chartHeaderChangeAmount.classList.toggle('is-down', datum.changeAvailable && datum.direction === 'down');
+        }
+        if (chartHeaderChangePercent) {
+          chartHeaderChangePercent.textContent = datum.changeAvailable ? datum.formatted.changePercent : '—';
+          chartHeaderChangePercent.classList.toggle('is-up', datum.changeAvailable && (datum.changePercent ?? 0) > 0);
+          chartHeaderChangePercent.classList.toggle('is-down', datum.changeAvailable && (datum.changePercent ?? 0) < 0);
+        }
+      };
+
+      const updateChartStrip = (datum: ReturnType<typeof buildCandleDisplayDatum>) => {
+        if (!datum || !chartOhlcvStrip) return;
+        chartOhlcvStrip.hidden = false;
+        if (stripEls.open) stripEls.open.textContent = datum.formatted.open;
+        if (stripEls.high) stripEls.high.textContent = datum.formatted.high;
+        if (stripEls.low) stripEls.low.textContent = datum.formatted.low;
+        if (stripEls.close) stripEls.close.textContent = datum.formatted.close;
+        if (stripEls.changeAmount) {
+          stripEls.changeAmount.textContent = datum.formatted.change;
+          stripEls.changeAmount.classList.toggle('is-up', datum.changeAvailable && datum.direction === 'up');
+          stripEls.changeAmount.classList.toggle('is-down', datum.changeAvailable && datum.direction === 'down');
+        }
+        if (stripEls.changePercent) {
+          stripEls.changePercent.textContent = datum.formatted.changePercent;
+          stripEls.changePercent.classList.toggle('is-up', datum.changeAvailable && (datum.changePercent ?? 0) > 0);
+          stripEls.changePercent.classList.toggle('is-down', datum.changeAvailable && (datum.changePercent ?? 0) < 0);
+        }
+        if (stripEls.volume) stripEls.volume.textContent = datum.formatted.volume;
+        if (stripEls.date) stripEls.date.textContent = datum.formatted.date;
+      };
+
+      const applyCandleEmphasis = (index: number) => {
+        if (!chartSvg) return;
+        chartSvg.querySelectorAll('.chart-candle-body.is-selected, .chart-volume-bar.is-selected').forEach((el) => {
+          el.classList.remove('is-selected');
+        });
+        const bodies = chartSvg.querySelectorAll('.chart-svg-candles .chart-candle-body');
+        const bars = chartSvg.querySelectorAll('.chart-svg-volume .chart-volume-bar');
+        bodies[index]?.classList.add('is-selected');
+        bars[index]?.classList.add('is-selected');
+      };
+
+      const showChartTooltipAt = (svgX: number, svgY: number, html: string) => {
+        if (!chartTooltip || !chart || !chartSvg) return;
+        chartTooltip.innerHTML = html;
+        chartTooltip.hidden = false;
+        const chartRect = chart.getBoundingClientRect();
+        const viewBox = chartSvg.viewBox.baseVal;
+        if (viewBox.width <= 0 || viewBox.height <= 0) return;
+        const scaleX = chartRect.width / viewBox.width;
+        const scaleY = chartRect.height / viewBox.height;
+        const tooltipWidth = (chartTooltip as HTMLElement).offsetWidth || 160;
+        const tooltipHeight = (chartTooltip as HTMLElement).offsetHeight || 60;
+        let left = svgX * scaleX + 12;
+        if (left + tooltipWidth > chartRect.width) left = svgX * scaleX - tooltipWidth - 12;
+        left = Math.max(4, Math.min(chartRect.width - tooltipWidth - 4, left));
+        let top = svgY * scaleY - 8;
+        top = Math.max(4, Math.min(chartRect.height - tooltipHeight - 4, top));
+        (chartTooltip as HTMLElement).style.left = `${left}px`;
+        (chartTooltip as HTMLElement).style.top = `${top}px`;
+      };
+
+      const selectChartCandle = (
+        index: number,
+        opts: { commit: boolean; svgPoint?: { x: number; y: number } },
+      ) => {
+        const points = chartInteractionPoints;
+        const geometry = chartInteractionGeometry;
+        if (!geometry || !points.length || index < 0 || index >= points.length) return;
+        chartSelectedIndex = index;
+        const datum = buildCandleDisplayDatum(points, index, chartInteractionCurrency);
+        if (!datum) return;
+        updateChartHeaderPrice(datum);
+        updateChartStrip(datum);
+        applyCandleEmphasis(index);
+
+        const candle = geometry.candles[index];
+        if (chartCrosshairLine && candle) {
+          chartCrosshairLine.setAttribute('x1', String(candle.x));
+          chartCrosshairLine.setAttribute('x2', String(candle.x));
+        }
+        if (chartHighlightRect && candle) {
+          chartHighlightRect.setAttribute('x', String(candle.x - candle.bodyWidth / 2 - 2));
+          chartHighlightRect.setAttribute('width', String(candle.bodyWidth + 4));
+        }
+
+        if (opts.svgPoint && candle) {
+          if (chartOverlayLayer) chartOverlayLayer.classList.add('is-visible');
+          const region: 'price' | 'volume' = opts.svgPoint.y >= geometry.volumeTop - 14 ? 'volume' : 'price';
+          const changeCell = datum.changeAvailable
+            ? `${datum.formatted.change} (${datum.formatted.changePercent})`
+            : '—';
+          const tooltipHtml = region === 'volume'
+            ? `<dl><dt>날짜</dt><dd>${datum.formatted.date}</dd><dt>거래량</dt><dd>${datum.formatted.volume}</dd></dl>${
+                datum.formatted.turnoverEstimate
+                  ? `<p class="chart-tooltip-turnover">추정 거래대금 ${datum.formatted.turnoverEstimate}</p>`
+                  : ''
+              }`
+            : `<dl><dt>날짜</dt><dd>${datum.formatted.date}</dd><dt>시</dt><dd>${datum.formatted.open}</dd><dt>고</dt><dd>${datum.formatted.high}</dd><dt>저</dt><dd>${datum.formatted.low}</dd><dt>종</dt><dd>${datum.formatted.close}</dd><dt>변동</dt><dd>${changeCell}</dd></dl>`;
+          showChartTooltipAt(candle.x, opts.svgPoint.y, tooltipHtml);
+        }
+
+        if (opts.commit && chartCandleSummary && index !== chartAnnouncedIndex) {
+          chartAnnouncedIndex = index;
+          chartCandleSummary.textContent = `${datum.formatted.date} 시가 ${datum.formatted.open}, 고가 ${datum.formatted.high}, 저가 ${datum.formatted.low}, 종가 ${datum.formatted.close}, ${
+            datum.changeAvailable ? `전일 대비 ${datum.formatted.change} (${datum.formatted.changePercent})` : '전일 대비 정보 없음'
+          }, 거래량 ${datum.formatted.volume}`;
+        }
+      };
+
+      const resetChartCandleToLatest = () => {
+        if (!chartInteractionPoints.length) return;
+        selectChartCandle(chartInteractionPoints.length - 1, { commit: false });
+        if (chartOverlayLayer) chartOverlayLayer.classList.remove('is-visible');
+        if (chartTooltip) chartTooltip.hidden = true;
+      };
+
+      let chartInteractionHandlersAttached = false;
+      const attachChartInteractionHandlers = () => {
+        if (chartInteractionHandlersAttached || !chart || !chartSvg) return;
+        chartInteractionHandlersAttached = true;
+
+        const resolveIndexFromEvent = (event: PointerEvent) => {
+          const svgPoint = clientToSvgPoint(event.clientX, event.clientY);
+          if (!svgPoint || !chartInteractionGeometry || !chartInteractionPoints.length) return null;
+          const geometry = chartInteractionGeometry;
+          const index = nearestCandleIndex(
+            svgPoint.x, geometry.plotLeft, geometry.plotRight - geometry.plotLeft, chartInteractionPoints.length,
+          );
+          if (index < 0) return null;
+          return { index, svgPoint };
+        };
+
+        chart.addEventListener('pointermove', (event) => {
+          const resolved = resolveIndexFromEvent(event as PointerEvent);
+          if (!resolved) return;
+          selectChartCandle(resolved.index, { commit: false, svgPoint: resolved.svgPoint });
+        });
+
+        chart.addEventListener('pointerleave', (event) => {
+          if ((event as PointerEvent).pointerType === 'touch') return;
+          resetChartCandleToLatest();
+        });
+
+        chart.addEventListener('pointerdown', (event) => {
+          const resolved = resolveIndexFromEvent(event as PointerEvent);
+          if (!resolved) return;
+          selectChartCandle(resolved.index, { commit: true, svgPoint: resolved.svgPoint });
+        });
+
+        chart.addEventListener('keydown', (event) => {
+          const keyEvent = event as KeyboardEvent;
+          if (!chartInteractionPoints.length) return;
+          if (keyEvent.key === 'ArrowLeft') {
+            keyEvent.preventDefault();
+            selectChartCandle(Math.max(0, chartSelectedIndex - 1), { commit: true });
+          } else if (keyEvent.key === 'ArrowRight') {
+            keyEvent.preventDefault();
+            selectChartCandle(Math.min(chartInteractionPoints.length - 1, chartSelectedIndex + 1), { commit: true });
+          } else if (keyEvent.key === 'Escape') {
+            resetChartCandleToLatest();
+          }
+        });
+      };
+
+      const resetChartInteractionState = () => {
+        chartInteractionPoints = [];
+        chartInteractionGeometry = null;
+        chartSelectedIndex = -1;
+        chartAnnouncedIndex = -1;
+        if (chartHeaderPriceRow) chartHeaderPriceRow.hidden = true;
+        if (chartHeaderPrice) chartHeaderPrice.textContent = '—';
+        if (chartHeaderChangeAmount) {
+          chartHeaderChangeAmount.textContent = '—';
+          chartHeaderChangeAmount.classList.remove('is-up', 'is-down');
+        }
+        if (chartHeaderChangePercent) {
+          chartHeaderChangePercent.textContent = '—';
+          chartHeaderChangePercent.classList.remove('is-up', 'is-down');
+        }
+        if (chartOhlcvStrip) chartOhlcvStrip.hidden = true;
+        if (chartTooltip) chartTooltip.hidden = true;
+        if (chartCandleSummary) chartCandleSummary.textContent = '';
+        if (chartOverlayLayer && chartOverlayLayer.parentNode) chartOverlayLayer.parentNode.removeChild(chartOverlayLayer);
+        chartOverlayLayer = null;
+        chartCrosshairLine = null;
+        chartPriceLine = null;
+        chartPriceLineLabel = null;
+        chartHighlightRect = null;
       };
 
       const renderChart = () => {
@@ -1933,6 +2259,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         // Phase 3GG-T-HF3A: the explicit "이 종목 차트 불러오기" button appears whenever an instrument is
         // pending or a load can be retried (never on ready/idle/loading), so promotion is always explicit.
         if (loadBtn) loadBtn.hidden = !(mode === 'suggested' || mode === 'error' || mode === 'no-data' || mode === 'unavailable');
+        // Phase 3GG-T-HF4-FAST: any non-ready transition tears down the interaction layer (header price,
+        // OHLCV strip, tooltip, crosshair, price line) so stale values never linger behind a hidden chart.
+        if (mode !== 'ready') resetChartInteractionState();
       };
 
       // Phase 3GG-T-HF3A: build the canonical instrument identity from a client-safe search record.
@@ -4776,8 +5105,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       --chart-shell-muted: #637083;
       --chart-shell-volume: #9aabc0;
       --chart-shell-overlay: rgb(255 255 255 / 90%);
-      --chart-shell-up: #118a4f;
-      --chart-shell-down: #c43f3f;
+      --chart-shell-up: #c43f3f;
+      --chart-shell-down: #1f6fd6;
+      --chart-shell-flat: #8a95a6;
+      --chart-crosshair: rgb(23 32 51 / 45%);
+      --chart-price-line: #1f2a44;
       --chart-shell-active: color-mix(in srgb, var(--primary) 11%, var(--chart-shell-bg));
       --chart-shell-warning: #8a5a05;
       --chart-shell-shadow: 0 18px 42px rgb(20 36 64 / 10%);
@@ -4795,8 +5127,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       --chart-shell-muted: #91a3ba;
       --chart-shell-volume: #39506d;
       --chart-shell-overlay: rgb(13 23 40 / 90%);
-      --chart-shell-up: #30c892;
-      --chart-shell-down: #f06b74;
+      --chart-shell-up: #f06b74;
+      --chart-shell-down: #5b9dff;
+      --chart-shell-flat: #7c8aa0;
+      --chart-crosshair: rgb(148 163 184 / 55%);
+      --chart-price-line: #e7edf5;
       --chart-shell-active: rgb(90 120 255 / 14%);
       --chart-shell-warning: #f5c96a;
       --chart-shell-shadow: 0 18px 42px rgb(0 0 0 / 24%);
@@ -5222,15 +5557,21 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       stroke: var(--chart-shell-up);
     }
 
+    :global(.chart-candle-body.is-down),
     :global(.chart-candle-wick.is-down) {
+      fill: var(--chart-shell-down);
       stroke: var(--chart-shell-down);
     }
 
-    :global(.chart-candle-body.is-down) {
-      fill: var(--chart-shell-bg);
-      stroke: var(--chart-shell-down);
-      stroke-width: 1.5;
-      vector-effect: non-scaling-stroke;
+    :global(.chart-candle-body.is-flat),
+    :global(.chart-candle-wick.is-flat) {
+      fill: var(--chart-shell-flat);
+      stroke: var(--chart-shell-flat);
+    }
+
+    :global(.chart-candle-body.is-selected) {
+      stroke-width: 2;
+      filter: brightness(1.12);
     }
 
     :global(.chart-volume-bar) {
@@ -5244,6 +5585,149 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
     :global(.chart-volume-bar.is-down) {
       fill: var(--chart-shell-down);
+    }
+
+    :global(.chart-volume-bar.is-flat) {
+      fill: var(--chart-shell-flat);
+    }
+
+    :global(.chart-volume-bar.is-selected) {
+      opacity: 0.85;
+    }
+
+    :global(.chart-crosshair-line) {
+      stroke: var(--chart-crosshair);
+      stroke-width: 1;
+      stroke-dasharray: 3 4;
+      pointer-events: none;
+    }
+
+    :global(.chart-price-line) {
+      stroke: var(--chart-price-line);
+      stroke-width: 1.25;
+      stroke-dasharray: 5 4;
+      pointer-events: none;
+    }
+
+    :global(.chart-price-line-label) {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      fill: var(--chart-price-line);
+    }
+
+    :global(.chart-overlay-layer) {
+      opacity: 0;
+      transition: opacity 0.1s ease;
+    }
+
+    :global(.chart-overlay-layer.is-visible) {
+      opacity: 1;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      z-index: 3;
+      pointer-events: none;
+      min-width: 10rem;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--chart-shell-border);
+      border-radius: 8px;
+      background: var(--chart-shell-overlay);
+      box-shadow: var(--chart-shell-shadow);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    .chart-tooltip dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.1rem 0.5rem;
+      margin: 0;
+    }
+
+    .chart-tooltip dt {
+      color: var(--chart-shell-muted);
+    }
+
+    .chart-tooltip dd {
+      margin: 0;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-tooltip .chart-tooltip-turnover {
+      margin-top: 0.25rem;
+      color: var(--chart-shell-muted);
+      font-size: 0.68rem;
+    }
+
+    .chart-market-price-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .chart-header-price {
+      font-size: 1.3rem;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-header-change {
+      font-size: 0.9rem;
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+      color: var(--chart-shell-muted);
+    }
+
+    .chart-header-change.is-up { color: var(--chart-shell-up); }
+    .chart-header-change.is-down { color: var(--chart-shell-down); }
+
+    .chart-ohlcv-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.6rem 0.9rem;
+      padding: 0.4rem 0.1rem;
+      border-top: 1px solid var(--chart-shell-border);
+      border-bottom: 1px solid var(--chart-shell-border);
+      font-size: 0.76rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .chart-ohlcv-item {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.25rem;
+      white-space: nowrap;
+    }
+
+    .chart-ohlcv-item b {
+      color: var(--chart-shell-muted);
+      font-weight: 650;
+    }
+
+    .chart-ohlcv-change.is-up { color: var(--chart-shell-up); }
+    .chart-ohlcv-change.is-down { color: var(--chart-shell-down); }
+    .chart-ohlcv-date { color: var(--chart-shell-muted); }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .chart-lookup-content-grid--solo {
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .chart-safety-note {
@@ -6919,6 +7403,21 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         border-radius: 12px;
         padding: 1rem;
       }
+
+      .chart-ohlcv-strip {
+        font-size: 0.7rem;
+        gap: 0.35rem 0.55rem;
+      }
+
+      .chart-tooltip {
+        max-width: calc(100vw - 3rem);
+        min-width: 8rem;
+        font-size: 0.68rem;
+      }
+
+      .chart-header-price {
+        font-size: 1.1rem;
+      }
     }
 
     @media (max-width: 420px) {
@@ -6958,7 +7457,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       .chart-period-controls button,
       .chart-analysis-tag,
       .chart-analysis-trigger-card,
-      .chart-analysis-trigger-button {
+      .chart-analysis-trigger-button,
+      :global(.chart-overlay-layer) {
         transition: none;
       }
 
