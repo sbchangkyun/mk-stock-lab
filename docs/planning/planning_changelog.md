@@ -33,6 +33,9 @@
   the turnover bare-label check was fixed to `replaceAll` now that a second correctly-labeled "추정
   거래대금" occurrence legitimately exists in the new compact mobile view.
 - See `docs\planning\phase_3gg_t_hf4_fast_hf2_mobile_tooltip_title_cleanup_result_v0.1.md` for full detail.
+- **Owner QA verified 2026-07-14**: all checkpoint items PASS (tooltip size, transparency, both duplicate
+  title removals, Samsung/AAPL execution), 0 additional KIS token pushes. Final classification
+  `PASS_SELECTED_SYMBOL_INTEGRITY_AND_CHART_FOUNDATION_PRODUCTION_VERIFIED` assigned; no rollback required.
 
 ## Phase 3GG-T-HF4-FAST-HF1 - 2026-07-14
 

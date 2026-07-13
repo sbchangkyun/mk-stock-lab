@@ -133,8 +133,23 @@ contains no Market Intelligence UI and no hidden Samsung default; deployed CSS c
 max-width ≤145px and the new translucent mobile surface variable; deployed HTML no longer contains the two
 duplicate large heading elements.
 
-## 13. Owner QA — pending
+## 13. Owner QA — verified
 
-Owner Checkpoint delivered per spec Section 19; final classification
-`PASS_SELECTED_SYMBOL_INTEGRITY_AND_CHART_FOUNDATION_PRODUCTION_VERIFIED` is **not** assigned until the
-Owner reports all checkpoint items PASS in a future turn.
+Owner reported all checkpoint items PASS:
+
+- Mobile Tooltip size: PASS
+- Mobile Tooltip transparency and readability: PASS
+- Similar Pattern duplicate title removal: PASS
+- MK AI duplicate title removal: PASS
+- Samsung and AAPL analysis execution: PASS
+- Additional KIS token-issuance pushes: 0
+- Remaining issue: none for HF4 scope
+
+Implementation commit: `8490a82` (`Phase 3GG-T-HF4-FAST-HF2: refine mobile tooltip and remove duplicate
+titles`). Production deployment: `dpl_GrVHDSbJgconDF3r8QK9e9mEBcuU`, READY, alias
+`https://mkstocklab.vercel.app`, deployed commit `8490a82`. No rollback required.
+
+**Final classification: `PASS_SELECTED_SYMBOL_INTEGRITY_AND_CHART_FOUNDATION_PRODUCTION_VERIFIED`.**
+
+Verification commit recorded as `HF4_FINAL_HEAD` in the Phase 3GG-T-HF5-HF6AB-FAST result document
+(this phase's finalization is the baseline for that subsequent phase).
