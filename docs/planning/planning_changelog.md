@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF1 - 2026-07-13
+
+### Chart AI Authentication Gate, Zero-Request Entry and Production UI Cleanup
+
+- Builds on Phase 3GG-T-FAST (urgent Production hotfix + cleanup).
+- **Requires login** using the same Supabase browser-session source and lock-gate pattern as the
+  Portfolio page (🔐 · 접속 필요 · 로그인이 필요합니다 · 회원가입/로그인). When signed out, Chart AI renders
+  the lock card, keeps the workspace body hidden, initializes no client workspace, and makes **no provider
+  calls** (search / OHLCV / similarity / MK AI / Market Intelligence / summary / KIS OAuth / OpenAI).
+- Protects the deployed Chart AI API routes (instrument search, OHLCV, similarity, MK AI analysis, Market
+  Intelligence) with the existing `validateUserFromBearerToken` Supabase check — unauthenticated deployed
+  requests fail closed with a sanitized 401. The localhost owner path stays token-free. No new auth scheme.
+- **Zero-request page entry**: opening `/chart-ai` no longer auto-selects Samsung or auto-fetches anything.
+  Idle until an explicit search + selection; a `?symbol` becomes a click-to-load suggestion (client-safe
+  labels only) with no KIS request until the user clicks "이 종목 차트 불러오기".
+- Removes chart-overlapping labels (the in-plot period label and the `실시간 지연 시세 · KIS` / timestamp
+  overlay); the compact 데이터 기준 · 통화 · 지연 여부 metadata now sits below the plot.
+- Removes obsolete sample/scaffold stock-description copy; the stock card shows only verified normalized
+  instrument metadata.
+- Removes the low-value three-line MK AI 시세 요약 from the Production UI (gated out of the Production DOM)
+  and Production-disables its route (localhost/Preview regression only). Zero Production calls to it.
+- **Removes Portfolio Intelligence from Chart AI** (DOM + client initialization + CSS). The reusable
+  `portfolio-intelligence` localStorage modules and the separate `/portfolio` page are untouched.
+- Preserves the real OHLCV chart, real similarity analysis, deterministic MK AI analysis, and Market
+  Intelligence, plus the localhost/Preview/Production provider guards and the read-only market-data scope.
+- Audits KIS token reuse: cache-until-expiry + 60s expiry skew already correct; the repeated issuance was
+  caused by unnecessary route invocation (page-load auto-fetch + summary clicks), now removed. Adds a
+  single-in-flight token issuance guard.
+- No trading/account/order/balance/funds endpoint. No dependency or lockfile change. No Supabase schema
+  change. Production deploy and desktop + mobile browser QA included.
+- Next recommended phase: Phase 3GG-U-FAST — News, Filings and Macro Event Intelligence.
+
 ## Phase 3GG-T-FAST - 2026-07-13
 
 ### Market and Cross-Asset Intelligence

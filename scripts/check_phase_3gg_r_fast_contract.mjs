@@ -33,11 +33,16 @@ const RESULT_DOC = 'docs/planning/phase_3gg_r_fast_real_mk_ai_analysis_result_v0
 const CHANGELOG = 'docs/planning/planning_changelog.md';
 const PACKAGE_JSON = 'package.json';
 
+// The prompt/contract owns the "3-line summary" behavior and lives in the LLM runtime bridge + model
+// policy — those stay frozen. Phase 3GG-T-HF1 legitimately Production-disables the summary ROUTE (removes
+// the production beta access path so the deployed Production UI cannot call it) WITHOUT rewriting the
+// prompt or the summary contract, so the route file itself is no longer part of the frozen set. The
+// route's prompt-contract wiring is re-verified below instead of frozen by diff.
 const LLM_FROZEN = [
-  'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts',
   'src/lib/server/chart-ai/local-only-llm-runtime-bridge.mjs',
   'src/lib/server/chart-ai/local-only-llm-model-policy.mjs',
 ];
+const SUMMARY_ROUTE_FILE = 'src/pages/api/chart-ai/local-only-kis-llm-summary.json.ts';
 
 const REQUIRED_FILES = [TYPES, SCORING, ENGINE, FORMATTER, ROUTE, CHART_AI_PAGE, SMOKE, CHECKER_SELF, RESULT_DOC];
 
@@ -82,7 +87,12 @@ for (const pat of FORBIDDEN_ENDPOINTS) assert(!pat.test(route + engineSurface), 
 // --- 5. Existing 3-line LLM summary contract UNCHANGED vs baseline ---
 let llmDiff = '';
 try { llmDiff = runGit(['diff', '--name-only', BASELINE, '--', ...LLM_FROZEN]).trim(); } catch { llmDiff = '<git diff failed>'; }
-assert(llmDiff === '', `The existing LLM summary route/bridge/model-policy must remain unchanged (kept the 3-line summary + prompt contract), but changed: ${llmDiff}`);
+assert(llmDiff === '', `The existing LLM summary bridge/model-policy must remain unchanged (kept the 3-line summary + prompt contract), but changed: ${llmDiff}`);
+// The summary route may be Production-disabled by a later phase, but must still wire the SAME prompt
+// contract (the runtime bridge) and must not introduce an LLM model rewrite of its own.
+const summaryRoute = read(SUMMARY_ROUTE_FILE);
+assert(summaryRoute.includes('runLocalOnlyLlmRuntimeBridge'), 'summary route must still use the frozen LLM runtime bridge (prompt contract unchanged).');
+assert(!/gpt-4|gpt-5|claude-|text-davinci|o1-preview|o1-mini/i.test(summaryRoute), 'summary route must not hardcode an LLM model.');
 
 // --- 6. chart-ai.astro real MK AI UI ---
 const page = read(CHART_AI_PAGE);
@@ -129,6 +139,7 @@ const tolerated = (f) =>
   f === '.gitignore' ||
   /^src\/lib\/server\/chart-ai\//.test(f) ||
   /^src\/pages\/api\/chart-ai\//.test(f) ||
+  f === 'src/lib/server/providers/kisClient.ts' ||
   /^src\/lib\/chart-ai\/portfolio-intelligence\//.test(f) ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);

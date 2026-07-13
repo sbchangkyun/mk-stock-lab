@@ -124,7 +124,14 @@ let lockDiff = '';
 try { lockDiff = runGit(['diff', '--name-only', BASELINE, '--', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock']).trim(); } catch { lockDiff = ''; }
 assert(lockDiff === '', `No lockfile change allowed this phase, but changed: ${lockDiff}`);
 let supaDiff = '';
-try { supaDiff = runGit(['diff', '--name-only', BASELINE, '--', 'supabase', 'src/lib/server/providers']).trim(); } catch { supaDiff = ''; }
+try {
+  supaDiff = runGit(['diff', '--name-only', BASELINE, '--', 'supabase', 'src/lib/server/providers'])
+    .split('\n').map((l) => l.trim()).filter(Boolean)
+    // Phase 3GG-T-HF1 (superseding hotfix) added a single-in-flight guard to the KIS token client;
+    // tolerate that provider change (still no Supabase schema / no new provider).
+    .filter((f) => f !== 'src/lib/server/providers/kisClient.ts')
+    .join('\n');
+} catch { supaDiff = ''; }
 assert(supaDiff === '', `No Supabase/provider change allowed this phase, but changed: ${supaDiff}`);
 try {
   const pkgDiff = runGit(['diff', BASELINE, '--', PACKAGE_JSON]);
@@ -164,7 +171,10 @@ const tolerated = (f) =>
   KNOWN.some((p) => f === p || f.startsWith(p)) ||
   f === '.gitignore' ||
   /^src\/lib\/server\/chart-ai\/marketIntelligence\//.test(f) ||
-  /^src\/pages\/api\/chart-ai\/market-intelligence\.json/.test(f) ||
+  // Phase 3GG-T-HF1 (superseding hotfix) adds authenticated Supabase gating to the Chart AI API routes
+  // and Production-disables the legacy summary route; tolerate those sibling route changes.
+  /^src\/pages\/api\/chart-ai\//.test(f) ||
+  f === 'src/lib/server/providers/kisClient.ts' ||
   /^scripts\/(smoke|check|owner_smoke)_phase_3gg_[a-z0-9_]+\.mjs$/.test(f) ||
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
 let porcelain = [];

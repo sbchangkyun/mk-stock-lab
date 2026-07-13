@@ -17,6 +17,7 @@ import {
   evaluateProductionChartAiBetaAccess,
 } from '../../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
+import { validateUserFromBearerToken } from '../../../../lib/server/supabaseAdmin';
 import { findUniversalInstrument } from '../../../../lib/server/chart-ai/universal-instrument-search.mjs';
 import {
   fetchUniversalOhlcv,
@@ -70,6 +71,17 @@ export const GET: APIRoute = async ({ url, request }) => {
   const ownerLocalOptIn = url.searchParams.get('ownerLocalOhlcv') === '1';
   const resolvedHostname = resolveLocalHostname(url, request);
   const localOwnerAllowed = ownerLocalOptIn && Boolean(resolvedHostname);
+
+  // Phase 3GG-T-HF1: Chart AI requires an authenticated Supabase user on every deployed
+  // (Preview/Production) request. The localhost owner opt-in stays token-free for owner smokes/dev.
+  // Fails closed with a sanitized 401/403 before any provider work — reuses the same Bearer-token
+  // validator the Portfolio APIs use (no new auth scheme).
+  if (!localOwnerAllowed) {
+    const auth = await validateUserFromBearerToken(request.headers.get('authorization'));
+    if (!auth.ok) {
+      return jsonResponse({ ok: false, code: auth.code, message: auth.message }, auth.status);
+    }
+  }
 
   const betaAccess = evaluateProtectedPreviewBetaAccess({
     betaQueryOptIn: url.searchParams.get('chartAiBetaPreview') === '1',

@@ -134,7 +134,12 @@ export const GET: APIRoute = async ({ url, request }) => {
     },
   });
 
-  if (!localOwnerAllowed && !betaAccess.allowed && !prodBetaAccess.allowed) {
+  // Phase 3GG-T-HF1: the low-value three-line MK AI 시세 요약 is REMOVED from the Production Chart AI
+  // UI and this route is Production-disabled. The production beta path (path 3) no longer grants
+  // access, so any deployed Production request fails closed here. The localhost owner path (path 1) and
+  // the protected Preview beta path (path 2) remain ONLY for historical localhost/Preview regression
+  // compatibility — the Production UI never renders or calls this route (verified by browser QA).
+  if (!localOwnerAllowed && !betaAccess.allowed) {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse(SANITIZED_ERROR_CODES.NON_LOCAL_REQUEST) });
   }
 

@@ -95,6 +95,8 @@ export type KisDailyOhlcPoint = {
 };
 
 let accessTokenCache: KisAccessTokenCache | null = null;
+// Phase 3GG-T-HF1: single-in-flight token issuance guard (shared across concurrent callers).
+let accessTokenInFlight: Promise<ProviderResult<{ accessToken: string }>> | null = null;
 
 const normalizeString = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
 
@@ -254,12 +256,7 @@ const parseTokenExpiry = (payload: KisTokenResponse): number => {
   return Date.now() + 23 * 60 * 60 * 1000;
 };
 
-const getKisAccessToken = async (config: KisRuntimeConfig): Promise<ProviderResult<{ accessToken: string }>> => {
-  const now = Date.now();
-  if (accessTokenCache && accessTokenCache.expiresAtMs - tokenCacheSkewMs > now) {
-    return { ok: true, data: { accessToken: accessTokenCache.accessToken }, staleState: 'fresh' };
-  }
-
+const issueKisAccessTokenNow = async (config: KisRuntimeConfig): Promise<ProviderResult<{ accessToken: string }>> => {
   try {
     const response = await fetch(`${config.baseUrl}${tokenPath}`, {
       method: 'POST',
@@ -310,6 +307,23 @@ const getKisAccessToken = async (config: KisRuntimeConfig): Promise<ProviderResu
     accessTokenCache = null;
     return sanitizeUnknownError(error, provider);
   }
+};
+
+// Phase 3GG-T-HF1: cache-first + single-in-flight token accessor. The fast path returns the cached token
+// while it is valid (with the existing 60s expiry safety skew). On a cache miss, concurrent callers share
+// ONE `/oauth2/tokenP` issuance via a shared in-flight promise instead of each firing their own request —
+// preventing a token-issuance thundering herd on cold start or right after expiry. Token reuse-until-expiry
+// and the per-request reuse behavior are unchanged; only redundant concurrent issuance is removed.
+const getKisAccessToken = async (config: KisRuntimeConfig): Promise<ProviderResult<{ accessToken: string }>> => {
+  const now = Date.now();
+  if (accessTokenCache && accessTokenCache.expiresAtMs - tokenCacheSkewMs > now) {
+    return { ok: true, data: { accessToken: accessTokenCache.accessToken }, staleState: 'fresh' };
+  }
+  if (accessTokenInFlight) return accessTokenInFlight;
+  accessTokenInFlight = issueKisAccessTokenNow(config).finally(() => {
+    accessTokenInFlight = null;
+  });
+  return accessTokenInFlight;
 };
 
 const normalizeKrSymbol = (symbol: string) => symbol.trim();

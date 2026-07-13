@@ -18,6 +18,7 @@ import {
   evaluateProductionChartAiBetaAccess,
 } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
+import { validateUserFromBearerToken } from '../../../lib/server/supabaseAdmin';
 import { findUniversalInstrument } from '../../../lib/server/chart-ai/universal-instrument-search.mjs';
 import { fetchLongHistoryOhlcv } from '../../../lib/server/chart-ai/universalOhlcvProvider';
 import { runRealSimilarity } from '../../../lib/server/chart-ai/similarity-engine.mjs';
@@ -94,6 +95,15 @@ export const GET: APIRoute = async ({ url, request }) => {
   const ownerLocalOptIn = url.searchParams.get('ownerLocalSimilarity') === '1';
   const resolvedHostname = resolveLocalHostname(url, request);
   const localOwnerAllowed = ownerLocalOptIn && Boolean(resolvedHostname);
+
+  // Phase 3GG-T-HF1: authenticated Supabase user required on deployed requests (localhost-owner
+  // stays token-free). Fails closed 401/403 before any provider work; reuses the Portfolio validator.
+  if (!localOwnerAllowed) {
+    const auth = await validateUserFromBearerToken(request.headers.get('authorization'));
+    if (!auth.ok) {
+      return jsonResponse({ ok: false, code: auth.code, message: auth.message }, auth.status);
+    }
+  }
 
   const betaAccess = evaluateProtectedPreviewBetaAccess({
     betaQueryOptIn: url.searchParams.get('chartAiBetaPreview') === '1',

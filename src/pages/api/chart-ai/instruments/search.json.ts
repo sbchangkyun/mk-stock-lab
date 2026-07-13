@@ -16,8 +16,18 @@ import {
   getUniversalMasterAsOf,
   UNIVERSAL_SEARCH_MIN_QUERY_LENGTH,
 } from '../../../../lib/server/chart-ai/universal-instrument-search.mjs';
+import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
+import { validateUserFromBearerToken } from '../../../../lib/server/supabaseAdmin';
 
 export const prerender = false;
+
+const resolveLocalHostname = (url: URL, request: Request): string | null => {
+  const urlHost = url.hostname.toLowerCase();
+  if (LOCAL_ONLY_ALLOWED_HOSTNAMES.includes(urlHost)) return urlHost;
+  const headerHost = (request.headers.get('host') ?? '').split(':')[0]?.trim().toLowerCase();
+  if (headerHost && LOCAL_ONLY_ALLOWED_HOSTNAMES.includes(headerHost)) return headerHost;
+  return null;
+};
 
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -66,7 +76,16 @@ const emptyResponse = (query: string, sanitizedErrorCode: string) => ({
   asOf: getUniversalMasterAsOf(),
 });
 
-export const GET: APIRoute = ({ url }) => {
+export const GET: APIRoute = async ({ url, request }) => {
+  // Phase 3GG-T-HF1: Chart AI search now requires an authenticated Supabase user on deployed
+  // (Preview/Production) requests; localhost stays open for owner smokes/dev. Fails closed 401/403.
+  if (!resolveLocalHostname(url, request)) {
+    const auth = await validateUserFromBearerToken(request.headers.get('authorization'));
+    if (!auth.ok) {
+      return jsonResponse({ ...emptyResponse('', 'AUTH_REQUIRED'), code: auth.code, message: auth.message }, auth.status);
+    }
+  }
+
   const rawQuery = (url.searchParams.get('q') ?? '').trim();
   const country = url.searchParams.get('country') ?? undefined;
   const assetType = url.searchParams.get('assetType') ?? undefined;

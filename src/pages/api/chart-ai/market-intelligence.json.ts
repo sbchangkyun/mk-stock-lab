@@ -19,6 +19,7 @@ import {
   evaluateProductionChartAiBetaAccess,
 } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
+import { validateUserFromBearerToken } from '../../../lib/server/supabaseAdmin';
 import { findUniversalInstrument } from '../../../lib/server/chart-ai/universal-instrument-search.mjs';
 import { fetchLongHistoryOhlcv } from '../../../lib/server/chart-ai/universalOhlcvProvider';
 import { resolveBenchmark } from '../../../lib/server/chart-ai/marketIntelligence/benchmarkResolver.mjs';
@@ -67,6 +68,16 @@ const toSeries = (result: any) =>
 
 export const GET: APIRoute = async ({ url, request }) => {
   const ownerLocal = url.searchParams.get('ownerLocalMarketIntel') === '1' && Boolean(resolveLocalHostname(url, request));
+
+  // Phase 3GG-T-HF1: authenticated Supabase user required on deployed requests (localhost-owner
+  // stays token-free). Fails closed 401/403 before any provider work; reuses the Portfolio validator.
+  if (!ownerLocal) {
+    const auth = await validateUserFromBearerToken(request.headers.get('authorization'));
+    if (!auth.ok) {
+      return jsonResponse({ ok: false, code: auth.code, message: auth.message }, auth.status);
+    }
+  }
+
   const betaAccess = evaluateProtectedPreviewBetaAccess({
     betaQueryOptIn: url.searchParams.get('chartAiBetaPreview') === '1',
     env: { VERCEL_ENV: readServerEnvValue('VERCEL_ENV'), NODE_ENV: readServerEnvValue('NODE_ENV'), CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA: readServerEnvValue('CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA') },
