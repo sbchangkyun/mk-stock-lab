@@ -1,5 +1,30 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF2-PROD-ACTIVATE-RERUN - 2026-07-13
+
+### Durable KIS Single Issuance Verified in Production
+
+- Activated durable KIS token mode in Production on the T-HF2-HF1 public RPC bridge (HEAD 8146fe4, no code
+  change). Classification `PASS_KIS_DURABLE_TOKEN_SINGLE_ISSUANCE_PRODUCTION_VERIFIED`.
+- Owner applied only `20260714_kis_token_postgrest_rpc_bridge.sql` via Dashboard SQL Editor (ran clean);
+  `20260713` not reapplied; `internal` not exposed. Stage-7 service-role probe: `kis_token_read_state`
+  REACHABLE (no PGRST106/202), anon DENIED (42501).
+- Set `KIS_DURABLE_TOKEN_ENABLED=true`, `KIS_TOKEN_TELEMETRY_ENABLED=true`,
+  `KIS_TOKEN_EMERGENCY_REFRESH_ENABLED=false` (non-sensitive booleans); preserved the existing
+  `KIS_TOKEN_ENCRYPTION_KEY` + `KIS_TOKEN_NAMESPACE` untouched.
+- First prod deploy `dpl_2ws3hK6mKPobV6DNGLVJhd51BJqD` (READY): page 200, all 5 Chart AI routes 401
+  fail-closed, bogus token 401 AUTH_INVALID, no PGRST106, zero issuance on entry.
+- Bootstrap (owner): KR+US charts + Similar Pattern + MK AI + Market Intelligence loaded with **exactly 1**
+  KIS push (~21:42 KST) → single issuance + cross-feature reuse.
+- Controlled second deploy `dpl_GDA2wVWbi5ML9tsgQGdcJe4ssxzo` (READY, cold L1): owner reloaded a chart →
+  loaded with **0** additional push → durable **L2** persistence + cross-deploy reuse proven. TOKEN_ISSUED
+  stays 1.
+- Verification limitation (honest): the L2 row couldn't be read back directly because `KIS_TOKEN_NAMESPACE`
+  is sensitive (not in `vercel env pull`); single-issuance is proven by the authoritative KIS push count +
+  the cold-redeploy behavioral test. No secret printed/committed; throwaway probes + pulled env files
+  deleted. Patched two sibling checkers (t-hf1/t-fast) to tolerate the additive `kis_token` migrations now
+  committed. No git push. See phase_3gg_t_hf2_prod_activate_rerun_result_v0.1.md.
+
 ## Phase 3GG-T-HF2-HF1 - 2026-07-13
 
 ### Public PostgREST RPC Bridge for the Durable KIS Token Store

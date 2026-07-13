@@ -131,7 +131,8 @@ try {
     // modules + migration; tolerate those (still no new provider, no unrelated Supabase schema change).
     .filter((f) => f !== 'src/lib/server/providers/kisClient.ts')
     .filter((f) => !f.startsWith('src/lib/server/providers/kis/'))
-    .filter((f) => f !== 'supabase/migrations/20260713_kis_token_lifecycle.sql')
+    // 20260713 lifecycle + 20260714 PostgREST RPC bridge are additive durable KIS-token migrations.
+    .filter((f) => !/^supabase\/migrations\/[0-9]+_kis_token[a-z0-9_]*\.sql$/.test(f))
     .join('\n');
 } catch { supaDiff = ''; }
 assert(supaDiff === '', `No Supabase/provider change allowed this phase, but changed: ${supaDiff}`);

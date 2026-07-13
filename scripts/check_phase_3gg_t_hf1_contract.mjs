@@ -119,8 +119,9 @@ let supaDiff = '';
 try {
   supaDiff = runGit(['diff', '--name-only', BASELINE, '--', 'supabase'])
     .split('\n').map((l) => l.trim()).filter(Boolean)
-    // Phase 3GG-T-HF2 (superseding) adds the durable KIS-token migration; tolerate it here.
-    .filter((f) => f !== 'supabase/migrations/20260713_kis_token_lifecycle.sql')
+    // Phases 3GG-T-HF2 / T-HF2-HF1 (superseding) add the additive durable KIS-token migrations
+    // (20260713 lifecycle + 20260714 PostgREST RPC bridge); tolerate any additive kis_token migration.
+    .filter((f) => !/^supabase\/migrations\/[0-9]+_kis_token[a-z0-9_]*\.sql$/.test(f))
     .join('\n');
 } catch { supaDiff = ''; }
 assert(supaDiff === '', `No Supabase schema change allowed, but changed: ${supaDiff}`);
