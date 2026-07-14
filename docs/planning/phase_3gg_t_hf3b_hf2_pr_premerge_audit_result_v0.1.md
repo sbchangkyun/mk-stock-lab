@@ -95,10 +95,14 @@ the branch or a release-branch rebuild.
   embed it). Reasonable for source control given it is the deterministic, regenerable app data master. **[TEST/INFER]**
 - **[OBS]** `project_structure.txt` (≈2.15 MB, UTF-16 directory dump) is **pre-existing on `origin/main`,
   NOT introduced by this PR** — a repo-hygiene item independent of this merge, not a PR blocker.
-- **[OBS]** `scripts/check_phase_3gg_t_hf3b_hf4c_fast_contract.mjs` contains **one stray NUL byte** at
-  offset 7519, inside dead-fallback code (`masterVersion || '\x00zzz'`; `masterVersion` is always truthy so
-  the fallback never executes). The checker runs correctly (191/191). Git flags the file binary. **Zero
-  functional/security impact**; recommended one-byte cleanup pre-merge (non-blocking).
+- **[OBS→REMEDIATED]** `scripts/check_phase_3gg_t_hf3b_hf4c_fast_contract.mjs` contained **one stray NUL
+  byte** at offset 7519, inside dead-fallback code (`masterVersion || '\x00zzz'`, intended `' zzz'`;
+  `masterVersion` is always truthy so the fallback never executes). The checker ran correctly (191/191).
+  **Remediated** in Phase 3GG-T-HF3B-HF2-HF1: the single NUL byte was replaced with the intended space
+  (now 0 NUL bytes, valid UTF-8, checker still 191/191, behavior unchanged). A repo-wide NUL scan found no
+  other unexpected NUL in text/source — only the pre-existing `project_structure.txt` (UTF-16, on main, not
+  in the PR) and the two `public/icon-*.png` binaries. See
+  `phase_3gg_t_hf3b_hf2_premerge_remediation_preview_qa_result_v0.1.md`.
 - No node_modules/dist/.vercel/raw-source/logs/coverage/dumps present. **[FACT]**
 
 ## 9. Dependency review

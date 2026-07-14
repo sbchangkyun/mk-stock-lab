@@ -1,5 +1,25 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-HF1 - 2026-07-14
+
+### Pre-merge remediation + Preview QA setup (no merge/deploy)
+
+- Removed the single stray NUL byte the pre-merge audit found in
+  `scripts/check_phase_3gg_t_hf3b_hf4c_fast_contract.mjs` (dead-fallback `masterVersion || '\x00zzz'` →
+  intended `' zzz'`; now 0 NUL, valid UTF-8, checker 191/191, behavior unchanged). Repo-wide NUL scan found
+  no other unexpected NUL in source/text (only pre-existing UTF-16 `project_structure.txt` on main + the two
+  PNG icons). Only non-doc change this phase = that one byte.
+- Full local gate re-validated post-cleanup (HF3B-HF2 123/123 + 53/53, HF3B-HF4C 191/191, simulator 19/19,
+  discovery, HF5-HF6AB, HF4-FAST-HF2/HF4-FAST, HF3A, T-HF1/T-FAST/T-HF2/HF2-HF1, OP-FAST, `astro build`,
+  `npm ls`, `git diff --check`). No dependency/lockfile change; no raw source tracked; runtime invariants
+  intact (widened KR symbol validation, no KRX runtime dep, server-only master, no MI UI, no trading endpoint).
+- Pushed `rebuild/phase-1-ia-shell` (audit commit `bd4c788` + this remediation commit); no main push, no
+  force. Vercel Git-integration Preview detected read-only; safe unauthenticated Preview regression run;
+  authenticated Owner Preview QA is the checkpoint. Classification
+  `REMEDIATED_PUSHED_PREVIEW_READY_OWNER_QA_PENDING`. `OWNER_VERCEL_MAIN_AUTO_DEPLOY_CONFIRMATION_REQUIRED`
+  still gates merge authorization. See
+  `docs\planning\phase_3gg_t_hf3b_hf2_premerge_remediation_preview_qa_result_v0.1.md`.
+
 ## Phase 3GG-T-HF3B-HF2-PR-PREMERGE-AUDIT - 2026-07-14
 
 ### PR #1 pre-merge audit (audit-only; no push/merge/deploy)
