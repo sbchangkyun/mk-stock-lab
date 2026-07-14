@@ -46,13 +46,21 @@ the normalized master, the provenance manifest, the deterministic generator, and
 
 | Category | Count |
 | --- | --- |
-| KR stock (KOSPI 839 / KOSDAQ 1769) | 2601 |
-| KR ETF (curated anchors) | 7 |
+| KR stock (KOSPI 832 / KOSDAQ 1769) | 2601 |
+| KR ETF (KOSPI, curated anchors) | 7 |
 | US stock (NASDAQ/NYSE/NYSE American/NYSE Arca) | 6231 |
 | US ETF (official ETF flag) | 3987 |
 | **Total** | **12826** |
 
-- By exchange: KOSPI 839, KOSDAQ 1769, NASDAQ 4939, NYSE 2331, NYSE Arca 2676, NYSE American 272.
+- **KR breakdown (manifest-authoritative, verified against the generated records):** the KOSPI *exchange*
+  total is **839** = **832 KOSPI stocks + 7 KOSPI KR ETFs**; KOSDAQ is **1769 stocks (0 ETFs)**. So total
+  **KR stocks = 832 + 1769 = 2601**, total **KR ETFs = 7**, and total **KR instruments = 2608**. The
+  manifest's `counts.krStock` (2601) already excludes ETFs, while `counts.byExchange.KOSPI` (839) is the
+  raw per-exchange total that includes the 7 KR ETFs — the two are consistent, not contradictory. (An
+  earlier draft of this table mislabeled the KR-stock row as "KOSPI 839"; the generated data was always
+  correct — only this documentation line is corrected here.)
+- By exchange (raw exchange totals): KOSPI 839 (832 stock + 7 ETF), KOSDAQ 1769, NASDAQ 4939, NYSE 2331,
+  NYSE Arca 2676, NYSE American 272.
 - 12826 / 31 ≈ **414×** the prior curated count (well beyond the ≥10× requirement). The exact count is
   reported here as an observation, not hard-coded as a permanent contract.
 
@@ -169,14 +177,45 @@ node scripts/generate_chart_ai_instrument_master.mjs \
 
 ## 10. Production deployment + safe regression
 
-- Deployed via `vercel deploy --prod --yes` only. Deployment id / READY / alias / commit recorded in the
-  Owner Checkpoint report.
+- Implementation commit deployed: `cbd24eb`. Deployed via `vercel deploy --prod --yes` only.
+- Deployment `dpl_63VLvyyCELwDdz23pUGMsPkJHJgq`, `readyState: READY`, `target: production`, alias
+  `https://mkstocklab.vercel.app`. No rollback required.
 - Safe unauthenticated regression: `/chart-ai` 200; search / ohlcv / similarity / mk-analysis /
   market-intelligence routes → sanitized 401 `AUTH_REQUIRED`; bogus bearer → `AUTH_INVALID`; deployed
-  page HTML contains neither the full master nor a hidden Samsung default nor Market Intelligence UI.
+  page HTML contains neither the full master nor a hidden Samsung default nor Market Intelligence UI, and
+  carries the new search UI (KR/US filters + load-more).
 
-## 11. Owner QA — pending
+## 11. Owner QA — verified
 
-Owner-authenticated browser QA is required (`OWNER_AUTHENTICATED_BROWSER_QA_REQUIRED: YES`) and has not
-been performed in this run. This document will record the Owner's checkpoint results and the final
-classification (`PASS_UNIVERSAL_SEARCH_AND_OHLCV_DATA_FOUNDATION_PRODUCTION_VERIFIED`) once QA completes.
+Owner-authenticated browser QA completed 2026-07-14; all required Production QA categories passed:
+
+- Search coverage and ranking: **PASS**
+- Filters, result count, pagination, and duplicate prevention: **PASS**
+- Newly added KR stock chart loading: **PASS**
+- Existing KR ETF regression: **PASS**
+- New KR ETF coverage expansion: **NOT ACHIEVED** — the seven verified anchors remain supported
+- Newly added US stock and ETF chart loading: **PASS**
+- Stale-search protection and pending-only selection: **PASS**
+- OHLCV data integrity and warm-instance cache behavior: **PASS**
+- Similarity V2 and MK Agent V2 regression: **PASS**
+- Samsung/AAPL and cross-symbol isolation: **PASS**
+- Mobile responsiveness: **PASS**
+- Minor UI/UX items: deferred as non-blocking follow-up work (owner-approved, separate cleanup phase)
+- No duplicate KIS token-issuance regression was reported
+- No rollback required
+
+### KR ETF coverage limitation (documented)
+
+HF3B did **not** expand KR ETF coverage. The official KRX KIND listed-corporation directory enumerates
+listed companies (stocks) only and does not include ETFs, and no other official KR ETF listing file was
+introduced this phase. The KR ETF category therefore remains exactly the **7 verified curated anchors**
+(069500 KODEX 200, 102110 TIGER 200, 114800 KODEX 인버스, 229200 KODEX 코스닥150, 360750 TIGER
+미국S&P500, 133690 TIGER 미국나스닥100, 379800 KODEX 미국S&P500), all real and chart-loadable. A future
+phase can add an official KR ETF listing source to the generator to expand this category.
+
+Implementation commit: `cbd24eb` (`Phase 3GG-T-HF3B-HF4C: expand search and deduplicate OHLCV requests`).
+Production deployment: `dpl_63VLvyyCELwDdz23pUGMsPkJHJgq`, READY, alias `https://mkstocklab.vercel.app`,
+deployed commit `cbd24eb`. No rollback. No push.
+
+**Final classification:
+`PASS_SEARCH_AND_OHLCV_DATA_FOUNDATION_PRODUCTION_VERIFIED_WITH_KR_ETF_COVERAGE_LIMITATION`.**

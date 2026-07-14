@@ -46,6 +46,19 @@
   `results: [], resultCount: 0` substring assertion widened to two tokens because the search module's
   empty-return is now multi-line after adding pagination fields); no protection weakened.
 - See `docs\planning\phase_3gg_t_hf3b_hf4c_fast_data_foundation_result_v0.1.md` for full detail.
+- KR breakdown (manifest-authoritative): KOSPI exchange total 839 = 832 stocks + 7 KR ETFs; KOSDAQ 1769
+  stocks; total KR stocks 2601, KR ETFs 7, KR instruments 2608. (`counts.krStock` already excludes ETFs;
+  `counts.byExchange.KOSPI` is the raw exchange total — consistent, not contradictory.)
+- Implementation commit `cbd24eb`; deployed `dpl_63VLvyyCELwDdz23pUGMsPkJHJgq` (READY, alias
+  `https://mkstocklab.vercel.app`).
+- **Owner QA verified 2026-07-14**: all required Production QA categories PASS (search coverage/ranking,
+  filters/count/pagination/dedup, new KR stock + new US stock/ETF chart loading, existing KR ETF
+  regression, stale-search + pending-only, warm-instance OHLCV cache integrity, Similarity V2 + MK Agent
+  V2 regression, Samsung/AAPL isolation, mobile). **KR ETF coverage expansion NOT ACHIEVED** — the KRX
+  corp-list has no ETFs, so the KR ETF category remains the 7 verified anchors (documented limitation).
+  Minor UI/UX items deferred to a separate owner-approved cleanup phase. No duplicate KIS issuance
+  regression; no rollback. Final classification
+  `PASS_SEARCH_AND_OHLCV_DATA_FOUNDATION_PRODUCTION_VERIFIED_WITH_KR_ETF_COVERAGE_LIMITATION`.
 
 ## Phase 3GG-T-HF5-HF6AB - 2026-07-14
 
