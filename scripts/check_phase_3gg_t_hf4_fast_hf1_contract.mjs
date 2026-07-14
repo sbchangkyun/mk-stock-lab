@@ -39,9 +39,21 @@ for (const f of REQUIRED_FILES) assert(existsSync(f), `Required file missing: ${
 const page = read(PAGE);
 
 // --- 2. DEFECT-1: mobile tooltip compact + semi-transparent (max-width:640px override) ---
-const mobileBlockMatch = page.match(/@media \(max-width: 640px\) \{([\s\S]*?)\n {4}\}\n\n {4}@media/);
-const mobileBlock = mobileBlockMatch ? mobileBlockMatch[1] : '';
-assert(mobileBlock.length > 0, 'the max-width:640px media block must be present.');
+// A later phase (HF5-HF6AB) legitimately added its own unrelated `@media (max-width: 640px)` block
+// (Similarity V2 table/card swap) earlier in the stylesheet, so more than one such media query can
+// now exist. Anchor on the block whose content actually contains `.chart-tooltip {`, not on position.
+const findMobileTooltipBlock = (src) => {
+  const starts = [...src.matchAll(/@media \(max-width: 640px\) \{/g)].map((m) => m.index);
+  for (const start of starts) {
+    const closeMatch = src.slice(start).match(/\n {4}\}\n/);
+    if (!closeMatch) continue;
+    const candidate = src.slice(start, start + closeMatch.index + closeMatch[0].length);
+    if (candidate.includes('.chart-tooltip {')) return candidate;
+  }
+  return '';
+};
+const mobileBlock = findMobileTooltipBlock(page);
+assert(mobileBlock.length > 0, 'the max-width:640px media block containing the mobile tooltip override must be present.');
 const mobileTooltipMatch = mobileBlock.match(/\.chart-tooltip \{([\s\S]*?)\}/);
 const mobileTooltipRule = mobileTooltipMatch ? mobileTooltipMatch[1] : '';
 assert(mobileTooltipRule.length > 0, 'mobile .chart-tooltip override must exist.');
@@ -158,6 +170,16 @@ const RECONCILED_SIBLINGS = [
   'scripts/smoke_phase_3gg_t_hf4_fast_hf2_mobile_tooltip_title_cleanup.mjs',
   'scripts/check_phase_3gg_t_hf4_fast_hf2_contract.mjs',
   'docs/planning/phase_3gg_t_hf4_fast_hf2_mobile_tooltip_title_cleanup_result_v0.1.md',
+  // Phase 3GG-T-HF5-HF6AB (Similarity/MK Agent experience redesign) — new files + additive
+  // swingHigh/swingLow wiring in the analysis engine/scoring modules.
+  'src/lib/chart-ai/similarity-explainability-v2.mjs',
+  'src/lib/chart-ai/mk-agent-experience-v2.mjs',
+  'src/lib/server/chart-ai/mkAiAnalysis/analysisEngine.mjs',
+  'src/lib/server/chart-ai/mkAiAnalysis/analysisScoring.mjs',
+  'scripts/smoke_phase_3gg_t_hf5_hf6ab_fast_analysis_experience_v2.mjs',
+  'scripts/check_phase_3gg_t_hf5_hf6ab_fast_contract.mjs',
+  'docs/planning/phase_3gg_t_hf5_hf6ab_fast_analysis_experience_v2_result_v0.1.md',
+  'scripts/check_phase_3gg_t_hf4_fast_contract.mjs',
 ];
 const ALLOWED = new Set([...REQUIRED_FILES, CHANGELOG, PACKAGE_JSON, ...RECONCILED_SIBLINGS]);
 const KNOWN_PREFIXES = ['.agents/', '.claude/', '.vscode/', 'docs/handoff/', 'skills-lock.json'];

@@ -28,8 +28,20 @@ let failed = 0;
 const check = (name, cond) => { if (cond) passed += 1; else failed += 1; console.log(`${cond ? 'PASS' : 'FAIL'} :: ${name}`); };
 
 // ---- DEFECT-1: mobile tooltip width ----
-const mobileBlockMatch = page.match(/@media \(max-width: 640px\) \{([\s\S]*?)\n {4}\}\n\n {4}@media/);
-const mobileBlock = mobileBlockMatch ? mobileBlockMatch[1] : page;
+// A later phase (HF5-HF6AB) legitimately added its own unrelated `@media (max-width: 640px)` block
+// (Similarity V2 table/card swap) earlier in the stylesheet, so more than one such media query can
+// now exist. Anchor on the block whose content actually contains `.chart-tooltip {`, not on position.
+const findMobileTooltipBlock = (src) => {
+  const starts = [...src.matchAll(/@media \(max-width: 640px\) \{/g)].map((m) => m.index);
+  for (const start of starts) {
+    const closeMatch = src.slice(start).match(/\n {4}\}\n/);
+    if (!closeMatch) continue;
+    const candidate = src.slice(start, start + closeMatch.index + closeMatch[0].length);
+    if (candidate.includes('.chart-tooltip {')) return candidate;
+  }
+  return '';
+};
+const mobileBlock = findMobileTooltipBlock(page) || page;
 const mobileTooltipMatch = mobileBlock.match(/\.chart-tooltip \{([\s\S]*?)\}/);
 const mobileTooltipRule = mobileTooltipMatch ? mobileTooltipMatch[1] : '';
 check('mobile .chart-tooltip override exists', mobileTooltipRule.length > 0);

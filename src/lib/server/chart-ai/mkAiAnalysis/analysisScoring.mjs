@@ -172,4 +172,28 @@ export const dataCompletenessConfidence = ({ barCount, hasSma60, hasSma120, hasV
   return max > 0 ? round2(clamp((points / max) * 100, 0, 100)) : 0;
 };
 
+/** Highest `high` over the last `window` candles ending at `endIndex` (inclusive). Null-safe. */
+export const swingHigh = (candles, window, endIndex = (Array.isArray(candles) ? candles.length - 1 : -1)) => {
+  if (!Array.isArray(candles) || window <= 0 || endIndex < 0 || endIndex >= candles.length) return null;
+  const start = Math.max(0, endIndex - window + 1);
+  let max = null;
+  for (let i = start; i <= endIndex; i += 1) {
+    const h = candles[i] && candles[i].high;
+    if (typeof h === 'number' && Number.isFinite(h)) max = max === null ? h : Math.max(max, h);
+  }
+  return max;
+};
+
+/** Lowest `low` over the last `window` candles ending at `endIndex` (inclusive). Null-safe. */
+export const swingLow = (candles, window, endIndex = (Array.isArray(candles) ? candles.length - 1 : -1)) => {
+  if (!Array.isArray(candles) || window <= 0 || endIndex < 0 || endIndex >= candles.length) return null;
+  const start = Math.max(0, endIndex - window + 1);
+  let min = null;
+  for (let i = start; i <= endIndex; i += 1) {
+    const l = candles[i] && candles[i].low;
+    if (typeof l === 'number' && Number.isFinite(l)) min = min === null ? l : Math.min(min, l);
+  }
+  return min;
+};
+
 export { clamp, round2 };

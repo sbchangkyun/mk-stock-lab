@@ -169,7 +169,10 @@ const tolerated = (f) =>
   /^supabase\/migrations\//.test(f) ||
   /^scripts\/[a-z0-9_]+_testsrc\.ts$/.test(f) ||
   /^src\/lib\/chart-ai\//.test(f) ||
-  /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f);
+  /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f) ||
+  // Phase 3GG-T-HF5-HF6AB: additive swingHigh/swingLow wiring in the analysis engine/scoring modules.
+  f === 'src/lib/server/chart-ai/mkAiAnalysis/analysisEngine.mjs' ||
+  f === 'src/lib/server/chart-ai/mkAiAnalysis/analysisScoring.mjs';
 let porcelain = [];
 try { porcelain = runGit(['status', '--porcelain']).split('\n').map((l) => l.slice(3).trim()).filter(Boolean); } catch { porcelain = []; }
 const unexpected = porcelain.filter((f) => !tolerated(f));

@@ -32,6 +32,8 @@ import {
   similarityScore,
   riskScore,
   dataCompletenessConfidence,
+  swingHigh,
+  swingLow,
   round2,
 } from './analysisScoring.mjs';
 
@@ -115,6 +117,8 @@ export const runMkAiAnalysis = (input = {}) => {
   const accel = acceleration(closes, 5, 20);
   const upRatio = upDayRatio(closes, 20);
   const aboveRatio = aboveMaRatio(closes, 20);
+  const recentSwingHigh20 = swingHigh(candles, 20);
+  const recentSwingLow20 = swingLow(candles, 20);
 
   const trendScoreValue = trendScore({ lastClose, sma20, sma60, slope20 });
   const momentumScoreValue = momentumScore({ accel, upRatio, aboveRatio });
@@ -177,6 +181,8 @@ export const runMkAiAnalysis = (input = {}) => {
           slope20Pct: pct(slope20),
           priceVsSma20Pct: sma20 ? pct((lastClose - sma20) / sma20) : null,
           priceVsSma60Pct: sma60 ? pct((lastClose - sma60) / sma60) : null,
+          recentSwingHigh20: round2(recentSwingHigh20),
+          recentSwingLow20: round2(recentSwingLow20),
         },
       },
       momentum: {

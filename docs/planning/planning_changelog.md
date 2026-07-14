@@ -1,5 +1,57 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF5-HF6AB - 2026-07-14
+
+### Similarity and MK Agent Experience Redesign
+
+- Builds on the deployed HF4-FAST-HF2 chart foundation. Redesigns the Similarity ("유사 패턴 분석") and
+  MK AI ("MK AI 해석") Production panels for readability and information architecture, without touching
+  any provider/auth/token/route code. Target classification
+  `PASS_ANALYSIS_EXPERIENCE_V2_PRODUCTION_VERIFIED` (assignable only after Owner QA).
+- **HF5 — Similarity Explainability V2**: replaced the disorganized Top-5 text columns with a proper
+  normalized overlay (current + up to 5 matches), a toggleable legend (`aria-pressed`, keyboard-operable,
+  each entry labeled with rank + match start date), a D+ axis, and a desktop-hover/mobile-tap tooltip that
+  only shows currently-visible series. Added a desktop comparison table and mobile card view (순위/유사도/
+  과거 구간/5일 후/20일 후/60일 후/최대 낙폭/최대 상승; unavailable values render as "—", never a fabricated
+  0). Added a deterministic natural-language aggregate interpretation (positive-outcome count, avg/median
+  5d/20d returns, best/worst 20d, avg/worst drawdown, and a fixed-threshold dispersion classification —
+  "비교적 일관됨" ≥0.8 agreement / "다소 엇갈림" ≥0.6 / "결과 편차가 큼" below). Technical detail moved
+  behind an optional "분석 기준 보기" disclosure; the main reading path no longer repeats disclaimer/engine
+  copy. New pure module `src/lib/chart-ai/similarity-explainability-v2.mjs`.
+- **HF6A — MK Agent Experience V2**: reordered the panel to (1) one-sentence conclusion, (2) current flow
+  status, (3) six structured score cards (추세 강도/모멘텀/가격 안정성/패턴 유사도/위험 수준/데이터 품질)
+  each with a rounded score, status label, short meaning, and direction-aware styling (trend/momentum/
+  stability: higher = favorable; risk: higher = unfavorable; similarity: higher = more similar, not more
+  likely to rise; data quality: higher = more complete, not more confident), (4) strategy checkpoints, (5)
+  detailed sections behind a real ARIA accordion (`aria-expanded`/`aria-controls`, only the first section
+  open by default), (6) a data-basis explanation stating explicitly that a 100-point data-quality score is
+  not a prediction-confidence score, (7) exactly one disclaimer. Fixed awkward Korean particle-selection
+  bugs (batchim-aware `pickParticle`/`topicParticle`/`subjectParticle`/`objectParticle`, e.g. no more
+  literal "삼성전자은(는)"). No direct buy/sell commands or guaranteed-return language anywhere in the
+  module. New pure module `src/lib/chart-ai/mk-agent-experience-v2.mjs`.
+- **HF6B — Strategy Checkpoints**: new "전략 체크포인트" section with four groups — A. 상승 전환 확인 조건,
+  B. 하락 위험 확대 조건, C. 현재 관찰 우선순위, D. 핵심 가격대 — built only from real derivable values, with
+  an honest fallback bullet when no signal can be derived (never a fabricated condition). Explicitly out of
+  scope: RSI/MACD/Bollinger Bands/ATR/formal support-resistance (reserved for a future HF6C); the four
+  group-D price levels are labeled by their real calculation basis ("최근 저점 (20거래일)"/"최근 고점
+  (20거래일)"/"20일 이동평균"/"60일 이동평균"), never called "지지선"/"저항선".
+- Additive `recentSwingHigh20`/`recentSwingLow20` metrics wired into
+  `src/lib/server/chart-ai/mkAiAnalysis/{analysisEngine,analysisScoring}.mjs` to back the group-D price
+  levels (no change to existing scoring/analysis behavior).
+- New `scripts\smoke_phase_3gg_t_hf5_hf6ab_fast_analysis_experience_v2.mjs` (106/106, fully offline — no
+  DOM/network/login/KIS/Supabase/Production request) and `scripts\check_phase_3gg_t_hf5_hf6ab_fast_contract.mjs`.
+  Narrow, documented reconciliation of five sibling checkers/smokes (T-HF1, T-HF4-FAST, T-HF4-FAST-HF1,
+  T-HF4-FAST-HF2, T-FAST) whose working-tree-purity allowlists did not yet know about the two new pure
+  modules or the additive analysis-engine/scoring wiring; and a targeted fix in the HF4-FAST-HF1/HF2
+  smoke+checker files where their mobile-tooltip block-locator regex (which anchored on the *first*
+  `@media (max-width: 640px)` block in the stylesheet) started matching this phase's new, unrelated
+  `@media (max-width: 640px) { .chart-similarity-table-wrap { display: none; } }` block instead of the real
+  mobile-tooltip block placed later in the file — fixed by anchoring on the block whose content contains
+  `.chart-tooltip {` rather than on position; no assertion threshold was weakened.
+- See `docs\planning\phase_3gg_t_hf5_hf6ab_fast_analysis_experience_v2_result_v0.1.md` for full detail.
+- HF3A selected-symbol integrity guard untouched; Market Intelligence stays absent from the Chart AI page
+  (backend route/engine preserved); no account/order/trading scope added; no dependency/lockfile change.
+
 ## Phase 3GG-T-HF4-FAST-HF2 - 2026-07-14
 
 ### Mobile Tooltip Refinement + Duplicate Title Cleanup
