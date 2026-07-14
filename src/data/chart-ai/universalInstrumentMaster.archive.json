@@ -1,0 +1,5 @@
+{
+  "note": "Phase 3GG-T-HF3B-HF2 inactive instrument archive. Compact record of instruments removed from the active KIS-supported master (delisted / source-absent / type-changed). Retention: INDEFINITE. Excluded from ordinary search; may resolve legacy URLs/snapshots with an inactive notice. Populated by scripts/automation/refresh_kis_instrument_master.mjs.",
+  "schemaVersion": 1,
+  "instruments": []
+}

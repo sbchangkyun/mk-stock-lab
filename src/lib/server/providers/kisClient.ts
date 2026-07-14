@@ -327,9 +327,11 @@ const getKisTokenRuntime = () => {
 
 const getKisExecutorDeps = (): KisExecutorDeps => getKisTokenRuntime().executorDeps;
 
-const normalizeKrSymbol = (symbol: string) => symbol.trim();
+// Phase 3GG-T-HF3B-HF2: KR codes may be alphanumeric six-character KRX short codes (e.g. 0000D0),
+// normalized to ASCII uppercase. The KIS domestic OHLC/quote FID_INPUT_ISCD accepts the 6-char code.
+const normalizeKrSymbol = (symbol: string) => symbol.trim().toUpperCase();
 
-const isValidKrQuoteSymbol = (symbol: string) => /^\d{6}$/.test(symbol);
+const isValidKrQuoteSymbol = (symbol: string) => /^[0-9A-Z]{6}$/.test(symbol);
 
 export const validateKisDomesticQuoteInput = (input: SecurityIdentity): ProviderErrorEnvelope | null => {
   if (input.market !== 'KR') {
@@ -340,7 +342,7 @@ export const validateKisDomesticQuoteInput = (input: SecurityIdentity): Provider
   }
 
   if (!isValidKrQuoteSymbol(normalizeKrSymbol(input.symbol))) {
-    return createProviderError('VALIDATION_FAILED', 'KR quote symbol must be exactly six digits.', {
+    return createProviderError('VALIDATION_FAILED', 'KR quote symbol must be a six-character KRX code.', {
       provider,
       staleState: 'unavailable',
     });

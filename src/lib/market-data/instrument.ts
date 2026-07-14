@@ -51,10 +51,13 @@ export type NormalizedInstrument = {
 export const INSTRUMENT_COUNTRIES: readonly InstrumentCountry[] = ['KR', 'US'];
 export const INSTRUMENT_ASSET_TYPES: readonly InstrumentAssetType[] = ['stock', 'etf'];
 
-const KR_SYMBOL_PATTERN = /^\d{6}$/;
+// Phase 3GG-T-HF3B-HF2: KR codes are six-character KRX short codes that are NO LONGER numeric-only —
+// KRX has exhausted the numeric space and issues alphanumeric codes (e.g. 0000D0 for newer ETFs). The
+// contract is widened to ^[0-9A-Z]{6}$ with ASCII-uppercase normalization; leading zeros are preserved.
+const KR_SYMBOL_PATTERN = /^[0-9A-Z]{6}$/;
 const US_SYMBOL_PATTERN = /^[A-Z][A-Z0-9.\-]{0,9}$/;
 
-export const isKrSymbol = (value: string): boolean => KR_SYMBOL_PATTERN.test(value.trim());
+export const isKrSymbol = (value: string): boolean => KR_SYMBOL_PATTERN.test(value.trim().toUpperCase());
 export const isUsSymbol = (value: string): boolean => US_SYMBOL_PATTERN.test(value.trim().toUpperCase());
 
 /** Normalizes free text for deterministic, case/width-insensitive keyword matching. */
@@ -76,7 +79,7 @@ export const assertValidInstrument = (instrument: NormalizedInstrument): void =>
   if (!isInstrumentAssetType(assetType)) throw new Error(`Instrument ${symbol} invalid assetType.`);
 
   if (country === 'KR') {
-    if (!isKrSymbol(symbol)) throw new Error(`KR instrument ${symbol} must be a six-digit code.`);
+    if (!isKrSymbol(symbol)) throw new Error(`KR instrument ${symbol} must be a six-character KRX code.`);
     if (currency !== 'KRW') throw new Error(`KR instrument ${symbol} must be KRW.`);
     if (provider !== 'kis-domestic') throw new Error(`KR instrument ${symbol} must use kis-domestic.`);
     if (exchangeCode !== null) throw new Error(`KR instrument ${symbol} must not carry a US exchange code.`);

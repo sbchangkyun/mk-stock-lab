@@ -67,13 +67,16 @@ check('27.1 US stocks present', usStocks.length > 0);
 check('27.1 US ETFs present', usEtfs.length > 0);
 
 check('27.1 leading-zero KR codes preserved as 6-digit strings', instruments.some((i) => i.country === 'KR' && /^0\d{5}$/.test(i.symbol)));
-check('27.1 all KR symbols are six-digit numeric', instruments.filter((i) => i.country === 'KR').every((i) => /^\d{6}$/.test(i.symbol)));
+// Phase 3GG-T-HF3B-HF2: KR codes widened to six-character alphanumeric (^[0-9A-Z]{6}$).
+check('27.1 all KR symbols are six-character alphanumeric', instruments.filter((i) => i.country === 'KR').every((i) => /^[0-9A-Z]{6}$/.test(i.symbol)));
 check('27.1 all US symbols uppercase pure-alpha', instruments.filter((i) => i.country === 'US').every((i) => /^[A-Z]{1,5}$/.test(i.symbol)));
 check('27.1 all US carry supported EXCD (NAS/NYS/AMS)', instruments.filter((i) => i.country === 'US').every((i) => ['NAS', 'NYS', 'AMS'].includes(i.exchangeCode)));
 check('27.1 all KR carry null EXCD', instruments.filter((i) => i.country === 'KR').every((i) => i.exchangeCode === null));
-check('27.1 no unsupported exchange leaked into master', instruments.every((i) => (i.country === 'KR' ? ['KOSPI', 'KOSDAQ'].includes(i.exchange) : ['NASDAQ', 'NYSE', 'NYSE American', 'NYSE Arca'].includes(i.exchange))));
-check('27.1 manifest reports rejected unsupported exchanges (proof of rejection)', (manifest.rejections?.us?.['unsupported-exchange'] ?? 0) > 0);
-check('27.1 manifest reports rejected invalid KR symbol codes', (manifest.rejections?.kr?.['invalid-symbol-shape'] ?? 0) > 0);
+// Phase 3GG-T-HF3B-HF2: US exchanges are now the KIS overseas set NASDAQ/NYSE/AMEX (NAS/NYS/AMS).
+check('27.1 no unsupported exchange leaked into master', instruments.every((i) => (i.country === 'KR' ? ['KOSPI', 'KOSDAQ'].includes(i.exchange) : ['NASDAQ', 'NYSE', 'AMEX'].includes(i.exchange))));
+// Phase 3GG-T-HF3B-HF2: manifest rejections is a flat reason->count object (KIS-only generator).
+check('27.1 manifest reports rejected unsupported security groups (proof of rejection)', (manifest.rejections?.['unsupported-security-group'] ?? 0) > 0);
+check('27.1 manifest reports rejected invalid symbol codes', (manifest.rejections?.['invalid-symbol-shape'] ?? 0) > 0);
 check('27.1 master version is a stable non-empty string', typeof getUniversalMasterVersion() === 'string' && getUniversalMasterVersion().length > 0);
 
 // no hidden Samsung-first ordering: an exact non-Samsung code returns that code first, and the master

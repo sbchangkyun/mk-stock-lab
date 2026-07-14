@@ -114,7 +114,8 @@ export function evaluateCredentialPresence({ hasAppKey, hasAppSecret, hasBaseUrl
   return { allowed: missingEnvNames.length === 0, missingEnvNames };
 }
 
-const isValidKrSymbol = (symbol) => typeof symbol === 'string' && /^\d{6}$/.test(symbol);
+// Phase 3GG-T-HF3B-HF2: KR codes may be alphanumeric six-character KRX short codes (ASCII-uppercased).
+const isValidKrSymbol = (symbol) => typeof symbol === 'string' && /^[0-9A-Z]{6}$/.test(symbol.trim().toUpperCase());
 
 export function createRateLimiter(policy = DEFAULT_RATE_LIMIT_POLICY) {
   let timestampsMs = [];

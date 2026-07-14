@@ -17,7 +17,8 @@ import { getKisDomesticQuoteSnapshot } from '../../../lib/server/providers/kisCl
 export const prerender = false;
 
 const DEFAULT_SYMBOL = '005930';
-const SYMBOL_PATTERN = /^\d{6}$/;
+// Phase 3GG-T-HF3B-HF2: KR codes may be alphanumeric six-character KRX short codes.
+const SYMBOL_PATTERN = /^[0-9A-Z]{6}$/;
 const rateLimiter = createRateLimiter();
 const cache = createQuoteCache();
 
@@ -152,7 +153,7 @@ export const GET: APIRoute = async ({ url, request }) => {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse('US_SUMMARY_UNSUPPORTED') });
   }
 
-  const symbolParam = (url.searchParams.get('symbol') ?? '').trim();
+  const symbolParam = (url.searchParams.get('symbol') ?? '').trim().toUpperCase();
   if (symbolParam.length > 0 && !SYMBOL_PATTERN.test(symbolParam)) {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse(SANITIZED_ERROR_CODES.INVALID_SYMBOL) });
   }

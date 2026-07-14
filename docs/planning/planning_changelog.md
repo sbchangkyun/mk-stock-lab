@@ -1,5 +1,46 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2 - 2026-07-14
+
+### KIS Instrument-Master Automation
+
+- Implements the approved **KIS-only** instrument-master expansion + automated refresh. Target after merge
+  + QA: `PASS_KIS_INSTRUMENT_MASTER_AUTOMATION_PRODUCTION_VERIFIED`; this run stops at
+  `IMPLEMENTED_PUSHED_PR_OPEN_OWNER_REVIEW_PENDING` (branch pushed, PR to `main` opened; **no merge, no
+  deploy, no DB/env/Supabase/secret change**).
+- **KIS-only sources** (no KRX/data.go.kr/Nasdaq-Trader): KR KOSPI+KOSDAQ domestic masters + US
+  NASDAQ/NYSE/AMEX overseas masters from `new.real.download.dws.co.kr/common/master/*`. Classification is
+  KIS field-based only (KR group `ST`/`EF`, `EN`/`RT` excluded; US type `2`/`3`; EXCD `NAS`/`NYS`/`AMS` →
+  NASDAQ/NYSE/AMEX) — never product-name/brand/ticker guessing.
+- **KR ETF coverage** replaces the 7-anchor limitation with all valid KIS `EF` records; masterVersion
+  `hf3b-hf2-kis-16018`: KR stock 2,718 / KR ETF 1,151 (868 numeric + **283 alphanumeric**) / US stock 6,210
+  / US ETF 5,939 = **16,018** (KIS-supported subset — not exchange-wide totals; not hardcoded).
+- **KR alphanumeric six-character symbol support** (`^[0-9A-Z]{6}$`, ASCII-uppercased, leading zeros
+  preserved) across `instrument.ts`, `kisClient.ts` (domestic OHLC + quote validation), the local-only KIS
+  paths, and the generator/source adapter. Canonical identity `country|symbol|exchange|instrumentType`
+  unchanged. Alphanumeric KR ETFs (e.g. `0000D0`) chart-load and pass search/similarity/MK identity.
+- **Deterministic refresh pipeline** `scripts/automation/refresh_kis_instrument_master.mjs` (modes
+  validate-only/report-only/write-candidate/apply/full-reconcile/scratch-dir/source-dir/output-report):
+  fetch → integrity → normalize → candidate → diff → lifecycle → Safety Gates → artifacts → transactional
+  last-known-good apply. Two-consecutive-valid-snapshot missing policy (pending → archive), indefinite
+  inactive archive, rename-alias, no auto-linking of code changes/mergers. Per-axis Safety Gates (total
+  drop 5% / growth 25% / KR ETF drop 1%-or-10 / KR stock 20 / KR ETF 10 / US 100 removals / 20 type
+  changes / anchors / duplicates / shape). New shared `scripts/lib/kisInstrumentMasterSource.mjs` +
+  dependency-free ZIP inflate.
+- **GitHub Actions** `.github/workflows/kis-instrument-master-refresh.yml`: 3 schedules (KR `17 13 * * 1-5`,
+  US `23 2 * * 2-6`, weekly `41 13 * * 6`) + `workflow_dispatch` (manual default report-only); minimum
+  permissions (contents/PR write, actions read); concurrency `kis-instrument-master-refresh`
+  cancel-in-progress false; persistent branch `automation/kis-instrument-master-refresh`; commits only the
+  4 generated data artifacts; opens/updates **one** PR to the default branch; **never** pushes the default
+  branch, force-pushes, merges, auto-merges, or deploys; safe failure artifacts; token never printed.
+  Scheduled runs require the workflow on the default branch (fires only after merge to `main`).
+- New `scripts/smoke_phase_3gg_t_hf3b_hf2_kis_automation.mjs` (53/53, offline) +
+  `scripts/check_phase_3gg_t_hf3b_hf2_contract.mjs`. Narrow reconciliation of the HF3B-HF4C + OP-FAST
+  checkers/smokes for KIS-only US exchange labels + widened KR symbol (security/auth/identity/no-fabrication
+  protections preserved). No dependency/lockfile change; no raw KIS source files committed.
+- See `docs\planning\phase_3gg_t_hf3b_hf2_kis_instrument_master_automation_result_v0.1.md` and
+  `docs\planning\kis_instrument_master_refresh_runbook_v0.1.md` for full detail.
+
 ## Phase 3GG-T-HF3B-HF1 - 2026-07-14
 
 ### KR ETF Coverage & Master-Refresh Discovery (discovery-only)
