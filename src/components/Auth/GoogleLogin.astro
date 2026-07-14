@@ -15,10 +15,18 @@
     const supabase = getBrowserSupabaseClient();
     if (!supabase) return;
 
+    // Phase 3GG-T-HF3B-HF2-HF2A2: preserve the ACTIVE origin + path + query so a Preview /chart-ai
+    // login returns to the SAME Preview /chart-ai (not the Supabase Site URL / Production). Origin-only
+    // redirect dropped the path and let the OAuth callback fall back to Production, where an older
+    // instrument master (without newer KIS-only symbols) made KIS-supported codes appear to "not exist".
+    // Uses only origin+pathname+search (never the URL hash, which is where OAuth tokens live). No
+    // hardcoded Production or Preview host.
+    const redirectTo = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo,
       },
     });
   });

@@ -146,7 +146,10 @@ assert(page.includes('id="chartAiResultCount"'), 'search UI must show a result c
 assert(/seq !== searchSeq/.test(page) && page.includes('AbortController'), 'search UI must protect against stale responses.');
 assert(page.includes('buildSearchParams') && /offset:\s*String/.test(page), 'search UI must page via offset.');
 // pending-only selection: updating the selection must NOT auto-load a chart from a search result.
-assert(/updateSelection\(visibleRecords\[0\]\)/.test(page), 'run button selects the first result (pending), not auto-loads.');
+// Phase 3GG-T-HF3B-HF2-HF2A2: the explicit run button now selects the first result from the fresh page
+// returned by runSearch (updateSelection(items[0])) instead of the async-mutated global; still
+// pending-only (updateSelection, not a chart load).
+assert(/updateSelection\(visibleRecords\[0\]\)/.test(page) || /if \(ok && items\[0\]\) updateSelection\(items\[0\]\)/.test(page), 'run button selects the first result (pending), not auto-loads.');
 assert(!/updateSelection\([^)]*\)\.then|loadRealChart\(\);\s*\/\/ from search/.test(page), 'search selection must remain pending-only (no auto chart load).');
 
 // --- 9. HF4C: one canonical key builder + forbidden field rejection ---

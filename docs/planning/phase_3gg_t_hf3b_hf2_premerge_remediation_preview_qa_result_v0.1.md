@@ -54,14 +54,39 @@ checkpoint. **No merge, no main push, no Production deploy, no DB/env/Supabase/s
 
 ## 8. New Preview deployment
 
-- Detected read-only after push (Git-integration Preview for the remediation SHA). ID / URL / alias /
-  READY / commit / target recorded in the Owner checkpoint. No manual deploy invoked. **[FACT]**
+- **ID:** `dpl_FFeiYKKfSTQbyFiidGVRmmfx1ruE`. **[FACT]**
+- **URL:** `https://mkstocklab-bzyuv5hna-sbchangkyun-2946s-projects.vercel.app`.
+- **Branch alias:** `https://mkstocklab-git-rebuild-phase-da906a-sbchangkyun-2946s-projects.vercel.app`.
+- **Target:** preview · **Status:** ● Ready · **Created:** 2026-07-14 22:38:43 KST (seconds after the
+  `b1dafbe` push, newest Preview on the `rebuild/phase-1-ia-shell` branch). **[FACT]**
+- The push auto-created this Preview via Vercel Git integration; **no manual deploy was invoked**. The
+  remediation changed only a non-deployed checker + docs, so the Preview runtime equals the merged runtime.
+- **`vercel inspect` text output does not print the git commit SHA**; identity is established by (a) newest
+  Preview, (b) creation timestamp == push time, (c) the `rebuild/phase-1-ia-shell` branch alias. **[FACT/INFER]**
+- **Deployment protection: ENABLED (Vercel SSO).** **[FACT]**
 
 ## 9. Safe unauthenticated Preview regression
 
-- `/chart-ai` reachable (or deployment-protection response recorded); protected routes fail closed 401;
-  no master embedded; no Market Intelligence UI; no hidden Samsung default; KR/US + stock/ETF controls
-  present; no unauthenticated provider work. Details in the checkpoint. **[TEST]**
+- **Gated by Vercel Deployment Protection (SSO):** `GET /chart-ai` → **302 → `https://vercel.com/sso-api?...`**
+  (`Set-Cookie: _vercel_sso...`). Every request is intercepted by Vercel SSO *before* reaching the app, so
+  the unauthenticated app-level checks (route 401s, master-not-embedded, no-MI-UI, filters present) **cannot
+  be executed from this environment without bypassing deployment protection**, which is prohibited. **Recorded,
+  not bypassed** (per the phase's protection rule). **[FACT]**
+- The Owner's authenticated Vercel session passes the SSO gate; the app-level fail-closed behavior (protected
+  routes 401 before login) is then verified as part of Owner QA §14. Alternatively a Vercel
+  Protection-Bypass-for-Automation token (Owner action; not created here) would allow automated checks. **[OWNER]**
+- Equivalent app-level safety on this exact KIS-only codebase family was previously verified on the public
+  Production surface in prior phases (routes fail closed 401; master server-only; no MI UI); the Preview is a
+  build of the same runtime plus the KIS-only master + symbol widening. **[INFER]**
+
+## 9a. Follow-up hotfix (HF2A2)
+
+The Preview `0000D0` search "zero results" reported at QA was root-caused (Phase 3GG-T-HF3B-HF2-HF2A2) to the
+Google OAuth `redirectTo: window.location.origin` bouncing Preview logins to Production (whose older
+`hf3b-12826` master lacks the alphanumeric ETF), compounded by the search route's public cache and the
+client rendering a 401 as "no results". Fixed there (redirect origin+path+query preservation;
+`private, no-store` + `Vary: Authorization` + `X-MK-Instrument-Master-Version`; auth-error/debounce client
+hardening). See `phase_3gg_t_hf3b_hf2_hf2a2_preview_alphanumeric_search_hotfix_result_v0.1.md`.
 
 ## 10. Owner-authenticated Preview QA — pending
 

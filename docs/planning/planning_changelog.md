@@ -1,5 +1,29 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-HF2A2 - 2026-07-14
+
+### Preview alphanumeric-search Hotfix (0000D0)
+
+- **Root cause (CASE A):** the Google login `redirectTo: window.location.origin` (origin-only, dropping
+  `/chart-ai`) let the Supabase OAuth callback fall back to the Site URL = **Production**, whose deployed
+  master is the OLD `hf3b-12826` (no alphanumeric `0000D0`). Deterministic evidence: the Production search
+  route returns `masterVersion hf3b-12826` and no `0000D0`, while the committed Preview master
+  `hf3b-hf2-kis-16018` resolves `0000D0`/`0000d0` correctly. The master + pure search were **not** the
+  cause and were **not modified**.
+- **Fixes:** (1) `GoogleLogin.astro` redirect now preserves origin + pathname + search (never the hash), so a
+  Preview `/chart-ai` login returns to the same Preview `/chart-ai`; no hardcoded host. (2) search route
+  `Cache-Control: public, max-age=300` → **`private, no-store` + `Vary: Authorization`** (an auth-gated
+  response must never be shared across auth contexts), plus a safe **`X-MK-Instrument-Master-Version`**
+  header. (3) `runSearch()` hardened: 401/403/AUTH_REQUIRED/AUTH_INVALID now show a **login-required**
+  message (not "검색 결과가 없습니다"), non-ok → error state; explicit search cancels the pending debounce +
+  issues one request + selects from the fresh returned page (no race); six-char KR-like codes canonicalized
+  to uppercase (leading zeros preserved).
+- New `scripts/smoke_phase_3gg_t_hf3b_hf2_hf2a2_preview_search_hotfix.mjs` (19/19) +
+  `scripts/check_phase_3gg_t_hf3b_hf2_hf2a2_preview_search_contract.mjs`. Master/generator/workflow/token/
+  Similarity/MK/migrations unchanged; no dependency/lockfile change. `astro build` PASS. Feature branch
+  pushed; new Preview created by Git integration for Owner-authenticated QA. No merge, no Production deploy.
+  See `docs\planning\phase_3gg_t_hf3b_hf2_hf2a2_preview_alphanumeric_search_hotfix_result_v0.1.md`.
+
 ## Phase 3GG-T-HF3B-HF2-HF1 - 2026-07-14
 
 ### Pre-merge remediation + Preview QA setup (no merge/deploy)

@@ -35,8 +35,15 @@ const jsonResponse = (body: unknown, status = 200) =>
     status,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      // Search is static reference data; a short shared cache is safe and reduces load.
-      'Cache-Control': 'public, max-age=300',
+      // Phase 3GG-T-HF3B-HF2-HF2A2: this route is authenticated (Bearer) on deployed environments, so
+      // its responses (401/403 AND 200) MUST NOT be shared in a public/CDN cache across auth contexts —
+      // a cached 401 or another user's 200 would surface as wrong/zero results. Keep it private + uncached
+      // and vary on Authorization. The static master stays in server memory; only the HTTP response is
+      // kept per-caller.
+      'Cache-Control': 'private, no-store',
+      Vary: 'Authorization',
+      // Non-secret deployed-master identity, so a caller can confirm which master version answered.
+      'X-MK-Instrument-Master-Version': getUniversalMasterVersion() ?? 'unknown',
     },
   });
 

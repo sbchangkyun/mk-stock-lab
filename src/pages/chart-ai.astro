@@ -2528,6 +2528,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try { resetQuotePreview(); } catch {}
       };
 
+      // Phase 3GG-T-HF3B-HF2-HF2A2: the search outcome drives the empty-state message so an auth/session
+      // or server error is NEVER disguised as "검색 결과가 없습니다" (no matching instrument).
+      let lastSearchState: 'ok' | 'auth' | 'error' = 'ok';
+      const SEARCH_STATE_MESSAGES = {
+        ok: '검색 결과가 없습니다. 종목명이나 종목코드를 다시 확인해 주세요.',
+        auth: '로그인이 필요합니다. 로그인 후 다시 검색해 주세요.',
+        error: '검색 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+      } as const;
+
       // Phase 3GG-T-HF3B: renders the current page. `appendFrom > 0` appends the just-loaded page
       // (load-more) without clearing/scroll-jumping; `appendFrom === 0` is a fresh render. The count
       // headline shows the TOTAL matches, and the load-more control appears only when more remain.
@@ -2536,6 +2545,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const totalToShow = searchTotal || visibleRecords.length;
         resultCount.textContent = `${totalToShow.toLocaleString('ko-KR')}개`;
         emptyState.hidden = visibleRecords.length > 0;
+        if (visibleRecords.length === 0) emptyState.textContent = SEARCH_STATE_MESSAGES[lastSearchState] ?? SEARCH_STATE_MESSAGES.ok;
         dropdown.hidden = !open;
         searchPanel.classList.toggle('open', open);
         input.setAttribute('aria-expanded', String(open));
@@ -2571,9 +2581,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // protection (monotonic seq + AbortController) and bounded offset paging over the large master.
       let searchSeq = 0;
       let searchAbort: AbortController | null = null;
+      // Phase 3GG-T-HF3B-HF2-HF2A2: canonicalize a six-character KR-like code (e.g. 0000d0 -> 0000D0) for
+      // the request; ordinary Korean/English name queries are left unchanged. Leading zeros preserved.
+      const normalizeQueryText = (raw: string): string => {
+        const t = String(raw ?? '').normalize('NFKC').trim();
+        return /^[0-9A-Za-z]{6}$/.test(t) ? t.toUpperCase() : t;
+      };
       const buildSearchParams = (offset: number) => {
         const params = new URLSearchParams({
-          q: input.value.trim(),
+          q: normalizeQueryText(input.value),
           limit: String(SEARCH_PAGE_LIMIT),
           offset: String(Math.max(0, offset)),
         });
@@ -2585,13 +2601,18 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const list = Array.isArray(data?.items) ? data.items : Array.isArray(data?.results) ? data.results : [];
         return list.map(mapApiResult);
       };
-      const runSearch = async (open = true) => {
+      // Returns the fresh result page for THIS request so the explicit action never relies on the
+      // asynchronously-mutated global `visibleRecords`. An auth/session or server error is surfaced as a
+      // distinct state (never disguised as an empty match set).
+      const runSearch = async (open = true): Promise<{ ok: boolean; items: any[] }> => {
         if (searchHint) searchHint.hidden = true;
-        const query = input.value.trim();
+        const query = normalizeQueryText(input.value);
         if (!query) {
           closeDropdown();
-          return;
+          return { ok: false, items: [] };
         }
+        // Explicit or filter-driven search must not be aborted by a still-pending debounce timer.
+        window.clearTimeout(searchDebounceId);
         const seq = ++searchSeq;
         if (searchAbort) searchAbort.abort();
         searchAbort = new AbortController();
@@ -2604,22 +2625,47 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             credentials: 'omit',
             headers: { ...authHeaders },
           });
-          const data = await response.json();
-          // Stale-response guard: a newer query bumped searchSeq while this was in flight -> drop it so
-          // an older result can never overwrite a newer query.
-          if (seq !== searchSeq) return;
-          visibleRecords = readItems(data);
-          searchTotal = Number.isFinite(data?.total) ? Number(data.total) : visibleRecords.length;
+          const data = await response.json().catch(() => null);
+          // Stale-response guard: a newer query bumped searchSeq while this was in flight -> drop it.
+          if (seq !== searchSeq) return { ok: false, items: [] };
+
+          const code = data?.code ?? data?.sanitizedErrorCode;
+          const isAuthError = response.status === 401 || response.status === 403 || code === 'AUTH_REQUIRED' || code === 'AUTH_INVALID';
+          if (isAuthError) {
+            // Do NOT show "no results" for an auth/session failure — show a login-required message.
+            lastSearchState = 'auth';
+            visibleRecords = [];
+            searchTotal = 0;
+            searchHasMore = false;
+            renderResultButtons(open, 0);
+            return { ok: false, items: [] };
+          }
+          if (!response.ok || data?.ok !== true) {
+            lastSearchState = 'error';
+            visibleRecords = [];
+            searchTotal = 0;
+            searchHasMore = false;
+            renderResultButtons(open, 0);
+            return { ok: false, items: [] };
+          }
+
+          lastSearchState = 'ok';
+          const items = readItems(data);
+          visibleRecords = items;
+          searchTotal = Number.isFinite(data?.total) ? Number(data.total) : items.length;
           searchHasMore = Boolean(data?.hasMore);
-          searchOffset = Number.isFinite(data?.nextOffset) ? Number(data.nextOffset) : visibleRecords.length;
+          searchOffset = Number.isFinite(data?.nextOffset) ? Number(data.nextOffset) : items.length;
           renderResultButtons(open, 0);
+          return { ok: true, items };
         } catch (error) {
-          if (seq !== searchSeq) return;
-          if (error && (error as any).name === 'AbortError') return;
+          if (seq !== searchSeq) return { ok: false, items: [] };
+          if (error && (error as any).name === 'AbortError') return { ok: false, items: [] };
+          lastSearchState = 'error';
           visibleRecords = [];
           searchTotal = 0;
           searchHasMore = false;
           renderResultButtons(open, 0);
+          return { ok: false, items: [] };
         }
       };
 
@@ -2726,8 +2772,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           closeDropdown();
           return;
         }
-        await runSearch(true);
-        if (visibleRecords[0]) updateSelection(visibleRecords[0]);
+        // Phase 3GG-T-HF3B-HF2-HF2A2: use the fresh page returned by THIS explicit search (runSearch
+        // already cancels the pending debounce and issues exactly one request), never the async-mutated
+        // global. Only auto-select when the request actually succeeded.
+        const { ok, items } = await runSearch(true);
+        if (ok && items[0]) updateSelection(items[0]);
       });
 
       periodButtons.forEach((button) => {
