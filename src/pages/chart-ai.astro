@@ -1347,6 +1347,10 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     // Phase 3GG-T-HF1: real Supabase auth gate + authenticated Chart AI API calls, reusing the same
     // browser session source as the Portfolio page (no new auth scheme).
     import { getBrowserSupabaseClient, isSupabaseConfigured, getCurrentSession } from '../lib/supabase';
+    // Phase 3GG-T-HF3B-HF2-HF2A3: same-origin authenticated transport for protected Chart AI APIs, so the
+    // Deployment Protection (Vercel SSO) cookie reaches the Preview route (credentials: 'same-origin')
+    // instead of being stripped by credentials: 'omit'. Bearer auth stays required by the route.
+    import { chartAiAuthenticatedFetch, fetchChartAiJson } from '../lib/chart-ai/chart-ai-authenticated-fetch';
 
     const assetTypeLabel = (assetType: DomesticAssetType): string => {
       if (assetType === 'stock') return '주식';
@@ -2397,12 +2401,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         params.set('symbol', reqSymbol);
         params.set('range', activeRange);
         const timeoutId = window.setTimeout(() => realChartAbort?.abort(), REAL_CHART_TIMEOUT_MS);
-        const authHeaders = await chartAiAuthHeaders();
-        fetch(`/api/chart-ai/market/ohlcv.json?${marketDataRequestQuery}&${params.toString()}`, {
+        chartAiAuthenticatedFetch(`/api/chart-ai/market/ohlcv.json?${marketDataRequestQuery}&${params.toString()}`, {
           method: 'GET',
           signal,
-          credentials: 'omit',
-          headers: { ...authHeaders },
         })
           .then((response) => response.json())
           .then((data) => {
@@ -2530,12 +2531,25 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
       // Phase 3GG-T-HF3B-HF2-HF2A2: the search outcome drives the empty-state message so an auth/session
       // or server error is NEVER disguised as "검색 결과가 없습니다" (no matching instrument).
-      let lastSearchState: 'ok' | 'auth' | 'error' = 'ok';
+      let lastSearchState: 'ok' | 'auth' | 'transport' | 'error' = 'ok';
       const SEARCH_STATE_MESSAGES = {
         ok: '검색 결과가 없습니다. 종목명이나 종목코드를 다시 확인해 주세요.',
         auth: '로그인이 필요합니다. 로그인 후 다시 검색해 주세요.',
+        // Phase 3GG-T-HF3B-HF2-HF2A3: Deployment Protection (Vercel SSO) intercepted the API request.
+        transport: 'Preview 접근 인증이 만료되었거나 API 요청이 보호 화면에서 차단되었습니다. 페이지를 새로고침한 뒤 다시 로그인해 주세요.',
         error: '검색 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
       } as const;
+      // Phase 3GG-T-HF3B-HF2-HF2A3: non-secret transport diagnostics for deterministic browser QA
+      // (state enum + integer HTTP status + non-secret master version + hostname only — never tokens,
+      // cookies, user data, or response payloads).
+      const setSearchDiagnostics = (state: string, status: number, masterVersion: string | null, host: string) => {
+        try {
+          searchPanel.setAttribute('data-chart-ai-search-state', state);
+          searchPanel.setAttribute('data-chart-ai-search-http-status', String(Number.isFinite(status) ? status : 0));
+          searchPanel.setAttribute('data-chart-ai-search-master-version', masterVersion ?? '');
+          searchPanel.setAttribute('data-chart-ai-search-request-host', host ?? '');
+        } catch {}
+      };
 
       // Phase 3GG-T-HF3B: renders the current page. `appendFrom > 0` appends the just-loaded page
       // (load-more) without clearing/scroll-jumping; `appendFrom === 0` is a fresh render. The count
@@ -2618,49 +2632,42 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         searchAbort = new AbortController();
         searchOffset = 0;
         try {
-          const authHeaders = await chartAiAuthHeaders();
-          const response = await fetch(`/api/chart-ai/instruments/search.json?${buildSearchParams(0).toString()}`, {
-            method: 'GET',
-            signal: searchAbort.signal,
-            credentials: 'omit',
-            headers: { ...authHeaders },
-          });
-          const data = await response.json().catch(() => null);
+          // Same-origin authenticated transport: carries the Vercel SSO cookie (credentials: 'same-origin')
+          // AND the Supabase Bearer token, and classifies the response (SUCCESS/NO_RESULTS vs
+          // APP_AUTH_* vs PREVIEW_DEPLOYMENT_AUTH_REQUIRED vs API_*), so a blocked/redirected request is
+          // never rendered as "no results".
+          const { state, status, data, masterVersion, host } = await fetchChartAiJson(
+            `/api/chart-ai/instruments/search.json?${buildSearchParams(0).toString()}`,
+            { method: 'GET', signal: searchAbort.signal },
+          );
           // Stale-response guard: a newer query bumped searchSeq while this was in flight -> drop it.
           if (seq !== searchSeq) return { ok: false, items: [] };
+          setSearchDiagnostics(state, status, masterVersion, host);
 
-          const code = data?.code ?? data?.sanitizedErrorCode;
-          const isAuthError = response.status === 401 || response.status === 403 || code === 'AUTH_REQUIRED' || code === 'AUTH_INVALID';
-          if (isAuthError) {
-            // Do NOT show "no results" for an auth/session failure — show a login-required message.
-            lastSearchState = 'auth';
-            visibleRecords = [];
-            searchTotal = 0;
-            searchHasMore = false;
+          if (state === 'SUCCESS' || state === 'NO_RESULTS') {
+            lastSearchState = 'ok';
+            const items = readItems(data);
+            visibleRecords = items;
+            searchTotal = Number.isFinite(data?.total) ? Number(data.total) : items.length;
+            searchHasMore = Boolean(data?.hasMore);
+            searchOffset = Number.isFinite(data?.nextOffset) ? Number(data.nextOffset) : items.length;
             renderResultButtons(open, 0);
-            return { ok: false, items: [] };
-          }
-          if (!response.ok || data?.ok !== true) {
-            lastSearchState = 'error';
-            visibleRecords = [];
-            searchTotal = 0;
-            searchHasMore = false;
-            renderResultButtons(open, 0);
-            return { ok: false, items: [] };
+            return { ok: true, items };
           }
 
-          lastSearchState = 'ok';
-          const items = readItems(data);
-          visibleRecords = items;
-          searchTotal = Number.isFinite(data?.total) ? Number(data.total) : items.length;
-          searchHasMore = Boolean(data?.hasMore);
-          searchOffset = Number.isFinite(data?.nextOffset) ? Number(data.nextOffset) : items.length;
+          // Auth / deployment-protection / transport failure — never "no results".
+          lastSearchState = state === 'APP_AUTH_REQUIRED' || state === 'APP_AUTH_INVALID' ? 'auth'
+            : state === 'PREVIEW_DEPLOYMENT_AUTH_REQUIRED' ? 'transport' : 'error';
+          visibleRecords = [];
+          searchTotal = 0;
+          searchHasMore = false;
           renderResultButtons(open, 0);
-          return { ok: true, items };
+          return { ok: false, items: [] };
         } catch (error) {
           if (seq !== searchSeq) return { ok: false, items: [] };
           if (error && (error as any).name === 'AbortError') return { ok: false, items: [] };
           lastSearchState = 'error';
+          setSearchDiagnostics('API_REQUEST_FAILED', 0, null, '');
           visibleRecords = [];
           searchTotal = 0;
           searchHasMore = false;
@@ -2680,11 +2687,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           loadMoreBtn.textContent = '불러오는 중…';
         }
         try {
-          const authHeaders = await chartAiAuthHeaders();
-          const response = await fetch(`/api/chart-ai/instruments/search.json?${buildSearchParams(offsetToLoad).toString()}`, {
+          const response = await chartAiAuthenticatedFetch(`/api/chart-ai/instruments/search.json?${buildSearchParams(offsetToLoad).toString()}`, {
             method: 'GET',
-            credentials: 'omit',
-            headers: { ...authHeaders },
           });
           const data = await response.json();
           if (seq !== searchSeq) return; // a newer query superseded this page
@@ -2779,6 +2783,14 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         if (ok && items[0]) updateSelection(items[0]);
       });
 
+      // Phase 3GG-T-HF3B-HF2-HF2A3: mark search as ready ONLY after the input/button exist, all search
+      // listeners are bound, and the authenticated transport helper is available. This is set BEFORE the
+      // later chart/analysis setup runs, so a subsequent chart or analysis initialization error cannot
+      // leave search unbound — the already-bound handlers survive, and QA can assert readiness.
+      if (typeof chartAiAuthenticatedFetch === 'function') {
+        try { searchPanel.setAttribute('data-chart-ai-search-ready', 'true'); } catch {}
+      }
+
       periodButtons.forEach((button) => {
         button.addEventListener('click', () => {
           const range = button.dataset.range;
@@ -2823,10 +2835,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try {
           const params = new URLSearchParams({ q: sym });
           if (ctry === 'KR' || ctry === 'US') params.set('country', ctry);
-          const response = await fetch(`/api/chart-ai/instruments/search.json?${params.toString()}`, {
+          const response = await chartAiAuthenticatedFetch(`/api/chart-ai/instruments/search.json?${params.toString()}`, {
             method: 'GET',
-            credentials: 'omit',
-            headers: { ...(await chartAiAuthHeaders()) },
           });
           const data = await response.json();
           const results = Array.isArray(data?.results) ? data.results : [];
@@ -3227,7 +3237,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           const timeoutId = window.setTimeout(() => simAbort?.abort(), SIM_TIMEOUT_MS);
           try {
             const url = `/api/chart-ai/similarity.json?${marketDataRequestQuery}&country=${ctry}&symbol=${encodeURIComponent(sym)}&window=${activeSimWindow}&topK=5`;
-            const res = await fetch(url, { method: 'GET', signal, credentials: 'omit', headers: { ...(await chartAiAuthHeaders()) } });
+            const res = await chartAiAuthenticatedFetch(url, { method: 'GET', signal });
             const data = await res.json();
             if (seq !== simSeq) return;
             // Ignore a stale response whose selection was superseded (symbol changed mid-flight).
@@ -3475,7 +3485,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           const timeoutId = window.setTimeout(() => mkaiAbort?.abort(), MKAI_TIMEOUT_MS);
           try {
             const url = `/api/chart-ai/mk-analysis.json?${marketDataRequestQuery}&country=${ctry}&symbol=${encodeURIComponent(sym)}`;
-            const res = await fetch(url, { method: 'GET', signal, credentials: 'omit', headers: { ...(await chartAiAuthHeaders()) } });
+            const res = await chartAiAuthenticatedFetch(url, { method: 'GET', signal });
             const data = await res.json();
             if (seq !== mkaiSeq) return;
             if (integrity.resolveAnalysis(token) !== 'accepted') return;
@@ -4786,9 +4796,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           );
 
           try {
-            const response = await fetch(
+            const response = await chartAiAuthenticatedFetch(
               `/api/chart-ai/local-only-kis-llm-summary.json?${ownerLocalKisLlmSummaryRequestQuery}&country=${selectedCountry}&symbol=${encodeURIComponent(selectedSymbol)}`,
-              { method: 'GET', signal: abortController.signal, credentials: 'omit' },
+              { method: 'GET', signal: abortController.signal },
             );
             let parsedResponse: unknown = null;
             try {

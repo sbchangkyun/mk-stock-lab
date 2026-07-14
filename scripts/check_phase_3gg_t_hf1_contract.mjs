@@ -69,7 +69,10 @@ assert(/runLocalOnlyLlmRuntimeBridge/.test(summary), 'summary route must keep th
 
 // --- 4. Client attaches the Bearer token to every Chart AI fetch ---
 assert(/chartAiAuthHeaders/.test(page) && /Authorization: `Bearer \$\{session\.access_token\}`/.test(page), 'client must attach the Supabase Bearer token to Chart AI fetches.');
-assert((page.match(/chartAiAuthHeaders\(\)/g) || []).length >= 5, 'all Chart AI production fetches must send auth headers.');
+// Phase 3GG-T-HF3B-HF2-HF2A3: protected Chart AI fetches now go through chartAiAuthenticatedFetch/
+// fetchChartAiJson, which attach the Supabase Bearer token (and send credentials: 'same-origin' so the
+// Vercel SSO cookie reaches the Preview route). Count the authenticated-transport call sites.
+assert(((page.match(/chartAiAuthHeaders\(\)|chartAiAuthenticatedFetch\(|fetchChartAiJson\(/g) || []).length) >= 5, 'all Chart AI production fetches must send auth headers.');
 
 // --- 5. Zero-request entry ---
 assert(page.includes('종목을 검색해 선택하면 실제 차트를 불러옵니다.'), 'idle chart copy must be present.');

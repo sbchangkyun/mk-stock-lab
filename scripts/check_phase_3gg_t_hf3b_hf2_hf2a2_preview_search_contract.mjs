@@ -62,9 +62,12 @@ assert(!/prerender\s*=\s*true/.test(route), 'search route must not be prerendere
 // --- 3. Client hardening (chart-ai.astro) ---
 assert(/lastSearchState/.test(page) && /SEARCH_STATE_MESSAGES/.test(page), 'search UI must track a search-outcome state.');
 assert(/auth:\s*'로그인이 필요합니다/.test(page), 'auth outcome must show a login-required message, not "no results".');
-assert(/response\.status === 401 \|\| response\.status === 403 \|\| code === 'AUTH_REQUIRED' \|\| code === 'AUTH_INVALID'/.test(page), 'runSearch must detect auth errors (401/403/AUTH_REQUIRED/AUTH_INVALID).');
-assert(/if \(isAuthError\)/.test(page) && /lastSearchState = 'auth'/.test(page), 'runSearch must set the auth state on an auth error (no zero-results disguise).');
-assert(/data\?\.ok !== true/.test(page), 'runSearch must require data.ok === true for a successful render.');
+// Phase 3GG-T-HF3B-HF2-HF2A3: response classification (401/403/AUTH_REQUIRED/AUTH_INVALID + data.ok +
+// deployment-protection) moved into the transport helper (classifyChartAiResponse); runSearch now maps the
+// classified state. The intent — auth/transport errors are never shown as zero results — is preserved.
+assert(/state === 'APP_AUTH_REQUIRED' \|\| state === 'APP_AUTH_INVALID'/.test(page), 'runSearch must map app auth-error states.');
+assert(/state === 'APP_AUTH_REQUIRED' \|\| state === 'APP_AUTH_INVALID' \? 'auth'/.test(page), 'runSearch must set the auth state on an auth error (no zero-results disguise).');
+assert(/state === 'SUCCESS' \|\| state === 'NO_RESULTS'/.test(page), 'runSearch must render only on a classified successful/no-results response.');
 assert(/window\.clearTimeout\(searchDebounceId\)/.test(page), 'explicit runSearch must cancel the pending debounce timer.');
 assert(/const \{ ok, items \} = await runSearch\(true\)/.test(page) && /if \(ok && items\[0\]\) updateSelection\(items\[0\]\)/.test(page), 'explicit search must select from the fresh returned page (not the async global).');
 assert(/normalizeQueryText/.test(page) && /\^\[0-9A-Za-z\]\{6\}\$/.test(page) && /toUpperCase\(\)/.test(page), 'client must canonicalize a six-char KR-like code to uppercase.');

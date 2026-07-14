@@ -196,6 +196,8 @@
     "check:phase-3gg-t-hf3b-hf2": "node scripts/check_phase_3gg_t_hf3b_hf2_contract.mjs",
     "smoke:phase-3gg-t-hf3b-hf2-hf2a2": "node scripts/smoke_phase_3gg_t_hf3b_hf2_hf2a2_preview_search_hotfix.mjs",
     "check:phase-3gg-t-hf3b-hf2-hf2a2": "node scripts/check_phase_3gg_t_hf3b_hf2_hf2a2_preview_search_contract.mjs",
+    "smoke:phase-3gg-t-hf3b-hf2-hf2a3": "node scripts/smoke_phase_3gg_t_hf3b_hf2_hf2a3_preview_transport_hotfix.mjs",
+    "check:phase-3gg-t-hf3b-hf2-hf2a3": "node scripts/check_phase_3gg_t_hf3b_hf2_hf2a3_preview_transport_contract.mjs",
     "check:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/check_phase_3fa_d_manual_run_owner_local_manual_smoke_execution_contract.mjs",
     "smoke:phase-3fa-d-manual-run-owner-local-manual-smoke-execution": "node scripts/smoke_phase_3fa_d_manual_run_owner_local_manual_smoke_execution.mjs",
     "check:phase-3fa-d-manual-run-hf1-kis-credential-configuration-check": "node scripts/check_phase_3fa_d_manual_run_hf1_kis_credential_configuration_check_contract.mjs",

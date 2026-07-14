@@ -1,5 +1,35 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-HF2A3 - 2026-07-15
+
+### Protected Preview API transport hotfix (credentials: same-origin)
+
+- **Corrected root cause:** ALL instrument searches (005930/삼성전자/069500/0000D0/AAPL/IWM) failed on the
+  SSO-protected Preview because every same-origin Chart AI API call used **`credentials: 'omit'`**, which
+  strips the **Vercel Deployment Protection cookie** — Vercel redirected the cookie-less requests to its SSO
+  login **before they reached the Astro route** (Preview runtime logs showed `/chart-ai` +
+  `/api/auth/profile-bootstrap` but never `/api/chart-ai/instruments/search.json`). This is a transport
+  block, not "the handler returned zero results". Master + pure search resolve all instruments → master
+  **not** the cause, **not modified**. Prior HF2A2 fixed the OAuth redirect + client display but the request
+  was still cookie-less.
+- **Fix:** new `src/lib/chart-ai/chart-ai-authenticated-fetch.ts` — `chartAiAuthenticatedFetch` (same-origin
+  validation, robust `new Headers` merge, Supabase Bearer from session [no global cache],
+  **`credentials: 'same-origin'`**, preserves method/body/signal, no token/cookie logging) + `fetchChartAiJson`
+  / `classifyChartAiResponse` (SUCCESS / NO_RESULTS / APP_AUTH_REQUIRED / APP_AUTH_INVALID /
+  PREVIEW_DEPLOYMENT_AUTH_REQUIRED / API_RESPONSE_INVALID / API_REQUEST_FAILED). Migrated all 7
+  `credentials:'omit'` protected calls (search ×3, OHLCV, Similarity, MK, localhost summary) to the helper.
+  Vercel SSO preserved, Supabase Bearer still required, route stays fail-closed `private, no-store`.
+- Search now shows a distinct **deployment-protection transport message** (not "검색 결과가 없습니다"),
+  exposes non-secret `data-chart-ai-search-{state,http-status,master-version,request-host}` diagnostics, and
+  sets `data-chart-ai-search-ready` after search binding (before chart/analysis setup, so a later error
+  can't unbind search). HF2A2 behaviors preserved.
+- New `smoke_phase_3gg_t_hf3b_hf2_hf2a3_preview_transport_hotfix.mjs` (18/18: search matrix + classification
+  table) + `check_phase_3gg_t_hf3b_hf2_hf2a3_preview_transport_contract.mjs`. Master/manifest/archive/state/
+  generator/workflow/token/migrations unchanged; no dep/lockfile change; astro build PASS. Feature branch
+  pushed; new Preview for Owner-authenticated transport QA (search route must appear in Preview runtime
+  logs). No merge, no Production deploy. See
+  `docs\planning\phase_3gg_t_hf3b_hf2_hf2a3_preview_transport_hotfix_result_v0.1.md`.
+
 ## Phase 3GG-T-HF3B-HF2-HF2A2 - 2026-07-14
 
 ### Preview alphanumeric-search Hotfix (0000D0)
