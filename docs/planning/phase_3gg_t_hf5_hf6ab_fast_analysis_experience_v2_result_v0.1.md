@@ -139,20 +139,45 @@ Lane B of the current session alongside Lane A's HF4-FAST-HF2 finalization (Lane
 ## 11. Production deployment
 
 - Deployed via `vercel deploy --prod --yes` only (no local `vercel build`).
-- Deployment metadata (id, READY state, alias, deployed commit hash) recorded in the Owner Checkpoint report
-  delivered alongside this commit — no environment values printed.
+- Implementation commit deployed: `1b2287f`.
+- Deployment `dpl_HFBkxmQoytFnuzgyo6NvaTgFZLUQ`, `readyState: READY`, `target: production`, aliased to
+  `https://mkstocklab.vercel.app`. No rollback required. No environment values printed.
 
 ## 12. Safe unauthenticated Production regression
 
-Performed after deployment: `GET /chart-ai` → 200; the five protected Chart AI API routes → sanitized 401
-with no stack trace or secret; no provider/KIS work triggered by unauthenticated entry; deployed page HTML
-contains no Market Intelligence UI and no hidden Samsung default; deployed HTML/CSS contains the new
-Similarity legend/table/card and MK AI score-card/accordion markup; no account/order/trading endpoint
-exposed.
+Performed after deployment against `https://mkstocklab.vercel.app`:
 
-## 13. Owner QA — pending
+- `GET /chart-ai` → 200.
+- `instruments/search.json`, `market/ohlcv.json`, `similarity.json`, `mk-analysis.json`,
+  `market-intelligence.json` with no token → sanitized 401 `{"code":"AUTH_REQUIRED"}`.
+- `market/ohlcv.json` with a bogus `Authorization: Bearer` token → sanitized 401 `{"code":"AUTH_INVALID"}`.
+- No stack trace or secret in any response; no provider/KIS work triggered by unauthenticated entry.
+- Deployed page HTML: 0 Market Intelligence markers; new HF5 containers present
+  (`chart-similarity-legend`/`-overlay-*`/`-aggregate`/`-matches`/`-disclaimer`); new HF6A/HF6B containers
+  present (`chart-mkai-conclusion-lead`/`-flow-status`/`-score-cards`/`-checkpoints`/`-sections`/
+  `-data-quality`/`-disclaimer`); old duplicate `<h2>`/`<h3>` panel headings remain removed; no
+  account/order/trading endpoint exposed.
 
-Owner-authenticated browser QA has not been performed as part of this run
-(`OWNER_AUTHENTICATED_BROWSER_QA_REQUIRED: YES`). This document will be updated with the Owner's checkpoint
-results and final classification once that QA completes; until then no `PASS_..._PRODUCTION_VERIFIED`
-classification is claimed for HF5-HF6AB.
+## 13. Owner QA — verified
+
+Owner reported Phase 3GG-T-HF5-HF6AB-FAST-ANALYSIS-EXPERIENCE-V2: **PASS**. All checkpoint categories PASS:
+
+- Similarity overlay legend and toggles: PASS
+- Similarity desktop hover / mobile tap tooltip: PASS
+- Similarity desktop table / mobile cards: PASS
+- Similarity aggregate interpretation: PASS
+- MK one-sentence conclusion and score cards: PASS
+- MK accordion usability: PASS
+- Strategy Checkpoints and key price levels: PASS
+- Samsung/AAPL analysis correctness: PASS
+- Mobile responsiveness: PASS
+- Duplicate copy and disclaimer cleanup: PASS
+
+Additional KIS token push count was not separately restated in the final Owner shorthand; no
+duplicate-issuance regression was reported.
+
+Implementation commit: `1b2287f` (`Phase 3GG-T-HF5-HF6AB: redesign Similarity and MK Agent experience`).
+Production deployment: `dpl_HFBkxmQoytFnuzgyo6NvaTgFZLUQ`, READY, alias `https://mkstocklab.vercel.app`,
+deployed commit `1b2287f`. No rollback required.
+
+**Final classification: `PASS_SIMILARITY_AND_MK_AGENT_EXPERIENCE_V2_PRODUCTION_VERIFIED`.**
