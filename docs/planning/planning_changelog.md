@@ -1,5 +1,38 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-PR-PREMERGE-AUDIT - 2026-07-14
+
+### PR #1 pre-merge audit (audit-only; no push/merge/deploy)
+
+- Read-only audit of Pull Request #1 (`base: main` ← `head: rebuild/phase-1-ia-shell`). Classification
+  **`PASS_PR_PREMERGE_AUDIT_READY_WITH_REQUIRED_PREMERGE_ACTIONS`**. No push, no PR mutation, no merge, no
+  deploy, no DB/env/Supabase/Vercel/secret change, no application behavior change. One local docs-only
+  audit commit.
+- Baseline: local HEAD + `origin/rebuild/phase-1-ia-shell` = `aa2e422`; `origin/main` = `672419b`;
+  **merge-base = origin/main** → the branch never diverged, so the merge is conflict-free. Range 394
+  commits / 1,163 files / +455,318 / −3,242.
+- **Merge simulation**: temp worktree at origin/main + `git merge --no-ff --no-commit aa2e422` → clean, 0
+  conflicts, no unexpected deletions (worktree removed; refs untouched). Merged-tree validation: `astro
+  build` PASS, `git diff --check` clean, full local gate 18/18, `npm ls` clean.
+- **Security**: no credible secret in the full PR diff; no `.env`/`.vercel`/raw KIS/KRX source files tracked;
+  `docs/handoff/codex_state_inspection/` NOT in the PR (0 files).
+- **Migrations**: 6, all additive (0 destructive); no workflow/script auto-applies them (merging SQL is
+  inert). **Dependencies**: 3 additive deps consistent with the lockfile; no install lifecycle scripts.
+  **Workflow**: only kis-refresh added (official actions, minimal perms, automation-branch-only, no main
+  push/force/merge/auto-merge/deploy). **Generated master** 5 MB, server-only.
+- **Production parity**: `origin/main..cbd24eb` = 391 commits already CLI-deployed + Owner-verified; then
+  docs-only (`030d8fd`), discovery-only (`9d22ff4`), and undeployed KIS automation + symbol widening +
+  16,018-row KIS-only master (`aa2e422`). main is an older state; merge brings the whole rebuild to main
+  for the first time.
+- **Key gating item**: `OWNER_VERCEL_DASHBOARD_CONFIRMATION_REQUIRED` — no `vercel.json`; whether merging
+  `main` auto-deploys Production is a dashboard setting, so it must be confirmed/paused before merge
+  authorization. Minor non-blocking items: one stray NUL byte in a checker's dead-fallback code; stale PR
+  title/empty body (proposed replacement provided); pre-existing (non-PR) `project_structure.txt` noise.
+- **Recommended strategy A** (merge as-is, `--no-ff`) after those actions; release-branch rebuild NOT
+  required. See `docs\planning\phase_3gg_t_hf3b_hf2_pr_premerge_audit_result_v0.1.md`,
+  `pr_1_full_scope_inventory_v0.1.md`, `pr_1_merge_and_release_runbook_v0.1.md`,
+  `pr_1_proposed_title_and_body_v0.1.md`.
+
 ## Phase 3GG-T-HF3B-HF2 - 2026-07-14
 
 ### KIS Instrument-Master Automation
