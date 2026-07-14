@@ -161,15 +161,14 @@ assert(!/^[+-]/m.test(engineDiff) || /swingHigh|swingLow|recentSwingHigh20|recen
 assert(!/^[+-]/m.test(scoringDiff) || /swingHigh|swingLow/.test(scoringDiff), 'analysisScoring.mjs changes this phase must be scoped to swingHigh/swingLow only.');
 assert(read(ANALYSIS_SCORING).includes('export const swingHigh') && read(ANALYSIS_SCORING).includes('export const swingLow'), 'analysisScoring.mjs must export swingHigh/swingLow.');
 
-// --- 11. No durable-token / auth / route / search / Supabase architecture change ---
+// --- 11. No durable-token / auth / Supabase architecture change ---
+// Phase 3GG-T-HF3B-HF4C legitimately expands the search route + normalized-OHLCV provider and adds a
+// safe cache header to the market-data/analysis routes, so those route paths are no longer frozen here.
+// The durable-token/provider (providers/kis), Market Intelligence backend, and Supabase guards remain.
 const OUT_OF_SCOPE_PATHS = [
   'src/lib/server/providers/kis',
-  'src/pages/api/chart-ai/similarity.json.ts',
-  'src/pages/api/chart-ai/mk-analysis.json.ts',
   MI_ROUTE,
   MI_ENGINE_DIR,
-  'src/pages/api/chart-ai/market/ohlcv.json.ts',
-  'src/pages/api/chart-ai/instruments/search.json.ts',
   'supabase',
 ];
 const outOfScopeDiff = runGit(['diff', '--name-only', BASELINE, '--', ...OUT_OF_SCOPE_PATHS]).trim();

@@ -36,10 +36,10 @@ const readServerEnvValue = (name: string): string | undefined => {
   return process.env[name];
 };
 
-const jsonResponse = (body: unknown, status = 200) =>
+const jsonResponse = (body: unknown, status = 200, extraHeaders: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...extraHeaders },
   });
 
 const resolveLocalHostname = (url: URL, request: Request): string | null => {
@@ -122,7 +122,10 @@ export const GET: APIRoute = async ({ url, request }) => {
     allowProductionChartAiBetaLiveQuotes: prodBetaAccess.allowed === true,
   });
 
-  return jsonResponse({ ok: true, ohlcv });
+  // Safe cache-observability header (MISS | HIT | COALESCED | NEGATIVE_HIT | BYPASS). Metadata only:
+  // no key, no credentials, no user identity; the response body contract is unchanged.
+  const cacheState = typeof ohlcv.cacheState === 'string' ? ohlcv.cacheState : 'MISS';
+  return jsonResponse({ ok: true, ohlcv }, 200, { 'X-MK-OHLCV-Cache': cacheState });
 };
 
 export const ALL: APIRoute = () => jsonResponse({ ok: false, ohlcv: blockedResponse('3m', 'NON_LOCAL_REQUEST') }, 405);

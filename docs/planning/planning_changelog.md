@@ -1,5 +1,52 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF4C - 2026-07-14
+
+### Universal Search + OHLCV Data Foundation
+
+- Builds on `ANALYSIS_V2_FINAL_HEAD` (`845cac4`). Two data-foundation improvements with no change to
+  auth, durable KIS token lifecycle, selected-symbol integrity, chart interaction, or Similarity/MK
+  scoring. Target classification `PASS_UNIVERSAL_SEARCH_AND_OHLCV_DATA_FOUNDATION_PRODUCTION_VERIFIED`
+  (assignable only after Owner QA).
+- **HF3B — Universal KR/US Stock·ETF Search Coverage**: replaced the 31-item hand-curated master with a
+  generated, versioned master (masterVersion `hf3b-12826`; 2601 KR stock / 7 KR ETF / 6231 US stock /
+  3987 US ETF = 12,826, ~414× the prior count). Built from official listing metadata — NASDAQ Trader
+  Symbol Directory (`nasdaqlisted.txt` + `otherlisted.txt`, authoritative ETF flag + exchange) and the
+  KRX KIND listed-corporation directory (KOSPI/KOSDAQ) — plus verified curated anchors (authoritative
+  for KR ETFs + enriched Korean/English names/aliases). New deterministic generator
+  `scripts/generate_chart_ai_instrument_master.mjs` (reads local official files only — no runtime
+  download, no credentials, no dependency; validate/dry-run mode; source SHA-256; counted rejection
+  report; exits non-zero on schema/mapping/empty-category errors). New provenance manifest
+  `universalInstrumentMaster.manifest.json` + committed anchor source
+  `universalInstrumentMaster.anchors.json`. US mapping NASDAQ→NAS / NYSE→NYS / NYSE American+Arca→AMS
+  (Cboe BZX / IEX rejected); KR six-digit KOSPI/KOSDAQ only (KONEX/non-6-digit rejected); leading-zero
+  KR codes preserved; US pure-alpha `^[A-Z]{1,5}$`; ETF class from the official flag only.
+- **HF3B search**: deterministic 7-tier ranking (exact symbol → exact name → symbol prefix → name prefix
+  → alias → token prefix → contains, deterministic tie-break, no Samsung-first rule), KR/US + stock/ETF
+  filters, bounded offset pagination (default 20, max 50; `items`/`total`/`hasMore`/`nextOffset`/
+  `masterVersion`). The server-only master is never embedded in `/chart-ai` HTML; the search route makes
+  no KIS call and keeps the auth gate. UI adds a KR/US filter row, a "더 보기" load-more control, total
+  count, stale-response protection (monotonic seq + AbortController), cross-page de-dup, and keeps
+  pending-only selection (no auto chart load).
+- **HF4C — Normalized OHLCV Cache + Request Deduplication**: new
+  `src/lib/server/chart-ai/normalizedOhlcvCache.mjs` is the sole owner of OHLCV caching + single-flight.
+  Canonical `buildOhlcvCacheKey` (country/symbol/exchange/EXCD/mode/range/targetBars/adjusted/version;
+  throws on any user/auth/token field). Bounded LRU (512) with deterministic eviction + injectable clock;
+  explicit TTLs (chart 5 min, long-history 6 h, negative no-data 30 s; errors never cached); one
+  in-flight map that always clears in `finally` (retry allowed after failure); structured deep-clone
+  value safety (caller mutation cannot corrupt the cache; no raw payload/auth/user data stored). The
+  provider's two ad-hoc unbounded Maps were replaced by this shared cache, so Chart, Similarity and MK
+  Analysis reuse one normalized layer and concurrent same-key requests coalesce onto one provider call.
+  Safe `X-MK-OHLCV-Cache` observability header (MISS/HIT/COALESCED/NEGATIVE_HIT/BYPASS) on the ohlcv /
+  similarity / mk-analysis routes. Not durable/cross-instance (no Supabase/Redis/KV added); durable KIS
+  token reuse stays independent.
+- New `scripts/smoke_phase_3gg_t_hf3b_hf4c_fast_data_foundation.mjs` (87/87, fully offline — fake clock +
+  fake loader, no network/login/KIS/Supabase) and `scripts/check_phase_3gg_t_hf3b_hf4c_fast_contract.mjs`.
+  Narrow reconciliation of `check_phase_3gg_op_fast_contract.mjs` (its one-line
+  `results: [], resultCount: 0` substring assertion widened to two tokens because the search module's
+  empty-return is now multi-line after adding pagination fields); no protection weakened.
+- See `docs\planning\phase_3gg_t_hf3b_hf4c_fast_data_foundation_result_v0.1.md` for full detail.
+
 ## Phase 3GG-T-HF5-HF6AB - 2026-07-14
 
 ### Similarity and MK Agent Experience Redesign

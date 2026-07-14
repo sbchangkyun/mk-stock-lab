@@ -44,10 +44,10 @@ const readServerEnvValue = (name: string): string | undefined => {
   return process.env[name];
 };
 
-const jsonResponse = (body: unknown, status = 200) =>
+const jsonResponse = (body: unknown, status = 200, extraHeaders: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...extraHeaders },
   });
 
 const resolveLocalHostname = (url: URL, request: Request): string | null => {
@@ -124,11 +124,12 @@ export const GET: APIRoute = async ({ url, request }) => {
   const cacheKey = `${instrument.country}:${instrument.symbol}`;
   const cached = resultCache.get(cacheKey);
   if (cached && Date.now() - cached.storedAtMs < RESULT_TTL_MS) {
-    return jsonResponse({ ok: true, mkai: { ...cached.body, cached: true } });
+    return jsonResponse({ ok: true, mkai: { ...cached.body, cached: true } }, 200, { 'X-MK-OHLCV-Cache': 'RESULT_HIT' });
   }
 
   try {
     const history = await fetchLongHistoryOhlcv({ instrument, allowProductionChartAiBetaLiveQuotes: allowProd });
+    const ohlcvCacheState = typeof history.cacheState === 'string' ? history.cacheState : 'MISS';
     if (!history.ok || history.candles.length === 0) {
       const code =
         history.sourceStatus === 'no-data'
@@ -175,7 +176,7 @@ export const GET: APIRoute = async ({ url, request }) => {
     };
 
     resultCache.set(cacheKey, { body, storedAtMs: Date.now() });
-    return jsonResponse({ ok: true, mkai: body });
+    return jsonResponse({ ok: true, mkai: body }, 200, { 'X-MK-OHLCV-Cache': ohlcvCacheState });
   } catch {
     return jsonResponse({ ok: true, mkai: blocked(SANITIZED_ERROR_CODES.INTERNAL, 'error') });
   }

@@ -117,15 +117,14 @@ assert(!/DEFAULT_INSTRUMENT/.test(page), 'no hidden default-instrument fallback 
 assert(!/(\|\||\?\?)\s*['"]005930['"]/.test(page), 'no Samsung symbol fallback may be reintroduced.');
 assert(/let\s+selectedSymbol\s*=\s*['"]['"]/.test(page), 'selectedSymbol must still initialize empty.');
 
-// --- 8. No durable-token / auth / route / search / OHLCV-cache / Supabase architecture change ---
+// --- 8. No durable-token / auth / Supabase architecture change ---
+// Phase 3GG-T-HF3B-HF4C legitimately expands the search route + normalized-OHLCV provider and adds a
+// safe cache header to the market-data/analysis routes, so those route paths are no longer frozen here.
+// The durable-token/provider (providers/kis), Market Intelligence backend, and Supabase guards remain.
 const OUT_OF_SCOPE_PATHS = [
   'src/lib/server/providers/kis',
-  'src/pages/api/chart-ai/similarity.json.ts',
-  'src/pages/api/chart-ai/mk-analysis.json.ts',
   MI_ROUTE,
   MI_ENGINE_DIR,
-  'src/pages/api/chart-ai/market/ohlcv.json.ts',
-  'src/pages/api/chart-ai/instruments/search.json.ts',
   'supabase',
 ];
 const outOfScopeDiff = runGit(['diff', '--name-only', BASELINE, '--', ...OUT_OF_SCOPE_PATHS]).trim();

@@ -21,6 +21,17 @@ import {
   RANGE_LOOKBACK_DAYS,
   OHLCV_DEFAULT_INTERVAL,
 } from './universal-ohlcv-normalize.mjs';
+import { createNormalizedOhlcvCache, buildOhlcvCacheKey, OHLCV_CACHE_STATE } from './normalizedOhlcvCache.mjs';
+
+// ---- Phase 3GG-T-HF4C: one authoritative normalized-OHLCV cache + single-flight ----
+// Both the chart-range fetch and the long-history pager share this bounded, per-instance cache. The
+// `mode` field in the key keeps chart vs long-history (and every range/targetBars) collision-free.
+// TTLs are explicit and testable. Errors are never cached; a short negative TTL covers stable
+// no-data outcomes only. This layer is authoritative within one warm instance, not cross-instance.
+const normalizedOhlcvCache = createNormalizedOhlcvCache({ maxEntries: 512 });
+const RECENT_CHART_TTL_MS = 5 * 60 * 1000; // recent chart ranges refresh ~every 5 minutes
+const NEGATIVE_TTL_MS = 30 * 1000; // stable no-data / unsupported: short negative cache
+const OHLCV_METHOD_VERSION = 'ohlcv-v1';
 
 export const OHLCV_SANITIZED_ERROR_CODES = {
   NONE: 'NONE',
@@ -62,12 +73,9 @@ export type UniversalOhlcvResponse = {
   asOf: string;
   isDelayed: boolean;
   timezone: string;
+  /** Safe cache-observability metadata (MISS | HIT | COALESCED | NEGATIVE_HIT | BYPASS). */
+  cacheState?: string;
 };
-
-type CacheEntry = { response: UniversalOhlcvResponse; storedAtMs: number };
-const ohlcvCache = new Map<string, CacheEntry>();
-
-const cacheTtlMs = (range: string): number => (range === '1m' ? 3 * 60 * 1000 : 20 * 60 * 1000);
 
 const formatYyyyMmDd = (date: Date): string =>
   `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
@@ -136,64 +144,64 @@ export const fetchUniversalOhlcv = async (
   const nowIso = new Date(now()).toISOString();
 
   if (!instrument || (instrument.country !== 'KR' && instrument.country !== 'US')) {
-    return buildResponse(
-      null,
-      range,
-      [],
-      'unavailable',
-      OHLCV_SANITIZED_ERROR_CODES.INVALID_INSTRUMENT,
-      nowIso,
-    );
+    return {
+      ...buildResponse(null, range, [], 'unavailable', OHLCV_SANITIZED_ERROR_CODES.INVALID_INSTRUMENT, nowIso),
+      cacheState: OHLCV_CACHE_STATE.BYPASS,
+    };
   }
 
-  const cacheKey = `${instrument.country}:${instrument.symbol}:${range}`;
-  const cached = ohlcvCache.get(cacheKey);
-  if (cached && now() - cached.storedAtMs < cacheTtlMs(range)) {
-    return { ...cached.response, cached: true };
-  }
-
-  let providerResult: Awaited<ReturnType<typeof getKisDomesticDailyOhlcSeries>>;
-  if (instrument.country === 'KR') {
-    providerResult = await getKisDomesticDailyOhlcSeries(
-      { symbol: instrument.symbol, query: buildDomesticQuery(instrument.symbol, range) },
-      { allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true },
-    );
-  } else {
-    providerResult = await getKisOverseasDailyOhlcSeries(
-      { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '' },
-      { allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true },
-    );
-  }
-
-  if (!providerResult.ok) {
-    // Sanitized: provider error code is not surfaced verbatim; only a coarse status is exposed.
-    return buildResponse(
-      instrument,
-      range,
-      [],
-      'unavailable',
-      OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE,
-      nowIso,
-    );
-  }
-
-  const rawPoints: KisDailyOhlcPoint[] = providerResult.data.points;
-  const { candles } = normalizeOhlcvRows(rawPoints, range);
-
-  if (candles.length === 0) {
-    return buildResponse(instrument, range, [], 'no-data', OHLCV_SANITIZED_ERROR_CODES.NO_DATA, nowIso);
-  }
-
-  const response = buildResponse(
-    instrument,
+  const cacheKey = buildOhlcvCacheKey({
+    country: instrument.country,
+    symbol: instrument.symbol,
+    exchange: instrument.exchange,
+    exchangeCode: instrument.exchangeCode ?? '',
+    mode: 'chart',
     range,
-    candles as UniversalOhlcvCandle[],
-    'ok',
-    OHLCV_SANITIZED_ERROR_CODES.NONE,
-    nowIso,
-  );
-  ohlcvCache.set(cacheKey, { response, storedAtMs: now() });
-  return response;
+    adjusted: 'raw',
+    methodVersion: OHLCV_METHOD_VERSION,
+  });
+
+  // The loader runs the real provider fetch + normalization. It runs at most once per concurrent
+  // burst for this key; concurrent callers coalesce onto the same work.
+  const loader = async (): Promise<UniversalOhlcvResponse> => {
+    let providerResult: Awaited<ReturnType<typeof getKisDomesticDailyOhlcSeries>>;
+    if (instrument.country === 'KR') {
+      providerResult = await getKisDomesticDailyOhlcSeries(
+        { symbol: instrument.symbol, query: buildDomesticQuery(instrument.symbol, range) },
+        { allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true },
+      );
+    } else {
+      providerResult = await getKisOverseasDailyOhlcSeries(
+        { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '' },
+        { allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true },
+      );
+    }
+
+    if (!providerResult.ok) {
+      // Sanitized: provider error code is not surfaced verbatim; only a coarse status is exposed.
+      return buildResponse(instrument, range, [], 'unavailable', OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE, nowIso);
+    }
+
+    const rawPoints: KisDailyOhlcPoint[] = providerResult.data.points;
+    const { candles } = normalizeOhlcvRows(rawPoints, range);
+    if (candles.length === 0) {
+      return buildResponse(instrument, range, [], 'no-data', OHLCV_SANITIZED_ERROR_CODES.NO_DATA, nowIso);
+    }
+    return buildResponse(instrument, range, candles as UniversalOhlcvCandle[], 'ok', OHLCV_SANITIZED_ERROR_CODES.NONE, nowIso);
+  };
+
+  const classify = (value: UniversalOhlcvResponse) => {
+    if (value.sourceStatus === 'ok') return { store: true, ttlMs: RECENT_CHART_TTL_MS, negative: false };
+    // Stable "supported instrument, no data for this window" is safe to negative-cache briefly.
+    if (value.sanitizedErrorCode === OHLCV_SANITIZED_ERROR_CODES.NO_DATA) {
+      return { store: true, ttlMs: NEGATIVE_TTL_MS, negative: true };
+    }
+    // Provider/internal errors: never cached.
+    return { store: false, ttlMs: 0, negative: false };
+  };
+
+  const { value, state } = await normalizedOhlcvCache.getOrLoad(cacheKey, loader, classify);
+  return { ...value, cached: state !== OHLCV_CACHE_STATE.MISS && state !== OHLCV_CACHE_STATE.BYPASS, cacheState: state };
 };
 
 // ---- Phase 3GG-Q-FAST: long-history OHLCV for similarity analysis ----
@@ -216,10 +224,9 @@ export type LongHistoryOhlcvResult = {
   asOf: string;
   currency: 'KRW' | 'USD' | null;
   pagesFetched: number;
+  /** Safe cache-observability metadata (MISS | HIT | COALESCED | NEGATIVE_HIT | BYPASS). */
+  cacheState?: string;
 };
-
-type LongCacheEntry = { result: LongHistoryOhlcvResult; storedAtMs: number };
-const longHistoryCache = new Map<string, LongCacheEntry>();
 
 const yyyymmdd = (date: Date): string =>
   `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
@@ -274,101 +281,120 @@ export const fetchLongHistoryOhlcv = async (
       asOf: nowIso,
       currency: null,
       pagesFetched: 0,
+      cacheState: OHLCV_CACHE_STATE.BYPASS,
     };
   }
 
-  const cacheKey = `${instrument.country}:${instrument.symbol}:${targetBars}`;
-  const cached = longHistoryCache.get(cacheKey);
-  if (cached && now() - cached.storedAtMs < LONG_HISTORY_TTL_MS) {
-    return { ...cached.result, cached: true };
-  }
+  // Similarity and MK Analysis both request the default (~3-year) long history for the same symbol,
+  // so they share ONE key and coalesce onto ONE paged provider fetch (cross-feature reuse).
+  const cacheKey = buildOhlcvCacheKey({
+    country: instrument.country,
+    symbol: instrument.symbol,
+    exchange: instrument.exchange,
+    exchangeCode: instrument.exchangeCode ?? '',
+    mode: 'long-history',
+    targetBars,
+    adjusted: 'raw',
+    methodVersion: OHLCV_METHOD_VERSION,
+  });
 
-  const rawRows: KisDailyOhlcPoint[] = [];
-  let endDate = new Date(now());
-  let pagesFetched = 0;
-  let firstPageFailed = false;
+  const loader = async (): Promise<LongHistoryOhlcvResult> => {
+    const rawRows: KisDailyOhlcPoint[] = [];
+    let endDate = new Date(now());
+    let pagesFetched = 0;
+    let firstPageFailed = false;
 
-  for (let page = 0; page < LONG_HISTORY_MAX_PAGES; page += 1) {
-    if (rawRows.length >= targetBars) break;
+    for (let page = 0; page < LONG_HISTORY_MAX_PAGES; page += 1) {
+      if (rawRows.length >= targetBars) break;
 
-    let result: Awaited<ReturnType<typeof getKisDomesticDailyOhlcSeries>>;
-    if (instrument.country === 'KR') {
-      const startDate = new Date(endDate.getTime() - LONG_HISTORY_PAGE_SPAN_DAYS * 24 * 60 * 60 * 1000);
-      result = await getKisDomesticDailyOhlcSeries(
-        { symbol: instrument.symbol, query: buildLongDomesticQuery(instrument.symbol, startDate, endDate) },
-        { allowProductionChartAiBetaLiveQuotes: allow },
-      );
-    } else {
-      result = await getKisOverseasDailyOhlcSeries(
-        { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '', bymd: page === 0 ? '' : yyyymmdd(endDate) },
-        { allowProductionChartAiBetaLiveQuotes: allow },
-      );
+      let result: Awaited<ReturnType<typeof getKisDomesticDailyOhlcSeries>>;
+      if (instrument.country === 'KR') {
+        const startDate = new Date(endDate.getTime() - LONG_HISTORY_PAGE_SPAN_DAYS * 24 * 60 * 60 * 1000);
+        result = await getKisDomesticDailyOhlcSeries(
+          { symbol: instrument.symbol, query: buildLongDomesticQuery(instrument.symbol, startDate, endDate) },
+          { allowProductionChartAiBetaLiveQuotes: allow },
+        );
+      } else {
+        result = await getKisOverseasDailyOhlcSeries(
+          { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '', bymd: page === 0 ? '' : yyyymmdd(endDate) },
+          { allowProductionChartAiBetaLiveQuotes: allow },
+        );
+      }
+
+      pagesFetched += 1;
+      if (!result.ok) {
+        if (page === 0) firstPageFailed = true;
+        break;
+      }
+      const points = result.data.points;
+      if (!Array.isArray(points) || points.length === 0) break;
+      rawRows.push(...points);
+
+      // Walk backward: next page ends the day before the earliest row we just received.
+      let earliest = points[0].dateTime;
+      for (const p of points) if (p.dateTime && p.dateTime < earliest) earliest = p.dateTime;
+      const earliestDate = parseYyyymmdd(earliest);
+      if (!earliestDate) break;
+      endDate = new Date(earliestDate.getTime() - 24 * 60 * 60 * 1000);
+      if (points.length < 10) break; // near the start of available history
     }
 
-    pagesFetched += 1;
-    if (!result.ok) {
-      if (page === 0) firstPageFailed = true;
-      break;
+    if (firstPageFailed) {
+      return {
+        ok: false,
+        sourceStatus: 'unavailable',
+        sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE,
+        instrument: toInstrumentSummary(instrument),
+        candles: [],
+        barCount: 0,
+        historyRange: null,
+        cached: false,
+        asOf: nowIso,
+        currency: instrument.currency,
+        pagesFetched,
+      };
     }
-    const points = result.data.points;
-    if (!Array.isArray(points) || points.length === 0) break;
-    rawRows.push(...points);
 
-    // Walk backward: next page ends the day before the earliest row we just received.
-    let earliest = points[0].dateTime;
-    for (const p of points) if (p.dateTime && p.dateTime < earliest) earliest = p.dateTime;
-    const earliestDate = parseYyyymmdd(earliest);
-    if (!earliestDate) break;
-    endDate = new Date(earliestDate.getTime() - 24 * 60 * 60 * 1000);
-    if (points.length < 10) break; // near the start of available history
-  }
+    const { candles } = normalizeOhlcvRowsFull(rawRows);
+    if (candles.length === 0) {
+      return {
+        ok: false,
+        sourceStatus: 'no-data',
+        sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.NO_DATA,
+        instrument: toInstrumentSummary(instrument),
+        candles: [],
+        barCount: 0,
+        historyRange: null,
+        cached: false,
+        asOf: nowIso,
+        currency: instrument.currency,
+        pagesFetched,
+      };
+    }
 
-  if (firstPageFailed) {
     return {
-      ok: false,
-      sourceStatus: 'unavailable',
-      sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE,
+      ok: true,
+      sourceStatus: 'ok',
+      sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.NONE,
       instrument: toInstrumentSummary(instrument),
-      candles: [],
-      barCount: 0,
-      historyRange: null,
+      candles: candles as UniversalOhlcvCandle[],
+      barCount: candles.length,
+      historyRange: { start: candles[0].timestamp, end: candles[candles.length - 1].timestamp },
       cached: false,
       asOf: nowIso,
       currency: instrument.currency,
       pagesFetched,
     };
-  }
-
-  const { candles } = normalizeOhlcvRowsFull(rawRows);
-  if (candles.length === 0) {
-    return {
-      ok: false,
-      sourceStatus: 'no-data',
-      sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.NO_DATA,
-      instrument: toInstrumentSummary(instrument),
-      candles: [],
-      barCount: 0,
-      historyRange: null,
-      cached: false,
-      asOf: nowIso,
-      currency: instrument.currency,
-      pagesFetched,
-    };
-  }
-
-  const result: LongHistoryOhlcvResult = {
-    ok: true,
-    sourceStatus: 'ok',
-    sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.NONE,
-    instrument: toInstrumentSummary(instrument),
-    candles: candles as UniversalOhlcvCandle[],
-    barCount: candles.length,
-    historyRange: { start: candles[0].timestamp, end: candles[candles.length - 1].timestamp },
-    cached: false,
-    asOf: nowIso,
-    currency: instrument.currency,
-    pagesFetched,
   };
-  longHistoryCache.set(cacheKey, { result, storedAtMs: now() });
-  return result;
+
+  const classify = (value: LongHistoryOhlcvResult) => {
+    if (value.sourceStatus === 'ok') return { store: true, ttlMs: LONG_HISTORY_TTL_MS, negative: false };
+    if (value.sanitizedErrorCode === OHLCV_SANITIZED_ERROR_CODES.NO_DATA) {
+      return { store: true, ttlMs: NEGATIVE_TTL_MS, negative: true };
+    }
+    return { store: false, ttlMs: 0, negative: false };
+  };
+
+  const { value, state } = await normalizedOhlcvCache.getOrLoad(cacheKey, loader, classify);
+  return { ...value, cached: state !== OHLCV_CACHE_STATE.MISS && state !== OHLCV_CACHE_STATE.BYPASS, cacheState: state };
 };

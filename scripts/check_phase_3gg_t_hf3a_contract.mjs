@@ -136,8 +136,11 @@ assert(page.includes('선택한 종목의 차트를 먼저 불러와 주세요.'
 assert(page.includes('차트를 불러오는 동안 분석 기능을 사용할 수 없습니다.'), 'must include the loading guidance copy.');
 
 // --- 15. No durable-token / provider / auth change; no account/trading scope; no deps ---
-const tokenDiff = runGit(['diff', '--name-only', BASELINE, '--', 'src/lib/server/providers/kis', 'src/pages/api/chart-ai/similarity.json.ts', 'src/pages/api/chart-ai/mk-analysis.json.ts', 'src/pages/api/chart-ai/market-intelligence.json.ts', 'src/pages/api/chart-ai/market/ohlcv.json.ts', 'src/pages/api/chart-ai/instruments/search.json.ts']).trim();
-assert(tokenDiff === '', `no durable-token/provider/route source may change this phase, but changed: ${tokenDiff}`);
+// Phase 3GG-T-HF3B-HF4C legitimately expands the search route + normalized-OHLCV provider and adds a
+// safe cache header to the market-data/analysis routes; the durable-token/provider (providers/kis) and
+// Market Intelligence backend guards are preserved here.
+const tokenDiff = runGit(['diff', '--name-only', BASELINE, '--', 'src/lib/server/providers/kis', 'src/pages/api/chart-ai/market-intelligence.json.ts']).trim();
+assert(tokenDiff === '', `no durable-token/provider source may change this phase, but changed: ${tokenDiff}`);
 const supaDiff = runGit(['diff', '--name-only', BASELINE, '--', 'supabase']).trim();
 assert(supaDiff === '', `no Supabase change allowed this phase, but changed: ${supaDiff}`);
 for (const pat of [/inquire-balance/i, /inquire-account/i, /order-cash/i, /\/trading\//i, /funds?-transfer/i, /KIS_ACCOUNT_NO/]) {

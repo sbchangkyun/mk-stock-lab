@@ -14,6 +14,7 @@ import type { APIRoute } from 'astro';
 import {
   searchUniversalInstruments,
   getUniversalMasterAsOf,
+  getUniversalMasterVersion,
   UNIVERSAL_SEARCH_MIN_QUERY_LENGTH,
 } from '../../../../lib/server/chart-ai/universal-instrument-search.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
@@ -70,11 +71,24 @@ const emptyResponse = (query: string, sanitizedErrorCode: string) => ({
   query,
   resultCount: 0,
   results: [],
+  items: [],
+  total: 0,
+  returned: 0,
+  hasMore: false,
+  nextOffset: null,
+  appliedFilters: { country: 'all', assetType: 'all' },
   sourceStatus: 'blocked',
   sanitizedErrorCode,
   cached: false,
   asOf: getUniversalMasterAsOf(),
+  masterVersion: getUniversalMasterVersion(),
 });
+
+const clampReqLimit = (raw: string | null): number | undefined => {
+  if (raw === null || raw.trim() === '') return undefined;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : undefined;
+};
 
 export const GET: APIRoute = async ({ url, request }) => {
   // Phase 3GG-T-HF1: Chart AI search now requires an authenticated Supabase user on deployed
@@ -87,31 +101,44 @@ export const GET: APIRoute = async ({ url, request }) => {
   }
 
   const rawQuery = (url.searchParams.get('q') ?? '').trim();
-  const country = url.searchParams.get('country') ?? undefined;
-  const assetType = url.searchParams.get('assetType') ?? undefined;
-  const limitParam = url.searchParams.get('limit');
-  const limit = limitParam !== null && limitParam.trim() !== '' ? Number(limitParam) : undefined;
+  const countryParam = url.searchParams.get('country') ?? undefined;
+  const assetTypeParam = url.searchParams.get('assetType') ?? undefined;
+  const country = countryParam === 'KR' || countryParam === 'US' ? countryParam : undefined;
+  const assetType = assetTypeParam === 'stock' || assetTypeParam === 'etf' ? assetTypeParam : undefined;
+  const limit = clampReqLimit(url.searchParams.get('limit'));
+  const offset = clampReqLimit(url.searchParams.get('offset'));
 
   if (rawQuery.length < UNIVERSAL_SEARCH_MIN_QUERY_LENGTH) {
     return jsonResponse(emptyResponse(rawQuery, SANITIZED_ERROR_CODES.QUERY_REQUIRED));
   }
 
   try {
-    const { results, resultCount, query } = searchUniversalInstruments({
+    const { results, resultCount, total, returned, hasMore, nextOffset, query } = searchUniversalInstruments({
       query: rawQuery,
       country,
       assetType,
       limit,
+      offset,
     });
+    const clientItems = results.map(toClientResult);
     return jsonResponse({
       ok: true,
       query,
+      // `results`/`resultCount` are kept for backward compatibility; `items`/`total`/`hasMore`/
+      // `nextOffset` are the HF3B pagination contract. Both describe the same bounded page.
       resultCount,
-      results: results.map(toClientResult),
+      results: clientItems,
+      items: clientItems,
+      total,
+      returned,
+      hasMore,
+      nextOffset,
+      appliedFilters: { country: country ?? 'all', assetType: assetType ?? 'all' },
       sourceStatus: 'ok',
       sanitizedErrorCode: SANITIZED_ERROR_CODES.NONE,
       cached: false,
       asOf: getUniversalMasterAsOf(),
+      masterVersion: getUniversalMasterVersion(),
     });
   } catch {
     return jsonResponse(emptyResponse(rawQuery, SANITIZED_ERROR_CODES.INTERNAL), 200);

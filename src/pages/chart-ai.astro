@@ -360,10 +360,17 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             <strong>검색 결과</strong>
             <span id="chartAiResultCount" aria-live="polite">0개</span>
           </div>
-          <div class="chart-ai-filter-bar" role="group" aria-label="종목 유형 필터">
-            <button class="chart-ai-filter-btn active" type="button" data-asset-filter="all" aria-pressed="true">전체</button>
-            <button class="chart-ai-filter-btn" type="button" data-asset-filter="stock" aria-pressed="false">주식</button>
-            <button class="chart-ai-filter-btn" type="button" data-asset-filter="etf" aria-pressed="false">ETF</button>
+          <div class="chart-ai-filter-groups">
+            <div class="chart-ai-filter-bar" role="group" aria-label="국가 필터">
+              <button class="chart-ai-filter-btn active" type="button" data-country-filter="all" aria-pressed="true">전체</button>
+              <button class="chart-ai-filter-btn" type="button" data-country-filter="KR" aria-pressed="false">국내</button>
+              <button class="chart-ai-filter-btn" type="button" data-country-filter="US" aria-pressed="false">미국</button>
+            </div>
+            <div class="chart-ai-filter-bar" role="group" aria-label="종목 유형 필터">
+              <button class="chart-ai-filter-btn active" type="button" data-asset-filter="all" aria-pressed="true">전체</button>
+              <button class="chart-ai-filter-btn" type="button" data-asset-filter="stock" aria-pressed="false">주식</button>
+              <button class="chart-ai-filter-btn" type="button" data-asset-filter="etf" aria-pressed="false">ETF</button>
+            </div>
           </div>
         </div>
         <div
@@ -372,6 +379,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           role="listbox"
           aria-label="국내·미국 종목 검색 결과"
         ></div>
+        <button class="chart-ai-load-more" id="chartAiLoadMore" type="button" hidden aria-label="검색 결과 더 보기">
+          더 보기
+        </button>
         <p class="chart-ai-empty-state" id="chartAiEmptyState" hidden aria-live="polite">
           검색 결과가 없습니다. 종목명이나 종목코드를 다시 확인해 주세요.
         </p>
@@ -1372,7 +1382,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const resultCount = document.getElementById('chartAiResultCount');
       const emptyState = document.getElementById('chartAiEmptyState');
       const searchHint = document.getElementById('chartAiSearchHint');
-      const filterButtons = document.querySelectorAll<HTMLButtonElement>('.chart-ai-filter-btn');
+      const filterButtons = document.querySelectorAll<HTMLButtonElement>('[data-asset-filter]');
+      const countryFilterButtons = document.querySelectorAll<HTMLButtonElement>('[data-country-filter]');
+      const loadMoreBtn = document.getElementById('chartAiLoadMore') as HTMLButtonElement | null;
       const periodButtons = document.querySelectorAll<HTMLButtonElement>('.chart-period-controls button');
       const chart = document.getElementById('chartAiMarketChart');
       const chartSvg = document.getElementById('chartAiMarketSvg') as SVGSVGElement | null;
@@ -1410,6 +1422,12 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // the instrument whose chart was explicitly loaded successfully — never a hidden default.
       const integrity = createSelectedSymbolIntegrityState();
       let activeFilter: DomesticAssetType | 'all' = 'all';
+      // Phase 3GG-T-HF3B: KR/US country filter + bounded paging state for the large universal master.
+      let activeCountry: 'all' | 'KR' | 'US' = 'all';
+      let searchOffset = 0;
+      let searchTotal = 0;
+      let searchHasMore = false;
+      const SEARCH_PAGE_LIMIT = 20;
       // No hidden Production default: nothing is selected until the user explicitly searches + selects.
       let selectedSymbol = '';
       let selectedName = '';
@@ -2010,6 +2028,10 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         dropdown.hidden = true;
         searchPanel.classList.remove('open');
         input.setAttribute('aria-expanded', 'false');
+        searchOffset = 0;
+        searchTotal = 0;
+        searchHasMore = false;
+        if (loadMoreBtn) loadMoreBtn.hidden = true;
       };
 
       const buildSelectedSymbolOverview = (record: any): string => {
@@ -2506,15 +2528,20 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try { resetQuotePreview(); } catch {}
       };
 
-      const renderResultButtons = (open: boolean) => {
-        resultsEl.replaceChildren();
-        resultCount.textContent = `${visibleRecords.length}개`;
+      // Phase 3GG-T-HF3B: renders the current page. `appendFrom > 0` appends the just-loaded page
+      // (load-more) without clearing/scroll-jumping; `appendFrom === 0` is a fresh render. The count
+      // headline shows the TOTAL matches, and the load-more control appears only when more remain.
+      const renderResultButtons = (open: boolean, appendFrom = 0) => {
+        if (appendFrom <= 0) resultsEl.replaceChildren();
+        const totalToShow = searchTotal || visibleRecords.length;
+        resultCount.textContent = `${totalToShow.toLocaleString('ko-KR')}개`;
         emptyState.hidden = visibleRecords.length > 0;
         dropdown.hidden = !open;
         searchPanel.classList.toggle('open', open);
         input.setAttribute('aria-expanded', String(open));
 
-        for (const record of visibleRecords) {
+        for (let index = Math.max(0, appendFrom); index < visibleRecords.length; index += 1) {
+          const record = visibleRecords[index];
           const button = document.createElement('button');
           const isSelected = record.symbol === selectedSymbol;
           button.type = 'button';
@@ -2536,11 +2563,28 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           button.addEventListener('click', () => updateSelection(record));
           resultsEl.append(button);
         }
+
+        if (loadMoreBtn) loadMoreBtn.hidden = !(open && searchHasMore && visibleRecords.length > 0);
       };
 
-      // Phase 3GG-OP-FAST: universal search via the server route, with stale-response protection.
+      // Phase 3GG-OP-FAST / 3GG-T-HF3B: universal search via the server route, with stale-response
+      // protection (monotonic seq + AbortController) and bounded offset paging over the large master.
       let searchSeq = 0;
       let searchAbort: AbortController | null = null;
+      const buildSearchParams = (offset: number) => {
+        const params = new URLSearchParams({
+          q: input.value.trim(),
+          limit: String(SEARCH_PAGE_LIMIT),
+          offset: String(Math.max(0, offset)),
+        });
+        if (activeFilter !== 'all') params.set('assetType', activeFilter);
+        if (activeCountry !== 'all') params.set('country', activeCountry);
+        return params;
+      };
+      const readItems = (data: any): any[] => {
+        const list = Array.isArray(data?.items) ? data.items : Array.isArray(data?.results) ? data.results : [];
+        return list.map(mapApiResult);
+      };
       const runSearch = async (open = true) => {
         if (searchHint) searchHint.hidden = true;
         const query = input.value.trim();
@@ -2551,27 +2595,77 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const seq = ++searchSeq;
         if (searchAbort) searchAbort.abort();
         searchAbort = new AbortController();
-        const params = new URLSearchParams({ q: query });
-        if (activeFilter !== 'all') params.set('assetType', activeFilter);
+        searchOffset = 0;
         try {
           const authHeaders = await chartAiAuthHeaders();
-          const response = await fetch(`/api/chart-ai/instruments/search.json?${params.toString()}`, {
+          const response = await fetch(`/api/chart-ai/instruments/search.json?${buildSearchParams(0).toString()}`, {
             method: 'GET',
             signal: searchAbort.signal,
             credentials: 'omit',
             headers: { ...authHeaders },
           });
           const data = await response.json();
+          // Stale-response guard: a newer query bumped searchSeq while this was in flight -> drop it so
+          // an older result can never overwrite a newer query.
           if (seq !== searchSeq) return;
-          visibleRecords = Array.isArray(data?.results) ? data.results.map(mapApiResult) : [];
-          renderResultButtons(open);
+          visibleRecords = readItems(data);
+          searchTotal = Number.isFinite(data?.total) ? Number(data.total) : visibleRecords.length;
+          searchHasMore = Boolean(data?.hasMore);
+          searchOffset = Number.isFinite(data?.nextOffset) ? Number(data.nextOffset) : visibleRecords.length;
+          renderResultButtons(open, 0);
         } catch (error) {
           if (seq !== searchSeq) return;
           if (error && (error as any).name === 'AbortError') return;
           visibleRecords = [];
-          renderResultButtons(open);
+          searchTotal = 0;
+          searchHasMore = false;
+          renderResultButtons(open, 0);
         }
       };
+
+      // Load-more appends the next page. It does NOT bump searchSeq; if a fresh query starts meanwhile,
+      // searchSeq advances and this page is dropped (never appended to unrelated results).
+      const loadMoreResults = async () => {
+        if (!searchHasMore || !input.value.trim()) return;
+        const seq = searchSeq;
+        const offsetToLoad = searchOffset;
+        if (loadMoreBtn) {
+          loadMoreBtn.disabled = true;
+          loadMoreBtn.textContent = '불러오는 중…';
+        }
+        try {
+          const authHeaders = await chartAiAuthHeaders();
+          const response = await fetch(`/api/chart-ai/instruments/search.json?${buildSearchParams(offsetToLoad).toString()}`, {
+            method: 'GET',
+            credentials: 'omit',
+            headers: { ...authHeaders },
+          });
+          const data = await response.json();
+          if (seq !== searchSeq) return; // a newer query superseded this page
+          const startIndex = visibleRecords.length;
+          const nextItems = readItems(data);
+          // Guard against duplicate rows across pages (e.g. if offsets overlap).
+          const seen = new Set(visibleRecords.map((r) => `${r.country}:${r.symbol}`));
+          for (const item of nextItems) {
+            const key = `${item.country}:${item.symbol}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              visibleRecords.push(item);
+            }
+          }
+          searchHasMore = Boolean(data?.hasMore);
+          searchOffset = Number.isFinite(data?.nextOffset) ? Number(data.nextOffset) : offsetToLoad + nextItems.length;
+          renderResultButtons(true, startIndex);
+        } catch {
+          /* keep the currently rendered results on a transient load-more failure */
+        } finally {
+          if (loadMoreBtn) {
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.textContent = '더 보기';
+          }
+        }
+      };
+      if (loadMoreBtn) loadMoreBtn.addEventListener('click', loadMoreResults);
 
       let searchDebounceId = 0;
       const debouncedSearch = () => {
@@ -2585,6 +2679,21 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           if (filter !== 'all' && filter !== 'stock' && filter !== 'etf') return;
           activeFilter = filter;
           filterButtons.forEach((candidate) => {
+            const active = candidate === button;
+            candidate.classList.toggle('active', active);
+            candidate.setAttribute('aria-pressed', String(active));
+          });
+          runSearch(true);
+        });
+      });
+
+      // Phase 3GG-T-HF3B: KR/US country filter. Re-runs the search from offset 0 with the new filter.
+      countryFilterButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const filter = button.dataset.countryFilter;
+          if (filter !== 'all' && filter !== 'KR' && filter !== 'US') return;
+          activeCountry = filter;
+          countryFilterButtons.forEach((candidate) => {
             const active = candidate === button;
             candidate.classList.toggle('active', active);
             candidate.setAttribute('aria-pressed', String(active));
@@ -5232,6 +5341,39 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       border-color: color-mix(in srgb, var(--primary) 55%, var(--border));
       background: color-mix(in srgb, var(--primary) 10%, var(--surface));
       color: var(--primary);
+    }
+
+    /* Phase 3GG-T-HF3B: KR/US + type filter groups wrap cleanly on narrow screens. */
+    .chart-ai-filter-groups {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      align-items: center;
+    }
+
+    /* Phase 3GG-T-HF3B: incremental "더 보기" paging control for the large universal master. */
+    .chart-ai-load-more {
+      display: block;
+      width: 100%;
+      min-height: 40px;
+      padding: 0.55rem 0.75rem;
+      border: none;
+      border-top: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--primary);
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .chart-ai-load-more:hover {
+      background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+    }
+
+    .chart-ai-load-more[disabled] {
+      color: var(--text-muted);
+      cursor: default;
     }
 
     .chart-lookup-dropdown {

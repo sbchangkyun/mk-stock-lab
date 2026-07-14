@@ -133,8 +133,11 @@ assert(krEntries.every((i) => i.exchangeCode === null), 'KR instruments must not
 // --- 5. Search + normalize: no fabricated fallback ---
 const searchMod = read(SEARCH_MODULE);
 const normalizeMod = read(NORMALIZE_MODULE);
+// Phase 3GG-T-HF3B: the empty-return object is now formatted across multiple lines (pagination fields
+// added), so the two tokens are asserted separately instead of as one single-line substring. The
+// intent — an empty, non-fabricated result for a too-short query — is unchanged.
 assert(
-  searchMod.includes('UNIVERSAL_SEARCH_MIN_QUERY_LENGTH') && searchMod.includes('results: [], resultCount: 0'),
+  searchMod.includes('UNIVERSAL_SEARCH_MIN_QUERY_LENGTH') && searchMod.includes('results: []') && /resultCount: 0/.test(searchMod),
   'search must return empty results for a too-short query (no fabricated fallback).',
 );
 assert(/isValidCandle/.test(normalizeMod) && /rejectedCount/.test(normalizeMod), 'normalize module must validate + reject malformed candles.');
