@@ -1,5 +1,47 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF1 - 2026-07-14
+
+### KR ETF Coverage & Master-Refresh Discovery (discovery-only)
+
+- **Discovery-only** phase (no Production master change, no deploy, no workflow created, no push) answering
+  two questions before further functional work: (1) the actual active KR ETF universe, and (2) how to
+  safely refresh the KR/US instrument master. Classification
+  `PASS_KR_ETF_AND_MASTER_REFRESH_DISCOVERY_COMPLETE_OWNER_INPUT_REQUIRED`.
+- **Exact KR ETF count**: the KRX Data Marketplace bulk endpoints are WAF-blocked from automation
+  (`getJsonData.cmd` → 400 "LOGOUT"; OTP CSV → 200/0 bytes), so the retrievable-now authoritative figure
+  comes from the official **KIS KOSPI master** (`kospi_code.mst`, retrieved 2026-07-14, SHA-256
+  `dd15d6be3237efff…`, 2,562 records) via its **security-group field**: **EF (ETF) = 1,151** (868 numeric +
+  **283 alphanumeric** 6-char codes e.g. `0000D0`), EN (ETN) 385, RT (REIT) 23, ST (stock) 917. KOSDAQ
+  master has 0 EF (all KR ETFs are on the KOSPI file). The definitive KRX-published membership count is
+  `OWNER_SOURCE_FILE_REQUIRED` (owner downloads the KRX ETF CSV in a browser — credential-free).
+- **Critical finding**: 283 ETFs use alphanumeric KRX codes → the current KR symbol rule `^\d{6}$` would
+  reject them; implementation must widen to `^[0-9A-Z]{6}$` (KIS domestic OHLC accepts either).
+- **Classification method**: KIS security-group code (field-based, per the official
+  `koreainvestment/open-trading-api` `kis_kospi_code_mst.py`) — never brand/ticker/name guessing; the coarse
+  `ETP` flag does not separate ETF from ETN.
+- **Projected impact** (illustrative, not applied): KR ETF 7 → 1,151; grand total 12,826 → ~13,970; master
+  ~3.64 MB → ~3.96 MB; existing pagination stays sufficient.
+- **Refresh design**: lifecycle model (NEW_LISTING/DELISTED/RENAMED/SYMBOL_CHANGED/…), active + inactive
+  archive policy, per-axis blocking rules (total drop 5% / growth 25% / removals 50 / mapping rate 95% /
+  anchors), cadence B (daily diff + weekly full reconciliation; US keyed off the Nasdaq `File Creation Time`
+  trailer), and GitHub Actions feasibility. **Decisive constraint**: scheduled Actions run only from the
+  workflow on the **default branch `main`** — the current work is on an unpushed feature branch, so a
+  scheduled refresh needs owner push/merge to `main`. Recommended mode sequence Mode 0 → Mode 1 (report-only)
+  → Mode 2 (auto-PR); no auto-deploy.
+- **Legal**: KRX Open API ToS restricts re-providing KRX data to third parties → owner/legal review required
+  before an automatic pipeline serving KRX-derived data; `data.go.kr` gov open-data is the most promising
+  clean source.
+- New committed discovery tooling (offline, no dependency, no network at import): `scripts/discovery/`
+  `parse_kis_kospi_master.mjs`, `parse_krx_etf_master.mjs`, `compare_krx_etf_to_kis_master.mjs`,
+  `simulate_instrument_master_refresh.mjs` (`--self-test` 19/19), `smoke_phase_3gg_t_hf3b_hf1_discovery.mjs`
+  (14/14). Raw official source files kept in scratch, not committed. Successor proposed:
+  **Phase 3GG-T-HF3B-HF2-INSTRUMENT-MASTER-AUTOMATION**.
+- See `docs\planning\phase_3gg_t_hf3b_hf1_kr_etf_master_refresh_discovery_result_v0.1.md`,
+  `kr_etf_official_source_and_mapping_matrix_v0.1.md`,
+  `instrument_master_refresh_operating_policy_v0.1.md`, and
+  `instrument_master_refresh_owner_input_checklist_v0.1.md` for full detail.
+
 ## Phase 3GG-T-HF3B-HF4C - 2026-07-14
 
 ### Universal Search + OHLCV Data Foundation
