@@ -90,7 +90,10 @@ for (const s of [
 ]) assert(!page.includes(s), `obsolete stock-card copy must be removed: "${s.slice(0, 16)}…"`);
 
 // --- 7. Three-line summary removed from Production; Portfolio Intelligence removed from Chart AI ---
-assert(/!isVercelProductionRuntime[\s\S]{0,220}chartAiOwnerLocalKisLlmSummaryPanel/.test(page), 'summary panel must be gated out of the Production DOM.');
+// Phase 3GG-T-HF3B-HF2-HF2B consolidated the real-experience markup gate into chartAiRealExperienceRuntime
+// (Production OR protected-Preview opt-in). !chartAiRealExperienceRuntime still hides the owner-local summary
+// panel in Production, so the "gated out of Production" intent is preserved.
+assert(/!(?:isVercelProductionRuntime|chartAiRealExperienceRuntime)[\s\S]{0,220}chartAiOwnerLocalKisLlmSummaryPanel/.test(page), 'summary panel must be gated out of the Production DOM.');
 assert(!page.includes('chartAiPortfolioWorkspace') && !page.includes('data-pf-tab'), 'Portfolio Intelligence workspace must be removed from Chart AI DOM.');
 assert(!page.includes('portfolio-intelligence') && !page.includes('recordSelectionForPortfolio'), 'Portfolio Intelligence client init + imports must be removed.');
 assert(existsSync(PORTFOLIO), 'the separate /portfolio page must be preserved.');

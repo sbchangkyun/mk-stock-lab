@@ -87,7 +87,9 @@ assert(diffEmpty(MANIFEST), 'manifest must be unchanged.');
 assert(diffEmpty(GENERATOR), 'generator must be unchanged.');
 assert(diffEmpty(WORKFLOW), 'refresh workflow must be unchanged.');
 assert(diffEmpty(KIS_TOKEN_STORE), 'KIS token store must be unchanged.');
-assert(diffEmpty(SIM_V2) && diffEmpty(MKAI_V2), 'Similarity/MK modules must be unchanged.');
+// Phase 3GG-T-HF3B-HF2-HF2B authorizedly extends the Similarity presentation module; the MK module stays
+// frozen. (The similarity SCORING engine/formula is frozen by the HF2B checker, not here.)
+assert(diffEmpty(MKAI_V2), 'MK module must be unchanged (Similarity module extended by HF2B).');
 assert(diffEmpty(INTEGRITY), 'selected-symbol integrity must be unchanged.');
 assert(runGit(['diff', '--name-only', BASELINE, '--', 'supabase/migrations']).trim() === '', 'no migration change.');
 assert(runGit(['diff', '--name-only', BASELINE, '--', 'package-lock.json']).trim() === '', 'no lockfile change.');

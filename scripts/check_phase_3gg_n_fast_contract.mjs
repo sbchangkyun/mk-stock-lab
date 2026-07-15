@@ -96,10 +96,14 @@ const SOURCE_REQUIRED_TOKENS = [
 
 // Every owner-local/mock/sample block that Section D/F/G/H requires to be truly absent from
 // Production-rendered markup must be gated behind one of these two conditional forms.
+// Phase 3GG-T-HF3B-HF2-HF2B consolidated the real-experience markup gate into the authoritative
+// chartAiRealExperienceRuntime flag (Production OR protected-Preview opt-in). It equals
+// isVercelProductionRuntime on Production, so owner-local/mock blocks stay gated out of the real user
+// experience — the security intent of this count is preserved. Accept either token.
 const REQUIRED_PRODUCTION_GATE_PATTERNS = [
-  /\{!isVercelProductionRuntime && \(/,
-  /\{isVercelProductionRuntime && \(/,
-  /\{isVercelProductionRuntime \? \(/,
+  /\{!(?:isVercelProductionRuntime|chartAiRealExperienceRuntime) && \(/,
+  /\{(?:isVercelProductionRuntime|chartAiRealExperienceRuntime) && \(/,
+  /\{(?:isVercelProductionRuntime|chartAiRealExperienceRuntime) \? \(/,
 ];
 const MIN_NEGATIVE_GATE_COUNT = 5; // at least this many distinct owner-local/mock blocks removed
 

@@ -73,7 +73,9 @@ for (const id of [
   assert(new RegExp(`id="${id}"`).test(page), `page must render #${id}.`);
 }
 assert(/aria-live="polite"/.test(page) && /chartAiCandleSummary/.test(page), 'accessible candle summary must be aria-live polite.');
-assert(/isVercelProductionRuntime\s*&&[\s\S]{0,120}chartAiChartTooltip/.test(page), 'tooltip element must be gated to Production only.');
+// Phase 3GG-T-HF3B-HF2-HF2B: the real-experience markup gate is now chartAiRealExperienceRuntime
+// (Production OR protected-Preview opt-in); the Production-gating intent is preserved.
+assert(/(?:isVercelProductionRuntime|chartAiRealExperienceRuntime)\s*&&[\s\S]{0,120}chartAiChartTooltip/.test(page), 'tooltip element must be gated to Production only.');
 
 // --- 6. Interaction functions exist and are gated behind the Production-only tooltip element ---
 for (const fn of [
@@ -104,7 +106,7 @@ assert(/opts\.commit\s*&&\s*chartCandleSummary\s*&&\s*index\s*!==\s*chartAnnounc
 assert(/pointermove[\s\S]{0,200}selectChartCandle\([^)]*\{\s*commit:\s*false/.test(page), 'pointermove (hover) must never commit an aria-live announcement.');
 
 // --- 10. Chart is keyboard-reachable and responds to Left/Right/Escape ---
-assert(/tabindex=\{isVercelProductionRuntime \? '0' : undefined\}/.test(page), 'chart host must be keyboard-focusable in Production.');
+assert(/tabindex=\{(?:isVercelProductionRuntime|chartAiRealExperienceRuntime) \? '0' : undefined\}/.test(page), 'chart host must be keyboard-focusable in Production.');
 assert(/ArrowLeft/.test(page) && /ArrowRight/.test(page) && /Escape/.test(page), 'chart must support ArrowLeft/ArrowRight/Escape keyboard interaction.');
 
 // --- 11. HF3A-preservation: interaction state resets on every non-ready chart transition ---

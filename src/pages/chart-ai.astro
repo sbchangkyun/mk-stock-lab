@@ -32,6 +32,19 @@ const productionChartAiDefaultAccess = evaluateProductionChartAiBetaAccess({
 });
 const productionChartAiDefaultEnabled = productionChartAiDefaultAccess.allowed === true;
 
+// Phase 3GG-T-HF3B-HF2-HF2B: ONE authoritative "render the real experience" flag for the markup.
+// True on the actual Production runtime (unchanged) OR on a protected Vercel Preview carrying the
+// explicit ?chartAiBetaPreview=1 opt-in. This is VISIBILITY ONLY — every Chart AI API route still
+// independently enforces its own guard (VERCEL_ENV=preview + CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA +
+// the query) and fails closed, so an un-flagged Preview simply shows the honest guarded state instead
+// of fabricated data. Ordinary Preview (no opt-in) and local keep the existing sample experience, so
+// Production and ordinary-Preview behavior are unchanged; only protected-Preview+opt-in now sees the
+// real chart / real Similarity candidate UI (the QA surface authorized for this phase).
+const isProtectedPreviewBetaOptInRuntime =
+  readServerEnvValue('VERCEL_ENV') === 'preview' &&
+  Astro.url.searchParams.get('chartAiBetaPreview') === '1';
+const chartAiRealExperienceRuntime = isVercelProductionRuntime || isProtectedPreviewBetaOptInRuntime;
+
 const clientSafeDomesticSymbols = getClientSafeDomesticSymbolRecords();
 const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols)
   .replaceAll('<', '\\u003c');
@@ -302,7 +315,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       <p class="eyebrow">국내/미국 주식·ETF</p>
       <h1>종목 차트</h1>
       <p class="lead">
-        {isVercelProductionRuntime
+        {chartAiRealExperienceRuntime
           ? '종목을 조회하고 차트 중심의 기본 정보를 확인하세요.'
           : '종목을 조회하고 차트 중심의 기본 정보를 확인하세요. 현재 화면은 안전한 샘플 데이터로 구성되어 있습니다.'}
       </p>
@@ -388,11 +401,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       </div>
     </section>
 
-    <div class={`chart-lookup-content-grid${isVercelProductionRuntime ? ' chart-lookup-content-grid--solo' : ''}`}>
-      <section class="chart-market-panel" {...(isVercelProductionRuntime ? { 'aria-label': '종목 차트' } : { 'aria-labelledby': 'chart-market-heading' })}>
+    <div class={`chart-lookup-content-grid${chartAiRealExperienceRuntime ? ' chart-lookup-content-grid--solo' : ''}`}>
+      <section class="chart-market-panel" {...(chartAiRealExperienceRuntime ? { 'aria-label': '종목 차트' } : { 'aria-labelledby': 'chart-market-heading' })}>
         <div class="chart-market-rail">
           <div class="chart-market-summary">
-            {!isVercelProductionRuntime && (
+            {!chartAiRealExperienceRuntime && (
             <div class="chart-market-heading-group">
               <p class="chart-market-kicker">차트</p>
               <h2 id="chart-market-heading">샘플 차트</h2>
@@ -405,7 +418,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               <span class="chart-identity-chip" id="chartAiSelectedAssetType">—</span>
               <span class="chart-identity-chip" id="chartAiSelectedCurrency">—</span>
             </div>
-            {isVercelProductionRuntime && (
+            {chartAiRealExperienceRuntime && (
             <div class="chart-market-price-row" id="chartAiHeaderPriceRow" hidden>
               <span class="chart-header-price" id="chartAiHeaderPrice">—</span>
               <span class="chart-header-change" id="chartAiHeaderChangeAmount">—</span>
@@ -414,19 +427,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             </div>
             )}
           </div>
-          {!isVercelProductionRuntime && (
+          {!chartAiRealExperienceRuntime && (
           <div class="chart-market-status">
             <span id="chartAiChartStatus">샘플 OHLC·거래량 데이터</span>
             <strong id="chartAiChartStatusStrong">실제 시세 아님</strong>
           </div>
           )}
-          {!isVercelProductionRuntime && (
+          {!chartAiRealExperienceRuntime && (
           <p class="chart-market-sample-helper">현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 실제 투자 판단용 정보가 아닙니다.</p>
           )}
         </div>
 
         <div class="chart-period-controls" role="group" aria-label="차트 기간 선택">
-          {isVercelProductionRuntime ? (
+          {chartAiRealExperienceRuntime ? (
             <Fragment>
               <button type="button" data-range="1m" aria-pressed="false">1개월</button>
               <button type="button" data-range="3m" aria-pressed="true" class="active">3개월</button>
@@ -444,7 +457,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           )}
         </div>
 
-        {isVercelProductionRuntime && (
+        {chartAiRealExperienceRuntime && (
           <div class="chart-ohlcv-strip" id="chartAiOhlcvStrip" hidden>
             <span class="chart-ohlcv-item"><b>시</b><em id="chartAiStripOpen">—</em></span>
             <span class="chart-ohlcv-item"><b>고</b><em id="chartAiStripHigh">—</em></span>
@@ -462,8 +475,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           id="chartAiMarketChart"
           role="img"
           aria-label="선택 종목의 캔들 차트와 거래량"
-          tabindex={isVercelProductionRuntime ? '0' : undefined}
-          hidden={isVercelProductionRuntime}
+          tabindex={chartAiRealExperienceRuntime ? '0' : undefined}
+          hidden={chartAiRealExperienceRuntime}
         >
           <svg
             class="chart-market-svg"
@@ -472,15 +485,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             preserveAspectRatio="none"
             aria-hidden="true"
           ></svg>
-          {isVercelProductionRuntime && (
+          {chartAiRealExperienceRuntime && (
             <div class="chart-tooltip" id="chartAiChartTooltip" hidden></div>
           )}
         </div>
-        {isVercelProductionRuntime && (
+        {chartAiRealExperienceRuntime && (
           <p class="sr-only" id="chartAiCandleSummary" aria-live="polite"></p>
         )}
 
-        {isVercelProductionRuntime && (
+        {chartAiRealExperienceRuntime && (
           <div class="chart-market-preparing-state" id="chartAiRealChartState" role="status" aria-live="polite" data-state="idle">
             <strong id="chartAiRealChartStateTitle">종목을 검색해 선택하면 실제 차트를 불러옵니다.</strong>
             <p id="chartAiRealChartStateMessage">종목명, 티커 또는 종목코드로 검색한 뒤 결과를 선택하세요.</p>
@@ -490,7 +503,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         {/* Phase 3GG-T-HF1: chart data status moved OUT of the SVG plotting area to a compact metadata
             row below the chart (데이터 기준 · 통화 · 지연 여부) so nothing overlaps the candles/volume. */}
-        {isVercelProductionRuntime ? (
+        {chartAiRealExperienceRuntime ? (
           <div class="chart-real-meta" id="chartAiRealChartMeta" hidden>
             <span class="chart-real-meta-source" id="chartAiRealChartSourceNote">실시간 지연 시세 · KIS</span>
             <span class="chart-real-meta-asof" id="chartAiRealChartAsOf">데이터 기준 시각 확인 중</span>
@@ -501,7 +514,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
       </section>
 
-      {!isVercelProductionRuntime && (
+      {!chartAiRealExperienceRuntime && (
       <aside class="chart-stock-sidebar">
         <section class="panel chart-company-placeholder" aria-labelledby="chart-company-heading">
           <div class="chart-sidebar-heading">
@@ -537,7 +550,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           <p id="chartAiOverviewSummary">종목을 검색해 선택하면 종목 개요가 표시됩니다.</p>
         </section>
 
-        {!isVercelProductionRuntime && (
+        {!chartAiRealExperienceRuntime && (
           <section class="panel chart-quote-preview" id="chartAiQuotePreview" aria-labelledby="chart-quote-preview-heading">
             <div class="chart-sidebar-heading">
               <p class="eyebrow" id="chartAiQuotePreviewEyebrow">오너 로컬 전용</p>
@@ -564,10 +577,10 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       <div class="chart-analysis-header">
         <p class="eyebrow">차트 분석</p>
         <h2 id="chart-analysis-workspace-heading">차트 기반 분석 결과</h2>
-        <p class="chart-analysis-header-guide">{isVercelProductionRuntime ? '실시간 지연 시세 기반으로 과거 유사 패턴을 분석합니다. 참고용 정보이며 미래 성과를 예측하거나 보장하지 않습니다.' : '샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.'}</p>
+        <p class="chart-analysis-header-guide">{chartAiRealExperienceRuntime ? '실시간 지연 시세 기반으로 과거 유사 패턴을 분석합니다. 참고용 정보이며 미래 성과를 예측하거나 보장하지 않습니다.' : '샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.'}</p>
       </div>
 
-      {!isVercelProductionRuntime && (
+      {!chartAiRealExperienceRuntime && (
         <Fragment>
           <section
             class="chart-ai-owner-local-similar-pattern-route-notice"
@@ -660,7 +673,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         </Fragment>
       )}
 
-      {!isVercelProductionRuntime && (
+      {!chartAiRealExperienceRuntime && (
       <Fragment>
       <!--
         Phase 3FF-A-UI-A: local-only, explicit opt-in owner-local deterministic agent UI panel.
@@ -894,7 +907,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       {/* Phase 3GG-T-HF1: the low-value three-line MK AI 시세 요약 is REMOVED from the Production Chart
           AI UI. This panel is gated to non-production (localhost/Preview) ONLY for historical regression;
           it is never rendered into the Production DOM and the route is Production-disabled server-side. */}
-      {!isVercelProductionRuntime && (
+      {!chartAiRealExperienceRuntime && (
       <section
         id="chartAiOwnerLocalKisLlmSummaryPanel"
         class="chart-owner-local-kis-llm-summary-panel"
@@ -902,7 +915,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         hidden
       >
         <div class="chart-owner-local-kis-llm-summary-heading">
-          {isVercelProductionRuntime ? (
+          {chartAiRealExperienceRuntime ? (
             <Fragment>
               <p class="eyebrow">실시간 요약</p>
               <h3 id="chart-owner-local-kis-llm-summary-heading">MK AI 시세 요약</h3>
@@ -923,7 +936,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           )}
         </div>
         <button type="button" id="chartAiOwnerLocalKisLlmSummaryButton" class="chart-owner-local-kis-llm-summary-run-btn">
-          {isVercelProductionRuntime ? 'MK AI 시세 요약 요청 (005930)' : '로컬 전용 KIS + LLM 요약 요청 (005930)'}
+          {chartAiRealExperienceRuntime ? 'MK AI 시세 요약 요청 (005930)' : '로컬 전용 KIS + LLM 요약 요청 (005930)'}
         </button>
         <p id="chartAiOwnerLocalKisLlmSummaryStatus" class="chart-owner-local-kis-llm-summary-status" aria-live="polite">대기 중</p>
         <div
@@ -959,7 +972,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         <div class="chart-analysis-page-canvas">
       <div id="chartAiSimilarityPanel" class="chart-analysis-page active" role="tabpanel" aria-labelledby="chartAiSimilarityTab" tabindex="0">
       <div class="chart-similarity-panel-heading">
-        {isVercelProductionRuntime ? (
+        {chartAiRealExperienceRuntime ? (
           <Fragment>
             <p class="eyebrow" id="chart-similarity-panel-heading">유사 패턴 분석</p>
           </Fragment>
@@ -977,7 +990,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         )}
       </div>
 
-      {isVercelProductionRuntime ? (
+      {chartAiRealExperienceRuntime ? (
         <div class="chart-similarity-real" id="chartAiSimilarityReal" data-state="idle">
           <div class="chart-similarity-controls">
             <div class="chart-similarity-window-select" role="group" aria-label="분석 구간 길이 선택">
@@ -995,18 +1008,24 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             <div class="chart-similarity-current" id="chartAiSimilarityCurrent" aria-live="polite"></div>
 
             <figure class="chart-similarity-overlay-figure">
-              <figcaption class="chart-similarity-overlay-caption">정규화 오버레이 · 시작값 100 기준 비교</figcaption>
+              <figcaption class="chart-similarity-overlay-caption">정규화 오버레이 · 시작값 100 기준 비교 · 마우스·터치·화살표 키로 각 지점을 확인할 수 있습니다</figcaption>
               <div class="chart-similarity-overlay-wrap">
-                <svg class="chart-similarity-overlay-svg" id="chartAiSimilarityOverlaySvg" viewBox="0 0 720 260" preserveAspectRatio="none" role="img" aria-label="현재 구간과 상위 유사 과거 구간의 정규화 가격 경로 비교"></svg>
+                <svg class="chart-similarity-overlay-svg" id="chartAiSimilarityOverlaySvg" viewBox="0 0 720 260" preserveAspectRatio="none" role="application" tabindex="0" aria-label="현재 구간과 상위 유사 과거 구간의 정규화 가격 경로 비교. 좌우 화살표 키로 각 D+ 지점을 이동하고, Home·End로 처음·끝으로 이동하며, Esc로 선택을 해제합니다." aria-describedby="chartAiSimilarityOverlaySr"></svg>
+                <span class="chart-similarity-overlay-dplus" id="chartAiSimilarityOverlayDplus" hidden aria-hidden="true"></span>
                 <div class="chart-similarity-overlay-axis" id="chartAiSimilarityOverlayAxis" aria-hidden="true"></div>
                 <div class="chart-similarity-overlay-tooltip" id="chartAiSimilarityOverlayTooltip" hidden aria-hidden="true"></div>
               </div>
+              <p class="chart-similarity-overlay-sr sr-only" id="chartAiSimilarityOverlaySr" role="status" aria-live="polite"></p>
               <div class="chart-similarity-legend" id="chartAiSimilarityLegend" role="group" aria-label="비교 구간 표시/숨김"></div>
             </figure>
 
             <div class="chart-similarity-matches" id="chartAiSimilarityMatches" aria-label="상위 유사 과거 구간"></div>
 
-            <div class="chart-similarity-aggregate" id="chartAiSimilarityAggregate" aria-live="polite"></div>
+            <div class="chart-similarity-scoreguide" id="chartAiSimilarityScoreGuide"></div>
+
+            <div class="chart-similarity-insight" id="chartAiSimilarityInsight" aria-label="패턴 비교 해석" aria-live="polite"></div>
+
+            <div class="chart-similarity-aggregate" id="chartAiSimilarityAggregate"></div>
           </div>
         </div>
       ) : (
@@ -1152,14 +1171,14 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       <div id="chartAiMkAiPanel" class="chart-analysis-page" role="tabpanel" aria-labelledby="chartAiMkAiTab" hidden tabindex="0">
         <div class="chart-mk-ai-panel-heading">
           <p class="eyebrow" id="chart-mk-ai-heading">MK AI</p>
-          {!isVercelProductionRuntime && (
+          {!chartAiRealExperienceRuntime && (
             <Fragment>
               <p class="chart-mk-ai-subheading">AI 분석 미리보기</p>
               <p class="chart-mk-ai-intro">아래 해석은 샘플·합성 데이터를 결정적 로직으로 분석한 결과이며, 외부 AI를 호출하지 않습니다.</p>
             </Fragment>
           )}
         </div>
-        {isVercelProductionRuntime && (
+        {chartAiRealExperienceRuntime && (
           <div class="chart-mkai-real" id="chartAiMkAiReal" data-state="idle">
             <div class="chart-mkai-controls">
               <button type="button" id="chartAiMkAiStartBtn" class="chart-mkai-start-btn" disabled aria-disabled="true">MK AI 분석 시작</button>
@@ -1176,7 +1195,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             </div>
           </div>
         )}
-        {!isVercelProductionRuntime && (
+        {!chartAiRealExperienceRuntime && (
         <Fragment>
         <section
           class="chart-analysis-trigger-card"
@@ -1303,8 +1322,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     </section>
 
     <aside class="chart-lookup-disclaimer" aria-label="데이터 이용 안내">
-      <strong>{isVercelProductionRuntime ? '이용 안내' : '샘플 화면'}</strong>
-      <span>{isVercelProductionRuntime ? '실시간 지연 시세 기반의 참고용 정보이며, 투자 판단이나 매수·매도 추천이 아닙니다.' : '현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.'}</span>
+      <strong>{chartAiRealExperienceRuntime ? '이용 안내' : '샘플 화면'}</strong>
+      <span>{chartAiRealExperienceRuntime ? '실시간 지연 시세 기반의 참고용 정보이며, 투자 판단이나 매수·매도 추천이 아닙니다.' : '현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.'}</span>
     </aside>
   </main>
   </div>
@@ -1329,7 +1348,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     // Phase 3GG-T-HF3A: authoritative selected-symbol / active-chart integrity state machine (pure).
     import { createSelectedSymbolIntegrityState } from '../lib/chart-ai/selected-symbol-integrity.mjs';
     // Phase 3GG-T-HF5: similarity explainability V2 (pure presentation, no DOM/fetch/env).
-    import { buildSimilarityExplainability, resolveVisibleTooltipValues } from '../lib/chart-ai/similarity-explainability-v2.mjs';
+    import { buildSimilarityExplainability, resolveVisibleTooltipValues, orderTooltipRowsByHighlight, resolveNearestSeriesByPixel } from '../lib/chart-ai/similarity-explainability-v2.mjs';
     // Phase 3GG-T-HF6AB: MK Agent experience V2 (pure presentation, no DOM/fetch/env).
     import { buildMkAgentExperience } from '../lib/chart-ai/mk-agent-experience-v2.mjs';
     // Phase 3GG-T-HF4-FAST: pure chart interaction/formatting helpers (no DOM/network/time/randomness).
@@ -1611,7 +1630,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // Phase 3GG-OP-FAST: the real OHLCV chart is driven only on the Production deployment (the
       // production-facing markup). Owner-local/Preview keep the existing sample chart. The OHLCV
       // route carries the same access opt-in the summary route does.
-      const productionRealChartEnabled = chartAiProdBetaEnabled;
+      // Phase 3GG-T-HF3B-HF2-HF2B: the real chart + real Similarity JS now also runs on a protected
+      // Vercel Preview carrying ?chartAiBetaPreview=1 (chartAiBetaPreviewEnabled), matching the server
+      // markup flag chartAiRealExperienceRuntime. The API routes still fail closed independently, and
+      // marketDataRequestQuery already forwards chartAiBetaPreview=1 for the Preview beta path below.
+      const productionRealChartEnabled = chartAiProdBetaEnabled || chartAiBetaPreviewEnabled;
       const marketDataRequestQuery = ownerLocalKisLlmEnabled
         ? 'ownerLocalOhlcv=1'
         : chartAiBetaPreviewEnabled
@@ -2896,7 +2919,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       };
 
       // ===== Phase 3GG-Q-FAST: real similar-pattern analysis (Production) =====
-      // Phase 3GG-T-HF5: rendering rewritten to consume similarity-explainability-v2.mjs.
+      // Phase 3GG-T-HF3B-HF2-HF2B: Similarity result redesign — crosshair + D+ inspection, structured
+      // tooltip, single responsive Top-5 table, score guide, and deterministic insight cards. All
+      // interpretation comes from similarity-explainability-v2.mjs (one authoritative presentation model).
       {
         const simRoot = document.getElementById('chartAiSimilarityReal');
         const simStartBtn = document.getElementById('chartAiSimilarityStartBtn') as HTMLButtonElement | null;
@@ -2907,8 +2932,12 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const simOverlay = document.getElementById('chartAiSimilarityOverlaySvg') as unknown as SVGSVGElement | null;
         const simOverlayAxis = document.getElementById('chartAiSimilarityOverlayAxis');
         const simOverlayTooltip = document.getElementById('chartAiSimilarityOverlayTooltip');
+        const simOverlayDplus = document.getElementById('chartAiSimilarityOverlayDplus');
+        const simOverlaySr = document.getElementById('chartAiSimilarityOverlaySr');
         const simLegend = document.getElementById('chartAiSimilarityLegend');
         const simMatches = document.getElementById('chartAiSimilarityMatches');
+        const simScoreGuide = document.getElementById('chartAiSimilarityScoreGuide');
+        const simInsight = document.getElementById('chartAiSimilarityInsight');
         const simAggregate = document.getElementById('chartAiSimilarityAggregate');
 
         let activeSimWindow = 20;
@@ -2921,31 +2950,26 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const OVERLAY_H = 260;
         const OVERLAY_PAD_X = 10;
         const OVERLAY_PAD_Y = 18;
+        const NEAREST_PX = 18; // documented screen-distance threshold for nearest-line selection
 
-        let overlaySeries: Array<{ key: string; label: string; shortLabel: string; color: string; current: boolean; values: number[] }> = [];
+        type OverlaySeries = { key: string; label: string; shortLabel: string; color: string; current: boolean; startDate: string | null; similarityScore: number | null; values: number[] };
+        let overlaySeries: OverlaySeries[] = [];
         let overlayVisibleKeys = new Set<string>();
+        let overlayScale = { min: 0, span: 1, len: 2 };
+        let activeIndex: number | null = null;   // snapped D+ index under inspection (null = none)
+        let highlightKey: string | null = null;   // emphasized series (nearest line / legend hover)
+        let touchLocked = false;                   // touch keeps the inspection until an outside tap / Esc
 
         const setSimState = (state: string) => { if (simRoot) simRoot.dataset.state = state; };
         const showSimStatus = (text: string) => { if (simStatus) { simStatus.textContent = text; simStatus.hidden = !text; } };
 
+        const xUser = (i: number) => OVERLAY_PAD_X + (i / Math.max(1, overlayScale.len - 1)) * (OVERLAY_W - 2 * OVERLAY_PAD_X);
+        const yUser = (v: number) => OVERLAY_PAD_Y + (1 - (v - overlayScale.min) / overlayScale.span) * (OVERLAY_H - 2 * OVERLAY_PAD_Y);
+
         const hideOverlayTooltip = () => {
           if (simOverlayTooltip) { simOverlayTooltip.hidden = true; simOverlayTooltip.replaceChildren(); }
+          if (simOverlayDplus) { simOverlayDplus.hidden = true; }
         };
-
-        const resetSim = () => {
-          simSeq += 1;
-          if (simAbort) { simAbort.abort(); simAbort = null; }
-          simInFlight = false;
-          if (simResults) simResults.hidden = true;
-          showSimStatus('');
-          setSimState('idle');
-          if (simStartBtn) { simStartBtn.disabled = !integrity.canRunAnalysis(); simStartBtn.textContent = '유사 패턴 분석 시작'; }
-          overlaySeries = [];
-          overlayVisibleKeys = new Set();
-          hideOverlayTooltip();
-          [simMatches, simAggregate, simCurrent, simOverlay, simLegend, simOverlayAxis].forEach((el) => el && el.replaceChildren());
-        };
-        resetSelectedSimilarity = resetSim;
 
         const renderCurrent = (sim: any) => {
           if (!simCurrent) return;
@@ -2968,67 +2992,88 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           simCurrent.append(title, range, disclosure);
         };
 
+        const strokeFor = (s: OverlaySeries) => {
+          if (highlightKey) {
+            if (s.key === highlightKey) return { width: s.current ? '3.2' : '3', opacity: '1' };
+            return { width: s.current ? '2' : '1.2', opacity: '0.22' };
+          }
+          return { width: s.current ? '2.6' : '1.6', opacity: s.current ? '1' : '0.85' };
+        };
+
+        const renderDplus = () => {
+          if (!simOverlayDplus) return;
+          if (activeIndex === null) { simOverlayDplus.hidden = true; return; }
+          simOverlayDplus.style.left = `${(xUser(activeIndex) / OVERLAY_W) * 100}%`;
+          simOverlayDplus.textContent = `D+${activeIndex}`;
+          simOverlayDplus.hidden = false;
+        };
+
         const renderOverlayPaths = () => {
           if (!simOverlay) return;
           simOverlay.replaceChildren();
           const visibleSeries = overlaySeries.filter((s) => overlayVisibleKeys.has(s.key));
           const allVals = visibleSeries.flatMap((p) => p.values).filter((v) => typeof v === 'number' && isFinite(v));
-          if (allVals.length < 2) return;
+          if (allVals.length < 2) { overlayScale = { min: 0, span: 1, len: 2 }; return; }
           const min = Math.min(...allVals);
           const max = Math.max(...allVals);
-          const span = Math.max(1e-6, max - min);
-          const len = Math.max(...overlaySeries.map((p) => p.values.length), 2);
-          const xAt = (i: number) => OVERLAY_PAD_X + (i / Math.max(1, len - 1)) * (OVERLAY_W - 2 * OVERLAY_PAD_X);
-          const yAt = (v: number) => OVERLAY_PAD_Y + (1 - (v - min) / span) * (OVERLAY_H - 2 * OVERLAY_PAD_Y);
+          overlayScale = { min, span: Math.max(1e-6, max - min), len: Math.max(...overlaySeries.map((p) => p.values.length), 2) };
           const baseLine = document.createElementNS(SVG_NS, 'line');
           baseLine.setAttribute('x1', String(OVERLAY_PAD_X)); baseLine.setAttribute('x2', String(OVERLAY_W - OVERLAY_PAD_X));
-          baseLine.setAttribute('y1', yAt(100).toFixed(1)); baseLine.setAttribute('y2', yAt(100).toFixed(1));
+          baseLine.setAttribute('y1', yUser(100).toFixed(1)); baseLine.setAttribute('y2', yUser(100).toFixed(1));
           baseLine.setAttribute('stroke', '#9ca3af'); baseLine.setAttribute('stroke-dasharray', '4 4'); baseLine.setAttribute('stroke-width', '1');
           simOverlay.append(baseLine);
-          visibleSeries.forEach((p) => {
-            const pts = p.values.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ');
+          if (activeIndex !== null) {
+            const cx = xUser(activeIndex);
+            const cross = document.createElementNS(SVG_NS, 'line');
+            cross.setAttribute('x1', cx.toFixed(1)); cross.setAttribute('x2', cx.toFixed(1));
+            cross.setAttribute('y1', String(OVERLAY_PAD_Y - 6)); cross.setAttribute('y2', String(OVERLAY_H - OVERLAY_PAD_Y + 6));
+            cross.setAttribute('stroke', '#6b7280'); cross.setAttribute('stroke-width', '1'); cross.setAttribute('stroke-dasharray', '3 3');
+            cross.setAttribute('class', 'chart-similarity-overlay-crosshair');
+            simOverlay.append(cross);
+          }
+          const ordered = highlightKey
+            ? [...visibleSeries.filter((s) => s.key !== highlightKey), ...visibleSeries.filter((s) => s.key === highlightKey)]
+            : visibleSeries;
+          ordered.forEach((p) => {
+            const st = strokeFor(p);
+            const pts = p.values.map((v, i) => `${xUser(i).toFixed(1)},${yUser(v).toFixed(1)}`).join(' ');
             const pl = document.createElementNS(SVG_NS, 'polyline');
             pl.setAttribute('points', pts);
             pl.setAttribute('fill', 'none');
             pl.setAttribute('stroke', p.color);
-            pl.setAttribute('stroke-width', p.current ? '2.6' : '1.4');
-            pl.setAttribute('stroke-opacity', p.current ? '1' : '0.85');
+            pl.setAttribute('stroke-width', st.width);
+            pl.setAttribute('stroke-opacity', st.opacity);
             pl.setAttribute('stroke-linejoin', 'round');
+            pl.setAttribute('data-series-key', p.key);
             simOverlay.append(pl);
           });
+          if (activeIndex !== null) {
+            visibleSeries.forEach((p) => {
+              const v = p.values[activeIndex as number];
+              if (typeof v !== 'number' || !isFinite(v)) return;
+              const c = document.createElementNS(SVG_NS, 'circle');
+              c.setAttribute('cx', xUser(activeIndex as number).toFixed(1));
+              c.setAttribute('cy', yUser(v).toFixed(1));
+              const emph = highlightKey === p.key;
+              c.setAttribute('r', emph ? '4.5' : (p.current ? '3.5' : '3'));
+              c.setAttribute('fill', p.color);
+              c.setAttribute('stroke', '#ffffff'); c.setAttribute('stroke-width', '1');
+              c.setAttribute('fill-opacity', highlightKey && !emph ? '0.35' : '1');
+              c.setAttribute('data-series-key', p.key);
+              simOverlay.append(c);
+            });
+          }
           const capture = document.createElementNS(SVG_NS, 'rect');
-          capture.setAttribute('x', String(OVERLAY_PAD_X));
-          capture.setAttribute('y', '0');
-          capture.setAttribute('width', String(OVERLAY_W - 2 * OVERLAY_PAD_X));
-          capture.setAttribute('height', String(OVERLAY_H));
+          capture.setAttribute('x', String(OVERLAY_PAD_X)); capture.setAttribute('y', '0');
+          capture.setAttribute('width', String(OVERLAY_W - 2 * OVERLAY_PAD_X)); capture.setAttribute('height', String(OVERLAY_H));
           capture.setAttribute('fill', 'transparent');
           simOverlay.append(capture);
         };
 
-        const renderLegend = () => {
+        const syncLegendHighlight = () => {
           if (!simLegend) return;
-          simLegend.replaceChildren();
-          overlaySeries.forEach((s) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'chart-similarity-legend-item';
-            const visible = overlayVisibleKeys.has(s.key);
-            btn.setAttribute('aria-pressed', String(visible));
-            btn.classList.toggle('is-off', !visible);
-            const sw = document.createElement('span');
-            sw.className = 'chart-similarity-legend-swatch';
-            sw.style.background = s.color;
-            const lbl = document.createElement('span');
-            lbl.textContent = s.label;
-            btn.append(sw, lbl);
-            btn.addEventListener('click', () => {
-              if (overlayVisibleKeys.has(s.key)) overlayVisibleKeys.delete(s.key);
-              else overlayVisibleKeys.add(s.key);
-              renderLegend();
-              renderOverlayPaths();
-              hideOverlayTooltip();
-            });
-            simLegend.append(btn);
+          Array.from(simLegend.querySelectorAll<HTMLElement>('.chart-similarity-legend-item')).forEach((b) => {
+            b.classList.toggle('is-highlight', b.dataset.seriesKey === highlightKey && highlightKey !== null);
           });
         };
 
@@ -3039,173 +3084,377 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           ticks.forEach((t) => {
             const tick = document.createElement('span');
             tick.className = 'chart-similarity-overlay-axis-tick';
-            const pct = ((OVERLAY_PAD_X + (t.index / Math.max(1, len - 1)) * (OVERLAY_W - 2 * OVERLAY_PAD_X)) / OVERLAY_W) * 100;
-            tick.style.left = `${pct}%`;
+            tick.style.left = `${((OVERLAY_PAD_X + (t.index / Math.max(1, len - 1)) * (OVERLAY_W - 2 * OVERLAY_PAD_X)) / OVERLAY_W) * 100}%`;
             tick.textContent = t.label;
             simOverlayAxis.append(tick);
           });
         };
 
-        const indexFromClientPoint = (clientX: number): number | null => {
+        const indexFromClientX = (clientX: number): number | null => {
           if (!simOverlay) return null;
           const ctm = simOverlay.getScreenCTM();
           if (!ctm) return null;
           const pt = simOverlay.createSVGPoint();
           pt.x = clientX; pt.y = 0;
           const local = pt.matrixTransform(ctm.inverse());
-          const len = Math.max(...overlaySeries.map((p) => p.values.length), 2);
+          const len = overlayScale.len;
           const frac = (local.x - OVERLAY_PAD_X) / (OVERLAY_W - 2 * OVERLAY_PAD_X);
           return Math.max(0, Math.min(len - 1, Math.round(frac * Math.max(1, len - 1))));
         };
 
-        const showOverlayTooltipAt = (clientX: number, clientY: number, index: number) => {
-          if (!simOverlayTooltip || !simOverlay?.parentElement) return;
-          const values = resolveVisibleTooltipValues(overlaySeries, Array.from(overlayVisibleKeys), index);
-          if (!values.length) { hideOverlayTooltip(); return; }
+        // Each visible series' Y position at `index` in CLIENT pixels, for true screen-distance nearest.
+        const seriesClientYCandidates = (index: number): Array<{ key: string; y: number }> => {
+          if (!simOverlay) return [];
+          const ctm = simOverlay.getScreenCTM();
+          if (!ctm) return [];
+          const out: Array<{ key: string; y: number }> = [];
+          overlaySeries.filter((s) => overlayVisibleKeys.has(s.key)).forEach((s) => {
+            const v = s.values[index];
+            if (typeof v !== 'number' || !isFinite(v)) return;
+            const pt = simOverlay.createSVGPoint(); pt.x = 0; pt.y = yUser(v);
+            const scr = pt.matrixTransform(ctm);
+            out.push({ key: s.key, y: scr.y });
+          });
+          return out;
+        };
+
+        const showOverlayTooltip = (anchorClientX?: number, anchorClientY?: number) => {
+          if (!simOverlayTooltip || !simOverlay?.parentElement || activeIndex === null) { hideOverlayTooltip(); return; }
+          let rows = resolveVisibleTooltipValues(overlaySeries, Array.from(overlayVisibleKeys), activeIndex) as Array<any>;
+          if (!rows.length) { hideOverlayTooltip(); return; }
+          rows = orderTooltipRowsByHighlight(rows, highlightKey) as Array<any>;
           simOverlayTooltip.replaceChildren();
-          values.forEach((v: any) => {
+          const header = document.createElement('div');
+          header.className = 'chart-similarity-overlay-tooltip-header';
+          header.textContent = `D+${activeIndex}`;
+          simOverlayTooltip.append(header);
+          rows.forEach((v: any) => {
             const row = document.createElement('div');
             row.className = 'chart-similarity-overlay-tooltip-row';
+            if (v.current) row.classList.add('is-current');
+            if (highlightKey && v.key === highlightKey) row.classList.add('is-highlight');
             const dot = document.createElement('span');
             dot.className = 'chart-similarity-overlay-tooltip-dot';
             dot.style.background = v.color;
-            const lbl = document.createElement('span');
-            lbl.className = 'chart-similarity-overlay-tooltip-label';
-            lbl.textContent = v.label;
+            const id = document.createElement('span');
+            id.className = 'chart-similarity-overlay-tooltip-label';
+            id.textContent = v.current ? '현재 구간' : (v.startDate ? `${v.label} · ${v.startDate}` : v.label);
+            const score = document.createElement('span');
+            score.className = 'chart-similarity-overlay-tooltip-score';
+            score.textContent = typeof v.similarityScore === 'number' ? `${v.similarityScore.toFixed(1)}점` : '';
+            const idWrap = document.createElement('span');
+            idWrap.className = 'chart-similarity-overlay-tooltip-id';
+            idWrap.append(dot, id, score);
             const val = document.createElement('span');
             val.className = 'chart-similarity-overlay-tooltip-value';
             val.textContent = typeof v.value === 'number' ? v.value.toFixed(1) : '—';
-            row.append(dot, lbl, val);
+            row.append(idWrap, val);
             simOverlayTooltip.append(row);
           });
+          const foot = document.createElement('div');
+          foot.className = 'chart-similarity-overlay-tooltip-foot';
+          foot.textContent = '오른쪽 값은 시작 100 기준 정규화 지수이며 유사도 점수가 아닙니다.';
+          simOverlayTooltip.append(foot);
           const wrapRect = simOverlay.parentElement.getBoundingClientRect();
           simOverlayTooltip.hidden = false;
-          let left = clientX - wrapRect.left + 10;
-          let top = clientY - wrapRect.top - 10;
           const tw = simOverlayTooltip.offsetWidth;
-          if (left + tw > wrapRect.width) left = wrapRect.width - tw - 6;
+          const th = simOverlayTooltip.offsetHeight;
+          const crossX = wrapRect.left + (xUser(activeIndex) / OVERLAY_W) * wrapRect.width;
+          let left = (typeof anchorClientX === 'number' ? anchorClientX : crossX) - wrapRect.left + 14;
+          let top = (typeof anchorClientY === 'number' ? anchorClientY : wrapRect.top + 8) - wrapRect.top + 12;
+          if (left + tw > wrapRect.width) left = (crossX - wrapRect.left) - tw - 14; // flip left of crosshair
           if (left < 0) left = 6;
+          if (left + tw > wrapRect.width) left = Math.max(6, wrapRect.width - tw - 6);
+          if (top + th > wrapRect.height) top = wrapRect.height - th - 6;
           if (top < 0) top = 6;
           simOverlayTooltip.style.left = `${left}px`;
           simOverlayTooltip.style.top = `${top}px`;
         };
 
+        // Screen-reader summary — updated on keyboard navigation only (never on every mouse move).
+        const announce = () => {
+          if (!simOverlaySr || activeIndex === null) return;
+          const rows = resolveVisibleTooltipValues(overlaySeries, Array.from(overlayVisibleKeys), activeIndex) as Array<any>;
+          const parts = rows.map((v: any) => `${v.current ? '현재 구간' : v.label} ${typeof v.value === 'number' ? v.value.toFixed(1) : '없음'}`);
+          simOverlaySr.textContent = `D+${activeIndex} 지점. ${parts.join(', ')}.`;
+        };
+
+        const clearInspection = () => {
+          activeIndex = null; highlightKey = null; touchLocked = false;
+          hideOverlayTooltip();
+          renderOverlayPaths();
+          syncLegendHighlight();
+        };
+
+        const setActive = (index: number, opts: { highlight?: string | null; clientX?: number; clientY?: number; announce?: boolean } = {}) => {
+          if (!overlaySeries.length) return;
+          activeIndex = Math.max(0, Math.min(overlayScale.len - 1, index));
+          if ('highlight' in opts) highlightKey = opts.highlight ?? null;
+          renderOverlayPaths();
+          renderDplus();
+          syncLegendHighlight();
+          showOverlayTooltip(opts.clientX, opts.clientY);
+          if (opts.announce) announce();
+        };
+
+        const renderLegend = () => {
+          if (!simLegend) return;
+          simLegend.replaceChildren();
+          overlaySeries.forEach((s) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'chart-similarity-legend-item';
+            if (s.current) btn.classList.add('is-current');
+            const visible = overlayVisibleKeys.has(s.key);
+            btn.setAttribute('aria-pressed', String(visible));
+            btn.classList.toggle('is-off', !visible);
+            btn.dataset.seriesKey = s.key;
+            const sw = document.createElement('span');
+            sw.className = 'chart-similarity-legend-swatch';
+            sw.style.background = s.color;
+            const lbl = document.createElement('span');
+            lbl.className = 'chart-similarity-legend-text';
+            lbl.textContent = s.label;
+            btn.append(sw, lbl);
+            btn.addEventListener('click', () => {
+              const isVisible = overlayVisibleKeys.has(s.key);
+              if (isVisible && overlayVisibleKeys.size <= 1) return; // never allow zero visible series
+              if (isVisible) overlayVisibleKeys.delete(s.key); else overlayVisibleKeys.add(s.key);
+              if (highlightKey === s.key && !overlayVisibleKeys.has(s.key)) highlightKey = null;
+              renderLegend();
+              renderOverlayPaths();
+              if (activeIndex !== null) showOverlayTooltip();
+            });
+            const emphasize = () => { if (!overlayVisibleKeys.has(s.key)) return; highlightKey = s.key; syncLegendHighlight(); renderOverlayPaths(); if (activeIndex !== null) showOverlayTooltip(); };
+            const deEmphasize = () => { if (touchLocked) return; highlightKey = null; syncLegendHighlight(); renderOverlayPaths(); if (activeIndex !== null) showOverlayTooltip(); };
+            btn.addEventListener('pointerenter', (e) => { if ((e as PointerEvent).pointerType === 'touch') return; emphasize(); });
+            btn.addEventListener('pointerleave', (e) => { if ((e as PointerEvent).pointerType === 'touch') return; deEmphasize(); });
+            btn.addEventListener('focus', emphasize);
+            btn.addEventListener('blur', deEmphasize);
+            simLegend.append(btn);
+          });
+          syncLegendHighlight();
+        };
+
+        const resetSim = () => {
+          simSeq += 1;
+          if (simAbort) { simAbort.abort(); simAbort = null; }
+          simInFlight = false;
+          if (simResults) simResults.hidden = true;
+          showSimStatus('');
+          setSimState('idle');
+          if (simStartBtn) { simStartBtn.disabled = !integrity.canRunAnalysis(); simStartBtn.textContent = '유사 패턴 분석 시작'; }
+          overlaySeries = [];
+          overlayVisibleKeys = new Set();
+          activeIndex = null; highlightKey = null; touchLocked = false;
+          hideOverlayTooltip();
+          [simMatches, simScoreGuide, simInsight, simAggregate, simCurrent, simOverlay, simLegend, simOverlayAxis].forEach((el) => el && el.replaceChildren());
+          if (simOverlaySr) simOverlaySr.textContent = '';
+        };
+        resetSelectedSimilarity = resetSim;
+
         if (simOverlay) {
+          const nearestAt = (index: number, clientY: number) => resolveNearestSeriesByPixel(seriesClientYCandidates(index), clientY, NEAREST_PX);
           simOverlay.addEventListener('pointermove', (evt: PointerEvent) => {
-            if (evt.pointerType === 'touch') return;
-            const idx = indexFromClientPoint(evt.clientX);
-            if (idx === null) { hideOverlayTooltip(); return; }
-            showOverlayTooltipAt(evt.clientX, evt.clientY, idx);
+            if (evt.pointerType === 'touch' && !touchLocked) return;
+            if (!overlaySeries.length) return;
+            const idx = indexFromClientX(evt.clientX);
+            if (idx === null) return;
+            setActive(idx, { highlight: nearestAt(idx, evt.clientY), clientX: evt.clientX, clientY: evt.clientY });
           });
           simOverlay.addEventListener('pointerleave', (evt: PointerEvent) => {
-            if (evt.pointerType !== 'touch') hideOverlayTooltip();
+            if (evt.pointerType === 'touch') return;
+            if (!touchLocked) clearInspection();
           });
           simOverlay.addEventListener('pointerdown', (evt: PointerEvent) => {
-            const idx = indexFromClientPoint(evt.clientX);
+            if (!overlaySeries.length) return;
+            const idx = indexFromClientX(evt.clientX);
             if (idx === null) return;
-            showOverlayTooltipAt(evt.clientX, evt.clientY, idx);
+            if (evt.pointerType === 'touch') { touchLocked = true; try { simOverlay.setPointerCapture(evt.pointerId); } catch {} }
+            setActive(idx, { highlight: nearestAt(idx, evt.clientY), clientX: evt.clientX, clientY: evt.clientY });
+          });
+          simOverlay.addEventListener('keydown', (evt: KeyboardEvent) => {
+            if (!overlaySeries.length) return;
+            const cur = activeIndex === null ? 0 : activeIndex;
+            let handled = true;
+            switch (evt.key) {
+              case 'ArrowLeft': setActive(cur - 1, { announce: true }); break;
+              case 'ArrowRight': setActive(cur + 1, { announce: true }); break;
+              case 'Home': setActive(0, { announce: true }); break;
+              case 'End': setActive(overlayScale.len - 1, { announce: true }); break;
+              case 'Escape': clearInspection(); if (simOverlaySr) simOverlaySr.textContent = ''; break;
+              default: handled = false;
+            }
+            if (handled) evt.preventDefault();
           });
         }
         document.addEventListener('pointerdown', (evt) => {
           const target = evt.target as Node;
-          if (simOverlay?.contains(target) || simOverlayTooltip?.contains(target)) return;
-          hideOverlayTooltip();
+          if (simOverlay?.contains(target) || simOverlayTooltip?.contains(target) || simLegend?.contains(target)) return;
+          if (touchLocked || activeIndex !== null) clearInspection();
         });
 
         const renderOverlay = (explain: any) => {
           if (!simOverlay || !simLegend) return;
           overlaySeries = explain.series;
           overlayVisibleKeys = new Set(explain.defaultVisibleKeys);
+          activeIndex = null; highlightKey = null; touchLocked = false;
           hideOverlayTooltip();
           renderLegend();
           renderOverlayPaths();
           renderAxis(explain.axisTicks);
+          if (simOverlaySr) simOverlaySr.textContent = '';
         };
 
+        // Single semantic Top-5 table (Section 8). Rows transform into cards on mobile via data-label
+        // CSS — NO second duplicate card collection, so screen readers meet each match exactly once.
         const renderMatches = (explain: any) => {
           if (!simMatches) return;
           simMatches.replaceChildren();
           const rows = explain.matchRows as Array<any>;
           if (!rows.length) return;
-
-          const tableWrap = document.createElement('div');
-          tableWrap.className = 'chart-similarity-table-wrap';
+          const wrap = document.createElement('div');
+          wrap.className = 'chart-similarity-result-table-wrap';
           const table = document.createElement('table');
-          table.className = 'chart-similarity-top5-table';
+          table.className = 'chart-similarity-result-table';
+          const cap = document.createElement('caption');
+          cap.className = 'sr-only';
+          cap.textContent = '상위 유사 과거 구간 비교표 (순위·유사도·후보 순위·과거 구간·이후 수익률·위험)';
+          table.append(cap);
+          const cols = ['순위', '유사도', '후보 순위', '과거 구간', '5일 후', '20일 후', '60일 후', '최대 낙폭', '최대 상승'];
           const thead = document.createElement('thead');
-          const headRow = document.createElement('tr');
-          ['순위', '유사도', '과거 구간', '5일 후', '20일 후', '60일 후', '최대 낙폭', '최대 상승'].forEach((h) => {
-            const th = document.createElement('th');
-            th.scope = 'col';
-            th.textContent = h;
-            headRow.append(th);
-          });
-          thead.append(headRow);
+          const hr = document.createElement('tr');
+          cols.forEach((h) => { const th = document.createElement('th'); th.scope = 'col'; th.textContent = h; hr.append(th); });
+          thead.append(hr);
           const tbody = document.createElement('tbody');
+          const signCols = new Set(['5일 후', '20일 후', '60일 후', '최대 낙폭', '최대 상승']);
+          let anyIncomplete = false;
           rows.forEach((r) => {
             const tr = document.createElement('tr');
-            [`#${r.rank}`, r.similarityLabel, r.pastRangeLabel, r.d5Label, r.d20Label, r.d60Label, r.maxDrawdownLabel, r.maxUpsideLabel].forEach((v) => {
-              const td = document.createElement('td');
-              td.textContent = v;
-              tr.append(td);
+            if (r.rank === 1) tr.classList.add('is-top');
+            const cells: Array<[string, string]> = [
+              [`#${r.rank}`, '순위'],
+              [r.similarityLabel, '유사도'],
+              [r.relativePositionLabel, '후보 순위'],
+              [r.pastRangeLabel, '과거 구간'],
+              [r.d5Label, '5일 후'],
+              [r.d20Label, '20일 후'],
+              [r.d60Label, '60일 후'],
+              [r.maxDrawdownLabel, '최대 낙폭'],
+              [r.maxUpsideLabel, '최대 상승'],
+            ];
+            cells.forEach(([val, label], i) => {
+              const cell = i === 0 ? document.createElement('th') : document.createElement('td');
+              if (i === 0) (cell as HTMLTableCellElement).scope = 'row';
+              cell.setAttribute('data-label', label);
+              cell.textContent = val;
+              if (signCols.has(label) && /^[+-]/.test(val)) cell.dataset.sign = val.startsWith('-') ? 'neg' : 'pos';
+              tr.append(cell);
             });
+            if (r.incomplete) { tr.dataset.incomplete = 'true'; anyIncomplete = true; }
             tbody.append(tr);
           });
           table.append(thead, tbody);
-          tableWrap.append(table);
+          wrap.append(table);
+          simMatches.append(wrap);
+          if (anyIncomplete) {
+            const note = document.createElement('p');
+            note.className = 'chart-similarity-result-note';
+            note.textContent = '일부 구간은 60일 후 데이터가 아직 완성되지 않아 60일 지표가 제한적입니다.';
+            simMatches.append(note);
+          }
+        };
 
-          const cards = document.createElement('div');
-          cards.className = 'chart-similarity-cards';
-          rows.forEach((r) => {
-            const card = document.createElement('div');
-            card.className = 'chart-similarity-match-card';
-            const head = document.createElement('div');
-            head.className = 'chart-similarity-match-head';
-            const rank = document.createElement('span');
-            rank.className = 'chart-similarity-match-rank';
-            rank.textContent = `#${r.rank}`;
-            const score = document.createElement('span');
-            score.className = 'chart-similarity-match-score';
-            score.textContent = `유사도 ${r.similarityLabel}`;
-            head.append(rank, score);
-            const dates = document.createElement('p');
-            dates.className = 'chart-similarity-match-dates';
-            dates.textContent = r.pastRangeLabel;
-            const dl = document.createElement('dl');
-            dl.className = 'chart-similarity-match-metrics';
-            const addRow = (k: string, v: string) => {
-              const dt = document.createElement('dt'); dt.textContent = k;
-              const dd = document.createElement('dd'); dd.textContent = v;
-              dl.append(dt, dd);
-            };
-            addRow('5일 후', r.d5Label);
-            addRow('20일 후', r.d20Label);
-            addRow('60일 후', r.d60Label);
-            addRow('최대 낙폭', r.maxDrawdownLabel);
-            addRow('최대 상승', r.maxUpsideLabel);
-            card.append(head, dates, dl);
-            if (r.incomplete) {
-              const inc = document.createElement('p');
-              inc.className = 'chart-similarity-match-incomplete';
-              inc.textContent = '일부 이후 구간 데이터가 아직 완성되지 않았습니다.';
-              card.append(inc);
-            }
-            cards.append(card);
+        const renderScoreGuide = (explain: any) => {
+          if (!simScoreGuide) return;
+          simScoreGuide.replaceChildren();
+          const g = explain.scoreGuide;
+          if (!g) return;
+          const details = document.createElement('details');
+          details.className = 'chart-similarity-scoreguide-box';
+          const summary = document.createElement('summary');
+          summary.className = 'chart-similarity-scoreguide-summary';
+          summary.textContent = '유사도 점수 이해하기';
+          details.append(summary);
+          const notes = document.createElement('ul');
+          notes.className = 'chart-similarity-scoreguide-notes';
+          (g.notes as string[]).forEach((n) => { const li = document.createElement('li'); li.textContent = n; notes.append(li); });
+          details.append(notes);
+          const bands = document.createElement('ul');
+          bands.className = 'chart-similarity-scoreguide-bands';
+          (g.bands as Array<any>).forEach((b) => {
+            const li = document.createElement('li');
+            li.className = 'chart-similarity-scoreguide-band';
+            if (g.topBand && b.code === g.topBand.code) li.classList.add('is-active');
+            const range = document.createElement('span'); range.className = 'chart-similarity-scoreguide-range'; range.textContent = `${Number(b.min).toFixed(1)}–${b.max}`;
+            const lab = document.createElement('span'); lab.className = 'chart-similarity-scoreguide-label'; lab.textContent = b.label;
+            li.append(range, lab);
+            bands.append(li);
           });
+          details.append(bands);
+          const foot = document.createElement('p');
+          foot.className = 'chart-similarity-scoreguide-foot';
+          foot.textContent = '위 구간 등급은 서비스 설명용 구분이며, 통계적으로 보정된 확률이 아닙니다.';
+          details.append(foot);
+          simScoreGuide.append(details);
+        };
 
-          simMatches.append(tableWrap, cards);
+        // Deterministic insight cards in the required reading order (Section 10.4).
+        const renderInsight = (explain: any) => {
+          if (!simInsight) return;
+          simInsight.replaceChildren();
+          const ins = explain.insight;
+          if (!ins) return;
+          const makeCard = (title: string, body: string | string[], opts: { variant?: string; badge?: string; badgeTone?: string } = {}) => {
+            const card = document.createElement('section');
+            card.className = 'chart-similarity-insight-card';
+            if (opts.variant) card.classList.add(`is-${opts.variant}`);
+            const h = document.createElement('h4');
+            h.className = 'chart-similarity-insight-title';
+            h.textContent = title;
+            if (opts.badge) { const b = document.createElement('span'); b.className = 'chart-similarity-insight-badge'; b.dataset.tone = opts.badgeTone || ''; b.textContent = opts.badge; h.append(b); }
+            card.append(h);
+            if (Array.isArray(body)) {
+              const ul = document.createElement('ul'); ul.className = 'chart-similarity-insight-list';
+              body.forEach((t) => { const li = document.createElement('li'); li.textContent = t; ul.append(li); });
+              card.append(ul);
+            } else {
+              const p = document.createElement('p'); p.className = 'chart-similarity-insight-body'; p.textContent = body; card.append(p);
+            }
+            return card;
+          };
+          const evidenceTone = ({ HIGH: 'high', MODERATE: 'mod', LOW: 'low' } as any)[ins.evidenceQuality.level] || 'low';
+          const finalCard = makeCard('최종 관찰', ins.finalInsightBody, { variant: 'final', badge: ins.finalInsightLabel, badgeTone: 'final' });
+          const ev = document.createElement('p');
+          ev.className = 'chart-similarity-insight-evidence';
+          ev.dataset.tone = evidenceTone;
+          ev.textContent = `패턴 비교 근거 수준: ${ins.evidenceQuality.label} · 예측 신뢰도가 아니라 비교 근거가 얼마나 충분한지를 뜻합니다.`;
+          finalCard.append(ev);
+          simInsight.append(
+            makeCard('가장 유사한 과거 구간', ins.strongestMatchSummary),
+            makeCard('유사도 점수의 의미', ins.scoreExplanation),
+            makeCard('후보 구간 중 상대 위치', ins.relativeRankExplanation),
+            makeCard('상위 구간 결과 일치도', ins.outcomeAgreementSummary),
+            makeCard('관찰된 위험과 상승 여력', ins.riskSummary),
+            finalCard,
+            makeCard('유의사항', ins.limitations),
+          );
         };
 
         const renderAggregate = (explain: any) => {
           if (!simAggregate) return;
           simAggregate.replaceChildren();
-          const title = document.createElement('p');
-          title.className = 'chart-similarity-aggregate-title';
-          title.textContent = '종합 해석';
+          if (!explain.aggregateInterpretation) return;
+          const details = document.createElement('details');
+          details.className = 'chart-similarity-aggregate-box';
+          const summary = document.createElement('summary');
+          summary.className = 'chart-similarity-aggregate-title';
+          summary.textContent = '숫자 요약 자세히 보기';
           const body = document.createElement('p');
           body.className = 'chart-similarity-aggregate-body';
-          body.textContent = explain.aggregateInterpretation || '비교할 수 있는 유사 구간이 없습니다.';
-          simAggregate.append(title, body);
+          body.textContent = explain.aggregateInterpretation;
+          details.append(summary, body);
+          simAggregate.append(details);
         };
 
         const honestStateMessage = (code: string) => {
@@ -3214,13 +3463,13 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             case 'NO_VALID_CANDIDATES': return '비교할 수 있는 과거 구간을 찾지 못했습니다.';
             case 'UNSUPPORTED_INSTRUMENT': return '이 종목은 아직 유사 패턴 분석을 지원하지 않습니다.';
             case 'PROVIDER_UNAVAILABLE': return '시세 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+            case 'NON_LOCAL_REQUEST': return '이 환경에서는 실제 유사 패턴 분석을 사용할 수 없습니다.';
             default: return '유사 패턴 분석을 완료하지 못했습니다. 다시 시도해 주세요.';
           }
         };
 
         const runSimilarity = async () => {
           if (!productionRealChartEnabled || simInFlight) return;
-          // Phase 3GG-T-HF3A: shared guard — only runs against the actively-loaded chart instrument.
           const token = integrity.beginAnalysis('similar-pattern');
           if (!token) { setSimState('idle'); showSimStatus('먼저 종목을 검색해 차트를 불러와 주세요.'); updateAnalysisAvailability(); return; }
           simInFlight = true;
@@ -3240,7 +3489,6 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const res = await chartAiAuthenticatedFetch(url, { method: 'GET', signal });
             const data = await res.json();
             if (seq !== simSeq) return;
-            // Ignore a stale response whose selection was superseded (symbol changed mid-flight).
             if (integrity.resolveAnalysis(token) !== 'accepted') return;
             const sim = data && data.similarity;
             if (!sim || sim.sourceStatus === 'blocked' || sim.sanitizedErrorCode !== 'NONE' || sim.ok !== true) {
@@ -3255,6 +3503,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             if (explain) {
               renderOverlay(explain);
               renderMatches(explain);
+              renderScoreGuide(explain);
+              renderInsight(explain);
               renderAggregate(explain);
             }
             if (simResults) simResults.hidden = false;
@@ -6096,21 +6346,41 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     .chart-similarity-basis-disclosure { font-size: 0.76rem; color: var(--chart-shell-muted); margin: 0; }
     .chart-similarity-basis-disclosure summary { cursor: pointer; color: var(--chart-shell-muted); }
     .chart-similarity-basis-disclosure p { margin: 0.3rem 0 0; }
+    /* Phase 3GG-T-HF3B-HF2-HF2B: overlay interaction (crosshair + D+ marker), structured tooltip,
+       single responsive Top-5 table, score guide, and insight cards. */
     .chart-similarity-overlay-wrap { position: relative; }
+    /* Allow normal vertical page scroll; only horizontal drags in the plot are captured. */
+    .chart-similarity-overlay-svg { touch-action: pan-y; }
+    .chart-similarity-overlay-svg:focus-visible { outline: 2px solid var(--accent, #2563eb); outline-offset: 2px; }
+    .chart-similarity-overlay-crosshair { pointer-events: none; }
+    .chart-similarity-overlay-dplus {
+      position: absolute; top: 0.15rem; transform: translateX(-50%); z-index: 3; pointer-events: none;
+      font-size: 0.66rem; font-weight: 700; color: #fff; background: #4b5563;
+      padding: 0.05rem 0.35rem; border-radius: 6px; white-space: nowrap;
+    }
     .chart-similarity-overlay-axis { position: relative; height: 1.1rem; margin-top: 0.15rem; }
     .chart-similarity-overlay-axis-tick {
       position: absolute; top: 0; transform: translateX(-50%);
       font-size: 0.68rem; color: var(--chart-shell-muted); white-space: nowrap;
     }
     .chart-similarity-overlay-tooltip {
-      position: absolute; z-index: 3; pointer-events: none; display: grid; gap: 0.2rem;
-      padding: 0.45rem 0.6rem; border-radius: 8px; border: 1px solid var(--border);
-      background: var(--surface); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); font-size: 0.72rem; min-width: 7rem;
+      position: absolute; z-index: 4; pointer-events: none; display: grid; gap: 0.1rem;
+      padding: 0.5rem 0.6rem; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      font-size: 0.72rem; min-width: 9rem; max-width: min(19rem, 90%);
     }
-    .chart-similarity-overlay-tooltip-row { display: flex; align-items: center; gap: 0.35rem; justify-content: space-between; }
-    .chart-similarity-overlay-tooltip-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; flex: none; }
-    .chart-similarity-overlay-tooltip-label { color: var(--chart-shell-muted); flex: 1; }
-    .chart-similarity-overlay-tooltip-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+    .chart-similarity-overlay-tooltip-header { font-weight: 700; margin-bottom: 0.15rem; }
+    .chart-similarity-overlay-tooltip-row {
+      display: flex; align-items: center; gap: 0.6rem; justify-content: space-between; padding: 0.07rem 0.15rem; border-radius: 4px;
+    }
+    .chart-similarity-overlay-tooltip-row.is-current { font-weight: 700; }
+    .chart-similarity-overlay-tooltip-row.is-highlight { background: var(--surface-muted); }
+    .chart-similarity-overlay-tooltip-id { display: inline-flex; align-items: center; gap: 0.3rem; min-width: 0; }
+    .chart-similarity-overlay-tooltip-dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; flex: none; }
+    .chart-similarity-overlay-tooltip-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chart-similarity-overlay-tooltip-score { color: var(--chart-shell-muted); font-variant-numeric: tabular-nums; flex: none; }
+    .chart-similarity-overlay-tooltip-value { font-variant-numeric: tabular-nums; font-weight: 600; flex: none; text-align: right; }
+    .chart-similarity-overlay-tooltip-foot { margin-top: 0.25rem; font-size: 0.64rem; color: var(--chart-shell-muted); line-height: 1.4; }
     .chart-similarity-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; }
     .chart-similarity-legend-item {
       display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; color: var(--chart-shell-text, inherit);
@@ -6119,39 +6389,82 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     }
     .chart-similarity-legend-item.is-off,
     .chart-similarity-legend-item[aria-pressed="false"] { opacity: 0.45; color: var(--chart-shell-muted); }
-    .chart-similarity-legend-swatch { width: 0.85rem; height: 0.28rem; border-radius: 2px; display: inline-block; }
-    .chart-similarity-matches { display: grid; gap: 0.6rem; }
-    .chart-similarity-cards { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-    .chart-similarity-match-card {
-      display: grid; gap: 0.4rem; padding: 0.75rem 0.85rem; border: 1px solid var(--border);
-      border-radius: 10px; background: var(--surface);
+    .chart-similarity-legend-item.is-highlight { border-color: var(--accent, #2563eb); box-shadow: 0 0 0 1px var(--accent, #2563eb); }
+    .chart-similarity-legend-item:focus-visible { outline: 2px solid var(--accent, #2563eb); outline-offset: 2px; }
+    .chart-similarity-legend-swatch { width: 0.85rem; height: 0.28rem; border-radius: 2px; display: inline-block; flex: none; }
+    /* Single semantic Top-5 table (no duplicate mobile card collection). */
+    .chart-similarity-matches { display: grid; gap: 0.5rem; }
+    .chart-similarity-result-table-wrap { overflow-x: auto; }
+    .chart-similarity-result-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .chart-similarity-result-table th,
+    .chart-similarity-result-table td {
+      padding: 0.45rem 0.55rem; text-align: right; border-bottom: 1px solid var(--border);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
     }
-    .chart-similarity-match-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
-    .chart-similarity-match-rank { font-weight: 700; font-size: 0.95rem; }
-    .chart-similarity-match-score { font-size: 0.8rem; color: var(--chart-shell-muted); }
-    .chart-similarity-match-dates { font-size: 0.8rem; margin: 0; }
-    .chart-similarity-match-metrics {
-      display: grid; grid-template-columns: auto auto; gap: 0.15rem 0.5rem; margin: 0; font-size: 0.78rem;
+    .chart-similarity-result-table thead th {
+      position: sticky; top: 0; z-index: 1; background: var(--surface); color: var(--chart-shell-muted); font-weight: 600;
     }
-    .chart-similarity-match-metrics dt { color: var(--chart-shell-muted); }
-    .chart-similarity-match-metrics dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-    .chart-similarity-match-incomplete { font-size: 0.72rem; color: var(--chart-shell-muted); margin: 0; }
-    .chart-similarity-aggregate {
-      display: grid; gap: 0.45rem; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
-      border-radius: 10px; background: var(--surface-muted);
+    .chart-similarity-result-table th[scope="row"],
+    .chart-similarity-result-table td[data-label="과거 구간"] { text-align: left; }
+    .chart-similarity-result-table tbody tr.is-top { background: var(--surface-muted); }
+    .chart-similarity-result-table tbody tr.is-top th[scope="row"] { font-weight: 800; }
+    .chart-similarity-result-table td[data-sign="pos"] { color: var(--chart-up, #059669); }
+    .chart-similarity-result-table td[data-sign="neg"] { color: var(--chart-down, #dc2626); }
+    .chart-similarity-result-note { font-size: 0.72rem; color: var(--chart-shell-muted); margin: 0; }
+    /* Score guide */
+    .chart-similarity-scoreguide-box { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); padding: 0.6rem 0.85rem; font-size: 0.8rem; }
+    .chart-similarity-scoreguide-summary { cursor: pointer; font-weight: 700; }
+    .chart-similarity-scoreguide-notes { margin: 0.5rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; color: var(--chart-shell-muted); font-size: 0.76rem; }
+    .chart-similarity-scoreguide-bands { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.15rem; }
+    .chart-similarity-scoreguide-band { display: flex; gap: 0.7rem; align-items: baseline; padding: 0.2rem 0.35rem; border-radius: 6px; }
+    .chart-similarity-scoreguide-band.is-active { background: var(--surface-muted); font-weight: 700; }
+    .chart-similarity-scoreguide-range { font-variant-numeric: tabular-nums; color: var(--chart-shell-muted); min-width: 4.6rem; }
+    .chart-similarity-scoreguide-foot { font-size: 0.72rem; color: var(--chart-shell-muted); margin: 0.5rem 0 0; }
+    /* Insight cards (deterministic, in required order) */
+    .chart-similarity-insight { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .chart-similarity-insight-card {
+      border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+      padding: 0.7rem 0.85rem; display: grid; gap: 0.35rem; align-content: start;
     }
-    .chart-similarity-aggregate-title { font-weight: 700; font-size: 0.86rem; margin: 0; }
-    .chart-similarity-aggregate-body { font-size: 0.84rem; margin: 0; line-height: 1.6; }
-    @media (min-width: 641px) {
-      .chart-similarity-cards { display: none; }
-    }
+    .chart-similarity-insight-card.is-final { grid-column: 1 / -1; background: var(--surface-muted); border-color: var(--accent, #2563eb); }
+    .chart-similarity-insight-title { font-size: 0.82rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .chart-similarity-insight-body { font-size: 0.82rem; margin: 0; line-height: 1.6; }
+    .chart-similarity-insight-list { margin: 0; padding-left: 1.05rem; font-size: 0.78rem; display: grid; gap: 0.2rem; color: var(--chart-shell-muted); }
+    .chart-similarity-insight-badge { font-size: 0.72rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--border); }
+    .chart-similarity-insight-badge[data-tone="final"] { background: var(--accent, #2563eb); color: #fff; border-color: transparent; }
+    .chart-similarity-insight-badge[data-tone="high"] { background: #059669; color: #fff; border-color: transparent; }
+    .chart-similarity-insight-badge[data-tone="mod"] { background: #d97706; color: #fff; border-color: transparent; }
+    .chart-similarity-insight-badge[data-tone="low"] { background: var(--surface); color: var(--chart-shell-muted); }
+    .chart-similarity-insight-evidence { font-size: 0.74rem; margin: 0.2rem 0 0; color: var(--chart-shell-muted); }
+    /* Supporting numeric detail (collapsed by default) */
+    .chart-similarity-aggregate-box { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); padding: 0.6rem 0.85rem; }
+    .chart-similarity-aggregate-title { font-weight: 700; font-size: 0.84rem; cursor: pointer; }
+    .chart-similarity-aggregate-body { font-size: 0.82rem; margin: 0.45rem 0 0; line-height: 1.6; }
+    .chart-similarity-overlay-sr.sr-only,
+    .chart-similarity-result-table .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    /* Mobile: the SAME table rows become cards via data-label (no separate card DOM). */
     @media (max-width: 640px) {
-      .chart-similarity-table-wrap { display: none; }
+      .chart-similarity-result-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .chart-similarity-result-table,
+      .chart-similarity-result-table tbody,
+      .chart-similarity-result-table tr,
+      .chart-similarity-result-table th,
+      .chart-similarity-result-table td { display: block; width: auto; }
+      .chart-similarity-result-table tr {
+        border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.6rem; padding: 0.55rem 0.75rem; background: var(--surface);
+      }
+      .chart-similarity-result-table tr.is-top { border-color: var(--accent, #2563eb); }
+      .chart-similarity-result-table th[scope="row"] { border: 0; padding: 0 0 0.35rem; font-size: 0.95rem; text-align: left; }
+      .chart-similarity-result-table td { border: 0; display: flex; justify-content: space-between; gap: 1rem; text-align: right; padding: 0.18rem 0; white-space: normal; }
+      .chart-similarity-result-table td::before { content: attr(data-label); color: var(--chart-shell-muted); font-variant-numeric: normal; text-align: left; }
+      .chart-similarity-insight { grid-template-columns: 1fr; }
     }
     @media (max-width: 420px) {
       .chart-similarity-controls { flex-direction: column; align-items: stretch; }
       .chart-similarity-start-btn { width: 100%; }
-      .chart-similarity-cards { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .chart-similarity-overlay-svg, .chart-similarity-legend-item, .chart-similarity-insight-card { transition: none; }
     }
 
     /* Phase 3GG-R-FAST real MK AI analysis UI */

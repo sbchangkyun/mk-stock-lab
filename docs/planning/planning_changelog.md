@@ -1,5 +1,44 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-HF2B - 2026-07-15
+
+### Similarity explainability UX (overlay + tooltip + single Top-5 + score guide + insight)
+
+- **Scoring formula UNCHANGED** (corr 0.45 / rmse 0.35 / dir 0.20, clamped 0–100, method
+  `sim-v1-corr045-rmse035-dir020`). Engine `similarity-engine.mjs` adds ONLY additive metadata: raw sorted
+  `candidateRank` (1-based, before min-gap Top-K selection) + `candidateTopPercentile =
+  candidateRank/candidateCount*100`; `similarity.json.ts` surfaces both sanitized scalars per match (full
+  candidate array never exposed).
+- **Overlay** (`chart-ai.astro`): vertical crosshair snapping to the nearest D+ index with a `D+N` marker +
+  per-series point markers; nearest-line emphasis by SCREEN-pixel distance (documented 18px threshold,
+  `resolveNearestSeriesByPixel`) synced with the legend; pointer + touch (`touch-action: pan-y`, tap-lock,
+  Escape) + full keyboard (focusable `role="application"`, Arrow/Home/End/Escape, polite SR summary on
+  keyboard only). Legend keeps `aria-pressed` toggles + never allows zero visible series.
+- **Structured tooltip:** `D+N` header, one row per visible series with swatch, full identity, historical
+  start date, similarity score (`NN.N점`), and a right-aligned tabular normalized value; hovered series
+  first; footnote clarifies the value is a base-100 normalized index, not the score; 4-edge collision.
+- **Single responsive Top-5:** ONE `chart-similarity-result-table` that transforms to cards on mobile via
+  `data-label` (removed the duplicate `chart-similarity-cards`/`chart-similarity-match-card` collection);
+  columns incl. relative candidate position; `#1` emphasized; sign by text (not color only).
+- **Score guide** (유사도 점수 이해하기) with fixed service bands (80/65/50/35 boundaries) explicitly labelled as
+  explanation bands, not calibrated probabilities; **relative rank** `전체 N개 후보 중 R위 / 상위 P%` (with
+  `<0.1%`).
+- **Deterministic insight** (pure module `similarity-explainability-v2.mjs`, no LLM): evidence level 패턴
+  비교 근거 수준 (HIGH/MODERATE/LOW documented constants) + final category (추가 확인 가치 높음 / 조건부 관심 /
+  관망 우선 / 패턴 신뢰도 낮음) via a documented decision tree; ordered cards (strongest → score meaning →
+  relative position → outcome agreement → risk → final observation → limitations). No buy/sell/guarantee
+  wording (smoke + checker enforced).
+- **One authoritative real-experience flag** `chartAiRealExperienceRuntime` (Production OR protected-Preview
+  `?chartAiBetaPreview=1`) replaces the scattered `isVercelProductionRuntime` markup gates; client
+  `productionRealChartEnabled` also enables the real JS under the Preview beta path. Visibility only — routes
+  fail closed; Production and ordinary-Preview/local unchanged.
+- New `smoke_phase_3gg_t_hf3b_hf2_hf2b_similarity_explainability_ux.mjs` (72/72) +
+  `check_phase_3gg_t_hf3b_hf2_hf2b_similarity_explainability_contract.mjs`. Sibling checkers reconciled for
+  the single-DOM result + the runtime-flag consolidation (intent preserved). `astro build` PASS. No
+  master/migration/token/dependency change; feature branch pushed; new Preview for Owner Similarity UX QA.
+  No merge, no Production deploy. See
+  `docs\planning\phase_3gg_t_hf3b_hf2_hf2b_similarity_explainability_ux_result_v0.1.md`.
+
 ## Phase 3GG-T-HF3B-HF2-HF2A3 - 2026-07-15
 
 ### Protected Preview API transport hotfix (credentials: same-origin)

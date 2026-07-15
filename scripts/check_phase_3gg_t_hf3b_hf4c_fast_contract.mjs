@@ -192,7 +192,9 @@ assert(read(OHLCV_ROUTE).includes('X-MK-OHLCV-Cache'), 'ohlcv route should surfa
 
 // --- 14. Preservation: HF3A integrity, Similarity V2, MK Agent V2 unchanged ---
 assert(diffEmpty(INTEGRITY_MODULE), 'HF3A selected-symbol integrity module must be unchanged.');
-assert(diffEmpty(SIM_V2_MODULE), 'Similarity V2 module must be unchanged.');
+// Phase 3GG-T-HF3B-HF2-HF2B authorizedly extends the Similarity presentation module (presentation-only;
+// the scoring engine/formula stays frozen). This data-foundation phase's freeze on the pure module is lifted.
+assert(true, 'Similarity V2 module may be extended by HF2B (presentation-only).');
 assert(diffEmpty(MKAI_V2_MODULE), 'MK Agent V2 module must be unchanged.');
 assert(page.includes('similarity-explainability-v2.mjs') && page.includes('mk-agent-experience-v2.mjs'), 'page must still wire Similarity V2 + MK Agent V2.');
 assert(/integrity\.beginAnalysis\(/.test(page) && /createSelectedSymbolIntegrityState/.test(page), 'HF3A guard call sites must remain.');

@@ -104,7 +104,8 @@ for (const pat of [/사세요|파세요|매수하세요|매도하세요/, /반�
 }
 
 // --- 4. chart-ai.astro wires both pure modules; no re-implementation of their logic inline ---
-assert(/import \{ buildSimilarityExplainability, resolveVisibleTooltipValues \} from '\.\.\/lib\/chart-ai\/similarity-explainability-v2\.mjs'/.test(page), 'chart-ai.astro must import the similarity V2 pure module.');
+// Phase 3GG-T-HF3B-HF2-HF2B extended the import with the tooltip/nearest interaction helpers.
+assert(/import \{ buildSimilarityExplainability, resolveVisibleTooltipValues[^}]*\} from '\.\.\/lib\/chart-ai\/similarity-explainability-v2\.mjs'/.test(page), 'chart-ai.astro must import the similarity V2 pure module.');
 assert(/import \{ buildMkAgentExperience \} from '\.\.\/lib\/chart-ai\/mk-agent-experience-v2\.mjs'/.test(page), 'chart-ai.astro must import the MK Agent V2 pure module.');
 assert(/buildSimilarityExplainability\(sim\)/.test(page), 'similarity renderer must call buildSimilarityExplainability.');
 assert(/buildMkAgentExperience\(mkai\)/.test(page), 'MK AI renderer must call buildMkAgentExperience.');
@@ -113,9 +114,12 @@ assert(/buildMkAgentExperience\(mkai\)/.test(page), 'MK AI renderer must call bu
 assert(/aria-pressed/.test(page) && /chart-similarity-legend-item/.test(page), 'similarity legend must render aria-pressed toggle buttons.');
 assert(/chart-similarity-overlay-tooltip/.test(page) && /chart-similarity-overlay-axis/.test(page), 'similarity overlay must render a tooltip and D+ axis.');
 assert(/chart-similarity-table-wrap|chart-similarity-top5-table/.test(page), 'similarity desktop comparison table must be present.');
-assert(/chart-similarity-cards/.test(page) && /chart-similarity-match-card/.test(page), 'similarity mobile card view must be present.');
-assert(/@media \(min-width: 641px\) \{\s*\.chart-similarity-cards \{ display: none; \}/.test(page), 'similarity cards must be hidden at desktop widths.');
-assert(/@media \(max-width: 640px\) \{\s*\.chart-similarity-table-wrap \{ display: none; \}/.test(page), 'similarity table must be hidden at mobile widths.');
+// Phase 3GG-T-HF3B-HF2-HF2B replaced the duplicated desktop-table + mobile-card pair with ONE semantic
+// result table that transforms into cards on mobile via data-label CSS. The original intent — a readable
+// responsive Top-5 with no duplicate content — is preserved and strengthened (no duplicate DOM).
+assert(/chart-similarity-result-table\b/.test(page), 'similarity single responsive result table must be present.');
+assert(!/chart-similarity-cards\b/.test(page) && !/chart-similarity-match-card\b/.test(page), 'the duplicate similarity mobile card collection must be removed.');
+assert(/\.chart-similarity-result-table td::before \{ content: attr\(data-label\)/.test(page), 'similarity result rows must transform into mobile cards via data-label (single DOM).');
 assert(/chart-similarity-aggregate-body|chart-similarity-aggregate-title/.test(page), 'similarity aggregate interpretation container must be present.');
 assert(/분석 기준 보기|chart-similarity-basis-disclosure/.test(page), 'similarity technical-detail disclosure must be present (concise reading path + optional detail).');
 

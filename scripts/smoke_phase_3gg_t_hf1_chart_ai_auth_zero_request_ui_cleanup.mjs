@@ -62,7 +62,9 @@ check('server auth reuses the existing Bearer-token validator (no new scheme)', 
 // ---- Client attaches the Bearer token to every Chart AI fetch ----
 check('client builds Chart AI auth headers from the session token', /chartAiAuthHeaders/.test(page) && /Authorization: `Bearer \$\{session\.access_token\}`/.test(page));
 // Phase 3GG-T-HF4-FAST-HF1 SUPERSEDED this: market-intel's fetch call site was removed (Market Intelligence removed from the page).
-check('ohlcv + search + similarity + mk-analysis fetches send auth headers', (page.match(/chartAiAuthHeaders\(\)/g) || []).length >= 4);
+// Phase 3GG-T-HF3B-HF2-HF2A3+: protected Chart AI fetches attach the Bearer via chartAiAuthenticatedFetch /
+// fetchChartAiJson (same-origin transport). Count those authenticated call sites.
+check('ohlcv + search + similarity + mk-analysis fetches send auth headers', (page.match(/chartAiAuthHeaders\(\)|chartAiAuthenticatedFetch\(|fetchChartAiJson\(/g) || []).length >= 4);
 
 // ---- Zero-request entry ----
 check('idle chart copy present (no auto-load)', page.includes('종목을 검색해 선택하면 실제 차트를 불러옵니다.'));
@@ -86,7 +88,9 @@ const OBSOLETE = [
 for (const s of OBSOLETE) check(`obsolete card copy removed: "${s.slice(0, 18)}…"`, !page.includes(s));
 
 // ---- Three-line summary removed from Production; Portfolio Intelligence removed from Chart AI ----
-check('three-line MK AI 시세 요약 panel is gated OUT of the Production DOM', /\{!isVercelProductionRuntime && \(\s*<section\s+id="chartAiOwnerLocalKisLlmSummaryPanel"/.test(page.replace(/\s+/g, ' ')) || /!isVercelProductionRuntime[\s\S]{0,220}chartAiOwnerLocalKisLlmSummaryPanel/.test(page));
+// Phase 3GG-T-HF3B-HF2-HF2B: real-experience gate consolidated into chartAiRealExperienceRuntime (still
+// hides the owner-local summary panel in Production).
+check('three-line MK AI 시세 요약 panel is gated OUT of the Production DOM', /\{!(?:isVercelProductionRuntime|chartAiRealExperienceRuntime) && \(\s*<section\s+id="chartAiOwnerLocalKisLlmSummaryPanel"/.test(page.replace(/\s+/g, ' ')) || /!(?:isVercelProductionRuntime|chartAiRealExperienceRuntime)[\s\S]{0,220}chartAiOwnerLocalKisLlmSummaryPanel/.test(page));
 check('Portfolio Intelligence workspace removed from Chart AI DOM', !page.includes('chartAiPortfolioWorkspace') && !page.includes('data-pf-tab'));
 check('Portfolio Intelligence client init + imports removed', !page.includes('portfolio-intelligence') && !page.includes('recordSelectionForPortfolio'));
 check('separate Portfolio page is untouched by this smoke target', existsSync(PORTFOLIO));

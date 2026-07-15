@@ -336,6 +336,13 @@ export const runRealSimilarity = (rawBars, options = {}) => {
     return a.startIndex - b.startIndex;
   });
 
+  // Phase 3GG-T-HF3B-HF2-HF2B: assign each candidate its RAW sorted rank (1-based) over ALL scanned
+  // windows, BEFORE the min-gap Top-K selection below. This is additive metadata only — it does not
+  // change the scoring formula, the deterministic sort order, or which windows are selected. It lets
+  // the UI explain a selected match's relative position among every scanned candidate window
+  // (e.g. "rank 3 of 1,248"), which the display rank #1..#5 (post-dedup order) cannot convey.
+  scored.forEach((entry, index) => { entry.candidateRank = index + 1; });
+
   // Top-K with a minimum start-index gap so near-duplicate adjacent windows don't dominate.
   const selected = [];
   for (const entry of scored) {
@@ -347,6 +354,11 @@ export const runRealSimilarity = (rawBars, options = {}) => {
 
   const matches = selected.map((entry, index) => ({
     rank: index + 1,
+    // Raw sorted position among all `candidateCount` scanned windows (lower = stronger); the derived
+    // top-percentile is candidateRank / candidateCount * 100. Both are sanitized scalars — the full
+    // candidate array is never exposed.
+    candidateRank: entry.candidateRank,
+    candidateTopPercentile: round2((entry.candidateRank / candidateCount) * 100),
     startDate: entry.startDate,
     endDate: entry.endDate,
     similarityScore: entry.scoreParts.similarityScore,

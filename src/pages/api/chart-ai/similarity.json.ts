@@ -197,6 +197,11 @@ export const GET: APIRoute = async ({ url, request }) => {
 
     const matches = result.matches.map((m: any) => ({
       rank: m.rank,
+      // Phase 3GG-T-HF3B-HF2-HF2B: sanitized relative-position metadata (raw sorted rank + derived
+      // top-percentile over all scanned candidate windows). Additive only — no scoring/order change,
+      // and the full candidate array is never exposed (only these scalars + candidateCount below).
+      candidateRank: typeof m.candidateRank === 'number' ? m.candidateRank : null,
+      candidateTopPercentile: typeof m.candidateTopPercentile === 'number' ? m.candidateTopPercentile : null,
       startDate: m.startDate.slice(0, 10),
       endDate: m.endDate.slice(0, 10),
       similarityScore: m.similarityScore,
