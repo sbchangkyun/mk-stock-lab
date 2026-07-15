@@ -29,6 +29,12 @@
   pushed; new Preview for Owner-authenticated transport QA (search route must appear in Preview runtime
   logs). No merge, no Production deploy. See
   `docs\planning\phase_3gg_t_hf3b_hf2_hf2a3_preview_transport_hotfix_result_v0.1.md`.
+- **VERIFIED (Owner QA, commit 09bc39c) → `PASS_PREVIEW_DEPLOYMENT_PROTECTION_API_TRANSPORT_VERIFIED`:** on
+  the SSO-protected Preview `mkstocklab-23kvouhpg`, the authenticated browser stayed on the protected Preview
+  (transport reached the app, not the SSO login); `0000D0` search succeeded and `0000d0` resolved to canonical
+  `0000D0`; identity `KR | 0000D0 | KOSPI | etf` with KOSPI/ETF/KRW rendered correctly; Preview runtime logs
+  recorded 8 requests to `/api/chart-ai/instruments/search.json`, **all HTTP 200**; no Production deployment.
+  Docs-only verification commit; feature branch pushed; no merge/main-push/PR-metadata/Production change.
 
 ## Phase 3GG-T-HF3B-HF2-HF2A2 - 2026-07-14
 

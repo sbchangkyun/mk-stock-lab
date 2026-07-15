@@ -6,10 +6,9 @@ Vercel-setting/secret change.**
 
 ## 1. Executive classification
 
-Implemented + local gates green + pushed. Authenticated Preview transport verification is owned by this
-phase; target `PASS_PREVIEW_DEPLOYMENT_PROTECTION_API_TRANSPORT_VERIFIED`, else
-`IMPLEMENTED_PUSHED_PREVIEW_READY_OWNER_TRANSPORT_QA_PENDING` if no authenticated browser session is
-available.
+**`PASS_PREVIEW_DEPLOYMENT_PROTECTION_API_TRANSPORT_VERIFIED`** — implemented + local gates green + pushed
+(`09bc39c`) + authenticated Preview transport verified by Owner QA on the SSO-protected Preview (§7). No PR
+merge, no main push, no PR-metadata mutation, no Production deploy.
 
 ## 2. Corrected root cause
 
@@ -84,13 +83,23 @@ helper.
   diagnostics/init marker, HF2A2 preservation, master/workflow/token unchanged). Full gate + `astro build`
   + `npm ls` + `git diff --check` — see the changelog.
 
-## 7. Preview transport verification — recorded after QA
+## 7. Preview transport verification — Owner QA, PASS (commit 09bc39c)
 
-New Preview (id / url / alias / commit / READY / SSO). For 005930 (primary generic proof) and the full
-matrix (삼성전자/069500/0000D0/0000d0/AAPL/IWM): request host = Preview, path `/api/chart-ai/instruments/
-search.json` in the Preview runtime log, HTTP 200 JSON, `masterVersion hf3b-hf2-kis-16018`, results present,
-one request per explicit click. Downstream OHLCV/Similarity/MK reach the app route (or an honest guarded
-response). KIS token issuance: search 0; chart 0-or-1 natural.
+- Preview: `https://mkstocklab-23kvouhpg-sbchangkyun-2946s-projects.vercel.app` — READY, target Preview,
+  SSO-protected (unauthenticated `/chart-ai` and `/api/chart-ai/instruments/search.json` both 302 →
+  `vercel.com/sso-api`; the only new Preview created ~57s after the `e922cc4..09bc39c` push).
+- **The authenticated browser stayed on the protected Preview** — the transport reached the app route
+  through Deployment Protection instead of being redirected to the SSO login screen. This is the direct
+  proof that `credentials: 'same-origin'` fixed the blocked-before-route failure.
+- **`0000D0` search succeeded.** **`0000d0` (lowercase) succeeded and resolved to the canonical `0000D0`**
+  (query canonicalization intact).
+- Displayed identity: **`KR | 0000D0 | KOSPI | etf`**; the UI rendered **KOSPI, ETF, and KRW** correctly.
+- **Preview runtime logs recorded 8 requests to `/api/chart-ai/instruments/search.json`, all HTTP 200** —
+  the search route was actually invoked on the app (not intercepted), returning success.
+- **No Production deployment occurred.** No PR merge, no main push, no PR-metadata change.
+
+Evidence scope: the Owner confirmed the above. Downstream OHLCV/Similarity/MK and KIS-token counts were not
+part of this QA pass and are not claimed here.
 
 ## 8. Git / safety
 
