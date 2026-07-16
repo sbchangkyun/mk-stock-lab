@@ -6,10 +6,9 @@ env/Vercel change, no LLM, no Production deploy, no PR merge.**
 
 ## 1. Executive classification
 
-Target `PASS_SIMILARITY_EXPLAINABILITY_UX_PREVIEW_VERIFIED` after Owner protected-Preview QA; otherwise
-`IMPLEMENTED_PUSHED_PREVIEW_READY_OWNER_SIMILARITY_UX_QA_PENDING`. Implementation + local gates complete;
-the real Similarity UI only renders on Production / protected Preview, so authenticated visual QA is
-Owner-run on the Preview surface (§10).
+**`PASS_SIMILARITY_EXPLAINABILITY_UX_PREVIEW_VERIFIED`** — implementation + local gates complete, pushed,
+and Owner authenticated protected-Preview visual and interaction QA (§10) confirmed every required overlay,
+tooltip, Top-5, score-guide, insight, mobile, touch, and keyboard check with no remaining issue.
 
 ## 2. Original UX problems (all addressed)
 
@@ -107,11 +106,33 @@ Preview runtime logs recorded one `/api/chart-ai/market/ohlcv.json` and one `/ap
 request (Similarity HTTP 200), no related runtime errors, no Production deployment. See
 `phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_hotfix_result_v0.1.md` §10.
 
-**Visual / interaction QA — still owner-pending (not asserted here).** Crosshair/D+ inspection, line
-emphasis + legend sync, structured-tooltip readability, single Top-5 table→cards responsiveness, score guide
-+ candidate percentile, insight cards + final category, mobile/touch/keyboard/accessibility, and no
-horizontal overflow at 375px remain to be visually confirmed by the Owner. HF2A3 search transport remains
-healthy; no selected-symbol contamination; no Production deploy.
+**Visual / interaction QA — VERIFIED (Owner QA, protected Preview, feature HEAD `ea9d292`).** On
+`…/chart-ai?chartAiBetaPreview=1` (signed in), the Owner completed the full HF2B visual and interaction
+checklist. All items **PASS**, no remaining issue:
+
+- **Crosshair and D+ marker:** vertical crosshair followed pointer movement; the `D+N` marker updated
+  correctly; visible-series point markers aligned to the inspected index.
+- **Series emphasis and legend coordination:** nearest line emphasized, others dimmed; legend and graph
+  emphasis synchronized; series visibility toggles behaved correctly; no zero-visible-series state occurred.
+- **Tooltip structure and readability:** `D+N` heading displayed; Current and #1–#5 separated into readable
+  rows; color swatch, historical date, similarity score, and normalized value visually distinct; selected
+  series first; no concatenated text or plot-edge clipping.
+- **Top-5 result and desktop presentation:** Top-5 output appeared only once (no duplicate table/card/text
+  renderer); `#1` visually emphasized; rows remained readable and comparable.
+- **Score guide and candidate percentile:** the 0–100 similarity guide displayed, clearly explained as
+  structural similarity (not probability or expected return); candidate rank and top percentile displayed
+  correctly.
+- **Evidence level and final insight:** pattern-comparison evidence level displayed; Top-5 agreement and
+  risk interpretation displayed; a valid non-advisory final insight category displayed; no direct buy/sell
+  instruction or future guarantee appeared.
+- **Mobile 390px and horizontal overflow:** no horizontal page overflow; the single semantic result
+  structure transformed into readable mobile cards; no duplicate results; tooltip stayed inside the visible
+  area.
+- **Touch and keyboard interaction:** touch inspection and drag worked; normal page scrolling remained
+  usable; ArrowLeft/ArrowRight/Home/End/Escape worked; plot focus and clearing behavior worked.
+
+No implementation change was required as a result of this QA round. HF2A3 search transport remains healthy;
+no selected-symbol contamination; no Production deploy; no PR merge.
 
 ## 11. Tests
 

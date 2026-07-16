@@ -1,5 +1,20 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-HF2B - 2026-07-16 (visual/interaction verification)
+
+### Similarity explainability UX — Owner visual and interaction QA → `PASS_SIMILARITY_EXPLAINABILITY_UX_PREVIEW_VERIFIED`
+
+- **VERIFIED (Owner QA, protected Preview, feature HEAD `ea9d292`):** the Owner completed the full HF2B
+  visual and interaction checklist on `…/chart-ai?chartAiBetaPreview=1` — crosshair + `D+N` marker, series
+  emphasis + legend coordination, structured-tooltip readability, single Top-5 desktop presentation (no
+  duplicate renderer), score guide + candidate percentile, evidence level + non-advisory final insight,
+  mobile 390px with no horizontal overflow (single structure → cards, no duplication), and touch + full
+  keyboard interaction (Arrow/Home/End/Escape). All required checks **PASS**, no remaining issue reported.
+- No implementation change was required as a result of this QA round. No Production deployment occurred.
+  No PR merge occurred. This is a docs-only verification update; the HF2B-HF1 guard-hotfix classification
+  is unchanged. See
+  `docs\planning\phase_3gg_t_hf3b_hf2_hf2b_similarity_explainability_ux_result_v0.1.md` §10.
+
 ## Phase 3GG-T-HF3B-HF2-HF2B-HF1 - 2026-07-16
 
 ### Protected Preview KIS access guard hotfix (VERCEL_ENV precedence)
