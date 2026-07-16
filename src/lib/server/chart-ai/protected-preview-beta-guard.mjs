@@ -24,27 +24,42 @@ export function evaluateProtectedPreviewBetaAccess({ betaQueryOptIn = false, env
   const nodeEnv = normalize(env.NODE_ENV);
   const betaFlag = normalize(env.CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA);
 
-  // Production must always fail closed, regardless of any other signal.
-  if (vercelEnv === 'production' || nodeEnv === 'production') {
+  // Phase 3GG-T-HF3B-HF2-HF2B-HF1: VERCEL_ENV is authoritative when present. NODE_ENV represents the
+  // application BUILD/RUNTIME mode (a deployed Vercel Preview legitimately runs with NODE_ENV=production
+  // while VERCEL_ENV=preview) and must NOT override an explicit VERCEL_ENV classification. The previous
+  // `nodeEnv === 'production'` short-circuit fail-closed a valid protected Preview before the flag/query
+  // checks. This precedence mirrors kisClient's classifyRuntime (VERCEL_ENV first, NODE_ENV only as the
+  // fallback when VERCEL_ENV is absent). Production stays fully fail-closed.
+  //
+  // 1. Explicit Vercel Production always fails closed.
+  if (vercelEnv === 'production') {
     return { allowed: false, reason: 'production_fail_closed' };
   }
 
-  // Only Vercel Preview deployments are eligible for beta activation.
-  if (vercelEnv !== 'preview') {
+  // 2. Explicit Vercel Preview: eligible for beta activation regardless of NODE_ENV. Still requires the
+  //    owner-controlled activation flag AND the explicit per-request opt-in query.
+  if (vercelEnv === 'preview') {
+    if (betaFlag !== 'true') {
+      return { allowed: false, reason: 'beta_flag_disabled' };
+    }
+    if (betaQueryOptIn !== true) {
+      return { allowed: false, reason: 'beta_query_optin_missing' };
+    }
+    return { allowed: true, reason: 'protected_preview_beta_allowed' };
+  }
+
+  // 3. Any other explicit non-empty VERCEL_ENV value is not an eligible Preview.
+  if (vercelEnv !== '') {
     return { allowed: false, reason: 'not_preview_env' };
   }
 
-  // The owner-controlled activation flag must be explicitly enabled.
-  if (betaFlag !== 'true') {
-    return { allowed: false, reason: 'beta_flag_disabled' };
+  // 4. VERCEL_ENV absent + NODE_ENV=production (a non-Vercel production build) fails closed.
+  if (nodeEnv === 'production') {
+    return { allowed: false, reason: 'production_fail_closed' };
   }
 
-  // The request must carry the explicit beta opt-in query.
-  if (betaQueryOptIn !== true) {
-    return { allowed: false, reason: 'beta_query_optin_missing' };
-  }
-
-  return { allowed: true, reason: 'protected_preview_beta_allowed' };
+  // 5. Otherwise (no VERCEL_ENV, non-production) this is not a protected Preview.
+  return { allowed: false, reason: 'not_preview_env' };
 }
 
 // Phase 3GG-M-PROD-BETA-DEPLOY production beta access guard.

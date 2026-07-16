@@ -24,8 +24,33 @@ import {
   OHLCV_SANITIZED_ERROR_CODES,
 } from '../../../../lib/server/chart-ai/universalOhlcvProvider';
 import { normalizeOhlcvRange } from '../../../../lib/server/chart-ai/universal-ohlcv-normalize.mjs';
+import { getKisQuoteConfigReadiness } from '../../../../lib/server/providers/kisClient';
 
 export const prerender = false;
+
+// Phase 3GG-T-HF3B-HF2-HF2B-HF1: sanitized, non-secret access/readiness classification so a blocked
+// chart is never shown as an ambiguous "access rights" catch-all. These are coarse fixed enums only —
+// no env values, tokens, cookies, identities, or raw provider payloads are ever exposed. Read-only
+// market-data route (never used on account/order/balance routes).
+const CHART_AI_ACCESS_CODE = {
+  NONE: 'NONE',
+  NON_LOCAL_REQUEST: 'NON_LOCAL_REQUEST',
+  PREVIEW_BETA_GUARD_BLOCKED: 'PREVIEW_BETA_GUARD_BLOCKED',
+  KIS_PREVIEW_GUARD_REQUIRED: 'KIS_PREVIEW_GUARD_REQUIRED',
+  KIS_DISABLED: 'KIS_DISABLED',
+  KIS_CONFIG_MISSING: 'KIS_CONFIG_MISSING',
+  KIS_PROVIDER_UNAVAILABLE: 'KIS_PROVIDER_UNAVAILABLE',
+  NO_DATA: 'NO_DATA',
+  INVALID_INSTRUMENT: 'INVALID_INSTRUMENT',
+} as const;
+
+// Coarse KIS readiness reason -> sanitized client code (fixed enum; never a value).
+const READINESS_CODE: Record<string, string> = {
+  preview_guard_required: CHART_AI_ACCESS_CODE.KIS_PREVIEW_GUARD_REQUIRED,
+  disabled: CHART_AI_ACCESS_CODE.KIS_DISABLED,
+  config_missing: CHART_AI_ACCESS_CODE.KIS_CONFIG_MISSING,
+  production_not_allowed: CHART_AI_ACCESS_CODE.KIS_CONFIG_MISSING,
+};
 
 type ImportMetaWithEnv = ImportMeta & { env?: Record<string, string | undefined> };
 const getImportMetaEnv = (): Record<string, string | undefined> =>
@@ -100,8 +125,16 @@ export const GET: APIRoute = async ({ url, request }) => {
     },
   });
 
+  // Stage 1 — access guard. Distinguish "beta opt-in present but the protected-Preview guard denied it"
+  // from a plain non-local request, so the client shows an honest message instead of an access-rights
+  // catch-all. (X-MK-Chart-AI-Access-Stage is a coarse fixed enum — no env values are exposed.)
   if (!localOwnerAllowed && !betaAccess.allowed && !prodBetaAccess.allowed) {
-    return jsonResponse({ ok: true, ohlcv: blockedResponse(range, 'NON_LOCAL_REQUEST') });
+    const betaOptInPresent = url.searchParams.get('chartAiBetaPreview') === '1';
+    const code = betaOptInPresent ? CHART_AI_ACCESS_CODE.PREVIEW_BETA_GUARD_BLOCKED : CHART_AI_ACCESS_CODE.NON_LOCAL_REQUEST;
+    return jsonResponse({ ok: true, ohlcv: blockedResponse(range, code) }, 200, {
+      'X-MK-Chart-AI-Access-Stage': 'GUARD_BLOCKED',
+      'X-MK-KIS-Readiness-State': 'not_checked',
+    });
   }
 
   const countryParam = (url.searchParams.get('country') ?? '').trim().toUpperCase();
@@ -113,19 +146,44 @@ export const GET: APIRoute = async ({ url, request }) => {
     return jsonResponse({
       ok: true,
       ohlcv: blockedResponse(range, OHLCV_SANITIZED_ERROR_CODES.INVALID_INSTRUMENT),
+    }, 200, { 'X-MK-Chart-AI-Access-Stage': 'GUARD_ALLOWED', 'X-MK-KIS-Readiness-State': 'not_checked' });
+  }
+
+  const allowProd = prodBetaAccess.allowed === true;
+
+  // Stage 2 — KIS readiness (read-only, same gate the provider uses). If the runtime is a valid Preview
+  // but a required Preview-scoped KIS variable is absent/disabled, classify it honestly (config, not
+  // access rights) BEFORE any token/provider work. This never issues a token and never reads a value —
+  // only the coarse readiness reason enum is surfaced.
+  const readiness = getKisQuoteConfigReadiness({ allowProductionChartAiBetaLiveQuotes: allowProd });
+  const readinessState = typeof readiness.reason === 'string' ? readiness.reason : 'unknown';
+  if (!readiness.ready) {
+    const code = READINESS_CODE[readinessState] ?? CHART_AI_ACCESS_CODE.KIS_CONFIG_MISSING;
+    return jsonResponse({ ok: true, ohlcv: blockedResponse(range, code) }, 200, {
+      'X-MK-Chart-AI-Access-Stage': 'READINESS_BLOCKED',
+      'X-MK-KIS-Readiness-State': readinessState,
     });
   }
 
-  const ohlcv = await fetchUniversalOhlcv({
-    instrument,
-    range,
-    allowProductionChartAiBetaLiveQuotes: prodBetaAccess.allowed === true,
-  });
+  // Stage 3 — provider fetch (token lifecycle handled by the existing durable manager; unchanged).
+  const ohlcv = await fetchUniversalOhlcv({ instrument, range, allowProductionChartAiBetaLiveQuotes: allowProd });
+
+  // A provider failure AFTER a ready readiness is a token/data failure, not an access/config problem —
+  // surface a coarse KIS_PROVIDER_UNAVAILABLE (never the raw provider error). no-data stays NO_DATA.
+  const mappedOhlcv =
+    ohlcv.sourceStatus === 'unavailable' && ohlcv.sanitizedErrorCode === OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE
+      ? { ...ohlcv, sourceStatus: 'unavailable' as const, sanitizedErrorCode: CHART_AI_ACCESS_CODE.KIS_PROVIDER_UNAVAILABLE }
+      : ohlcv;
 
   // Safe cache-observability header (MISS | HIT | COALESCED | NEGATIVE_HIT | BYPASS). Metadata only:
   // no key, no credentials, no user identity; the response body contract is unchanged.
   const cacheState = typeof ohlcv.cacheState === 'string' ? ohlcv.cacheState : 'MISS';
-  return jsonResponse({ ok: true, ohlcv }, 200, { 'X-MK-OHLCV-Cache': cacheState });
+  const accessStage = mappedOhlcv.sourceStatus === 'ok' ? 'OK' : 'PROVIDER';
+  return jsonResponse({ ok: true, ohlcv: mappedOhlcv }, 200, {
+    'X-MK-OHLCV-Cache': cacheState,
+    'X-MK-Chart-AI-Access-Stage': accessStage,
+    'X-MK-KIS-Readiness-State': readinessState,
+  });
 };
 
 export const ALL: APIRoute = () => jsonResponse({ ok: false, ohlcv: blockedResponse('3m', 'NON_LOCAL_REQUEST') }, 405);

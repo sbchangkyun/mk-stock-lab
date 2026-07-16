@@ -1,5 +1,37 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-HF2B-HF1 - 2026-07-16
+
+### Protected Preview KIS access guard hotfix (VERCEL_ENV precedence)
+
+- **Confirmed blocked stage = `CONFIRMED_PREVIEW_NODE_ENV_GUARD_COLLISION`** (token lifecycle NOT reached):
+  the OHLCV route reached the app (5 requests, HTTP 200) but `evaluateProtectedPreviewBetaAccess` returned
+  `production_fail_closed` because it short-circuited on `nodeEnv === 'production'` — a deployed Vercel
+  Preview legitimately runs `VERCEL_ENV=preview` + `NODE_ENV=production`, so the route returned a sanitized
+  `blocked` before KIS readiness/token. kisClient's `classifyRuntime` was already VERCEL_ENV-authoritative
+  (no collision there).
+- **Fix** (`protected-preview-beta-guard.mjs`): `evaluateProtectedPreviewBetaAccess` is now VERCEL_ENV-
+  authoritative — Production fails closed first; `VERCEL_ENV=preview` requires flag + query then allows
+  regardless of NODE_ENV; other explicit VERCEL_ENV → not_preview_env; absent VERCEL_ENV + NODE_ENV=production
+  → fail closed. Explicit comment records NODE_ENV must not override an explicit VERCEL_ENV=preview. Production
+  evaluator unchanged.
+- **Sanitized classification** (`ohlcv.json.ts`): coarse codes `PREVIEW_BETA_GUARD_BLOCKED` /
+  `KIS_PREVIEW_GUARD_REQUIRED` / `KIS_DISABLED` / `KIS_CONFIG_MISSING` / `KIS_PROVIDER_UNAVAILABLE` / `NO_DATA`
+  / `NONE`, a read-only KIS readiness pre-check BEFORE any provider/token work, and fixed-enum headers
+  `X-MK-Chart-AI-Access-Stage` + `X-MK-KIS-Readiness-State` (no env values/tokens/payloads). Client
+  (`chart-ai.astro`) maps each code to an honest Korean message — `blocked` is no longer an ambiguous
+  access-rights catch-all; no env names in UI copy.
+- **KIS Preview readiness** (read-only `vercel env ls preview`, names/scopes only): all required Preview
+  vars present (`CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA`, `KIS_ENABLE_PREVIEW_LIVE_QUOTES`,
+  `KIS_ENABLE_LIVE_QUOTES`, `KIS_BASE_URL`, `KIS_APP_SECRET`, `KIS_APP_KEY`); `KIS_ACCOUNT_NO` absent
+  (quote-only). No env change needed.
+- Token implementation (`kisClient` / `kisTokenStore` / durable-token dir), similarity engine, master,
+  manifest, migrations, and workflow are byte-for-byte unchanged. New
+  `smoke_phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_hotfix.mjs` (24/24) +
+  `check_phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_contract.mjs`. `astro build` PASS. Feature branch
+  pushed; new Preview for owner chart QA. No merge, no Production deploy. See
+  `docs\planning\phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_hotfix_result_v0.1.md`.
+
 ## Phase 3GG-T-HF3B-HF2-HF2B - 2026-07-15
 
 ### Similarity explainability UX (overlay + tooltip + single Top-5 + score guide + insight)

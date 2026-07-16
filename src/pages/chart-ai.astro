@@ -2442,8 +2442,24 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               setRealChartState(title, message, mode);
               updateAnalysisAvailability();
             };
+            // Phase 3GG-T-HF3B-HF2-HF2B-HF1: map the sanitized stage code to an HONEST message instead of
+            // one ambiguous "access rights" catch-all (guard vs KIS readiness vs token vs provider vs data).
+            const ohlcvStageMessage = (code: string): [string, string] => {
+              switch (code) {
+                case 'PREVIEW_BETA_GUARD_BLOCKED': return ['차트를 표시할 수 없습니다.', 'Preview 차트 테스트 권한이 활성화되지 않았습니다.'];
+                case 'KIS_PREVIEW_GUARD_REQUIRED': return ['차트를 표시할 수 없습니다.', 'Preview의 KIS 시세 조회 권한이 활성화되지 않았습니다.'];
+                case 'KIS_DISABLED': return ['차트를 표시할 수 없습니다.', 'Preview 시세 조회 기능이 활성화되지 않았습니다.'];
+                case 'KIS_CONFIG_MISSING': return ['차트를 표시할 수 없습니다.', 'Preview 시세 조회 설정을 확인하고 있습니다.'];
+                case 'KIS_TOKEN_UNAVAILABLE': return ['차트를 표시할 수 없습니다.', 'KIS 인증을 갱신하지 못했습니다. 잠시 후 다시 시도해 주세요.'];
+                case 'KIS_PROVIDER_UNAVAILABLE': return ['실시간 시세를 불러오지 못했습니다.', 'KIS 시세 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.'];
+                case 'NON_LOCAL_REQUEST': return ['차트를 표시할 수 없습니다.', '이 환경에서는 실제 차트를 사용할 수 없습니다.'];
+                case 'NO_DATA': return ['표시할 시세 데이터가 없습니다.', '선택한 기간에 표시할 시세 데이터가 없습니다.'];
+                default: return ['차트를 표시할 수 없습니다.', '시세 데이터를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.'];
+              }
+            };
             if (!ohlcv || ohlcv.sourceStatus === 'blocked') {
-              fail('차트를 표시할 수 없습니다.', '실시간 시세 접근 권한을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.', 'error');
+              const [t, m] = ohlcvStageMessage(ohlcv?.sanitizedErrorCode);
+              fail(t, m, 'error');
               return;
             }
             if (ohlcv.sourceStatus === 'no-data' || candles.length < 2) {
@@ -2451,7 +2467,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               return;
             }
             if (ohlcv.sourceStatus !== 'ok') {
-              fail('실시간 시세를 불러오지 못했습니다.', '잠시 후 다시 시도해 주세요.', 'unavailable');
+              const [t, m] = ohlcvStageMessage(ohlcv.sanitizedErrorCode);
+              fail(t, m, 'unavailable');
               return;
             }
             const outcome = integrity.resolveChartLoad(token, { ok: true, candleCount: candles.length, responseSymbolKey });
