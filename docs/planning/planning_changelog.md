@@ -1,5 +1,39 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-T-HF3B-HF2-PREMERGE-FINALIZATION - 2026-07-16
+
+### PR #1 pre-merge audit + reconciliation → `PASS_PREMERGE_FINALIZATION_READY_FOR_OWNER_MERGE_APPROVAL`
+
+- **Read-only audit; no remediation required, no runtime file changed** (docs-only). Baseline verified: HEAD
+  `ab176e4`, origin/main `672419b`, ahead 403 / behind 0, merge-base = main.
+- **Merge simulation conflict-free** (`git merge-tree` → tree `4f52624`, 0 conflicts; no path/rename/migration/
+  workflow/lockfile conflict).
+- **Active gates:** ran full local surface — `check_*.mjs` 125/266 pass, `smoke_*.mjs` 54/62 pass;
+  `astro build` PASS, `npm ls` clean, `git diff --check` clean. Every **current-contract** gate (T-family HF
+  checkers incl. durable KIS token 160/160, preview guard, similarity explainability, OHLCV cache, q/r/t_fast)
+  is green. All 141 red checkers + 8 red smokes classified SUPERSEDED or HISTORICAL_NON_GATING with evidence —
+  **zero real pre-merge blockers**. The two security-named reds verified non-blocking: `server_only_provider_
+  boundaries` is a false positive (all `lib/server` imports are SSR frontmatter, server-only; no server module
+  in the client bundle), `security_metadata_coverage` is superseded by HF3A's intentional `?symbol`
+  suggestion-only handling. The stale-harness `ERR_MODULE_NOT_FOUND kis/kisTokenConfig` smokes are disproven by
+  the passing `astro build`.
+- **Migrations:** all additive (0 destructive). KIS-token migrations `20260713`/`20260714` proven dormant-safe
+  behind `KIS_DURABLE_TOKEN_ENABLED` (manager uses in-memory `legacyIssue` when `!durableReady`; DB touched
+  only after the gate; misconfigured fails closed). Base-schema `20260615/20260621/20260625` additive →
+  production-DB application is an Owner-confirm item (DB not readable this phase). `draft_3fd_c` stays
+  unexecuted.
+- **KIS workflow** `kis-instrument-master-refresh.yml` safe: KIS-only sources, schedules KR `17 13 * * 1-5` /
+  US `23 2 * * 2-6` / weekly `41 13 * * 6`, minimal `contents`+`pull-requests` write, branch
+  `automation/kis-instrument-master-refresh`, concurrency-guarded, opens one PR, never merges/force-pushes/
+  deploys/mutates-env, symbol `^[0-9A-Z]{6}$`.
+- **Security/secret scan clean** (only pattern-definition strings in a scanner script; no env/`.vercel/`/
+  credential files tracked; no account/order/balance endpoint; KIS fail-closed confirmed). Committed
+  `.gitignore` change is additive ignore hardening that hides nothing critical.
+- New docs: `phase_3gg_t_hf3b_hf2_premerge_finalization_result_v0.1.md`,
+  `pr_1_premerge_release_checklist_v0.1.md`, `pr_1_final_title_and_body_draft_v0.1.md`. **No merge, no main
+  push, no PR-metadata change, no Production deploy, no DB/env/Vercel mutation.** Owner-only follow-ups:
+  confirm production DB migration state + green CI/clean review threads, then apply PR metadata and merge.
+
 ## Phase 3GG-T-HF3B-HF2-HF2B - 2026-07-16 (visual/interaction verification)
 
 ### Similarity explainability UX — Owner visual and interaction QA → `PASS_SIMILARITY_EXPLAINABILITY_UX_PREVIEW_VERIFIED`
