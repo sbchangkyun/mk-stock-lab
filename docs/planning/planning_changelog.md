@@ -31,6 +31,14 @@
   `check_phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_contract.mjs`. `astro build` PASS. Feature branch
   pushed; new Preview for owner chart QA. No merge, no Production deploy. See
   `docs\planning\phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_hotfix_result_v0.1.md`.
+- **VERIFIED (Owner QA, commit e71403b) → `PASS_PREVIEW_KIS_ACCESS_GUARD_AND_CHART_VERIFIED`:** on the
+  protected Preview `mkstocklab-etvc1u3nh`, 069500 search + selection + explicit chart load rendered the real
+  OHLCV chart, and Similarity execution rendered the real Similarity result UI; runtime logs showed one
+  `/api/chart-ai/market/ohlcv.json` + one `/api/chart-ai/similarity.json` request (Similarity HTTP 200), no
+  related runtime errors, no Production deployment. Scope = guard fix + chart/Similarity FUNCTIONAL
+  integration (HF2B visual/mobile/touch/keyboard/accessibility QA remains owner-pending); token expiry was
+  not the cause and no exact L1/L2/issuance source is claimed. Docs-only verification commit; feature branch
+  pushed; no merge/main-push/PR-metadata/Production change.
 
 ## Phase 3GG-T-HF3B-HF2-HF2B - 2026-07-15
 

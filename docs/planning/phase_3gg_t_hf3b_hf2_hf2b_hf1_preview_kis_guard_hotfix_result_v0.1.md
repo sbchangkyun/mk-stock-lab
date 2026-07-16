@@ -6,9 +6,10 @@ no master/migration change, no env mutation, no Production deploy, no PR merge.*
 
 ## 1. Executive classification
 
-`IMPLEMENTED_PUSHED_PREVIEW_READY_OWNER_CHART_QA_PENDING` (target
-`PASS_PREVIEW_KIS_ACCESS_GUARD_AND_CHART_VERIFIED` after owner Preview QA). The demonstrated cause is fixed;
-Preview KIS env is fully configured (§5), so the guard fix alone is expected to restore chart access.
+**`PASS_PREVIEW_KIS_ACCESS_GUARD_AND_CHART_VERIFIED`** — the guard fix is implemented (commit `e71403b`),
+local gates green, pushed, and Owner authenticated protected-Preview QA confirmed the real OHLCV chart and
+the real Similarity result render (§10). No PR merge, no main push, no PR-metadata change, no Production
+deploy.
 
 ## 2. Confirmed blocked stage
 
@@ -81,13 +82,24 @@ verification commit only after a real Preview PASS. Feature branch pushed (no ma
 auto-merge). No token implementation change, no env mutation, no Supabase/DB change, no master/migration
 change, no dependency install, no Production deploy.
 
-## 10. Preview verification — recorded after owner QA
+## 10. Preview verification — Owner QA, PASS (commit e71403b)
 
-On `…/chart-ai?chartAiBetaPreview=1` (signed in): search 069500 → select → explicit chart load → guard
-allowed, instrument KR|069500|KOSPI|etf, candles > 1, sourceStatus=ok, sanitizedErrorCode=NONE, chart
-renders; then Similarity once (HF2B result UI). Regression 005930 / AAPL / 0000D0. Record OHLCV + Similarity
-request counts, cache states, additional KIS token issuance count, token source, runtime errors. HF2A3 search
-transport must remain healthy; no Production deploy.
+Owner authenticated protected-Preview QA on `…/chart-ai?chartAiBetaPreview=1`:
+
+- The Owner stayed on the protected Preview.
+- 069500 search + selection succeeded; **explicit chart loading succeeded and the real OHLCV chart
+  rendered** — the guard fix let the OHLCV request pass the access stage and reach the KIS provider (the
+  previous `blocked` no longer occurs).
+- **Similarity execution succeeded and the real Similarity result UI rendered.**
+- Preview runtime logs recorded exactly **one `/api/chart-ai/market/ohlcv.json`** request and **one
+  `/api/chart-ai/similarity.json`** request (the Similarity request returned **HTTP 200**); no related
+  runtime errors.
+- No Production deployment occurred.
+
+Scope of this evidence: the guard fix + chart and Similarity **functional integration** are verified. This
+does NOT assert full HF2B visual / mobile / touch / keyboard / accessibility QA (owner-pending, tracked by
+HF2B). Token lifecycle was not reached before the fix (§3); the exact post-fix token source (L1 / durable L2
+/ fresh issuance) is not claimed — it was not read from telemetry. Token expiry was not the cause.
 
 ## 11. Resume point
 

@@ -96,16 +96,22 @@ outcome agreement → risk/upside → final observation → limitations.
   shows the honest guarded state. Client `productionRealChartEnabled` now also enables the real JS under the
   protected-Preview beta path. Production and ordinary-Preview/local behavior are unchanged.
 
-## 10. Preview QA — recorded after Owner QA
+## 10. Preview QA
 
-Preview deployment (id / url / branch alias / commit / READY / SSO), then on
-`…/chart-ai?chartAiBetaPreview=1` (signed in): 069500 primary + 005930/AAPL/0000D0 regression — search →
-select → explicit chart load → Similarity once. Verify crosshair/D+, line emphasis + legend sync, structured
-tooltip identity/date/score/value, single Top-5 (table→cards, no duplication), score guide + candidate
-percentile, insight cards + final category, no advisory wording, no horizontal overflow. Route/log evidence
-for search.json / ohlcv.json / similarity.json (and mk-analysis.json regression) with HTTP status, cache
-state, and additional KIS-token issuance count. HF2A3 transport must stay PASS; no selected-symbol
-contamination; no Production deploy.
+**Functional integration — VERIFIED (Owner QA, after the HF2B-HF1 guard hotfix, commit e71403b).** The real
+Similarity experience was reachable on the protected Preview only after the HF2B-HF1 access-guard fix (a
+`VERCEL_ENV=preview` + `NODE_ENV=production` guard collision had blocked the OHLCV chart). On
+`…/chart-ai?chartAiBetaPreview=1` (signed in): 069500 search + selection succeeded, explicit chart load
+rendered the real OHLCV chart, **Similarity execution succeeded and the real Similarity result UI rendered**;
+Preview runtime logs recorded one `/api/chart-ai/market/ohlcv.json` and one `/api/chart-ai/similarity.json`
+request (Similarity HTTP 200), no related runtime errors, no Production deployment. See
+`phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_hotfix_result_v0.1.md` §10.
+
+**Visual / interaction QA — still owner-pending (not asserted here).** Crosshair/D+ inspection, line
+emphasis + legend sync, structured-tooltip readability, single Top-5 table→cards responsiveness, score guide
++ candidate percentile, insight cards + final category, mobile/touch/keyboard/accessibility, and no
+horizontal overflow at 375px remain to be visually confirmed by the Owner. HF2A3 search transport remains
+healthy; no selected-symbol contamination; no Production deploy.
 
 ## 11. Tests
 
