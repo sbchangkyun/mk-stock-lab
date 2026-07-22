@@ -137,7 +137,7 @@ possibilities without requiring any secret value to be shared:
    exactly `KIS_ENABLE_LIVE_QUOTES=true` with no typo, no extra whitespace, no surrounding quotes,
    and is not commented out (no leading `#`).
 3. Start a single fresh `npm run dev` process from the project root
-   (`C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`) and wait for it to report ready.
+   (`E:\개인 프로젝트\mk-stock-lab`) and wait for it to report ready.
 4. Re-run this same rerun diagnostic (`npm run owner-diagnostic:phase-3gg-k-env-hf1 --
    --owner-approved-kis-runtime-diagnostic --base-url=http://localhost:4321`).
 5. If `KIS_ENABLE_LIVE_QUOTES_exactly_true` is then confirmed `true` but the route still reports

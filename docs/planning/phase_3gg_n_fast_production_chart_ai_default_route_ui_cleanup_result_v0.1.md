@@ -10,7 +10,7 @@ confirms the default route, the UI cleanup, and the real KIS+LLM `MK AI 시세 �
 
 - **Baseline commit**: `da71860` (Phase 3GG-M-PROD-HF1).
 - **Branch**: `rebuild/phase-1-ia-shell`.
-- **Project path**: `C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`.
+- **Project path**: `E:\개인 프로젝트\mk-stock-lab`.
 
 ## Goal (owner intent)
 

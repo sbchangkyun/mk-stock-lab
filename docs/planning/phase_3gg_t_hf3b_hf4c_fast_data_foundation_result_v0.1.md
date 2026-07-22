@@ -2,7 +2,7 @@
 
 ## 1. Baseline
 
-- Project path: `C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`
+- Project path: `E:\개인 프로젝트\mk-stock-lab`
 - Branch: `rebuild/phase-1-ia-shell`
 - Starting HEAD (`ANALYSIS_V2_FINAL_HEAD`): `845cac4`
   (`Phase 3GG-T-HF5-HF6AB: verify analysis experience V2 in Production`)

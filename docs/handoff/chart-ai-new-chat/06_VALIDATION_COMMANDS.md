@@ -1,6 +1,6 @@
 # Validation Commands
 
-Run validation from the repository root: `C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`.
+Run validation from the repository root: `E:\개인 프로젝트\mk-stock-lab`.
 
 Do not inspect `.env`, `.env.local`, or `.env.*`. Do not print credentials, tokens, cookies, sessions, raw user IDs, raw emails, or provider secrets.
 

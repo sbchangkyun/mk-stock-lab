@@ -158,7 +158,7 @@ diagnostic could reach any dev server at `http://localhost:4321/`, whether corre
    exactly `KIS_ENABLE_LIVE_QUOTES=true` with no typo, no extra whitespace, no surrounding quotes,
    and is not commented out (no leading `#`). Save the file.
 4. Start exactly **one** fresh `npm run dev` process from the project root
-   (`C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`) and wait for it to print that it is ready
+   (`E:\개인 프로젝트\mk-stock-lab`) and wait for it to print that it is ready
    and listening on port `4321` specifically (not a fallback port like `5173`/`5174` -- a fallback
    port itself is a signal that another process is still holding `4321`).
 5. Re-run this same Phase 3GG-K-ENV-HF1-RERUN-2 diagnostic

@@ -1,7 +1,7 @@
 I am continuing the mk-stock-lab project in a new chat.
 
 Project: mk-stock-lab
-Local path: C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab
+Local path: E:\개인 프로젝트\mk-stock-lab
 Branch: rebuild/phase-1-ia-shell
 Latest known commit: 2ae6367 docs: record successful local kis quote smoke result
 Latest completed phase: Phase 3Z (owner manual local live KIS quote smoke — passed)

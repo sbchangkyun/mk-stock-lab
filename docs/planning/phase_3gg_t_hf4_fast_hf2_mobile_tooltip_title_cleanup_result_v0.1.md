@@ -2,7 +2,7 @@
 
 ## 1. Baseline
 
-- Project path: `C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`
+- Project path: `E:\개인 프로젝트\mk-stock-lab`
 - Branch: `rebuild/phase-1-ia-shell`
 - Starting HEAD: `3be57c3` (`Phase 3GG-T-HF4-FAST-HF1: clean up mobile chart interaction`)
 - Pre-hotfix Production deployment: `dpl_6GWfz1EgwxSTC6wKoveFW8kfZgYN` at `https://mkstocklab.vercel.app`

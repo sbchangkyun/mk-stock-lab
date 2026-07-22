@@ -1,6 +1,6 @@
 # Current State
 
-Repository path: `C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`
+Repository path: `E:\개인 프로젝트\mk-stock-lab`
 
 Branch: `rebuild/phase-1-ia-shell`
 

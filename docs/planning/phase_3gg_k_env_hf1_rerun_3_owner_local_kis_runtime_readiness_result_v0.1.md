@@ -35,7 +35,7 @@ No diff against baseline `62d888c` for any of: `scripts/owner_diagnostic_phase_3
 
 The owner reported having: (1) killed all dev-related node processes; (2) confirmed no `netstat`
 output on ports `4321`, `5173`, or `5174` before restarting; (3) restarted `npm run dev` from
-`C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`; (4) observed Astro report
+`E:\개인 프로젝트\mk-stock-lab`; (4) observed Astro report
 `Local http://localhost:4321/`. `.env`/`.env.local` were never opened, read, or printed by this
 phase at any point -- only sanitized OS-level process/port metadata (PID, creation timestamp,
 listening ports -- no env values, no secret values) and the existing sanitized diagnostic/G-FAST

@@ -62,7 +62,7 @@ If the branch has commits that have not yet been pushed to the remote, pushing t
 
 ```powershell
 # Owner runs manually in PowerShell — Claude Code must not run this
-cd "C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab"
+cd "E:\개인 프로젝트\mk-stock-lab"
 git status --short
 git push origin rebuild/phase-1-ia-shell
 ```
@@ -73,7 +73,7 @@ If the branch is already at HEAD on the remote and a new deployment is needed, t
 
 ```powershell
 # Owner runs manually in PowerShell — Claude Code must not run this
-cd "C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab"
+cd "E:\개인 프로젝트\mk-stock-lab"
 git status --short
 git commit --allow-empty -m "chore: trigger preview deploy for disabled quote card"
 git push origin rebuild/phase-1-ia-shell

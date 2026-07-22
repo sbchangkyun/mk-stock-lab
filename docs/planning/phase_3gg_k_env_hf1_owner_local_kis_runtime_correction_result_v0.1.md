@@ -131,7 +131,7 @@ Do not paste any secret value into chat at any point during these steps.
    `KIS_BASE_URL`, and that `KIS_ACCOUNT_NO` is either absent or fully removed/commented out
    (its presence hard-blocks quote-only readiness regardless of the other settings).
 3. Stop any running `npm run dev` process completely, then restart it fresh from the project root
-   (`C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`) so the dev server reloads `.env`/`.env.local`
+   (`E:\개인 프로젝트\mk-stock-lab`) so the dev server reloads `.env`/`.env.local`
    from disk.
 4. Re-run `npm run owner-diagnostic:phase-3gg-k-env-hf1 -- --owner-approved-kis-runtime-diagnostic
    --base-url=http://localhost:4321` and `npm run owner-smoke:phase-3gg-g-fast --

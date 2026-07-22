@@ -4,7 +4,7 @@ Copy and paste the following into a new ChatGPT conversation to continue this wo
 
 ```
 프로젝트: mk-stock-lab
-경로: C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab
+경로: E:\개인 프로젝트\mk-stock-lab
 브랜치: rebuild/phase-1-ia-shell
 현재 베이스라인: dcb6724
 최근 완료 단계: Phase 3FF-A-HOUSEKEEPING-A

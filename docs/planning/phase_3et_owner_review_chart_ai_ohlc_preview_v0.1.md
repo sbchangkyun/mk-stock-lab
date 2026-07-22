@@ -73,7 +73,7 @@ Provide command instructions WITHOUT secret values.
 PowerShell:
 
 ```powershell
-cd "C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab"
+cd "E:\개인 프로젝트\mk-stock-lab"
 
 $env:KIS_APP_KEY="your local value"
 $env:KIS_APP_SECRET="your local value"

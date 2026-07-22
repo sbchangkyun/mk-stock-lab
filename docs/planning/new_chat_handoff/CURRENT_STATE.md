@@ -7,7 +7,7 @@ Generated: 2026-06-21 — after Phase 3Z completion.
 ## 1. Project Identity
 
 - **Project name**: mk-stock-lab
-- **Local path**: `C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab`
+- **Local path**: `E:\개인 프로젝트\mk-stock-lab`
 - **Branch**: `rebuild/phase-1-ia-shell`
 - **Latest known commit**: `2ae6367 docs: record successful local kis quote smoke result`
 - **Working tree state at handoff**: clean — no uncommitted changes

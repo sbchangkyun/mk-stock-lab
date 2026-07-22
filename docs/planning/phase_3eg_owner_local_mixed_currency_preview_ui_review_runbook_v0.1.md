@@ -19,7 +19,7 @@ Use the local project only.
 Recommended command:
 
 ```powershell
-cd C:\Users\kkama\OneDrive\문서\Project\mk-stock-lab
+cd E:\개인 프로젝트\mk-stock-lab
 npm run dev -- --host 127.0.0.1 --port 4321
 ```
 
