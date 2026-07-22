@@ -1,0 +1,1639 @@
+## New Chat Handoff Pack Owner Review Delta
+
+Use this format when reviewing the new-chat handoff pack. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+New Chat Handoff Pack 생성 결과:
+
+* CURRENT_STATE.md가 생성되어 최신 프로젝트 상태가 정리됨: 통과/실패
+* NEXT_TASK_PROMPT.md가 생성되어 다음 Phase 3AA 준비 방향이 정리됨: 통과/실패
+* PROJECT_HANDOFF_INDEX.md가 생성되어 source-of-truth 문서 목록이 정리됨: 통과/실패
+* NEW_CHAT_BOOTSTRAP_PROMPT.txt가 생성되어 새 채팅 시작 문구가 준비됨: 통과/실패
+* HANDOFF_MANIFEST.json이 생성되고 valid JSON임: 통과/실패
+* 현재 완료 Phase가 Phase 3Z로 기록됨: 통과/실패
+* 다음 권장 Phase가 Phase 3AA로 기록됨: 통과/실패
+* 새 채팅이 static summary만 믿지 않고 Claude Code read-back을 먼저 수행하도록 설계됨: 통과/실패
+* local path와 branch가 명확히 기록됨: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* production KIS guard 변경이 계속 차단됨: 통과/실패
+* Vercel env mutation 및 deployment가 계속 차단됨: 통과/실패
+* Claude Code가 live KIS call을 실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* 다음 단계가 새 채팅에서 Claude Code read-back 후 Phase 3AA 준비임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
+## Phase 3Z Owner Local KIS Quote Smoke Result Owner Review Delta
+
+Use this format when reviewing Phase 3Z. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3Z Owner Local KIS Quote Smoke Result 기록 결과:
+
+* owner manual local KIS quote smoke 성공 결과가 문서화됨: 통과/실패
+* sanitized `phase3y` output만 기록됨: 통과/실패
+* live-approved mode 통과가 기록됨: 통과/실패
+* local non-production runtime 통과가 기록됨: 통과/실패
+* `KIS_ACCOUNT_NO` 부재 확인이 기록됨: 통과/실패
+* KIS env name presence 확인이 값 노출 없이 기록됨: 통과/실패
+* provider-import 통과가 기록됨: 통과/실패
+* live KIS quote fetch 통과가 기록됨: 통과/실패
+* quote-normalization 통과가 기록됨: 통과/실패
+* in-process mock cache write/readback/cleanup 통과가 기록됨: 통과/실패
+* Supabase persistent cache live write/readback은 아직 미검증으로 기록됨: 통과/실패
+* `/api/market/quote` live endpoint는 아직 미검증으로 기록됨: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* production KIS guard가 변경되지 않음: 통과/실패
+* Claude Code가 live KIS call을 실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* 다음 단계가 별도 local `/api/market/quote` endpoint verification phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
+## Phase 3Y Local KIS Quote Smoke Harness Owner Review Delta
+
+Use this format when reviewing Phase 3Y. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3Y Local KIS Quote Smoke Harness 검토 결과:
+
+* local owner-run KIS quote smoke harness가 준비됨: 통과/실패
+* harness가 fail-closed 방식으로 구현됨: 통과/실패
+* 기본 실행이 dry-run/mock으로 유지됨: 통과/실패
+* live KIS mode에 owner approval guards가 필요함: 통과/실패
+* production runtime에서 live KIS call이 차단됨: 통과/실패
+* quote-only phase에서 `KIS_ACCOUNT_NO` 사용이 차단됨: 통과/실패
+* KIS env 값이 아니라 존재 여부만 확인하도록 설계됨: 통과/실패
+* sanitized `phase3y step=... status=...` 출력이 구현됨: 통과/실패
+* raw KIS payload/token/key/header/account data 출력이 차단됨: 통과/실패
+* dry-run/mock validation이 통과함: 통과/실패
+* Claude Code가 live KIS call을 실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* production KIS guard가 변경되지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* 다음 단계가 별도 owner manual local KIS smoke result recording phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
+## Phase 3X Vercel Env Readiness And KIS Gate Plan Owner Review Delta
+
+Use this format when reviewing Phase 3X. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3X Vercel Env Readiness And KIS Gate Plan 검토 결과:
+
+* Phase 3W baseline과 Phase 3V cache smoke 통과 상태가 반영됨: 통과/실패
+* KIS live end-to-end flow가 아직 미검증으로 기록됨: 통과/실패
+* Vercel env mutation이 아직 수행되지 않음: 통과/실패
+* production KIS guard의 `production_not_allowed` 제약이 명확히 기록됨: 통과/실패
+* Vercel Production env 값 설정만으로 production KIS 호출이 활성화되지 않음이 기록됨: 통과/실패
+* 필요한 env 이름만 정리되고 값은 기록되지 않음: 통과/실패
+* secret / non-secret / project-identifying 값 구분이 명확함: 통과/실패
+* Local / Preview / Production 단계 전략이 분리되어 있음: 통과/실패
+* production KIS gate decision options가 정리됨: 통과/실패
+* live KIS call 전 owner approval gate가 명확함: 통과/실패
+* Vercel env mutation 전 owner approval gate가 명확함: 통과/실패
+* production guard code change 전 owner approval gate가 명확함: 통과/실패
+* deployment 전 owner approval gate가 명확함: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* Claude Code가 code/source를 변경하지 않음: 통과/실패
+* Claude Code가 live KIS call을 실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* 다음 단계가 별도 local KIS quote smoke harness phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
+## Phase 3W Controlled Live Quote Integration Readiness Plan Owner Review Delta
+
+Use this format when reviewing Phase 3W. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3W Controlled Live Quote Integration Readiness Plan 검토 결과:
+
+* Phase 3V persistent quote cache live smoke 통과 상태가 반영됨: 통과/실패
+* KIS live provider end-to-end flow가 아직 미검증으로 기록됨: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* Vercel production env mutation이 아직 수행되지 않음: 통과/실패
+* 필요한 env 이름만 정리되고 값은 기록되지 않음: 통과/실패
+* KIS read-only quote 범위가 명확함: 통과/실패
+* trading/account/order/balance/WebSocket 범위가 명확히 제외됨: 통과/실패
+* live provider testing 전 owner approval gate가 명확함: 통과/실패
+* API response verification checklist가 정리됨: 통과/실패
+* 향후 phase sequence가 분리되어 정리됨: 통과/실패
+* Claude Code가 live KIS call을 실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* 다음 단계가 별도 env readiness 또는 server-side KIS API smoke planning phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
+## Phase 3V Owner Live Smoke Retry Result Owner Review Delta
+
+Use this format when reviewing Phase 3V. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3V Owner Live Smoke Retry Result 기록 결과:
+
+* owner manual live smoke retry 성공 결과가 문서화됨: 통과/실패
+* runtime config presence가 값 노출 없이 true로 기록됨: 통과/실패
+* guard-check 통과가 기록됨: 통과/실패
+* smoke-identity-validation 통과가 기록됨: 통과/실패
+* runtime-setup / adapter-import / admin-import 통과가 기록됨: 통과/실패
+* config-preflight 통과가 기록됨: 통과/실패
+* client-construction 통과가 기록됨: 통과/실패
+* precheck-read 통과가 기록됨: 통과/실패
+* success-write 통과가 기록됨: 통과/실패
+* fresh-readback 통과가 기록됨: 통과/실패
+* stale-readback 통과가 기록됨: 통과/실패
+* failure-metadata-write 통과가 기록됨: 통과/실패
+* cleanup-restore 통과 및 smoke row 삭제가 기록됨: 통과/실패
+* final-result 통과가 기록됨: 통과/실패
+* Claude Code가 live smoke를 재실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* 다음 단계가 별도 controlled live quote integration readiness phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+---
+
+## Phase 3U Owner Live Smoke Diagnostic Improvement Owner Review Delta
+
+Use this format when reviewing Phase 3U. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3U Owner Live Smoke Diagnostic Improvement 검토 결과:
+
+* owner live smoke harness에 단계별 sanitized diagnostic label이 추가됨: 통과/실패
+* `UNEXPECTED_SAFE_FAILURE`가 last-resort fallback으로 축소됨: 통과/실패
+* setup/import/config/client-construction/precheck/write/readback/cleanup 실패 구간이 구분됨: 통과/실패
+* config preflight가 값 노출 없이 존재 여부만 검증함: 통과/실패
+* Node harness와 Astro `import.meta.env` 경계가 안전하게 개선됨: 통과/실패/해당 없음
+* live mode fail-closed guard가 유지됨: 통과/실패
+* dry-run/mock validation이 통과함: 통과/실패
+* Claude Code가 live smoke를 재실행하지 않음: 통과/실패
+* Claude Code가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Claude Code가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Claude Code에 의해 접근/변경되지 않음: 통과/실패
+* `.env*` 파일 내용이 읽히지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error/stack trace가 기록되지 않음: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* 다음 단계가 별도 owner-approved live retry/result phase임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3T Owner Live Smoke Failed Result Owner Review Delta
+
+Use this Korean-first format when reviewing Phase 3T. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, raw errors, stack traces, environment values, or secret-bearing output.
+
+```text
+Phase 3T Owner Live Smoke Failed Result 기록 결과:
+
+* owner manual live smoke 실패 결과가 문서화됨: 통과/실패
+* live-approved mode 진입 결과가 기록됨: 통과/실패
+* backup risk acceptance flag 통과가 기록됨: 통과/실패
+* `UNEXPECTED_SAFE_FAILURE` 실패 코드가 기록됨: 통과/실패
+* `sanitized=true`가 기록됨: 통과/실패
+* persistent adapter live enablement가 통과로 기록되지 않음: 통과/실패
+* write/upsert/readback/cleanup 성공을 추정하지 않음: 통과/실패
+* UI live quote wiring이 계속 차단됨: 통과/실패
+* Codex가 live smoke를 재실행하지 않음: 통과/실패
+* Codex가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Codex에 의해 접근/변경되지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot/raw error가 기록되지 않음: 통과/실패
+* 다음 단계가 Phase 3U safe diagnostic improvement임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3S Persistent Quote Cache Enablement Smoke Harness Owner Review Delta
+
+Use this Korean-first format when reviewing Phase 3S. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, environment values, or secret-bearing output.
+
+```text
+Phase 3S Persistent Quote Cache Enablement Smoke Harness 검토 결과:
+
+* owner-run persistent adapter live smoke harness가 준비됨: 통과/실패
+* live smoke가 fail-closed 방식으로 구현됨: 통과/실패
+* live smoke 실행 시 owner approval flags가 필요함: 통과/실패
+* dry-run/mock validation이 통과함: 통과/실패
+* Codex가 live Supabase query/write를 실행하지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* production DB가 Codex에 의해 접근/변경되지 않음: 통과/실패
+* smoke payload가 normalized public quote snapshot으로 제한됨: 통과/실패
+* raw KIS payload/token/key/header/account data가 저장/출력되지 않음: 통과/실패
+* cleanup/restore 전략이 문서화됨: 통과/실패
+* UI live quote wiring이 아직 구현되지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* 다음 단계가 owner manual live smoke 실행/결과 기록임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3R Persistent Quote Cache Adapter Owner Review Delta
+
+Use this Korean-first format when reviewing Phase 3R. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, environment values, or secret-bearing output.
+
+```text
+Phase 3R Persistent Supabase Quote Cache Adapter 검토 결과:
+
+* persistent Supabase quote cache adapter가 server-only로 구현됨: 통과/실패
+* memory cache가 default backend로 유지됨: 통과/실패
+* Supabase persistent backend가 opt-in 방식으로만 동작함: 통과/실패
+* raw KIS payload/token/key/header/account data가 저장되지 않음: 통과/실패
+* quote_json에는 normalized public quote snapshot만 저장되도록 제한됨: 통과/실패
+* service-role/server-side write boundary가 유지됨: 통과/실패
+* browser/client 코드가 persistent adapter를 import하지 않음: 통과/실패
+* Codex가 Supabase live query/write를 실행하지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* UI live quote wiring이 아직 구현되지 않음: 통과/실패
+* Vercel env 변경 및 deployment가 없음: 통과/실패
+* mock/static validation이 통과함: 통과/실패
+* 다음 단계가 별도 adapter enablement 또는 API smoke approval임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3Q Production Migration Execution Result Owner Review Delta
+
+Use this Korean-first format when reviewing the Phase 3Q production migration execution result record. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3Q Production Migration Execution Result 기록 결과:
+
+* production 수동 실행 결과가 문서화됨: 통과/실패
+* production target confirmed 결과가 기록됨: 통과/실패
+* Free Plan backup/PITR/snapshot 미제공 리스크 수용이 기록됨: 통과/실패
+* Script 01 precheck all pass 및 safe_to_apply pass가 기록됨: 통과/실패
+* Script 02 Phase 3M migration applied pass가 기록됨: 통과/실패
+* Script 03 post-migration validation pass가 기록됨: 통과/실패
+* RLS/grants preserved pass가 기록됨: 통과/실패
+* Script 04 cleanup-none pass가 기록됨: 통과/실패
+* production DB changed yes가 기록됨: 통과/실패
+* rollback/corrective action needed no가 기록됨: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* project ref/URL/key/token/connection string/screenshot이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 단계가 별도 persistent cache adapter 구현 승인임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3P Production Dashboard SQL Execution Pack Owner Review Delta
+
+Use this Korean-first format when reviewing the Phase 3P production Dashboard SQL execution pack. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3P Production Dashboard SQL Execution Pack 검토 결과:
+
+* production precheck/execution script pack이 준비됨: 통과/실패
+* Script 01이 read-only precheck로 구성됨: 통과/실패
+* Script 02가 disposable 검증 완료 migration과 일치하도록 준비됨: 통과/실패
+* Script 03이 read-only postcheck로 구성됨: 통과/실패
+* Script 04가 production cleanup 없음/비삭제 원칙을 명시함: 통과/실패
+* production SQL은 Codex에 의해 실행되지 않음: 통과/실패
+* production DB는 Codex에 의해 접근/변경되지 않음: 통과/실패
+* backup/rollback 및 abort condition이 명확함: 통과/실패
+* project ref/URL/key/token/connection string/screenshot이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 단계가 owner의 production target 확인 및 수동 실행 여부 결정임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3O Production Migration Approval Execution Plan Owner Review Delta
+
+Use this Korean-first format when reviewing the Phase 3O production migration approval and execution plan. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3O Production Migration Approval/Execution Plan 검토 결과:
+
+* Phase 3M migration의 production 적용 전 승인 계획이 문서화됨: 통과/실패
+* disposable validation all pass 결과가 근거로 반영됨: 통과/실패
+* production target 분리 확인 절차가 명확함: 통과/실패
+* backup/rollback 정책 검토 항목이 포함됨: 통과/실패
+* precheck, execution, postcheck, abort condition이 명확함: 통과/실패
+* production SQL 실행은 아직 승인/수행되지 않음: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 단계가 별도 Phase 3P production execution approval임: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N.7 Dashboard SQL Validation Result Owner Review Delta
+
+Use this Korean-first format when reviewing the Phase 3N.7 dashboard SQL validation result record. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3N.7 Dashboard SQL Validation Result 기록 결과:
+
+* Phase 3N.6 SQL pack 수동 실행 결과가 문서화됨: 통과/실패
+* disposable project에서만 실행한 것으로 기록됨: 통과/실패
+* production DB 접근/변경 없음이 기록됨: 통과/실패
+* baseline/fixture 결과가 all pass로 기록됨: 통과/실패
+* Phase 3M migration 적용 결과가 pass로 기록됨: 통과/실패
+* schema/constraint/index/backfill/RLS/grant/negative validation 결과가 all pass로 기록됨: 통과/실패
+* cleanup 결과가 pass로 기록됨: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* production 적용은 별도 승인 gate 전까지 차단됨: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N.5 Runtime-only Supabase Target SQL Validation Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.5 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.5 Runtime-only Supabase Target SQL Validation 결과:
+
+* runtime-only target handle은 MCP tool argument로만 사용 승인됨: 통과/실패
+* SQL 실행은 `disposable-remote-approved` target으로만 제한됨: 통과/실패
+* production DB에 접근/변경되지 않음: 통과/실패
+* Phase 3M migration 적용 검증은 runtime handle 미가용으로 아직 실행되지 않음: 통과/실패
+* schema/constraint/index/backfill live 검증은 아직 미실행임: 통과/실패
+* RLS/grant/public write 차단 live 검증은 아직 미실행임: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data가 기록되지 않음: 통과/실패
+* project ref/URL/connection string이 문서/채팅/커밋에 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* reset/disposal은 SQL 미실행으로 해당 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N.4 Disposable Supabase SQL Validation Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.4 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.4 Disposable Supabase SQL Validation 결과:
+
+* SQL 실행은 `disposable-remote-approved` target으로만 제한됨: 통과/실패
+* production DB에 접근/변경되지 않음: 통과/실패
+* Phase 3M migration 적용 검증은 MCP target handle 문제로 아직 실행되지 않음: 통과/실패
+* schema/constraint/index/backfill live 검증은 아직 미실행임: 통과/실패
+* RLS/grant/public write 차단 live 검증은 아직 미실행임: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data가 기록되지 않음: 통과/실패
+* project ref/URL/connection string이 문서/채팅/커밋에 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* reset/disposal은 SQL 미실행으로 해당 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N.3A Supabase Target Status Check Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.3A owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.3A Supabase Target Status Check 결과:
+
+* 현재 target 지정 상태가 비밀값 없이 점검됨: 통과/실패
+* project listing 또는 project ref 기록이 수행되지 않음: 통과/실패
+* SQL 실행 및 migration 적용이 수행되지 않음: 통과/실패
+* Supabase DB query가 수행되지 않음: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* target 상태 결과가 명확함: 통과/실패
+* 다음 단계 판단 기준이 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N.3 Disposable Supabase Target Designation Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.3 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.3 Disposable Supabase Target Designation 결과:
+
+* Supabase MCP target 지정 방식이 project ref/URL/key 기록 없이 정리됨: 통과/실패
+* production DB 접근/변경이 없음: 통과/실패
+* project listing 또는 project ref 기록이 수행되지 않음: 통과/실패
+* SQL 실행 및 migration 적용이 수행되지 않음: 통과/실패
+* target category만 기록됨: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 Phase 3N.4 실행 전 owner approval gate가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N.2 Disposable Supabase SQL Validation Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.2 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.2 Disposable Supabase SQL Validation 결과:
+
+* SQL 실행은 disposable 또는 controlled non-production 환경으로만 제한됨: 통과/실패
+* production DB에 접근/변경되지 않음: 통과/실패
+* Phase 3M migration 적용 검증은 target 미확인으로 아직 실행되지 않음: 통과/실패
+* schema/constraint/index/backfill live 검증은 아직 미실행임: 통과/실패
+* RLS/grant/public write 차단 live 검증은 아직 미실행임: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data가 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* reset/disposal은 target 미선택으로 해당 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N.1 Disposable Supabase Migration Validation Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N.1 owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N.1 Disposable Supabase Migration Validation 결과:
+
+* disposable 또는 controlled non-production 환경을 비밀값 없이 확인하지 못해 실행 전 중단됨: 통과/실패
+* production DB에 접근/변경되지 않음: 통과/실패
+* Phase 3M migration 적용은 아직 실행되지 않음: 통과/실패
+* schema/constraint/index/backfill live 검증은 아직 미실행임: 통과/실패
+* RLS/grant/public write 차단 live 검증은 아직 미실행임: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data가 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 실행 전 disposable target을 비밀값 없이 확인해야 함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3N Disposable Supabase Validation Plan Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3N owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3N Disposable Supabase Validation Plan 검토 결과:
+
+* disposable 환경에서만 migration 검증하도록 계획됨: 통과/실패
+* production DB 적용은 명확히 금지됨: 통과/실패
+* precheck, migration 적용, negative validation, evidence 정책이 충분함: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data 기록 금지가 명확함: 통과/실패
+* 실제 SQL/Supabase CLI/psql/Supabase write가 실행되지 않음: 통과/실패
+* 다음 phase에서 disposable 실행 전 owner approval gate가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3M Persistent Quote Cache Migration File Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3M owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3M Persistent Quote Cache Migration File 검토 결과:
+
+* migration file은 생성되었지만 아직 실행되지 않음: 통과/실패
+* market_quote_cache lifecycle/metadata 컬럼 추가 목적이 명확함: 통과/실패
+* raw payload/token/key/계정정보/user portfolio data 저장 컬럼이 없음: 통과/실패
+* anon/authenticated write 권한이 추가되지 않음: 통과/실패
+* app source/provider/UI 동작 변경이 없음: 통과/실패
+* SQL/Supabase CLI/psql/Supabase write가 실행되지 않음: 통과/실패
+* 다음 phase에서 실행 전 owner approval gate가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3L Persistent Quote Cache Migration Review Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3L owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3L Persistent Quote Cache Migration Review 검토 결과:
+
+* 기존 market_quote_cache 스키마와 Phase 3K 정책 차이가 명확히 정리됨: 통과/실패
+* 필수 조정사항과 선택 조정사항이 구분됨: 통과/실패
+* RLS/grant/service-role write boundary 검토가 충분함: 통과/실패
+* 금지 저장 데이터(raw payload/token/key/계좌정보 등)가 명확함: 통과/실패
+* 실제 migration file 생성, SQL 실행, Supabase write가 수행되지 않음: 통과/실패
+* 다음 phase 승인 게이트가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3K Persistent Quote Cache Policy Planning Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3K owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3K Persistent Quote Cache Policy Planning 검토 결과:
+
+* persistent cache 구현 전 정책 문서로 충분함: 통과/실패
+* market_quote_cache에 저장 가능한 데이터와 금지 데이터가 명확함: 통과/실패
+* service-role write/RLS/read boundary가 명확함: 통과/실패
+* TTL/fresh/stale/expired 정책이 명확함: 통과/실패
+* provider 실패/rate-limit 시 fallback 정책이 명확함: 통과/실패
+* DB migration/Supabase write/UI live quote 연결이 아직 구현되지 않음: 통과/실패
+* 다음 phase 승인 게이트가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3J Quote Cache Stale Fallback Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3J owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3J Quote Cache/Stale/Fallback 검토 결과:
+
+* Codex 자동 검증 결과가 통과함: 통과/실패
+* quote cache가 server-only in-memory 범위로 제한됨: 통과/실패
+* raw KIS payload/token/key가 cache 또는 응답에 저장/노출되지 않음: 통과/실패
+* provider 실패 시 stale-but-usable fallback 정책이 문서와 구현에 반영됨: 통과/실패
+* DB migration/Supabase cache write/UI live quote 연결이 아직 구현되지 않음: 통과/실패
+* 실제 KIS live smoke 재확인: 통과/실패/미실행
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3I KIS Quote Read Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3I owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3I KIS Quote Read 연동 검토 결과:
+
+* KIS 국내주식 현재가 read-only 범위로 제한됨: 통과/실패
+* server route 안에서만 KIS 호출 가능함: 통과/실패
+* local/dev feature flag 없이 KIS 호출이 차단됨: 통과/실패
+* browser/client 코드에 KIS key/token이 노출되지 않음: 통과/실패
+* env var는 이름만 있고 실제 값이 기록되지 않음: 통과/실패
+* 주문/매매/계좌/잔고 API가 구현되지 않음: 통과/실패
+* DB migration/cache write/Supabase write가 구현되지 않음: 통과/실패
+* Market/Portfolio/Chart AI UI에 live quote가 아직 연결되지 않음: 통과/실패
+* disabled/config 상태에서 sanitized error만 반환됨: 통과/실패
+* 잘못된 symbol 입력이 sanitized validation error로 처리됨: 통과/실패
+* 실제 local KIS quote smoke를 수행함: 통과/실패/미실행
+* 실제 local KIS quote smoke 응답에 token/key/raw provider payload가 없음: 통과/실패/미실행
+* 브라우저 콘솔과 generated browser/static output에 KIS secret marker가 없음: 통과/실패
+* provider call, Vercel env mutation, deployment가 승인 범위 밖에서 수행되지 않음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3H Server-only Provider Adapter Scaffolding Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3H owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3H Server-only Provider Adapter Scaffolding 검토 결과:
+
+* server-only provider scaffold 범위로 충분함: 통과/실패
+* 실제 KIS 호출이 구현되지 않음: 통과/실패
+* 실제 OpenDART 호출이 구현되지 않음: 통과/실패
+* 실제 OpenAI/Gemini 호출이 구현되지 않음: 통과/실패
+* provider adapter가 browser/client 코드로 import되지 않음: 통과/실패
+* env var는 이름만 있고 실제 값이 기록되지 않음: 통과/실패
+* provider error envelope가 raw error/stack/token을 노출하지 않는 구조임: 통과/실패
+* Portfolio valuation shell이 실제 시세/평가금액을 위조하지 않음: 통과/실패
+* Chart AI context shell이 실제 AI 분석을 수행하지 않음: 통과/실패
+* provider call, DB migration, SQL, Vercel env mutation, deployment가 실제로 수행되지 않음: 통과/실패
+* 다음 phase 승인 게이트가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3G Provider/Data Readiness Planning Owner Review Delta
+
+Use this Korean-first format when reporting Phase 3G owner review results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3G Provider/Data Readiness Planning 검토 결과:
+
+* Provider/Data 연동 전 설계 문서로 충분함: 통과/실패
+* KIS 역할과 범위가 명확함: 통과/실패
+* OpenDART 역할과 범위가 명확함: 통과/실패
+* Chart AI provider 역할과 제한사항이 명확함: 통과/실패
+* server-only provider boundary가 명확함: 통과/실패
+* browser에서 provider key를 절대 다루지 않는 구조가 명확함: 통과/실패
+* Market quote/chart/treemap API 후보가 명확함: 통과/실패
+* Portfolio valuation readiness가 명확함: 통과/실패
+* Chart AI context package 설계가 명확함: 통과/실패
+* cache/stale/fallback 정책이 명확함: 통과/실패
+* env var 이름만 있고 실제 값이 기록되지 않음: 통과/실패
+* error handling과 browser 노출 메시지가 안전함: 통과/실패
+* provider call, DB migration, SQL, Vercel env mutation, deployment가 실제로 수행되지 않음: 통과/실패
+* 다음 phase 승인 게이트가 명확함: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3F.4 Portfolio Page Aggregate And Market Fit Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F.4 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F.4 Portfolio 전체 보기/Market 화면 맞춤 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/portfolio` 진입: 통과/실패
+- 포트폴리오가 1개 이상 있을 때 `전체 보기`가 목록 맨 위에 표시됨: 통과/실패
+- `전체 보기` 선택 시 모든 포트폴리오 보유 종목이 합산 표시됨: 통과/실패
+- 같은 시장/티커 종목이 하나의 행으로 합산됨: 통과/실패/미실행
+- `전체 보기`에서 종목 추가 버튼이 보이지 않거나 사용할 수 없음: 통과/실패
+- `전체 보기` 행에서 수정/삭제 대신 읽기 전용 상태가 표시됨: 통과/실패
+- 개별 포트폴리오 선택 시 기존 종목 추가/수정/삭제 유지: 통과/실패/미실행
+- 평가금액/현재가가 실제 시세처럼 표시되지 않고 기존 placeholder 유지: 통과/실패
+- `/market` 진입: 통과/실패
+- `/market` Treemap 단독 보기에서 차트가 PC 화면에 더 잘 맞음: 통과/실패
+- `/market` Momentum / Trend 단독 보기에서 내부 여백이 줄고 plot 영역이 커짐: 통과/실패
+- `/heatmap` 호환 진입 유지: 통과/실패
+- Treemap 표시명 중심 라벨 유지: 통과/실패
+- 보기 선택 `Treemap` / `Momentum / Trend` / `같이 보기` 유지: 통과/실패
+- Treemap 크게 보기 동작: 통과/실패
+- Momentum / Trend 크게 보기 동작: 통과/실패
+- Treemap PNG 저장: 통과/실패/미실행
+- Momentum / Trend PNG 저장: 통과/실패/미실행
+- Home sticky 광고 유지: 통과/실패/화면폭 부족
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Portfolio 개별 CRUD 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한경 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3F.3 Portfolio Aggregate And Display-Name Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F.3 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F.3 Portfolio 전체 보기/표시명 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/market` 진입: 통과/실패
+- `/heatmap` 호환 진입: 통과/실패
+- My Portfolio 선택 시 `전체 보기` 옵션 표시: 통과/실패
+- 개별 포트폴리오 선택 옵션 표시: 통과/실패/해당 없음
+- `전체 보기` 선택 시 여러 포트폴리오 보유 종목이 합산 표시됨: 통과/실패/샘플 기준
+- 동일 종목이 여러 포트폴리오에 있을 때 하나로 합산됨: 통과/실패/해당 없음
+- Treemap 라벨이 티커가 아니라 종목명 중심으로 표시됨: 통과/실패
+- Momentum / Trend 라벨이 티커가 아니라 종목명 중심으로 표시됨: 통과/실패
+- tooltip/title 또는 보조 정보에서 티커 확인 가능: 통과/실패/미실행
+- `Treemap` 보기 모드 유지: 통과/실패
+- `Momentum / Trend` 보기 모드 유지: 통과/실패
+- `같이 보기` 보기 모드 유지: 통과/실패
+- Treemap 계층형 블록 시각 유지: 통과/실패
+- Treemap 크게 보기 동작: 통과/실패
+- 산점도 크게 보기 동작: 통과/실패
+- Treemap PNG 저장: 통과/실패/미실행
+- 산점도 PNG 저장: 통과/실패/미실행
+- Home 광고 sticky 동작 유지: 통과/실패/화면폭 부족
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한경/참고 URL 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3F.2 Treemap Engine And View Mode Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F.2 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F.2 Treemap 엔진/보기 모드 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/market` 진입: 통과/실패
+- `/heatmap` 호환 진입: 통과/실패
+- visible UI에서 `Treemap` 명칭 유지: 통과/실패
+- Treemap이 가로/세로 길이가 모두 다른 계층형 블록으로 보임: 통과/실패
+- Treemap이 같은 폭 막대 또는 얇은 strip처럼 보이지 않음: 통과/실패
+- 대형 종목 타일이 의미 있게 크게 보임: 통과/실패
+- 중소형 종목 타일이 남은 영역을 촘촘히 채움: 통과/실패
+- 섹터/그룹 구분이 자연스럽게 보임: 통과/실패
+- Treemap 색상 범례가 직관적임: 통과/실패
+- 보기 선택 `Treemap` 동작: 통과/실패
+- 보기 선택 `Momentum / Trend` 동작: 통과/실패
+- 보기 선택 `같이 보기` 동작: 통과/실패
+- `Treemap` 단독 보기에서 차트가 넓게 표시됨: 통과/실패
+- `Momentum / Trend` 단독 보기에서 산점도가 넓게 표시됨: 통과/실패
+- 산점도 점/라벨이 이전보다 보기 쉬움: 통과/실패
+- 산점도 `단기 모멘텀` 문구가 표 영역을 침범하지 않음: 통과/실패
+- 산점도 `장기 트렌드` 문구가 plot 직사각형 우측 하단에 유지됨: 통과/실패
+- Treemap 크게 보기 동작: 통과/실패
+- 산점도 크게 보기 동작: 통과/실패
+- Treemap PNG 저장: 통과/실패/미실행
+- 산점도 PNG 저장: 통과/실패/미실행
+- Home 광고 sticky 동작 유지: 통과/실패/화면폭 부족
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한경/참고 URL 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3F.1 Treemap Visual Quality Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F.1 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F.1 Treemap 시각화 품질 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/market` 진입: 통과/실패
+- `/heatmap` 호환 진입: 통과/실패
+- visible UI에서 `Treemap` 명칭 유지: 통과/실패
+- Treemap이 세로 막대 나열이 아니라 크고 작은 직사각형 블록 조합처럼 보임: 통과/실패
+- Treemap이 직사각형 영역을 빈틈 적게 채움: 통과/실패
+- 섹터/그룹 구분이 자연스럽게 보임: 통과/실패
+- 대형 종목 타일이 의미 있게 크게 보임: 통과/실패
+- 중소형 종목 타일이 남은 영역을 촘촘히 채움: 통과/실패
+- Treemap 색상 범례가 명확함: 통과/실패
+- PC Web 좌우 여백이 줄어듦: 통과/실패
+- Home 본문 영역이 이전보다 넓게 느껴짐: 통과/실패
+- Market dashboard가 이전보다 넓게 느껴짐: 통과/실패
+- Momentum / Trend 산점도가 이전보다 크게 보임: 통과/실패
+- 산점도 `단기 모멘텀` 문구가 표 영역을 침범하지 않음: 통과/실패
+- 산점도 `장기 트렌드` 문구가 plot 직사각형 우측 하단에 배치됨: 통과/실패
+- Treemap 크게 보기 동작: 통과/실패
+- 산점도 크게 보기 동작: 통과/실패
+- Treemap PNG 저장: 통과/실패/미실행
+- 산점도 PNG 저장: 통과/실패/미실행
+- Home 광고 sticky 동작 유지: 통과/실패/화면폭 부족
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한경 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+# Phase 3C.1 Portfolio Manual Smoke Checklist v0.1
+
+## Status And Scope
+
+Status: owner-performed manual smoke checklist and result template prepared.
+
+Phase 3C.1 is documentation-only. It validates the Phase 3C Portfolio MVP through an owner-approved browser session, but Codex must not perform authenticated production Portfolio writes, sign in, create users, collect credentials, or call authenticated Portfolio write endpoints.
+
+Credentials, tokens, keys, project references, environment values, and screenshots containing secrets must never be recorded in this checklist, chat, or planning docs.
+
+## Preconditions
+
+- Phase 3C is committed.
+- The local or deployed app target is accessible to the owner.
+- Public Supabase browser configuration is configured for the selected app target.
+- The server-side service-role environment category is configured for the selected app target.
+- An owner-approved test account is available and was created or approved by the owner.
+- No real financial data, sensitive holdings, or personal financial information will be used.
+- Browser console inspection is available.
+- The owner will not share passwords, tokens, keys, project references, secret URLs, or screenshots containing secrets.
+
+## Suggested Disposable Data
+
+Use only disposable values:
+
+- Portfolio name: `Smoke Test Portfolio`
+- Portfolio memo or description, if supported: `Temporary manual smoke test`
+- Position symbol: `AAPL`
+- Position market: `US`
+- Position quantity: `1`
+- Position average or buy price: `100`
+- Position currency: `USD`
+- Position note or memo: `Temporary smoke test position`
+
+Do not use real holdings, account names, cost basis, purchase dates, or personal financial details.
+
+## Manual Checklist
+
+Mark each item pass, fail, or not run. Record only non-secret notes.
+
+1. Open `/`.
+2. Confirm the page renders without an obvious blank page or blocking UI error.
+3. Open the login modal from the header auth entry.
+4. Sign in with the owner-approved test account without sharing credentials with Codex.
+5. Confirm the signed-in state appears in the shell.
+6. Confirm profile bootstrap completes or the UI reaches a profile-ready state.
+7. Open `/portfolio`.
+8. Confirm the Portfolio page recognizes the authenticated/profile-ready state.
+9. Confirm the initial empty state is usable if no disposable portfolios exist.
+10. Create `Smoke Test Portfolio`.
+11. Select the newly created test portfolio.
+12. Add the disposable `AAPL` position using the suggested data.
+13. Refresh the page.
+14. Confirm the test portfolio and test position persist after refresh.
+15. Edit the test portfolio name or base currency with disposable values.
+16. Edit the test position quantity, price, memo, or optional display name with disposable values.
+17. Delete the test position.
+18. Delete the test portfolio.
+19. Sign out.
+20. Confirm signed-out state hides Portfolio data.
+21. Confirm unauthenticated access does not show user Portfolio data.
+22. Inspect the browser console for secrets, tokens, raw database errors, raw stack traces, or server internals.
+23. Confirm the Portfolio UI does not introduce broad crypto functionality outside the approved asset-class context.
+24. Confirm slide ad and footer fixed ad do not block Portfolio navigation or cleanup.
+
+## Phase 3C.2 Expected State Deltas
+
+After Phase 3C.2, a signed-in owner-approved test account should not see Login as unavailable on `/portfolio`.
+
+Expected states:
+
+- Missing public browser login config: Login shows setup needed and Portfolio remains disabled.
+- Signed out: Login shows required and the login button is visible.
+- Signed in, profile bootstrap pending: Login shows signed in and Profile shows pending.
+- Signed in, server-side profile or Portfolio config missing: Login stays signed in while Profile or Portfolio API shows a sanitized setup-needed message.
+- Signed in, profile and Portfolio API ready: Login, Profile, and Portfolio API show ready/available states.
+
+The login/signup modal should show Korean labels, a signup nickname field, a signup password confirmation field, and a Korean password mismatch validation message.
+
+## Phase 3C.3 Expected State Deltas
+
+After Phase 3C.3, the owner manual smoke should also confirm:
+
+- Header auth controls do not briefly show a signed-out/login state during navigation after a valid session exists.
+- `/portfolio` waits for session resolution before showing signed-out content.
+- Sign-out immediately hides Portfolio and Position user data.
+- Re-login reloads persisted Portfolio and Position data if the disposable data still exists.
+- Current visible shell and Portfolio MVP UI labels are Korean-first.
+
+## Phase 3C.4 Expected State Deltas
+
+After Phase 3C.4, the owner manual smoke should also confirm:
+
+- After login is confirmed, menu navigation keeps `로그아웃` visible.
+- Menu navigation does not show unnecessary `확인 중` after a valid signed-in state is already known.
+- `/portfolio` shows a compact status bar instead of a large readiness card.
+- The position form uses one visible `종목명 또는 티커` field.
+- The manual `자산 유형` select is not visible.
+- Position table placeholders exist for `현재가`, `평가금액`, and `수익률`.
+- A USD position in a KRW-base portfolio shows FX/valuation as pending, not falsely calculated.
+- Position rows show security name on the first line and ticker/code status on the second line.
+- `수정` and `삭제` actions are smaller and visually cleaner.
+- Pretendard or improved Korean font rendering is visible.
+
+## Phase 3C.4 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.4 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.4 포트폴리오 UX 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인: 통과/실패
+- 메뉴 이동 중 `로그아웃` 표시 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- `/portfolio` 진입: 통과/실패
+- compact 상태바 표시: 통과/실패
+- 포트폴리오 생성/조회/수정/삭제: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제: 통과/실패/미실행
+- `종목명 또는 티커` 단일 입력창: 통과/실패
+- `자산 유형` 수동 선택 제거: 통과/실패
+- 현재가/평가금액/수익률 자리 표시: 통과/실패
+- USD 종목의 원화 환산 예정 표시: 통과/실패/해당 없음
+- 종목명 상단·티커 하단 표시: 통과/실패
+- 수정/삭제 버튼 크기와 테이블 구분선 개선: 통과/실패
+- Pretendard 또는 개선된 한글 폰트 느낌: 통과/실패
+- 로그아웃 즉시 데이터 숨김: 통과/실패
+- 재로그인 후 데이터 재조회: 통과/실패/해당 없음
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3C.5 Expected State Deltas
+
+After Phase 3C.5, the owner manual smoke should also confirm:
+
+- After login is confirmed, menu navigation keeps `로그아웃` visible.
+- Menu navigation does not show unnecessary `확인 중` after a valid signed-in state is already known.
+- Logged-out `/portfolio` shows a lock-style `로그인이 필요합니다` UI.
+- The compact status bar does not show a duplicate login action.
+- Portfolio name placeholder is `계좌 이름`.
+- Portfolio card actions are smaller and visually calmer.
+- Portfolio cards expose `위로` and `아래로` order controls.
+- Position rows show a logo or fallback avatar.
+- Position rows show a KR/US country badge.
+- The manual `시장` select is not visible.
+- The manual `자산 유형` select remains absent.
+- The currency display toggle shows `현지통화 기준` and `원화 기준`.
+- USD positions in KRW display mode show pending KRW conversion, not fake converted values.
+- Valuation amount and return sorting controls exist.
+- The position list is visually cleaner and closer to a modern finance app hierarchy.
+- Lab uses the corrected `국회의원 보유 주식` label.
+
+## Phase 3C.6 Expected State Deltas
+
+After Phase 3C.6, the owner manual smoke should also confirm:
+
+- Signed-out menu navigation keeps `로그인` visible.
+- Signed-in menu navigation keeps `로그아웃` visible.
+- Ordinary menu navigation does not visibly show `확인 중` in the header auth entry.
+- Logged-out `/portfolio` shows a clear lock-style UI.
+- Position cards do not overflow the parent panel.
+- The position add form is not always visible in the main detail panel.
+- The `종목 추가` button opens a bottom sheet.
+- Position edit actions reuse the same bottom sheet.
+- The currency display toggle shows `달러 기준` and `원화 기준`.
+- USD buy-price display uses compact dollar formatting such as `$90.25`.
+- KRW buy-price display uses compact won formatting such as `52,300원`.
+- Clicking a position name opens `/chart-ai` with `symbol`, `name`, and `market` query parameters.
+- Chart AI displays the selected security from query parameters without provider, AI, market-data, or authenticated calls.
+
+## Phase 3C.6 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.6 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.6 포트폴리오 최종 UX 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 로그아웃 잠금 UI가 명확함: 통과/실패
+- 포지션 리스트가 부모 영역 밖으로 넘치지 않음: 통과/실패
+- `종목 추가` 버튼으로 바텀시트 열림: 통과/실패
+- 포지션 수정도 같은 바텀시트 사용: 통과/실패
+- 통화 토글 `달러 기준` / `원화 기준` 표시: 통과/실패
+- USD 금액 `$90.25` 형식 표시: 통과/실패/해당 없음
+- KRW 금액 `52,300원` 형식 표시: 통과/실패/해당 없음
+- 종목명 클릭 시 Chart AI로 이동: 통과/실패
+- Chart AI 선택 종목 프리필 표시: 통과/실패
+- Chart AI에서 외부 AI/provider 호출 없음: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3C.7 Expected State Deltas
+
+After Phase 3C.7, the owner manual smoke should also confirm:
+
+- Signed-out menu navigation keeps `로그인` visible.
+- Signed-in menu navigation keeps `로그아웃` visible.
+- Normal menu navigation does not visibly show `확인 중`.
+- Logged-out lock UI uses only `🔐` or another clean lock visual.
+- Lock icon has no sky-blue background.
+- Lock icon is large and visually clear.
+- Position add bottom sheet opens with slide-up motion.
+- Position edit bottom sheet opens with the same slide-up motion.
+- Bottom sheet closes with slide-down or natural exit motion.
+- Top-left logo uses the original project logo if found.
+- Portfolio refresh is shown as an icon button, not visible text.
+- Chart AI selected-security prefill still works.
+
+## Phase 3C.7 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.7 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.7 포트폴리오 시각/모션 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 로그아웃 잠금 UI가 `🔐` 아이콘 중심으로 명확함: 통과/실패
+- 잠금 아이콘에 불필요한 배경/겹침 없음: 통과/실패
+- 잠금 아이콘 크기 적절함: 통과/실패
+- `종목 추가` 바텀시트가 아래에서 위로 자연스럽게 열림: 통과/실패
+- 포지션 수정 바텀시트도 동일하게 자연스럽게 열림: 통과/실패/미실행
+- 바텀시트 닫기 동작이 자연스러움: 통과/실패
+- 사이트 좌측 상단 로고가 기존 프로젝트 로고로 적용됨: 통과/실패/자산 없음
+- 포트폴리오 `새로고침`이 아이콘 버튼으로 표시됨: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- 포트폴리오 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- 로그아웃 즉시 데이터 숨김 유지: 통과/실패
+- 재로그인 후 데이터 재조회 유지: 통과/실패/해당 없음
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3C.8 Expected State Deltas
+
+After Phase 3C.8, the owner manual smoke should also confirm:
+
+- Signed-in menu navigation does not visibly show `확인 중`.
+- Signed-out menu navigation does not visibly show `확인 중`.
+- Signed-out normal header state remains `로그인`.
+- Signed-in normal header state remains `로그아웃`.
+- Header logo is slightly larger and visually balanced with the brand text.
+- Phase 3C.7 lock UI still uses a clear lock visual.
+- Phase 3C.7 bottom-sheet motion still works.
+- Portfolio refresh remains an icon button.
+- Chart AI selected-security prefill still works.
+- The Home vertical banner feasibility report exists.
+- No actual Home vertical banner is shown yet.
+
+## Phase 3C.8 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.8 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.8 헤더/로고/배너공간 사전점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 좌측 상단 로고 크기 확대와 정렬: 통과/실패
+- 포트폴리오 잠금 UI 유지: 통과/실패
+- 바텀시트 모션 유지: 통과/실패
+- 포트폴리오 새로고침 아이콘 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Home 세로 배너 공간 산출 보고서 확인: 통과/실패
+- 실제 배너가 아직 노출되지 않음: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3C.9 Expected State Deltas
+
+After Phase 3C.9, the owner manual smoke should also confirm:
+
+- Signed-in menu navigation does not briefly flash `로그인`.
+- Signed-in normal header state remains `로그아웃`.
+- Signed-out normal header state remains `로그인`.
+- Visible `확인 중` remains absent.
+- The logo box remains balanced while the inner MK mark appears larger.
+- Header shows subtle `Today: 000`.
+- Real visitor counting is not active yet.
+- Home right rail appears only on sufficiently wide desktop.
+- Home right rail is not shown on non-Home pages.
+- The two sample banners rotate every 5 seconds with left-slide motion.
+- Portfolio lock UI remains.
+- Bottom-sheet motion remains.
+- Portfolio refresh icon remains.
+- Chart AI selected-security prefill still works.
+
+## Phase 3C.9 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.9 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.9 헤더/배너/Today 사전점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+- 로그아웃 상태에서 메뉴 이동 중 `로그인` 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 좌측 상단 로고 박스 안의 MK 마크가 더 크게 보임: 통과/실패
+- 헤더의 연한 회색 `Today: 000` 표시: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- Home 우측 세로 배너가 넓은 데스크톱에서 표시됨: 통과/실패/화면폭 부족
+- Home 우측 세로 배너가 2개 샘플로 5초마다 왼쪽 슬라이드 전환됨: 통과/실패/미실행
+- Home 우측 세로 배너가 다른 페이지에는 표시되지 않음: 통과/실패
+- 포트폴리오 잠금 UI 유지: 통과/실패
+- 바텀시트 모션 유지: 통과/실패
+- 포트폴리오 새로고침 아이콘 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3C.12 Expected State Deltas
+
+After Phase 3C.12, the owner manual smoke should also confirm:
+
+- `/?railPreview=1` shows a visible Home preview panel in the page body.
+- The preview panel has an obvious `HOME RAIL PREVIEW` label or equivalent.
+- Sample Banner 01 and Sample Banner 02 are visible or have visible text fallback.
+- The two sample banners rotate every 5 seconds.
+- Hover pause works if tested.
+- `/portfolio?railPreview=1` does not show the preview panel.
+- `/chart-ai?railPreview=1` does not show the preview panel.
+- `/lab?railPreview=1` does not show the preview panel.
+- `/heatmap?railPreview=1` does not show the preview panel.
+- Normal Home without preview still follows the wide-desktop breakpoint.
+- `Today: 000` still appears.
+- Real visitor counting is not active.
+- Header auth state remains stable.
+- Portfolio and Chart AI behavior remain stable.
+
+## Phase 3C.12 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.12 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.12 Home 배너 Preview Fallback 재점검 결과:
+
+* 테스트 대상: local / deployed
+* 브라우저: Chrome 등
+* Home 일반 접속에서 화면폭 부족 시 기존 배너 숨김 유지: 통과/실패/화면폭 충분
+* `/?railPreview=1`에서 Home 본문 안에 Preview 패널이 보임: 통과/실패
+* Preview 패널에 `HOME RAIL PREVIEW` 또는 식별 가능한 라벨이 보임: 통과/실패
+* Preview 패널에서 Sample Banner 01/02 이미지 또는 텍스트 fallback이 보임: 통과/실패
+* Preview 패널에서 2개 샘플 배너가 5초마다 전환됨: 통과/실패
+* Preview 패널 hover 시 전환 일시정지: 통과/실패/미실행
+* `/portfolio?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* `/chart-ai?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* `/lab?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* `/heatmap?railPreview=1`에서 Preview 패널 미노출: 통과/실패
+* 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+* 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+* 헤더의 연한 회색 `Today: 000` 표시 유지: 통과/실패
+* 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+* 포트폴리오 잠금 UI 유지: 통과/실패
+* 바텀시트 모션 유지: 통과/실패
+* 포트폴리오 새로고침 아이콘 유지: 통과/실패
+* Chart AI 선택 종목 프리필 유지: 통과/실패
+* 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3C.11 Expected State Deltas
+
+After Phase 3C.11, the owner manual smoke should also confirm:
+
+- `/?railPreview=1` visibly shows the Home rail in the normal local browser viewport.
+- `/?railPreview=1` positions the Home rail inside the visible viewport.
+- `/?railPreview=1` rotates the two sample banners every 5 seconds.
+- `/?railPreview=1` pauses rotation on hover if tested.
+- `/portfolio?railPreview=1` does not show the Home rail.
+- `/chart-ai?railPreview=1` does not show the Home rail.
+- `/lab?railPreview=1` does not show the Home rail.
+- Normal Home without preview still follows the wide-desktop breakpoint.
+- `Today: 000` still appears.
+- Real visitor counting is not active.
+- Header auth state remains stable.
+- Portfolio and Chart AI behavior remain stable.
+
+## Phase 3C.11 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.11 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.11 Home 배너 Preview 표시 재점검 결과:
+
+* 테스트 대상: local / deployed
+* 브라우저: Chrome 등
+* Home 일반 접속에서 화면폭 부족 시 배너 숨김 유지: 통과/실패/화면폭 충분
+* `/?railPreview=1`에서 Home 배너가 실제 화면 안에 보임: 통과/실패
+* `/?railPreview=1`에서 배너 위치가 화면 오른쪽에 정상 표시됨: 통과/실패
+* `/?railPreview=1`에서 2개 샘플 배너가 5초마다 왼쪽 슬라이드 전환: 통과/실패
+* `/?railPreview=1`에서 배너 hover 시 전환 일시정지: 통과/실패/미실행
+* `/portfolio?railPreview=1`에서 배너 미노출: 통과/실패
+* `/chart-ai?railPreview=1`에서 배너 미노출: 통과/실패
+* `/lab?railPreview=1`에서 배너 미노출: 통과/실패
+* 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+* 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+* 헤더의 연한 회색 `Today: 000` 표시 유지: 통과/실패
+* 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+* 포트폴리오 잠금 UI 유지: 통과/실패
+* 바텀시트 모션 유지: 통과/실패
+* 포트폴리오 새로고침 아이콘 유지: 통과/실패
+* Chart AI 선택 종목 프리필 유지: 통과/실패
+* 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+* 비밀 정보 없는 메모:
+```
+
+## Phase 3C.10 Expected State Deltas
+
+After Phase 3C.10, the owner manual smoke should also confirm:
+
+- `/?railPreview=1` shows the Home rail even if the viewport is below 1660px.
+- `/?railPreview=1` rotates the two sample banners every 5 seconds.
+- `/?railPreview=1` pauses rotation on hover if tested.
+- `/portfolio?railPreview=1` does not show the Home rail.
+- `/chart-ai?railPreview=1` does not show the Home rail.
+- `/lab?railPreview=1` does not show the Home rail.
+- Normal Home without preview still follows the wide-desktop breakpoint.
+- Header auth state remains stable.
+- `Today: 000` still appears.
+- Real visitor counting is not active.
+- Portfolio and Chart AI behavior remain stable.
+
+## Phase 3C.10 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.10 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.10 Home 배너 검증 사전점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 일반 접속에서 화면폭 부족 시 배너 숨김 유지: 통과/실패/화면폭 충분
+- `/?railPreview=1`에서 화면폭과 무관하게 Home 배너 표시: 통과/실패
+- `/?railPreview=1`에서 2개 샘플 배너가 5초마다 왼쪽 슬라이드 전환: 통과/실패
+- `/?railPreview=1`에서 배너 hover 시 전환 일시정지: 통과/실패/미실행
+- `/portfolio?railPreview=1`에서 배너 미노출: 통과/실패
+- `/chart-ai?railPreview=1`에서 배너 미노출: 통과/실패
+- `/lab?railPreview=1`에서 배너 미노출: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 헤더의 연한 회색 `Today: 000` 표시 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- 포트폴리오 잠금 UI 유지: 통과/실패
+- 바텀시트 모션 유지: 통과/실패
+- 포트폴리오 새로고침 아이콘 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3C.5 Pass/Fail Result Template
+
+Use this Korean-first format when reporting Phase 3C.5 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.5 포트폴리오 리스트 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인: 통과/실패
+- 메뉴 이동 중 `로그아웃` 표시 유지: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- 로그아웃 상태의 물쇠형 `로그인이 필요합니다` UI: 통과/실패
+- compact 상태바 중복 로그인 제거: 통과/실패
+- `계좌 이름` placeholder: 통과/실패
+- 포트폴리오 카드 `수정`/`삭제` 크기 개선: 통과/실패
+- 포트폴리오 순서 변경 버튼: 통과/실패
+- 보유 종목 로고 또는 fallback 아바타: 통과/실패
+- 종목 국가 배지: 통과/실패
+- `시장` 수동 선택 제거: 통과/실패
+- `자산 유형` 수동 선택 제거 유지: 통과/실패
+- 통화 표시 토글 `현지통화 기준 / 원화 기준`: 통과/실패
+- USD 종목의 원화 기준 표시가 `원화 환산 예정` 등으로 안전하게 표시: 통과/실패/해당 없음
+- 평가금액/수익률 정렬 컨트롤: 통과/실패
+- 종목 리스트가 토스증권 참고형으로 더 정리됨: 통과/실패
+- Lab의 `국회의원 보유 주식` 라벨 정정: 통과/실패
+- 포트폴리오 생성/조회/수정/삭제: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제: 통과/실패/미실행
+- 로그아웃 즉시 데이터 숨김: 통과/실패
+- 재로그인 후 데이터 재조회: 통과/실패/해당 없음
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
+## Pass/Fail Result Template
+
+Use this Korean-first format when reporting results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3C.3 포트폴리오 수동 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 로그인: 통과/실패
+- 헤더 로그인 상태 유지: 통과/실패
+- 메뉴 이동 중 로그인 상태 깜박임 없음: 통과/실패
+- `/portfolio` 진입: 통과/실패
+- 포트폴리오 화면의 로그인 상태: 통과/실패
+- 프로필 상태: 통과/실패
+- 포트폴리오 API 상태: 통과/실패
+- 기존 포트폴리오 자동 재조회: 통과/실패/해당 없음
+- 포트폴리오 생성/조회/수정/삭제: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제: 통과/실패/미실행
+- 새로고침 후 데이터 유지: 통과/실패/미실행
+- 로그아웃 즉시 데이터 숨김: 통과/실패
+- 재로그인 후 데이터 재조회: 통과/실패/해당 없음
+- 한국어 UI 표시: 통과/실패
+- 회원가입 닉네임 입력칸: 통과/실패
+- 회원가입 비밀번호 확인칸: 통과/실패
+- 비밀번호 불일치 검증: 통과/실패
+- 콘솔 비밀값/token/raw error 노출 없음: 통과/실패
+- 테스트 데이터 정리: 통과/실패/해당 없음
+- 비밀 정보 없는 메모:
+```
+
+## Failure Triage Guide
+
+Record only the failure category and non-secret details.
+
+| Symptom | Likely Cause | Safe Next Action |
+|---|---|---|
+| Login controls are unavailable. | Supabase public config is missing for the selected app target. | Record the missing-public-config symptom without values and stop. |
+| Portfolio API says unavailable. | Server-side service-role environment category is missing or not loaded. | Record the API-unavailable symptom without values and stop. |
+| Profile never becomes ready. | Profile bootstrap is failing or server auth validation is unavailable. | Record profile-bootstrap fail and the sanitized UI message only. |
+| Portfolio API returns 401 while signed in. | Session token is absent, expired, or rejected by server validation. | Sign out and back in once; if still failing, record 401 and stop. |
+| Portfolio API returns 403 or 404 for owned test data. | Ownership lookup, RLS, or route scoping may be misaligned. | Record the operation and sanitized status only. |
+| Generic configuration unavailable message appears. | Runtime server environment is missing even though build passed. | Record build-versus-runtime config mismatch and stop. |
+| Validation error appears. | Disposable input does not match allowed fields or numeric bounds. | Retry once with the suggested disposable data. |
+| UI does not refresh after create, edit, or delete. | Client state refresh or selection handling may be stale. | Record the action and visible non-secret state mismatch. |
+| Console shows raw error, token, key, or stack trace. | Sanitization boundary failed. | Stop immediately and report only that a secret/raw error exposure was observed. |
+| Build passes but runtime fails. | Deployment or preview runtime environment differs from build environment. | Record the app target type and sanitized runtime symptom only. |
+
+Do not paste secrets, tokens, project references, environment values, database identifiers, or screenshots with secrets when reporting failures.
+
+## Stop Conditions
+
+Stop the manual smoke immediately if any of these occur:
+
+- A secret, token, key, or credential appears in the UI or browser console.
+- A raw database error, stack trace, or server internal appears in browser-visible UI.
+- Another user's data appears.
+- Signed-out state still shows Portfolio data.
+- An unauthenticated request appears to create, edit, or delete Portfolio data.
+- The owner is asked to paste credentials into chat or docs.
+- Real or sensitive production data is present.
+- Broad crypto functionality appears in Portfolio UI outside the approved asset-class context.
+
+## Cleanup
+
+- Delete the disposable test position before deleting the disposable test portfolio.
+- Delete the disposable test portfolio before ending the smoke check.
+- If cleanup fails, record only a non-secret cleanup failure and stop.
+- Do not perform SQL cleanup unless a later phase explicitly approves it.
+- Do not ask Codex to clean production data directly in Phase 3C.1.
+
+## Recommended Next Action
+
+Choose exactly one:
+
+- If Phase 3D smoke passes: proceed to the next approved Chart AI provider-boundary planning or integration-preparation phase.
+- If Phase 3D smoke fails: prepare a focused Phase 3D follow-up using non-secret failure details.
+
+Options:
+
+- Option A: Run Phase 3D manual Chart AI skeleton smoke now and report non-secret pass/fail.
+- Option B: Prepare the next Chart AI provider-boundary planning phase after Phase 3D smoke passes.
+- Option C: Run Advisor/security follow-up before additional provider-backed feature work.
+
+## Final Statement
+
+Phase 3C.1 is checklist and documentation only. Codex performed no production mutation, no environment mutation, no deployment, and no code implementation for this phase.
+
+## Phase 3D Chart AI Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3D results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3D Chart AI 사용량 가드 Skeleton 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- `/chart-ai` 진입: 통과/실패
+- `/chart-ai?symbol=005930&name=삼성전자&market=KR` 선택 종목 프리필: 통과/실패
+- 선택 종목 없이 실행 시 종목 선택 필요 안내: 통과/실패
+- 로그아웃 상태에서 `AI 분석 실행` 클릭 시 로그인 필요 상태 표시: 통과/실패
+- 로그인 상태에서 `AI 분석 실행` 클릭 시 서버 사용량 가드 확인 시도: 통과/실패/미실행
+- 성공 시 실제 AI 분석이 아니라 준비 상태 안내만 표시: 통과/실패/미실행
+- 일일 한도 초과 시 한도 안내 표시: 통과/실패/미실행
+- 서비스 설정 부족 시 설정 필요 안내 표시: 통과/실패/미실행
+- OpenAI/Gemini/KIS/OpenDART 실제 호출 없음: 통과/실패
+- Chart AI 화면에서 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 로그인 상태에서 메뉴 이동 중 `로그아웃` 유지 및 `로그인` 순간 노출 없음: 통과/실패
+- 메뉴 이동 중 불필요한 `확인 중` 표시 없음: 통과/실패
+- Header의 `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- Portfolio 잠금 UI 유지: 통과/실패
+- Portfolio 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- 보유 종목 생성/조회/수정/삭제 유지: 통과/실패/미실행
+- Portfolio에서 Chart AI 선택 종목 프리필 유지: 통과/실패
+- Home `/?railPreview=1` fallback preview 유지: 통과/실패/미실행
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3E Market, Chart AI, And Home Ad Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E 시장/Chart AI/Home 광고 UX 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 일반 접속에서 오른쪽 광고 배너 표시: 통과/실패/화면폭 부족
+- Home에서 `HOME RAIL PREVIEW` 패널이 더 이상 보이지 않음: 통과/실패
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- `/chart-ai`, `/portfolio`, `/lab`, `/market` 또는 `/heatmap`에서 Home 광고 배너 미노출: 통과/실패
+- 메뉴명이 `시장`으로 표시됨: 통과/실패
+- 기존 Heatmap 메뉴명이 주요 메뉴에서 제거됨: 통과/실패
+- 시장 페이지 진입: 통과/실패
+- KOSPI200 섹션 표시: 통과/실패
+- KOSDAQ150 섹션 표시: 통과/실패
+- S&P500 섹션 표시: 통과/실패
+- NASDAQ100 섹션 표시: 통과/실패
+- My Portfolio holdings 섹션 표시: 통과/실패
+- 각 섹션의 Heatmap 카드 표시: 통과/실패
+- 각 섹션의 단기 모멘텀 × 장기 트렌드 산점도 카드 표시: 통과/실패
+- Heatmap 카드 오른쪽 상단 카메라 아이콘 표시: 통과/실패
+- 산점도 카드 오른쪽 상단 카메라 아이콘 표시: 통과/실패
+- 카메라 아이콘 클릭 시 PNG 이미지가 로컬에 저장됨: 통과/실패
+- `/chart-ai` 질문 입력 칸 제거: 통과/실패
+- `/chart-ai` 종목명/티커 입력 옆 `차트 불러오기` 버튼 표시: 통과/실패
+- `/chart-ai` 일봉/주봉/월봉 선택이 차트 영역에 표시: 통과/실패
+- `/chart-ai?symbol=005930&name=삼성전자&market=KR` 선택 종목 프리필 유지: 통과/실패
+- `AI 분석 실행`이 차트 준비 이후 후속 액션으로 보임: 통과/실패
+- 실제 AI 분석이 아니라 준비 상태 안내만 표시: 통과/실패/미실행
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics 실제 호출 없음: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3E.1 Home Rail, Footer, Market Expand, And Export Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E.1 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E.1 Home 광고/시장 카드 보정 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 일반 접속에서 오른쪽 광고 배너가 하단 잘림 없이 표시됨: 통과/실패/화면폭 부족
+- 하단 footer 또는 footer ad가 스크롤을 따라다니지 않음: 통과/실패
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- `/chart-ai`, `/portfolio`, `/lab`, `/market`, `/heatmap`에서 Home 광고 배너 미노출: 통과/실패
+- 시장 페이지 진입: 통과/실패
+- Heatmap 카드 확대 아이콘 표시: 통과/실패
+- 산점도 카드 확대 아이콘 표시: 통과/실패
+- Heatmap 카드 확대 보기 열림: 통과/실패
+- 산점도 카드 확대 보기 열림: 통과/실패
+- 확대 보기 닫기 버튼 동작: 통과/실패
+- ESC로 확대 보기 닫힘: 통과/실패/미실행
+- 카메라 아이콘 클릭 시 PNG 이미지가 로컬에 저장됨: 통과/실패
+- 저장된 PNG에 카드 제목과 차트 본문이 포함됨: 통과/실패/미실행
+- 저장된 PNG에 카메라/확대 아이콘이 불필요하게 포함되지 않음: 통과/실패/미실행
+- `/chart-ai` 질문 입력 칸 제거 유지: 통과/실패
+- `/chart-ai` 차트 불러오기 버튼 유지: 통과/실패
+- `/chart-ai` 일봉/주봉/월봉 선택이 차트 영역에 유지: 통과/실패
+- `/chart-ai?symbol=005930&name=삼성전자&market=KR` 선택 종목 프리필 유지: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics 실제 호출 없음: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3E.2 Home Sidebar And Market Scatter Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E.2 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E.2 Home 광고/시장 산점도 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 일반 접속에서 오른쪽 광고 배너가 헤더/메뉴와 겹치지 않음: 통과/실패/화면폭 부족
+- Home 일반 접속에서 오른쪽 광고 배너가 footer 또는 하단 광고와 겹치지 않음: 통과/실패/화면폭 부족
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- Home 광고 배너 hover 시 전환 일시정지: 통과/실패/미실행
+- `/chart-ai`, `/portfolio`, `/lab`, `/market`, `/heatmap`에서 Home 광고 배너 미노출: 통과/실패
+- Market 산점도 카드 확대 보기에서 차트가 검은 영역 없이 표시됨: 통과/실패
+- Market 산점도 카드 확대 보기가 한 화면 안에 표시되고 내부 스크롤이 과하지 않음: 통과/실패
+- Market 확대 보기 닫기 X가 명확히 보임: 통과/실패
+- Market 산점도 PNG 저장 시 검은 사각형 없이 저장됨: 통과/실패/미실행
+- Market Heatmap PNG 저장은 유지됨: 통과/실패/미실행
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3E.3 Home Sidebar Sticky Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E.3 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E.3 Home 광고 Sticky 보정 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 광고 배너가 본문 오른쪽 영역에 표시됨: 통과/실패/화면폭 부족
+- Home 광고 배너가 스크롤 중 일정 위치에서 따라옴: 통과/실패
+- Home 광고 배너가 header/nav/ticker 영역을 침범하지 않음: 통과/실패
+- Home 광고 배너가 footer/footer ad 영역을 침범하지 않음: 통과/실패
+- footer 근처에서 Home 광고 배너가 자연스럽게 멈추거나 본문과 함께 벗어남: 통과/실패
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- Home 광고 배너 hover 시 전환 일시정지: 통과/실패/미실행
+- 비 Home 페이지에서 Home 광고 배너 미노출: 통과/실패
+- Market 산점도 카드 확대 보기에서 차트가 검은 영역 없이 표시됨: 통과/실패
+- Market 산점도 PNG 저장 시 검은 사각형 없이 저장됨: 통과/실패/미실행
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3E.4 Home Sidebar Sticky Range Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3E.4 results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3E.4 Home 광고 Sticky Range 보정 점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- Home 광고 배너가 본문 오른쪽 영역에 표시됨: 통과/실패/화면폭 부족
+- Home 광고 배너가 스크롤 중 일정 위치에서 따라옴: 통과/실패
+- Home 광고 배너가 header/nav/ticker 영역을 침범하지 않음: 통과/실패
+- Home 광고 배너가 footer/footer ad 영역을 침범하지 않음: 통과/실패
+- footer 근처에서 Home 광고 배너가 자연스럽게 멈추거나 본문과 함께 벗어남: 통과/실패
+- Home 광고 배너가 2개 샘플로 5초마다 전환됨: 통과/실패/미실행
+- Home 광고 배너 hover 시 전환 일시정지: 통과/실패/미실행
+- 비 Home 페이지에서 Home 광고 배너 미노출: 통과/실패
+- Market 산점도 카드 확대 보기에서 차트가 검은 영역 없이 표시됨: 통과/실패
+- Market 산점도 PNG 저장 시 검은 사각형 없이 저장됨: 통과/실패/미실행
+- Chart AI 차트 우선 UX 유지: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한경 실제 호출 없음: 통과/실패
+- Phase 3F에서 Heatmap 명칭을 Treemap으로 수정할 계획이 문서에 반영됨: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+## Phase 3F Market Treemap Dashboard Manual Smoke Delta
+
+Use this Korean-first format when reporting Phase 3F results back to Codex. Do not include credentials, tokens, keys, project references, environment values, secret query strings, or screenshots containing secrets.
+
+```text
+Phase 3F 시장 Treemap 대시보드 재점검 결과:
+
+- 테스트 대상: local / deployed
+- 브라우저: Chrome 등
+- 메뉴명이 `시장`으로 표시됨: 통과/실패
+- 기존 주요 메뉴에서 `Heatmap` 메뉴명이 보이지 않음: 통과/실패
+- `/market` 진입: 통과/실패
+- `/heatmap` 진입 시 새 시장 Treemap 대시보드가 표시됨: 통과/실패
+- KOSPI200 선택 버튼 표시: 통과/실패
+- KOSDAQ150 선택 버튼 표시: 통과/실패
+- S&P500 선택 버튼 표시: 통과/실패
+- NASDAQ100 선택 버튼 표시: 통과/실패
+- My Portfolio 선택 버튼 표시: 통과/실패
+- 기간 선택 `1일`, `1주`, `1개월`, `3개월`, `6개월`, `1년` 표시: 통과/실패
+- 선택한 시장과 기간에 맞는 큰 Treemap 카드 표시: 통과/실패
+- Treemap 타일이 섹터별로 묶여 보임: 통과/실패
+- Treemap 타일 크기가 비중에 따라 달라 보임: 통과/실패
+- Treemap 색상 범례 표시: 통과/실패
+- 선택한 시장과 기간에 맞는 Momentum / Trend 산점도 표시: 통과/실패
+- 산점도 축 라벨 `단기 모멘텀`, `장기 트렌드`가 플롯 영역을 침범하지 않음: 통과/실패
+- Treemap 카드 우측 상단 카메라 아이콘 표시: 통과/실패
+- 산점도 카드 우측 상단 카메라 아이콘 표시: 통과/실패
+- Treemap 카드 크게 보기 동작: 통과/실패
+- 산점도 카드 크게 보기 동작: 통과/실패
+- 카메라 아이콘 클릭 시 PNG 이미지가 로컬에 저장됨: 통과/실패/미실행
+- Home 오른쪽 광고 배너 sticky 동작 유지: 통과/실패/화면폭 부족
+- `/chart-ai`, `/portfolio`, `/lab`, `/market`, `/heatmap`에서 Home 광고 배너 미노출: 통과/실패
+- Chart AI 선택 종목 프리필 유지: 통과/실패
+- Portfolio 주요 기능 유지: 통과/실패/미실행
+- Header 로그인 라벨 안정성 유지: 통과/실패
+- `Today: 000` placeholder 유지: 통과/실패
+- 실제 방문자 집계가 아직 동작하지 않음: 통과/실패
+- OpenAI/Gemini/KIS/OpenDART/Trading Economics/ETFshopping/한국경제 실제 호출 없음: 통과/실패
+- 브라우저 콘솔에 token/key/raw DB error/stack trace 노출 없음: 통과/실패
+- 비밀 정보 없는 메모:
+```
+
+## Phase 3N.6 Dashboard SQL Validation Pack Owner Review
+
+Use this Korean-first format when reviewing the Phase 3N.6 dashboard SQL validation pack. Do not include credentials, tokens, keys, project references, Supabase URLs, connection strings, screenshots, or secret-bearing output.
+
+```text
+Phase 3N.6 Dashboard SQL Validation Pack 검토 결과:
+
+* Dashboard SQL Editor에서 수동 검증할 수 있는 script pack이 준비됨: 통과/실패
+* production DB가 아닌 disposable project에서만 실행하도록 명시됨: 통과/실패
+* Codex가 SQL/Supabase MCP DB query/project listing을 실행하지 않음: 통과/실패
+* schema/constraint/index/backfill/RLS/grant/negative validation 항목이 포함됨: 통과/실패
+* synthetic data와 cleanup 기준이 명확함: 통과/실패
+* project ref/URL/key/token/connection string이 기록되지 않음: 통과/실패
+* app source/provider/UI/Vercel/deployment 변경이 없음: 통과/실패
+* 다음 단계가 owner manual SQL execution 결과 확인임: 통과/실패
+* 비밀 정보 없는 메모:
+```

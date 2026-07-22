@@ -1,176 +1,257 @@
 ---
-// src/components/Auth/AuthModal.astro
-import GoogleLogin from "./GoogleLogin.astro";
+import GoogleLogin from './GoogleLogin.astro';
 ---
 
-<div id="auth-modal" class="modal-overlay hidden">
-  <div class="modal-content">
+<div class="modal-overlay hidden" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+  <div class="modal-panel">
     <div class="modal-header">
-      <h2 id="modal-title">로그인</h2>
-      <button id="close-modal" class="close-btn">&times;</button>
+      <div>
+        <p class="eyebrow">MK Stock Lab</p>
+        <h2 id="auth-title">로그인</h2>
+      </div>
+      <button class="icon-button" id="close-auth-modal" type="button" aria-label="로그인 창 닫기">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
+      </button>
     </div>
 
-    <div class="modal-body">
-      <GoogleLogin />
+    <GoogleLogin />
 
-      <div class="divider">또는</div>
+    <div class="divider">또는</div>
 
-      <div class="input-group hidden" id="nickname-group">
-        <label>닉네임</label>
-        <input type="text" placeholder="닉네임을 입력하세요" id="auth-nickname" />
-      </div>
+    <form class="auth-form" id="auth-form">
+      <label class="signup-only hidden" id="auth-nickname-label">
+        닉네임
+        <input id="auth-nickname" type="text" autocomplete="nickname" maxlength="120" placeholder="서비스에서 사용할 이름" />
+      </label>
+      <label>
+        이메일
+        <input id="auth-email" type="email" autocomplete="email" required placeholder="name@example.com" />
+      </label>
+      <label>
+        비밀번호
+        <input id="auth-password" type="password" autocomplete="current-password" required placeholder="비밀번호" />
+      </label>
+      <label class="signup-only hidden" id="auth-password-confirm-label">
+        비밀번호 확인
+        <input id="auth-password-confirm" type="password" autocomplete="new-password" placeholder="비밀번호 재입력" />
+      </label>
+      <p class="auth-error hidden" id="auth-error" role="alert"></p>
+      <button class="primary-action" type="submit" id="auth-submit">로그인</button>
+      <button class="text-button auth-reset-link" type="button" id="show-reset-panel">비밀번호를 잊으셨나요?</button>
+    </form>
 
-      <div class="input-group">
-        <label>이메일</label>
-        <input type="email" placeholder="이메일을 입력하세요" id="auth-email" />
-      </div>
-      
-      <div class="input-group">
-        <label>비밀번호</label>
-        <input type="password" placeholder="비밀번호를 입력하세요" id="auth-password" />
-      </div>
-
-      <button class="submit-btn" id="auth-submit">로그인</button>
-
-      <p class="footer-text" id="login-footer">
-        계정이 없으신가요? <a href="#" class="toggle-link">회원가입</a>
-      </p>
-      <p class="footer-text hidden" id="signup-footer">
-        이미 계정이 있으신가요? <a href="#" class="toggle-link">로그인</a>
-      </p>
+    <div class="auth-reset-panel hidden" id="auth-reset-panel" aria-label="비밀번호 재설정">
+      <p class="auth-reset-desc">등록하신 이메일 주소로 비밀번호 재설정 링크를 보내드립니다.</p>
+      <form class="auth-form" id="auth-reset-form">
+        <label>
+          이메일
+          <input id="auth-reset-email" type="email" autocomplete="email" placeholder="name@example.com" />
+        </label>
+        <p class="auth-error hidden" id="auth-reset-error" role="alert"></p>
+        <p class="auth-reset-success hidden" id="auth-reset-success" role="status"></p>
+        <button class="primary-action" type="submit" id="auth-reset-submit">비밀번호 재설정 메일 보내기</button>
+        <button class="text-button" type="button" id="auth-reset-back">로그인으로 돌아가기</button>
+      </form>
     </div>
+
+    <p class="modal-note" id="auth-modal-note">
+      <span id="auth-mode-copy">계정이 없으신가요?</span>
+      <button class="text-button" id="toggle-auth-mode" type="button">회원가입</button>
+    </p>
   </div>
 </div>
 
-<style>
-  /* 디자인 (CSS) - 벤치마크 스타일 적용 */
-  .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;
-  }
-  .hidden { display: none; }
-  .modal-content {
-    background: white; width: 90%; max-width: 400px; padding: 24px; border-radius: 16px; position: relative;
-  }
-  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
-  .divider { margin: 20px 0; text-align: center; color: #888; font-size: 14px; position: relative; }
-  .input-group { margin-bottom: 15px; }
-  .input-group label { display: block; font-size: 14px; margin-bottom: 5px; font-weight: 600; }
-  .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-  .submit-btn {
-    width: 100%; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 8px;
-    font-weight: 600; cursor: pointer; margin-top: 10px;
-  }
-  .footer-text { text-align: center; margin-top: 20px; font-size: 14px; color: #666; }
-  .footer-text a { color: #3b82f6; text-decoration: none; font-weight: 600; }
-</style>
-
 <script>
-  import { supabase } from "../../lib/supabase";
+  import { bootstrapProfileForCurrentSession } from '../../lib/profileBootstrap';
+  import { getBrowserSupabaseClient, isSupabaseConfigured } from '../../lib/supabase';
 
-  // 1. 필요한 요소들 가져오기
   const modal = document.getElementById('auth-modal');
-  const modalTitle = document.getElementById('modal-title');
-  const nicknameGroup = document.getElementById('nickname-group');
-  const authBtn = document.getElementById('auth-submit');
-  const toggleLink = document.getElementById('toggle-auth');
-  
-  let isSignUpMode = false;
+  const closeButton = document.getElementById('close-auth-modal');
+  const form = document.getElementById('auth-form') as HTMLFormElement | null;
+  const title = document.getElementById('auth-title');
+  const submitButton = document.getElementById('auth-submit');
+  const toggleButton = document.getElementById('toggle-auth-mode');
+  const modeCopy = document.getElementById('auth-mode-copy');
+  const nicknameLabel = document.getElementById('auth-nickname-label');
+  const passwordConfirmLabel = document.getElementById('auth-password-confirm-label');
+  const nicknameInput = document.getElementById('auth-nickname') as HTMLInputElement | null;
+  const emailInput = document.getElementById('auth-email') as HTMLInputElement | null;
+  const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null;
+  const passwordConfirmInput = document.getElementById('auth-password-confirm') as HTMLInputElement | null;
+  const errorMessage = document.getElementById('auth-error');
+  const showResetLink = document.getElementById('show-reset-panel') as HTMLButtonElement | null;
+  const resetPanel = document.getElementById('auth-reset-panel') as HTMLElement | null;
+  const resetForm = document.getElementById('auth-reset-form') as HTMLFormElement | null;
+  const resetEmailInput = document.getElementById('auth-reset-email') as HTMLInputElement | null;
+  const resetErrorEl = document.getElementById('auth-reset-error') as HTMLElement | null;
+  const resetSuccessEl = document.getElementById('auth-reset-success') as HTMLElement | null;
+  const resetSubmitBtn = document.getElementById('auth-reset-submit') as HTMLButtonElement | null;
+  const resetBackBtn = document.getElementById('auth-reset-back') as HTMLButtonElement | null;
+  const modalNote = document.getElementById('auth-modal-note') as HTMLElement | null;
+  let signupMode = false;
 
-  // 2. [모드 전환] 로그인 <-> 회원가입 스위치 로직
-  const loginFooter = document.getElementById('login-footer');
-  const signupFooter = document.getElementById('signup-footer');
-  const toggleLinks = document.querySelectorAll('.toggle-link');
+  const setError = (message: string) => {
+    if (!errorMessage) return;
+    errorMessage.textContent = message;
+    errorMessage.classList.toggle('hidden', !message);
+  };
 
-  // 모드를 강제로 변경하는 함수 (초기화용)
-  const setAuthMode = (signUp: boolean) => {
-    isSignUpMode = signUp;
+  const setResetError = (msg: string) => {
+    if (!resetErrorEl) return;
+    resetErrorEl.textContent = msg;
+    resetErrorEl.classList.toggle('hidden', !msg);
+  };
 
-      if (isSignUpMode) {
-        modalTitle!.innerText = "회원가입";
-        nicknameGroup!.classList.remove('hidden');
-        authBtn!.innerText = "회원가입 하기";
-        
-        // 문구 교체 (로그인 문구 숨기고, 회원가입용 문구 보여주기)
-        loginFooter!.classList.add('hidden');
-        signupFooter!.classList.remove('hidden');
-      } else {
-        modalTitle!.innerText = "로그인";
-        nicknameGroup!.classList.add('hidden');
-        authBtn!.innerText = "로그인";
-        
-        // 문구 교체 (회원가입 문구 숨기고, 로그인용 문구 보여주기)
-        signupFooter!.classList.add('hidden');
-        loginFooter!.classList.remove('hidden');
-      }
-    };
+  const setResetSuccess = (msg: string) => {
+    if (!resetSuccessEl) return;
+    resetSuccessEl.textContent = msg;
+    resetSuccessEl.classList.toggle('hidden', !msg);
+  };
 
-  toggleLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      // setAuthMode 함수를 호출하여 화면(제목, 버튼, 입력칸)을 실제로 바꿔줍니다.
-      setAuthMode(!isSignUpMode);
-    });
-  });
+  const setMode = (nextMode: boolean) => {
+    signupMode = nextMode;
+    if (title) title.textContent = signupMode ? '회원가입' : '로그인';
+    if (submitButton) submitButton.textContent = signupMode ? '회원가입' : '로그인';
+    if (toggleButton) toggleButton.textContent = signupMode ? '로그인하기' : '회원가입';
+    if (modeCopy) modeCopy.textContent = signupMode ? '이미 계정이 있으신가요?' : '계정이 없으신가요?';
+    nicknameLabel?.classList.toggle('hidden', !signupMode);
+    passwordConfirmLabel?.classList.toggle('hidden', !signupMode);
+    if (nicknameInput) nicknameInput.required = signupMode;
+    if (passwordConfirmInput) passwordConfirmInput.required = signupMode;
+    if (passwordInput) passwordInput.autocomplete = signupMode ? 'new-password' : 'current-password';
+    showResetLink?.classList.toggle('hidden', signupMode);
+    setError('');
+  };
 
-  // 3. [데이터 처리] 버튼 클릭 시 회원가입 또는 로그인 실행
-  authBtn?.addEventListener('click', async () => {
-    if (!supabase) {
-      alert("데이터베이스 연결에 실패했습니다. 페이지를 새로고침 해주세요.");
-      return;
+  const showReset = () => {
+    if (resetEmailInput && emailInput?.value) {
+      resetEmailInput.value = emailInput.value;
     }
-    
-    const email = (document.getElementById('auth-email') as HTMLInputElement).value;
-    const password = (document.getElementById('auth-password') as HTMLInputElement).value;
-    const nickname = (document.getElementById('auth-nickname') as HTMLInputElement).value;
+    setResetError('');
+    setResetSuccess('');
+    form?.classList.add('hidden');
+    showResetLink?.classList.add('hidden');
+    modalNote?.classList.add('hidden');
+    resetPanel?.classList.remove('hidden');
+  };
 
-    if (isSignUpMode) {
-      // 닉네임 입력 여부 확인 추가
-      if (!nickname.trim()) {
-        alert("닉네임을 입력해 주세요.");
-        return;
-      }
-      // 회원가입 로직
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { display_name: nickname } 
-        }
-      });
+  const hideReset = () => {
+    resetPanel?.classList.add('hidden');
+    form?.classList.remove('hidden');
+    modalNote?.classList.remove('hidden');
+    showResetLink?.classList.toggle('hidden', signupMode);
+  };
 
-      if (error) alert("회원가입 실패: " + error.message);
-      else alert("가입 확인 이메일을 보냈습니다! 이메일을 꼭 확인해 주세요.");
-    } else {
-      // 로그인 로직
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert("로그인 실패: " + error.message);
-      else {
-        alert("로그인 성공!");
-        location.reload();
-      }
-    }
-  });
+  const closeModal = () => {
+    modal?.classList.add('hidden');
+    form?.reset();
+    setError('');
+  };
 
-  // 페이지 로드 시 기본적으로 로그인 모드(false)로 설정
-  setAuthMode(false);
-
-  // ✅ [추가] window.openAuthModal 등록 — main.js에서 포트폴리오 클릭 시 이 함수를 호출합니다.
-  (window as any).openAuthModal = function() {
-    setAuthMode(false); // 항상 로그인 모드로 초기화하여 열기
+  const openModal = () => {
+    setMode(false);
+    hideReset();
     modal?.classList.remove('hidden');
   };
 
-  // ✅ [추가] 닫기 버튼(×) 클릭 시 모달 닫기
-  document.getElementById('close-modal')?.addEventListener('click', () => {
-    modal?.classList.add('hidden');
+  window.addEventListener('mk:open-auth', openModal);
+  closeButton?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (event) => {
+    if (event.target === modal) closeModal();
+  });
+  toggleButton?.addEventListener('click', () => setMode(!signupMode));
+  showResetLink?.addEventListener('click', showReset);
+  resetBackBtn?.addEventListener('click', hideReset);
+
+  resetForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    setResetError('');
+    setResetSuccess('');
+
+    if (!isSupabaseConfigured()) {
+      setResetError('재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) {
+      setResetError('재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    const email = resetEmailInput?.value.trim() ?? '';
+    if (!email || !email.includes('@')) {
+      setResetError('유효한 이메일 주소를 입력해 주세요.');
+      return;
+    }
+
+    if (resetSubmitBtn) resetSubmitBtn.setAttribute('disabled', 'true');
+
+    const redirectTo = `${window.location.origin}/reset-password`;
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+    if (resetSubmitBtn) resetSubmitBtn.removeAttribute('disabled');
+    setResetSuccess('입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다. 메일함을 확인해 주세요.');
   });
 
-  // ✅ [추가] 모달 바깥(어두운 오버레이) 클릭 시 모달 닫기
-  modal?.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.classList.add('hidden');
+  const validateSignup = () => {
+    const nickname = nicknameInput?.value.trim() ?? '';
+    const email = emailInput?.value.trim() ?? '';
+    const password = passwordInput?.value ?? '';
+    const passwordConfirm = passwordConfirmInput?.value ?? '';
+
+    if (!nickname) return '닉네임을 입력해 주세요.';
+    if (!email) return '이메일을 입력해 주세요.';
+    if (!password) return '비밀번호를 입력해 주세요.';
+    if (!passwordConfirm) return '비밀번호 확인을 입력해 주세요.';
+    if (password !== passwordConfirm) return '비밀번호가 일치하지 않습니다.';
+    return '';
+  };
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    setError('');
+
+    if (!isSupabaseConfigured()) {
+      setError('로그인 설정이 아직 완료되지 않았습니다.');
+      return;
     }
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) return;
+
+    const email = emailInput?.value.trim() ?? '';
+    const password = passwordInput?.value ?? '';
+    const nickname = nicknameInput?.value.trim() ?? '';
+
+    if (signupMode) {
+      const validationError = validateSignup();
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+    }
+
+    if (submitButton) submitButton.setAttribute('disabled', 'true');
+    const { error } = signupMode
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { name: nickname },
+          },
+        })
+      : await supabase.auth.signInWithPassword({ email, password });
+
+    if (submitButton) submitButton.removeAttribute('disabled');
+    if (error) {
+      setError('인증 정보를 확인해 주세요.');
+      return;
+    }
+
+    await bootstrapProfileForCurrentSession();
+    closeModal();
   });
 </script>

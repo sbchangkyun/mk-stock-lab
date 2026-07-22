@@ -1,0 +1,143 @@
+---
+// No SSR sample banner rendering — rail is hidden until managed banners load client-side
+---
+
+<!-- Rail starts hidden; client script reveals only if active managed banners exist -->
+<aside
+  class="home-rail-ad"
+  data-home-rail-ad
+  data-managed-rail-pending
+  aria-label="Home banner rail"
+  style="display:none"
+>
+  <div class="home-rail-viewport">
+    <div class="home-rail-track"></div>
+  </div>
+</aside>
+
+<script>
+  import { getHomeRailBanners } from '../lib/siteSettingsClient';
+  import { isSupabaseConfigured } from '../lib/supabase';
+
+  const setupRailCarousel = (rail: HTMLElement) => {
+    const track = rail.querySelector<HTMLElement>('.home-rail-track');
+    const cards = rail.querySelectorAll<HTMLElement>('.home-rail-card');
+    if (
+      !rail.classList.contains('is-carousel') ||
+      !track ||
+      cards.length < 2 ||
+      rail.dataset.ready === 'true'
+    ) return;
+
+    rail.dataset.ready = 'true';
+    let activeIndex = 0;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const render = () => {
+      track.style.transitionDuration = reduceMotion.matches ? '0ms' : '320ms';
+      track.style.transform = `translateX(-${activeIndex * 100}%)`;
+    };
+
+    const startCarousel = () => {
+      if ((rail as any)._railIntervalId !== undefined) return;
+      (rail as any)._railIntervalId = window.setInterval(() => {
+        activeIndex = (activeIndex + 1) % cards.length;
+        render();
+      }, 5000);
+    };
+
+    const stopCarousel = () => {
+      if ((rail as any)._railIntervalId === undefined) return;
+      window.clearInterval((rail as any)._railIntervalId as number);
+      delete (rail as any)._railIntervalId;
+    };
+
+    rail.addEventListener('mouseenter', stopCarousel);
+    rail.addEventListener('mouseleave', startCarousel);
+    reduceMotion.addEventListener('change', render);
+    render();
+    startCarousel();
+  };
+
+  const loadManagedBanners = async () => {
+    if (!isSupabaseConfigured()) return;
+    const banners = await getHomeRailBanners();
+    const active = (banners ?? []).filter(
+      (b) => b.active && b.imageUrl.trim() && /^https?:\/\//i.test(b.imageUrl.trim())
+    );
+
+    const rail = document.querySelector<HTMLElement>('[data-home-rail-ad]');
+    if (!rail) return;
+    const track = rail.querySelector<HTMLElement>('.home-rail-track');
+    if (!track) return;
+
+    // Mark loading as settled (remove pending state)
+    rail.removeAttribute('data-managed-rail-pending');
+
+    // Cancel any existing carousel (re-navigation with view transitions may reuse DOM)
+    if ((rail as any)._railIntervalId !== undefined) {
+      window.clearInterval((rail as any)._railIntervalId as number);
+      delete (rail as any)._railIntervalId;
+    }
+    rail.removeAttribute('data-ready');
+    track.style.transform = '';
+    track.style.transitionDuration = '';
+
+    if (active.length === 0) {
+      // No active managed banners — clear stale managed content and keep the rail hidden.
+      track.innerHTML = '';
+      rail.classList.remove('is-carousel');
+      rail.dataset.count = '0';
+      rail.style.display = 'none';
+      return;
+    }
+
+    track.innerHTML = '';
+    for (const b of active) {
+      const safeAlt = (b.alt || 'MK Stock Lab 배너').slice(0, 120);
+      const safeImageUrl = b.imageUrl.trim();
+      let card: HTMLElement;
+      if (b.linkUrl && /^https?:\/\//i.test(b.linkUrl)) {
+        const a = document.createElement('a');
+        a.href = b.linkUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'home-rail-card';
+        a.setAttribute('aria-label', safeAlt);
+        card = a;
+      } else {
+        const div = document.createElement('div');
+        div.className = 'home-rail-card';
+        div.setAttribute('role', 'img');
+        div.setAttribute('aria-label', safeAlt);
+        card = div;
+      }
+      const img = document.createElement('img');
+      img.src = safeImageUrl;
+      img.alt = safeAlt;
+      img.width = 160;
+      img.height = 600;
+      img.loading = 'lazy';
+      card.appendChild(img);
+      track.appendChild(card);
+    }
+
+    if (active.length >= 2) {
+      rail.classList.add('is-carousel');
+    } else {
+      rail.classList.remove('is-carousel');
+    }
+    rail.dataset.count = String(active.length);
+    rail.setAttribute('aria-label', 'Home banner rail');
+
+    // Reveal rail — remove inline display:none, let CSS media query control visibility
+    rail.style.display = '';
+
+    if (active.length >= 2) {
+      setupRailCarousel(rail);
+    }
+  };
+
+  document.addEventListener('astro:page-load', () => { void loadManagedBanners(); });
+  void loadManagedBanners();
+</script>

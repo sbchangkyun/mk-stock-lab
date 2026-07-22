@@ -1,0 +1,224 @@
+---
+interface MatrixCategory {
+  id: string;
+  label: string;
+  colorClass: string;
+}
+
+interface MatrixCell {
+  year: string;
+  categoryId: string;
+  label: string;
+  return: string;
+}
+
+interface MatrixRankRow {
+  rank: number;
+  cells: MatrixCell[];
+}
+
+interface MatrixSummaryRow {
+  categoryId: string;
+  label: string;
+  average: string;
+  best: string;
+  worst: string;
+}
+
+interface MatrixData {
+  title: string;
+  description: string;
+  note: string;
+  years: string[];
+  categories: MatrixCategory[];
+  rankings: MatrixRankRow[];
+  summary: MatrixSummaryRow[];
+}
+
+interface Props {
+  data: MatrixData;
+  sectionId: string;
+  captureId?: string;
+}
+
+const { data, sectionId, captureId } = Astro.props;
+---
+
+<section class="lab-section" aria-label={data.title} data-lab-return-matrix-root>
+  <!-- Category legend chips -->
+  <div class="lab-matrix-legend" aria-label="범례">
+    {data.categories.map((cat) => (
+      <span
+        class={`lab-matrix-chip lab-return-cell--${cat.colorClass}`}
+        data-lab-category-chip
+        data-lab-category-id={cat.id}
+      >{cat.label}</span>
+    ))}
+  </div>
+  <p class="lab-matrix-interaction-hint">셀 또는 범례에 마우스를 올리거나 탭하면 같은 항목의 연도별 위치가 강조됩니다.</p>
+
+  <!-- Ranking matrix -->
+  <div class="lab-matrix-card" id={captureId} data-exportable-card={captureId ? true : undefined}>
+    <div class="lab-matrix-scroll" role="region" aria-label={`${data.title} 순위 매트릭스`}>
+      <table class="lab-return-matrix">
+        <thead>
+          <tr>
+            <th class="lab-rank-cell">순위</th>
+            {data.years.map((year) => (
+              <th>{year}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.rankings.map((row) => (
+            <tr>
+              <td class="lab-rank-cell">{row.rank}위</td>
+              {data.years.map((year) => {
+                const cell = row.cells.find((c) => c.year === year);
+                return cell ? (
+                  <td>
+                    <div
+                      class={`lab-return-cell lab-return-cell--${cell.categoryId}`}
+                      data-lab-matrix-cell
+                      data-lab-category-id={cell.categoryId}
+                    >
+                      <span class="lab-return-cell-label">{cell.label}</span>
+                      <span class="lab-return-cell-value">{cell.return}</span>
+                    </div>
+                  </td>
+                ) : (
+                  <td class="lab-return-cell-empty">—</td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="lab-matrix-data-note">{data.note}</p>
+  </div>
+
+  <!-- Summary table -->
+  <div class="lab-matrix-summary-block">
+    <h3 class="lab-matrix-summary-heading">구분별 예시 수익률 요약</h3>
+    <div class="lab-matrix-scroll">
+      <table class="lab-summary-table">
+        <thead>
+          <tr>
+            <th>구분</th>
+            <th>예시 평균</th>
+            <th>예시 최고</th>
+            <th>예시 최저</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.summary.map((row) => (
+            <tr>
+              <td>
+                <span
+                  class={`lab-matrix-chip lab-return-cell--${row.categoryId}`}
+                  data-lab-category-chip
+                  data-lab-category-id={row.categoryId}
+                >{row.label}</span>
+              </td>
+              <td class="lab-summary-cell">{row.average}</td>
+              <td class="lab-summary-cell lab-summary-cell--best">{row.best}</td>
+              <td class="lab-summary-cell lab-summary-cell--worst">{row.worst}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    'use strict';
+
+    const applyHighlight = (root: Element, categoryId: string) => {
+      root.classList.add('lab-matrix-has-active');
+      root.querySelectorAll<HTMLElement>('[data-lab-category-id]').forEach((el) => {
+        const match = el.dataset.labCategoryId === categoryId;
+        el.classList.toggle('is-highlighted', match);
+        el.classList.toggle('is-dimmed', !match);
+      });
+    };
+
+    const clearHighlight = (root: Element) => {
+      root.classList.remove('lab-matrix-has-active');
+      root.querySelectorAll('[data-lab-category-id]').forEach((el) => {
+        el.classList.remove('is-highlighted', 'is-dimmed');
+      });
+    };
+
+    const setupMatrix = (root: Element) => {
+      let pinned: string | null = null;
+      let lastHovered: string | null = null;
+      let pdX = 0;
+      let pdY = 0;
+
+      root.addEventListener('pointerover', (e) => {
+        const target = (e.target as Element).closest('[data-lab-category-id]');
+        if (!target || !root.contains(target)) return;
+        const id = (target as HTMLElement).dataset.labCategoryId;
+        if (!id || id === lastHovered) return;
+        lastHovered = id;
+        applyHighlight(root, id);
+      });
+
+      root.addEventListener('pointerleave', () => {
+        lastHovered = null;
+        if (pinned) {
+          applyHighlight(root, pinned);
+        } else {
+          clearHighlight(root);
+        }
+      });
+
+      root.addEventListener('pointerdown', (e) => {
+        const pe = e as PointerEvent;
+        pdX = pe.clientX;
+        pdY = pe.clientY;
+      });
+
+      root.addEventListener('pointerup', (e) => {
+        const pe = e as PointerEvent;
+        if (Math.abs(pe.clientX - pdX) > 10 || Math.abs(pe.clientY - pdY) > 10) return;
+        const target = (pe.target as Element | null)?.closest('[data-lab-category-id]');
+        if (!target) {
+          pinned = null;
+          clearHighlight(root);
+          return;
+        }
+        const id = (target as HTMLElement).dataset.labCategoryId;
+        if (!id) return;
+        if (pinned === id) {
+          pinned = null;
+          clearHighlight(root);
+        } else {
+          pinned = id;
+          applyHighlight(root, id);
+        }
+      });
+
+      root.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Escape') {
+          pinned = null;
+          clearHighlight(root);
+        }
+      });
+    };
+
+    const init = () => {
+      document.querySelectorAll('[data-lab-return-matrix-root]').forEach((root) => {
+        if ((root as HTMLElement).dataset.labMatrixReady === 'true') return;
+        (root as HTMLElement).dataset.labMatrixReady = 'true';
+        setupMatrix(root);
+      });
+    };
+
+    document.addEventListener('astro:page-load', init);
+    init();
+  }());
+</script>

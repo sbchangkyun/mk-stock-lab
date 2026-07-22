@@ -1,0 +1,152 @@
+# Phase 3GG-T-HF3B-HF2 — scheduled KIS instrument-master refresh.
+#
+# Runs the deterministic KIS-only refresh pipeline, and — only when the generated tracked data files
+# actually change and all Safety Gates pass — commits to a PERSISTENT automation branch and opens/updates
+# ONE pull request targeting the default branch. It NEVER pushes the default branch, never force-pushes,
+# never merges, never enables auto-merge, and never deploys. On a blocked/failed run it preserves the
+# last-known-good tracked files and uploads safe diagnostic artifacts.
+#
+# Scheduled workflows run from the workflow file on the DEFAULT branch, so this file must be merged to the
+# default branch before any schedule fires (see the phase result doc / runbook).
+
+name: KIS Instrument Master Refresh
+
+on:
+  schedule:
+    # KR daily refresh — Mon–Fri 22:17 Asia/Seoul (UTC 13:17). Avoids the top of the hour.
+    - cron: '17 13 * * 1-5'
+    # US daily refresh — Tue–Sat 11:23 Asia/Seoul (UTC 02:23), after the US session + directory settle.
+    - cron: '23 2 * * 2-6'
+    # Weekly full reconciliation — Sat 22:41 Asia/Seoul (UTC 13:41).
+    - cron: '41 13 * * 6'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Which markets to refresh'
+        type: choice
+        default: all
+        options: [all, kr, us]
+      fullReconcile:
+        description: 'Run a full reconciliation'
+        type: boolean
+        default: false
+      reportOnly:
+        description: 'Report-only (no commit/PR) — default for manual runs'
+        type: boolean
+        default: true
+
+# Minimum required permissions only.
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+# Never allow two master-refresh writers concurrently; do not cancel an in-flight refresh.
+concurrency:
+  group: kis-instrument-master-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      AUTOMATION_BRANCH: automation/kis-instrument-master-refresh
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve run parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "reportOnly=${{ github.event.inputs.reportOnly }}" >> "$GITHUB_OUTPUT"
+            echo "fullReconcile=${{ github.event.inputs.fullReconcile }}" >> "$GITHUB_OUTPUT"
+            echo "scope=${{ github.event.inputs.scope }}" >> "$GITHUB_OUTPUT"
+          else
+            # Scheduled runs apply and open/update the PR; the weekly cron is a full reconciliation.
+            echo "reportOnly=false" >> "$GITHUB_OUTPUT"
+            echo "scope=all" >> "$GITHUB_OUTPUT"
+            if [ "${{ github.event.schedule }}" = "41 13 * * 6" ]; then echo "fullReconcile=true" >> "$GITHUB_OUTPUT"; else echo "fullReconcile=false" >> "$GITHUB_OUTPUT"; fi
+          fi
+
+      - name: Prepare persistent automation branch
+        if: steps.params.outputs.reportOnly != 'true'
+        run: |
+          git config user.name "mk-stock-lab-bot"
+          git config user.email "actions@github.com"
+          git fetch origin "$DEFAULT_BRANCH"
+          if git ls-remote --exit-code --heads origin "$AUTOMATION_BRANCH"; then
+            git fetch origin "$AUTOMATION_BRANCH"
+            git checkout -B "$AUTOMATION_BRANCH" "origin/$AUTOMATION_BRANCH"
+            # Integrate latest default branch without rewriting history; fail on conflict.
+            if ! git merge --no-edit "origin/$DEFAULT_BRANCH"; then
+              echo "::error::merge conflict integrating $DEFAULT_BRANCH into $AUTOMATION_BRANCH"
+              git merge --abort || true
+              exit 1
+            fi
+          else
+            git checkout -B "$AUTOMATION_BRANCH" "origin/$DEFAULT_BRANCH"
+          fi
+
+      - name: Run refresh pipeline (report-only)
+        if: steps.params.outputs.reportOnly == 'true'
+        run: node scripts/automation/refresh_kis_instrument_master.mjs --report-only --scratch-dir "${{ runner.temp }}/kis" --output-report "${{ runner.temp }}/kis/report.json" ${{ steps.params.outputs.fullReconcile == 'true' && '--full-reconcile' || '' }}
+
+      - name: Run refresh pipeline (apply)
+        if: steps.params.outputs.reportOnly != 'true'
+        run: node scripts/automation/refresh_kis_instrument_master.mjs --apply --scratch-dir "${{ runner.temp }}/kis" --output-report "${{ runner.temp }}/kis/report.json" ${{ steps.params.outputs.fullReconcile == 'true' && '--full-reconcile' || '' }}
+
+      - name: Validate candidate content (offline, CI-safe)
+        if: steps.params.outputs.reportOnly != 'true'
+        run: node scripts/smoke_phase_3gg_t_hf3b_hf2_kis_automation.mjs
+
+      - name: Commit + push automation branch and open/update PR
+        if: steps.params.outputs.reportOnly != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Commit only the approved generated data artifacts.
+          git add src/data/chart-ai/universalInstrumentMaster.json \
+                  src/data/chart-ai/universalInstrumentMaster.manifest.json \
+                  src/data/chart-ai/universalInstrumentMaster.archive.json \
+                  src/data/chart-ai/universalInstrumentMaster.refreshState.json
+          if git diff --cached --quiet; then
+            echo "No tracked data changes; nothing to commit or PR."
+            exit 0
+          fi
+          git commit -m "chore: refresh KIS instrument master"
+          # Push ONLY the automation branch (never the default branch, never force).
+          git push origin "HEAD:$AUTOMATION_BRANCH"
+          # Open one PR or update the existing one; never merge, never enable auto-merge.
+          EXISTING=$(gh pr list --head "$AUTOMATION_BRANCH" --base "$DEFAULT_BRANCH" --state open --json number --jq '.[0].number' || echo "")
+          BODY="Automated KIS instrument-master refresh. KIS-only sources. Review required before merge. Do not auto-merge. Do not deploy without separate authorization."
+          if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --title "chore: refresh KIS instrument master" --body "$BODY"
+            echo "Updated existing PR #$EXISTING"
+          else
+            if ! gh pr create --base "$DEFAULT_BRANCH" --head "$AUTOMATION_BRANCH" --title "chore: refresh KIS instrument master" --body "$BODY"; then
+              echo "::error::Could not create PR. Ensure repo Settings → Actions → 'Allow GitHub Actions to create and approve pull requests' is enabled."
+              exit 1
+            fi
+          fi
+
+      - name: Upload safe diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kis-refresh-diagnostics
+          path: |
+            ${{ runner.temp }}/kis/report.json
+            ${{ runner.temp }}/kis/blocked-report.json
+          retention-days: 7
+          if-no-files-found: ignore

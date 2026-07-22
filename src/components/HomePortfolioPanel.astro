@@ -1,0 +1,262 @@
+---
+// HomePortfolioPanel.astro
+// Home hero right panel — portfolio-aware status panel.
+// SSR renders resolving (neutral) as the initial visible state to prevent signed_out flash
+// for signed-in users. Client resolves into signed_out, signed_in_empty, or
+// signed_in_with_portfolio once auth and portfolio state are confirmed.
+// No live KIS, GNews, or external fetch. No Supabase writes.
+---
+
+<div class="panel home-portfolio-panel" id="home-portfolio-panel" aria-label="포트폴리오 현황">
+
+  {/* State 0: resolving — default SSR-visible; shown while auth state is being determined */}
+  <div class="hpp-state" id="hpp-resolving" data-hpp-default="true">
+    <p class="eyebrow">PORTFOLIO</p>
+    <h2 class="hpp-title">포트폴리오 상태를<br>확인하고 있습니다</h2>
+    <p class="hpp-lead">로그인 상태와 등록된 포트폴리오를 불러오는 중입니다.</p>
+    <div class="hpp-resolving-skeleton" aria-hidden="true">
+      <div class="hpp-skeleton-line hpp-skeleton-line--wide"></div>
+      <div class="hpp-skeleton-line"></div>
+      <div class="hpp-skeleton-line hpp-skeleton-line--narrow"></div>
+      <div class="hpp-skeleton-line"></div>
+    </div>
+  </div>
+
+  {/* State A: signed_out — shown only after auth is confirmed signed out */}
+  <div class="hpp-state hidden" id="hpp-signed-out">
+    <p class="eyebrow">PORTFOLIO START</p>
+    <h2 class="hpp-title">포트폴리오 관리를<br>시작해보세요</h2>
+    <p class="hpp-lead">계정을 만들고 보유 종목을 입력하면 자산 구성과 수익률을 한눈에 확인할 수 있습니다.</p>
+    <ol class="hpp-steps" aria-label="시작 단계">
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">01</span>
+        <span>무료 계정으로 시작</span>
+      </li>
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">02</span>
+        <span>포트폴리오 만들기</span>
+      </li>
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">03</span>
+        <span>보유 종목 입력</span>
+      </li>
+      <li class="hpp-step">
+        <span class="hpp-step-num" aria-hidden="true">04</span>
+        <span>투자 현황 확인</span>
+      </li>
+    </ol>
+    <a class="button-link hpp-cta" href="/portfolio">포트폴리오 시작하기</a>
+  </div>
+
+  {/* State B: signed_in_empty — hidden until client confirms signed-in + no portfolio */}
+  <div class="hpp-state hidden" id="hpp-signed-in-empty">
+    <p class="eyebrow">NEXT STEP</p>
+    <h2 class="hpp-title">첫 포트폴리오를<br>만들어보세요</h2>
+    <p class="hpp-lead">계정 준비가 완료되었습니다. 이제 보유 종목을 추가해 투자 현황을 확인할 수 있습니다.</p>
+    <ol class="hpp-steps" aria-label="시작 단계">
+      <li class="hpp-step hpp-step-done">
+        <span class="hpp-step-num" aria-hidden="true">01</span>
+        <span>로그인 완료</span>
+      </li>
+      <li class="hpp-step hpp-step-next" aria-current="step">
+        <span class="hpp-step-num" aria-hidden="true">02</span>
+        <span>포트폴리오 만들기</span>
+        <span class="hpp-next-badge" aria-label="다음 단계">다음 단계</span>
+      </li>
+      <li class="hpp-step hpp-step-future">
+        <span class="hpp-step-num" aria-hidden="true">03</span>
+        <span>보유 종목 추가</span>
+      </li>
+      <li class="hpp-step hpp-step-future">
+        <span class="hpp-step-num" aria-hidden="true">04</span>
+        <span>분석 확인</span>
+      </li>
+    </ol>
+    <a class="button-link hpp-cta" href="/portfolio">포트폴리오 만들기</a>
+  </div>
+
+  {/* State C: signed_in_with_portfolio — hidden until client confirms portfolios exist */}
+  <div class="hpp-state hidden" id="hpp-signed-in-portfolio">
+    <div class="hpp-card-header">
+      <div>
+        <p class="eyebrow">MY PORTFOLIO</p>
+        <h2 class="hpp-title">내 포트폴리오 요약</h2>
+      </div>
+      <div class="hpp-card-meta">
+        <span class="hpp-meta-label">포트폴리오</span>
+        <strong class="hpp-meta-value"><span id="hpp-portfolio-count">—</span>개</strong>
+      </div>
+    </div>
+    <div class="hpp-donut-section">
+      <div class="hpp-donut-wrap">
+        <div class="hpp-donut" id="hpp-donut" role="img" aria-label="계좌 비중 차트">
+          <div class="hpp-donut-hole" aria-hidden="true"></div>
+        </div>
+        <div class="hpp-donut-legend" id="hpp-donut-legend" aria-label="계좌 비중"></div>
+      </div>
+      <p class="hpp-donut-basis">등록 금액 기준 계좌 비중</p>
+      <p class="hpp-donut-placeholder hidden" id="hpp-donut-placeholder">보유 종목 입력 후 비중이 표시됩니다.</p>
+    </div>
+    <div class="hpp-portfolio-names" id="hpp-portfolio-names" aria-label="등록된 포트폴리오"></div>
+    <a class="button-link hpp-cta" href="/portfolio">포트폴리오 보기</a>
+  </div>
+
+</div>
+
+<script>
+  import { isSupabaseConfigured } from '../lib/supabase';
+  import { portfolioApi, PortfolioApiError, type Portfolio, type PortfolioPosition } from '../lib/portfolioClient';
+
+  const HPP_STATE_IDS = ['hpp-resolving', 'hpp-signed-out', 'hpp-signed-in-empty', 'hpp-signed-in-portfolio'] as const;
+  const CHART_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
+  const CHART_OTHER_COLOR = '#94a3b8';
+
+  const switchHppState = (activeId: typeof HPP_STATE_IDS[number]) => {
+    HPP_STATE_IDS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden', id !== activeId);
+    });
+  };
+
+  const escapeHtml = (text: string) =>
+    text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c));
+
+  const renderDonutChart = (portfolios: Portfolio[], positionsByPortfolioId: Record<string, PortfolioPosition[]>) => {
+    const donutEl = document.getElementById('hpp-donut') as HTMLDivElement | null;
+    const legendEl = document.getElementById('hpp-donut-legend');
+    const placeholderEl = document.getElementById('hpp-donut-placeholder');
+    if (!donutEl || !legendEl || !placeholderEl) return;
+
+    const portfolioData = portfolios.map((p, i) => {
+      const positions = positionsByPortfolioId[p.id] ?? [];
+      const costBasis = positions.reduce((sum, pos) => sum + (pos.quantity ?? 0) * (pos.buyPrice ?? 0), 0);
+      return { name: p.name, costBasis, color: CHART_COLORS[i % CHART_COLORS.length] ?? CHART_OTHER_COLOR };
+    });
+
+    const totalCost = portfolioData.reduce((sum, d) => sum + d.costBasis, 0);
+
+    if (totalCost <= 0) {
+      donutEl.style.background = 'var(--border)';
+      legendEl.innerHTML = '';
+      placeholderEl.classList.remove('hidden');
+      return;
+    }
+
+    placeholderEl.classList.add('hidden');
+
+    const shown = portfolioData.slice(0, 4);
+    const restCost = portfolioData.slice(4).reduce((s, d) => s + d.costBasis, 0);
+    const segments = restCost > 0
+      ? [...shown, { name: '기타', costBasis: restCost, color: CHART_OTHER_COLOR }]
+      : shown;
+
+    let cum = 0;
+    const gradient = segments.map((seg) => {
+      const pct = (seg.costBasis / totalCost) * 100;
+      const part = `${seg.color} ${cum.toFixed(2)}% ${(cum + pct).toFixed(2)}%`;
+      cum += pct;
+      return part;
+    });
+    donutEl.style.background = `conic-gradient(${gradient.join(', ')})`;
+
+    legendEl.innerHTML = '';
+    segments.forEach((seg) => {
+      const pct = Math.round((seg.costBasis / totalCost) * 100);
+      const item = document.createElement('span');
+      item.className = 'hpp-donut-legend-item';
+      const dot = document.createElement('span');
+      dot.className = 'hpp-donut-legend-dot';
+      dot.style.background = seg.color;
+      dot.setAttribute('aria-hidden', 'true');
+      const name = document.createElement('span');
+      name.className = 'hpp-donut-legend-name';
+      name.textContent = seg.name;
+      const pctEl = document.createElement('span');
+      pctEl.className = 'hpp-donut-legend-pct';
+      pctEl.textContent = `${pct}%`;
+      item.appendChild(dot);
+      item.appendChild(name);
+      item.appendChild(pctEl);
+      legendEl.appendChild(item);
+    });
+  };
+
+  const loadDonutChart = async (portfolios: Portfolio[]) => {
+    const positionsByPortfolioId: Record<string, PortfolioPosition[]> = {};
+    try {
+      await Promise.all(
+        portfolios.map(async (p) => {
+          const positions = await portfolioApi.listPositions(p.id);
+          positionsByPortfolioId[p.id] = positions;
+        })
+      );
+    } catch {
+      // Best effort — proceed with empty positions so placeholder is shown
+    }
+    renderDonutChart(portfolios, positionsByPortfolioId);
+  };
+
+  const updatePortfolioDisplay = (portfolios: Portfolio[]) => {
+    const countEl = document.getElementById('hpp-portfolio-count');
+    if (countEl) countEl.textContent = String(portfolios.length);
+
+    const namesEl = document.getElementById('hpp-portfolio-names');
+    if (namesEl) {
+      namesEl.innerHTML = '';
+      portfolios.slice(0, 4).forEach((p) => {
+        const tag = document.createElement('span');
+        tag.className = 'hpp-portfolio-tag';
+        tag.textContent = escapeHtml(p.name);
+        namesEl.appendChild(tag);
+      });
+    }
+
+    switchHppState('hpp-signed-in-portfolio');
+    void loadDonutChart(portfolios);
+  };
+
+  const detectAndRenderPortfolioState = async () => {
+    if (!isSupabaseConfigured()) {
+      switchHppState('hpp-signed-out');
+      return;
+    }
+
+    try {
+      const portfolios = await portfolioApi.listPortfolios();
+      if (portfolios.length === 0) {
+        switchHppState('hpp-signed-in-empty');
+      } else {
+        updatePortfolioDisplay(portfolios);
+      }
+    } catch (err) {
+      if (err instanceof PortfolioApiError && err.status === 401) {
+        // Confirmed: user is not signed in
+        switchHppState('hpp-signed-out');
+      } else {
+        // Network or API error — prefer signed_in_empty; user may be signed in
+        switchHppState('hpp-signed-in-empty');
+      }
+    }
+  };
+
+  const initHomePortfolioPanel = async () => {
+    const marker = window as Window & { mkHppInit?: boolean };
+    if (marker.mkHppInit) return;
+    marker.mkHppInit = true;
+
+    await detectAndRenderPortfolioState();
+  };
+
+  // Respond to auth state changes emitted by Header
+  window.addEventListener('mk:auth-state', (event) => {
+    const detail = (event as CustomEvent<{ status: string }>).detail;
+    if (detail?.status === 'signed_out') {
+      switchHppState('hpp-signed-out');
+    } else if (detail?.status === 'signed_in') {
+      void detectAndRenderPortfolioState();
+    }
+  });
+
+  document.addEventListener('astro:page-load', () => { void initHomePortfolioPanel(); });
+  void initHomePortfolioPanel();
+</script>

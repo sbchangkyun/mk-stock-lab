@@ -1,0 +1,61 @@
+---
+import homeIndexCards from '../data/homeIndexCards.json';
+
+const SVG_W = 120;
+const SVG_H = 36;
+const PAD_X = 2;
+const PAD_Y = 4;
+
+const computePoints = (trend: number[]): string => {
+  const minV = Math.min(...trend);
+  const maxV = Math.max(...trend);
+  const rangeV = maxV - minV || 1;
+  const n = trend.length;
+  return trend
+    .map((v, i) => {
+      const x = PAD_X + (i / (n - 1)) * (SVG_W - PAD_X * 2);
+      const y = (SVG_H - PAD_Y) - ((v - minV) / rangeV) * (SVG_H - PAD_Y * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+};
+---
+
+<section class="index-snapshot-section" aria-labelledby="index-snapshot-heading">
+  <p class="eyebrow">MARKET SNAPSHOT</p>
+  <h2 id="index-snapshot-heading">주요 지수 한눈에 보기</h2>
+  <p class="index-snapshot-desc">예시 데이터 기준입니다. 실제 시세 연동은 이후 단계에서 진행됩니다.</p>
+  <div class="index-card-grid">
+    {homeIndexCards.map((item) => (
+      <div class={`index-card index-card--${item.direction}`}>
+        <div class="index-card-main">
+          <div class="index-card-label">{item.label}</div>
+          <div class="index-card-caption">{item.caption}</div>
+          <div class="index-card-value">{item.value}</div>
+          <div class="index-card-footer">
+            <span class="index-card-change">{item.change}</span>
+            <span class="index-card-as-of">{item.asOfLabel}</span>
+          </div>
+        </div>
+        <div class={`index-card-sparkline index-card-sparkline--${item.direction}`}>
+          <svg
+            class="index-card-sparkline-svg"
+            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+            width={SVG_W}
+            height={SVG_H}
+            aria-hidden="true"
+          >
+            <polyline
+              class="index-card-sparkline-line"
+              points={computePoints(item.trend)}
+              fill="none"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>

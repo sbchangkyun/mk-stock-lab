@@ -1,0 +1,443 @@
+{
+  "note": "Curated verified instrument anchors (Phase 3GG-OP-FAST origin, carried into 3GG-T-HF3B). Every entry is a real, listed KR/US stock or ETF hand-verified before commit. These anchors seed the generated universal master with enriched Korean/English names and search aliases, and are the authoritative source for KR ETFs (which the official KRX listed-corporation directory does not enumerate). No fabricated symbols, no credentials, no raw provider payloads.",
+  "sourceOrg": "Curated (owner-verified) + prior curated master",
+  "instruments": [
+    {
+      "symbol": "005930",
+      "displayName": "삼성전자",
+      "englishName": "Samsung Electronics",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "삼성",
+        "삼전",
+        "samsung",
+        "005930"
+      ]
+    },
+    {
+      "symbol": "000660",
+      "displayName": "SK하이닉스",
+      "englishName": "SK hynix",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "하이닉스",
+        "sk hynix",
+        "에스케이하이닉스",
+        "000660"
+      ]
+    },
+    {
+      "symbol": "005380",
+      "displayName": "현대차",
+      "englishName": "Hyundai Motor",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "현대자동차",
+        "hyundai",
+        "005380"
+      ]
+    },
+    {
+      "symbol": "035420",
+      "displayName": "NAVER",
+      "englishName": "NAVER",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "네이버",
+        "naver",
+        "035420"
+      ]
+    },
+    {
+      "symbol": "035720",
+      "displayName": "카카오",
+      "englishName": "Kakao",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "kakao",
+        "035720"
+      ]
+    },
+    {
+      "symbol": "051910",
+      "displayName": "LG화학",
+      "englishName": "LG Chem",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "엘지화학",
+        "lg chem",
+        "051910"
+      ]
+    },
+    {
+      "symbol": "000270",
+      "displayName": "기아",
+      "englishName": "Kia",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "기아차",
+        "kia",
+        "000270"
+      ]
+    },
+    {
+      "symbol": "068270",
+      "displayName": "셀트리온",
+      "englishName": "Celltrion",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "celltrion",
+        "068270"
+      ]
+    },
+    {
+      "symbol": "005490",
+      "displayName": "POSCO홀딩스",
+      "englishName": "POSCO Holdings",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "포스코",
+        "posco",
+        "005490"
+      ]
+    },
+    {
+      "symbol": "207940",
+      "displayName": "삼성바이오로직스",
+      "englishName": "Samsung Biologics",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "삼성바이오",
+        "samsung biologics",
+        "207940"
+      ]
+    },
+    {
+      "symbol": "373220",
+      "displayName": "LG에너지솔루션",
+      "englishName": "LG Energy Solution",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "aliases": [
+        "엘지엔솔",
+        "lg energy",
+        "373220"
+      ]
+    },
+    {
+      "symbol": "069500",
+      "displayName": "KODEX 200",
+      "englishName": "KODEX 200 ETF",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "aliases": [
+        "코덱스 200",
+        "kodex 200",
+        "069500"
+      ]
+    },
+    {
+      "symbol": "102110",
+      "displayName": "TIGER 200",
+      "englishName": "TIGER 200 ETF",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "aliases": [
+        "타이거 200",
+        "tiger 200",
+        "102110"
+      ]
+    },
+    {
+      "symbol": "114800",
+      "displayName": "KODEX 인버스",
+      "englishName": "KODEX Inverse ETF",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "aliases": [
+        "코덱스 인버스",
+        "kodex inverse",
+        "114800"
+      ]
+    },
+    {
+      "symbol": "229200",
+      "displayName": "KODEX 코스닥150",
+      "englishName": "KODEX KOSDAQ 150 ETF",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "aliases": [
+        "코덱스 코스닥150",
+        "kodex kosdaq150",
+        "229200"
+      ]
+    },
+    {
+      "symbol": "360750",
+      "displayName": "TIGER 미국S&P500",
+      "englishName": "TIGER US S&P500 ETF",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "aliases": [
+        "타이거 미국s&p500",
+        "tiger us s&p500",
+        "미국sp500",
+        "360750"
+      ]
+    },
+    {
+      "symbol": "133690",
+      "displayName": "TIGER 미국나스닥100",
+      "englishName": "TIGER US NASDAQ 100 ETF",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "aliases": [
+        "타이거 미국나스닥100",
+        "tiger nasdaq100",
+        "133690"
+      ]
+    },
+    {
+      "symbol": "379800",
+      "displayName": "KODEX 미국S&P500",
+      "englishName": "KODEX US S&P500 ETF",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "aliases": [
+        "코덱스 미국s&p500",
+        "kodex us s&p500",
+        "379800"
+      ]
+    },
+    {
+      "symbol": "AAPL",
+      "displayName": "Apple",
+      "englishName": "Apple Inc.",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "애플",
+        "apple",
+        "aapl"
+      ]
+    },
+    {
+      "symbol": "MSFT",
+      "displayName": "Microsoft",
+      "englishName": "Microsoft Corp.",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "마이크로소프트",
+        "microsoft",
+        "msft"
+      ]
+    },
+    {
+      "symbol": "NVDA",
+      "displayName": "NVIDIA",
+      "englishName": "NVIDIA Corp.",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "엔비디아",
+        "nvidia",
+        "nvda"
+      ]
+    },
+    {
+      "symbol": "AMZN",
+      "displayName": "Amazon",
+      "englishName": "Amazon.com Inc.",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "아마존",
+        "amazon",
+        "amzn"
+      ]
+    },
+    {
+      "symbol": "TSLA",
+      "displayName": "Tesla",
+      "englishName": "Tesla Inc.",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "테슬라",
+        "tesla",
+        "tsla"
+      ]
+    },
+    {
+      "symbol": "GOOGL",
+      "displayName": "Alphabet (Class A)",
+      "englishName": "Alphabet Inc. Class A",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "구글",
+        "google",
+        "alphabet",
+        "googl"
+      ]
+    },
+    {
+      "symbol": "META",
+      "displayName": "Meta Platforms",
+      "englishName": "Meta Platforms Inc.",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "메타",
+        "meta",
+        "facebook",
+        "meta"
+      ]
+    },
+    {
+      "symbol": "JPM",
+      "displayName": "JPMorgan Chase",
+      "englishName": "JPMorgan Chase & Co.",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "제이피모건",
+        "jpmorgan",
+        "jpm"
+      ]
+    },
+    {
+      "symbol": "KO",
+      "displayName": "Coca-Cola",
+      "englishName": "The Coca-Cola Company",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "코카콜라",
+        "coca cola",
+        "ko"
+      ]
+    },
+    {
+      "symbol": "QQQ",
+      "displayName": "Invesco QQQ",
+      "englishName": "Invesco QQQ Trust",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "나스닥100 etf",
+        "invesco qqq",
+        "qqq"
+      ]
+    },
+    {
+      "symbol": "SPY",
+      "displayName": "SPDR S&P 500",
+      "englishName": "SPDR S&P 500 ETF Trust",
+      "country": "US",
+      "exchange": "NYSE Arca",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "에스앤피500 etf",
+        "spdr",
+        "spy"
+      ]
+    },
+    {
+      "symbol": "VOO",
+      "displayName": "Vanguard S&P 500",
+      "englishName": "Vanguard S&P 500 ETF",
+      "country": "US",
+      "exchange": "NYSE Arca",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "뱅가드 s&p500",
+        "vanguard",
+        "voo"
+      ]
+    },
+    {
+      "symbol": "VTI",
+      "displayName": "Vanguard Total Market",
+      "englishName": "Vanguard Total Stock Market ETF",
+      "country": "US",
+      "exchange": "NYSE Arca",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "뱅가드 토탈",
+        "vanguard total",
+        "vti"
+      ]
+    }
+  ]
+}

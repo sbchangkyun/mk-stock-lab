@@ -1,34 +1,52 @@
 ---
-/* src/layouts/Layout.astro */
-const { title } = Astro.props;
+import Header from '../components/Header.astro';
+import Ticker from '../components/Ticker.astro';
+import Nav from '../components/Nav.astro';
+import SlideAd from '../components/SlideAd.astro';
+import Footer from '../components/Footer.astro';
 import '../styles/style.css';
+
+const {
+  title = 'MK Stock Lab',
+  description = '국내외 주식과 ETF 투자자를 위한 투자 데이터 플랫폼.',
+  activePath = Astro.url.pathname,
+  pageClass = '',
+} = Astro.props;
 ---
+
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
     <title>{title}</title>
-    
-    <link rel="icon" type="image/svg+xml" href="/logo.svg">
-    
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <meta name="theme-color" content="#1A237E">
-    
-<body>
-    <slot />
-
-    <script>
-        // 1. Supabase 설정을 먼저 불러옵니다.
-        import { supabase } from '../lib/supabase.ts';
-        // 2. 전역 변수로 확실히 박아줍니다.
-        (window as any).supabase = supabase;
-
-        console.log("✅ Supabase 전역 등록 완료");
-
-        // 3. 그 다음 main.js를 실행합니다.
-        import '../scripts/main.js';
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="theme-color" content="#0f4fd8" />
+    <script is:inline>
+      try {
+        const hint = window.localStorage.getItem('mk-stock-lab-auth-ui-hint');
+        const root = document.documentElement;
+        root.classList.toggle('auth-hint-signed-in', hint === 'signed_in');
+        root.classList.toggle('auth-hint-signed-out', hint === 'signed_out' || !hint);
+      } catch {
+        document.documentElement.classList.add('auth-hint-signed-out');
+      }
     </script>
-</body>
+  </head>
+  <body class={pageClass}>
+    <SlideAd />
+    <Header />
+    <Ticker />
+    <Nav currentPath={activePath} />
+    <main class="site-main">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import '../scripts/main.js';
+    </script>
+  </body>
 </html>

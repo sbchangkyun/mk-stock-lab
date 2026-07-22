@@ -1,0 +1,59 @@
+{
+  "005930": {
+    "name": "삼성전자",
+    "symbol": "005930",
+    "country": "KR",
+    "logoUrl": "https://images.tossinvest.com/https%3A%2F%2Fstatic.toss.im%2Fpng-icons%2Fsecurities%2Ficn-sec-fill-005930.png?width=48&height=48"
+  },
+  "000660": {
+    "name": "SK하이닉스",
+    "symbol": "000660",
+    "country": "KR"
+  },
+  "035420": {
+    "name": "NAVER",
+    "symbol": "035420",
+    "country": "KR"
+  },
+  "069500": {
+    "name": "KODEX 200",
+    "symbol": "069500",
+    "country": "KR"
+  },
+  "KO": {
+    "name": "Coca-Cola",
+    "symbol": "KO",
+    "country": "US",
+    "logoUrl": "https://images.tossinvest.com/https%3A%2F%2Fstatic.toss.im%2Fpng-icons%2Fsecurities%2Ficn-sec-fill-NYS000DWY-E0.png?width=48&height=48"
+  },
+  "AAPL": {
+    "name": "Apple",
+    "symbol": "AAPL",
+    "country": "US"
+  },
+  "NVDA": {
+    "name": "NVIDIA",
+    "symbol": "NVDA",
+    "country": "US"
+  },
+  "MSFT": {
+    "name": "Microsoft",
+    "symbol": "MSFT",
+    "country": "US"
+  },
+  "TSLA": {
+    "name": "Tesla",
+    "symbol": "TSLA",
+    "country": "US"
+  },
+  "SPY": {
+    "name": "SPDR S&P 500 ETF",
+    "symbol": "SPY",
+    "country": "US"
+  },
+  "QQQ": {
+    "name": "Invesco QQQ",
+    "symbol": "QQQ",
+    "country": "US"
+  }
+}

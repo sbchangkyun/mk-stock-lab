@@ -1,4 +1,5 @@
 # build output
+dist
 dist/
 # generated types
 .astro/
@@ -15,7 +16,19 @@ pnpm-debug.log*
 
 # environment variables
 .env
+.env.local
+.env.*
 .env.production
+*.pem
+*.key
+*.crt
+*.cer
+*.cert
+*.p12
+*.pfx
+service-account*.json
+*credentials*
+*secret*
 
 # macOS-specific files
 .DS_Store
@@ -25,4 +38,10 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
+.vercel/
+
+# local tool metadata
+.omc/
+
 .vercel
+.env*

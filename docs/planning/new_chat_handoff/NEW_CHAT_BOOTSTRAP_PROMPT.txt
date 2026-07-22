@@ -1,0 +1,40 @@
+I am continuing the mk-stock-lab project in a new chat.
+
+Project: mk-stock-lab
+Local path: E:\개인 프로젝트\mk-stock-lab
+Branch: rebuild/phase-1-ia-shell
+Latest known commit: 2ae6367 docs: record successful local kis quote smoke result
+Latest completed phase: Phase 3Z (owner manual local live KIS quote smoke — passed)
+Next recommended phase: Phase 3AA (local /api/market/quote HTTP endpoint verification)
+
+IMPORTANT: You (ChatGPT) cannot read the local repository directly. Claude Code can.
+
+Before any Phase 3AA work begins, please prepare an instruction for Claude Code to perform a read-back of the repository. The read-back must happen before any planning or implementation.
+
+Claude Code read-back files (in order):
+1. git log --oneline -10
+2. git status --short
+3. docs/planning/planning_changelog.md
+4. docs/planning/phase_3z_owner_local_kis_quote_smoke_result_v0.1.md
+5. docs/planning/new_chat_handoff/CURRENT_STATE.md
+6. docs/planning/new_chat_handoff/NEXT_TASK_PROMPT.md
+7. docs/planning/new_chat_handoff/PROJECT_HANDOFF_INDEX.md
+8. src/lib/server/providers/kisClient.ts (lines 1-100)
+9. src/lib/server/marketData/quotes.ts
+10. src/pages/api/market/quote.ts
+
+After Claude Code produces a read-back report confirming branch, latest commit, working tree state, latest phase, and blocked items — then prepare Phase 3AA planning based on NEXT_TASK_PROMPT.md.
+
+Hard safety summary:
+- Do NOT run live KIS calls (no KIS OAuth, no KIS quote endpoint)
+- Do NOT run live Supabase queries or writes
+- Do NOT execute SQL
+- Do NOT mutate Vercel env or deploy
+- Do NOT change the isProductionRuntime() guard in kisClient.ts
+- Do NOT implement UI live quote wiring
+- Do NOT use KIS_ACCOUNT_NO
+- Do NOT record price values, tokens, keys, account data, raw errors, or stack traces
+- All documentation and code must be English only (Korean in owner-review checklist blocks only)
+
+Do NOT begin Phase 3AA implementation from static handoff text alone.
+First: Claude Code read-back. Then: Phase 3AA planning per NEXT_TASK_PROMPT.md.

@@ -1,0 +1,69 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="국민연금 보유 현황 | MK Stock Lab" activePath="/lab">
+  <div class="lab-detail-shell">
+    <a href="/lab" class="lab-detail-backlink">← Lab</a>
+
+    <header class="lab-detail-header">
+      <div class="lab-detail-header-text">
+        <p class="eyebrow">기관 투자자 리서치</p>
+        <h1>국민연금 보유 현황</h1>
+        <p class="lead">국민연금 공시 데이터를 기반으로 보유 종목과 섹터 비중을 확인하는 리서치 모듈 준비 화면입니다. 공개 데이터 연동 전이며 모든 내용은 구조 예시입니다.</p>
+      </div>
+      <span class="lab-detail-badge lab-detail-badge--pending">연동 예정</span>
+    </header>
+
+    <section class="lab-static-preview" aria-labelledby="nps-preview-heading">
+      <h2 id="nps-preview-heading" class="lab-static-preview-heading">리서치 모듈 준비 화면</h2>
+      <p class="lab-static-preview-note">아래 섹션은 모듈 구조 예시입니다. 실제 국민연금 보유 종목, 비중, 수량 데이터가 아닙니다.</p>
+      <div class="lab-static-preview-grid">
+        <div class="lab-static-preview-card">
+          <p class="eyebrow">보유 비중</p>
+          <p class="lab-static-preview-card-desc">공시 기준 국민연금 보유 종목의 섹터별 및 종목별 비중을 표시합니다. 상위 보유 종목 목록 예정.</p>
+          <span class="lab-static-tag">연동 후 제공</span>
+        </div>
+        <div class="lab-static-preview-card">
+          <p class="eyebrow">섹터 변화</p>
+          <p class="lab-static-preview-card-desc">분기별 공시 기준으로 섹터별 비중 변화를 추적합니다. 섹터 확대 및 축소 흐름 시각화 예정.</p>
+          <span class="lab-static-tag">연동 후 제공</span>
+        </div>
+        <div class="lab-static-preview-card">
+          <p class="eyebrow">리밸런싱 흐름</p>
+          <p class="lab-static-preview-card-desc">신규 취득 및 처분 종목 기반의 리밸런싱 흐름을 집계합니다. 분기별 순매수 상위 종목 예정.</p>
+          <span class="lab-static-tag">연동 후 제공</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="lab-data-policy" aria-label="데이터 정책">
+      <p class="eyebrow">데이터 정책</p>
+      <ul>
+        <li>이 화면은 <strong>리서치 모듈 준비 화면</strong>입니다. 실제 국민연금 공시 데이터가 아닙니다.</li>
+        <li>공개 데이터 연동 전이며, 실제 국민연금 보유 종목이 표시되지 않습니다.</li>
+        <li>실제 투자 판단에 사용할 수 없습니다.</li>
+        <li>자동화된 투자 권고를 제공하지 않습니다.</li>
+      </ul>
+    </aside>
+
+    <section class="lab-detail-related" aria-labelledby="related-nps-heading">
+      <h2 id="related-nps-heading" class="lab-related-heading">다른 Lab 보기</h2>
+      <div class="lab-related-grid">
+        <a href="/lab/asset-class-returns" class="lab-related-card">
+          <span class="eyebrow">자산 배분 리서치</span>
+          <span class="lab-related-title">자산군 수익률 비교</span>
+        </a>
+        <a href="/lab/sp500-sectors" class="lab-related-card">
+          <span class="eyebrow">미국 시장 리서치</span>
+          <span class="lab-related-title">S&amp;P 500 섹터별 수익률</span>
+        </a>
+        <a href="/lab/congress-stocks" class="lab-related-card">
+          <span class="eyebrow">공시 기반 리서치</span>
+          <span class="lab-related-title">국회의원 보유 주식</span>
+          <span class="lab-related-badge">연동 예정</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>

@@ -1,0 +1,121 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Lab | MK Stock Lab" activePath="/lab">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Lab</p>
+      <h1>실험실</h1>
+      <p class="lead">데이터 시각화와 리서치 모듈을 모아 보는 공간.</p>
+    </div>
+  </header>
+
+  <div class="lab-landing-shell">
+    <div class="lab-card-grid">
+
+      <!-- Asset-class returns -->
+      <a href="/lab/asset-class-returns" class="lab-card">
+        <div class="lab-card-preview lab-card-preview--matrix" aria-hidden="true">
+          <div class="lab-card-mini-matrix">
+            <div class="lab-card-mini-row">
+              <div class="lab-mini-cell lab-return-cell--bitcoin"></div>
+              <div class="lab-mini-cell lab-return-cell--gold"></div>
+              <div class="lab-mini-cell lab-return-cell--sp500"></div>
+              <div class="lab-mini-cell lab-return-cell--nasdaq100"></div>
+            </div>
+            <div class="lab-card-mini-row">
+              <div class="lab-mini-cell lab-return-cell--world"></div>
+              <div class="lab-mini-cell lab-return-cell--em"></div>
+              <div class="lab-mini-cell lab-return-cell--reits"></div>
+              <div class="lab-mini-cell lab-return-cell--kospi"></div>
+            </div>
+            <div class="lab-card-mini-row">
+              <div class="lab-mini-cell lab-return-cell--exus"></div>
+              <div class="lab-mini-cell lab-return-cell--hiyield"></div>
+              <div class="lab-mini-cell lab-return-cell--bond"></div>
+              <div class="lab-mini-cell lab-return-cell--shortgov"></div>
+            </div>
+          </div>
+          <p class="lab-card-preview-label">수익률 순위 매트릭스 · 예시</p>
+        </div>
+        <div class="lab-card-meta">
+          <p class="eyebrow">자산 배분 리서치</p>
+          <span class="lab-card-badge">예시 데이터</span>
+        </div>
+        <h2 class="lab-card-title">자산군 수익률 비교</h2>
+        <p class="lab-card-copy">주요 자산군의 연도별 수익률 순위를 비교합니다. 12개 자산군, 7개 연도 예시 데이터.</p>
+        <span class="lab-card-link">열기 →</span>
+      </a>
+
+      <!-- S&P 500 sectors -->
+      <a href="/lab/sp500-sectors" class="lab-card">
+        <div class="lab-card-preview lab-card-preview--matrix" aria-hidden="true">
+          <div class="lab-card-mini-matrix">
+            <div class="lab-card-mini-row">
+              <div class="lab-mini-cell lab-return-cell--technology"></div>
+              <div class="lab-mini-cell lab-return-cell--energy"></div>
+              <div class="lab-mini-cell lab-return-cell--communication"></div>
+              <div class="lab-mini-cell lab-return-cell--healthcare"></div>
+            </div>
+            <div class="lab-card-mini-row">
+              <div class="lab-mini-cell lab-return-cell--financials"></div>
+              <div class="lab-mini-cell lab-return-cell--industrials"></div>
+              <div class="lab-mini-cell lab-return-cell--consumer_disc"></div>
+              <div class="lab-mini-cell lab-return-cell--consumer_stap"></div>
+            </div>
+            <div class="lab-card-mini-row">
+              <div class="lab-mini-cell lab-return-cell--materials"></div>
+              <div class="lab-mini-cell lab-return-cell--utilities"></div>
+              <div class="lab-mini-cell lab-return-cell--realestate"></div>
+              <div class="lab-mini-cell lab-return-cell--spx"></div>
+            </div>
+          </div>
+          <p class="lab-card-preview-label">섹터 수익률 순위 매트릭스 · 예시</p>
+        </div>
+        <div class="lab-card-meta">
+          <p class="eyebrow">미국 시장 리서치</p>
+          <span class="lab-card-badge">예시 데이터</span>
+        </div>
+        <h2 class="lab-card-title">S&amp;P 500 섹터별 수익률</h2>
+        <p class="lab-card-copy">S&amp;P 500 섹터 로테이션 흐름을 연도별 예시 순위표로 확인합니다. 11개 섹터 + 벤치마크.</p>
+        <span class="lab-card-link">열기 →</span>
+      </a>
+
+      <!-- Congress stocks (future) -->
+      <a href="/lab/congress-stocks" class="lab-card">
+        <div class="lab-card-preview lab-card-preview--future" aria-hidden="true">
+          <div class="lab-card-preview-shell">
+            <span class="lab-card-preview-soon">연동 예정</span>
+            <span class="lab-card-preview-desc">공시 기반 리서치</span>
+          </div>
+        </div>
+        <div class="lab-card-meta">
+          <p class="eyebrow">공시 기반 리서치</p>
+          <span class="lab-card-badge lab-card-badge--pending">연동 예정</span>
+        </div>
+        <h2 class="lab-card-title">국회의원 보유 주식</h2>
+        <p class="lab-card-copy">공개 재산 신고 데이터를 기반으로 보유 종목을 탐색하는 리서치 모듈 준비 화면입니다.</p>
+        <span class="lab-card-link">미리 보기 →</span>
+      </a>
+
+      <!-- NPS holdings (future) -->
+      <a href="/lab/nps-holdings" class="lab-card">
+        <div class="lab-card-preview lab-card-preview--future" aria-hidden="true">
+          <div class="lab-card-preview-shell">
+            <span class="lab-card-preview-soon">연동 예정</span>
+            <span class="lab-card-preview-desc">기관 투자자 리서치</span>
+          </div>
+        </div>
+        <div class="lab-card-meta">
+          <p class="eyebrow">기관 투자자 리서치</p>
+          <span class="lab-card-badge lab-card-badge--pending">연동 예정</span>
+        </div>
+        <h2 class="lab-card-title">국민연금 보유 현황</h2>
+        <p class="lab-card-copy">국민연금 공시 데이터를 기반으로 보유 종목과 섹터 비중을 확인하는 리서치 모듈 준비 화면입니다.</p>
+        <span class="lab-card-link">미리 보기 →</span>
+      </a>
+
+    </div>
+  </div>
+</Layout>

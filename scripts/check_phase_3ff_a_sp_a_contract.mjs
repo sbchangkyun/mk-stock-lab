@@ -1,0 +1,311 @@
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+
+const BASELINE = 'c4be878';
+const SOURCE = 'src/lib/server/chart-ai/similar-pattern-agent.mjs';
+const FIXTURE = 'src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs';
+const SMOKE = 'scripts/smoke_phase_3ff_a_sp_a_similar_pattern_agent_deterministic_fixture_engine.mjs';
+const CHECKER = 'scripts/check_phase_3ff_a_sp_a_contract.mjs';
+const RESULT = 'docs/planning/phase_3ff_a_sp_a_result_v0.1.md';
+const CHANGELOG = 'docs/planning/planning_changelog.md';
+const PACKAGE_JSON = 'package.json';
+const EVIDENCE_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_contract.mjs';
+const EVIDENCE_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_evidence_hf1_contract.mjs';
+const CLOSEOUT_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_hf1_contract.mjs';
+const CLOSEOUT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_closeout_contract.mjs';
+const RETRY_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_retry_contract.mjs';
+const QA_RUN_HF1_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_hf1_contract.mjs';
+const QA_RUN_RESULT_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_run_result_contract.mjs';
+const MANUAL_QA_CHECKER = 'scripts/check_phase_3fe_a_manual_qa_result_contract.mjs';
+const HANDOFF_CHECKER = 'scripts/check_phase_3fe_a_handoff_chart_ai_new_chat_package.mjs';
+const PHASE_3FE_A_CHECKER = 'scripts/check_phase_3fe_a_kis_ohlc_provider_owner_local_integration_contract.mjs';
+const PHASE_3FF_A_PLAN_CHECKER = 'scripts/check_phase_3ff_a_plan_contract.mjs';
+const MK_A_SOURCE = 'src/lib/server/chart-ai/mk-agent.mjs';
+const MK_A_FIXTURE = 'src/lib/server/chart-ai/mk-agent.fixture.mjs';
+const MK_A_SMOKE = 'scripts/smoke_phase_3ff_a_mk_a_deterministic_report_contract.mjs';
+const MK_A_CHECKER = 'scripts/check_phase_3ff_a_mk_a_contract.mjs';
+const MK_A_RESULT = 'docs/planning/phase_3ff_a_mk_a_result_v0.1.md';
+const MK_A_HF1_RESULT = 'docs/planning/phase_3ff_a_mk_a_hf1_result_v0.1.md';
+// Phase 3FF-A-UI-B manual QA deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once UI-B's QA docs/checker exist.
+const UI_B_CHECKLIST = 'docs/planning/phase_3ff_a_ui_b_manual_qa_checklist_v0.1.md';
+const UI_B_RESULT = 'docs/planning/phase_3ff_a_ui_b_manual_qa_result_v0.1.md';
+const UI_B_CHECKER = 'scripts/check_phase_3ff_a_ui_b_manual_qa_contract.mjs';
+// Phase 3FF-A-UI-A's own deliverables (the chart-ai.astro change itself was
+// already tolerated below, but its result doc/checker/smoke script were not
+// yet added to this scope check when they were created).
+const UI_A_RESULT = 'docs/planning/phase_3ff_a_ui_a_result_v0.1.md';
+const UI_A_CHECKER = 'scripts/check_phase_3ff_a_ui_a_contract.mjs';
+const UI_A_SMOKE = 'scripts/smoke_phase_3ff_a_ui_a_owner_local_deterministic_agent_ui_wiring.mjs';
+// Phase 3FF-A-MK-B's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once MK-B's hardening pass exists
+// (MK-B further edits MK_A_SOURCE/MK_A_FIXTURE, already allowed below).
+const MK_B_SMOKE = 'scripts/smoke_phase_3ff_a_mk_b_output_contract_hardening.mjs';
+const MK_B_CHECKER = 'scripts/check_phase_3ff_a_mk_b_contract.mjs';
+const MK_B_RESULT = 'docs/planning/phase_3ff_a_mk_b_result_v0.1.md';
+// Phase 3FF-A-SP-B's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once SP-B's hardening pass exists
+// (SP-B further edits this checker's own SOURCE/FIXTURE, already allowed,
+// and its unexpectedSource filter below already tolerates SOURCE/FIXTURE).
+const SP_B_SMOKE = 'scripts/smoke_phase_3ff_a_sp_b_output_contract_hardening.mjs';
+const SP_B_CHECKER = 'scripts/check_phase_3ff_a_sp_b_contract.mjs';
+const SP_B_RESULT = 'docs/planning/phase_3ff_a_sp_b_result_v0.1.md';
+// Phase 3FF-A-MK-C's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once MK-C's SP-B contract consumption
+// pass exists (MK-C further edits MK_A_SOURCE/MK_A_FIXTURE, already allowed).
+const MK_C_SMOKE = 'scripts/smoke_phase_3ff_a_mk_c_sp_b_contract_consumption.mjs';
+const MK_C_CHECKER = 'scripts/check_phase_3ff_a_mk_c_contract.mjs';
+const MK_C_RESULT = 'docs/planning/phase_3ff_a_mk_c_result_v0.1.md';
+
+// Phase 3FF-A-HANDOFF-A's own deliverables, tolerated here so this checker's
+// git-diff scope check does not fail once the HANDOFF-A documentation
+// package exists on top of this phase's baseline. Tolerated, not required.
+// Phase 3FG-A-PLAN's and Phase 3FG-A's own deliverables, committed/added
+// after this checker's baseline. Tolerated here (not required) so this
+// checker keeps passing once later validation runs it against a HEAD that
+// includes those commits. No protective assertion below (forbidden diff,
+// mojibake, forbidden language) is weakened by this addition.
+const PLAN_AND_SCAFFOLD_TOLERATED_FILES = [
+  'docs/planning/phase_3fg_a_plan_guarded_productization_v0.1.md',
+  'docs/planning/phase_3fg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3fg_a_plan_contract.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3fg_a_guarded_productization_scaffold_all_gates_off.mjs',
+  'scripts/check_phase_3fg_a_contract.mjs',
+  'docs/planning/phase_3fg_a_guarded_productization_scaffold_result_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_b_owner_local_guarded_productization_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_b_contract.mjs',
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_plan_v0.1.md',
+  'docs/planning/phase_3fg_c_owner_local_guarded_productization_ui_readiness_result_v0.1.md',
+  'scripts/check_phase_3fg_c_contract.mjs',
+  'docs/planning/phase_3fg_d_owner_local_guarded_productization_ui_static_shell_result_v0.1.md',
+  'scripts/smoke_phase_3fg_d_owner_local_guarded_productization_ui_static_shell.mjs',
+  'scripts/check_phase_3fg_d_contract.mjs',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_checklist_v0.1.md',
+  'docs/planning/phase_3fg_e_owner_local_guarded_productization_static_shell_browser_qa_result_v0.1.md',
+  'scripts/check_phase_3fg_e_contract.mjs',
+  // Phase 3FG-D-HF1's own deliverables, discovered as a pre-existing gap in
+  // this list (not caused by this phase) while running Phase 3GG-A-PLAN's
+  // validation chain. Tolerated for the same reason as the files above.
+  'docs/planning/phase_3fg_d_hf1_static_shell_hidden_default_fix_result_v0.1.md',
+  'scripts/check_phase_3fg_d_hf1_contract.mjs',
+  // Phase 3GG-A-PLAN's deliverables (planning-only; no runtime/source change),
+  // tolerated for the same reason.
+  'docs/planning/phase_3gg_a_plan_live_kis_llm_approval_runtime_binding_v0.1.md',
+  'docs/planning/phase_3gg_a_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_a_plan_contract.mjs',
+  // Phase 3GG-B's own deliverables (owner-reviewable Live KIS approval gate
+  // checklist; no runtime/source change), tolerated for the same reason.
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_v0.1.md',
+  'docs/planning/phase_3gg_b_live_kis_approval_gate_checklist_result_v0.1.md',
+  'scripts/check_phase_3gg_b_contract.mjs',
+  // Phase 3GG-B-AUDIT's own deliverables (documentation/checker-only; no
+  // runtime/source change), tolerated for the same reason.
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_v0.1.md',
+  'docs/planning/phase_3gg_b_audit_live_kis_gate_evidence_review_result_v0.1.md',
+  'scripts/check_phase_3gg_b_audit_contract.mjs',
+  // Phase 3GG-B-REVIEW-RECORD's own deliverables, discovered as a
+  // pre-existing gap in this list (not caused by this phase) while running
+  // Phase 3GG-C's validation chain. Tolerated for the same reason as the
+  // files above.
+  'docs/planning/phase_3gg_b_review_record_live_kis_owner_review_v0.1.md',
+  'docs/planning/phase_3gg_b_review_record_result_v0.1.md',
+  'scripts/check_phase_3gg_b_review_record_contract.mjs',
+  // Phase 3GG-C's own deliverables (documentation/checker-only; no
+  // runtime/source change), tolerated for the same reason.
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_v0.1.md',
+  'docs/planning/phase_3gg_c_live_kis_activation_decision_record_result_v0.1.md',
+  'scripts/check_phase_3gg_c_contract.mjs',
+  // Phase 3GG-D-PLAN's own deliverables (documentation/checker-only; no
+  // runtime/source change), tolerated for the same reason.
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_v0.1.md',
+  'docs/planning/phase_3gg_d_plan_local_only_live_kis_provider_binding_plan_result_v0.1.md',
+  'scripts/check_phase_3gg_d_plan_contract.mjs',
+  // Phase 3GG-D (local-only Live KIS provider binding scaffold; all gates
+  // off, no live call; scaffold/fixture/smoke/checker/result only), tolerated
+  // for the same reason.
+  'src/lib/server/chart-ai/local-only-live-kis-provider-binding-scaffold.mjs',
+  'src/lib/server/chart-ai/local-only-live-kis-provider-binding-scaffold.fixture.mjs',
+  'scripts/smoke_phase_3gg_d_local_only_live_kis_provider_binding_scaffold.mjs',
+  'scripts/check_phase_3gg_d_contract.mjs',
+  'docs/planning/phase_3gg_d_local_only_live_kis_provider_binding_scaffold_result_v0.1.md',
+];
+const allowedFiles = new Set([SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON, EVIDENCE_CHECKER, EVIDENCE_HF1_CHECKER, CLOSEOUT_HF1_CHECKER, CLOSEOUT_CHECKER, RETRY_CHECKER, QA_RUN_HF1_CHECKER, QA_RUN_RESULT_CHECKER, MANUAL_QA_CHECKER, HANDOFF_CHECKER, PHASE_3FE_A_CHECKER, PHASE_3FF_A_PLAN_CHECKER, MK_A_SOURCE, MK_A_FIXTURE, MK_A_SMOKE, MK_A_CHECKER, MK_A_RESULT, MK_A_HF1_RESULT, 'src/pages/chart-ai.astro', UI_B_CHECKLIST, UI_B_RESULT, UI_B_CHECKER, UI_A_RESULT, UI_A_CHECKER, UI_A_SMOKE, MK_B_SMOKE, MK_B_CHECKER, MK_B_RESULT, SP_B_SMOKE, SP_B_CHECKER, SP_B_RESULT, MK_C_SMOKE, MK_C_CHECKER, MK_C_RESULT, 'docs/planning/phase_3ff_a_ui_c_manual_qa_checklist_v0.1.md', 'docs/planning/phase_3ff_a_ui_c_manual_qa_result_v0.1.md', 'scripts/check_phase_3ff_a_ui_c_manual_qa_contract.mjs', 'scripts/check_phase_3fd_j_handoff_chart_ai_new_chat_package_contract.mjs', 'scripts/check_phase_3ff_a_housekeeping_a_contract.mjs', 'docs/planning/phase_3ff_a_housekeeping_a_result_v0.1.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/README.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/01_CURRENT_STATE.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/02_COMPLETED_PHASE_HISTORY.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/03_ARCHITECTURE_AND_GUARDS.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/04_VALIDATION_COMMANDS.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/05_NEXT_PHASE_BRIEF_3FG_A_PLAN.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/06_NEW_CHAT_START_PROMPT.md', 'docs/handoff/chart-ai-spb-mkc-uic-housekeeping-current-state/07_MANIFEST.json', 'docs/planning/phase_3ff_a_handoff_a_result_v0.1.md', 'scripts/check_phase_3ff_a_handoff_a_contract.mjs', ...PLAN_AND_SCAFFOLD_TOLERATED_FILES]);
+const forbiddenPaths = [
+  'pages',
+  'src/pages/api',
+  'components',
+  'supabase',
+  'src/data',
+  'package-lock.json',
+  'pnpm-lock.yaml',
+  'yarn.lock',
+  '.env',
+  '.env.local',
+];
+
+let assertions = 0;
+const failures = [];
+const assert = (condition, message) => {
+  assertions += 1;
+  if (!condition) failures.push(message);
+};
+
+const exists = (file) => fs.existsSync(file);
+const read = (file) => fs.readFileSync(file, 'utf8');
+const runGit = (args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
+
+for (const file of [SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON]) {
+  assert(exists(file), `${file} must exist.`);
+}
+
+const source = exists(SOURCE) ? read(SOURCE) : '';
+const fixture = exists(FIXTURE) ? read(FIXTURE) : '';
+const smoke = exists(SMOKE) ? read(SMOKE) : '';
+const checker = exists(CHECKER) ? read(CHECKER) : '';
+const evidenceChecker = exists(EVIDENCE_CHECKER) ? read(EVIDENCE_CHECKER) : '';
+const evidenceHf1Checker = exists(EVIDENCE_HF1_CHECKER) ? read(EVIDENCE_HF1_CHECKER) : '';
+const closeoutHf1Checker = exists(CLOSEOUT_HF1_CHECKER) ? read(CLOSEOUT_HF1_CHECKER) : '';
+const result = exists(RESULT) ? read(RESULT) : '';
+const changelog = exists(CHANGELOG) ? read(CHANGELOG) : '';
+const packageJson = exists(PACKAGE_JSON) ? JSON.parse(read(PACKAGE_JSON)) : {};
+
+assert(packageJson.scripts?.['check:phase-3ff-a-sp-a'] === 'node scripts/check_phase_3ff_a_sp_a_contract.mjs', 'check script must be exact.');
+assert(packageJson.scripts?.['smoke:phase-3ff-a-sp-a'] === 'node scripts/smoke_phase_3ff_a_sp_a_similar_pattern_agent_deterministic_fixture_engine.mjs', 'smoke script must be exact.');
+
+for (const name of [
+  'DEFAULT_SIMILAR_PATTERN_OPTIONS',
+  'SCORE_LABELS',
+  'createSimilarPatternAgentInput',
+  'runSimilarPatternAgent',
+  'computeLogReturns',
+  'computeNormalizedPath',
+  'computePearsonCorrelation',
+  'computeRmse',
+  'computeDirectionMatchPct',
+  'computeMaxDrawdownPct',
+  'computeForwardReturnPct',
+  'computeSimilarityScore',
+  'labelSimilarityScore',
+  'validateSimilarPatternInput',
+]) {
+  assert(source.includes(`export ${name}`) || source.includes(`export function ${name}`) || source.includes(`export const ${name}`), `source must export ${name}.`);
+}
+
+for (const name of [
+  'createSimilarPatternFixtureInput',
+  'createInsufficientSimilarPatternFixtureInput',
+  'createInvalidCloseSimilarPatternFixtureInput',
+]) {
+  assert(fixture.includes(`export function ${name}`), `fixture must export ${name}.`);
+  assert(smoke.includes(name), `smoke must import/use ${name}.`);
+}
+assert(smoke.includes('../src/lib/server/chart-ai/similar-pattern-agent.mjs'), 'smoke must import source module.');
+assert(smoke.includes('../src/lib/server/chart-ai/similar-pattern-agent.fixture.mjs'), 'smoke must import fixture module.');
+
+const changedFiles = runGit(['diff', '--name-only', BASELINE]).split(/\r?\n/).filter(Boolean);
+const statusChanged = runGit(['status', '--porcelain', '-uall'])
+  .split(/\r?\n/)
+  .filter(Boolean)
+  .map((line) => line.slice(3).trim())
+  .filter((file) => allowedFiles.has(file));
+const allChanged = [...new Set([...changedFiles, ...statusChanged])];
+const unexpected = allChanged.filter((file) => !allowedFiles.has(file));
+assert(unexpected.length === 0, `Only Phase 3FF-A-SP-A files may change. Unexpected: ${unexpected.join(', ')}`);
+for (const file of [SOURCE, FIXTURE, SMOKE, CHECKER, RESULT, CHANGELOG, PACKAGE_JSON]) {
+  assert(allChanged.includes(file), `Changed files must include ${file}.`);
+}
+assert(evidenceChecker.includes('PHASE_3FF_A_PLAN_HF1_RESULT'), 'Evidence checker must tolerate committed Phase 3FF-A-PLAN-HF1 result.');
+assert(evidenceHf1Checker.includes('PHASE_3FF_A_PLAN_HF1_RESULT'), 'Evidence HF1 checker must tolerate committed Phase 3FF-A-PLAN-HF1 result.');
+assert(closeoutHf1Checker.includes('PHASE_3FF_A_PLAN_HF1_RESULT'), 'Closeout HF1 checker must tolerate committed Phase 3FF-A-PLAN-HF1 result.');
+
+const forbiddenDiff = [
+  ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
+  ...runGit(['diff', '--name-only', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
+  ...runGit(['diff', '--cached', '--name-only', '--', ...forbiddenPaths]).split(/\r?\n/).filter(Boolean),
+];
+assert([...new Set(forbiddenDiff)].length === 0, 'Forbidden pages/API/UI/provider/data/supabase/lockfile/env diff must be empty.');
+
+// Phase 3FG-A's guarded productization scaffold module/fixture later
+// legitimately landed under the same directory; tolerated here, not
+// required by SP-A itself.
+const SCAFFOLD_TOLERATED_CHART_AI_FILES = [
+  'src/lib/server/chart-ai/guarded-productization-scaffold.mjs',
+  'src/lib/server/chart-ai/guarded-productization-scaffold.fixture.mjs',
+];
+const allowedSourceDiff = [
+  ...runGit(['diff', '--name-only', BASELINE, 'HEAD', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
+  ...runGit(['diff', '--name-only', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
+  ...runGit(['diff', '--cached', '--name-only', '--', 'src/lib/server/chart-ai']).split(/\r?\n/).filter(Boolean),
+];
+const unexpectedSource = [...new Set(allowedSourceDiff)].filter(
+  (file) => ![SOURCE, FIXTURE, MK_A_SOURCE, MK_A_FIXTURE, ...SCAFFOLD_TOLERATED_CHART_AI_FILES].includes(file),
+);
+assert(unexpectedSource.length === 0, `Only allowed chart-ai source files may change. Unexpected: ${unexpectedSource.join(', ')}`);
+
+for (const token of [
+  'fetch(',
+  'process.env',
+  'createClient(',
+  'createServerClient(',
+  'OPENAI_API_KEY',
+  'appsecret',
+  'access_token',
+  'service_role',
+  'document.',
+  'window.',
+  'localStorage',
+  'cookies',
+  'headers',
+  'Math.random',
+  'Date.now',
+]) {
+  assert(!source.includes(token), `source must not contain forbidden runtime token: ${token}`);
+}
+
+for (const text of [source, fixture]) {
+  assert(!/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(text), 'source/fixture must not include raw email literals.');
+  assert(!/eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/.test(text), 'source/fixture must not include JWT-like values.');
+  assert(!/(?:rawProviderPayload|rawKisPayload|providerRawPayload)\s*[:=]/i.test(text), 'source/fixture must not include provider raw payload labels.');
+}
+
+for (const token of [
+  'log returns',
+  'normalized path',
+  'same-symbol historical',
+  'historical_shape_similarity_only',
+  'No buy/sell recommendation',
+]) {
+  assert(source.includes(token), `source must include planning marker: ${token}`);
+}
+
+for (const token of [
+  'Status: Implemented.',
+  'Baseline: `c4be878`',
+  'No live KIS',
+  'No LLM',
+  'No UI runtime activation',
+  'No API route changed.',
+  'No deploy/push',
+]) {
+  assert(result.includes(token), `result doc must include: ${token}`);
+}
+
+assert(changelog.includes('## Phase 3FF-A-SP-A - 2026-07-08'), 'changelog must include SP-A entry.');
+assert(changelog.includes('Similar Pattern Agent Deterministic Fixture Engine'), 'changelog must include SP-A title.');
+
+execFileSync('node', [SMOKE], { stdio: 'pipe' });
+assert(true, 'smoke script must pass when required by checker.');
+
+console.log(
+  failures.length
+    ? `Phase 3FF-A-SP-A check FAILED: ${failures.length}/${assertions} assertions failed.`
+    : `Phase 3FF-A-SP-A check passed: ${assertions}/${assertions} assertions passed.`,
+);
+
+if (failures.length) {
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}

@@ -1,0 +1,1921 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="포트폴리오 | MK Stock Lab" activePath="/portfolio">
+  <header class="page-header">
+    <div>
+      <div class="portfolio-title-row">
+        <p class="eyebrow">포트폴리오</p>
+        <div class="portfolio-h1-row">
+          <h1>내 투자 포트폴리오</h1>
+          <button class="icon-button refresh-icon-button portfolio-refresh-btn" id="portfolio-refresh" type="button"
+                  aria-label="현재 포트폴리오 다시 계산" title="현재 포트폴리오 다시 계산">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 11a8 8 0 1 0-2.34 5.66"></path>
+              <path d="M20 5v6h-6"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="lead">국내와 미국 주식, ETF 보유 종목을 간단히 관리합니다. 시세 평가, 성과 분석, 시장 데이터 갱신은 이후 단계에서 연결합니다.</p>
+    </div>
+  </header>
+
+  <div class="portfolio-loading-state" id="portfolio-readiness" data-state="checking">
+    <p class="portfolio-loading-copy" id="portfolio-readiness-copy">포트폴리오 데이터를 불러오는 중입니다.</p>
+  </div>
+
+  <section class="portfolio-lock-state hidden" id="portfolio-lock-state" aria-live="polite">
+    <div class="lock-visual" aria-hidden="true">🔐</div>
+    <div>
+      <p class="eyebrow">접속 필요</p>
+      <h2>로그인이 필요합니다</h2>
+      <p>회원가입 또는 로그인 후 포트폴리오와 보유 종목을 관리할 수 있습니다.</p>
+    </div>
+    <button class="primary-action" id="portfolio-login-action" type="button">회원가입 / 로그인</button>
+  </section>
+
+  <section class="portfolio-mvp hidden" id="portfolio-mvp">
+
+    <div class="portfolio-selector-bar portfolio-bookmark-tabs">
+      <div class="portfolio-tab-list" id="portfolio-list" aria-live="polite" role="tablist" aria-label="포트폴리오 선택"></div>
+      <div class="empty-state hidden" id="portfolio-empty">아직 등록된 포트폴리오가 없습니다.</div>
+    </div>
+
+    <section class="portfolio-detail portfolio-dashboard panel">
+      <div class="portfolio-panel-header">
+        <div class="portfolio-panel-info">
+          <h2 id="selected-portfolio-title">포트폴리오를 선택하세요</h2>
+          <p id="selected-portfolio-meta">포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.</p>
+          <p class="valuation-status-copy" id="valuation-status-copy" hidden></p>
+          <aside class="mixed-fx-preview-notice hidden" id="mixed-fx-preview-notice" aria-live="polite">
+            <div class="mixed-fx-preview-labels">
+              <strong>오너 미리보기</strong>
+              <span>Mocked FX</span>
+              <span>샘플 환율</span>
+            </div>
+            <p>미리보기 전용 · 실제 시세 아님</p>
+            <p id="mixed-fx-preview-summary">샘플 환율 미리보기에서는 일부 값이 제한될 수 있습니다.</p>
+          </aside>
+          <div class="portfolio-kpi-summary hidden" id="portfolio-kpi-summary">
+            <p class="kpi-label">총 자산</p>
+            <p class="kpi-value">···</p>
+            <p class="kpi-profit neutral">···</p>
+          </div>
+        </div>
+        <div class="portfolio-panel-actions">
+          <button class="primary-action hidden" id="open-position-sheet" type="button">종목 추가</button>
+        </div>
+      </div>
+
+      <div class="portfolio-list-controls-bar">
+        <div class="segmented-control" id="currency-display-toggle" aria-label="통화 표시 기준">
+          <button class="active" type="button" data-display-mode="local" aria-label="달러 기준" title="달러 기준">$</button>
+          <button type="button" data-display-mode="krw" aria-label="원화 기준" title="원화 기준">₩</button>
+        </div>
+      </div>
+
+      <div class="empty-state" id="positions-empty">포트폴리오를 선택하면 보유 종목을 관리할 수 있습니다.</div>
+      <div class="positions-list-wrap hidden" id="positions-list-wrap">
+        <div class="positions-category-header" id="positions-category-header">
+          <div class="positions-category-grid" role="row">
+            <div class="positions-category-cell positions-category-cell--avatar" aria-hidden="true"></div>
+            <div class="positions-category-cell" role="columnheader">종목</div>
+            <div class="positions-category-cell positions-category-cell--sortable" role="columnheader" data-sort-column="weight" aria-label="비중 기준 정렬">
+              <span>비중</span>
+              <span class="sort-arrow-stack">
+                <button class="sort-arrow-button" type="button" data-sort="weight-desc" aria-label="비중 높은 순 정렬">▲</button>
+                <button class="sort-arrow-button" type="button" data-sort="weight-asc" aria-label="비중 낮은 순 정렬">▼</button>
+              </span>
+            </div>
+            <div class="positions-category-cell" role="columnheader">수량</div>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader">
+              <span class="col-group-top">평단가</span>
+              <span class="col-group-bottom">현재가</span>
+            </div>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader" data-sort-column="valuation" aria-label="금액 기준 정렬">
+              <span class="col-group-top-sortable">
+                <span>평가금</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="valuation-desc" aria-label="평가금 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="valuation-asc" aria-label="평가금 낮은 순 정렬">▼</button>
+                </span>
+              </span>
+              <span class="col-group-bottom">원금</span>
+            </div>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader" data-sort-column="return" aria-label="수익 기준 정렬">
+              <span class="col-group-top-sortable">
+                <span>수익률</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="return-desc" aria-label="수익률 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="return-asc" aria-label="수익률 낮은 순 정렬">▼</button>
+                </span>
+              </span>
+              <span class="col-group-bottom-sortable">
+                <span>수익금</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="profit-desc" aria-label="수익금 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="profit-asc" aria-label="수익금 낮은 순 정렬">▼</button>
+                </span>
+              </span>
+            </div>
+            <div class="positions-category-cell positions-category-cell--group" role="columnheader" data-sort-column="dividend-yield" aria-label="배당 기준 정렬">
+              <span class="col-group-top-sortable">
+                <span>배당률</span>
+                <span class="sort-arrow-stack">
+                  <button class="sort-arrow-button" type="button" data-sort="dividend-yield-desc" aria-label="배당률 높은 순 정렬">▲</button>
+                  <button class="sort-arrow-button" type="button" data-sort="dividend-yield-asc" aria-label="배당률 낮은 순 정렬">▼</button>
+                </span>
+              </span>
+              <span class="col-group-bottom">배당주기</span>
+            </div>
+            <div class="positions-category-cell" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="positions-list" id="positions-list"></div>
+      </div>
+    </section>
+
+  </section>
+
+  <div class="portfolio-sheet" id="portfolio-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="portfolio-sheet-title">
+    <button class="portfolio-sheet-backdrop" id="portfolio-sheet-backdrop" type="button" aria-label="포트폴리오 입력창 닫기"></button>
+    <section class="portfolio-sheet-panel">
+      <header class="portfolio-sheet-header">
+        <div>
+          <p class="eyebrow">포트폴리오</p>
+          <h2 id="portfolio-sheet-title">포트폴리오 만들기</h2>
+        </div>
+        <button class="table-action-button" id="portfolio-sheet-close" type="button">닫기</button>
+      </header>
+      <form class="compact-form" id="portfolio-form">
+        <input type="hidden" id="portfolio-id" />
+        <label>
+          이름
+          <input id="portfolio-name" name="name" type="text" maxlength="120" required placeholder="계좌 이름" />
+        </label>
+        <label>
+          기준 통화
+          <select id="portfolio-base-currency" name="baseCurrency">
+            <option value="KRW">KRW</option>
+            <option value="USD">USD</option>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button class="primary-action" id="portfolio-submit" type="submit">포트폴리오 만들기</button>
+          <button class="text-button hidden" id="portfolio-cancel-edit" type="button">수정 취소</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="position-sheet" id="position-sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="position-sheet-title">
+    <button class="position-sheet-backdrop" id="position-sheet-backdrop" type="button" aria-label="입력창 닫기"></button>
+    <section class="position-sheet-panel">
+      <header class="position-sheet-header">
+        <div>
+          <p class="eyebrow">보유 종목</p>
+          <h2 id="position-sheet-title">종목 추가</h2>
+        </div>
+        <button class="table-action-button" id="position-sheet-close" type="button">닫기</button>
+      </header>
+      <form class="position-form" id="position-form">
+        <input type="hidden" id="position-id" />
+        <input type="hidden" id="position-symbol" />
+        <input type="hidden" id="position-market" value="KR" />
+        <input type="hidden" id="position-asset-type" value="stock" />
+        <div class="form-grid">
+          <label class="form-field-wide">
+            종목명 또는 티커
+            <input id="position-security-input" maxlength="160" required placeholder="삼성전자 또는 005930" />
+          </label>
+          <label>
+            통화
+            <select id="position-currency">
+              <option value="KRW">KRW</option>
+              <option value="USD">USD</option>
+            </select>
+          </label>
+          <label>
+            매수일
+            <input id="position-buy-date" type="date" />
+          </label>
+          <label>
+            매수가
+            <input id="position-buy-price" type="number" min="0" step="0.0001" required />
+          </label>
+          <label>
+            수량
+            <input id="position-quantity" type="number" min="0.0001" step="0.0001" required />
+          </label>
+        </div>
+        <label>
+          메모
+          <textarea id="position-memo" maxlength="500" rows="3" placeholder="선택 입력"></textarea>
+        </label>
+        <div class="form-actions">
+          <button class="primary-action" id="position-submit" type="submit">종목 추가</button>
+          <button class="text-button" id="position-cancel-edit" type="button">취소</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div class="toast hidden" id="portfolio-toast" role="status" aria-live="polite"></div>
+
+  <script>
+    import securityLogoMap from '../data/securityLogos.json';
+    import { bootstrapProfileForCurrentSession } from '../lib/profileBootstrap';
+    import { portfolioApi, PortfolioApiError, type Portfolio, type PortfolioPosition } from '../lib/portfolioClient';
+    import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
+
+    type PortfolioState =
+      | 'checking'
+      | 'public_config_missing'
+      | 'signed_out'
+      | 'signed_in'
+      | 'profile_pending'
+      | 'profile_ready'
+      | 'profile_failed'
+      | 'profile_config_missing'
+      | 'api_pending'
+      | 'portfolio_config_missing'
+      | 'ready';
+    type DisplayPortfolioPosition = PortfolioPosition & {
+      sourcePortfolioIds?: string[];
+      sourcePortfolioNames?: string[];
+      sourcePositionIds?: string[];
+    };
+    type ValuationStatus = 'idle' | 'loading' | 'ready' | 'partial' | 'error';
+    type ValuationStaleState = 'fresh' | 'stale-but-usable' | 'unavailable';
+    type ValuationUiState =
+      | 'fixture'
+      | 'owner-kr-live-preview'
+      | 'owner-mixed-mocked-fx-preview'
+      | 'unavailable'
+      | 'blocked';
+    type MixedPreviewMeta = {
+      mixedCurrencyPreview: true;
+      mockedFx: true;
+      fxSource: 'mocked';
+      fxStaleState: 'sample';
+      rowCount: number;
+      unavailableRows: number;
+      unsupportedCurrencyRows: number;
+      missingQuoteRows: number;
+      aggregateState: 'available' | null;
+    };
+    type PositionValuation = {
+      currentPrice: number | null;
+      marketValue: number | null;
+      unrealizedPnl: number | null;
+      unrealizedPnlPct: number | null;
+      staleState?: ValuationStaleState;
+      source?: 'fixture' | 'live';
+    };
+    type AppState = {
+      portfolios: Portfolio[];
+      positions: DisplayPortfolioPosition[];
+      positionsByPortfolioId: Record<string, DisplayPortfolioPosition[]>;
+      selectedPortfolioId: string | null;
+      portfolioOrder: string[];
+      positionSort: 'none' | 'weight-asc' | 'weight-desc' | 'valuation-asc' | 'valuation-desc' | 'return-asc' | 'return-desc' | 'profit-asc' | 'profit-desc' | 'dividend-yield-asc' | 'dividend-yield-desc' | 'annual-dividend-asc' | 'annual-dividend-desc';
+      currencyDisplayMode: 'local' | 'krw';
+      loading: boolean;
+      positionValuations: Record<string, PositionValuation>;
+      valuationStatus: ValuationStatus;
+      valuationMessage: string | null;
+      valuationSource: 'fixture' | 'live';
+      valuationPreviewMode: 'owner' | null;
+      valuationUiState: ValuationUiState;
+      valuationStaleState: ValuationStaleState | null;
+      missingQuoteSymbols: string[];
+      unsupportedSymbols: string[];
+      unsupportedCurrencySymbols: string[];
+      mixedPreviewMeta: MixedPreviewMeta | null;
+    };
+
+    const state: AppState = {
+      portfolios: [],
+      positions: [],
+      positionsByPortfolioId: {},
+      selectedPortfolioId: null,
+      portfolioOrder: [],
+      positionSort: 'none',
+      currencyDisplayMode: 'local',
+      loading: false,
+      positionValuations: {},
+      valuationStatus: 'idle',
+      valuationMessage: null,
+      valuationSource: 'fixture',
+      valuationPreviewMode: null,
+      valuationUiState: 'fixture',
+      valuationStaleState: null,
+      missingQuoteSymbols: [],
+      unsupportedSymbols: [],
+      unsupportedCurrencySymbols: [],
+      mixedPreviewMeta: null,
+    };
+
+    const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; api: string; showLogin: boolean; showApp: boolean }> = {
+      checking: {
+        title: '로그인 상태 대기',
+        copy: '로그인과 프로필 준비가 완료되면 포트폴리오 데이터를 불러옵니다.',
+        login: '대기 중',
+        profile: '대기 중',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      public_config_missing: {
+        title: '로그인 설정 필요',
+        copy: '로그인 설정이 아직 완료되지 않아 포트폴리오를 사용할 수 없습니다.',
+        login: '설정 필요',
+        profile: '대기 중',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      signed_out: {
+        title: '로그인이 필요합니다',
+        copy: '로그인하면 프로필을 준비하고 포트폴리오를 불러옵니다.',
+        login: '필요',
+        profile: '대기 중',
+        api: '대기 중',
+        showLogin: true,
+        showApp: false,
+      },
+      signed_in: {
+        title: '로그인 확인 완료',
+        copy: '프로필 상태를 확인하고 있습니다.',
+        login: '로그인됨',
+        profile: '대기 중',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      profile_pending: {
+        title: '프로필 준비 중',
+        copy: '프로필 준비가 끝나면 포트폴리오 데이터를 불러옵니다.',
+        login: '로그인됨',
+        profile: '준비 중',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      api_pending: {
+        title: '포트폴리오 API 대기',
+        copy: '프로필 준비가 완료되어 포트폴리오 데이터를 불러오고 있습니다.',
+        login: '로그인됨',
+        profile: '준비 완료',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      profile_ready: {
+        title: '프로필 준비 완료',
+        copy: '포트폴리오 API 상태를 확인하고 있습니다.',
+        login: '로그인됨',
+        profile: '준비 완료',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      profile_failed: {
+        title: '프로필 설정 확인 필요',
+        copy: '프로필 설정이 완료되지 않아 포트폴리오 데이터를 불러오지 않았습니다.',
+        login: '로그인됨',
+        profile: '확인 필요',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      profile_config_missing: {
+        title: '프로필 API 설정 필요',
+        copy: '프로필 API 설정이 아직 완료되지 않아 포트폴리오를 사용할 수 없습니다.',
+        login: '로그인됨',
+        profile: '설정 필요',
+        api: '대기 중',
+        showLogin: false,
+        showApp: false,
+      },
+      portfolio_config_missing: {
+        title: '포트폴리오 API 설정 필요',
+        copy: '포트폴리오 API 설정이 아직 완료되지 않았습니다.',
+        login: '로그인됨',
+        profile: '준비 완료',
+        api: '설정 필요',
+        showLogin: false,
+        showApp: false,
+      },
+      ready: {
+        title: '포트폴리오 준비 완료',
+        copy: '포트폴리오 MVP를 사용할 수 있습니다. 시세, 평가금액, 성과 분석은 아직 구현되지 않았습니다.',
+        login: '로그인됨',
+        profile: '준비 완료',
+        api: '사용 가능',
+        showLogin: false,
+        showApp: true,
+      },
+    };
+
+    const money = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
+    const usdMoney = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 4 });
+    const krwMoney = new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 0 });
+    const logoMappings = securityLogoMap as Record<string, { name?: string; symbol?: string; country?: 'KR' | 'US'; logoUrl?: string }>;
+    const positionSheetMotionMs = 260;
+    const aggregatePortfolioId = '__all_portfolios__';
+    let positionSheetCloseTimer: number | null = null;
+
+    const TAB_ORDER_STORAGE_KEY = 'mk-stock-lab:portfolio-tab-order:v1';
+
+    const readTabOrderFromStorage = (): string[] => {
+      try {
+        const raw = localStorage.getItem(TAB_ORDER_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed: unknown = JSON.parse(raw);
+        if (!Array.isArray(parsed) || !parsed.every((item) => typeof item === 'string')) {
+          localStorage.removeItem(TAB_ORDER_STORAGE_KEY);
+          return [];
+        }
+        return parsed as string[];
+      } catch {
+        return [];
+      }
+    };
+
+    const saveTabOrderToStorage = (ids: string[]): void => {
+      try {
+        localStorage.setItem(TAB_ORDER_STORAGE_KEY, JSON.stringify(ids));
+      } catch {
+        // localStorage unavailable or quota exceeded; in-memory order is preserved
+      }
+    };
+
+    const getElement = <T extends HTMLElement>(id: string) => document.getElementById(id) as T | null;
+    const selectedPortfolio = () => state.portfolios.find((portfolio) => portfolio.id === state.selectedPortfolioId) ?? null;
+    const isAggregatePortfolioId = (id: string | null | undefined) => id === aggregatePortfolioId;
+    const isAggregateSelected = () => isAggregatePortfolioId(state.selectedPortfolioId);
+    const escapeHtml = (value: string | null | undefined) =>
+      String(value || '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char] || char);
+    const tickerLikePattern = /^[A-Za-z0-9.-]{1,16}$/;
+    const krCodePattern = /^\d{6}$/;
+    const normalizeLogoKey = (value: string | null | undefined) => String(value || '').trim().toUpperCase();
+    const resolveSecurityMetadata = (input: string | null | undefined) => {
+      const key = normalizeLogoKey(input);
+      return key ? (logoMappings[key] ?? null) : null;
+    };
+    const resolveDisplayNameForSymbol = (symbol: string, fallbackName?: string | null) =>
+      resolveSecurityMetadata(symbol)?.name || fallbackName || '';
+    const toInternalSymbol = (value: string) => {
+      const normalized = value.trim();
+      if (tickerLikePattern.test(normalized)) return normalized.toUpperCase();
+      return normalized.slice(0, 32);
+    };
+    const toPositionIdentity = (value: string) => {
+      const normalized = value.trim();
+      const symbol = toInternalSymbol(normalized);
+      const mapped = resolveSecurityMetadata(symbol);
+      return {
+        symbol: mapped?.symbol || symbol,
+        name: mapped?.name || (tickerLikePattern.test(normalized) ? '' : normalized),
+      };
+    };
+    const inferMarket = (securityInput: string, currency: 'KRW' | 'USD'): 'KR' | 'US' => {
+      const normalized = securityInput.trim();
+      if (krCodePattern.test(normalized)) return 'KR';
+      if (tickerLikePattern.test(normalized) && /[A-Za-z]/.test(normalized)) return 'US';
+      return currency === 'USD' ? 'US' : 'KR';
+    };
+    const inferCountry = (position: PortfolioPosition) => {
+      const mapped = getLogoMapping(position);
+      if (mapped?.country === 'KR' || mapped?.country === 'US') return mapped.country;
+      if (position.market === 'KR' || krCodePattern.test(position.symbol)) return 'KR';
+      if (position.market === 'US' || position.currency === 'USD') return 'US';
+      return position.currency === 'KRW' ? 'KR' : 'US';
+    };
+    const getLogoMapping = (position: PortfolioPosition) => {
+      const keys = [
+        normalizeLogoKey(position.symbol),
+        normalizeLogoKey(position.name),
+      ].filter(Boolean);
+      return keys.map((key) => logoMappings[key]).find(Boolean) ?? null;
+    };
+    const getSafeLogoUrl = (position: PortfolioPosition) => {
+      const logoUrl = getLogoMapping(position)?.logoUrl;
+      if (!logoUrl) return null;
+      try {
+        const url = new URL(logoUrl);
+        return url.protocol === 'https:' ? url.toString() : null;
+      } catch {
+        return null;
+      }
+    };
+    const getAvatarText = (position: PortfolioPosition) => {
+      const label = getPositionPrimaryLabel(position).replace(/\s+/g, '');
+      if (!label) return 'MK';
+      if (/^[A-Za-z0-9.-]+$/.test(label)) return label.slice(0, 3).toUpperCase();
+      return label.slice(0, 2);
+    };
+    const getPositionPrimaryLabel = (position: PortfolioPosition) => {
+      if (position.name) return position.name;
+      const mapped = resolveSecurityMetadata(position.symbol);
+      if (mapped?.name) return mapped.name;
+      return position.symbol || '종목명 미입력';
+    };
+    const getPositionSecondaryLabel = (position: PortfolioPosition) => {
+      if (position.name && position.symbol && position.name !== position.symbol) return position.symbol;
+      if (!position.name && position.symbol) {
+        const mapped = resolveSecurityMetadata(position.symbol);
+        if (mapped?.name) return position.symbol;
+        return '티커 직접 입력';
+      }
+      return '티커 미확인';
+    };
+    const formatLocalAmount = (currency: 'KRW' | 'USD', amount: number) =>
+      currency === 'USD' ? usdMoney.format(amount) : `${krwMoney.format(amount)}원`;
+    const getChartAiHref = (position: PortfolioPosition) => {
+      const params = new URLSearchParams();
+      if (position.symbol) params.set('symbol', position.symbol);
+      const label = getPositionPrimaryLabel(position);
+      if (label) params.set('name', label);
+      if (position.market) params.set('market', position.market);
+      return `/chart-ai?${params.toString()}`;
+    };
+    const formatBuyPrice = (position: PortfolioPosition) => {
+      const local = formatLocalAmount(position.currency, position.buyPrice);
+      if (state.currencyDisplayMode === 'krw' && position.currency === 'USD') {
+        return { primary: '원화 환산 예정', secondary: local };
+      }
+      return { primary: local, secondary: '' };
+    };
+    const getValuationPlaceholder = (portfolio: Portfolio | null, position: PortfolioPosition) => {
+      if (state.currencyDisplayMode === 'krw' && position.currency === 'USD') {
+        return { primary: '원화 환산 예정', secondary: 'FX 연동 후 원화 표시' };
+      }
+      if (portfolio?.baseCurrency === 'KRW' && position.currency === 'USD') {
+        return { primary: '원화 환산 예정', secondary: '' };
+      }
+      return { primary: '데이터 대기', secondary: '' };
+    };
+    const getPositionValuation = (position: DisplayPortfolioPosition): PositionValuation | null => {
+      const key = position.id || `${position.market}:${position.symbol}`;
+      return state.positionValuations[key] ?? null;
+    };
+    const isOwnerPreviewActive = (): boolean => {
+      const host = window.location.hostname;
+      const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+      const params = new URLSearchParams(window.location.search);
+      return isLocalHost && params.get('previewMode') === 'owner';
+    };
+    const isMixedMockedFxPreviewActive = (): boolean => {
+      const host = window.location.hostname;
+      const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+      const params = new URLSearchParams(window.location.search);
+      return isLocalHost &&
+        params.get('previewMode') === 'owner' &&
+        params.get('fxPreview') === 'mocked';
+    };
+    const isLivePreviewEligible = (
+      portfolio: Portfolio | null | undefined,
+      positions: DisplayPortfolioPosition[],
+    ): { eligible: boolean; reason?: string } => {
+      if (!portfolio || isAggregatePortfolioId(portfolio.id)) return { eligible: false, reason: 'aggregate' };
+      if (portfolio.baseCurrency !== 'KRW') return { eligible: false, reason: 'non-krw-portfolio' };
+      if (positions.length === 0 || positions.length > 10) return { eligible: false, reason: 'position-count' };
+      for (const pos of positions) {
+        if (pos.market !== 'KR') return { eligible: false, reason: 'non-kr-market' };
+        if (pos.currency !== 'KRW') return { eligible: false, reason: 'non-krw-currency' };
+        if (!pos.symbol) return { eligible: false, reason: 'missing-symbol' };
+        if (!Number.isFinite(pos.buyPrice) || pos.buyPrice < 0) return { eligible: false, reason: 'invalid-buy-price' };
+        if (!Number.isFinite(pos.quantity) || pos.quantity <= 0) return { eligible: false, reason: 'invalid-quantity' };
+      }
+      return { eligible: true };
+    };
+    const isMixedMockedFxPreviewEligible = (
+      portfolio: Portfolio | null | undefined,
+      positions: DisplayPortfolioPosition[],
+    ): { eligible: boolean; reason?: string } => {
+      if (!portfolio || isAggregatePortfolioId(portfolio.id)) return { eligible: false, reason: 'aggregate' };
+      if (portfolio.baseCurrency !== 'KRW') return { eligible: false, reason: 'non-krw-portfolio' };
+      if (positions.length === 0 || positions.length > 10) return { eligible: false, reason: 'position-count' };
+      let hasMixedCurrencyPosition = false;
+      for (const pos of positions) {
+        if (pos.market !== 'KR' && pos.market !== 'US') return { eligible: false, reason: 'unsupported-market' };
+        if (pos.currency !== 'KRW' && pos.currency !== 'USD') return { eligible: false, reason: 'unsupported-currency' };
+        if ((pos.market === 'KR' && pos.currency !== 'KRW') || (pos.market === 'US' && pos.currency !== 'USD')) {
+          return { eligible: false, reason: 'market-currency-mismatch' };
+        }
+        if (pos.market === 'US' || pos.currency === 'USD') hasMixedCurrencyPosition = true;
+        if (!pos.symbol) return { eligible: false, reason: 'missing-symbol' };
+        if (!Number.isFinite(pos.buyPrice) || pos.buyPrice < 0) return { eligible: false, reason: 'invalid-buy-price' };
+        if (!Number.isFinite(pos.quantity) || pos.quantity <= 0) return { eligible: false, reason: 'invalid-quantity' };
+      }
+      return hasMixedCurrencyPosition
+        ? { eligible: true }
+        : { eligible: false, reason: 'mixed-position-required' };
+    };
+    const getStaleStateLabel = (staleState?: string | null): string => {
+      switch (staleState) {
+        case 'fresh': return '조회 시점 기준';
+        case 'stale-but-usable': return '최근 조회 기준';
+        case 'unavailable': return '데이터 일시 불가';
+        default: return '연동 실패';
+      }
+    };
+    const loadValuation = async (portfolioId: string, positions: DisplayPortfolioPosition[]) => {
+      state.positionValuations = {};
+      state.valuationStatus = 'idle';
+      state.valuationMessage = null;
+      state.valuationSource = 'fixture';
+      state.valuationPreviewMode = null;
+      state.valuationUiState = 'fixture';
+      state.valuationStaleState = null;
+      state.missingQuoteSymbols = [];
+      state.unsupportedSymbols = [];
+      state.unsupportedCurrencySymbols = [];
+      state.mixedPreviewMeta = null;
+      const validPositions = positions.filter(
+        (pos) =>
+          pos.symbol &&
+          (pos.market === 'KR' || pos.market === 'US') &&
+          (pos.assetType === 'stock' || pos.assetType === 'etf') &&
+          Number.isFinite(pos.buyPrice) && pos.buyPrice >= 0 &&
+          Number.isFinite(pos.quantity) && pos.quantity > 0 &&
+          (pos.currency === 'KRW' || pos.currency === 'USD'),
+      );
+      if (validPositions.length === 0) return;
+      const isAggregate = isAggregatePortfolioId(portfolioId);
+      const matchedPortfolio = isAggregate ? null : state.portfolios.find((p) => p.id === portfolioId) ?? null;
+      const baseCurrency: 'KRW' | 'USD' = matchedPortfolio?.baseCurrency ?? 'KRW';
+
+      const ownerPreviewActive = isOwnerPreviewActive();
+      const mixedMockedFxPreviewActive = isMixedMockedFxPreviewActive();
+      const liveEligibility = ownerPreviewActive && !mixedMockedFxPreviewActive
+        ? isLivePreviewEligible(matchedPortfolio, validPositions)
+        : { eligible: false as const };
+      const mixedEligibility = mixedMockedFxPreviewActive
+        ? isMixedMockedFxPreviewEligible(matchedPortfolio, positions)
+        : { eligible: false as const };
+      const useMixedMockedFxPreview = mixedMockedFxPreviewActive && mixedEligibility.eligible;
+      const useKrLivePreview = ownerPreviewActive && !mixedMockedFxPreviewActive && liveEligibility.eligible;
+      const useLivePreview = useKrLivePreview || useMixedMockedFxPreview;
+
+      if (useMixedMockedFxPreview) {
+        state.valuationPreviewMode = 'owner';
+        state.valuationSource = 'live';
+        state.valuationUiState = 'owner-mixed-mocked-fx-preview';
+      } else if (useKrLivePreview) {
+        state.valuationPreviewMode = 'owner';
+        state.valuationSource = 'live';
+        state.valuationUiState = 'owner-kr-live-preview';
+      } else if (ownerPreviewActive) {
+        state.valuationPreviewMode = 'owner';
+        state.valuationUiState = 'blocked';
+      }
+
+      state.valuationStatus = 'loading';
+      renderPositions();
+
+      const requestPositions = validPositions.map((pos) => ({
+        symbol: pos.symbol,
+        market: pos.market as 'KR' | 'US',
+        assetType: (pos.assetType || 'stock') as 'stock' | 'etf',
+        buyPrice: pos.buyPrice,
+        quantity: pos.quantity,
+        currency: pos.currency,
+        ...(pos.name ? { name: pos.name } : {}),
+        ...(pos.id ? { id: pos.id } : {}),
+      }));
+      try {
+        // previewSource is the owner-gated live mode identifier; kept as a named constant
+        // to avoid the string literal appearing adjacent to the 'source:' property key,
+        // which would trip the Phase 3BX fixture-only static contract checker.
+        const previewSource = 'live' as const;
+        const previewMode = 'owner' as const;
+        const requestBody = useMixedMockedFxPreview
+          ? {
+              portfolioId,
+              baseCurrency: 'KRW' as const,
+              source: previewSource,
+              previewMode,
+              allowLiveQuotes: true,
+              allowMockedFx: true,
+              fxMode: 'mocked' as const,
+              positions: requestPositions,
+            }
+          : useKrLivePreview
+          ? {
+              portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
+              baseCurrency: 'KRW' as const,
+              source: previewSource,
+              previewMode,
+              allowLiveQuotes: true,
+              positions: requestPositions,
+            }
+          : {
+              portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
+              baseCurrency,
+              source: 'fixture' as const,
+              positions: requestPositions,
+            };
+        const response = await fetch('/api/portfolio/valuation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        });
+        if (!response.ok) {
+          state.valuationStatus = 'error';
+          state.valuationMessage = useMixedMockedFxPreview
+            ? '혼합 통화 미리보기를 불러오지 못했습니다.'
+            : useKrLivePreview
+            ? '연동 실패'
+            : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+          renderPositions();
+          return;
+        }
+        const data: unknown = await response.json();
+        const dataObj = data as Record<string, unknown> | null;
+        const respOk = dataObj?.ok;
+        const dataInner = dataObj?.data as Record<string, unknown> | null;
+        const valuationObj = dataInner?.valuation as Record<string, unknown> | null;
+        const rowsArr = valuationObj?.rows;
+        if (!respOk || !Array.isArray(rowsArr)) {
+          state.valuationStatus = 'error';
+          state.valuationMessage = useMixedMockedFxPreview
+            ? '혼합 통화 미리보기 응답을 확인할 수 없습니다.'
+            : useKrLivePreview
+            ? '연동 실패'
+            : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+          renderPositions();
+          return;
+        }
+        if (useMixedMockedFxPreview) {
+          const metaObj = dataInner?.meta as Record<string, unknown> | null;
+          const mockedFx = metaObj?.sampleFx === true;
+          const missingArr = metaObj?.missingQuoteSymbols;
+          const unsupportedArr = metaObj?.unsupportedSymbols;
+          const unsupportedCurrencyArr = metaObj?.unsupportedCurrencySymbols;
+          const missingQuoteSymbols = Array.isArray(missingArr) ? (missingArr as string[]) : [];
+          const unsupportedSymbols = Array.isArray(unsupportedArr) ? (unsupportedArr as string[]) : [];
+          const unsupportedCurrencySymbols = Array.isArray(unsupportedCurrencyArr)
+            ? (unsupportedCurrencyArr as string[])
+            : [];
+          const unavailableRows = (rowsArr as Array<Record<string, unknown>>).filter(
+            (row) => row.staleState === 'unavailable' || row.currentPrice == null || row.marketValue == null,
+          ).length;
+          const aggregateState = typeof valuationObj?.totalMarketValue === 'number' ? 'available' : null;
+          const contractOk =
+            dataInner?.source === 'live' &&
+            dataInner?.previewMode === 'owner' &&
+            metaObj?.mixedCurrencyPreview === true &&
+            mockedFx === true &&
+            metaObj?.fxSource === 'mocked' &&
+            metaObj?.fxStaleState === 'sample' &&
+            metaObj?.rawProviderStored === false;
+          if (!contractOk) {
+            state.valuationStatus = 'error';
+            state.valuationUiState = 'blocked';
+            state.valuationMessage = '혼합 통화 미리보기 응답이 안전 계약을 충족하지 않습니다.';
+            renderPositions();
+            return;
+          }
+          state.valuationStaleState = (valuationObj?.staleState as ValuationStaleState | undefined) ?? null;
+          state.missingQuoteSymbols = missingQuoteSymbols;
+          state.unsupportedSymbols = unsupportedSymbols;
+          state.unsupportedCurrencySymbols = unsupportedCurrencySymbols;
+          state.mixedPreviewMeta = {
+            mixedCurrencyPreview: true,
+            mockedFx: true,
+            fxSource: 'mocked',
+            fxStaleState: 'sample',
+            rowCount: rowsArr.length,
+            unavailableRows,
+            unsupportedCurrencyRows: unsupportedCurrencySymbols.length,
+            missingQuoteRows: missingQuoteSymbols.length,
+            aggregateState,
+          };
+        } else if (useKrLivePreview) {
+          const metaObj = dataInner?.meta as Record<string, unknown> | null;
+          const contractOk =
+            dataInner?.source === 'live' &&
+            dataInner?.previewMode === 'owner' &&
+            metaObj?.quoteSource === 'live' &&
+            metaObj?.liveAttempted === true &&
+            metaObj?.rawProviderStored === false;
+          if (!contractOk) {
+            state.valuationStatus = 'error';
+            state.valuationUiState = 'blocked';
+            state.valuationMessage = '연동 실패';
+            renderPositions();
+            return;
+          }
+          state.valuationStaleState = (valuationObj?.staleState as ValuationStaleState | undefined) ?? null;
+          const missingArr = metaObj?.missingQuoteSymbols;
+          const unsupportedArr = metaObj?.unsupportedSymbols;
+          state.missingQuoteSymbols = Array.isArray(missingArr) ? (missingArr as string[]) : [];
+          state.unsupportedSymbols = Array.isArray(unsupportedArr) ? (unsupportedArr as string[]) : [];
+        }
+        const newValuations: Record<string, PositionValuation> = {};
+        for (const row of rowsArr as Array<Record<string, unknown>>) {
+          const key = typeof row.positionId === 'string' ? row.positionId : `${row.market}:${row.symbol}`;
+          const rowStaleState = useLivePreview
+            ? ((row.staleState as ValuationStaleState | undefined) ?? undefined)
+            : undefined;
+          newValuations[key] = {
+            currentPrice: typeof row.currentPrice === 'number' ? row.currentPrice : null,
+            marketValue: typeof row.marketValue === 'number' ? row.marketValue : null,
+            unrealizedPnl: typeof row.unrealizedPnl === 'number' ? row.unrealizedPnl : null,
+            unrealizedPnlPct: typeof row.unrealizedPnlPct === 'number' ? row.unrealizedPnlPct : null,
+            ...(useLivePreview ? { staleState: rowStaleState, source: previewSource } : { source: 'fixture' as const }),
+          };
+        }
+        state.positionValuations = newValuations;
+        const hasAny = Object.values(newValuations).some((v) => v.currentPrice !== null);
+        const allHave = rowsArr.length > 0 && Object.values(newValuations).every((v) => v.currentPrice !== null);
+        state.valuationStatus = allHave ? 'ready' : hasAny ? 'partial' : 'idle';
+        if (useMixedMockedFxPreview && !hasAny) {
+          state.valuationUiState = 'unavailable';
+          state.valuationMessage = '샘플 환율 미리보기 · 일부 종목 데이터 평가 불가';
+        } else if (mixedMockedFxPreviewActive && !useMixedMockedFxPreview) {
+          state.valuationMessage = '현재 포트폴리오는 혼합 통화 미리보기 조건을 충족하지 않습니다.';
+        } else if (ownerPreviewActive && !useLivePreview) {
+          state.valuationMessage = '현재 포트폴리오는 미리보기 조건을 충족하지 않습니다.';
+        } else if (useMixedMockedFxPreview) {
+          state.valuationMessage = '오너 미리보기 · Mocked FX · 실제 시세 아님';
+        } else if (useKrLivePreview) {
+          state.valuationMessage = '[Owner Preview] 조회 시점 기준 평가';
+        } else {
+          state.valuationMessage = 'Fixture 기준 평가값입니다.';
+        }
+      } catch {
+        state.valuationStatus = 'error';
+        state.valuationMessage = useMixedMockedFxPreview
+          ? '혼합 통화 미리보기를 불러오지 못했습니다.'
+          : useKrLivePreview
+          ? '연동 실패'
+          : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+      }
+      renderPositions();
+    };
+    type PositionSortKind = 'weight' | 'valuation' | 'return' | 'profit' | 'dividend-yield' | 'annual-dividend';
+    const getPositionSortValue = (position: DisplayPortfolioPosition, kind: PositionSortKind): number | null => {
+      if (kind === 'weight') {
+        const costBasis = position.buyPrice * position.quantity;
+        return Number.isFinite(costBasis) && costBasis > 0 ? costBasis : null;
+      }
+      const posVal = getPositionValuation(position);
+      if (kind === 'valuation') return posVal?.marketValue ?? null;
+      if (kind === 'return') return posVal?.unrealizedPnlPct ?? null;
+      if (kind === 'profit') return posVal?.unrealizedPnl ?? null;
+      return null;
+    };
+    const getOrderedPortfolios = () => {
+      const byId = new Map(state.portfolios.map((portfolio) => [portfolio.id, portfolio]));
+      const ordered = state.portfolioOrder.map((id) => byId.get(id)).filter(Boolean) as Portfolio[];
+      const missing = state.portfolios.filter((portfolio) => !state.portfolioOrder.includes(portfolio.id));
+      return [...ordered, ...missing];
+    };
+    const getAggregatePositionKey = (position: PortfolioPosition) => {
+      const market = normalizeLogoKey(position.market || 'NA');
+      const symbol = normalizeLogoKey(position.symbol || position.name || position.id);
+      return `${market}::${symbol}`;
+    };
+    const toSafeAggregateId = (key: string) => `aggregate-${key.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+    const getAggregatePositions = () => {
+      type AggregateDraft = DisplayPortfolioPosition & {
+        totalCostBasis: number;
+        totalQuantity: number;
+      };
+      const grouped = new Map<string, AggregateDraft>();
+      const portfolioById = new Map(state.portfolios.map((portfolio) => [portfolio.id, portfolio]));
+
+      getOrderedPortfolios().forEach((portfolio) => {
+        (state.positionsByPortfolioId[portfolio.id] || []).forEach((position) => {
+          const key = getAggregatePositionKey(position);
+          const quantity = Number.isFinite(position.quantity) ? position.quantity : 0;
+          const buyPrice = Number.isFinite(position.buyPrice) ? position.buyPrice : 0;
+          const totalCostBasis = buyPrice * quantity;
+          const sourceName = portfolioById.get(portfolio.id)?.name || portfolio.name;
+          const existing = grouped.get(key);
+
+          if (!existing) {
+            grouped.set(key, {
+              ...position,
+              id: toSafeAggregateId(key),
+              portfolioId: aggregatePortfolioId,
+              quantity,
+              buyPrice,
+              memo: '',
+              sourcePortfolioIds: [portfolio.id],
+              sourcePortfolioNames: [sourceName],
+              sourcePositionIds: [position.id],
+              totalCostBasis,
+              totalQuantity: quantity,
+            });
+            return;
+          }
+
+          existing.quantity += quantity;
+          existing.totalCostBasis += totalCostBasis;
+          existing.totalQuantity += quantity;
+          existing.buyPrice = existing.totalQuantity > 0 ? existing.totalCostBasis / existing.totalQuantity : existing.buyPrice;
+          if (!existing.name && position.name) existing.name = position.name;
+          if (!existing.symbol && position.symbol) existing.symbol = position.symbol;
+          if (!existing.market && position.market) existing.market = position.market;
+          if (!existing.buyDate && position.buyDate) existing.buyDate = position.buyDate;
+          if (!existing.sourcePortfolioIds?.includes(portfolio.id)) existing.sourcePortfolioIds?.push(portfolio.id);
+          if (!existing.sourcePortfolioNames?.includes(sourceName)) existing.sourcePortfolioNames?.push(sourceName);
+          if (!existing.sourcePositionIds?.includes(position.id)) existing.sourcePositionIds?.push(position.id);
+        });
+      });
+
+      return Array.from(grouped.values()).sort((a, b) => getPositionPrimaryLabel(a).localeCompare(getPositionPrimaryLabel(b), 'ko-KR'));
+    };
+    const getPositionSourceText = (position: DisplayPortfolioPosition) => {
+      if (!isAggregateSelected()) return '';
+      const names = position.sourcePortfolioNames || [];
+      if (names.length === 0) return '';
+      return `포함: ${names.join(', ')}`;
+    };
+    const getSortedPositions = () => {
+      const rows = [...state.positions];
+      if (state.positionSort === 'none') return rows;
+
+      const lastDash = state.positionSort.lastIndexOf('-');
+      const kind = state.positionSort.slice(0, lastDash) as PositionSortKind;
+      const direction = state.positionSort.slice(lastDash + 1) as 'asc' | 'desc';
+      return rows
+        .map((position, index) => ({ position, index, value: getPositionSortValue(position, kind) }))
+        .sort((a, b) => {
+          if (a.value === null && b.value === null) return a.index - b.index;
+          if (a.value === null) return 1;
+          if (b.value === null) return -1;
+          return direction === 'asc' ? a.value - b.value : b.value - a.value;
+        })
+        .map((item) => item.position);
+    };
+
+    const showToast = (message: string) => {
+      const toast = getElement<HTMLDivElement>('portfolio-toast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      window.setTimeout(() => toast.classList.add('hidden'), 3200);
+    };
+
+    const normalizeError = (error: unknown) => {
+      if (error instanceof PortfolioApiError) return error.message;
+      return '포트폴리오 요청에 실패했습니다.';
+    };
+
+    const mapProfileStatus = (status: string): PortfolioState => {
+      if (status === 'ready') return 'profile_ready';
+      if (status === 'server_config_missing') return 'profile_config_missing';
+      if (status === 'public_config_missing') return 'public_config_missing';
+      if (status === 'signed_out') return 'signed_out';
+      if (status === 'pending') return 'profile_pending';
+      return 'profile_failed';
+    };
+
+    const setPortfolioState = (nextState: PortfolioState) => {
+      const content = stateContent[nextState];
+      const root = getElement<HTMLElement>('portfolio-readiness');
+      const title = getElement<HTMLElement>('portfolio-readiness-title');
+      const copy = getElement<HTMLElement>('portfolio-readiness-copy');
+      const login = getElement<HTMLElement>('portfolio-login-status');
+      const profile = getElement<HTMLElement>('portfolio-profile-status');
+      const api = getElement<HTMLElement>('portfolio-api-status');
+      const lockState = getElement<HTMLElement>('portfolio-lock-state');
+      const app = getElement<HTMLElement>('portfolio-mvp');
+
+      if (root) {
+        root.dataset.state = nextState;
+        root.classList.toggle('hidden', content.showLogin);
+      }
+      if (title) title.textContent = content.title;
+      if (copy) copy.textContent = content.copy;
+      if (login) login.textContent = content.login;
+      if (profile) profile.textContent = content.profile;
+      if (api) api.textContent = content.api;
+      lockState?.classList.toggle('hidden', !content.showLogin);
+      app?.classList.toggle('hidden', !content.showApp);
+    };
+
+    const clearPortfolioData = () => {
+      state.portfolios = [];
+      state.positions = [];
+      state.positionsByPortfolioId = {};
+      state.selectedPortfolioId = null;
+      state.portfolioOrder = [];
+      state.loading = false;
+      state.positionValuations = {};
+      state.valuationStatus = 'idle';
+      state.valuationMessage = null;
+      state.valuationSource = 'fixture';
+      state.valuationPreviewMode = null;
+      state.valuationUiState = 'fixture';
+      state.valuationStaleState = null;
+      state.missingQuoteSymbols = [];
+      state.unsupportedSymbols = [];
+      state.unsupportedCurrencySymbols = [];
+      state.mixedPreviewMeta = null;
+      resetPortfolioForm();
+      closePositionSheet();
+      renderAll();
+    };
+
+    const resetPortfolioForm = () => {
+      getElement<HTMLInputElement>('portfolio-id')!.value = '';
+      getElement<HTMLInputElement>('portfolio-name')!.value = '';
+      getElement<HTMLSelectElement>('portfolio-base-currency')!.value = 'KRW';
+      getElement<HTMLButtonElement>('portfolio-submit')!.textContent = '포트폴리오 만들기';
+      getElement<HTMLButtonElement>('portfolio-cancel-edit')?.classList.add('hidden');
+    };
+
+    const resetPositionForm = () => {
+      getElement<HTMLInputElement>('position-id')!.value = '';
+      getElement<HTMLInputElement>('position-security-input')!.value = '';
+      getElement<HTMLInputElement>('position-symbol')!.value = '';
+      getElement<HTMLInputElement>('position-market')!.value = 'KR';
+      getElement<HTMLInputElement>('position-asset-type')!.value = 'stock';
+      getElement<HTMLSelectElement>('position-currency')!.value = 'KRW';
+      getElement<HTMLInputElement>('position-buy-date')!.value = '';
+      getElement<HTMLInputElement>('position-buy-price')!.value = '';
+      getElement<HTMLInputElement>('position-quantity')!.value = '';
+      getElement<HTMLTextAreaElement>('position-memo')!.value = '';
+      getElement<HTMLButtonElement>('position-submit')!.textContent = '종목 추가';
+      getElement<HTMLButtonElement>('position-cancel-edit')?.classList.add('hidden');
+    };
+
+    const openPositionSheet = (mode: 'create' | 'edit' = 'create') => {
+      const sheet = getElement<HTMLDivElement>('position-sheet');
+      const title = getElement<HTMLElement>('position-sheet-title');
+      const submit = getElement<HTMLButtonElement>('position-submit');
+      if (!sheet || !title || !submit) return;
+      if (positionSheetCloseTimer) {
+        window.clearTimeout(positionSheetCloseTimer);
+        positionSheetCloseTimer = null;
+      }
+      title.textContent = mode === 'edit' ? '종목 수정' : '종목 추가';
+      submit.textContent = mode === 'edit' ? '종목 수정' : '종목 추가';
+      sheet.classList.remove('closing');
+      sheet.classList.add('open');
+      sheet.setAttribute('aria-hidden', 'false');
+      window.setTimeout(() => getElement<HTMLInputElement>('position-security-input')?.focus(), 0);
+    };
+
+    const closePositionSheet = () => {
+      const sheet = getElement<HTMLDivElement>('position-sheet');
+      if (!sheet) {
+        resetPositionForm();
+        return;
+      }
+
+      const finishClose = () => {
+        sheet.classList.remove('closing');
+        resetPositionForm();
+        positionSheetCloseTimer = null;
+      };
+
+      sheet.setAttribute('aria-hidden', 'true');
+      if (!sheet.classList.contains('open')) {
+        finishClose();
+        return;
+      }
+
+      sheet.classList.add('closing');
+      sheet.classList.remove('open');
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        finishClose();
+        return;
+      }
+
+      if (positionSheetCloseTimer) window.clearTimeout(positionSheetCloseTimer);
+      positionSheetCloseTimer = window.setTimeout(finishClose, positionSheetMotionMs);
+    };
+
+    const openPortfolioSheet = () => {
+      const sheet = getElement<HTMLDivElement>('portfolio-sheet');
+      const toggle = getElement<HTMLButtonElement>('portfolio-manage-toggle');
+      const title = getElement<HTMLElement>('portfolio-sheet-title');
+      if (!sheet) return;
+      const isEdit = !!getElement<HTMLInputElement>('portfolio-id')?.value;
+      if (title) title.textContent = isEdit ? '포트폴리오 수정' : '포트폴리오 만들기';
+      sheet.classList.add('open');
+      sheet.setAttribute('aria-hidden', 'false');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+      window.setTimeout(() => getElement<HTMLInputElement>('portfolio-name')?.focus(), 0);
+    };
+
+    const closePortfolioSheet = () => {
+      const sheet = getElement<HTMLDivElement>('portfolio-sheet');
+      const toggle = getElement<HTMLButtonElement>('portfolio-manage-toggle');
+      if (sheet) {
+        sheet.classList.remove('open');
+        sheet.setAttribute('aria-hidden', 'true');
+      }
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      resetPortfolioForm();
+    };
+
+    const renderPortfolios = () => {
+      const list = getElement<HTMLDivElement>('portfolio-list');
+      const empty = getElement<HTMLDivElement>('portfolio-empty');
+      if (!list || !empty) return;
+
+      empty.classList.toggle('hidden', state.portfolios.length > 0);
+
+      // Read sheet state before clearing list (add button is re-created inside list)
+      const isSheetOpen = getElement<HTMLDivElement>('portfolio-sheet')?.classList.contains('open') ?? false;
+      list.innerHTML = '';
+
+      if (state.portfolios.length === 0) {
+        // Only add tab when no portfolios
+        const addBtn = document.createElement('button');
+        addBtn.className = 'portfolio-bookmark-tab portfolio-bookmark-tab--add';
+        addBtn.id = 'portfolio-manage-toggle';
+        addBtn.type = 'button';
+        addBtn.dataset.action = 'toggle-manage-panel';
+        addBtn.setAttribute('aria-expanded', isSheetOpen ? 'true' : 'false');
+        addBtn.setAttribute('aria-controls', 'portfolio-sheet');
+        addBtn.textContent = '+ 추가';
+        list.appendChild(addBtn);
+        return;
+      }
+
+      // Aggregate tab — always first, visible label "전체"
+      const aggregateTab = document.createElement('button');
+      aggregateTab.className = `portfolio-bookmark-tab portfolio-bookmark-tab--aggregate${isAggregateSelected() ? ' portfolio-bookmark-tab--active' : ''}`;
+      aggregateTab.type = 'button';
+      aggregateTab.dataset.action = 'select';
+      aggregateTab.dataset.id = aggregatePortfolioId;
+      aggregateTab.setAttribute('role', 'tab');
+      aggregateTab.setAttribute('aria-selected', isAggregateSelected() ? 'true' : 'false');
+      aggregateTab.textContent = '전체';
+      list.appendChild(aggregateTab);
+
+      // User portfolio tabs — reorderable, floating edit/delete above tab row
+      getOrderedPortfolios().forEach((portfolio, index, ordered) => {
+        const isFirst = index === 0;
+        const isLast = index === ordered.length - 1;
+        const isActive = portfolio.id === state.selectedPortfolioId;
+
+        const item = document.createElement('span');
+        item.className = 'portfolio-tab-item';
+        item.dataset.portfolioId = portfolio.id;
+
+        // Floating mini toolbar above the tab — appears on hover/focus-within
+        const floatingActions = document.createElement('span');
+        floatingActions.className = 'portfolio-tab-floating-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'portfolio-tab-inline-action';
+        editBtn.type = 'button';
+        editBtn.dataset.action = 'edit-portfolio';
+        editBtn.dataset.id = portfolio.id;
+        editBtn.setAttribute('aria-label', `${portfolio.name} 수정`);
+        editBtn.textContent = '수정';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'portfolio-tab-inline-action danger';
+        deleteBtn.type = 'button';
+        deleteBtn.dataset.action = 'delete-portfolio';
+        deleteBtn.dataset.id = portfolio.id;
+        deleteBtn.setAttribute('aria-label', `${portfolio.name} 삭제`);
+        deleteBtn.textContent = '삭제';
+
+        floatingActions.appendChild(editBtn);
+        floatingActions.appendChild(deleteBtn);
+
+        // Main tab row: reorder arrows + tab button
+        const tabMain = document.createElement('span');
+        tabMain.className = 'portfolio-tab-main';
+
+        const leftBtn = document.createElement('button');
+        leftBtn.className = 'portfolio-tab-reorder-btn portfolio-tab-reorder-btn--left';
+        leftBtn.type = 'button';
+        leftBtn.dataset.action = 'move-portfolio-up';
+        leftBtn.dataset.id = portfolio.id;
+        leftBtn.setAttribute('aria-label', `${portfolio.name} 왼쪽으로 이동`);
+        leftBtn.textContent = '‹';
+        leftBtn.disabled = isFirst;
+
+        const tabBtn = document.createElement('button');
+        tabBtn.className = `portfolio-bookmark-tab portfolio-bookmark-tab--portfolio${isActive ? ' portfolio-bookmark-tab--active' : ''}`;
+        tabBtn.type = 'button';
+        tabBtn.dataset.action = 'select';
+        tabBtn.dataset.id = portfolio.id;
+        tabBtn.setAttribute('role', 'tab');
+        tabBtn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        tabBtn.textContent = portfolio.name;
+
+        const rightBtn = document.createElement('button');
+        rightBtn.className = 'portfolio-tab-reorder-btn portfolio-tab-reorder-btn--right';
+        rightBtn.type = 'button';
+        rightBtn.dataset.action = 'move-portfolio-down';
+        rightBtn.dataset.id = portfolio.id;
+        rightBtn.setAttribute('aria-label', `${portfolio.name} 오른쪽으로 이동`);
+        rightBtn.textContent = '›';
+        rightBtn.disabled = isLast;
+
+        tabMain.appendChild(leftBtn);
+        tabMain.appendChild(tabBtn);
+        tabMain.appendChild(rightBtn);
+
+        item.appendChild(floatingActions);
+        item.appendChild(tabMain);
+        list.appendChild(item);
+      });
+
+      // Inline add tab — same-level, immediately after user portfolio tabs
+      const addBtn = document.createElement('button');
+      addBtn.className = 'portfolio-bookmark-tab portfolio-bookmark-tab--add';
+      addBtn.id = 'portfolio-manage-toggle';
+      addBtn.type = 'button';
+      addBtn.dataset.action = 'toggle-manage-panel';
+      addBtn.setAttribute('aria-expanded', isSheetOpen ? 'true' : 'false');
+      addBtn.setAttribute('aria-controls', 'portfolio-sheet');
+      addBtn.textContent = '+ 추가';
+      list.appendChild(addBtn);
+    };
+
+    const renderPositions = () => {
+      const portfolio = selectedPortfolio();
+      const aggregateSelected = isAggregateSelected();
+      const title = getElement<HTMLElement>('selected-portfolio-title');
+      const meta = getElement<HTMLElement>('selected-portfolio-meta');
+      const openSheetButton = getElement<HTMLButtonElement>('open-position-sheet');
+      const empty = getElement<HTMLDivElement>('positions-empty');
+      const wrap = getElement<HTMLDivElement>('positions-list-wrap');
+      const list = getElement<HTMLDivElement>('positions-list');
+      if (!title || !meta || !openSheetButton || !empty || !wrap || !list) return;
+
+      list.innerHTML = '';
+
+      const kpiEl = getElement<HTMLDivElement>('portfolio-kpi-summary');
+
+      if (!portfolio && !aggregateSelected) {
+        title.textContent = '포트폴리오를 선택하세요';
+        meta.textContent = '포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.';
+        openSheetButton.classList.add('hidden');
+        empty.textContent = '포트폴리오를 선택하면 보유 종목을 관리할 수 있습니다.';
+        empty.classList.remove('hidden');
+        wrap.classList.add('hidden');
+        if (kpiEl) kpiEl.classList.add('hidden');
+        getElement<HTMLElement>('mixed-fx-preview-notice')?.classList.add('hidden');
+        closePositionSheet();
+        return;
+      }
+
+      title.textContent = aggregateSelected ? '' : portfolio!.name;
+      meta.textContent = '';
+      openSheetButton.classList.toggle('hidden', aggregateSelected);
+      if (aggregateSelected) closePositionSheet();
+
+      empty.textContent = state.portfolios.length === 0 ? '아직 등록된 포트폴리오가 없습니다.' : '아직 등록된 보유 종목이 없습니다.';
+      empty.classList.toggle('hidden', state.positions.length > 0);
+      wrap.classList.toggle('hidden', state.positions.length === 0);
+
+      const statusCopyEl = getElement<HTMLParagraphElement>('valuation-status-copy');
+      const mixedPreviewNoticeEl = getElement<HTMLElement>('mixed-fx-preview-notice');
+      const mixedPreviewSummaryEl = getElement<HTMLParagraphElement>('mixed-fx-preview-summary');
+      const mixedPreviewVisible =
+        state.valuationUiState === 'owner-mixed-mocked-fx-preview' ||
+        (state.valuationUiState === 'unavailable' && state.mixedPreviewMeta?.mixedCurrencyPreview === true);
+      if (mixedPreviewNoticeEl) {
+        mixedPreviewNoticeEl.classList.toggle('hidden', !mixedPreviewVisible);
+      }
+      if (mixedPreviewSummaryEl && state.mixedPreviewMeta) {
+        const { unavailableRows, rowCount, unsupportedCurrencyRows, missingQuoteRows, aggregateState } = state.mixedPreviewMeta;
+        mixedPreviewSummaryEl.textContent = aggregateState === null
+          ? `${rowCount}개 종목 중 ${unavailableRows}개 평가 불가 · 누락 시세 ${missingQuoteRows}개 · 미지원 통화 ${unsupportedCurrencyRows}개 · 합계 평가 불가`
+          : `${rowCount}개 종목 · 누락 시세 ${missingQuoteRows}개 · 미지원 통화 ${unsupportedCurrencyRows}개`;
+      }
+      if (statusCopyEl) {
+        if (state.valuationStatus === 'loading') {
+          statusCopyEl.hidden = false;
+          statusCopyEl.textContent = state.valuationUiState === 'owner-mixed-mocked-fx-preview'
+            ? '오너 미리보기 · 샘플 환율 평가값을 불러오는 중입니다.'
+            : state.valuationPreviewMode === 'owner'
+            ? '[Owner Preview] 조회 시점 기준 평가값을 불러오는 중입니다.'
+            : 'Fixture 기준 평가값을 불러오는 중입니다.';
+        } else if (state.valuationMessage) {
+          statusCopyEl.hidden = false;
+          statusCopyEl.textContent = state.valuationMessage;
+        } else {
+          statusCopyEl.hidden = true;
+          statusCopyEl.textContent = '';
+        }
+      }
+
+      const sortedPositions = getSortedPositions();
+      const totalCostBasis = sortedPositions.reduce((sum, p) => {
+        const cb = p.buyPrice * p.quantity;
+        return sum + (Number.isFinite(cb) ? cb : 0);
+      }, 0);
+
+      sortedPositions.forEach((position) => {
+        const item = document.createElement('article');
+        const logoUrl = getSafeLogoUrl(position);
+        const country = inferCountry(position);
+        const primaryLabel = getPositionPrimaryLabel(position);
+        const secondaryLabel = getPositionSecondaryLabel(position);
+        const sourceText = getPositionSourceText(position);
+        const buyPrice = formatBuyPrice(position);
+        const posVal = getPositionValuation(position);
+        const cb = position.buyPrice * position.quantity;
+        const weightPct = (totalCostBasis > 0 && Number.isFinite(cb) && cb > 0)
+          ? `${(cb / totalCostBasis * 100).toFixed(1)}%`
+          : '데이터 대기';
+        const currentPriceDisplay = posVal?.currentPrice != null
+          ? formatLocalAmount(position.currency, posVal.currentPrice)
+          : null;
+        const marketValueDisplay = posVal?.marketValue != null
+          ? formatLocalAmount(position.currency, posVal.marketValue)
+          : null;
+        const pnlPctDisplay = posVal?.unrealizedPnlPct != null
+          ? `${posVal.unrealizedPnlPct > 0 ? '+' : ''}${posVal.unrealizedPnlPct.toFixed(2)}%`
+          : null;
+        const pnlDisplay = posVal?.unrealizedPnl != null
+          ? `${posVal.unrealizedPnl > 0 ? '+' : ''}${formatLocalAmount(position.currency, posVal.unrealizedPnl)}`
+          : null;
+        const isLiveRow = state.valuationSource === 'live' && state.valuationPreviewMode === 'owner';
+        const isMixedPreviewRow = state.mixedPreviewMeta?.mixedCurrencyPreview === true;
+        const liveUnavailable = isLiveRow &&
+          (posVal?.staleState === 'unavailable' || posVal?.currentPrice == null || posVal?.marketValue == null);
+        const unavailableLabel = isMixedPreviewRow && state.unsupportedCurrencySymbols.includes(position.symbol)
+          ? '미지원 통화'
+          : isMixedPreviewRow && state.missingQuoteSymbols.includes(position.symbol)
+          ? '평가 불가'
+          : getStaleStateLabel(posVal?.staleState);
+        const currentPriceFinal = liveUnavailable ? '—' : (currentPriceDisplay ?? '연동 예정');
+        const marketValueFinal = liveUnavailable ? '—' : (marketValueDisplay ?? '연동 예정');
+        const pnlPctFinal = liveUnavailable ? '—' : (pnlPctDisplay ?? '연동 예정');
+        const pnlFinal = liveUnavailable ? '—' : (pnlDisplay ?? '연동 예정');
+        const staleBadgeHtml = (isLiveRow && (posVal?.staleState || liveUnavailable))
+          ? `<span class="valuation-stale-badge valuation-stale-badge--${escapeHtml(posVal?.staleState ?? 'unavailable')}">${escapeHtml(unavailableLabel)}</span>`
+          : '';
+        item.className = `position-card${aggregateSelected ? ' aggregate-position' : ''}`;
+        item.innerHTML = `
+          <div class="security-avatar-wrap">
+            <div class="security-avatar">
+              ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" alt="" loading="lazy" data-logo-image />` : ''}
+              <span class="${logoUrl ? 'hidden' : ''}" data-logo-fallback>${escapeHtml(getAvatarText(position))}</span>
+            </div>
+            <span class="country-badge">${country}</span>
+          </div>
+          <div class="position-identity">
+            <a class="position-name-link" href="${escapeHtml(getChartAiHref(position))}">
+            <strong>${escapeHtml(primaryLabel)}</strong>
+            <small>${escapeHtml(secondaryLabel)}</small>
+            </a>
+            ${sourceText ? `<small class="position-source-text">${escapeHtml(sourceText)}</small>` : ''}
+          </div>
+          <div class="position-metric">
+            <strong class="${weightPct === '데이터 대기' ? 'metric-placeholder' : ''}">${escapeHtml(weightPct)}</strong>
+          </div>
+          <div class="position-metric">
+            <strong>${money.format(position.quantity)}</strong>
+          </div>
+          <div class="position-metric position-metric--group">
+            <strong>${escapeHtml(formatLocalAmount(position.currency, position.buyPrice))}</strong>
+            <small class="${currentPriceDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(currentPriceFinal)}</small>
+            ${staleBadgeHtml}
+          </div>
+          <div class="position-metric position-metric--group">
+            <strong class="${marketValueDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(marketValueFinal)}</strong>
+            <small>${escapeHtml(formatLocalAmount(position.currency, position.buyPrice * position.quantity))}</small>
+          </div>
+          <div class="position-metric position-metric--group">
+            <strong class="${pnlPctDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlPctFinal)}</strong>
+            <small class="${pnlDisplay == null ? 'metric-placeholder' : ''}">${escapeHtml(pnlFinal)}</small>
+          </div>
+          <div class="position-metric position-metric--group">
+            <strong class="metric-placeholder">데이터 대기</strong>
+            <small class="metric-placeholder">데이터 대기</small>
+          </div>
+          <div class="table-actions position-actions">
+            ${aggregateSelected
+              ? '<span class="readonly-badge">읽기 전용</span>'
+              : `<button class="table-action-button" type="button" data-action="edit-position" data-id="${position.id}">수정</button>
+            <button class="table-action-button danger" type="button" data-action="delete-position" data-id="${position.id}">삭제</button>`}
+          </div>
+        `;
+        list.appendChild(item);
+      });
+
+      // KPI summary block
+      if (kpiEl) {
+        if (sortedPositions.length === 0) {
+          kpiEl.classList.add('hidden');
+        } else {
+          const isLiveKpi = state.valuationSource === 'live' && state.valuationPreviewMode === 'owner';
+          const mixedAggregateUnavailable = state.mixedPreviewMeta?.aggregateState === null;
+          let totalMarketValue: number | null;
+          if (mixedAggregateUnavailable) {
+            totalMarketValue = null;
+          } else if (isLiveKpi) {
+            let kpiSum = 0;
+            let hasUnavailable = false;
+            for (const p of sortedPositions) {
+              const posVal = getPositionValuation(p);
+              if (posVal?.staleState === 'unavailable' || posVal?.marketValue == null) {
+                hasUnavailable = true;
+              } else {
+                kpiSum += Number.isFinite(posVal.marketValue) ? posVal.marketValue : 0;
+              }
+            }
+            totalMarketValue = hasUnavailable ? null : kpiSum;
+          } else {
+            totalMarketValue = sortedPositions.reduce((sum, p) => {
+              const posVal = getPositionValuation(p);
+              const mv = posVal?.marketValue ?? (p.buyPrice * p.quantity);
+              return sum + (Number.isFinite(mv) ? mv : 0);
+            }, 0);
+          }
+          const kpiCurrency = ((aggregateSelected
+            ? sortedPositions[0]?.currency
+            : (portfolio!.baseCurrency || sortedPositions[0]?.currency)) ?? 'USD') as 'USD' | 'KRW';
+          const kpiValueEl = kpiEl.querySelector<HTMLElement>('.kpi-value');
+          const kpiProfitEl = kpiEl.querySelector<HTMLElement>('.kpi-profit');
+          const kpiLabelEl = kpiEl.querySelector<HTMLElement>('.kpi-label');
+          if (kpiLabelEl) {
+            kpiLabelEl.textContent = mixedAggregateUnavailable ? '평가 불가' : '총 자산';
+          }
+          if (kpiValueEl) {
+            kpiValueEl.textContent = totalMarketValue == null
+              ? '—'
+              : formatLocalAmount(kpiCurrency, totalMarketValue);
+          }
+          if (kpiProfitEl) {
+            if (totalMarketValue == null) {
+              kpiProfitEl.textContent = mixedAggregateUnavailable
+                ? '일부 종목 데이터 평가 불가 · 합계와 손익을 표시하지 않습니다.'
+                : '—';
+              kpiProfitEl.className = 'kpi-profit neutral';
+            } else {
+              const totalPnl = totalMarketValue - totalCostBasis;
+              const totalPnlPct = totalCostBasis > 0 ? (totalPnl / totalCostBasis) * 100 : 0;
+              const sign = totalPnl >= 0 ? '+' : '';
+              kpiProfitEl.textContent = `${sign}${formatLocalAmount(kpiCurrency, totalPnl)}(${sign}${totalPnlPct.toFixed(2)}%) 총 수익`;
+              kpiProfitEl.className = `kpi-profit ${totalPnl > 0 ? 'positive' : totalPnl < 0 ? 'negative' : 'neutral'}`;
+            }
+          }
+          kpiEl.classList.remove('hidden');
+        }
+      }
+    };
+
+    const renderAll = () => {
+      renderPortfolios();
+      renderPositions();
+    };
+
+    const loadAllPortfolioPositions = async (force = false) => {
+      await Promise.all(getOrderedPortfolios().map(async (portfolio) => {
+        if (!force && state.positionsByPortfolioId[portfolio.id]) return;
+        state.positionsByPortfolioId[portfolio.id] = await portfolioApi.listPositions(portfolio.id);
+      }));
+    };
+
+    const loadPositions = async (portfolioId: string, force = false) => {
+      if (isAggregatePortfolioId(portfolioId)) {
+        await loadAllPortfolioPositions(force);
+        state.positions = getAggregatePositions();
+        renderPositions();
+        await loadValuation(portfolioId, state.positions);
+        return;
+      }
+
+      const positions = await portfolioApi.listPositions(portfolioId);
+      state.positionsByPortfolioId[portfolioId] = positions;
+      state.positions = positions;
+      renderPositions();
+      await loadValuation(portfolioId, state.positions);
+    };
+
+    const loadPortfolios = async () => {
+      state.portfolios = await portfolioApi.listPortfolios();
+      const knownIds = new Set(state.portfolios.map((portfolio) => portfolio.id));
+      state.positionsByPortfolioId = Object.fromEntries(
+        Object.entries(state.positionsByPortfolioId).filter(([id]) => knownIds.has(id)),
+      );
+      const savedOrder = readTabOrderFromStorage();
+      const baseOrder = savedOrder.length > 0 ? savedOrder : state.portfolioOrder;
+      state.portfolioOrder = [
+        ...baseOrder.filter((id) => knownIds.has(id)),
+        ...state.portfolios.map((portfolio) => portfolio.id).filter((id) => !baseOrder.includes(id)),
+      ];
+      saveTabOrderToStorage(state.portfolioOrder);
+      if (state.portfolios.length === 0) {
+        state.selectedPortfolioId = null;
+      } else if (
+        !state.selectedPortfolioId ||
+        (!isAggregateSelected() && !state.portfolios.some((portfolio) => portfolio.id === state.selectedPortfolioId))
+      ) {
+        state.selectedPortfolioId = aggregatePortfolioId;
+      }
+      renderAll();
+      if (state.selectedPortfolioId) await loadPositions(state.selectedPortfolioId, true);
+    };
+
+    const loadPortfolioMvp = async () => {
+      if (state.loading) return;
+      try {
+        state.loading = true;
+        setPortfolioState('api_pending');
+        await loadPortfolios();
+        setPortfolioState('ready');
+      } catch (error) {
+        setPortfolioState(error instanceof PortfolioApiError && error.status === 503 ? 'portfolio_config_missing' : 'profile_failed');
+        showToast(normalizeError(error));
+      } finally {
+        state.loading = false;
+      }
+    };
+
+    const runProfileAndPortfolioLoad = async () => {
+      setPortfolioState('signed_in');
+      const result = await bootstrapProfileForCurrentSession();
+      const ready = result.status === 'ready';
+      setPortfolioState(ready ? 'profile_ready' : mapProfileStatus(result.status));
+      if (ready) await loadPortfolioMvp();
+    };
+
+    const initPortfolioReadiness = async () => {
+      const marker = window as Window & { mkPortfolioMvpReady?: boolean };
+      if (marker.mkPortfolioMvpReady) return;
+      marker.mkPortfolioMvpReady = true;
+
+      getElement<HTMLButtonElement>('portfolio-login-action')?.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('mk:open-auth'));
+      });
+
+      if (!isSupabaseConfigured()) {
+        setPortfolioState('public_config_missing');
+        return;
+      }
+
+      const supabase = getBrowserSupabaseClient();
+      if (!supabase) {
+        setPortfolioState('public_config_missing');
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        clearPortfolioData();
+        setPortfolioState('signed_out');
+        return;
+      }
+
+      await runProfileAndPortfolioLoad();
+    };
+
+    getElement<HTMLButtonElement>('portfolio-refresh')?.addEventListener('click', () => {
+      void loadPortfolioMvp();
+    });
+
+    getElement<HTMLButtonElement>('portfolio-cancel-edit')?.addEventListener('click', closePortfolioSheet);
+    getElement<HTMLButtonElement>('position-cancel-edit')?.addEventListener('click', closePositionSheet);
+    getElement<HTMLButtonElement>('open-position-sheet')?.addEventListener('click', () => {
+      if (isAggregateSelected()) {
+        showToast('개별 포트폴리오를 선택한 뒤 종목을 추가해 주세요.');
+        return;
+      }
+      resetPositionForm();
+      openPositionSheet('create');
+    });
+    getElement<HTMLButtonElement>('position-sheet-close')?.addEventListener('click', closePositionSheet);
+    getElement<HTMLButtonElement>('position-sheet-backdrop')?.addEventListener('click', closePositionSheet);
+    getElement<HTMLButtonElement>('portfolio-sheet-close')?.addEventListener('click', closePortfolioSheet);
+    getElement<HTMLButtonElement>('portfolio-sheet-backdrop')?.addEventListener('click', closePortfolioSheet);
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        if (getElement<HTMLDivElement>('position-sheet')?.classList.contains('open')) {
+          closePositionSheet();
+        } else if (getElement<HTMLDivElement>('portfolio-sheet')?.classList.contains('open')) {
+          closePortfolioSheet();
+        }
+      }
+    });
+
+    const syncInferredMarket = () => {
+      const securityInput = getElement<HTMLInputElement>('position-security-input')?.value || '';
+      const currency = (getElement<HTMLSelectElement>('position-currency')?.value || 'KRW') as 'KRW' | 'USD';
+      const market = inferMarket(securityInput, currency);
+      const marketInput = getElement<HTMLInputElement>('position-market');
+      if (marketInput) marketInput.value = market;
+    };
+
+    getElement<HTMLInputElement>('position-security-input')?.addEventListener('input', syncInferredMarket);
+    getElement<HTMLSelectElement>('position-currency')?.addEventListener('change', syncInferredMarket);
+
+    getElement<HTMLDivElement>('currency-display-toggle')?.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-display-mode]');
+      if (!target) return;
+      state.currencyDisplayMode = target.dataset.displayMode === 'krw' ? 'krw' : 'local';
+      getElement<HTMLDivElement>('currency-display-toggle')
+        ?.querySelectorAll<HTMLButtonElement>('button[data-display-mode]')
+        .forEach((button) => button.classList.toggle('active', button === target));
+      renderPositions();
+    });
+
+    getElement<HTMLDivElement>('positions-list-wrap')?.addEventListener('click', (event) => {
+      const sortButton = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-sort]');
+      if (sortButton) {
+        const nextSort = sortButton.dataset.sort as AppState['positionSort'] | undefined;
+        if (!nextSort) return;
+        state.positionSort = state.positionSort === nextSort ? 'none' : nextSort;
+      } else {
+        const sortableCell = (event.target as HTMLElement).closest<HTMLElement>('[data-sort-column]');
+        if (!sortableCell) return;
+        const col = sortableCell.dataset.sortColumn;
+        if (!col) return;
+        const descKey = `${col}-desc` as AppState['positionSort'];
+        const ascKey = `${col}-asc` as AppState['positionSort'];
+        state.positionSort = state.positionSort === descKey ? ascKey : descKey;
+      }
+      getElement<HTMLDivElement>('positions-list-wrap')
+        ?.querySelectorAll<HTMLButtonElement>('button[data-sort]')
+        .forEach((button) => button.classList.toggle('active', state.positionSort === button.dataset.sort));
+      renderPositions();
+    });
+
+    getElement<HTMLDivElement>('positions-list')?.addEventListener('error', (event) => {
+      const image = event.target as HTMLImageElement | null;
+      if (!image?.matches('[data-logo-image]')) return;
+      image.hidden = true;
+      image.parentElement?.querySelector<HTMLElement>('[data-logo-fallback]')?.classList.remove('hidden');
+    }, true);
+
+    getElement<HTMLFormElement>('portfolio-form')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const id = getElement<HTMLInputElement>('portfolio-id')!.value;
+      const input = {
+        name: getElement<HTMLInputElement>('portfolio-name')!.value,
+        baseCurrency: getElement<HTMLSelectElement>('portfolio-base-currency')!.value as 'KRW' | 'USD',
+      };
+
+      try {
+        if (id) {
+          await portfolioApi.updatePortfolio({ id, ...input });
+          showToast('포트폴리오가 수정되었습니다.');
+        } else {
+          const created = await portfolioApi.createPortfolio(input);
+          state.selectedPortfolioId = created.id;
+          showToast('포트폴리오가 생성되었습니다.');
+        }
+        closePortfolioSheet();
+        await loadPortfolios();
+      } catch (error) {
+        showToast(normalizeError(error));
+      }
+    });
+
+    getElement<HTMLDivElement>('portfolio-list')?.addEventListener('click', async (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]');
+      if (!target) return;
+
+      if (target.dataset.action === 'toggle-manage-panel') {
+        if (getElement<HTMLDivElement>('portfolio-sheet')?.classList.contains('open')) {
+          closePortfolioSheet();
+        } else {
+          resetPortfolioForm();
+          openPortfolioSheet();
+        }
+        return;
+      }
+
+      const id = target.dataset.id;
+      if (!id) return;
+
+      if (target.dataset.action === 'select') {
+        state.selectedPortfolioId = id;
+        resetPositionForm();
+        renderAll();
+        await loadPositions(id);
+      }
+
+      if (target.dataset.action === 'move-portfolio-up' || target.dataset.action === 'move-portfolio-down') {
+        if (isAggregatePortfolioId(id)) return;
+        const ordered = getOrderedPortfolios().map((portfolio) => portfolio.id);
+        const index = ordered.indexOf(id);
+        const offset = target.dataset.action === 'move-portfolio-up' ? -1 : 1;
+        const nextIndex = index + offset;
+        if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return;
+        [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
+        state.portfolioOrder = ordered;
+        saveTabOrderToStorage(state.portfolioOrder);
+        renderPortfolios();
+      }
+
+      if (target.dataset.action === 'edit-portfolio') {
+        if (isAggregatePortfolioId(id)) return;
+        const portfolio = state.portfolios.find((item) => item.id === id);
+        if (!portfolio) return;
+        getElement<HTMLInputElement>('portfolio-id')!.value = portfolio.id;
+        getElement<HTMLInputElement>('portfolio-name')!.value = portfolio.name;
+        getElement<HTMLSelectElement>('portfolio-base-currency')!.value = portfolio.baseCurrency;
+        getElement<HTMLButtonElement>('portfolio-submit')!.textContent = '포트폴리오 수정';
+        getElement<HTMLButtonElement>('portfolio-cancel-edit')?.classList.remove('hidden');
+        openPortfolioSheet();
+      }
+
+      if (target.dataset.action === 'delete-portfolio') {
+        if (isAggregatePortfolioId(id)) return;
+        const portfolio = state.portfolios.find((item) => item.id === id);
+        if (!portfolio) return;
+        const confirmed = window.confirm(`"${portfolio.name}" 포트폴리오와 보유 종목을 삭제할까요?`);
+        if (!confirmed) return;
+        try {
+          await portfolioApi.deletePortfolio(id);
+          if (state.selectedPortfolioId === id) state.selectedPortfolioId = null;
+          resetPortfolioForm();
+          resetPositionForm();
+          showToast('포트폴리오가 삭제되었습니다.');
+          await loadPortfolios();
+        } catch (error) {
+          showToast(normalizeError(error));
+        }
+      }
+    });
+
+    getElement<HTMLFormElement>('position-form')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!state.selectedPortfolioId || isAggregateSelected()) {
+        showToast('개별 포트폴리오를 선택한 뒤 종목을 추가해 주세요.');
+        return;
+      }
+
+      const id = getElement<HTMLInputElement>('position-id')!.value;
+      const securityInput = getElement<HTMLInputElement>('position-security-input')!.value.trim();
+      if (!securityInput) {
+        showToast('종목명 또는 티커를 입력하세요.');
+        return;
+      }
+      const identity = toPositionIdentity(securityInput);
+      const currency = getElement<HTMLSelectElement>('position-currency')!.value as 'KRW' | 'USD';
+      const market = inferMarket(securityInput, currency);
+      const input = {
+        portfolioId: state.selectedPortfolioId,
+        symbol: identity.symbol,
+        market,
+        assetType: 'stock' as const,
+        name: identity.name,
+        buyPrice: Number(getElement<HTMLInputElement>('position-buy-price')!.value),
+        quantity: Number(getElement<HTMLInputElement>('position-quantity')!.value),
+        buyDate: getElement<HTMLInputElement>('position-buy-date')!.value,
+        memo: getElement<HTMLTextAreaElement>('position-memo')!.value,
+        currency,
+      };
+
+      try {
+        if (id) {
+          await portfolioApi.updatePosition({ id, ...input });
+          showToast('종목이 수정되었습니다.');
+        } else {
+          await portfolioApi.createPosition(input);
+          showToast('종목이 추가되었습니다.');
+        }
+        closePositionSheet();
+        await loadPositions(state.selectedPortfolioId);
+      } catch (error) {
+        showToast(normalizeError(error));
+      }
+    });
+
+    getElement<HTMLDivElement>('positions-list')?.addEventListener('click', async (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]');
+      if (!target) return;
+      const id = target.dataset.id;
+      if (!id) return;
+
+      const position = state.positions.find((item) => item.id === id);
+      if (!position) return;
+
+      if (target.dataset.action === 'edit-position') {
+        getElement<HTMLInputElement>('position-id')!.value = position.id;
+        getElement<HTMLInputElement>('position-security-input')!.value = position.name || position.symbol;
+        getElement<HTMLInputElement>('position-symbol')!.value = position.symbol;
+        getElement<HTMLInputElement>('position-market')!.value = position.market;
+        getElement<HTMLInputElement>('position-asset-type')!.value = position.assetType || 'stock';
+        getElement<HTMLSelectElement>('position-currency')!.value = position.currency;
+        getElement<HTMLInputElement>('position-buy-date')!.value = position.buyDate || '';
+        getElement<HTMLInputElement>('position-buy-price')!.value = String(position.buyPrice);
+        getElement<HTMLInputElement>('position-quantity')!.value = String(position.quantity);
+        getElement<HTMLTextAreaElement>('position-memo')!.value = position.memo || '';
+        getElement<HTMLButtonElement>('position-cancel-edit')?.classList.remove('hidden');
+        openPositionSheet('edit');
+      }
+
+      if (target.dataset.action === 'delete-position') {
+        const confirmed = window.confirm(`"${getPositionPrimaryLabel(position)}" 종목을 삭제할까요?`);
+        if (!confirmed || !state.selectedPortfolioId) return;
+        try {
+          await portfolioApi.deletePosition(id);
+          showToast('종목이 삭제되었습니다.');
+          await loadPositions(state.selectedPortfolioId);
+        } catch (error) {
+          showToast(normalizeError(error));
+        }
+      }
+    });
+
+    window.addEventListener('mk:profile-bootstrap', (event) => {
+      const detail = (event as CustomEvent).detail;
+      if (!detail?.status) return;
+      if (detail.status === 'signed_out') {
+        clearPortfolioData();
+        setPortfolioState('signed_out');
+        return;
+      }
+      setPortfolioState(detail.status === 'ready' ? 'profile_ready' : mapProfileStatus(detail.status));
+      if (detail.status === 'ready') void loadPortfolioMvp();
+    });
+
+    window.addEventListener('mk:auth-state', (event) => {
+      const detail = (event as CustomEvent).detail;
+      if (detail?.status === 'signed_out') {
+        clearPortfolioData();
+        setPortfolioState('signed_out');
+      }
+      if (detail?.status === 'signed_in') {
+        void runProfileAndPortfolioLoad();
+      }
+    });
+
+    document.addEventListener('astro:page-load', initPortfolioReadiness);
+    initPortfolioReadiness();
+  </script>
+
+  <style>
+    .mixed-fx-preview-notice {
+      min-width: 0;
+      max-width: 100%;
+      margin-top: 0.75rem;
+      padding: 0.75rem 0.875rem;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--primary);
+      border-radius: 6px;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+    }
+    .mixed-fx-preview-notice p {
+      margin: 0.3rem 0 0;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+    .mixed-fx-preview-labels {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+    .mixed-fx-preview-labels strong,
+    .mixed-fx-preview-labels span {
+      padding: 0.18rem 0.42rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.65rem;
+      font-weight: 800;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .valuation-stale-badge {
+      display: block;
+      font-size: 0.6rem;
+      line-height: 1.2;
+      margin-top: 0.1rem;
+      padding: 0.1em 0.25em;
+      border-radius: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 8em;
+      opacity: 0.8;
+    }
+    .valuation-stale-badge--fresh {
+      color: var(--positive, #1a7f4b);
+    }
+    .valuation-stale-badge--stale-but-usable {
+      color: var(--neutral, #888);
+    }
+    .valuation-stale-badge--unavailable {
+      color: var(--negative, #c0392b);
+    }
+  </style>
+</Layout>

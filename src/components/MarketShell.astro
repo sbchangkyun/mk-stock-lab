@@ -1,0 +1,752 @@
+---
+import { hierarchy, treemap, treemapSquarify, type HierarchyRectangularNode } from 'd3-hierarchy';
+import { marketPeriods, marketUniverses, type MarketConstituent, type MarketPeriodId, type MarketUniverseId } from '../data/marketTreemapSamples';
+import MarketLiveQuoteCard from './MarketLiveQuoteCard.astro';
+
+type Rect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type TreemapTile = Rect & {
+  key: string;
+  clipId: string;
+  symbol: string;
+  name: string;
+  market: string;
+  sector: string;
+  value: number;
+  changePct: number;
+  sourcePortfolios: string[];
+};
+
+type TreemapSector = Rect & {
+  key: string;
+  label: string;
+  value: number;
+  tiles: TreemapTile[];
+};
+
+type DashboardView = {
+  id: string;
+  universeId: MarketUniverseId;
+  periodId: MarketPeriodId;
+  portfolioScopeId: string;
+  portfolioScopeLabel: string;
+  titleLabel: string;
+  universeLabel: string;
+  periodLabel: string;
+  asOf: string;
+  currency: string;
+  treemapId: string;
+  scatterId: string;
+  sectors: TreemapSector[];
+  scatterPoints: Array<{
+    symbol: string;
+    name: string;
+    market: string;
+    sector: string;
+    x: number;
+    y: number;
+    labelX: number;
+    labelY: number;
+    showLabel: boolean;
+    momentum: number;
+    trend: number;
+    changePct: number;
+    color: string;
+    sourcePortfolios: string[];
+  }>;
+  gainers: number;
+  decliners: number;
+};
+
+type TreemapDatum = {
+  name: string;
+  value?: number;
+  sector?: string;
+  item?: MarketConstituent;
+  children?: TreemapDatum[];
+};
+
+const treemapWidth = 1120;
+const treemapHeight = 500;
+const scatterWidth = 720;
+const scatterHeight = 460;
+const plot = { x: 58, y: 46, width: 618, height: 350 };
+const returnScale = [
+  { label: '-5% 이하', color: '#174ea6' },
+  { label: '-3%', color: '#2563eb' },
+  { label: '-1%', color: '#7aa5f8' },
+  { label: '0%', color: '#9aa4b2' },
+  { label: '+1%', color: '#f29a76' },
+  { label: '+3%', color: '#d54a3f' },
+  { label: '+5% 이상', color: '#9d1c22' },
+];
+
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+const formatChange = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+const formatValue = (value: number, currency: string) => `${value.toLocaleString('en-US')} ${currency}`;
+const safeToken = (value: string) => value.replace(/[^a-zA-Z0-9_-]/g, '-');
+const aggregatePortfolioScopeId = 'all';
+
+type PortfolioScopeView = {
+  id: string;
+  label: string;
+  constituents: MarketConstituent[];
+};
+
+const displayNameFor = (item: MarketConstituent) => item.displayName || item.name || item.symbol;
+
+const marketFor = (item: MarketConstituent) => item.market || (/^\d+$/.test(item.symbol) ? 'KR' : 'US');
+
+const securityKeyFor = (item: MarketConstituent) => `${marketFor(item)}:${item.symbol.toUpperCase()}`;
+
+const weightedAverage = (current: number, currentValue: number, next: number, nextValue: number) => {
+  const total = currentValue + nextValue;
+  if (total <= 0) return next;
+  return (current * currentValue + next * nextValue) / total;
+};
+
+const aggregatePortfolioConstituents = (scopes: NonNullable<(typeof marketUniverses)[number]['portfolioScopes']>) => {
+  const merged = new Map<string, MarketConstituent>();
+
+  scopes.forEach((scope) => {
+    scope.constituents.forEach((item) => {
+      const key = securityKeyFor(item);
+      const current = merged.get(key);
+      if (!current) {
+        merged.set(key, {
+          ...item,
+          market: marketFor(item),
+          name: item.name,
+          displayName: displayNameFor(item),
+          sourcePortfolios: [scope.label],
+        });
+        return;
+      }
+
+      const currentValue = current.value;
+      const nextValue = item.value;
+      const sourcePortfolios = new Set([...(current.sourcePortfolios ?? []), scope.label]);
+      merged.set(key, {
+        ...current,
+        value: current.value + item.value,
+        baseChangePct: weightedAverage(current.baseChangePct, currentValue, item.baseChangePct, nextValue),
+        momentum: weightedAverage(current.momentum, currentValue, item.momentum, nextValue),
+        trend: weightedAverage(current.trend, currentValue, item.trend, nextValue),
+        sourcePortfolios: [...sourcePortfolios],
+      });
+    });
+  });
+
+  return [...merged.values()].sort((a, b) => b.value - a.value);
+};
+
+const getPortfolioScopeViews = (universe: (typeof marketUniverses)[number]): PortfolioScopeView[] => {
+  if (universe.id !== 'my-portfolio' || !universe.portfolioScopes?.length) {
+    return [{ id: aggregatePortfolioScopeId, label: 'All', constituents: universe.constituents }];
+  }
+
+  return [
+    {
+      id: aggregatePortfolioScopeId,
+      label: '전체 보기',
+      constituents: aggregatePortfolioConstituents(universe.portfolioScopes),
+    },
+    ...universe.portfolioScopes.map((scope) => ({
+      id: scope.id,
+      label: scope.label,
+      constituents: scope.constituents.map((item) => ({
+        ...item,
+        market: marketFor(item),
+        displayName: displayNameFor(item),
+        sourcePortfolios: [scope.label],
+      })),
+    })),
+  ];
+};
+
+const colorForChange = (changePct: number) => {
+  if (changePct >= 5) return '#9d1c22';
+  if (changePct >= 3) return '#d54a3f';
+  if (changePct >= 1) return '#f29a76';
+  if (changePct <= -5) return '#174ea6';
+  if (changePct <= -3) return '#2563eb';
+  if (changePct <= -1) return '#7aa5f8';
+  return '#9aa4b2';
+};
+
+const returnForPeriod = (item: MarketConstituent, multiplier: number) =>
+  clamp(item.baseChangePct * multiplier + item.trend * Math.max(0, multiplier - 1) * 0.16, -12, 12);
+
+const nodeRect = (node: HierarchyRectangularNode<TreemapDatum>): Rect => ({
+  x: node.x0,
+  y: node.y0,
+  width: Math.max(0, node.x1 - node.x0),
+  height: Math.max(0, node.y1 - node.y0),
+});
+
+const buildTreemap = (items: MarketConstituent[], multiplier: number): TreemapSector[] => {
+  const sectorMap = new Map<string, MarketConstituent[]>();
+  items.forEach((item) => {
+    const sectorItems = sectorMap.get(item.sector) ?? [];
+    sectorItems.push(item);
+    sectorMap.set(item.sector, sectorItems);
+  });
+
+  const sectors = [...sectorMap.entries()]
+    .map(([label, sectorItems]) => ({
+      label,
+      value: sectorItems.reduce((sum, item) => sum + item.value, 0),
+      items: sectorItems.sort((a, b) => b.value - a.value),
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  const root = hierarchy<TreemapDatum>({
+    name: 'Market',
+    children: sectors.map((sector) => ({
+      name: sector.label,
+      sector: sector.label,
+      children: sector.items.map((item) => ({
+        name: displayNameFor(item),
+        value: item.value,
+        sector: sector.label,
+        item,
+      })),
+    })),
+  })
+    .sum((datum) => datum.value ?? 0)
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
+  treemap<TreemapDatum>()
+    .tile(treemapSquarify.ratio(1.18))
+    .size([treemapWidth, treemapHeight])
+    .round(true)
+    .paddingOuter(4)
+    .paddingInner(3)
+    .paddingTop((node) => (node.depth === 1 ? 22 : 0))(root);
+
+  return (root.children ?? []).map((sectorNode, sectorIndex) => {
+    const sectorRect = nodeRect(sectorNode);
+    const tiles = sectorNode.leaves().map((leaf, tileIndex) => {
+      const item = leaf.data.item as MarketConstituent;
+      return {
+        ...nodeRect(leaf),
+        key: `${sectorNode.data.name}-${item.symbol}-${tileIndex}`,
+        clipId: safeToken(`clip-${sectorNode.data.name}-${item.symbol}-${tileIndex}`),
+        symbol: item.symbol,
+        name: displayNameFor(item),
+        market: marketFor(item),
+        sector: item.sector,
+        value: item.value,
+        changePct: returnForPeriod(item, multiplier),
+        sourcePortfolios: item.sourcePortfolios ?? [],
+      };
+    });
+
+    return {
+      ...sectorRect,
+      key: `${sectorNode.data.name}-${sectorIndex}`,
+      label: sectorNode.data.name,
+      value: sectorNode.value ?? 0,
+      tiles,
+    };
+  });
+};
+
+const buildScatterPoints = (items: MarketConstituent[], multiplier: number) =>
+  items.map((item, index) => {
+    const trend = clamp(item.trend * (0.55 + multiplier * 0.12), -10, 10);
+    const momentum = clamp(item.momentum * (0.72 + multiplier * 0.1), -10, 10);
+    const x = plot.x + ((trend + 10) / 20) * plot.width;
+    const y = plot.y + ((10 - momentum) / 20) * plot.height;
+    const changePct = returnForPeriod(item, multiplier);
+    const labelAbove = index % 3 === 1;
+    const labelLeft = index % 4 === 2;
+
+    return {
+      symbol: item.symbol,
+      name: displayNameFor(item),
+      market: marketFor(item),
+      sector: item.sector,
+      x: clamp(x, plot.x + 10, plot.x + plot.width - 10),
+      y: clamp(y, plot.y + 10, plot.y + plot.height - 10),
+      labelX: labelLeft ? -12 : 12,
+      labelY: labelAbove ? -10 : 5,
+      showLabel: item.value >= 80 || index < 10,
+      momentum,
+      trend,
+      changePct,
+      color: colorForChange(changePct),
+      sourcePortfolios: item.sourcePortfolios ?? [],
+    };
+  });
+
+const dashboards: DashboardView[] = marketUniverses.flatMap((universe) =>
+  getPortfolioScopeViews(universe).flatMap((scope) => marketPeriods.map((period) => {
+    const id = `${universe.id}-${scope.id}-${period.id}`;
+    const sectors = buildTreemap(scope.constituents, period.multiplier);
+    const allTiles = sectors.flatMap((sector) => sector.tiles);
+
+    return {
+      id,
+      universeId: universe.id,
+      periodId: period.id,
+      portfolioScopeId: scope.id,
+      portfolioScopeLabel: scope.label,
+      titleLabel: universe.id === 'my-portfolio' ? `${universe.label} · ${scope.label}` : universe.label,
+      universeLabel: universe.label,
+      periodLabel: period.label,
+      asOf: universe.asOf,
+      currency: universe.currency,
+      treemapId: `market-${universe.id}-${scope.id}-${period.id}-treemap`,
+      scatterId: `market-${universe.id}-${scope.id}-${period.id}-scatter`,
+      sectors,
+      scatterPoints: buildScatterPoints(scope.constituents, period.multiplier),
+      gainers: allTiles.filter((tile) => tile.changePct > 0.5).length,
+      decliners: allTiles.filter((tile) => tile.changePct < -0.5).length,
+    };
+  })),
+);
+
+const firstView = dashboards[0];
+const portfolioScopeOptions = getPortfolioScopeViews(marketUniverses.find((universe) => universe.id === 'my-portfolio') ?? marketUniverses[0]);
+const cameraPath =
+  'M4 7.5h3l1.3-2h7.4l1.3 2h3a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-1.8a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4Z';
+const expandPath = 'M4 9V4h5v2H7.4l3.1 3.1-1.4 1.4L6 7.4V9H4Zm11 0V7.4l-3.1 3.1-1.4-1.4L13.6 6H12V4h5v5h-2ZM4 15h2v1.6l3.1-3.1 1.4 1.4L7.4 18H9v2H4v-5Zm13 0v5h-5v-2h1.6l-3.1-3.1 1.4-1.4 3.1 3.1V15h2Z';
+const isMarketQuoteCardEnabled = import.meta.env.KIS_ENABLE_MARKET_QUOTE_CARD === 'true';
+---
+
+<header class="page-header market-page-header">
+  <div>
+    <p class="eyebrow">Market</p>
+    <h1>시장</h1>
+    <p class="lead">
+      선택한 시장을 하나의 Treemap과 모멘텀 산점도로 비교하는 provider-free 대시보드입니다. 현재 수치는 샘플 데이터이며 실시간 연동은 다음 단계에서 다룹니다.
+    </p>
+  </div>
+</header>
+
+<MarketLiveQuoteCard enabled={isMarketQuoteCardEnabled} />
+
+<section class="market-dashboard" data-market-dashboard data-active-universe={firstView.universeId} data-active-period={firstView.periodId} data-active-view="treemap" data-active-portfolio-scope={aggregatePortfolioScopeId}>
+  <div class="market-control-panel" aria-label="시장 대시보드 선택">
+    <div class="market-control-group">
+      <span class="market-control-label">시장</span>
+      <div class="market-tab-list" role="tablist" aria-label="시장 선택">
+        {marketUniverses.map((universe, index) => (
+          <button
+            class:list={['market-tab-button', index === 0 && 'is-active']}
+            type="button"
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            data-market-universe-tab={universe.id}
+          >
+            {universe.label}
+          </button>
+        ))}
+      </div>
+    </div>
+    <div class="market-control-group">
+      <span class="market-control-label">기간</span>
+      <div class="market-tab-list compact" role="tablist" aria-label="기간 선택">
+        {marketPeriods.map((period, index) => (
+          <button
+            class:list={['market-tab-button', index === 0 && 'is-active']}
+            type="button"
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            data-market-period-tab={period.id}
+          >
+            {period.label}
+          </button>
+        ))}
+      </div>
+    </div>
+    <div class="market-control-group market-portfolio-scope-group">
+      <span class="market-control-label">포트폴리오</span>
+      <div class="market-tab-list compact" role="tablist" aria-label="포트폴리오 보기 선택">
+        {portfolioScopeOptions.map((scope, index) => (
+          <button
+            class:list={['market-tab-button', index === 0 && 'is-active']}
+            type="button"
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            data-market-portfolio-scope-tab={scope.id}
+          >
+            {scope.label}
+          </button>
+        ))}
+      </div>
+    </div>
+    <div class="market-control-group">
+      <span class="market-control-label">보기</span>
+      <div class="market-tab-list compact" role="tablist" aria-label="보기 선택">
+        <button class="market-tab-button is-active" type="button" role="tab" aria-selected="true" data-market-view-tab="treemap">
+          Treemap
+        </button>
+        <button class="market-tab-button" type="button" role="tab" aria-selected="false" data-market-view-tab="momentum">
+          Momentum / Trend
+        </button>
+        <button class="market-tab-button" type="button" role="tab" aria-selected="false" data-market-view-tab="combined">
+          같이 보기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="market-dashboard-stage">
+    {dashboards.map((view, index) => (
+      <section
+        class:list={['market-dashboard-panel', index !== 0 && 'hidden']}
+        data-market-panel
+        data-market-universe={view.universeId}
+        data-market-period={view.periodId}
+        data-market-portfolio-scope={view.portfolioScopeId}
+        aria-hidden={index === 0 ? 'false' : 'true'}
+      >
+        <div class="market-summary-row">
+          <div>
+            <p class="eyebrow">Treemap Dashboard</p>
+            <h2>{view.titleLabel} · {view.periodLabel}</h2>
+          </div>
+          <div class="market-summary-metrics" aria-label={`${view.universeLabel} summary`}>
+            <span><strong>{view.gainers}</strong> 상승</span>
+            <span><strong>{view.decliners}</strong> 하락</span>
+            <span>{view.asOf}</span>
+          </div>
+        </div>
+
+        <div class="market-dashboard-grid">
+          <article class="market-chart-card market-treemap-card" id={view.treemapId} data-market-view-card="treemap" data-exportable-card>
+            <div class="market-card-header">
+              <div>
+                <h3>{view.titleLabel} Treemap</h3>
+                <p>섹터별 그룹과 종목 비중을 함께 보여주는 squarified 샘플 Treemap입니다.</p>
+              </div>
+              <div class="market-card-actions" data-card-actions>
+                <button
+                  class="chart-export-button"
+                  type="button"
+                  data-expand-card
+                  data-expand-target={view.treemapId}
+                  data-export-filename={`mk-stock-lab-market-${view.universeId}-${view.portfolioScopeId}-${view.periodId}-treemap`}
+                  aria-label="크게 보기"
+                  title="크게 보기"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={expandPath} /></svg>
+                </button>
+                <button
+                  class="chart-export-button"
+                  type="button"
+                  data-export-card
+                  data-export-target={view.treemapId}
+                  data-export-filename={`mk-stock-lab-market-${view.universeId}-${view.portfolioScopeId}-${view.periodId}-treemap`}
+                  data-export-width="1200"
+                  aria-label="이미지로 저장"
+                  title="이미지로 저장"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={cameraPath} /></svg>
+                </button>
+              </div>
+            </div>
+
+            <svg class="market-treemap-svg" viewBox={`0 0 ${treemapWidth} ${treemapHeight}`} role="img" aria-label={`${view.titleLabel} ${view.periodLabel} Treemap`}>
+              <rect x="0" y="0" width={treemapWidth} height={treemapHeight} rx="14" fill="#f8fafc" />
+              {view.sectors.map((sector) => (
+                <g>
+                  <rect x={sector.x} y={sector.y} width={sector.width} height={sector.height} rx="10" fill="#edf2f7" stroke="#cbd5e1" stroke-width="1.5" />
+                  {sector.width > 112 && sector.height > 58 && (
+                    <text x={sector.x + 10} y={sector.y + 18} class="market-treemap-sector-label">{sector.label}</text>
+                  )}
+                  {sector.tiles.map((tile) => (
+                    <g>
+                      <title>{`${tile.name} (${tile.symbol}) ${formatChange(tile.changePct)} · ${formatValue(tile.value, view.currency)}${tile.sourcePortfolios.length ? ` · ${tile.sourcePortfolios.join(', ')}` : ''}`}</title>
+                      <clipPath id={`${view.id}-${tile.clipId}`}>
+                        <rect x={tile.x} y={tile.y} width={tile.width} height={tile.height} rx="5" />
+                      </clipPath>
+                      <rect
+                        x={tile.x}
+                        y={tile.y}
+                        width={tile.width}
+                        height={tile.height}
+                        rx="5"
+                        fill={colorForChange(tile.changePct)}
+                        stroke="#ffffff"
+                        stroke-width="1.4"
+                      />
+                      {(tile.width > 76 && tile.height > 42) && (
+                        <g clip-path={`url(#${view.id}-${tile.clipId})`}>
+                          <text x={tile.x + 8} y={tile.y + 18} class="market-treemap-symbol">{tile.name}</text>
+                          <text x={tile.x + 8} y={tile.y + 37} class="market-treemap-change">{formatChange(tile.changePct)}</text>
+                        </g>
+                      )}
+                      {(tile.width > 54 && tile.height > 28 && !(tile.width > 76 && tile.height > 42)) && (
+                        <g clip-path={`url(#${view.id}-${tile.clipId})`}>
+                          <text x={tile.x + 7} y={tile.y + 18} class="market-treemap-symbol compact">{tile.name}</text>
+                        </g>
+                      )}
+                    </g>
+                  ))}
+                </g>
+              ))}
+            </svg>
+
+            <div class="market-return-scale" aria-label="수익률 색상 범례">
+              <div class="market-return-ramp" aria-hidden="true">
+                {returnScale.map((step) => <span style={`background:${step.color}`}></span>)}
+              </div>
+              <div class="market-return-labels">
+                {returnScale.map((step) => <span>{step.label}</span>)}
+              </div>
+            </div>
+          </article>
+
+          <article class="market-chart-card market-scatter-card" id={view.scatterId} data-market-view-card="momentum" data-exportable-card>
+            <div class="market-card-header">
+              <div>
+                <h3>{view.titleLabel} Momentum / Trend</h3>
+                <p>같은 시장과 기간의 단기 모멘텀과 장기 트렌드를 비교합니다.</p>
+              </div>
+              <div class="market-card-actions" data-card-actions>
+                <button
+                  class="chart-export-button"
+                  type="button"
+                  data-expand-card
+                  data-expand-target={view.scatterId}
+                  data-export-filename={`mk-stock-lab-market-${view.universeId}-${view.portfolioScopeId}-${view.periodId}-scatter`}
+                  aria-label="크게 보기"
+                  title="크게 보기"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={expandPath} /></svg>
+                </button>
+                <button
+                  class="chart-export-button"
+                  type="button"
+                  data-export-card
+                  data-export-target={view.scatterId}
+                  data-export-filename={`mk-stock-lab-market-${view.universeId}-${view.portfolioScopeId}-${view.periodId}-scatter`}
+                  data-export-width="800"
+                  aria-label="이미지로 저장"
+                  title="이미지로 저장"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={cameraPath} /></svg>
+                </button>
+              </div>
+            </div>
+            <svg class="market-scatter-chart" viewBox={`0 0 ${scatterWidth} ${scatterHeight}`} role="img" aria-label={`${view.titleLabel} ${view.periodLabel} momentum trend scatter`}>
+              <rect x="0" y="0" width={scatterWidth} height={scatterHeight} rx="16" fill="#ffffff" />
+              <rect x={plot.x} y={plot.y} width={plot.width} height={plot.height} rx="10" fill="#f8fafc" stroke="#d8e2ee" />
+              <line x1={plot.x + plot.width / 2} y1={plot.y} x2={plot.x + plot.width / 2} y2={plot.y + plot.height} stroke="#aeb8c6" stroke-width="1" />
+              <line x1={plot.x} y1={plot.y + plot.height / 2} x2={plot.x + plot.width} y2={plot.y + plot.height / 2} stroke="#aeb8c6" stroke-width="1" />
+              <text x={plot.x} y={plot.y - 22} class="scatter-axis-label">단기 모멘텀</text>
+              <text x={plot.x + plot.width} y={plot.y + plot.height + 30} text-anchor="end" class="scatter-axis-label">장기 트렌드</text>
+              <text x={plot.x + plot.width - 108} y={plot.y + 24} class="scatter-quadrant">강한 추세</text>
+              <text x={plot.x + 16} y={plot.y + 24} class="scatter-quadrant">반등 후보</text>
+              <text x={plot.x + plot.width - 112} y={plot.y + plot.height - 18} class="scatter-quadrant">추세 둔화</text>
+              <text x={plot.x + 16} y={plot.y + plot.height - 18} class="scatter-quadrant">약한 흐름</text>
+              {view.scatterPoints.map((point) => (
+                <g class="scatter-point" transform={`translate(${point.x} ${point.y})`} aria-label={`${point.name} ${point.symbol}`}>
+                  <title>{`${point.name} (${point.symbol}) · Momentum ${point.momentum.toFixed(1)} · Trend ${point.trend.toFixed(1)}${point.sourcePortfolios.length ? ` · ${point.sourcePortfolios.join(', ')}` : ''}`}</title>
+                  <circle r="7.5" fill={point.color} stroke="#ffffff" stroke-width="2" />
+                  {point.showLabel && (
+                    <text x={point.labelX} y={point.labelY} text-anchor={point.labelX < 0 ? 'end' : 'start'}>{point.name}</text>
+                  )}
+                </g>
+              ))}
+            </svg>
+          </article>
+        </div>
+      </section>
+    ))}
+  </div>
+</section>
+
+<div class="market-card-modal hidden" id="marketCardModal" aria-hidden="true">
+  <div class="market-card-modal-backdrop" data-close-expanded-card></div>
+  <div class="market-card-modal-panel" role="dialog" aria-modal="true" aria-label="크게 보기">
+    <div class="market-card-modal-actions" data-card-actions>
+      <button class="chart-export-button" type="button" id="marketModalExportButton" aria-label="이미지로 저장" title="이미지로 저장">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d={cameraPath} /></svg>
+      </button>
+      <button class="chart-export-button" type="button" data-close-expanded-card aria-label="닫기" title="닫기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /></svg>
+      </button>
+    </div>
+    <div class="market-card-modal-content" id="marketCardModalContent" data-exportable-card></div>
+  </div>
+</div>
+
+<script>
+  import { exportCardAsPng, setupCardImageExport } from '../lib/exportCardImage';
+
+  const setupMarketDashboardControls = () => {
+    const dashboard = document.querySelector<HTMLElement>('[data-market-dashboard]');
+    if (!dashboard || dashboard.dataset.controlsReady === 'true') return;
+    dashboard.dataset.controlsReady = 'true';
+
+    const universeTabs = Array.from(dashboard.querySelectorAll<HTMLButtonElement>('[data-market-universe-tab]'));
+    const periodTabs = Array.from(dashboard.querySelectorAll<HTMLButtonElement>('[data-market-period-tab]'));
+    const viewTabs = Array.from(dashboard.querySelectorAll<HTMLButtonElement>('[data-market-view-tab]'));
+    const portfolioScopeTabs = Array.from(dashboard.querySelectorAll<HTMLButtonElement>('[data-market-portfolio-scope-tab]'));
+    const panels = Array.from(dashboard.querySelectorAll<HTMLElement>('[data-market-panel]'));
+
+    const normalizePortfolioScope = (universe: string, scope: string) =>
+      universe === 'my-portfolio' ? scope || 'all' : 'all';
+
+    const setActive = (universe: string, period: string, view: string, portfolioScope = 'all') => {
+      const activePortfolioScope = normalizePortfolioScope(universe, portfolioScope);
+      dashboard.dataset.activeUniverse = universe;
+      dashboard.dataset.activePeriod = period;
+      dashboard.dataset.activeView = view;
+      dashboard.dataset.activePortfolioScope = activePortfolioScope;
+
+      universeTabs.forEach((tab) => {
+        const active = tab.dataset.marketUniverseTab === universe;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      periodTabs.forEach((tab) => {
+        const active = tab.dataset.marketPeriodTab === period;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      viewTabs.forEach((tab) => {
+        const active = tab.dataset.marketViewTab === view;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      portfolioScopeTabs.forEach((tab) => {
+        const active = tab.dataset.marketPortfolioScopeTab === activePortfolioScope;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      panels.forEach((panel) => {
+        const active =
+          panel.dataset.marketUniverse === universe &&
+          panel.dataset.marketPeriod === period &&
+          panel.dataset.marketPortfolioScope === activePortfolioScope;
+        panel.classList.toggle('hidden', !active);
+        panel.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+    };
+
+    universeTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const universe = tab.dataset.marketUniverseTab;
+        const period = dashboard.dataset.activePeriod;
+        const view = dashboard.dataset.activeView || 'treemap';
+        const portfolioScope = universe === 'my-portfolio' ? dashboard.dataset.activePortfolioScope || 'all' : 'all';
+        if (universe && period) setActive(universe, period, view, portfolioScope);
+      });
+    });
+
+    periodTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const universe = dashboard.dataset.activeUniverse;
+        const period = tab.dataset.marketPeriodTab;
+        const view = dashboard.dataset.activeView || 'treemap';
+        const portfolioScope = dashboard.dataset.activePortfolioScope || 'all';
+        if (universe && period) setActive(universe, period, view, portfolioScope);
+      });
+    });
+
+    viewTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const universe = dashboard.dataset.activeUniverse;
+        const period = dashboard.dataset.activePeriod;
+        const view = tab.dataset.marketViewTab;
+        const portfolioScope = dashboard.dataset.activePortfolioScope || 'all';
+        if (universe && period && view) setActive(universe, period, view, portfolioScope);
+      });
+    });
+
+    portfolioScopeTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const universe = dashboard.dataset.activeUniverse;
+        const period = dashboard.dataset.activePeriod;
+        const view = dashboard.dataset.activeView || 'treemap';
+        const portfolioScope = tab.dataset.marketPortfolioScopeTab;
+        if (universe && period && portfolioScope) setActive(universe, period, view, portfolioScope);
+      });
+    });
+  };
+
+  const setupMarketCardModal = () => {
+    const modal = document.getElementById('marketCardModal');
+    const content = document.getElementById('marketCardModalContent');
+    const exportButton = document.getElementById('marketModalExportButton') as HTMLButtonElement | null;
+    if (!modal || !content || modal.dataset.ready === 'true') return;
+    modal.dataset.ready = 'true';
+
+    let currentFilename = 'mk-stock-lab-market-card';
+
+    const close = () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+      content.replaceChildren();
+      document.body.classList.remove('modal-open');
+    };
+
+    const open = (card: HTMLElement, filename: string) => {
+      const clone = card.cloneNode(true) as HTMLElement;
+      clone.removeAttribute('id');
+      clone.querySelectorAll('[data-card-actions]').forEach((node) => node.remove());
+      content.replaceChildren(clone);
+      currentFilename = filename;
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+    };
+
+    document.querySelectorAll<HTMLButtonElement>('[data-expand-card]').forEach((button) => {
+      if (button.dataset.expandReady === 'true') return;
+      button.dataset.expandReady = 'true';
+      button.addEventListener('click', () => {
+        const targetId = button.dataset.expandTarget;
+        const target = targetId ? document.getElementById(targetId) : null;
+        if (!target) return;
+        open(target, button.dataset.exportFilename || targetId || 'mk-stock-lab-market-card');
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-close-expanded-card]').forEach((closeTarget) => {
+      if (closeTarget.dataset.closeReady === 'true') return;
+      closeTarget.dataset.closeReady = 'true';
+      closeTarget.addEventListener('click', close);
+    });
+
+    exportButton?.addEventListener('click', async () => {
+      const target = content.querySelector<HTMLElement>('.market-chart-card');
+      if (!target) return;
+      exportButton.disabled = true;
+      try {
+        await exportCardAsPng(target, currentFilename);
+      } catch {
+        window.alert('이미지 저장을 완료하지 못했습니다. Chrome에서 다시 시도해 주세요.');
+      } finally {
+        exportButton.disabled = false;
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
+    });
+  };
+
+  document.addEventListener('astro:page-load', () => {
+    setupCardImageExport();
+    setupMarketDashboardControls();
+    setupMarketCardModal();
+  });
+  setupCardImageExport();
+  setupMarketDashboardControls();
+  setupMarketCardModal();
+</script>

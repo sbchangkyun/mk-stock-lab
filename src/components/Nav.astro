@@ -1,48 +1,30 @@
 ---
-/* src/components/Nav.astro - 최적화 버전 */
+const { currentPath = '/' } = Astro.props;
+const navItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Chart AI', href: '/chart-ai' },
+  { label: '시장', href: '/market', aliases: ['/heatmap'] },
+  { label: 'Lab', href: '/lab' },
+  { label: '포트폴리오', href: '/portfolio' },
+];
+
+const isActive = (item: (typeof navItems)[number]) => {
+  const { href } = item;
+  if (href === '/') return currentPath === '/';
+  return (
+    currentPath === href ||
+    currentPath.startsWith(`${href}/`) ||
+    Boolean(item.aliases?.some((alias) => currentPath === alias || currentPath.startsWith(`${alias}/`)))
+  );
+};
 ---
-<nav class="nav-menu-wrapper">
-    <ul class="nav-menu">
-        <li class="nav-item" onclick="handleNav(this, '포트폴리오', '/')">💼 포트폴리오</li>
-        <li class="nav-item" onclick="handleNav(this, '경제 뉴스', '/')">경제 뉴스</li>
-        <li class="nav-item" onclick="handleNav(this, '크립토 뉴스', '/')">크립토 뉴스</li>
-        <li class="nav-item" onclick="handleNav(this, '실시간', '/')">실시간</li>
-        <li class="nav-item" id="nav-seibro" onclick="location.href='/seibro'">수급 분석</li>
 
-</ul>
-
-
+<nav class="primary-nav" aria-label="주요 메뉴">
+  <div class="nav-inner">
+    {navItems.map((item) => (
+      <a class:list={['nav-link', { active: isActive(item) }]} href={item.href}>
+        {item.label}
+      </a>
+    ))}
+  </div>
 </nav>
-
-<script is:inline>
-    window.handleNav = function(element, menuName, targetPath) {
-        const isHomePage = window.location.pathname === '/' || window.location.pathname === '/index.html';
-        
-        // 1. 수급 분석 페이지에서 클릭한 경우
-        if (window.location.pathname.includes('seibro')) {
-            if (menuName === '수급 분석') return; // 현재 페이지면 무시
-            // 메인으로 이동하며 메뉴 이름을 전달
-            window.location.href = `/?menu=${encodeURIComponent(menuName)}`;
-            return;
-        }
-
-        // 2. 메인 페이지에서 클릭한 경우 (SPA 방식 탭 전환)
-        if (isHomePage) {
-            if (window.changeMenu) {
-                window.changeMenu(element, menuName);
-            }
-        } else {
-            // 그 외 페이지(혹시 모를 에러 방지용)
-            window.location.href = `/?menu=${encodeURIComponent(menuName)}`;
-        }
-    };        
-
-    // ✅ [추가] /seibro 페이지 진입 시 '수급 분석' 메뉴에 active 클래스 적용
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.location.pathname.includes('seibro')) {
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            const seibroNav = document.getElementById('nav-seibro');
-            if (seibroNav) seibroNav.classList.add('active');
-        }
-    });
-</script>

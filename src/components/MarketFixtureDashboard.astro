@@ -1,0 +1,200 @@
+---
+import data from '../data/marketFixtureDashboard.json';
+
+// --- SVG trend chart computation (SSR, no client JS) ---
+const SVG_W = 600;
+const SVG_H = 205;
+const PLOT_X = 44;
+const PLOT_Y = 14;
+const PLOT_W = 510;
+const PLOT_H = 160;
+
+const allVals = data.trendChart.series.flatMap((s) => s.values);
+const dataMin = Math.min(...allVals);
+const dataMax = Math.max(...allVals);
+const pad = (dataMax - dataMin) * 0.18 + 0.8;
+const minVal = dataMin - pad;
+const maxVal = dataMax + pad;
+const vRange = maxVal - minVal;
+const nLabels = data.trendChart.labels.length;
+
+const xFor = (i: number) => PLOT_X + (i / (nLabels - 1)) * PLOT_W;
+const yFor = (v: number) => PLOT_Y + (1 - (v - minVal) / vRange) * PLOT_H;
+
+const getSeriesColor = (id: string) => {
+  if (id === 'kospi') return '#2563eb';
+  if (id === 'sp500') return '#d54a3f';
+  if (id === 'nasdaq100') return '#16a34a';
+  return '#9aa4b2';
+};
+
+const seriesLines = data.trendChart.series.map((s) => ({
+  ...s,
+  color: getSeriesColor(s.id),
+  points: s.values.map((v, i) => `${xFor(i).toFixed(1)},${yFor(v).toFixed(1)}`).join(' '),
+}));
+
+const baseLineY = yFor(100).toFixed(1);
+const baseLabelY = (yFor(100) + 4).toFixed(1);
+
+const xLabels = data.trendChart.labels.map((label, i) => ({
+  label,
+  x: xFor(i).toFixed(1),
+}));
+
+// --- Comparison bars computation ---
+const maxAbs = Math.max(...data.comparison.items.map((item) => Math.abs(item.change)));
+const barItems = data.comparison.items.map((item) => ({
+  ...item,
+  pct: ((Math.abs(item.change) / maxAbs) * 100).toFixed(1),
+  changeLabel: `${item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}%`,
+}));
+---
+
+<section class="market-fixture-section" aria-label="시장 데이터 예시 대시보드">
+  <div class="market-fixture-intro">
+    <p class="eyebrow">데이터 연동 전 · 예시 데이터</p>
+    <p class="market-fixture-lead">아래 수치는 모두 정적 표시값입니다. 실제 시장 데이터와 무관합니다.</p>
+  </div>
+
+  <!-- Market summary cards -->
+  <div class="market-summary-grid">
+    {data.summaryCards.map((card) => (
+      <div class="market-summary-card">
+        <span class:list={['market-summary-change', card.direction === 'up' ? 'positive' : 'negative']}>
+          {card.change}
+        </span>
+        <p class="market-summary-label">{card.label}</p>
+        <p class="market-summary-value">{card.value}</p>
+        <div class="market-summary-meta">
+          <span class="market-summary-category">{card.category}</span>
+          <span class="market-summary-status">{card.status}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <!-- Trend line chart -->
+  <div class="market-chart-section">
+    <div class="market-chart-panel">
+      <div class="market-chart-header">
+        <h3>{data.trendChart.title}</h3>
+        <p>{data.trendChart.description}</p>
+      </div>
+      <div class="market-chart-body">
+        <svg
+          class="market-chart-svg"
+          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+          role="img"
+          aria-label={`${data.trendChart.title} — ${data.trendChart.note}`}
+        >
+          <!-- plot background -->
+          <rect
+            x={PLOT_X}
+            y={PLOT_Y}
+            width={PLOT_W}
+            height={PLOT_H}
+            rx="6"
+            fill="#f8fafc"
+            stroke="#e2e8f0"
+            stroke-width="1"
+          />
+          <!-- base-100 reference line -->
+          <line
+            x1={PLOT_X}
+            y1={baseLineY}
+            x2={PLOT_X + PLOT_W}
+            y2={baseLineY}
+            stroke="#d1d5db"
+            stroke-width="1"
+            stroke-dasharray="4,3"
+          />
+          <text
+            x={PLOT_X - 4}
+            y={baseLabelY}
+            text-anchor="end"
+            class="market-chart-axis-label"
+          >100</text>
+          <!-- series polylines -->
+          {seriesLines.map((s) => (
+            <polyline
+              points={s.points}
+              fill="none"
+              stroke={s.color}
+              stroke-width="2.4"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+          ))}
+          <!-- x-axis labels -->
+          {xLabels.map((lp) => (
+            <text x={lp.x} y={SVG_H - 8} class="market-chart-x-label">{lp.label}</text>
+          ))}
+        </svg>
+      </div>
+      <div class="market-chart-legend">
+        {seriesLines.map((s) => (
+          <div class="market-chart-legend-item">
+            <span class="market-chart-legend-dot" style={`background:${s.color}`}></span>
+            <span>{s.label}</span>
+          </div>
+        ))}
+      </div>
+      <p class="market-chart-note">{data.trendChart.note}</p>
+    </div>
+  </div>
+
+  <!-- Comparison bars -->
+  <div class="market-comparison-section">
+    <div class="market-chart-panel">
+      <div class="market-chart-header">
+        <h3>{data.comparison.title}</h3>
+        <p>{data.comparison.description}</p>
+      </div>
+      <div class="market-chart-body">
+        <div class="market-comparison-list">
+          {barItems.map((item) => (
+            <div class="market-comparison-item">
+              <span class="market-comparison-label">{item.label}</span>
+              <div class="market-comparison-bar-track">
+                <div
+                  class:list={[
+                    'market-comparison-bar',
+                    item.direction === 'up' ? 'market-comparison-bar--up' : 'market-comparison-bar--down',
+                  ]}
+                  style={`width:${item.pct}%`}
+                ></div>
+              </div>
+              <span class:list={['market-comparison-change', item.direction === 'up' ? 'positive' : 'negative']}>
+                {item.changeLabel}
+              </span>
+            </div>
+          ))}
+        </div>
+        <p class="market-chart-note">{data.comparison.note}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Watch point memo cards -->
+  <div class="market-watch-grid">
+    {data.watchPoints.map((point) => (
+      <div class="market-watch-card">
+        <span class="market-watch-status">{point.status}</span>
+        <p class="market-watch-title">{point.title}</p>
+        <p class="market-watch-body">{point.body}</p>
+      </div>
+    ))}
+  </div>
+
+  <!-- Data policy -->
+  <aside class="market-data-policy" aria-label="데이터 정책">
+    <p class="eyebrow">데이터 정책</p>
+    <ul>
+      <li>이 화면의 모든 수치는 <strong>예시 데이터</strong>입니다. 실제 시장 수치와 무관합니다.</li>
+      <li>실제 투자 판단에 사용할 수 없습니다.</li>
+      <li>자동화된 투자 권고를 제공하지 않습니다.</li>
+      <li>데이터 연동 전 화면입니다. 연동 후에는 실제 정보로 교체될 예정입니다.</li>
+    </ul>
+  </aside>
+</section>

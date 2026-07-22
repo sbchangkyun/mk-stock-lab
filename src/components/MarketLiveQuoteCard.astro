@@ -1,0 +1,246 @@
+---
+interface Props {
+  enabled: boolean;
+}
+const { enabled } = Astro.props;
+---
+
+{enabled ? (
+  <section class="market-quote-card" id="marketQuoteCard" aria-label="시세 조회">
+    <p class="eyebrow">시세 조회</p>
+    <div data-mqc-idle>
+      <form class="mqc-form" data-mqc-form novalidate>
+        <label class="mqc-label" for="mqcSymbolInput">종목 코드 (6자리)</label>
+        <div class="mqc-form-row">
+          <input
+            id="mqcSymbolInput"
+            class="mqc-input"
+            type="text"
+            inputmode="numeric"
+            pattern="\d{6}"
+            maxlength="6"
+            placeholder="000000"
+            autocomplete="off"
+            aria-describedby="mqcSymbolHint mqcValidationError"
+            data-mqc-input
+          />
+          <button class="mqc-submit" type="submit" data-mqc-submit>조회</button>
+        </div>
+        <p id="mqcSymbolHint" class="mqc-hint">국내 주식 종목 코드 6자리를 입력하세요.</p>
+      </form>
+      <p
+        class="mqc-validation-error hidden"
+        id="mqcValidationError"
+        role="alert"
+        aria-live="polite"
+        data-mqc-validation-error
+      ></p>
+    </div>
+    <div class="mqc-loading hidden" data-mqc-loading role="status" aria-live="polite">
+      <span class="mqc-spinner" aria-hidden="true"></span>
+      <span>조회 중...</span>
+    </div>
+    <div class="mqc-result hidden" data-mqc-result aria-live="polite"></div>
+    <div class="mqc-unavailable hidden" data-mqc-unavailable role="status" aria-live="polite">
+      <p data-mqc-unavailable-msg>시세를 불러올 수 없습니다.</p>
+      <button class="mqc-retry" type="button" aria-label="다시 시도" data-mqc-retry>다시 시도</button>
+    </div>
+  </section>
+) : (
+  <section class="market-quote-card market-quote-card--disabled" aria-label="시세 조회">
+    <p class="mqc-disabled-note">시세를 조회할 수 없습니다.</p>
+  </section>
+)}
+
+<script>
+  (() => {
+    const setup = () => {
+      const card = document.getElementById('marketQuoteCard');
+      if (!card || card.dataset.mqcReady === 'true') return;
+      card.dataset.mqcReady = 'true';
+
+      const idleEl = card.querySelector('[data-mqc-idle]');
+      const loadingEl = card.querySelector('[data-mqc-loading]');
+      const resultEl = card.querySelector('[data-mqc-result]');
+      const unavailableEl = card.querySelector('[data-mqc-unavailable]');
+      const formEl = card.querySelector('[data-mqc-form]');
+      const inputEl = card.querySelector('[data-mqc-input]') as HTMLInputElement | null;
+      const submitEl = card.querySelector('[data-mqc-submit]') as HTMLButtonElement | null;
+      const validationErrorEl = card.querySelector('[data-mqc-validation-error]');
+      const retryEl = card.querySelector('[data-mqc-retry]');
+      const unavailableMsgEl = card.querySelector('[data-mqc-unavailable-msg]');
+
+      let lastSymbol = '';
+
+      const hideResultAreas = () => {
+        loadingEl?.classList.add('hidden');
+        resultEl?.classList.add('hidden');
+        unavailableEl?.classList.add('hidden');
+      };
+
+      const showIdle = () => {
+        hideResultAreas();
+        idleEl?.classList.remove('hidden');
+        if (submitEl) submitEl.disabled = false;
+      };
+
+      const showLoading = () => {
+        idleEl?.classList.add('hidden');
+        validationErrorEl?.classList.add('hidden');
+        hideResultAreas();
+        loadingEl?.classList.remove('hidden');
+        if (submitEl) submitEl.disabled = true;
+      };
+
+      const showUnavailable = (msg: string | null | undefined) => {
+        hideResultAreas();
+        idleEl?.classList.remove('hidden');
+        if (submitEl) submitEl.disabled = false;
+        if (unavailableMsgEl) unavailableMsgEl.textContent = msg || '시세를 불러올 수 없습니다.';
+        unavailableEl?.classList.remove('hidden');
+      };
+
+      const fmtPrice = (price: unknown, currency: string): string => {
+        if (typeof price !== 'number' || !isFinite(price)) return '—';
+        try {
+          if (currency === 'KRW') return new Intl.NumberFormat('ko-KR').format(Math.round(price));
+          return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price);
+        } catch { return String(Math.round(price)); }
+      };
+
+      const fmtSigned = (v: unknown, decimals: number): string | null => {
+        if (typeof v !== 'number' || !isFinite(v)) return null;
+        return (v > 0 ? '+' : '') + v.toFixed(decimals);
+      };
+
+      const fmtVolume = (v: unknown): string | null => {
+        if (typeof v !== 'number' || !isFinite(v)) return null;
+        try { return new Intl.NumberFormat('ko-KR').format(Math.round(v)); }
+        catch { return String(Math.round(v)); }
+      };
+
+      const fmtTime = (asOf: unknown): string | null => {
+        if (typeof asOf !== 'string' || !asOf) return null;
+        try {
+          const d = new Date(asOf);
+          if (isNaN(d.getTime())) return null;
+          return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        } catch { return null; }
+      };
+
+      const changeCls = (change: unknown): string => {
+        if (typeof change !== 'number' || !isFinite(change)) return 'neutral';
+        return change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral';
+      };
+
+      const dirArrow = (change: unknown): string => {
+        if (typeof change !== 'number' || !isFinite(change)) return '';
+        return change > 0 ? '▲ ' : change < 0 ? '▼ ' : '';
+      };
+
+      const freshnessLabel = (staleState: unknown, reason: unknown): string => {
+        if (staleState === 'stale-but-usable' || reason === 'cache-stale-provider-failed') return '마지막 시세';
+        if (reason === 'cache-fresh') return '최근 업데이트';
+        return '최신 시세';
+      };
+
+      const renderResult = (data: Record<string, unknown>, fallback: Record<string, unknown> | null | undefined) => {
+        const isStale = data.staleState === 'stale-but-usable' || fallback?.reason === 'cache-stale-provider-failed';
+        const label = freshnessLabel(data.staleState, fallback?.reason);
+        const priceStr = fmtPrice(data.price, typeof data.currency === 'string' ? data.currency : '');
+        const changeStr = fmtSigned(data.change, 0);
+        const changePctStr = fmtSigned(data.changePct, 2);
+        const changePctFull = changePctStr ? changePctStr + '%' : null;
+        const volumeStr = fmtVolume(data.volume);
+        const timeStr = fmtTime(data.asOf);
+        const cls = changeCls(data.change);
+        const arrow = dirArrow(data.change);
+
+        const staleClass = isStale ? ' mqc-result-label--stale' : '';
+        const changeHtml = changeStr && changePctFull
+          ? `<span class="mqc-change ${cls}" aria-label="변동">${arrow}${changeStr} (${changePctFull})</span>`
+          : '';
+        const volumeHtml = volumeStr
+          ? `<p class="mqc-volume"><span class="mqc-volume-label">거래량</span> ${volumeStr}</p>`
+          : '';
+        const currencyLabel = typeof data.currency === 'string' ? data.currency : '';
+        const timeHtml = timeStr
+          ? `<span class="mqc-result-time">${timeStr} 기준</span>`
+          : '';
+
+        if (resultEl) {
+          resultEl.innerHTML = `<div class="mqc-result-body">
+  <div class="mqc-result-top">
+    <span class="mqc-result-label${staleClass}">${label}</span>${timeHtml}
+  </div>
+  <div class="mqc-result-price-row">
+    <span class="mqc-price">${priceStr}</span>
+    <span class="mqc-currency">${currencyLabel}</span>
+    ${changeHtml}
+  </div>
+  ${volumeHtml}
+  <button class="mqc-new-search" type="button" aria-label="다른 종목 조회" data-mqc-new-search>다른 종목 조회</button>
+</div>`;
+          resultEl.querySelector('[data-mqc-new-search]')?.addEventListener('click', () => {
+            if (resultEl) resultEl.innerHTML = '';
+            showIdle();
+            if (inputEl) { inputEl.value = ''; inputEl.focus(); }
+          });
+        }
+
+        hideResultAreas();
+        idleEl?.classList.add('hidden');
+        resultEl?.classList.remove('hidden');
+        if (submitEl) submitEl.disabled = false;
+      };
+
+      const doFetch = async (symbol: string) => {
+        showLoading();
+        try {
+          const res = await fetch('/api/market/quote?market=KR&symbol=' + encodeURIComponent(symbol));
+          const body = await res.json();
+          if (body?.ok === true && body.data) {
+            renderResult(body.data, body.fallback);
+          } else {
+            const code = typeof body?.code === 'string' ? body.code : '';
+            if (code === 'VALIDATION_FAILED' || code === 'SYMBOL_UNSUPPORTED') {
+              showUnavailable('지원하지 않는 종목 코드입니다. 국내 주식 6자리 코드를 확인해 주세요.');
+            } else {
+              showUnavailable('시세를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.');
+            }
+          }
+        } catch {
+          showUnavailable('시세를 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.');
+        }
+      };
+
+      formEl?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const sym = (inputEl?.value ?? '').trim();
+        if (!/^\d{6}$/.test(sym)) {
+          if (validationErrorEl) {
+            validationErrorEl.textContent = '6자리 숫자 종목 코드를 입력해 주세요.';
+            validationErrorEl.classList.remove('hidden');
+          }
+          inputEl?.focus();
+          return;
+        }
+        validationErrorEl?.classList.add('hidden');
+        lastSymbol = sym;
+        doFetch(sym);
+      });
+
+      inputEl?.addEventListener('input', () => {
+        validationErrorEl?.classList.add('hidden');
+      });
+
+      retryEl?.addEventListener('click', () => {
+        if (lastSymbol) doFetch(lastSymbol);
+        else showIdle();
+      });
+    };
+
+    document.addEventListener('astro:page-load', setup);
+    setup();
+  })();
+</script>

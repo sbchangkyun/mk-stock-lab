@@ -1,0 +1,804 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="마이페이지 | MK Stock Lab" activePath="/mypage">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">My Page</p>
+      <h1>마이페이지</h1>
+      <p class="lead">계정 정보와 서비스 이용 설정을 확인하는 공간입니다.</p>
+    </div>
+  </header>
+
+  <!-- Page-level grid: left main column + right admin rail (admin rail only visible for master users) -->
+  <div class="mp-page-layout" id="mpPageLayout">
+
+    <!-- Left: main MyPage sections (preserved 680px max-width) -->
+    <div class="mp-sections">
+
+      <!-- A. Account Summary -->
+      <section class="panel mp-section" aria-labelledby="mp-account-heading">
+        <h2 id="mp-account-heading" class="mp-section-title">내 계정</h2>
+        <dl class="mp-info-list">
+          <div class="mp-info-row">
+            <dt>이메일</dt>
+            <dd id="mpEmail" class="mp-placeholder">로그인 계정 확인 중</dd>
+          </div>
+          <div class="mp-info-row">
+            <dt>로그인 방식</dt>
+            <dd id="mpLoginMethod" class="mp-placeholder">확인 중</dd>
+          </div>
+          <div class="mp-info-row">
+            <dt>가입일</dt>
+            <dd class="mp-placeholder">확인 예정</dd>
+          </div>
+          <div class="mp-info-row">
+            <dt>마지막 접속 일시</dt>
+            <dd id="mpLastAccess" class="mp-placeholder">확인 예정</dd>
+          </div>
+          <div class="mp-info-row">
+            <dt>구독 상태</dt>
+            <dd>구독 안함</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- B. Service section (공지사항, 이벤트/혜택 only) -->
+      <section class="panel mp-section" aria-labelledby="mp-prefs-heading">
+        <h2 id="mp-prefs-heading" class="mp-section-title">서비스 이용 설정</h2>
+        <ul class="mp-pref-list">
+          <li class="mp-pref-row">
+            <span class="mp-pref-label">공지사항</span>
+            <span class="mp-badge">준비 중</span>
+          </li>
+          <li class="mp-pref-row">
+            <span class="mp-pref-label">이벤트/혜택</span>
+            <span class="mp-badge">향후 제공 예정</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- D. Notification Settings -->
+      <section class="panel mp-section" aria-labelledby="mp-notif-heading">
+        <h2 id="mp-notif-heading" class="mp-section-title">알림 설정</h2>
+
+        <!-- Telegram placeholder -->
+        <div class="mp-notif-row">
+          <div>
+            <p class="mp-pref-label">내 텔레그램 연동</p>
+            <p class="mp-notif-desc">텔레그램 알림을 받으려면 봇 연동이 필요합니다.</p>
+          </div>
+          <span class="mp-badge">준비 중</span>
+        </div>
+
+        <!-- 관심종목 뉴스 알림 — search/save shell (in-memory only) -->
+        <div class="mp-notif-block">
+          <div class="mp-notif-block-header">
+            <span class="mp-pref-label" id="lbl-watchlist-news">관심종목 뉴스 알림</span>
+            <label class="mp-toggle">
+              <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-watchlist-news" />
+              <span class="mp-toggle-track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <p class="mp-notif-desc">관심종목 뉴스 알림을 받을 종목을 추가하세요. 최대 5개까지 등록할 수 있습니다.</p>
+          <p class="mp-watchlist-search-label">관심종목 검색</p>
+          <div class="mp-watchlist-search-row">
+            <input class="mp-watchlist-input" type="text" id="mpWatchlistInput"
+              placeholder="종목명 또는 종목코드를 입력하세요." aria-label="관심종목 검색"
+              maxlength="20" autocomplete="off" />
+            <button class="mp-watchlist-add-btn" type="button" id="mpWatchlistAddBtn">관심종목 저장</button>
+          </div>
+          <p class="mp-watchlist-section-label hidden" id="mpWatchlistHeader">저장된 관심종목</p>
+          <ul class="mp-watchlist-list hidden" id="mpWatchlistList" aria-live="polite" aria-label="저장된 관심종목 목록"></ul>
+          <p class="mp-watchlist-empty" id="mpWatchlistEmpty">등록된 관심종목이 없습니다.</p>
+          <p class="mp-alert-notice hidden" id="mpWatchlistNotice" role="status" aria-live="polite">실제 뉴스 알림 저장 기능은 준비 중입니다.</p>
+        </div>
+
+        <!-- 내 포트 종목 뉴스 알림 -->
+        <div class="mp-notif-row">
+          <span class="mp-pref-label" id="lbl-portfolio-news">내 포트 종목 뉴스 알림</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-portfolio-news" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <!-- 관심종목 지정가 알림 — with on/off toggle -->
+        <div class="mp-notif-block">
+          <div class="mp-notif-block-header">
+            <span class="mp-pref-label">관심종목 지정가 알림</span>
+            <span class="mp-badge">최대 5개</span>
+          </div>
+          <div class="mp-notif-inner-row">
+            <span class="mp-pref-label" id="lbl-price-alert-toggle">알림 사용</span>
+            <label class="mp-toggle">
+              <input type="checkbox" class="mp-toggle-input" id="mpPriceAlertToggle" aria-labelledby="lbl-price-alert-toggle" />
+              <span class="mp-toggle-track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <div class="mp-notif-body mp-notif-body--disabled" id="mpPriceAlertBody">
+            <p class="mp-notif-desc">지정가 알림은 최대 5개까지 준비할 수 있습니다.</p>
+            <button class="mp-add-btn" type="button" id="mpAddAlertBtn">+ 추가</button>
+            <div class="mp-alert-form hidden" id="mpAlertForm">
+              <div class="mp-alert-form-row">
+                <input class="mp-alert-input" type="text" inputmode="numeric" maxlength="6"
+                  placeholder="종목코드 6자리" aria-label="종목코드" autocomplete="off" />
+                <input class="mp-alert-input" type="text" inputmode="decimal"
+                  placeholder="지정가" aria-label="지정가" autocomplete="off" />
+                <button class="mp-alert-save-btn" type="button" id="mpAlertSaveBtn">저장</button>
+              </div>
+              <p class="mp-alert-notice hidden" id="mpAlertNotice" role="status" aria-live="polite">저장 기능은 준비 중입니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 이벤트/혜택 알림 -->
+        <div class="mp-notif-row">
+          <span class="mp-pref-label" id="lbl-event-notif">이벤트/혜택 알림</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-event-notif" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <!-- 공지사항 알림 -->
+        <div class="mp-notif-row">
+          <span class="mp-pref-label" id="lbl-announce-notif">공지사항 알림</span>
+          <label class="mp-toggle">
+            <input type="checkbox" class="mp-toggle-input" aria-labelledby="lbl-announce-notif" />
+            <span class="mp-toggle-track" aria-hidden="true"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- E. Legal and Support -->
+      <section class="panel mp-section" aria-labelledby="mp-legal-heading">
+        <h2 id="mp-legal-heading" class="mp-section-title">법적 고지 및 지원</h2>
+        <ul class="mp-link-list">
+          <li><a href="/privacy">개인정보처리방침</a></li>
+          <li><a href="/terms">이용약관</a></li>
+          <li>
+            <a href="https://forms.gle/WAVSxaotdes6T5yJA" target="_blank" rel="noopener noreferrer">제휴문의</a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- F. Danger Zone -->
+      <section class="panel mp-section mp-danger-zone" aria-labelledby="mp-danger-heading">
+        <h2 id="mp-danger-heading" class="mp-section-title mp-danger-title">계정 관리</h2>
+        <p class="mp-danger-desc">계정을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
+        <div class="mp-withdrawal-area">
+          <button class="mp-danger-btn" type="button" id="mpWithdrawalBtn">회원탈퇴</button>
+          <div class="mp-withdrawal-confirm hidden" id="mpWithdrawalConfirm" role="alertdialog"
+            aria-modal="true" aria-labelledby="mpWithdrawalConfirmMsg">
+            <p class="mp-withdrawal-message" id="mpWithdrawalConfirmMsg">정말 회원 탈퇴하시겠습니까? 회원탈퇴하면 등록/활동 정보가 모두 삭제됩니다.</p>
+            <div class="mp-withdrawal-actions">
+              <button class="mp-confirm-btn" type="button" id="mpWithdrawalOk">확인</button>
+              <button class="header-button secondary" type="button" id="mpWithdrawalCancel">취소</button>
+            </div>
+          </div>
+          <p class="mp-withdrawal-notice hidden" id="mpWithdrawalNotice" role="status" aria-live="polite">회원탈퇴 기능은 준비 중입니다.</p>
+        </div>
+      </section>
+
+    </div><!-- /mp-sections -->
+
+    <!-- Right: master admin rail (hidden by CSS until mp-page-layout--admin-visible is added by JS) -->
+    <aside class="mp-admin-rail" aria-label="배너 관리 패널">
+      <!-- G. Master Admin: Home Rail Banner Settings (hidden until admin confirmed) -->
+      <section class="panel mp-section mp-banner-admin" id="mpBannerAdminPanel"
+        aria-labelledby="mp-banner-admin-heading" hidden>
+        <div class="mp-banner-accordion-header">
+          <h2 id="mp-banner-admin-heading" class="mp-section-title">운영 배너 관리</h2>
+          <div class="mp-banner-accordion-meta">
+            <span class="mp-banner-accordion-summary" id="mpBannerAccordionSummary"></span>
+            <button class="mp-banner-accordion-toggle" type="button" id="mpBannerAccordionToggle"
+              aria-expanded="false" aria-controls="mpBannerAccordionBody">펼치기</button>
+          </div>
+        </div>
+        <div id="mpBannerAccordionBody" class="mp-banner-accordion-body" hidden>
+          <section class="mp-banner-subsection" aria-labelledby="mp-desktop-banner-heading">
+            <div class="mp-banner-subsection-heading">
+              <h3 id="mp-desktop-banner-heading">PC Home 우측 배너</h3>
+              <span class="mp-banner-size-guide">160×600</span>
+            </div>
+            <p class="mp-notif-desc">Supabase 버킷에 이미지를 올린 뒤 생성된 URL을 등록합니다. 앱 내 업로드는 지원하지 않습니다.</p>
+            <p class="mp-banner-active-guide">체크된 슬롯만 노출됩니다. 체크 해제 시 이미지 URL이 있어도 노출되지 않습니다.</p>
+
+          <div class="mp-banner-slot" id="mpBannerSlot1">
+            <div class="mp-banner-slot-header">
+              <input type="checkbox" id="mpBannerActive1" aria-label="슬롯 1 활성화">
+              <span class="mp-banner-slot-title">배너 슬롯 1</span>
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerImageUrl1">이미지 URL</label>
+              <input type="url" id="mpBannerImageUrl1" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerLinkUrl1">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+              <input type="url" id="mpBannerLinkUrl1" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerAlt1">대체 텍스트</label>
+              <input type="text" id="mpBannerAlt1" placeholder="배너 설명" maxlength="120" autocomplete="off">
+            </div>
+            <div class="mp-banner-preview" id="mpBannerPreview1" hidden>
+              <img src="" alt="배너 미리보기" id="mpBannerPreviewImg1" loading="lazy">
+            </div>
+          </div>
+
+          <div class="mp-banner-slot" id="mpBannerSlot2">
+            <div class="mp-banner-slot-header">
+              <input type="checkbox" id="mpBannerActive2" aria-label="슬롯 2 활성화">
+              <span class="mp-banner-slot-title">배너 슬롯 2</span>
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerImageUrl2">이미지 URL</label>
+              <input type="url" id="mpBannerImageUrl2" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerLinkUrl2">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+              <input type="url" id="mpBannerLinkUrl2" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerAlt2">대체 텍스트</label>
+              <input type="text" id="mpBannerAlt2" placeholder="배너 설명" maxlength="120" autocomplete="off">
+            </div>
+            <div class="mp-banner-preview" id="mpBannerPreview2" hidden>
+              <img src="" alt="배너 미리보기" id="mpBannerPreviewImg2" loading="lazy">
+            </div>
+          </div>
+
+          <div class="mp-banner-slot" id="mpBannerSlot3">
+            <div class="mp-banner-slot-header">
+              <input type="checkbox" id="mpBannerActive3" aria-label="슬롯 3 활성화">
+              <span class="mp-banner-slot-title">배너 슬롯 3</span>
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerImageUrl3">이미지 URL</label>
+              <input type="url" id="mpBannerImageUrl3" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerLinkUrl3">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+              <input type="url" id="mpBannerLinkUrl3" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerAlt3">대체 텍스트</label>
+              <input type="text" id="mpBannerAlt3" placeholder="배너 설명" maxlength="120" autocomplete="off">
+            </div>
+            <div class="mp-banner-preview" id="mpBannerPreview3" hidden>
+              <img src="" alt="배너 미리보기" id="mpBannerPreviewImg3" loading="lazy">
+            </div>
+          </div>
+
+          <div class="mp-banner-slot" id="mpBannerSlot4">
+            <div class="mp-banner-slot-header">
+              <input type="checkbox" id="mpBannerActive4" aria-label="슬롯 4 활성화">
+              <span class="mp-banner-slot-title">배너 슬롯 4</span>
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerImageUrl4">이미지 URL</label>
+              <input type="url" id="mpBannerImageUrl4" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerLinkUrl4">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+              <input type="url" id="mpBannerLinkUrl4" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerAlt4">대체 텍스트</label>
+              <input type="text" id="mpBannerAlt4" placeholder="배너 설명" maxlength="120" autocomplete="off">
+            </div>
+            <div class="mp-banner-preview" id="mpBannerPreview4" hidden>
+              <img src="" alt="배너 미리보기" id="mpBannerPreviewImg4" loading="lazy">
+            </div>
+          </div>
+
+          <div class="mp-banner-slot" id="mpBannerSlot5">
+            <div class="mp-banner-slot-header">
+              <input type="checkbox" id="mpBannerActive5" aria-label="슬롯 5 활성화">
+              <span class="mp-banner-slot-title">배너 슬롯 5</span>
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerImageUrl5">이미지 URL</label>
+              <input type="url" id="mpBannerImageUrl5" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerLinkUrl5">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+              <input type="url" id="mpBannerLinkUrl5" placeholder="https://" maxlength="1000" autocomplete="off">
+            </div>
+            <div class="mp-banner-field">
+              <label for="mpBannerAlt5">대체 텍스트</label>
+              <input type="text" id="mpBannerAlt5" placeholder="배너 설명" maxlength="120" autocomplete="off">
+            </div>
+            <div class="mp-banner-preview" id="mpBannerPreview5" hidden>
+              <img src="" alt="배너 미리보기" id="mpBannerPreviewImg5" loading="lazy">
+            </div>
+          </div>
+
+          <div class="mp-banner-admin-actions">
+            <button class="mp-add-btn" type="button" id="mpBannerSaveBtn">PC 배너 저장</button>
+            <button class="header-button secondary" type="button" id="mpBannerReloadBtn">다시 불러오기</button>
+            <span class="mp-banner-save-msg" id="mpBannerSaveMsg" role="status" aria-live="polite" hidden></span>
+          </div>
+          </section>
+
+          <section class="mp-banner-subsection mp-banner-subsection--mobile" aria-labelledby="mp-mobile-banner-heading">
+            <div class="mp-banner-subsection-heading">
+              <h3 id="mp-mobile-banner-heading">모바일 Home 배너</h3>
+              <span class="mp-banner-size-guide">720×225</span>
+            </div>
+            <p class="mp-notif-desc">모바일 Home 전용 배너 URL을 등록합니다. 화면 너비 859px 이하에서만 표시됩니다.</p>
+            <p class="mp-banner-active-guide">체크된 슬롯만 노출됩니다. 체크 해제 시 이미지 URL이 있어도 노출되지 않습니다.</p>
+
+            <div class="mp-banner-slot" id="mpMobileBannerSlot1">
+              <div class="mp-banner-slot-header">
+                <input type="checkbox" id="mpMobileBannerActive1" aria-label="모바일 슬롯 1 활성화">
+                <span class="mp-banner-slot-title">모바일 배너 슬롯 1</span>
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerImageUrl1">이미지 URL</label>
+                <input type="url" id="mpMobileBannerImageUrl1" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerLinkUrl1">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+                <input type="url" id="mpMobileBannerLinkUrl1" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerAlt1">대체 텍스트</label>
+                <input type="text" id="mpMobileBannerAlt1" placeholder="배너 설명" maxlength="120" autocomplete="off">
+              </div>
+              <div class="mp-banner-preview" id="mpMobileBannerPreview1" hidden>
+                <img src="" alt="모바일 배너 미리보기" id="mpMobileBannerPreviewImg1" loading="lazy">
+              </div>
+            </div>
+
+            <div class="mp-banner-slot" id="mpMobileBannerSlot2">
+              <div class="mp-banner-slot-header">
+                <input type="checkbox" id="mpMobileBannerActive2" aria-label="모바일 슬롯 2 활성화">
+                <span class="mp-banner-slot-title">모바일 배너 슬롯 2</span>
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerImageUrl2">이미지 URL</label>
+                <input type="url" id="mpMobileBannerImageUrl2" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerLinkUrl2">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+                <input type="url" id="mpMobileBannerLinkUrl2" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerAlt2">대체 텍스트</label>
+                <input type="text" id="mpMobileBannerAlt2" placeholder="배너 설명" maxlength="120" autocomplete="off">
+              </div>
+              <div class="mp-banner-preview" id="mpMobileBannerPreview2" hidden>
+                <img src="" alt="모바일 배너 미리보기" id="mpMobileBannerPreviewImg2" loading="lazy">
+              </div>
+            </div>
+
+            <div class="mp-banner-slot" id="mpMobileBannerSlot3">
+              <div class="mp-banner-slot-header">
+                <input type="checkbox" id="mpMobileBannerActive3" aria-label="모바일 슬롯 3 활성화">
+                <span class="mp-banner-slot-title">모바일 배너 슬롯 3</span>
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerImageUrl3">이미지 URL</label>
+                <input type="url" id="mpMobileBannerImageUrl3" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerLinkUrl3">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+                <input type="url" id="mpMobileBannerLinkUrl3" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerAlt3">대체 텍스트</label>
+                <input type="text" id="mpMobileBannerAlt3" placeholder="배너 설명" maxlength="120" autocomplete="off">
+              </div>
+              <div class="mp-banner-preview" id="mpMobileBannerPreview3" hidden>
+                <img src="" alt="모바일 배너 미리보기" id="mpMobileBannerPreviewImg3" loading="lazy">
+              </div>
+            </div>
+
+            <div class="mp-banner-slot" id="mpMobileBannerSlot4">
+              <div class="mp-banner-slot-header">
+                <input type="checkbox" id="mpMobileBannerActive4" aria-label="모바일 슬롯 4 활성화">
+                <span class="mp-banner-slot-title">모바일 배너 슬롯 4</span>
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerImageUrl4">이미지 URL</label>
+                <input type="url" id="mpMobileBannerImageUrl4" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerLinkUrl4">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+                <input type="url" id="mpMobileBannerLinkUrl4" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerAlt4">대체 텍스트</label>
+                <input type="text" id="mpMobileBannerAlt4" placeholder="배너 설명" maxlength="120" autocomplete="off">
+              </div>
+              <div class="mp-banner-preview" id="mpMobileBannerPreview4" hidden>
+                <img src="" alt="모바일 배너 미리보기" id="mpMobileBannerPreviewImg4" loading="lazy">
+              </div>
+            </div>
+
+            <div class="mp-banner-slot" id="mpMobileBannerSlot5">
+              <div class="mp-banner-slot-header">
+                <input type="checkbox" id="mpMobileBannerActive5" aria-label="모바일 슬롯 5 활성화">
+                <span class="mp-banner-slot-title">모바일 배너 슬롯 5</span>
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerImageUrl5">이미지 URL</label>
+                <input type="url" id="mpMobileBannerImageUrl5" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerLinkUrl5">연결 URL <span class="mp-field-hint">(비워 두면 링크 없음)</span></label>
+                <input type="url" id="mpMobileBannerLinkUrl5" placeholder="https://" maxlength="1000" autocomplete="off">
+              </div>
+              <div class="mp-banner-field">
+                <label for="mpMobileBannerAlt5">대체 텍스트</label>
+                <input type="text" id="mpMobileBannerAlt5" placeholder="배너 설명" maxlength="120" autocomplete="off">
+              </div>
+              <div class="mp-banner-preview" id="mpMobileBannerPreview5" hidden>
+                <img src="" alt="모바일 배너 미리보기" id="mpMobileBannerPreviewImg5" loading="lazy">
+              </div>
+            </div>
+
+            <div class="mp-banner-admin-actions">
+              <button class="mp-add-btn" type="button" id="mpMobileBannerSaveBtn">모바일 배너 저장</button>
+              <button class="header-button secondary" type="button" id="mpMobileBannerReloadBtn">다시 불러오기</button>
+              <span class="mp-banner-save-msg" id="mpMobileBannerSaveMsg" role="status" aria-live="polite" hidden></span>
+            </div>
+          </section>
+        </div><!-- /mpBannerAccordionBody -->
+      </section>
+    </aside><!-- /mp-admin-rail -->
+
+  </div><!-- /mp-page-layout -->
+</Layout>
+
+<script>
+  import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
+  import {
+    getHomeMobileBanners,
+    getHomeRailBanners,
+    isCurrentUserSiteAdmin,
+    saveHomeMobileBanners,
+    saveHomeRailBanners,
+  } from '../lib/siteSettingsClient';
+
+  const setupMyPage = async () => {
+    const emailEl = document.getElementById('mpEmail');
+    const lastAccessEl = document.getElementById('mpLastAccess');
+    const loginMethodEl = document.getElementById('mpLoginMethod');
+
+    if (isSupabaseConfigured()) {
+      const supabase = getBrowserSupabaseClient();
+      if (supabase) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.user) {
+          const user = data.session.user;
+
+          if (user.email && emailEl) {
+            emailEl.textContent = user.email;
+            emailEl.classList.remove('mp-placeholder');
+          }
+
+          if (user.last_sign_in_at && lastAccessEl) {
+            lastAccessEl.textContent = new Date(user.last_sign_in_at).toLocaleString('ko-KR');
+            lastAccessEl.classList.remove('mp-placeholder');
+          }
+
+          // Resolve login provider from identities (most reliable) with app_metadata fallback
+          if (loginMethodEl) {
+            const providers = new Set<string>();
+            if (Array.isArray((user as any).identities)) {
+              for (const id of (user as any).identities as Array<{ provider?: string }>) {
+                if (id.provider) providers.add(id.provider);
+              }
+            }
+            if (providers.size === 0 && (user as any).app_metadata?.provider) {
+              providers.add((user as any).app_metadata.provider as string);
+            }
+            const hasEmail = providers.has('email');
+            const hasGoogle = providers.has('google');
+            let label = providers.size > 0 ? [...providers].join(' + ') : '확인 불가';
+            if (hasEmail && hasGoogle) label = '이메일 + Google';
+            else if (hasEmail) label = '이메일 로그인';
+            else if (hasGoogle) label = 'Google 로그인';
+            loginMethodEl.textContent = label;
+            loginMethodEl.classList.remove('mp-placeholder');
+          }
+        }
+      }
+    }
+
+    // --- Watchlist news alert search/save shell (in-memory, no persistence) ---
+    const watchlistItems: string[] = [];
+    const MAX_WATCHLIST = 5;
+
+    const renderWatchlist = () => {
+      const list = document.getElementById('mpWatchlistList') as HTMLUListElement | null;
+      const emptyEl = document.getElementById('mpWatchlistEmpty') as HTMLElement | null;
+      const headerEl = document.getElementById('mpWatchlistHeader') as HTMLElement | null;
+      if (!list) return;
+
+      if (watchlistItems.length === 0) {
+        list.classList.add('hidden');
+        headerEl?.classList.add('hidden');
+        emptyEl?.classList.remove('hidden');
+      } else {
+        list.classList.remove('hidden');
+        headerEl?.classList.remove('hidden');
+        emptyEl?.classList.add('hidden');
+        list.innerHTML = '';
+        watchlistItems.forEach((item, idx) => {
+          const li = document.createElement('li');
+          li.className = 'mp-watchlist-item';
+          const span = document.createElement('span');
+          span.textContent = item;
+          const btn = document.createElement('button');
+          btn.className = 'mp-watchlist-remove-btn';
+          btn.type = 'button';
+          btn.textContent = '삭제';
+          btn.setAttribute('aria-label', `${item} 삭제`);
+          btn.addEventListener('click', () => {
+            watchlistItems.splice(idx, 1);
+            renderWatchlist();
+          });
+          li.appendChild(span);
+          li.appendChild(btn);
+          list.appendChild(li);
+        });
+      }
+    };
+
+    const watchlistInput = document.getElementById('mpWatchlistInput') as HTMLInputElement | null;
+    const watchlistAddBtn = document.getElementById('mpWatchlistAddBtn') as HTMLButtonElement | null;
+    const watchlistNotice = document.getElementById('mpWatchlistNotice') as HTMLElement | null;
+
+    watchlistAddBtn?.addEventListener('click', () => {
+      const val = watchlistInput?.value.trim() ?? '';
+      if (!val || watchlistItems.length >= MAX_WATCHLIST || watchlistItems.includes(val)) return;
+      watchlistItems.push(val);
+      if (watchlistInput) watchlistInput.value = '';
+      renderWatchlist();
+      watchlistNotice?.classList.remove('hidden');
+    });
+
+    renderWatchlist();
+
+    // --- Price alert on/off toggle (UI only, no persistence) ---
+    const priceAlertToggle = document.getElementById('mpPriceAlertToggle') as HTMLInputElement | null;
+    const priceAlertBody = document.getElementById('mpPriceAlertBody') as HTMLElement | null;
+
+    if (priceAlertToggle && priceAlertBody) {
+      const syncPriceAlertBody = () => {
+        priceAlertBody.classList.toggle('mp-notif-body--disabled', !priceAlertToggle.checked);
+      };
+      priceAlertToggle.addEventListener('change', syncPriceAlertBody);
+      syncPriceAlertBody();
+    }
+
+    // --- Withdrawal confirmation flow ---
+    const withdrawalBtn = document.getElementById('mpWithdrawalBtn') as HTMLButtonElement | null;
+    const confirmPanel = document.getElementById('mpWithdrawalConfirm') as HTMLElement | null;
+    const okBtn = document.getElementById('mpWithdrawalOk') as HTMLButtonElement | null;
+    const cancelBtn = document.getElementById('mpWithdrawalCancel') as HTMLButtonElement | null;
+    const noticeEl = document.getElementById('mpWithdrawalNotice') as HTMLElement | null;
+
+    withdrawalBtn?.addEventListener('click', () => {
+      confirmPanel?.classList.remove('hidden');
+      noticeEl?.classList.add('hidden');
+      okBtn?.focus();
+    });
+
+    cancelBtn?.addEventListener('click', () => {
+      confirmPanel?.classList.add('hidden');
+      withdrawalBtn?.focus();
+    });
+
+    okBtn?.addEventListener('click', () => {
+      confirmPanel?.classList.add('hidden');
+      noticeEl?.classList.remove('hidden');
+    });
+
+    // --- Target-price alert add form (UI only, no persistence) ---
+    const addAlertBtn = document.getElementById('mpAddAlertBtn') as HTMLButtonElement | null;
+    const alertForm = document.getElementById('mpAlertForm') as HTMLElement | null;
+    const alertSaveBtn = document.getElementById('mpAlertSaveBtn') as HTMLButtonElement | null;
+    const alertNotice = document.getElementById('mpAlertNotice') as HTMLElement | null;
+
+    addAlertBtn?.addEventListener('click', () => {
+      alertForm?.classList.remove('hidden');
+      addAlertBtn.classList.add('hidden');
+    });
+
+    alertSaveBtn?.addEventListener('click', () => {
+      alertNotice?.classList.remove('hidden');
+    });
+  };
+
+  const setupBannerAdmin = async () => {
+    const panel = document.getElementById('mpBannerAdminPanel') as HTMLElement | null;
+    if (!panel || panel.dataset.setup === 'true') return;
+    panel.dataset.setup = 'true';
+
+    const isAdmin = await isCurrentUserSiteAdmin();
+    if (!isAdmin) return;
+
+    // Reveal admin section
+    panel.removeAttribute('hidden');
+
+    // Activate page-level two-column grid (account left, admin rail right on desktop)
+    const pageLayout = panel.closest('.mp-page-layout') as HTMLElement | null;
+    pageLayout?.classList.add('mp-page-layout--admin-visible');
+
+    // --- Accordion ---
+    const accordionToggle = document.getElementById('mpBannerAccordionToggle') as HTMLButtonElement | null;
+    const accordionBody = document.getElementById('mpBannerAccordionBody') as HTMLElement | null;
+    const accordionSummary = document.getElementById('mpBannerAccordionSummary') as HTMLElement | null;
+
+    const setAccordion = (open: boolean) => {
+      if (!accordionToggle || !accordionBody) return;
+      accordionToggle.setAttribute('aria-expanded', String(open));
+      accordionToggle.textContent = open ? '접기' : '펼치기';
+      accordionBody.hidden = !open;
+    };
+
+    accordionToggle?.addEventListener('click', () => {
+      setAccordion(accordionToggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    const slotNumbers = [1, 2, 3, 4, 5] as const;
+    type BannerFormPrefix = 'mpBanner' | 'mpMobileBanner';
+    type BannerFormValue = {
+      slot: (typeof slotNumbers)[number];
+      imageUrl: string;
+      linkUrl: string;
+      alt: string;
+      active: boolean;
+    };
+
+    const countActiveFromForm = (prefix: BannerFormPrefix) =>
+      slotNumbers.filter((slot) => {
+        const activeEl = document.getElementById(`${prefix}Active${slot}`) as HTMLInputElement | null;
+        const imageUrlEl = document.getElementById(`${prefix}ImageUrl${slot}`) as HTMLInputElement | null;
+        return activeEl?.checked && (imageUrlEl?.value ?? '').trim();
+      }).length;
+
+    const updateSummaryFromForm = () => {
+      if (!accordionSummary) return;
+      accordionSummary.textContent =
+        `PC ${countActiveFromForm('mpBanner')}개 · 모바일 ${countActiveFromForm('mpMobileBanner')}개`;
+    };
+
+    const populateSlots = (
+      banners: BannerFormValue[] | null,
+      prefix: BannerFormPrefix,
+      fallbackAlt: string,
+    ) => {
+      if (!banners) return;
+      for (const banner of banners) {
+        const slot = banner.slot;
+        const activeEl = document.getElementById(`${prefix}Active${slot}`) as HTMLInputElement | null;
+        const imageUrlEl = document.getElementById(`${prefix}ImageUrl${slot}`) as HTMLInputElement | null;
+        const linkUrlEl = document.getElementById(`${prefix}LinkUrl${slot}`) as HTMLInputElement | null;
+        const altEl = document.getElementById(`${prefix}Alt${slot}`) as HTMLInputElement | null;
+        const previewEl = document.getElementById(`${prefix}Preview${slot}`) as HTMLElement | null;
+        const previewImgEl = document.getElementById(`${prefix}PreviewImg${slot}`) as HTMLImageElement | null;
+
+        if (activeEl) activeEl.checked = banner.active;
+        if (imageUrlEl) imageUrlEl.value = banner.imageUrl;
+        if (linkUrlEl) linkUrlEl.value = banner.linkUrl;
+        if (altEl) altEl.value = banner.alt;
+
+        if (previewImgEl && previewEl) {
+          if (banner.imageUrl && /^https?:\/\//i.test(banner.imageUrl)) {
+            previewImgEl.src = banner.imageUrl;
+            previewImgEl.alt = banner.alt || fallbackAlt;
+            previewEl.removeAttribute('hidden');
+          } else {
+            previewImgEl.removeAttribute('src');
+            previewEl.setAttribute('hidden', '');
+          }
+        }
+      }
+    };
+
+    const reload = async () => {
+      const [desktopBanners, mobileBanners] = await Promise.all([
+        getHomeRailBanners(),
+        getHomeMobileBanners(),
+      ]);
+      populateSlots(desktopBanners, 'mpBanner', '배너 미리보기');
+      populateSlots(mobileBanners, 'mpMobileBanner', '모바일 배너 미리보기');
+      updateSummaryFromForm();
+    };
+
+    const collectSlots = (prefix: BannerFormPrefix): BannerFormValue[] =>
+      slotNumbers.map((slot) => {
+        const activeEl = document.getElementById(`${prefix}Active${slot}`) as HTMLInputElement | null;
+        const imageUrlEl = document.getElementById(`${prefix}ImageUrl${slot}`) as HTMLInputElement | null;
+        const linkUrlEl = document.getElementById(`${prefix}LinkUrl${slot}`) as HTMLInputElement | null;
+        const altEl = document.getElementById(`${prefix}Alt${slot}`) as HTMLInputElement | null;
+        return {
+          slot,
+          active: activeEl?.checked ?? false,
+          imageUrl: (imageUrlEl?.value ?? '').trim(),
+          linkUrl: (linkUrlEl?.value ?? '').trim(),
+          alt: (altEl?.value ?? '').trim(),
+        };
+      });
+
+    const messageTimers = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>();
+    const showMsg = (messageEl: HTMLElement | null, message: string, ok: boolean) => {
+      if (!ok) setAccordion(true);
+      if (!messageEl) return;
+      messageEl.textContent = message;
+      messageEl.className = `mp-banner-save-msg${ok ? ' mp-banner-save-msg--ok' : ' mp-banner-save-msg--err'}`;
+      messageEl.removeAttribute('hidden');
+      const existingTimer = messageTimers.get(messageEl);
+      if (existingTimer !== undefined) clearTimeout(existingTimer);
+      messageTimers.set(
+        messageEl,
+        setTimeout(() => { messageEl.setAttribute('hidden', ''); }, 4000),
+      );
+    };
+
+    const desktopSaveBtn = document.getElementById('mpBannerSaveBtn') as HTMLButtonElement | null;
+    const desktopReloadBtn = document.getElementById('mpBannerReloadBtn') as HTMLButtonElement | null;
+    const desktopMsgEl = document.getElementById('mpBannerSaveMsg') as HTMLElement | null;
+    const mobileSaveBtn = document.getElementById('mpMobileBannerSaveBtn') as HTMLButtonElement | null;
+    const mobileReloadBtn = document.getElementById('mpMobileBannerReloadBtn') as HTMLButtonElement | null;
+    const mobileMsgEl = document.getElementById('mpMobileBannerSaveMsg') as HTMLElement | null;
+
+    desktopSaveBtn?.addEventListener('click', async () => {
+      desktopSaveBtn.disabled = true;
+      try {
+        const result = await saveHomeRailBanners(collectSlots('mpBanner'));
+        if (result.ok) await reload();
+        showMsg(desktopMsgEl, result.message, result.ok);
+      } finally {
+        desktopSaveBtn.disabled = false;
+      }
+    });
+
+    mobileSaveBtn?.addEventListener('click', async () => {
+      mobileSaveBtn.disabled = true;
+      try {
+        const result = await saveHomeMobileBanners(collectSlots('mpMobileBanner'));
+        if (result.ok) await reload();
+        showMsg(mobileMsgEl, result.message, result.ok);
+      } finally {
+        mobileSaveBtn.disabled = false;
+      }
+    });
+
+    desktopReloadBtn?.addEventListener('click', reload);
+    mobileReloadBtn?.addEventListener('click', reload);
+
+    const bindPreviews = (prefix: BannerFormPrefix) => {
+      for (const slot of slotNumbers) {
+        const imageUrlEl = document.getElementById(`${prefix}ImageUrl${slot}`) as HTMLInputElement | null;
+        const previewEl = document.getElementById(`${prefix}Preview${slot}`) as HTMLElement | null;
+        const previewImgEl = document.getElementById(`${prefix}PreviewImg${slot}`) as HTMLImageElement | null;
+        imageUrlEl?.addEventListener('input', () => {
+          const url = imageUrlEl.value.trim();
+          if (url && /^https?:\/\//i.test(url) && previewImgEl && previewEl) {
+            previewImgEl.src = url;
+            previewEl.removeAttribute('hidden');
+          } else if (previewImgEl && previewEl) {
+            previewImgEl.removeAttribute('src');
+            previewEl.setAttribute('hidden', '');
+          }
+        });
+      }
+    };
+
+    bindPreviews('mpBanner');
+    bindPreviews('mpMobileBanner');
+    await reload();
+  };
+
+  document.addEventListener('astro:page-load', () => { void setupMyPage(); void setupBannerAdmin(); });
+  void setupMyPage();
+  void setupBannerAdmin();
+</script>

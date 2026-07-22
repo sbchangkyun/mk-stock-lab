@@ -1,0 +1,85 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import LabReturnMatrix from '../../components/LabReturnMatrix.astro';
+import matrices from '../../data/labReturnMatrices.json';
+
+const { sectorMatrix } = matrices;
+
+const cameraPath =
+  'M4 7.5h3l1.3-2h7.4l1.3 2h3a1.5 1.5 0 0 1 1.5 1.5v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-1.8a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4Z';
+---
+
+<Layout title="S&P 500 섹터별 수익률 | MK Stock Lab" activePath="/lab">
+  <div class="lab-detail-shell">
+    <a href="/lab" class="lab-detail-backlink">← Lab</a>
+
+    <header class="lab-detail-header">
+      <div class="lab-detail-header-text">
+        <p class="eyebrow">미국 시장 리서치</p>
+        <h1>S&amp;P 500 섹터별 수익률</h1>
+        <p class="lead">{sectorMatrix.description}</p>
+      </div>
+      <span class="lab-detail-badge">예시 데이터 · 데이터 연동 전</span>
+    </header>
+
+    <div class="lab-matrix-export-card">
+      <div class="lab-matrix-export-header">
+        <div class="lab-matrix-export-actions" data-card-actions>
+          <button
+            class="chart-export-button"
+            type="button"
+            data-export-card
+            data-export-target="sp500-sectors-matrix-capture"
+            data-export-filename="sp500-sectors"
+            data-export-width="800"
+            aria-label="이미지로 저장"
+            title="이미지로 저장"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={cameraPath} /></svg>
+          </button>
+        </div>
+      </div>
+      <LabReturnMatrix
+        data={sectorMatrix}
+        sectionId="sector-matrix-section"
+        captureId="sp500-sectors-matrix-capture"
+      />
+    </div>
+
+    <aside class="lab-data-policy" aria-label="데이터 정책">
+      <p class="eyebrow">데이터 정책</p>
+      <ul>
+        <li>이 화면의 모든 수치는 <strong>예시 데이터</strong>입니다. 실제 S&amp;P 500 섹터 수익률이 아닙니다.</li>
+        <li>실제 투자 판단에 사용할 수 없습니다.</li>
+        <li>자동화된 투자 권고를 제공하지 않습니다.</li>
+        <li>데이터 연동 후에는 실제 섹터 데이터로 교체될 예정입니다.</li>
+      </ul>
+    </aside>
+
+    <section class="lab-detail-related" aria-labelledby="related-sector-heading">
+      <h2 id="related-sector-heading" class="lab-related-heading">다른 Lab 보기</h2>
+      <div class="lab-related-grid">
+        <a href="/lab/asset-class-returns" class="lab-related-card">
+          <span class="eyebrow">자산 배분 리서치</span>
+          <span class="lab-related-title">자산군 수익률 비교</span>
+        </a>
+        <a href="/lab/congress-stocks" class="lab-related-card">
+          <span class="eyebrow">공시 기반 리서치</span>
+          <span class="lab-related-title">국회의원 보유 주식</span>
+          <span class="lab-related-badge">연동 예정</span>
+        </a>
+        <a href="/lab/nps-holdings" class="lab-related-card">
+          <span class="eyebrow">기관 투자자 리서치</span>
+          <span class="lab-related-title">국민연금 보유 현황</span>
+          <span class="lab-related-badge">연동 예정</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  import { setupCardImageExport } from '../../lib/exportCardImage';
+  document.addEventListener('astro:page-load', setupCardImageExport);
+  setupCardImageExport();
+</script>

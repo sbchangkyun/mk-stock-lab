@@ -1,0 +1,280 @@
+{
+  "metadata": {
+    "fixtureVersion": "0.1",
+    "generatedForPhase": "3BC",
+    "isSynthetic": true,
+    "description": "Synthetic GNews-provider-like response fixture for mocked adapter validation. All content is fictional. All URLs are under example.test domains. No real news payloads, real source names, real URLs, or credentials are included.",
+    "providerFormatNote": "Mimics GNews API v4-like response shape (totalArticles + articles array). Not copied from any real provider response.",
+    "testScenarios": {
+      "successThemes": ["successful_market_stocks", "successful_fx", "successful_macro_policy", "successful_crypto"],
+      "edgeCases": "edge_cases",
+      "emptyResult": "empty_result",
+      "rateLimited": "rate_limited",
+      "unauthorized": "unauthorized",
+      "serverError": "server_error",
+      "invalidPayload": "invalid_payload"
+    }
+  },
+  "scenarios": {
+    "successful_market_stocks": {
+      "queryKey": "market_stocks",
+      "category": "MARKET_STOCKS",
+      "response": {
+        "totalArticles": 3,
+        "articles": [
+          {
+            "title": "Fictional Semiconductor Sector Posts Strong Quarterly Results",
+            "description": "A fictional semiconductor company reports record earnings in this entirely synthetic test article for no-network adapter validation.",
+            "content": "[Synthetic] Full article content would appear here in a real provider response.",
+            "url": "https://market-stocks.example.test/semiconductor-strong-quarter",
+            "image": "https://media.example.test/semiconductor-img-001.jpg",
+            "publishedAt": "2026-06-22T08:00:00Z",
+            "source": {
+              "name": "Fictional Market Times",
+              "url": "https://market-stocks.example.test"
+            }
+          },
+          {
+            "title": "Synthetic ETF Product Launch Coverage",
+            "description": "A new fictional ETF product is introduced in this synthetic fixture article for adapter normalization testing.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://market-stocks.example.test/etf-launch-coverage",
+            "image": null,
+            "publishedAt": "2026-06-22T09:30:00Z",
+            "source": {
+              "name": "Fictional ETF Observer",
+              "url": "https://etf.example.test"
+            }
+          },
+          {
+            "title": "Mock Battery Cell Manufacturer Expansion Plan",
+            "description": "A fictional battery maker announces expansion plans in this synthetic test article.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://market-stocks.example.test/battery-cell-expansion",
+            "image": "https://media.example.test/battery-img-001.jpg",
+            "publishedAt": "2026-06-23T07:00:00Z",
+            "source": {
+              "name": "Fictional Tech Weekly",
+              "url": "https://tech.example.test"
+            }
+          }
+        ]
+      }
+    },
+    "successful_fx": {
+      "queryKey": "fx",
+      "category": "FX",
+      "response": {
+        "totalArticles": 3,
+        "articles": [
+          {
+            "title": "Synthetic Won-Dollar Exchange Rate Commentary",
+            "description": "Fictional commentary on USD/KRW movements for adapter normalization testing purposes.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://fx.example.test/won-dollar-commentary",
+            "image": "https://media.example.test/fx-img-001.jpg",
+            "publishedAt": "2026-06-22T06:00:00Z",
+            "source": {
+              "name": "Fictional FX Desk",
+              "url": "https://fx.example.test"
+            }
+          },
+          {
+            "title": "Mock Dollar Index Synthetic Analysis",
+            "description": "Synthetic analysis of the fictional dollar index for testing purposes.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://fx.example.test/dollar-index-analysis",
+            "image": null,
+            "publishedAt": "2026-06-23T10:00:00Z",
+            "source": {
+              "name": "Fictional Currency Report",
+              "url": "https://currency.example.test"
+            }
+          },
+          {
+            "title": "Fictional Yen Movement Article for Testing",
+            "description": "A synthetic story about fictional currency movements for normalization validation.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://fx.example.test/yen-movement-article",
+            "image": "https://media.example.test/yen-img-001.jpg",
+            "publishedAt": "2026-06-23T11:00:00Z",
+            "source": {
+              "name": "Fictional Asia FX",
+              "url": "https://asia-fx.example.test"
+            }
+          }
+        ]
+      }
+    },
+    "successful_macro_policy": {
+      "queryKey": "macro_policy",
+      "category": "MACRO_POLICY",
+      "response": {
+        "totalArticles": 3,
+        "articles": [
+          {
+            "title": "Fictional Central Bank Rate Decision Coverage",
+            "description": "Synthetic coverage of a fictional interest rate decision for adapter testing.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://macro.example.test/central-bank-rate",
+            "image": "https://media.example.test/macro-img-001.jpg",
+            "publishedAt": "2026-06-21T09:00:00Z",
+            "source": {
+              "name": "Fictional Policy Monitor",
+              "url": "https://macro.example.test"
+            }
+          },
+          {
+            "title": "Mock Government Economic Stimulus Package",
+            "description": "A fictional government announces a test economic package in this synthetic article.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://macro.example.test/economic-stimulus-package",
+            "image": "https://media.example.test/macro-img-002.jpg",
+            "publishedAt": "2026-06-22T10:00:00Z",
+            "source": {
+              "name": "Fictional Policy Weekly",
+              "url": "https://policy.example.test"
+            }
+          },
+          {
+            "title": "Synthetic Consumer Price Index Release Article",
+            "description": "Fictional consumer price index data for testing normalization completeness.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://macro.example.test/cpi-data-release",
+            "image": null,
+            "publishedAt": "2026-06-23T08:30:00Z",
+            "source": {
+              "name": "Fictional Economic Data",
+              "url": "https://econ-data.example.test"
+            }
+          }
+        ]
+      }
+    },
+    "successful_crypto": {
+      "queryKey": "crypto_digital_assets",
+      "category": "CRYPTO_DIGITAL_ASSETS",
+      "response": {
+        "totalArticles": 3,
+        "articles": [
+          {
+            "title": "Fictional Crypto Exchange Volume Report",
+            "description": "Synthetic trading volume report from a fictional exchange for adapter testing.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://crypto.example.test/exchange-volume-report",
+            "image": "https://media.example.test/crypto-img-001.jpg",
+            "publishedAt": "2026-06-22T07:00:00Z",
+            "source": {
+              "name": "Fictional Crypto News",
+              "url": "https://crypto.example.test"
+            }
+          },
+          {
+            "title": "Mock Digital Asset Regulatory Update",
+            "description": "Fictional regulatory update for digital assets in this synthetic test article.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://crypto.example.test/digital-asset-regulation",
+            "image": null,
+            "publishedAt": "2026-06-23T09:00:00Z",
+            "source": {
+              "name": "Fictional Block Times",
+              "url": "https://block.example.test"
+            }
+          },
+          {
+            "title": "Synthetic Blockchain Technology Trend Article",
+            "description": "A fictional synthetic update on blockchain technology trends for normalization testing.",
+            "content": "[Synthetic] Content placeholder.",
+            "url": "https://crypto.example.test/blockchain-tech-trends",
+            "image": "https://media.example.test/crypto-img-002.jpg",
+            "publishedAt": "2026-06-23T10:30:00Z",
+            "source": {
+              "name": "Fictional Chain Journal",
+              "url": "https://chain.example.test"
+            }
+          }
+        ]
+      }
+    },
+    "edge_cases": {
+      "description": "Edge-case articles for testing invalid/missing field handling in normalizeGnewsArticle",
+      "articles": [
+        {
+          "_scenario": "missing_image",
+          "title": "Synthetic Article With Missing Image Field",
+          "description": "Test article where image field is null for adapter edge-case validation.",
+          "content": "[Synthetic]",
+          "url": "https://edge.example.test/missing-image-article",
+          "image": null,
+          "publishedAt": "2026-06-22T05:00:00Z",
+          "source": {
+            "name": "Fictional Edge News",
+            "url": "https://edge.example.test"
+          }
+        },
+        {
+          "_scenario": "missing_source_url",
+          "title": "Synthetic Article With Missing Source URL",
+          "description": "Test article where source.url is empty for adapter normalization fallback testing.",
+          "content": "[Synthetic]",
+          "url": "https://edge.example.test/missing-source-url-article",
+          "image": "https://media.example.test/edge-img-001.jpg",
+          "publishedAt": "2026-06-22T05:30:00Z",
+          "source": {
+            "name": "Fictional No-URL Source",
+            "url": ""
+          }
+        },
+        {
+          "_scenario": "invalid_published_at",
+          "title": "Synthetic Article With Malformed Published Date",
+          "description": "Test article where publishedAt is not a valid ISO string for date handling validation.",
+          "content": "[Synthetic]",
+          "url": "https://edge.example.test/invalid-published-at-article",
+          "image": "https://media.example.test/edge-img-002.jpg",
+          "publishedAt": "NOT_A_DATE",
+          "source": {
+            "name": "Fictional Date Test Source",
+            "url": "https://edge.example.test"
+          }
+        },
+        {
+          "_scenario": "null_title_and_url",
+          "title": null,
+          "description": null,
+          "content": null,
+          "url": null,
+          "image": null,
+          "publishedAt": null,
+          "source": null
+        }
+      ]
+    },
+    "empty_result": {
+      "description": "Empty result scenario — GNews returns articles: [] with totalArticles: 0",
+      "response": {
+        "totalArticles": 0,
+        "articles": []
+      }
+    },
+    "invalid_payload": {
+      "description": "Invalid payload scenario — response does not contain articles array",
+      "response": {
+        "message": "unexpected_format",
+        "articles": null
+      }
+    },
+    "rate_limited": {
+      "description": "Rate limit scenario — HTTP 429 response",
+      "httpStatus": 429
+    },
+    "unauthorized": {
+      "description": "Unauthorized scenario — HTTP 401 response",
+      "httpStatus": 401
+    },
+    "server_error": {
+      "description": "Server error scenario — HTTP 500 response",
+      "httpStatus": 500
+    }
+  }
+}

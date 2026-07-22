@@ -1,0 +1,91 @@
+{
+  "project": "mk-stock-lab",
+  "created_at": "2026-06-21",
+  "local_path": "E:\\개인 프로젝트\\mk-stock-lab",
+  "branch": "rebuild/phase-1-ia-shell",
+  "latest_known_phase": "Phase 3Z",
+  "next_recommended_phase": "Phase 3AA",
+  "latest_known_commit": "2ae6367 docs: record successful local kis quote smoke result",
+  "handoff_files": [
+    "docs/planning/new_chat_handoff/CURRENT_STATE.md",
+    "docs/planning/new_chat_handoff/NEXT_TASK_PROMPT.md",
+    "docs/planning/new_chat_handoff/PROJECT_HANDOFF_INDEX.md",
+    "docs/planning/new_chat_handoff/NEW_CHAT_BOOTSTRAP_PROMPT.txt",
+    "docs/planning/new_chat_handoff/HANDOFF_MANIFEST.json"
+  ],
+  "source_of_truth_files": [
+    "docs/planning/planning_changelog.md",
+    "docs/planning/phase_3z_owner_local_kis_quote_smoke_result_v0.1.md",
+    "docs/planning/phase_3y_local_kis_quote_smoke_harness_result_v0.1.md",
+    "docs/planning/phase_3x_vercel_env_readiness_and_kis_gate_plan_v0.1.md",
+    "docs/planning/phase_3w_controlled_live_quote_integration_readiness_plan_v0.1.md",
+    "docs/planning/phase_3v_owner_live_smoke_retry_result_v0.1.md",
+    "src/lib/server/providers/kisClient.ts",
+    "src/lib/server/marketData/quotes.ts",
+    "src/pages/api/market/quote.ts",
+    "src/lib/server/marketData/quoteCache.ts",
+    "src/lib/server/providers/providerEnv.ts",
+    "src/lib/server/providers/serverOnly.ts",
+    "package.json"
+  ],
+  "blocked_actions": [
+    "production KIS calls — blocked by isProductionRuntime() in kisClient.ts; requires code change + owner approval",
+    "UI live quote wiring — not approved; API endpoint not validated",
+    "Vercel environment variable mutation — requires separate owner approval",
+    "Vercel deployment — requires gate decision (Option A/B/C from Phase 3X)",
+    "KIS account, trading, order, balance, holdings, WebSocket APIs — excluded from current scope",
+    "KIS_ACCOUNT_NO environment variable — must remain absent",
+    "live KIS or Supabase calls from Claude Code — owner-run only",
+    "SQL execution or Supabase MCP DB tools",
+    "reading .env* file contents",
+    "recording secrets, project refs, price values, tokens, connection strings, raw errors, or stack traces"
+  ],
+  "allowed_startup_actions": [
+    "git log --oneline -10",
+    "git status --short",
+    "read docs/planning/planning_changelog.md",
+    "read docs/planning/phase_3z_owner_local_kis_quote_smoke_result_v0.1.md",
+    "read docs/planning/new_chat_handoff/CURRENT_STATE.md",
+    "read docs/planning/new_chat_handoff/NEXT_TASK_PROMPT.md",
+    "read src/lib/server/providers/kisClient.ts",
+    "read src/lib/server/marketData/quotes.ts",
+    "read src/pages/api/market/quote.ts",
+    "npm run check:provider-boundaries",
+    "npx tsc --noEmit"
+  ],
+  "requires_claude_code_readback_before_next_phase": true,
+  "secret_handling_policy": {
+    "KIS_APP_KEY": "never record value — boolean presence only",
+    "KIS_APP_SECRET": "never record value — boolean presence only",
+    "KIS_BASE_URL": "never record value",
+    "KIS_ACCOUNT_NO": "must remain absent; never set in smoke phases",
+    "SUPABASE_SERVICE_ROLE_KEY": "never record value",
+    "PUBLIC_SUPABASE_URL": "non-secret but do not record",
+    "PUBLIC_SUPABASE_ANON_KEY": "non-secret but do not record",
+    "OAuth_tokens": "never record",
+    "Bearer_tokens": "never record",
+    "price_values": "never record",
+    "raw_KIS_fields": "never record (stck_prpr, prdy_vrss, prdy_ctrt, acml_vol, rt_cd)",
+    "Vercel_project_ids": "never record",
+    "connection_strings": "never record",
+    "DB_passwords": "never record"
+  },
+  "validation_status": {
+    "phase_3z_passed": true,
+    "tsc_noEmit": "passed (Phase 3Y)",
+    "check_provider_boundaries": "passed (Phase 3Y)",
+    "npm_run_build": "passed (Phase 3Y)",
+    "local_live_kis_quote_smoke": "passed (Phase 3Z, owner-run)",
+    "api_route_live_http_test": "not yet validated — target of Phase 3AA",
+    "supabase_persistent_cache_with_live_kis": "not yet validated",
+    "vercel_preview": "not yet validated",
+    "vercel_production": "permanently blocked — gate decision pending"
+  },
+  "notes": [
+    "Phase 3Z cache-backend-check reported configuredBackend=supabase but used in-process mock — not a Supabase write",
+    "KIS accessTokenCache in kisClient.ts is in-memory and resets on cold start",
+    "getQuoteSnapshot() only supports market=KR at this phase",
+    "Phase 3X documents three gate options A/B/C for production KIS enablement — none chosen yet",
+    "Handoff created 2026-06-21 — verify repo state before trusting any field in this manifest"
+  ]
+}

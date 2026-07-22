@@ -1,47 +1,38 @@
 ---
-/* src/components/Ticker.astro */
+const tickerItems = [
+  { label: 'S&P 500', value: '미국 대형주' },
+  { label: 'Nasdaq 100', value: '성장주 지수' },
+  { label: 'Dow Jones', value: '우량주 지수' },
+  { label: 'KOSPI', value: '국내 대표 시장' },
+  { label: 'KOSDAQ', value: '국내 성장 시장' },
+  { label: 'USD/KRW', value: '환율 점검' },
+  { label: 'Dollar Index', value: '달러 흐름' },
+  { label: 'Gold', value: '안전자산' },
+  { label: 'WTI Oil', value: '에너지 기준가' },
+];
 ---
-<div class="independent-ticker" id="ticker_area"></div>
+
+<div class="ticker-belt" id="ticker_area" aria-label="시장 지표">
+  <div class="ticker-track">
+    {tickerItems.map((item) => (
+      <span class="ticker-chip">
+        <strong>{item.label}</strong>
+        <span>{item.value}</span>
+      </span>
+    ))}
+  </div>
+</div>
 
 <script is:inline>
-  // 이 함수를 Ticker 파일 안으로 옮겨옵니다.
-  function renderTicker(theme) {
+  function renderMarketTicker(theme) {
     const area = document.getElementById('ticker_area');
     if (!area) return;
-    area.innerHTML = "";
-    
-    const container = document.createElement('div');
-    container.style.cssText = "height:55px; width:100%;";
-    
-    const script = document.createElement('script');
-    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-    script.async = true;
-    script.text = JSON.stringify({
-      "symbols": [
-        { "proName": "CAPITALCOM:DXY", "title": "달러인덱스" },
-        { "proName": "NASDAQ:NDAQ", "title": "나스닥" },
-        { "proName": "FRED:SP500", "title": "S&P 500" },
-        { "proName": "UPBIT:BTCKRW", "title": "비트코인" },
-        { "proName": "UPBIT:ETHKRW", "title": "이더리움" },
-        { "proName": "UPBIT:SOLKRW", "title": "솔라나" },
-        { "proName": "TVC:GOLD", "title": "골드" },
-        { "proName": "TVC:SILVER", "title": "실버" },
-        { "proName": "FX_IDC:USDKRW", "title": "원/달러" }
-      ],
-      "showSymbolLogo": true,
-      "colorTheme": theme || 'light',
-      "isTransparent": true,
-      "displayMode": "regular",
-      "locale": "kr"
-    });
-    
-    container.appendChild(script);
-    area.appendChild(container);
+    area.dataset.theme = theme || 'light';
+    area.dataset.ready = 'true';
   }
 
-  // 페이지 로드 시 바로 실행되도록 설정
+  window.renderMarketTicker = renderMarketTicker;
   window.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    renderTicker(savedTheme);
+    renderMarketTicker(localStorage.getItem('theme') || 'light');
   });
 </script>

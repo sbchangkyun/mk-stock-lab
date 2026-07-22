@@ -1,130 +1,161 @@
 ---
-/* src/components/Header.astro */
-import AuthModal from "./Auth/AuthModal.astro";
+import AuthModal from './Auth/AuthModal.astro';
 ---
-<header class="header-container">
-    <div class="logo-area" onclick="location.reload()" style="cursor: pointer;">
-        <svg viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 45V15L20 30L30 15L40 45" stroke="#1A237E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 15L45 5L45 15M45 5L35 5" stroke="#FF1744" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="45" r="3" fill="#1A237E"/><circle cx="20" cy="30" r="3" fill="#1A237E"/><circle cx="30" cy="15" r="3" fill="#FF1744"/><text x="55" y="32" font-family="Arial, sans-serif" font-weight="900" font-size="28">MK</text><text x="55" y="52" font-family="Arial, sans-serif" font-weight="bold" font-size="14" letter-spacing="1">STOCK LAB</text>
-        </svg>
-    </div>
-    <div class="header-actions">
-        <div id="themeToggle" onclick="toggleTheme()"><svg id="themeIcon" viewBox="0 0 24 24"></svg></div>
-        
-        <button id="open-login-btn" class="auth-btn hidden">Login</button>
-        <button id="logout-btn" class="auth-btn hidden">Logout</button>
-        
-    </div>
+
+<header class="site-header">
+  <a class="brand-mark" href="/" aria-label="MK Stock Lab 홈">
+    <span class="brand-logo-frame">
+      <img class="brand-logo" src="/logo.svg" alt="MK Stock Lab 로고" width="48" height="48" />
+    </span>
+    <span class="brand-text">
+      <strong>MK Stock Lab</strong>
+      <small>투자 데이터 플랫폼</small>
+    </span>
+  </a>
+
+  <div class="header-actions">
+    <span class="today-placeholder" aria-label="Today visitor count placeholder">Today: 000</span>
+    <button class="icon-button" id="themeToggle" type="button" aria-label="테마 전환">
+      <svg id="themeIcon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4a8 8 0 1 0 8 8 6 6 0 0 1-8-8Z"></path>
+      </svg>
+    </button>
+    <button class="header-button" id="open-login-btn" type="button">로그인</button>
+    <a class="header-button secondary hidden" id="mypage-btn" href="/mypage">마이페이지</a>
+    <button class="header-button secondary hidden" id="logout-btn" type="button">로그아웃</button>
+  </div>
 </header>
 
 <AuthModal />
 
-<style>
-    /* 기존 스타일 유지하면서 버튼 디자인만 살짝 다듬었습니다 */
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 20px;
-        border-bottom: 1px solid #eee;
-    }
-    .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    #open-login-btn {
-        padding: 8px 20px;
-        background-color: #1A237E;
-        color: white;
-        border: none;
-        border-radius: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    #open-login-btn:hover {
-        background-color: #FF1744;
-    }
-    /* 테마 아이콘 크기 조절 (필요시) */
-    #themeToggle { cursor: pointer; width: 24px; height: 24px; }
-</style>
-
 <script>
-    import { supabase } from "../lib/supabase";
+  import { bootstrapProfileForCurrentSession, dispatchProfileBootstrapStatus } from '../lib/profileBootstrap';
+  import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
 
-    const setupAuth = async () => {
-        // 1. 필요한 요소들을 함수 안에서 한 번에 찾습니다.
-        const openBtn = document.getElementById('open-login-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const modal = document.getElementById('auth-modal');
-        const closeBtn = document.getElementById('close-modal');
+  type HeaderAuthState = 'signed_in' | 'signed_out' | 'unavailable';
+  const AUTH_UI_HINT_KEY = 'mk-stock-lab-auth-ui-hint';
 
-        // 요소가 하나라도 없으면 실행하지 않습니다.
-        if (!openBtn || !logoutBtn || !modal) return;
+  const readAuthUiHint = () => {
+    try {
+      return window.localStorage.getItem(AUTH_UI_HINT_KEY);
+    } catch {
+      return null;
+    }
+  };
 
-        // 2. 버튼 상태 업데이트 함수
-        const updateButtons = (user: any) => {
-            console.log("인증 상태 업데이트 - 유저 정보:", user);
-            if (user) {
-                openBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-            } else {
-                openBtn.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
-            }
-        };
+  const applyDocumentAuthHint = (status: HeaderAuthState) => {
+    const root = document.documentElement;
+    root.classList.toggle('auth-hint-signed-in', status === 'signed_in');
+    root.classList.toggle('auth-hint-signed-out', status === 'signed_out' || status === 'unavailable');
+  };
 
-        // 3. 초기 유저 체크 및 실시간 감지
-        const { data: { user } } = await supabase.auth.getUser();
-        updateButtons(user);
+  const writeAuthUiHint = (status: HeaderAuthState) => {
+    try {
+      if (status === 'signed_in') {
+        window.localStorage.setItem(AUTH_UI_HINT_KEY, 'signed_in');
+        applyDocumentAuthHint(status);
+        return;
+      }
 
-        supabase.auth.onAuthStateChange((_event, session) => {
-            updateButtons(session?.user ?? null);
-        });
+      if (status === 'signed_out') {
+        window.localStorage.setItem(AUTH_UI_HINT_KEY, 'signed_out');
+        applyDocumentAuthHint(status);
+        return;
+      }
 
-        // 4. 모든 클릭 이벤트 연결 (함수 안에서 처리)
-        
-        // 로그인 창 열기
-        openBtn.onclick = () => modal.classList.remove('hidden');
+      if (status === 'unavailable') {
+        window.localStorage.removeItem(AUTH_UI_HINT_KEY);
+        applyDocumentAuthHint(status);
+      }
+    } catch {
+      applyDocumentAuthHint(status);
+      // Local storage can be unavailable in private or constrained browser contexts.
+    }
+  };
 
-        // 로그아웃 하기
-        logoutBtn.onclick = async () => {
-            await supabase.auth.signOut();
-            window.location.reload();
-        };
+  const dispatchHeaderAuthState = (status: HeaderAuthState) => {
+    window.dispatchEvent(new CustomEvent('mk:auth-state', { detail: { status } }));
+  };
 
-        // 입력 필드 초기화 함수
-        const resetInputs = () => {
-            const inputs = modal.querySelectorAll('input');
-            inputs.forEach(input => {
-                (input as HTMLInputElement).value = '';
-            });
-        };
+  const updateAuthButtons = (status: HeaderAuthState) => {
+    const loginButton = document.getElementById('open-login-btn');
+    const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
+    const mypageBtn = document.getElementById('mypage-btn') as HTMLAnchorElement | null;
+    if (!loginButton || !logoutButton) return;
 
-        // X 버튼으로 창 닫기
-        if (closeBtn) {
-            closeBtn.onclick = () => {
-                modal.classList.add('hidden');
-                resetInputs(); // 닫을 때 비우기
-            };
-        }
+    if (status === 'signed_in') {
+      writeAuthUiHint(status);
+      loginButton.classList.add('hidden');
+      loginButton.removeAttribute('disabled');
+      mypageBtn?.classList.remove('hidden');
+      logoutButton.classList.remove('hidden');
+      dispatchHeaderAuthState(status);
+      return;
+    }
 
-        // 배경 클릭 시 창 닫기
-        window.onclick = (event) => {
-            if (event.target === modal) {
-                modal.classList.add('hidden');
-                resetInputs(); // 닫을 때 비우기
-            }
-        };
-    };
+    writeAuthUiHint(status);
+    loginButton.textContent = status === 'unavailable' ? '설정 필요' : '로그인';
+    loginButton.removeAttribute('disabled');
+    loginButton.classList.remove('hidden');
+    mypageBtn?.classList.add('hidden');
+    logoutButton.classList.add('hidden');
+    dispatchHeaderAuthState(status);
+  };
 
-    // Astro 페이지 로드 시 실행
-    document.addEventListener('astro:page-load', setupAuth);
-    setupAuth();
+  const syncProfileBootstrap = async (session: unknown) => {
+    if (!session) {
+      dispatchProfileBootstrapStatus({
+        status: 'signed_out',
+        profileReady: false,
+        message: '로그인이 필요합니다.',
+      });
+      return;
+    }
 
-    // 테마 전환 기능 (외부 노출용)
-    (window as any).toggleTheme = function() {
-        console.log("테마 전환 버튼 클릭됨");
-    };
+    await bootstrapProfileForCurrentSession();
+  };
+
+  const setupHeaderAuth = async () => {
+    const loginButton = document.getElementById('open-login-btn') as HTMLButtonElement | null;
+    const logoutButton = document.getElementById('logout-btn') as HTMLButtonElement | null;
+    if (!loginButton || !logoutButton || loginButton.dataset.authReady === 'true') return;
+    loginButton.dataset.authReady = 'true';
+    updateAuthButtons(readAuthUiHint() === 'signed_in' ? 'signed_in' : 'signed_out');
+
+    loginButton?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('mk:open-auth'));
+    });
+
+    if (!isSupabaseConfigured()) {
+      updateAuthButtons('unavailable');
+      dispatchProfileBootstrapStatus({
+        status: 'public_config_missing',
+        profileReady: false,
+        message: '로그인 설정이 아직 완료되지 않았습니다.',
+      });
+      return;
+    }
+
+    const supabase = getBrowserSupabaseClient();
+    if (!supabase) return;
+
+    logoutButton?.addEventListener('click', async () => {
+      updateAuthButtons('signed_out');
+      await supabase.auth.signOut();
+      await syncProfileBootstrap(null);
+      window.location.assign('/');
+    });
+
+    const { data } = await supabase.auth.getSession();
+    updateAuthButtons(data.session ? 'signed_in' : 'signed_out');
+    await syncProfileBootstrap(data.session);
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      updateAuthButtons(session ? 'signed_in' : 'signed_out');
+      void syncProfileBootstrap(session);
+    });
+  };
+
+  document.addEventListener('astro:page-load', setupHeaderAuth);
+  setupHeaderAuth();
 </script>

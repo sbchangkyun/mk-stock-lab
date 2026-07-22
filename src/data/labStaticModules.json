@@ -1,0 +1,54 @@
+{
+  "modules": [
+    {
+      "id": "congress-stocks",
+      "title": "국회의원 보유 주식",
+      "category": "공시 기반 리서치",
+      "status": "정적 모듈 준비",
+      "description": "공개 재산 신고 데이터를 기반으로 국회의원 보유 종목을 탐색하는 모듈입니다.",
+      "scope": "데이터 연동 전 화면",
+      "preview": ["보유 종목 분류", "상위 보유 섹터", "변동 이력"]
+    },
+    {
+      "id": "nps-holdings",
+      "title": "국민연금 보유 현황",
+      "category": "기관 투자자 리서치",
+      "status": "리서치 모듈",
+      "description": "국민연금 공시 데이터를 기반으로 보유 종목과 섹터 비중을 확인하는 모듈입니다.",
+      "scope": "연동 예정",
+      "preview": ["상위 보유 종목", "섹터 비중", "신규·청산 종목"]
+    },
+    {
+      "id": "sp500-sectors",
+      "title": "S&P 500 섹터",
+      "category": "미국 시장 리서치",
+      "status": "예시 데이터",
+      "description": "S&P 500 섹터별 예시 비중을 확인하는 모듈입니다. 정적 표시값이며 연동 전 화면입니다.",
+      "scope": "데이터 연동 전 화면",
+      "preview": ["Technology", "Healthcare", "Financials", "Industrials"]
+    },
+    {
+      "id": "asset-class-returns",
+      "title": "자산군 수익률",
+      "category": "자산 배분 리서치",
+      "status": "예시 데이터",
+      "description": "주식, 채권, 원자재, 환율 등 주요 자산군의 예시 수익률을 비교하는 모듈입니다. 정적 표시값이며 연동 전 화면입니다.",
+      "scope": "데이터 연동 전 화면",
+      "preview": ["US Equities", "Korean Equities", "Bonds", "Gold", "USD/KRW"]
+    }
+  ],
+  "sectorSamples": [
+    { "name": "Technology",             "sampleWeight": "예시 비중", "note": "정적 표시값" },
+    { "name": "Healthcare",             "sampleWeight": "예시 비중", "note": "정적 표시값" },
+    { "name": "Financials",             "sampleWeight": "예시 비중", "note": "정적 표시값" },
+    { "name": "Industrials",            "sampleWeight": "예시 비중", "note": "정적 표시값" },
+    { "name": "Consumer Discretionary", "sampleWeight": "예시 비중", "note": "정적 표시값" }
+  ],
+  "assetSamples": [
+    { "name": "US Equities",              "sampleReturn": "예시 수익률", "note": "정적 표시값" },
+    { "name": "Korean Equities (KOSPI)",  "sampleReturn": "예시 수익률", "note": "정적 표시값" },
+    { "name": "Bonds",                    "sampleReturn": "예시 수익률", "note": "정적 표시값" },
+    { "name": "Gold",                     "sampleReturn": "예시 수익률", "note": "정적 표시값" },
+    { "name": "USD/KRW",                  "sampleReturn": "예시 수익률", "note": "정적 표시값" }
+  ]
+}
