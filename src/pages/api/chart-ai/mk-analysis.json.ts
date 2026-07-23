@@ -24,6 +24,7 @@ import { fetchLongHistoryOhlcv } from '../../../lib/server/chart-ai/universalOhl
 import { runRealSimilarity } from '../../../lib/server/chart-ai/similarity-engine.mjs';
 import { runMkAiAnalysis } from '../../../lib/server/chart-ai/mkAiAnalysis/analysisEngine.mjs';
 import { formatMkAiAnalysis } from '../../../lib/server/chart-ai/mkAiAnalysis/analysisFormatter.mjs';
+import { consumeChartAiUsage, refundChartAiUsage, type ChartAiUsageState } from '../../../lib/server/chartAiUsage';
 
 export const prerender = false;
 
@@ -84,11 +85,13 @@ export const GET: APIRoute = async ({ url, request }) => {
 
   // Phase 3GG-T-HF1: authenticated Supabase user required on deployed requests (localhost-owner
   // stays token-free). Fails closed 401/403 before any provider work; reuses the Portfolio validator.
+  let authenticatedUserId: string | null = null;
   if (!localOwnerAllowed) {
     const auth = await validateUserFromBearerToken(request.headers.get('authorization'));
     if (!auth.ok) {
       return jsonResponse({ ok: false, code: auth.code, message: auth.message }, auth.status);
     }
+    authenticatedUserId = auth.user.id;
   }
 
   const betaAccess = evaluateProtectedPreviewBetaAccess({
@@ -120,11 +123,56 @@ export const GET: APIRoute = async ({ url, request }) => {
     return jsonResponse({ ok: true, mkai: blocked(SANITIZED_ERROR_CODES.UNSUPPORTED_INSTRUMENT) });
   }
 
+  // Phase 3GG-U: reserve one combined Similarity + MK Analysis execution before any cache/provider/engine
+  // work. Local owner-opt-in stays usage-free (no Supabase storage). A cache hit below still counts as one
+  // execution -- the reservation happens before the cache check on purpose.
+  //
+  // Admin/master bypass: none. The only existing admin check (isCurrentUserSiteAdmin in
+  // siteSettingsClient.ts) is client-side/browser-RLS-based and used solely for UI banners -- it is not an
+  // authoritative server-side resolver this route can trust, and adding one is out of scope this phase. The
+  // daily limit therefore applies to every deployed authenticated user, including site admins.
+  let usageState: ChartAiUsageState | null = null;
+  if (!localOwnerAllowed && authenticatedUserId) {
+    usageState = await consumeChartAiUsage(authenticatedUserId);
+    if (usageState.reason === 'usage_guard_unavailable') {
+      return jsonResponse(
+        {
+          ok: false,
+          code: 'CHART_AI_USAGE_GUARD_UNAVAILABLE',
+          message: '분석 사용량을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+          usage: usageState,
+        },
+        503,
+      );
+    }
+    if (!usageState.allowed) {
+      return jsonResponse(
+        {
+          ok: false,
+          code: 'CHART_AI_DAILY_LIMIT_REACHED',
+          message: '오늘 사용 가능한 분석 횟수를 모두 사용했습니다. 자정 이후 다시 이용해 주세요.',
+          usage: usageState,
+        },
+        429,
+      );
+    }
+  }
+  // Gives back the reservation above when the request never produces a usable analysis. Best-effort and
+  // called at most once per request (each failure branch returns immediately after calling this).
+  const refundReservedUsage = async (): Promise<ChartAiUsageState | null> => {
+    if (localOwnerAllowed || !authenticatedUserId) return null;
+    return refundChartAiUsage(authenticatedUserId);
+  };
+
   const allowProd = prodBetaAccess.allowed === true;
   const cacheKey = `${instrument.country}:${instrument.symbol}`;
   const cached = resultCache.get(cacheKey);
   if (cached && Date.now() - cached.storedAtMs < RESULT_TTL_MS) {
-    return jsonResponse({ ok: true, mkai: { ...cached.body, cached: true } }, 200, { 'X-MK-OHLCV-Cache': 'RESULT_HIT' });
+    return jsonResponse(
+      { ok: true, mkai: { ...cached.body, cached: true }, ...(usageState ? { usage: usageState } : {}) },
+      200,
+      { 'X-MK-OHLCV-Cache': 'RESULT_HIT' },
+    );
   }
 
   try {
@@ -135,7 +183,8 @@ export const GET: APIRoute = async ({ url, request }) => {
         history.sourceStatus === 'no-data'
           ? SANITIZED_ERROR_CODES.INSUFFICIENT_HISTORY
           : SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE;
-      return jsonResponse({ ok: true, mkai: blocked(code, history.sourceStatus) });
+      const refunded = await refundReservedUsage();
+      return jsonResponse({ ok: true, mkai: blocked(code, history.sourceStatus), ...(refunded ? { usage: refunded } : {}) });
     }
 
     const bars = history.candles.map((c) => ({
@@ -155,7 +204,8 @@ export const GET: APIRoute = async ({ url, request }) => {
     const analysis = runMkAiAnalysis({ instrument, candles: history.candles, similarity });
 
     if (!analysis.ok) {
-      return jsonResponse({ ok: true, mkai: blocked(SANITIZED_ERROR_CODES.INSUFFICIENT_HISTORY, 'no-data') });
+      const refunded = await refundReservedUsage();
+      return jsonResponse({ ok: true, mkai: blocked(SANITIZED_ERROR_CODES.INSUFFICIENT_HISTORY, 'no-data'), ...(refunded ? { usage: refunded } : {}) });
     }
 
     const formatted = formatMkAiAnalysis(analysis);
@@ -176,9 +226,14 @@ export const GET: APIRoute = async ({ url, request }) => {
     };
 
     resultCache.set(cacheKey, { body, storedAtMs: Date.now() });
-    return jsonResponse({ ok: true, mkai: body }, 200, { 'X-MK-OHLCV-Cache': ohlcvCacheState });
+    return jsonResponse(
+      { ok: true, mkai: body, ...(usageState ? { usage: usageState } : {}) },
+      200,
+      { 'X-MK-OHLCV-Cache': ohlcvCacheState },
+    );
   } catch {
-    return jsonResponse({ ok: true, mkai: blocked(SANITIZED_ERROR_CODES.INTERNAL, 'error') });
+    const refunded = await refundReservedUsage();
+    return jsonResponse({ ok: true, mkai: blocked(SANITIZED_ERROR_CODES.INTERNAL, 'error'), ...(refunded ? { usage: refunded } : {}) });
   }
 };
 

@@ -7,10 +7,15 @@ import {
   readJsonBody,
   toErrorResponse,
 } from '../../../lib/server/portfolio';
-import { consumeChartAiUsage } from '../../../lib/server/chartAiUsage';
 import { validateUserFromBearerToken } from '../../../lib/server/supabaseAdmin';
 
 export const prerender = false;
+
+// Phase 3GG-U: deprecated placeholder route. No page in src/ calls this endpoint (the live Chart AI
+// UI calls similarity.json.ts / mk-analysis.json.ts directly, which now own the combined daily usage
+// guard -- see src/lib/server/chartAiUsage.ts). This route no longer reserves usage on its own so it
+// cannot double-consume that shared quota if something starts calling it again. It stays fail-closed
+// (auth required, no provider/chart-data work) and returns a fixed placeholder payload.
 
 type ChartAiRequest = {
   symbol: string;
@@ -73,33 +78,9 @@ export const POST: APIRoute = async ({ request }) => {
   const parsed = parseChartAiRequest(body.data);
   if (!parsed.ok) return toErrorResponse(parsed);
 
-  const usage = await consumeChartAiUsage(validation.user.id);
-  if (usage.reason === 'usage_guard_unavailable') {
-    return jsonResponse(
-      {
-        ok: false,
-        code: 'CHART_AI_USAGE_GUARD_UNAVAILABLE',
-        message: 'AI 분석 사용량 확인 설정이 아직 완료되지 않았습니다.',
-        usage,
-      },
-      503,
-    );
-  }
-
-  if (!usage.allowed) {
-    return jsonResponse(
-      {
-        ok: false,
-        code: 'CHART_AI_DAILY_LIMIT_REACHED',
-        message: '오늘 사용 가능한 AI 분석 횟수를 모두 사용했습니다.',
-        usage,
-      },
-      429,
-    );
-  }
-
   const input = parsed.data;
 
+  // Deliberately no consumeChartAiUsage call here (Phase 3GG-U) -- see module comment above.
   return jsonResponse({
     ok: true,
     status: 'ready_for_provider_integration',
@@ -107,8 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
     name: input.name,
     market: input.market,
     timeframe: input.timeframe,
-    usage,
-    summary: `${input.name || input.symbol} ${input.timeframe} 차트 분석 준비 요청이 서버 사용량 가드를 통과했습니다.`,
+    summary: `${input.name || input.symbol} ${input.timeframe} 차트 분석 준비 요청이 서버 인증 경계를 통과했습니다.`,
     sections: [
       {
         title: '현재 단계',

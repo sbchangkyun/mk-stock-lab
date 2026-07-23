@@ -209,7 +209,21 @@ const RECONCILED_SIBLINGS = [
   'scripts/check_phase_3gg_t_hf3b_hf2_hf2a2_preview_search_contract.mjs',
   'scripts/check_phase_3gg_t_hf3b_hf4c_fast_contract.mjs',
 ];
-const ALLOWED = new Set([...REQUIRED_FILES, ENGINE, ROUTE, SIM_MODULE, CHANGELOG, PACKAGE_JSON, ...RECONCILED_SIBLINGS]);
+// Phase 3GG-U added a shared usage guard in front of the (frozen-scoring-formula) Similarity route; these
+// are the new/changed files that phase introduced, out of this checker's own scope to assert on.
+const PHASE_3GG_U_FILES = [
+  'src/lib/server/chartAiUsage.ts',
+  'src/pages/api/chart-ai/analyze.ts',
+  'src/pages/api/chart-ai/mk-analysis.json.ts',
+  'scripts/chart_ai_usage_testsrc.ts',
+  'scripts/smoke_phase_3gg_u_chart_ai_usage.mjs',
+  'scripts/check_phase_3gg_u_chart_ai_live_usage_guard_contract.mjs',
+  'supabase/migrations/20260723_chart_ai_live_usage_guard.sql',
+  'docs/planning/phase_3gg_u_chart_ai_live_usage_guard_result_v0.1.md',
+  'scripts/check_phase_3gg_r_fast_contract.mjs',
+  'scripts/check_phase_3gg_t_hf3b_hf2_hf2b_hf1_preview_kis_guard_contract.mjs',
+];
+const ALLOWED = new Set([...REQUIRED_FILES, ENGINE, ROUTE, SIM_MODULE, CHANGELOG, PACKAGE_JSON, ...RECONCILED_SIBLINGS, ...PHASE_3GG_U_FILES]);
 const KNOWN_PREFIXES = ['.agents/', '.claude/', '.vscode/', 'docs/handoff/', 'skills-lock.json'];
 const tolerated = (f) => ALLOWED.has(f) || KNOWN_PREFIXES.some((p) => f === p || f.startsWith(p)) || f === '.gitignore';
 let porcelain = [];

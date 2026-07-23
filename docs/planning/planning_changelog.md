@@ -1,5 +1,45 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-U-HF1 - 2026-07-23
+
+### Usage-limit policy pinning (pre-application hotfix in PR #2)
+
+- Rewrote the unapplied `public.consume_chart_ai_usage_v1` bridge in `20260723_chart_ai_live_usage_guard.sql`
+  to a self-contained atomic upsert on `public.ai_usage_daily`: it pins `free_limit = p_free_limit` (never
+  `greatest(...)`) and gates the increment on `used_count < p_free_limit`. Previously it delegated to
+  `internal.consume_chart_ai_usage`, whose `greatest(stored, incoming)` limit and stored-limit gate would let
+  a historically higher stored `free_limit` authorize more than the approved 3/day policy.
+- `internal.consume_chart_ai_usage` and all KIS token migrations left **unmodified**; no new migration file;
+  no DB mutation; no Production/main change. Checker/result-doc/changelog updated to record the pinning.
+- Follow-up correction (same commit set): the single-statement `ON CONFLICT DO UPDATE ... WHERE` above still
+  skipped the `free_limit` pin on the stored row whenever a call was rejected. Rewrote to an independent
+  two-step reservation (Step A unconditional insert/lock/pin, Step B conditional bounded increment, Step C
+  report current state) so the stored `free_limit` is corrected on every call, including rejections, and
+  concurrent callers are serialized by Step A's unconditional row lock. `refund_chart_ai_usage_v1` reviewed,
+  unchanged (already floors at zero).
+
+## Phase 3GG-U - 2026-07-23
+
+### Live Chart AI daily usage guard → `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING` (pending)
+
+- New additive migration `20260723_chart_ai_live_usage_guard.sql` adds public, `security definer`,
+  service-role-only bridge RPCs `consume_chart_ai_usage_v1` / `refund_chart_ai_usage_v1` on top of the
+  existing `internal.consume_chart_ai_usage` / `public.ai_usage_daily`. **Not applied this phase.**
+- New `src/lib/server/chartAiUsage.ts`: fail-closed daily usage state (3/day combined Similarity + MK
+  Analysis, KST calendar boundary), never uses `.schema('internal')`, injectable client for offline tests.
+- `similarity.json.ts` / `mk-analysis.json.ts`: usage reservation inserted after instrument validation and
+  before cache/provider work; 503 `CHART_AI_USAGE_GUARD_UNAVAILABLE` / 429 `CHART_AI_DAILY_LIMIT_REACHED`;
+  refund-once-on-failure; local owner opt-in stays usage-free. `analyze.ts` placeholder's independent usage
+  consumption removed (no double-consumption risk).
+- `chart-ai.astro`: shared `aria-live` usage notice + shared in-memory usage state across both panels;
+  exact required Korean copy for initial/remaining/exhausted/guard-unavailable states; both start buttons
+  disable on exhaustion; no `localStorage` usage authority, no client-computed KST boundary.
+- **No admin/master bypass** — `isCurrentUserSiteAdmin()` is client-only/UI-banner-only, not a server
+  resolver; the limit applies to every deployed authenticated user.
+- Tests: `smoke:phase-3gg-u-chart-ai-usage` 13/13; new `check:phase-3gg-u-chart-ai-live-usage-guard`
+  contract checker; sibling checkers' working-tree-purity tolerance extended for this phase's files.
+- See `docs/planning/phase_3gg_u_chart_ai_live_usage_guard_result_v0.1.md` for full detail.
+
 ## Phase 3GG-T-HF3B-HF2-PREMERGE-FINALIZATION - 2026-07-16
 
 ### PR #1 pre-merge audit + reconciliation → `PASS_PREMERGE_FINALIZATION_READY_FOR_OWNER_MERGE_APPROVAL`
