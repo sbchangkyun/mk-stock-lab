@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GH - 2026-07-24
+
+### Authenticated KR portfolio live valuation MVP
+
+- New `POST /api/portfolio/valuation`: client sends only `portfolioId`; server independently resolves auth,
+  ownership, and positions, then resolves KR/KRW quotes via the existing KIS orchestration and computes
+  costBasis/currentPrice/marketValue/unrealizedPnl/weight per row. Aggregate states `full`/`partial`/
+  `unavailable`/`empty`; partial totals always labeled "지원 종목 기준," never presented as full-portfolio
+  value. Never fabricates a quote. Scale limits (50 rows / 30 unique KR symbols / concurrency 3) enforced
+  before any provider call. Aggregate `__all_portfolios__` resolved as one authenticated request.
+- Retired the old Owner-Preview / mocked-FX / fixture-provider valuation contract entirely (10 scripts + their
+  `package.json` entries removed); live authenticated valuation is now the only deployed browser contract.
+- `portfolioClient.ts` gains `getValuation(portfolioId)` on the existing authenticated `requestJson` helper;
+  `portfolio.astro` rewritten with a request-sequence guard, pending-refresh disable, and sanitized Korean
+  copy for every state including unsupported US/USD rows (shown, never hidden).
+- No migration created or applied; no Production deploy; no Production Supabase mutation.
+- Tests: `smoke:phase-3gh-portfolio-live-valuation-mvp` 40/40; new
+  `check:phase-3gh-portfolio-live-valuation-mvp` static contract checker 79/79.
+- New `docs/planning/mk_stock_lab_master_roadmap_v2.0.md` supersedes the incompatible Phase 0–10 numbering in
+  `roadmap_v0.1.md` (preserved unmodified as a historical artifact) as the authoritative forward roadmap.
+- See `docs/planning/phase_3gh_portfolio_live_valuation_mvp_result_v0.1.md` for full detail.
+
 ## Phase 3GG-U-HF1 - 2026-07-23
 
 ### Usage-limit policy pinning (pre-application hotfix in PR #2)

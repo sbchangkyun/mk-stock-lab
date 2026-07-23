@@ -44,6 +44,58 @@ export type PositionInput = {
   currency: 'KRW' | 'USD';
 };
 
+export type PortfolioValuationUnsupportedReason =
+  | 'unsupported_market'
+  | 'unsupported_currency'
+  | 'market_currency_mismatch'
+  | 'missing_symbol'
+  | 'invalid_position_data'
+  | 'quote_unavailable';
+
+export type PortfolioValuationRow = {
+  positionId: string;
+  portfolioId: string;
+  sourcePortfolioName?: string;
+  symbol: string;
+  displayName: string;
+  market: 'KR' | 'US';
+  assetType: 'stock' | 'etf';
+  currency: 'KRW' | 'USD';
+  quantity: number;
+  buyPrice: number;
+  costBasis: number;
+  supported: boolean;
+  currentPrice: number | null;
+  marketValue: number | null;
+  unrealizedPnl: number | null;
+  unrealizedPnlPct: number | null;
+  weightPct: number | null;
+  quoteAsOf: string | null;
+  staleState: 'fresh' | 'stale-but-usable' | 'expired' | 'unavailable' | 'sample' | null;
+  unsupportedReason: PortfolioValuationUnsupportedReason | null;
+};
+
+export type PortfolioValuationTotals = {
+  supportedCostBasis: number;
+  supportedMarketValue: number | null;
+  supportedUnrealizedPnl: number | null;
+  supportedUnrealizedPnlPct: number | null;
+  supportedPositionCount: number;
+  unsupportedPositionCount: number;
+  unavailableQuoteCount: number;
+  totalPositionCount: number;
+};
+
+export type PortfolioValuationResult = {
+  portfolioId: string;
+  scope: 'single' | 'all';
+  state: 'full' | 'partial' | 'unavailable' | 'empty';
+  generatedAt: string;
+  rows: PortfolioValuationRow[];
+  totals: PortfolioValuationTotals;
+  staleState: 'fresh' | 'stale-but-usable' | 'unavailable';
+};
+
 export class PortfolioApiError extends Error {
   status: number;
   code: string;
@@ -169,5 +221,15 @@ export const portfolioApi = {
         body: JSON.stringify({ id }),
       },
       'deleted',
+    ),
+
+  getValuation: (portfolioId: string) =>
+    requestJson<PortfolioValuationResult>(
+      '/api/portfolio/valuation',
+      {
+        method: 'POST',
+        body: JSON.stringify({ portfolioId }),
+      },
+      'valuation',
     ),
 };

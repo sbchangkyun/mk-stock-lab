@@ -185,6 +185,66 @@ export type ChartAiNarrative = {
   limitations: string[];
 };
 
+export type PortfolioValuationUnsupportedReason =
+  | 'unsupported_market'
+  | 'unsupported_currency'
+  | 'market_currency_mismatch'
+  | 'missing_symbol'
+  | 'invalid_position_data'
+  | 'quote_unavailable';
+
+export type PortfolioValuationRecordInput = {
+  positionId: string;
+  portfolioId: string;
+  market: 'KR' | 'US';
+  symbol: string;
+  name?: string | null;
+  assetType: 'stock' | 'etf';
+  quantity: number;
+  buyPrice: number;
+  currency: 'KRW' | 'USD';
+  sourcePortfolioName?: string;
+};
+
+export type KrPortfolioValuationRow = {
+  positionId: string;
+  portfolioId: string;
+  sourcePortfolioName?: string;
+  symbol: string;
+  displayName: string;
+  market: 'KR' | 'US';
+  assetType: 'stock' | 'etf';
+  currency: 'KRW' | 'USD';
+  quantity: number;
+  buyPrice: number;
+  costBasis: number;
+  supported: boolean;
+  currentPrice: number | null;
+  marketValue: number | null;
+  unrealizedPnl: number | null;
+  unrealizedPnlPct: number | null;
+  weightPct: number | null;
+  quoteAsOf: string | null;
+  staleState: FallbackState | null;
+  unsupportedReason: PortfolioValuationUnsupportedReason | null;
+};
+
+export type KrPortfolioValuationState = 'full' | 'partial' | 'unavailable' | 'empty';
+
+export type KrPortfolioValuationResult = {
+  state: KrPortfolioValuationState;
+  rows: KrPortfolioValuationRow[];
+  supportedCostBasis: number;
+  supportedMarketValue: number | null;
+  supportedUnrealizedPnl: number | null;
+  supportedUnrealizedPnlPct: number | null;
+  supportedPositionCount: number;
+  unsupportedPositionCount: number;
+  unavailableQuoteCount: number;
+  totalPositionCount: number;
+  staleState: Extract<FallbackState, 'fresh' | 'stale-but-usable' | 'unavailable'>;
+};
+
 export type ProviderCacheRecord<T> = {
   cacheKey: string;
   provider: ProviderName;

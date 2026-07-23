@@ -2,11 +2,196 @@ import { assertServerRuntime } from './providers/serverOnly';
 import type { FxRateSnapshot } from './providers/fxTypes';
 import type {
   FallbackState,
+  KrPortfolioValuationResult,
+  KrPortfolioValuationRow,
   PortfolioPositionInput,
+  PortfolioValuationRecordInput,
   PortfolioValuationRow,
   PortfolioValuationSummary,
+  PortfolioValuationUnsupportedReason,
   QuoteSnapshot,
 } from './providers/types';
+
+const KR_SYMBOL_PATTERN = /^[0-9A-Z]{6}$/;
+
+// Classifies a persisted position for the Phase 3GH KR/KRW live-valuation MVP.
+// Returns the sanitized unsupported reason, or null when the position is
+// eligible for a KIS quote lookup (market=KR, currency=KRW, valid symbol).
+const classifyPositionSupport = (
+  position: PortfolioValuationRecordInput,
+): PortfolioValuationUnsupportedReason | null => {
+  if (!position.symbol || !position.symbol.trim()) return 'missing_symbol';
+  if (!Number.isFinite(position.quantity) || position.quantity <= 0) return 'invalid_position_data';
+  if (!Number.isFinite(position.buyPrice) || position.buyPrice < 0) return 'invalid_position_data';
+  if (position.market !== 'KR') return 'unsupported_market';
+  if (position.currency !== 'KRW') return 'market_currency_mismatch';
+  if (!KR_SYMBOL_PATTERN.test(position.symbol)) return 'invalid_position_data';
+  return null;
+};
+
+// Builds the authenticated, server-authoritative KR/KRW live valuation result
+// for Phase 3GH. Never fabricates a quote: positions with no usable entry in
+// quotesBySymbol are reported as quote_unavailable, never substituted with cost
+// basis. Weight is computed only among rows that produced a usable market value.
+export const buildKrPortfolioValuation = (input: {
+  positions: PortfolioValuationRecordInput[];
+  quotesBySymbol: Record<string, QuoteSnapshot | null>;
+}): KrPortfolioValuationResult => {
+  assertServerRuntime(moduleName);
+
+  const totalPositionCount = input.positions.length;
+
+  if (totalPositionCount === 0) {
+    return {
+      state: 'empty',
+      rows: [],
+      supportedCostBasis: 0,
+      supportedMarketValue: null,
+      supportedUnrealizedPnl: null,
+      supportedUnrealizedPnlPct: null,
+      supportedPositionCount: 0,
+      unsupportedPositionCount: 0,
+      unavailableQuoteCount: 0,
+      totalPositionCount: 0,
+      staleState: 'unavailable',
+    };
+  }
+
+  const rows: KrPortfolioValuationRow[] = input.positions.map((position) => {
+    const costBasis = Number.isFinite(position.buyPrice) && Number.isFinite(position.quantity)
+      ? position.buyPrice * position.quantity
+      : 0;
+    const unsupportedReason = classifyPositionSupport(position);
+    const displayName = position.name || position.symbol;
+
+    if (unsupportedReason) {
+      return {
+        positionId: position.positionId,
+        portfolioId: position.portfolioId,
+        sourcePortfolioName: position.sourcePortfolioName,
+        symbol: position.symbol,
+        displayName,
+        market: position.market,
+        assetType: position.assetType,
+        currency: position.currency,
+        quantity: position.quantity,
+        buyPrice: position.buyPrice,
+        costBasis,
+        supported: false,
+        currentPrice: null,
+        marketValue: null,
+        unrealizedPnl: null,
+        unrealizedPnlPct: null,
+        weightPct: null,
+        quoteAsOf: null,
+        staleState: null,
+        unsupportedReason,
+      };
+    }
+
+    const quote = input.quotesBySymbol[position.symbol] ?? null;
+    if (!quote) {
+      return {
+        positionId: position.positionId,
+        portfolioId: position.portfolioId,
+        sourcePortfolioName: position.sourcePortfolioName,
+        symbol: position.symbol,
+        displayName,
+        market: position.market,
+        assetType: position.assetType,
+        currency: position.currency,
+        quantity: position.quantity,
+        buyPrice: position.buyPrice,
+        costBasis,
+        supported: true,
+        currentPrice: null,
+        marketValue: null,
+        unrealizedPnl: null,
+        unrealizedPnlPct: null,
+        weightPct: null,
+        quoteAsOf: null,
+        staleState: null,
+        unsupportedReason: 'quote_unavailable',
+      };
+    }
+
+    const currentPrice = quote.price;
+    const marketValue = currentPrice * position.quantity;
+    const unrealizedPnl = marketValue - costBasis;
+    const unrealizedPnlPct = costBasis > 0 ? (unrealizedPnl / costBasis) * 100 : null;
+
+    return {
+      positionId: position.positionId,
+      portfolioId: position.portfolioId,
+      sourcePortfolioName: position.sourcePortfolioName,
+      symbol: position.symbol,
+      displayName,
+      market: position.market,
+      assetType: position.assetType,
+      currency: position.currency,
+      quantity: position.quantity,
+      buyPrice: position.buyPrice,
+      costBasis,
+      supported: true,
+      currentPrice,
+      marketValue,
+      unrealizedPnl,
+      unrealizedPnlPct,
+      weightPct: null,
+      quoteAsOf: quote.asOf,
+      staleState: quote.staleState,
+      unsupportedReason: null,
+    };
+  });
+
+  const valuedRows = rows.filter((row) => row.marketValue !== null);
+  const supportedMarketValueSum = valuedRows.reduce((sum, row) => sum + (row.marketValue ?? 0), 0);
+  for (const row of valuedRows) {
+    row.weightPct = supportedMarketValueSum > 0 ? ((row.marketValue ?? 0) / supportedMarketValueSum) * 100 : null;
+  }
+
+  const unsupportedPositionCount = rows.filter(
+    (row) => row.unsupportedReason && row.unsupportedReason !== 'quote_unavailable',
+  ).length;
+  const unavailableQuoteCount = rows.filter((row) => row.unsupportedReason === 'quote_unavailable').length;
+  const supportedPositionCount = valuedRows.length;
+
+  const supportedCostBasis = valuedRows.reduce((sum, row) => sum + row.costBasis, 0);
+  const supportedMarketValue = valuedRows.length > 0 ? supportedMarketValueSum : null;
+  const supportedUnrealizedPnl = supportedMarketValue !== null ? supportedMarketValue - supportedCostBasis : null;
+  const supportedUnrealizedPnlPct =
+    supportedUnrealizedPnl !== null && supportedCostBasis > 0
+      ? (supportedUnrealizedPnl / supportedCostBasis) * 100
+      : null;
+
+  const state: KrPortfolioValuationResult['state'] =
+    supportedPositionCount === 0
+      ? 'unavailable'
+      : unsupportedPositionCount === 0 && unavailableQuoteCount === 0
+        ? 'full'
+        : 'partial';
+
+  const staleState: KrPortfolioValuationResult['staleState'] =
+    valuedRows.length === 0
+      ? 'unavailable'
+      : valuedRows.every((row) => row.staleState === 'fresh')
+        ? 'fresh'
+        : 'stale-but-usable';
+
+  return {
+    state,
+    rows,
+    supportedCostBasis,
+    supportedMarketValue,
+    supportedUnrealizedPnl,
+    supportedUnrealizedPnlPct,
+    supportedPositionCount,
+    unsupportedPositionCount,
+    unavailableQuoteCount,
+    totalPositionCount,
+    staleState,
+  };
+};
 
 const moduleName = 'portfolioValuation';
 const placeholderState: FallbackState = 'unavailable';
