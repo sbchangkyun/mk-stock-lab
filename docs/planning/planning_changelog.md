@@ -11,6 +11,12 @@
   a historically higher stored `free_limit` authorize more than the approved 3/day policy.
 - `internal.consume_chart_ai_usage` and all KIS token migrations left **unmodified**; no new migration file;
   no DB mutation; no Production/main change. Checker/result-doc/changelog updated to record the pinning.
+- Follow-up correction (same commit set): the single-statement `ON CONFLICT DO UPDATE ... WHERE` above still
+  skipped the `free_limit` pin on the stored row whenever a call was rejected. Rewrote to an independent
+  two-step reservation (Step A unconditional insert/lock/pin, Step B conditional bounded increment, Step C
+  report current state) so the stored `free_limit` is corrected on every call, including rejections, and
+  concurrent callers are serialized by Step A's unconditional row lock. `refund_chart_ai_usage_v1` reviewed,
+  unchanged (already floors at zero).
 
 ## Phase 3GG-U - 2026-07-23
 

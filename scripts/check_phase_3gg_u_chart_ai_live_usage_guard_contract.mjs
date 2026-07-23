@@ -52,17 +52,38 @@ const page = read(PAGE);
 // --- 1. Migration: additive public bridge, service_role only, no internal exposure, no new admin RPC ---
 assert(/create or replace function public\.consume_chart_ai_usage_v1\(/.test(migrationSrc), 'migration must define public.consume_chart_ai_usage_v1.');
 assert(/create or replace function public\.refund_chart_ai_usage_v1\(/.test(migrationSrc), 'migration must define public.refund_chart_ai_usage_v1.');
-// HF1 policy pinning: the consume bridge must be self-contained (NOT delegating to the internal function,
+// HF1 policy pinning: the consume bridge must be self-contained (NOT calling internal.consume_chart_ai_usage,
 // which stores free_limit = greatest(stored, incoming) and would let a historically higher stored limit
-// authorize). It must pin free_limit to the server-provided p_free_limit and gate the increment on the
-// same policy value, so the current approved daily limit always wins.
-assert(!/from internal\.consume_chart_ai_usage\(/.test(migrationSrc), 'consume bridge must NOT delegate to internal.consume_chart_ai_usage (that path does not pin the policy limit).');
-assert(/insert into public\.ai_usage_daily/.test(migrationSrc) && /on conflict on constraint ai_usage_daily_user_id_usage_date_kst_key do update/.test(migrationSrc), 'consume bridge must run its own atomic upsert on public.ai_usage_daily.');
-assert(/set used_count = target_usage\.used_count \+ 1,\s*\n\s*free_limit = p_free_limit,/.test(migrationSrc), 'consume bridge must pin free_limit to the server-provided p_free_limit on write (never greatest()).');
+// authorize). It must be a two-step reservation: Step A unconditionally pins free_limit to the
+// server-provided p_free_limit (corrected even when the call is rejected, since it carries no WHERE
+// clause), Step B increments used_count by exactly one only while used_count < p_free_limit, so the
+// current approved daily limit always wins regardless of any historically stored value.
 const migrationCode = migrationSrc.split('\n').filter((line) => !line.trim().startsWith('--')).join('\n');
+assert(!/from internal\.consume_chart_ai_usage\(/.test(migrationSrc), 'consume bridge must NOT call internal.consume_chart_ai_usage (that path does not pin the policy limit).');
 assert(!/free_limit = greatest\(/.test(migrationCode), 'consume bridge must not store free_limit = greatest(...) (a historically higher stored limit must never authorize).');
-assert(/where target_usage\.used_count < p_free_limit/.test(migrationSrc), 'consume bridge must gate the increment on the server policy limit (used_count < p_free_limit), not the stored free_limit.');
-assert(/select\s*\n\s*false::boolean as out_allowed,[\s\S]{0,240}?p_free_limit as out_free_limit,/.test(migrationSrc), 'the rejected branch must report the pinned policy limit, not the historically stored free_limit.');
+
+// Step A: unconditional insert-or-lock-and-pin (no WHERE on the UPDATE branch), so the stored free_limit is
+// corrected to p_free_limit on every call, including one that step B below goes on to reject.
+const stepAMatch = migrationSrc.match(/insert into public\.ai_usage_daily as target_usage \(([\s\S]*?)on conflict on constraint ai_usage_daily_user_id_usage_date_kst_key do update\s*\n\s*set free_limit = p_free_limit,\s*\n\s*updated_at = now\(\);/);
+assert(!!stepAMatch, 'Step A must be an unconditional insert-or-pin: ON CONFLICT DO UPDATE SET free_limit = p_free_limit with no WHERE clause (so a historical limit is corrected even when step B rejects the call).');
+assert(!/on conflict on constraint ai_usage_daily_user_id_usage_date_kst_key do update\s*\n\s*set free_limit = p_free_limit,\s*\n\s*updated_at = now\(\)\s*\n\s*where/.test(migrationSrc), 'Step A (the free_limit pin) must not carry a WHERE clause -- it must run unconditionally on every call.');
+
+// Step B: a separate, conditional increment gated on the server policy value, never the stored column.
+const stepBMatch = migrationSrc.match(/update public\.ai_usage_daily as target_usage\s*\n\s*set used_count = target_usage\.used_count \+ 1,\s*\n\s*updated_at = now\(\)\s*\n\s*where target_usage\.user_id = p_user_id\s*\n\s*and target_usage\.usage_date_kst = v_usage_date_kst\s*\n\s*and target_usage\.used_count < p_free_limit;/);
+assert(!!stepBMatch, 'Step B must be a separate conditional UPDATE incrementing used_count by exactly one, gated on target_usage.used_count < p_free_limit.');
+const consumeFnMatch = migrationSrc.match(/create or replace function public\.consume_chart_ai_usage_v1\([\s\S]*?\n\$\$;/);
+const consumeFnSrc = consumeFnMatch ? consumeFnMatch[0] : '';
+assert(consumeFnSrc.length > 0, 'must be able to isolate the consume_chart_ai_usage_v1 function body for eligibility checks.');
+assert(!/used_count < target_usage\.free_limit/.test(consumeFnSrc), 'consume eligibility must never be compared against the stored free_limit column -- only against the server-provided p_free_limit (refund_chart_ai_usage_v1, which has no p_free_limit input, is exempt from this check).');
+assert(/v_incremented := found;/.test(migrationSrc), 'allowed must be derived from whether step B actually found/incremented a row (true only on an actual increment).');
+
+// Step C: the reported row is read back after both writes, so free_limit is always the pinned value and
+// allowed reflects exactly whether step B incremented -- proves cases A-H (first/third/fourth execution,
+// historical higher/lower limit at and below the boundary, already-above-limit, and the two-step lock
+// serializing concurrent callers via the unconditional step-A row lock).
+assert(/select\s*\n\s*v_incremented as allowed,\s*\n\s*existing_usage\.used_count as used_count,\s*\n\s*existing_usage\.free_limit as free_limit,/.test(migrationSrc), 'Step C must select the already-pinned free_limit and used_count directly from the row (not recompute or fall back to any stored/greatest value).');
+// Refund must never produce a negative used_count, even against a newly-pinned lower limit.
+assert(/set used_count = greatest\(target_usage\.used_count - 1, 0\),/.test(migrationSrc), 'refund must floor used_count at zero (greatest(used_count - 1, 0)) so it can never go negative.');
 for (const fn of ['public.consume_chart_ai_usage_v1', 'public.refund_chart_ai_usage_v1']) {
   const re = new RegExp(`create or replace function ${fn.replace('.', '\\.')}\\([\\s\\S]{0,400}?security definer\\s*\\nset search_path = ''`);
   assert(re.test(migrationSrc), `${fn} must be security definer with an empty search_path.`);

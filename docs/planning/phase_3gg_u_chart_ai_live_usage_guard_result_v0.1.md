@@ -39,10 +39,35 @@ The consume bridge originally delegated to the already-applied `internal.consume
 stores `free_limit = greatest(stored, incoming)` and gates on `used_count < stored free_limit`. A
 pre-existing `public.ai_usage_daily` row carrying a historically higher `free_limit` would therefore
 authorize more than the approved policy (exactly 3/day). The internal function is already applied and is
-**not modified**; instead the unapplied `public.consume_chart_ai_usage_v1` bridge was rewritten to a
-self-contained atomic upsert that pins `free_limit` to the server-provided `p_free_limit` on every write and
-gates the increment on that same policy value. The rejected branch reports the pinned policy limit, never
-the historically stored one, so `remaining` can never be inflated by a stale higher limit. No new migration
+**not modified**; the unapplied `public.consume_chart_ai_usage_v1` bridge no longer calls it at all.
+
+**Two-step atomic reservation.** An initial single-statement rewrite (`INSERT ... ON CONFLICT DO UPDATE ...
+WHERE used_count < p_free_limit`) still had a gap: the `WHERE` clause on that UPDATE branch causes Postgres
+to skip the *entire* update — including the `free_limit` pin — whenever the row is already at or above the
+limit, so a historically stored `free_limit` was corrected only in the value the RPC *returned*, never in the
+row actually stored in the database for a rejected call. The bridge is now a self-contained, independent,
+non-delegating two-step reservation directly on `public.ai_usage_daily`:
+
+- **Step A (unconditional):** `INSERT ... ON CONFLICT DO UPDATE SET free_limit = p_free_limit, updated_at =
+  now();` — no `WHERE` clause, so this always runs and always pins the stored `free_limit` to the current
+  server policy, whether or not step B below goes on to approve the call. Taking the row lock here (even
+  when only `free_limit` changes) serializes any concurrent caller for the same `(user_id, usage_date_kst)`
+  key until this transaction commits.
+- **Step B (conditional):** a separate `UPDATE ... SET used_count = used_count + 1 ... WHERE used_count <
+  p_free_limit;` — increments by exactly one only while strictly below the server policy value; eligibility
+  is never compared against the stored `free_limit` column, only against `p_free_limit`. `allowed` is set
+  from PL/pgSQL's `found` variable, true only when this call actually incremented.
+- **Step C:** re-selects the now-already-pinned row and reports it directly — `free_limit` in the response
+  is always `p_free_limit`, in every case, including rejection.
+
+Verified against all required policy cases: first/third/fourth same-day execution; a historically higher
+stored limit both at and below the new boundary (now corrected to the current policy in the stored row, not
+just the response, even when step B rejects); a historically lower stored limit; a stored count already at
+or above the current limit; and concurrent calls for the same user/day (step A's unconditional, `WHERE`-free
+`ON CONFLICT DO UPDATE` always takes the row lock, so exactly one concurrent caller's step B increment
+succeeds and the final stored state is deterministic). `public.refund_chart_ai_usage_v1` is unchanged and
+was reviewed for compatibility: it floors with `greatest(used_count - 1, 0)`, so a historical row whose
+`used_count` exceeds a newly-pinned lower limit still cannot refund to a negative value. No new migration
 file was created, no DB was mutated, and the internal function and all KIS token migrations are untouched.
 
 Both are `revoke all ... from public, anon, authenticated;` then `grant execute ... to service_role;` —
