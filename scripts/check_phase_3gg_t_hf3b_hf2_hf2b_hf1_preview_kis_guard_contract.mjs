@@ -118,7 +118,24 @@ for (const t of ['guard', 'node_env', 'preview', 'readiness', 'token', 'blocked 
 }
 
 // --- 7. Working-tree purity ---
-const ALLOWED = new Set([...REQUIRED_FILES, ROUTE, PAGE, CHANGELOG, PACKAGE_JSON]);
+// Phase 3GG-U added a shared usage guard in front of Similarity/MK Analysis (this checker's scope is the
+// OHLCV route + Preview guard, not those two routes) and reconciled three sibling checkers' tolerance lists
+// for its own new/changed files -- out of this checker's own scope to assert on.
+const PHASE_3GG_U_FILES = [
+  'src/lib/server/chartAiUsage.ts',
+  'src/pages/api/chart-ai/analyze.ts',
+  'src/pages/api/chart-ai/mk-analysis.json.ts',
+  'src/pages/api/chart-ai/similarity.json.ts',
+  'scripts/chart_ai_usage_testsrc.ts',
+  'scripts/smoke_phase_3gg_u_chart_ai_usage.mjs',
+  'scripts/check_phase_3gg_u_chart_ai_live_usage_guard_contract.mjs',
+  'supabase/migrations/20260723_chart_ai_live_usage_guard.sql',
+  'docs/planning/phase_3gg_u_chart_ai_live_usage_guard_result_v0.1.md',
+  'scripts/check_phase_3gg_r_fast_contract.mjs',
+  'scripts/check_phase_3gg_t_hf1_contract.mjs',
+  'scripts/check_phase_3gg_t_hf3b_hf2_hf2b_similarity_explainability_contract.mjs',
+];
+const ALLOWED = new Set([...REQUIRED_FILES, ROUTE, PAGE, CHANGELOG, PACKAGE_JSON, ...PHASE_3GG_U_FILES]);
 const KNOWN_PREFIXES = ['.agents/', '.claude/', '.vscode/', 'docs/handoff/', 'skills-lock.json'];
 const tolerated = (f) => ALLOWED.has(f) || KNOWN_PREFIXES.some((p) => f === p || f.startsWith(p)) || f === '.gitignore';
 let porcelain = [];
