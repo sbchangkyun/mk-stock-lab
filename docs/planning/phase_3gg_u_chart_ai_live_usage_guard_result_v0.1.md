@@ -23,14 +23,27 @@ pricing tier, no paid subscription this phase.
 ## 3. Migration (not applied)
 
 New additive migration `supabase/migrations/20260723_chart_ai_live_usage_guard.sql` adds two **public**,
-`security definer`, empty-`search_path`, fully-qualified bridge functions on top of the existing
-`internal.consume_chart_ai_usage` / `public.ai_usage_daily` objects (both already present in
-`20260615_rebuild_schema_v0_1.sql`, cross-verified this phase):
+`security definer`, empty-`search_path`, fully-qualified bridge functions operating on the existing
+`public.ai_usage_daily` table (present in `20260615_rebuild_schema_v0_1.sql`, cross-verified this phase):
 
-- `public.consume_chart_ai_usage_v1(p_user_id uuid, p_free_limit integer default 3)` — delegates to
-  `internal.consume_chart_ai_usage(p_user_id, p_free_limit)`.
+- `public.consume_chart_ai_usage_v1(p_user_id uuid, p_free_limit integer default 3)` — self-contained
+  atomic upsert on `public.ai_usage_daily`. **Policy-pinned (HF1, see below):** stores
+  `free_limit = p_free_limit` (never `greatest(...)`) and authorizes the increment only while
+  `used_count < p_free_limit`.
 - `public.refund_chart_ai_usage_v1(p_user_id uuid)` — decrements today's `used_count` on
   `public.ai_usage_daily`, floored at zero, keyed by the KST calendar date.
+
+### 3.1 HF1 policy pinning (Phase 3GG-U-HF1-USAGE-LIMIT-POLICY-PINNING)
+
+The consume bridge originally delegated to the already-applied `internal.consume_chart_ai_usage`, which
+stores `free_limit = greatest(stored, incoming)` and gates on `used_count < stored free_limit`. A
+pre-existing `public.ai_usage_daily` row carrying a historically higher `free_limit` would therefore
+authorize more than the approved policy (exactly 3/day). The internal function is already applied and is
+**not modified**; instead the unapplied `public.consume_chart_ai_usage_v1` bridge was rewritten to a
+self-contained atomic upsert that pins `free_limit` to the server-provided `p_free_limit` on every write and
+gates the increment on that same policy value. The rejected branch reports the pinned policy limit, never
+the historically stored one, so `remaining` can never be inflated by a stale higher limit. No new migration
+file was created, no DB was mutated, and the internal function and all KIS token migrations are untouched.
 
 Both are `revoke all ... from public, anon, authenticated;` then `grant execute ... to service_role;` —
 mirrors the established public-bridge pattern from `20260714_kis_token_postgrest_rpc_bridge.sql`. No new

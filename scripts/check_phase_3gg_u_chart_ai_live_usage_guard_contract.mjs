@@ -52,7 +52,17 @@ const page = read(PAGE);
 // --- 1. Migration: additive public bridge, service_role only, no internal exposure, no new admin RPC ---
 assert(/create or replace function public\.consume_chart_ai_usage_v1\(/.test(migrationSrc), 'migration must define public.consume_chart_ai_usage_v1.');
 assert(/create or replace function public\.refund_chart_ai_usage_v1\(/.test(migrationSrc), 'migration must define public.refund_chart_ai_usage_v1.');
-assert(/from internal\.consume_chart_ai_usage\(p_user_id, p_free_limit\)/.test(migrationSrc), 'consume bridge must delegate to the existing internal.consume_chart_ai_usage.');
+// HF1 policy pinning: the consume bridge must be self-contained (NOT delegating to the internal function,
+// which stores free_limit = greatest(stored, incoming) and would let a historically higher stored limit
+// authorize). It must pin free_limit to the server-provided p_free_limit and gate the increment on the
+// same policy value, so the current approved daily limit always wins.
+assert(!/from internal\.consume_chart_ai_usage\(/.test(migrationSrc), 'consume bridge must NOT delegate to internal.consume_chart_ai_usage (that path does not pin the policy limit).');
+assert(/insert into public\.ai_usage_daily/.test(migrationSrc) && /on conflict on constraint ai_usage_daily_user_id_usage_date_kst_key do update/.test(migrationSrc), 'consume bridge must run its own atomic upsert on public.ai_usage_daily.');
+assert(/set used_count = target_usage\.used_count \+ 1,\s*\n\s*free_limit = p_free_limit,/.test(migrationSrc), 'consume bridge must pin free_limit to the server-provided p_free_limit on write (never greatest()).');
+const migrationCode = migrationSrc.split('\n').filter((line) => !line.trim().startsWith('--')).join('\n');
+assert(!/free_limit = greatest\(/.test(migrationCode), 'consume bridge must not store free_limit = greatest(...) (a historically higher stored limit must never authorize).');
+assert(/where target_usage\.used_count < p_free_limit/.test(migrationSrc), 'consume bridge must gate the increment on the server policy limit (used_count < p_free_limit), not the stored free_limit.');
+assert(/select\s*\n\s*false::boolean as out_allowed,[\s\S]{0,240}?p_free_limit as out_free_limit,/.test(migrationSrc), 'the rejected branch must report the pinned policy limit, not the historically stored free_limit.');
 for (const fn of ['public.consume_chart_ai_usage_v1', 'public.refund_chart_ai_usage_v1']) {
   const re = new RegExp(`create or replace function ${fn.replace('.', '\\.')}\\([\\s\\S]{0,400}?security definer\\s*\\nset search_path = ''`);
   assert(re.test(migrationSrc), `${fn} must be security definer with an empty search_path.`);

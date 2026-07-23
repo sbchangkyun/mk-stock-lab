@@ -1,5 +1,17 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GG-U-HF1 - 2026-07-23
+
+### Usage-limit policy pinning (pre-application hotfix in PR #2)
+
+- Rewrote the unapplied `public.consume_chart_ai_usage_v1` bridge in `20260723_chart_ai_live_usage_guard.sql`
+  to a self-contained atomic upsert on `public.ai_usage_daily`: it pins `free_limit = p_free_limit` (never
+  `greatest(...)`) and gates the increment on `used_count < p_free_limit`. Previously it delegated to
+  `internal.consume_chart_ai_usage`, whose `greatest(stored, incoming)` limit and stored-limit gate would let
+  a historically higher stored `free_limit` authorize more than the approved 3/day policy.
+- `internal.consume_chart_ai_usage` and all KIS token migrations left **unmodified**; no new migration file;
+  no DB mutation; no Production/main change. Checker/result-doc/changelog updated to record the pinning.
+
 ## Phase 3GG-U - 2026-07-23
 
 ### Live Chart AI daily usage guard → `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING` (pending)
