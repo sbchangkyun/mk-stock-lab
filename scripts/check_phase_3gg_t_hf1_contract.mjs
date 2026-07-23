@@ -178,7 +178,9 @@ const tolerated = (f) =>
   /^docs\/planning\/phase_3gg_[a-z0-9_]+_result(_v[0-9.]+)?\.md$/.test(f) ||
   // Phase 3GG-T-HF5-HF6AB: additive swingHigh/swingLow wiring in the analysis engine/scoring modules.
   f === 'src/lib/server/chart-ai/mkAiAnalysis/analysisEngine.mjs' ||
-  f === 'src/lib/server/chart-ai/mkAiAnalysis/analysisScoring.mjs';
+  f === 'src/lib/server/chart-ai/mkAiAnalysis/analysisScoring.mjs' ||
+  // Phase 3GG-U: new shared server usage-guard module (Similarity + MK Analysis daily limit).
+  f === 'src/lib/server/chartAiUsage.ts';
 let porcelain = [];
 try { porcelain = runGit(['status', '--porcelain']).split('\n').map((l) => l.slice(3).trim()).filter(Boolean); } catch { porcelain = []; }
 const unexpected = porcelain.filter((f) => !tolerated(f));

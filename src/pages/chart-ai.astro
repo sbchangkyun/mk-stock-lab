@@ -969,6 +969,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           >MK AI 분석 보기</button>
         </div>
 
+        {chartAiRealExperienceRuntime && (
+          <p
+            id="chartAiUsageNotice"
+            class="chart-ai-usage-notice"
+            role="status"
+            aria-live="polite"
+          >유사 패턴과 MK AI 분석은 합산 하루 3회 제공됩니다.</p>
+        )}
+
         <div class="chart-analysis-page-canvas">
       <div id="chartAiSimilarityPanel" class="chart-analysis-page active" role="tabpanel" aria-labelledby="chartAiSimilarityTab" tabindex="0">
       <div class="chart-similarity-panel-heading">
@@ -1444,6 +1453,49 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // Phase 3GG-T-HF3A: authoritative pending/active-chart integrity state. Analyses run ONLY against
       // the instrument whose chart was explicitly loaded successfully — never a hidden default.
       const integrity = createSelectedSymbolIntegrityState();
+
+      // Phase 3GG-U: shared combined daily usage-notice state for the Similarity + MK Analysis panels.
+      // Populated only from server usage responses (never localStorage, never client time) -- reflects the
+      // authoritative Asia/Seoul-day counter the server maintains. Starts unknown (no request made yet, per
+      // the zero-request entry contract); becomes known only after the first analysis attempt.
+      type ChartAiUsageDisplayState = { remaining: number; limit: number; exhausted: boolean };
+      let chartAiUsageDisplayState: ChartAiUsageDisplayState | null = null;
+      const CHART_AI_USAGE_NOTICE_INITIAL = '유사 패턴과 MK AI 분석은 합산 하루 3회 제공됩니다.';
+      const CHART_AI_USAGE_NOTICE_UNAVAILABLE = '분석 사용량을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+      const CHART_AI_USAGE_NOTICE_EXHAUSTED = '오늘 사용 가능한 분석 횟수를 모두 사용했습니다. 자정 이후 다시 이용해 주세요.';
+      const chartAiUsageNoticeEl = () => document.getElementById('chartAiUsageNotice');
+      // Applies a server-reported usage snapshot from a successful reservation (data.usage on a 200
+      // response). A refund's returned state is display-only and intentionally NEVER lowers the shown
+      // remaining count below what a successful analysis already reported -- refunds correct the server
+      // counter, not the user-visible "used one" fact.
+      const applyChartAiUsageState = (usage: any) => {
+        if (!usage || typeof usage !== 'object') return;
+        const limit = Number(usage.limit);
+        const remaining = Number(usage.remaining);
+        if (!Number.isFinite(limit) || !Number.isFinite(remaining)) return;
+        chartAiUsageDisplayState = { remaining: Math.max(0, remaining), limit: Math.max(0, limit), exhausted: usage.allowed === false };
+        renderChartAiUsageNotice();
+        updateAnalysisAvailability();
+      };
+      const markChartAiUsageExhausted = () => {
+        const limit = chartAiUsageDisplayState?.limit ?? 3;
+        chartAiUsageDisplayState = { remaining: 0, limit, exhausted: true };
+        renderChartAiUsageNotice();
+        updateAnalysisAvailability();
+      };
+      const markChartAiUsageGuardUnavailable = () => {
+        const el = chartAiUsageNoticeEl();
+        if (el) el.textContent = CHART_AI_USAGE_NOTICE_UNAVAILABLE;
+      };
+      function renderChartAiUsageNotice() {
+        const el = chartAiUsageNoticeEl();
+        if (!el) return;
+        if (!chartAiUsageDisplayState) { el.textContent = CHART_AI_USAGE_NOTICE_INITIAL; return; }
+        el.textContent = chartAiUsageDisplayState.exhausted
+          ? CHART_AI_USAGE_NOTICE_EXHAUSTED
+          : `오늘 남은 분석 횟수: ${chartAiUsageDisplayState.remaining}/${chartAiUsageDisplayState.limit}`;
+      }
+
       let activeFilter: DomesticAssetType | 'all' = 'all';
       // Phase 3GG-T-HF3B: KR/US country filter + bounded paging state for the large universal master.
       let activeCountry: 'all' | 'KR' | 'US' = 'all';
@@ -2336,7 +2388,12 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         return ANALYSIS_GUIDE_NO_INSTRUMENT;
       };
       const updateAnalysisAvailability = () => {
-        const enabled = integrity.canRunAnalysis();
+        const instrumentReady = integrity.canRunAnalysis();
+        // Phase 3GG-U: a reached daily limit disables both start buttons regardless of instrument
+        // availability. The shared usage notice above the tabs carries the exhaustion message, so the
+        // per-panel status line only shows instrument guidance (never a duplicate/contradicting reason).
+        const usageBlocked = chartAiUsageDisplayState?.exhausted === true;
+        const enabled = instrumentReady && !usageBlocked;
         const guide = analysisGuideMessage();
         for (const [btnId, statusId] of ANALYSIS_CONTROLS) {
           const btn = document.getElementById(btnId) as HTMLButtonElement | null;
@@ -2346,7 +2403,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           }
           const status = document.getElementById(statusId);
           if (!status) continue;
-          if (!enabled) {
+          if (!instrumentReady) {
             status.textContent = guide;
             status.hidden = false;
           } else if (status.textContent === ANALYSIS_GUIDE_NO_INSTRUMENT || status.textContent === ANALYSIS_GUIDE_PENDING || status.textContent === ANALYSIS_GUIDE_LOADING) {
@@ -3507,6 +3564,23 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const data = await res.json();
             if (seq !== simSeq) return;
             if (integrity.resolveAnalysis(token) !== 'accepted') return;
+            // Phase 3GG-U: the daily usage guard responds with a top-level 429/503 (not the usual 200 +
+            // nested ok:false) -- handle it before touching data.similarity.
+            if (res.status === 429 && data && data.code === 'CHART_AI_DAILY_LIMIT_REACHED') {
+              if (data.usage) applyChartAiUsageState(data.usage); else markChartAiUsageExhausted();
+              showSimStatus(CHART_AI_USAGE_NOTICE_EXHAUSTED);
+              setSimState('error');
+              if (simStartBtn) simStartBtn.textContent = '다시 시도';
+              return;
+            }
+            if (res.status === 503 && data && data.code === 'CHART_AI_USAGE_GUARD_UNAVAILABLE') {
+              markChartAiUsageGuardUnavailable();
+              showSimStatus(CHART_AI_USAGE_NOTICE_UNAVAILABLE);
+              setSimState('error');
+              if (simStartBtn) simStartBtn.textContent = '다시 시도';
+              return;
+            }
+            if (data && data.usage) applyChartAiUsageState(data.usage);
             const sim = data && data.similarity;
             if (!sim || sim.sourceStatus === 'blocked' || sim.sanitizedErrorCode !== 'NONE' || sim.ok !== true) {
               showSimStatus(honestStateMessage(sim ? sim.sanitizedErrorCode : 'INTERNAL'));
@@ -3536,7 +3610,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           } finally {
             window.clearTimeout(timeoutId);
             simInFlight = false;
-            if (simStartBtn) simStartBtn.disabled = !integrity.canRunAnalysis();
+            if (simStartBtn) simStartBtn.disabled = !integrity.canRunAnalysis() || chartAiUsageDisplayState?.exhausted === true;
           }
         };
 
@@ -3756,6 +3830,23 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const data = await res.json();
             if (seq !== mkaiSeq) return;
             if (integrity.resolveAnalysis(token) !== 'accepted') return;
+            // Phase 3GG-U: the daily usage guard responds with a top-level 429/503 (not the usual 200 +
+            // nested ok:false) -- handle it before touching data.mkai.
+            if (res.status === 429 && data && data.code === 'CHART_AI_DAILY_LIMIT_REACHED') {
+              if (data.usage) applyChartAiUsageState(data.usage); else markChartAiUsageExhausted();
+              showMkaiStatus(CHART_AI_USAGE_NOTICE_EXHAUSTED);
+              setMkaiState('error');
+              if (mkaiStartBtn) mkaiStartBtn.textContent = '다시 시도';
+              return;
+            }
+            if (res.status === 503 && data && data.code === 'CHART_AI_USAGE_GUARD_UNAVAILABLE') {
+              markChartAiUsageGuardUnavailable();
+              showMkaiStatus(CHART_AI_USAGE_NOTICE_UNAVAILABLE);
+              setMkaiState('error');
+              if (mkaiStartBtn) mkaiStartBtn.textContent = '다시 시도';
+              return;
+            }
+            if (data && data.usage) applyChartAiUsageState(data.usage);
             const mkai = data && data.mkai;
             if (!mkai || mkai.sourceStatus === 'blocked' || mkai.sanitizedErrorCode !== 'NONE' || mkai.ok !== true || !mkai.formatted || mkai.formatted.ok !== true) {
               showMkaiStatus(mkaiHonestMessage(mkai ? mkai.sanitizedErrorCode : 'INTERNAL'));
@@ -3775,7 +3866,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           } finally {
             window.clearTimeout(timeoutId);
             mkaiInFlight = false;
-            if (mkaiStartBtn) mkaiStartBtn.disabled = !integrity.canRunAnalysis();
+            if (mkaiStartBtn) mkaiStartBtn.disabled = !integrity.canRunAnalysis() || chartAiUsageDisplayState?.exhausted === true;
           }
         };
 
@@ -7417,6 +7508,16 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       padding: 0 0.4rem;
       position: relative;
       z-index: 1;
+    }
+
+    .chart-ai-usage-notice {
+      margin: 0.5rem 0.4rem 0;
+      font-size: 0.8rem;
+      padding: 0.6rem 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--chart-shell-muted);
     }
 
     .chart-analysis-tag {
