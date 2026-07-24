@@ -118,4 +118,21 @@ import Layout from '../layouts/Layout.astro';
 
     </div>
   </div>
+
+  <script>
+    import { userRetentionApi, hasRetentionSession } from '../lib/userRetentionClient';
+
+    // Phase 3GI-HF1: best-effort resume-state persistence for the Lab surface. Fires once the page
+    // (a purely static landing view -- no provider/KIS data, no redirect) has finished parsing, and
+    // silently no-ops when signed out or the retention migration is not yet applied.
+    void (async () => {
+      try {
+        const hasSession = await hasRetentionSession();
+        if (!hasSession) return;
+        await userRetentionApi.updatePreferences({ lastSurface: 'lab' });
+      } catch {
+        // Best-effort only -- resume state failing to save must never affect the Lab page itself.
+      }
+    })();
+  </script>
 </Layout>
