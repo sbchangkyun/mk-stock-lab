@@ -52,6 +52,33 @@ const toRecordInput = (
   sourcePortfolioName,
 });
 
+type OwnedPortfolio = { id: string; name: string };
+type PositionLoadResult =
+  | { ok: true; data: LoadedPosition[] }
+  | { ok: false; status: number; code: string; message: string };
+type AggregateLoadResult =
+  | { ok: true; records: PortfolioValuationRecordInput[] }
+  | { ok: false; failure: { ok: false; status: number; code: string; message: string } };
+
+/**
+ * Fail-closed aggregate position loader, extracted so its control flow (never converting an
+ * authoritative position-load failure into an empty position set) is directly testable without
+ * a real Supabase client. `loadPositions` is injected so production wiring calls the real
+ * ownership-scoped `listPositions`, while tests can simulate success/failure per portfolio.
+ */
+export const loadAggregateRecords = async (
+  portfolios: OwnedPortfolio[],
+  loadPositions: (portfolioId: string) => Promise<PositionLoadResult>,
+): Promise<AggregateLoadResult> => {
+  const records: PortfolioValuationRecordInput[] = [];
+  for (const portfolio of portfolios) {
+    const positionsResult = await loadPositions(portfolio.id);
+    if (!positionsResult.ok) return { ok: false, failure: positionsResult };
+    records.push(...positionsResult.data.map((position) => toRecordInput(position, portfolio.name)));
+  }
+  return { ok: true, records };
+};
+
 export const POST: APIRoute = async ({ request }) => {
   const context = await getPortfolioRequestContext(request);
   if (!context.ok) return toErrorResponse(context);
@@ -78,14 +105,16 @@ export const POST: APIRoute = async ({ request }) => {
     const portfoliosResult = await listPortfolios(userId);
     if (!portfoliosResult.ok) return toErrorResponse(portfoliosResult);
 
-    const perPortfolioPositions = await Promise.all(
-      portfoliosResult.data.map(async (portfolio) => {
-        const positionsResult = await listPositions(userId, portfolio.id);
-        if (!positionsResult.ok) return [] as PortfolioValuationRecordInput[];
-        return positionsResult.data.map((position: LoadedPosition) => toRecordInput(position, portfolio.name));
-      }),
+    // Sequential, fail-closed load: an authoritative position-load failure for any owned
+    // portfolio must abort the whole aggregate request rather than silently degrade to an
+    // incomplete "partial" valuation built from only the portfolios that happened to succeed.
+    // Portfolio count per user is expected to be small, so sequential loading over a
+    // Promise.all-with-fallback is preferred for correctness over marginal concurrency.
+    const aggregateResult = await loadAggregateRecords(portfoliosResult.data, (portfolioId) =>
+      listPositions(userId, portfolioId),
     );
-    records = perPortfolioPositions.flat();
+    if (!aggregateResult.ok) return toErrorResponse(aggregateResult.failure);
+    records = aggregateResult.records;
   } else {
     const owned = await ensurePortfolioOwned(userId, portfolioIdValue);
     if (!owned.ok) return toErrorResponse(owned);

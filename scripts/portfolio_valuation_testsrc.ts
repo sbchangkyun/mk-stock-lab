@@ -6,6 +6,7 @@
  */
 
 import { buildKrPortfolioValuation } from '../src/lib/server/portfolioValuation';
+import { loadAggregateRecords } from '../src/pages/api/portfolio/valuation';
 import type { PortfolioValuationRecordInput, QuoteSnapshot } from '../src/lib/server/providers/types';
 
 let passed = 0;
@@ -209,6 +210,165 @@ const freshQuote = (overrides: Partial<QuoteSnapshot> = {}): QuoteSnapshot => ({
   const r1 = buildKrPortfolioValuation(input);
   const r2 = buildKrPortfolioValuation(input);
   check('deterministic calc across repeated calls', JSON.stringify(r1) === JSON.stringify(r2));
+}
+
+// --- Phase 3GH-HF1: aggregate fail-closed loader (loadAggregateRecords) ---
+// Exercises the extracted control-flow helper directly (no Supabase client) to prove an
+// authoritative position-load failure for any owned portfolio aborts the whole aggregate
+// request instead of silently degrading to a partial result built from the portfolios that
+// happened to succeed.
+
+const loadedPosition = (overrides: Record<string, unknown> = {}) => ({
+  id: 'pos-a',
+  portfolioId: 'pf-a',
+  symbol: '005930',
+  market: 'KR' as const,
+  assetType: 'stock' as const,
+  name: '삼성전자',
+  buyPrice: 60000,
+  quantity: 10,
+  currency: 'KRW' as const,
+  ...overrides,
+});
+
+// 13. Aggregate success: two owned portfolios, both position loads succeed -> all positions
+//     appear, tagged with their source portfolio name.
+{
+  const calls: string[] = [];
+  const loadPositions = (portfolioId: string) => {
+    calls.push(portfolioId);
+    if (portfolioId === 'pf-1') {
+      return Promise.resolve({ ok: true as const, data: [loadedPosition({ id: 'p1', portfolioId: 'pf-1', symbol: '005930' })] });
+    }
+    return Promise.resolve({ ok: true as const, data: [loadedPosition({ id: 'p2', portfolioId: 'pf-2', symbol: '000660' })] });
+  };
+  const result = await loadAggregateRecords(
+    [
+      { id: 'pf-1', name: 'Portfolio 1' },
+      { id: 'pf-2', name: 'Portfolio 2' },
+    ],
+    loadPositions,
+  );
+  check('aggregate success -> ok true', result.ok === true);
+  check('aggregate success -> both portfolios queried', calls.length === 2);
+  check(
+    'aggregate success -> all owned positions appear',
+    result.ok && result.records.length === 2 && result.records.some((r) => r.symbol === '005930') && result.records.some((r) => r.symbol === '000660'),
+  );
+  check(
+    'aggregate success -> sourcePortfolioName tagged per row',
+    result.ok && result.records.every((r) => typeof r.sourcePortfolioName === 'string' && r.sourcePortfolioName.length > 0),
+  );
+}
+
+// 14. Aggregate position-load failure: first portfolio succeeds, second fails -> the whole
+//     aggregate load fails closed; no rows from only the successful portfolio are returned.
+{
+  const calls: string[] = [];
+  const loadPositions = (portfolioId: string) => {
+    calls.push(portfolioId);
+    if (portfolioId === 'pf-1') {
+      return Promise.resolve({ ok: true as const, data: [loadedPosition({ id: 'p1', portfolioId: 'pf-1' })] });
+    }
+    return Promise.resolve({
+      ok: false as const,
+      status: 500,
+      code: 'POSITION_LIST_FAILED',
+      message: '보유 종목을 불러오지 못했습니다.',
+    });
+  };
+  const result = await loadAggregateRecords(
+    [
+      { id: 'pf-1', name: 'Portfolio 1' },
+      { id: 'pf-2', name: 'Portfolio 2' },
+    ],
+    loadPositions,
+  );
+  check('aggregate failure -> ok false (fails closed)', result.ok === false);
+  check(
+    'aggregate failure -> sanitized failure code surfaced',
+    !result.ok && result.failure.code === 'POSITION_LIST_FAILED',
+  );
+  check(
+    'aggregate failure -> no raw Supabase detail beyond sanitized message',
+    !result.ok && Object.keys(result.failure).sort().join(',') === 'code,message,ok,status',
+  );
+}
+
+// 15. Aggregate empty portfolios: owned portfolios exist but every position array is genuinely
+//     empty -> succeeds with zero records (caller maps this to state=empty, no provider calls).
+{
+  const loadPositions = () => Promise.resolve({ ok: true as const, data: [] });
+  const result = await loadAggregateRecords(
+    [
+      { id: 'pf-1', name: 'Portfolio 1' },
+      { id: 'pf-2', name: 'Portfolio 2' },
+    ],
+    loadPositions,
+  );
+  check('aggregate empty -> ok true', result.ok === true);
+  check('aggregate empty -> zero records', result.ok && result.records.length === 0);
+}
+
+// 16. No silent omission: a failure on the FIRST portfolio (before any success) also fails
+//     closed rather than skipping straight to the next portfolio.
+{
+  let secondCalled = false;
+  const loadPositions = (portfolioId: string) => {
+    if (portfolioId === 'pf-1') {
+      return Promise.resolve({
+        ok: false as const,
+        status: 500,
+        code: 'POSITION_LIST_FAILED',
+        message: '보유 종목을 불러오지 못했습니다.',
+      });
+    }
+    secondCalled = true;
+    return Promise.resolve({ ok: true as const, data: [] });
+  };
+  const result = await loadAggregateRecords(
+    [
+      { id: 'pf-1', name: 'Portfolio 1' },
+      { id: 'pf-2', name: 'Portfolio 2' },
+    ],
+    loadPositions,
+  );
+  check('first-portfolio failure -> ok false', result.ok === false);
+  check('first-portfolio failure -> stops before querying the next portfolio', secondCalled === false);
+}
+
+// 17. Zero owned portfolios -> succeeds with zero records, loader never invoked.
+{
+  let called = false;
+  const loadPositions = () => {
+    called = true;
+    return Promise.resolve({ ok: true as const, data: [] });
+  };
+  const result = await loadAggregateRecords([], loadPositions);
+  check('zero portfolios -> ok true', result.ok === true);
+  check('zero portfolios -> zero records', result.ok && result.records.length === 0);
+  check('zero portfolios -> loader never invoked', called === false);
+}
+
+// 18. Foreign-data safety (structural): loadAggregateRecords only ever calls loadPositions with
+//     the portfolio ids it was given -- it has no independent way to reach any other user's
+//     portfolio or position rows (ownership scoping happens in the injected loader itself,
+//     which in production is the userId-bound listPositions call).
+{
+  const givenIds = ['pf-only-mine-1', 'pf-only-mine-2'];
+  const seenIds: string[] = [];
+  const loadPositions = (portfolioId: string) => {
+    seenIds.push(portfolioId);
+    return Promise.resolve({ ok: true as const, data: [] });
+  };
+  await loadAggregateRecords(
+    givenIds.map((id) => ({ id, name: id })),
+    loadPositions,
+  );
+  check(
+    'aggregate loader only queries the exact portfolio ids it was given',
+    seenIds.length === givenIds.length && seenIds.every((id) => givenIds.includes(id)),
+  );
 }
 
 export const runAll = async (): Promise<number> => {

@@ -93,13 +93,16 @@ unrelated failure or a proven, spec-authorized contract supersession.
 ## 5. Test coverage and regression gates
 
 - New `smoke:phase-3gh-portfolio-live-valuation-mvp` (`portfolio_valuation_testsrc.ts`, bundled via esbuild) —
-  **40/40 passed**. Covers empty/full/partial/unavailable states, all five reachable sanitized unsupported
-  reasons, never-fabricated-quote behavior, weight normalization among valued rows only, mixed staleness
-  aggregation, and calculation determinism.
-- New `check:phase-3gh-portfolio-live-valuation-mvp` static contract checker — **79/79 passed** across 12
+  **55/55 passed** (40 original + 15 added by the HF1 aggregate fail-closed hotfix, see §9). Covers
+  empty/full/partial/unavailable states, all five reachable sanitized unsupported reasons, never-fabricated-
+  quote behavior, weight normalization among valued rows only, mixed staleness aggregation, calculation
+  determinism, and the HF1 aggregate fail-closed loader behavior (success, position-load failure, empty
+  portfolios, first-portfolio failure, zero portfolios, foreign-data scope safety).
+- New `check:phase-3gh-portfolio-live-valuation-mvp` static contract checker — **86/86 passed** across 13
   groups (file existence; authenticated server boundary; retired-contract absence; scale/provider-safety
   limits; aggregate scope isolation; response contract; sanitized reasons; shared provider types; client
-  integration; UI retirement; no account/trading surfaces; `package.json` wiring).
+  integration; UI retirement; no account/trading surfaces; `package.json` wiring; HF1 aggregate fail-closed
+  error handling).
 - Regression surface run clean: `npm ls --depth=0`; `npm run build`; `git diff --check`;
   `check:kis-runtime-guard` (7/7); `check:kis-error-fallback` (48/48); `check:phase-3gg-t-hf2` durable KIS
   token (160/160); `check:portfolio-tab-order-persistence` (61/61); `check:portfolio-create-sheet` (79/79);
@@ -132,3 +135,33 @@ See `docs/planning/mk_stock_lab_master_roadmap_v2.0.md`, newly created this phas
 artifact). Next phase order: 3GI (User Retention/Persistence) → 3GJ (Live Market Dashboard) → 3GK (Chart AI
 Beta Productization) → 3GL (Operations/Admin MVP), plus a parallel hardening lane. **Phase 3GI is not started
 by this phase**, per explicit Owner instruction.
+
+## 9. Phase 3GH-HF1 hotfix — aggregate fail-closed correction
+
+A pre-merge correction on this same PR #4 branch fixed a database-error-handling defect in the aggregate
+(`__all_portfolios__`) valuation branch of `src/pages/api/portfolio/valuation.ts`: it previously converted an
+authoritative `listPositions` failure for any one owned portfolio into a silently empty position array
+(`if (!positionsResult.ok) return [];` inside a `Promise.all`/`.map`), which could produce an incomplete
+aggregate valuation returned under HTTP 200 instead of failing closed. `partial` state is reserved for
+per-row conditions (unsupported market/currency, invalid persisted data, unavailable quote) — never for an
+authoritative load failure.
+
+Fix: the aggregate control flow was extracted into an exported, dependency-injected, fail-closed loader,
+`loadAggregateRecords(portfolios, loadPositions)`, which iterates portfolios sequentially and returns
+`{ ok: false, failure }` immediately on the first position-load failure (never continuing to remaining
+portfolios), or `{ ok: true, records }` only once every owned portfolio's positions have loaded successfully.
+The route now calls `toErrorResponse(aggregateResult.failure)` on any aggregate failure, before any quote/KIS
+provider work starts. Single-portfolio ownership behavior is unchanged.
+
+Added 15 new smoke assertions (6 test blocks) directly exercising `loadAggregateRecords` with fake loaders —
+aggregate success, position-load failure (fails closed, sanitized code only, no raw Supabase detail), empty
+portfolios, first-portfolio failure (stops before querying the next portfolio), zero owned portfolios, and a
+foreign-data-scope structural check — plus 7 new static-checker assertions (new Group 13) proving the old
+silent-omission pattern is absent from the route source, the new loader is present and wired in, the failure
+branch precedes any `getQuoteSnapshot(` call, and the loader accumulates records only after each load succeeds
+rather than via `Promise.all`-with-fallback. Totals: smoke 40 → 55, checker 79 → 86 (see §5).
+
+No schema change, no new dependency, no unrelated refactor. Single commit
+"Phase 3GH-HF1: fail closed on aggregate load errors" on the existing `feature/phase-3gh-portfolio-live-
+valuation-mvp` branch; no new branch, no new PR, PR #4 remains open and unmerged, no Production deploy, no
+Supabase mutation.

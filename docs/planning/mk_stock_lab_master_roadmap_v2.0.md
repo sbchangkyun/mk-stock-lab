@@ -6,27 +6,48 @@ scheme that no longer matches the fine-grained lettered/numbered phase history a
 artifact; this document is the authoritative, current roadmap going forward. Written 2026-07-24 at the close
 of Phase 3GH.
 
-## 1. Current Production support (verified)
+## 1. Current Production support — verified
 
-- **Home**: index cards, sparkline, market news, ad rail, portfolio panel summary link.
+Status label: `PRODUCTION_VERIFIED`. Only functionality actually deployed from `main` belongs in this section.
+Phase 3GH live valuation is **not** included here — see §1a — because PR #4 is unmerged and no Production
+deployment of it has occurred.
+
+- **Home**: index cards, sparkline, market news, ad rail, portfolio panel summary link. `PRODUCTION_VERIFIED`.
 - **Chart AI**: authenticated-only (`/chart-ai` requires a Supabase session — signed-out shows a lock card,
   zero provider/KIS/token requests until a chart is explicitly loaded); real KR/US OHLCV charts via KIS;
   Similarity engine with score guide, evidence level, and deterministic non-advisory insight; deterministic
   MK AI summary; Market Intelligence (benchmark, relative strength, USD/KRW via Frankfurter, commodities,
   volatility, regime — partial, interest rates and breadth not sourced); server-side daily usage guard
-  (3 combined Similarity + MK Analysis runs/day/user, KST calendar boundary).
-- **Portfolio**: authenticated CRUD for multiple portfolios and KR/US positions; **as of Phase 3GH, KR/KRW
-  positions get authenticated live valuation** (current price, market value, unrealized P/L, weight, staleness)
-  from the same KIS quote orchestration Chart AI uses; US/USD positions are explicitly marked "supported in a
-  future phase" rather than silently omitted or estimated.
+  (3 combined Similarity + MK Analysis runs/day/user, KST calendar boundary). `PRODUCTION_VERIFIED`.
+- **Portfolio**: authenticated CRUD for multiple portfolios and KR/US positions is `PRODUCTION_VERIFIED`.
+  Production valuation behavior remains whatever was deployed from `main` **before** Phase 3GH (Phase 3GH's
+  authenticated KR/KRW live valuation has not been merged or deployed — see §1a).
 - **Lab**: static S&P 500 sector / asset-class return matrices, cross-year hover, image export.
-- **Heatmap**: not yet implemented (still Phase 5 in the old roadmap — not started).
+  `PRODUCTION_VERIFIED`.
+- **Heatmap**: not yet implemented (still Phase 5 in the old roadmap — not started). `PLANNED`.
 - **KIS instrument-master automation**: scheduled GitHub Actions refresh (KIS-only sources, PR-only, never
-  auto-merges).
+  auto-merges). `PRODUCTION_VERIFIED`.
 - **Durable KIS token**: single-issuance, cross-request/cross-deploy reuse via Supabase-backed L2 store,
-  PostgREST public bridge functions (service-role-only), Production-verified.
+  PostgREST public bridge functions (service-role-only). `PRODUCTION_VERIFIED`.
 
-## 2. What Phase 3GH implemented
+## 1a. Phase 3GH release candidate — code/test/Preview verified
+
+Status label: `PREVIEW_VERIFIED` for deployment state, `CODE_TEST_VERIFIED` for the implementation itself.
+**Do not describe this section as Production until after PR #4 is merged and a Production deployment is
+verified.**
+
+- Authenticated, server-authoritative **live valuation MVP** for KR/KRW portfolio positions is implemented and
+  covered by focused tests and a static contract checker (`CODE_TEST_VERIFIED`).
+- PR `#4` (`feature/phase-3gh-portfolio-live-valuation-mvp` → `main`) is **open and unmerged**. No Production
+  deployment has occurred and no Production Supabase mutation has occurred.
+- Vercel Preview deployment for PR #4 has reached READY (`PREVIEW_VERIFIED`); Netlify Preview has not reported
+  red.
+- In-app Preview QA — both signed-out and authenticated — is `OWNER_QA_PENDING`: the Preview URL sits behind
+  Vercel's Deployment Protection / SSO gate, which this assistant cannot authenticate through.
+- US/USD positions are explicitly marked "supported in a future phase" rather than silently omitted or
+  estimated, once this release candidate reaches Production.
+
+## 2. What Phase 3GH implemented (`CODE_TEST_VERIFIED`; not yet `PRODUCTION_VERIFIED` — see §1a)
 
 Authenticated, server-authoritative **live valuation MVP** for KR/KRW portfolio positions:
 
@@ -53,26 +74,47 @@ Authenticated, server-authoritative **live valuation MVP** for KR/KRW portfolio 
 - Intraday charts and background/polling valuation refresh.
 - Paid plans / advanced usage tiers for valuation.
 
-## 4. Next five phases, in order
+## 4. Execution sequence
 
-1. **Phase 3GI — User Retention / Persistence.** Session durability, return-visit experience, and any
-   lightweight engagement mechanics (e.g. watchlists, saved views) that don't require new paid infrastructure.
-   Rationale: Chart AI and Portfolio now both have real authenticated value; retention determines whether that
-   value compounds into repeat usage before further feature surface is added.
-2. **Phase 3GJ — Live Market Dashboard.** A home/market surface that surfaces live KR/US index and sector
-   state using the same KIS orchestration and cache already proven in Chart AI and Portfolio, without adding a
-   third bespoke data path.
-3. **Phase 3GK — Chart AI Beta Productization.** Graduate Chart AI from "beta preview gated behind
+### Current implementation / release candidate
+
+- **Phase 3GH — Portfolio Live Valuation MVP.** `CODE_TEST_VERIFIED` + `PREVIEW_VERIFIED`; PR #4 open and
+  unmerged; not yet `PRODUCTION_VERIFIED`. See §1a.
+
+### Next sequential product phases
+
+1. **Phase 3GI — User Retention and Persistence.** `PLANNED`. Session durability, return-visit experience, and
+   any lightweight engagement mechanics (e.g. watchlists, saved views) that don't require new paid
+   infrastructure. Rationale: Chart AI and Portfolio now both have real authenticated value; retention
+   determines whether that value compounds into repeat usage before further feature surface is added. Not
+   started by this phase, per explicit Owner instruction.
+2. **Phase 3GJ — Live Market Dashboard.** `PLANNED`. A home/market surface that surfaces live KR/US index and
+   sector state using the same KIS orchestration and cache already proven in Chart AI and Portfolio, without
+   adding a third bespoke data path.
+3. **Phase 3GK — Chart AI Beta Productization.** `PLANNED`. Graduate Chart AI from "beta preview gated behind
    `chartAiBetaPreview`" toward a stable, fully-Production, no-flag experience — closing out remaining HF-scale
    UX debt (mobile/a11y edge cases, similarity explainability polish) identified across the 3GG-T-HF3B
    sub-phases.
-4. **Phase 3GL — Operations / Admin MVP.** Minimal internal visibility into usage-guard counters, KIS token
-   health, and quote-cache staleness — currently only inspectable via ad hoc Owner smoke scripts and Supabase
-   Dashboard queries, not a real operational surface.
-5. **Hardening lane (parallel, not sequential).** Ongoing: checker-suite consolidation (many phase-freeze
-   checkers assert obsolete per-phase working-tree-scope invariants that fail on every subsequent phase — see
-   §7), roadmap doc consolidation, and periodic re-verification that Production guards (Chart AI auth/usage,
-   Preview access, KIS token, RLS, provider boundaries) have not regressed as new phases land.
+4. **Phase 3GL — Operations and Admin MVP.** `PLANNED`. Minimal internal visibility into usage-guard counters,
+   KIS token health, and quote-cache staleness — currently only inspectable via ad hoc Owner smoke scripts and
+   Supabase Dashboard queries, not a real operational surface.
+
+### Parallel post-release hardening lane (not a numbered product phase)
+
+- Checker-suite consolidation — many phase-freeze checkers assert obsolete per-phase working-tree-scope
+  invariants that fail on every subsequent phase (see §7). `DEFERRED`.
+- Scheduled KIS instrument-master observation — periodic confirmation the automation continues to run
+  KIS-only, PR-only, non-auto-merging. `DEFERRED`.
+- `/api/market/quote` intent and rate-limit audit. `DEFERRED`.
+- Authoritative active-gate manifest — a single source of truth for which checkers currently gate a merge vs.
+  which are historical/superseded. `DEFERRED`.
+- Stale Netlify dependency/configuration review. `DEFERRED`.
+- Dead similarity code retirement. `DEFERRED`.
+- `is_site_admin` SECURITY DEFINER permission review. `DEFERRED`.
+- Leaked-password protection review. `DEFERRED`.
+- Authenticated Chart AI usage-guard Owner QA. `OWNER_QA_PENDING`.
+- Periodic re-verification that Production guards (Chart AI auth/usage, Preview access, KIS token, RLS,
+  provider boundaries) have not regressed as new phases land. `DEFERRED`.
 
 ## 5. Top five risks
 
@@ -120,8 +162,19 @@ directly). `check:portfolio-holdings-category-header` failures (예상 연배당
 markup) were confirmed pre-existing and unrelated via `git show HEAD:src/pages/portfolio.astro`, which shows
 those strings absent from the phase's own baseline commit, before Phase 3GH touched the file. None of these
 represent a regression introduced by this phase's diff. `check:phase-3gh-portfolio-live-valuation-mvp`
-(new, 79/79) and `smoke:phase-3gh-portfolio-live-valuation-mvp` (new, 40/40) are the current-contract gates
+(86/86 as of the HF1 aggregate fail-closed hotfix, up from 79/79) and
+`smoke:phase-3gh-portfolio-live-valuation-mvp` (55/55 as of HF1, up from 40/40) are the current-contract gates
 for this phase's own change surface, alongside `check:kis-runtime-guard`, `check:kis-error-fallback`,
 `check:phase-3gg-t-hf2` (durable KIS token), `check:portfolio-tab-order-persistence`,
 `check:portfolio-create-sheet`, `check:portfolio-bookmark-tabs`, and `check:home-portfolio-panel`, all of
 which pass clean.
+
+## 8. Phase 3GH-HF1 hotfix (aggregate fail-closed correction)
+
+A pre-merge hotfix on the same PR #4 branch corrected the aggregate (`__all_portfolios__`) valuation path in
+`src/pages/api/portfolio/valuation.ts`: it previously converted an authoritative position-load failure for any
+one owned portfolio into a silently empty position set (`if (!positionsResult.ok) return [];`), which could
+return an incomplete aggregate valuation under HTTP 200 instead of failing closed. The aggregate loader
+(`loadAggregateRecords`) now aborts the whole request and returns the existing sanitized failure response on
+any position-load failure, with no quote/provider work started afterward. `CODE_TEST_VERIFIED`; not yet
+`PRODUCTION_VERIFIED` (still gated on PR #4 merge — see §1a).

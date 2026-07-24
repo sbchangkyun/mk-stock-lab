@@ -220,6 +220,36 @@ check('package.json no longer has smoke:portfolio-mixed-currency-preview-api:own
   pkg.scripts?.['smoke:portfolio-mixed-currency-preview-api:owner'] === undefined);
 
 // ---------------------------------------------------------------------------
+// Group 13: Aggregate fail-closed error handling (Phase 3GH-HF1)
+// ---------------------------------------------------------------------------
+log('--- Group 13: Aggregate fail-closed error handling ---');
+check('route exports the extracted loadAggregateRecords loader', route.includes('export const loadAggregateRecords'));
+check(
+  'aggregate branch delegates to loadAggregateRecords',
+  /await loadAggregateRecords\(/.test(route),
+);
+check(
+  'a failed aggregate load returns the sanitized failure response',
+  /if \(!aggregateResult\.ok\) return toErrorResponse\(aggregateResult\.failure\)/.test(route),
+);
+check(
+  'the failure branch precedes any quote provider call',
+  route.indexOf('return toErrorResponse(aggregateResult.failure)') < route.indexOf('getQuoteSnapshot('),
+);
+check(
+  'no silent conversion of a position-load failure into an empty array',
+  !/if\s*\(!positionsResult\.ok\)\s*return\s*\[\]/.test(route),
+);
+check(
+  'loadAggregateRecords never coerces a failed per-portfolio load into an empty record set',
+  /if \(!positionsResult\.ok\) return \{ ok: false, failure: positionsResult \}/.test(route),
+);
+check(
+  'loadAggregateRecords accumulates records only after each load succeeds (sequential, not Promise.all-with-fallback)',
+  !/Promise\.all\(\s*portfolios(Result)?\.data\.map/.test(route),
+);
+
+// ---------------------------------------------------------------------------
 // Summary
 // ---------------------------------------------------------------------------
 log('');
