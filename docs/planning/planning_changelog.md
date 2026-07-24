@@ -1,5 +1,47 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GI-HF1 - 2026-07-25
+
+### Pre-migration contract hardening (same PR #5, no second migration file) — `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING`
+
+- Edited the still-unapplied `supabase/migrations/20260724_user_retention_persistence.sql` in place (no
+  second migration file): `last_surface` gained a `lab` value plus a `NOT NULL DEFAULT 'home'` contract; a new
+  `user_preferences_chart_state_consistent` `CHECK` rejects a partial chart resume pointer (market without
+  symbol, symbol without market, or name/timeframe without both); new `user_preferences_chart_symbol_format`
+  and `user_watchlist_items_symbol_format` `CHECK` constraints validate against the same KR/US symbol patterns
+  already authoritative in `src/lib/market-data/instrument.ts`; `last_chart_timeframe` is now bounded to
+  Chart AI's exact supported set (`1m`/`3m`/`6m`/`1y`); and the `user_preferences` INSERT/UPDATE RLS policies
+  now independently re-verify `last_portfolio_id` ownership via an `EXISTS` subquery against
+  `public.portfolios`, so a client bypassing the server route still cannot point another user's row at a
+  foreign portfolio.
+- `src/lib/server/userRetention.ts`: `last_activity_at` is now always server-generated (a client-supplied
+  `lastActivityAt` is never read or trusted); chart resume state is validated as one complete unit via a new
+  exported `validateChartResumeState`; watchlist symbol validation now reuses a new exported
+  `validateMarketSymbol` (the same KR/US rules, not a separate convention); `lab` added to the server-side
+  surface enum.
+- `src/pages/chart-ai.astro`: the resume-state dedup key now combines instrument identity with the timeframe
+  being persisted, so a timeframe-only change on an otherwise-unchanged instrument still triggers exactly one
+  write; the key is recorded only after the write succeeds, so a failed/transient write remains retryable; an
+  in-flight guard prevents a concurrent duplicate write. A watchlist add/remove failure now shows sanitized
+  Korean status feedback (mapped from `RETENTION_API_NOT_READY`/`WATCHLIST_LIMIT_EXCEEDED`, generic fallback
+  otherwise — never raw error text) and preserves the pre-click toggle state instead of assuming success; at
+  most one request per click, no automatic retry.
+- `src/pages/lab.astro`: added best-effort `lastSurface: 'lab'` resume-state persistence, following the same
+  pattern already used on Home/Chart AI/Portfolio — session-gated, fire-and-forget, never affects the page on
+  failure, zero provider/KIS/analysis calls.
+- Tests extended: `smoke:phase-3gi-user-retention-persistence` grew from 24/24 to 35/35 (new coverage for
+  `validateChartResumeState`/`validateMarketSymbol`, replacing the removed `optionalIsoTimestamp` cases since
+  that function is no longer used); `check:phase-3gi-user-retention-persistence` grew from 106/106 to 130/130
+  (new migration/server/chart-ai/lab static assertions covering the HF1 hardening above). Re-ran the Phase 3GI
+  focused totals plus the current-contract regression gate list (`phase-3gh-portfolio-live-valuation-mvp`,
+  `phase-3gg-t-hf1`, `phase-3gg-u-chart-ai-live-usage-guard`, `kis-runtime-guard`, `kis-error-fallback`,
+  `phase-3gg-t-hf2`, `provider-boundaries`, `phase-3gg-t-hf3a`) plus `npm ls --depth=0`, `npm run build`, and
+  `git diff --check` — all green except the same non-blocking working-tree-scope-freeze pattern and the same
+  pre-existing `check:provider-boundaries` false positive already documented for Phase 3GI proper.
+- No second migration file, no migration applied, no merge, no Production deploy, no Production Supabase
+  mutation — same PR #5, one additional commit.
+- See `docs/planning/phase_3gi_user_retention_persistence_result_v0.1.md` (HF1 section) for full detail.
+
 ## Phase 3GI - 2026-07-24
 
 ### Session restoration hardening, persistent resume state, and cross-device watchlist — `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING`

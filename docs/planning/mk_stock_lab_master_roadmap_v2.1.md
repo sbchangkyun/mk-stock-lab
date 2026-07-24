@@ -60,9 +60,22 @@ migration has intentionally not been applied anywhere).
 - Exactly one new, additive, collision-free migration (`20260724_user_retention_persistence.sql`) creating
   `public.user_preferences` and `public.user_watchlist_items` with RLS — **intentionally not applied** by any
   means this phase; every server code path degrades silently (not an error) when the tables don't exist yet.
-- New tests: `smoke:phase-3gi-user-retention-persistence` (24/24) and
-  `check:phase-3gi-user-retention-persistence` (106/106), plus a full pre-existing regression gate re-run (see
+- New tests: `smoke:phase-3gi-user-retention-persistence` (35/35) and
+  `check:phase-3gi-user-retention-persistence` (130/130), plus a full pre-existing regression gate re-run (see
   `phase_3gi_user_retention_persistence_result_v0.1.md` for the complete list and non-blocking classifications).
+- **Phase 3GI-HF1 (pre-migration contract hardening, same PR, no second migration file)**: before the
+  migration's first application anywhere, the still-unapplied `20260724_user_retention_persistence.sql` was
+  edited in place to add a `lab` surface value (Home/Chart AI/Portfolio/Lab now all persist resume state) with
+  a `NOT NULL DEFAULT 'home'` contract, a chart-state-consistency `CHECK` rejecting a partial resume pointer,
+  KR/US symbol-format `CHECK` constraints reusing the same pattern as `src/lib/market-data/instrument.ts`, a
+  `last_chart_timeframe` `CHECK` bounded to Chart AI's exact supported set, and `user_preferences`
+  INSERT/UPDATE RLS policies that independently re-verify `last_portfolio_id` ownership via an `EXISTS`
+  subquery (defense in depth alongside the existing server-side check). Server hardening: `last_activity_at`
+  is now always server-generated (a client-supplied value is never read); chart resume state is validated as
+  one complete unit; watchlist symbol validation reuses the same KR/US rules. Chart AI's resume-state dedup key
+  now includes the timeframe (a timeframe-only change on the same instrument still persists) and is recorded
+  only after a successful write (a failed write stays retryable); a watchlist add/remove failure now shows
+  sanitized Korean status feedback and preserves the pre-click toggle state instead of assuming success.
 
 ## 3. Explicitly deferred scope (not Phase 3GI, not Phase 3GH)
 

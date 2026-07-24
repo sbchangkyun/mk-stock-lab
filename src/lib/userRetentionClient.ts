@@ -11,13 +11,18 @@ export class UserRetentionApiError extends Error {
   }
 }
 
+// Exact set of timeframes Chart AI's real-chart UI supports (src/pages/chart-ai.astro data-range
+// buttons, assigned to `activeRange`) -- kept in sync with the server contract in
+// src/lib/server/userRetention.ts and the migration's `last_chart_timeframe` CHECK constraint.
+export type ChartResumeTimeframe = '1m' | '3m' | '6m' | '1y';
+
 export type UserPreferences = {
-  lastSurface: 'home' | 'chart_ai' | 'portfolio' | null;
+  lastSurface: 'home' | 'chart_ai' | 'portfolio' | 'lab' | null;
   lastPortfolioId: string | null;
   lastChartMarket: 'KR' | 'US' | null;
   lastChartSymbol: string | null;
   lastChartName: string | null;
-  lastChartTimeframe: string | null;
+  lastChartTimeframe: ChartResumeTimeframe | null;
   lastActivityAt: string | null;
   updatedAt: string;
 } | null;

@@ -1,5 +1,6 @@
 import { getSupabaseAdminClient, isSupabaseServerConfigured, validateUserFromBearerToken } from './supabaseAdmin';
 import { ensurePortfolioOwned } from './portfolio';
+import { isKrSymbol, isUsSymbol } from '../market-data/instrument';
 
 type ApiFailure = {
   ok: false;
@@ -17,9 +18,13 @@ type ApiResult<T> = ApiSuccess<T> | ApiFailure;
 
 const MAX_WATCHLIST_ITEMS = 50;
 
-const SURFACES = ['home', 'chart_ai', 'portfolio'] as const;
+const SURFACES = ['home', 'chart_ai', 'portfolio', 'lab'] as const;
 const MARKETS = ['KR', 'US'] as const;
 const ASSET_TYPES = ['stock', 'etf'] as const;
+// Exact set of timeframes Chart AI's real-chart UI supports (src/pages/chart-ai.astro data-range
+// buttons, assigned to `activeRange`) -- not a length bound. Kept in sync with the migration's
+// `last_chart_timeframe` CHECK constraint.
+const CHART_TIMEFRAMES = ['1m', '3m', '6m', '1y'] as const;
 
 type PreferencesRow = {
   user_id: string;
@@ -154,15 +159,6 @@ export const optionalBoundedString = (value: unknown, maxLength: number, field: 
   return apiSuccess(text);
 };
 
-export const optionalIsoTimestamp = (value: unknown, field: string) => {
-  if (value === undefined) return apiSuccess(undefined);
-  if (value === null) return apiSuccess(null);
-  if (typeof value !== 'string') return apiFailure(400, 'INVALID_PAYLOAD', `${field} 값을 확인해 주세요.`);
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return apiFailure(400, 'INVALID_PAYLOAD', `${field} 값을 확인해 주세요.`);
-  return apiSuccess(date.toISOString());
-};
-
 const mapPreferences = (row: PreferencesRow | null) =>
   row
     ? {
@@ -223,6 +219,87 @@ export const getRetentionSnapshot = async (userId: string) => {
   return apiSuccess({ preferences: preferences.data, watchlist: watchlist.data });
 };
 
+const CHART_FIELDS = ['lastChartMarket', 'lastChartSymbol', 'lastChartName', 'lastChartTimeframe'] as const;
+
+export type ChartResumeStateUpdate = {
+  last_chart_market: (typeof MARKETS)[number] | null;
+  last_chart_symbol: string | null;
+  last_chart_name: string | null;
+  last_chart_timeframe: (typeof CHART_TIMEFRAMES)[number] | null;
+};
+
+/**
+ * Pure validation for the Chart AI resume-state quad, extracted out of updatePreferences (which
+ * also performs a DB write) so it can be unit-tested directly without a Supabase connection --
+ * mirrors this module's existing precedent for optionalEnum/optionalBoundedString. Chart resume
+ * state is only ever meaningful as a complete unit: either fully cleared (all four fields
+ * explicitly null) or fully identified (market + symbol both present; name/timeframe optional
+ * within that). Returns `null` when none of the four chart fields are present in `body` (nothing
+ * to validate/update this call).
+ */
+export const validateChartResumeState = (body: Record<string, unknown>): ApiResult<ChartResumeStateUpdate> | null => {
+  const chartFieldsPresent = CHART_FIELDS.filter((field) => Object.prototype.hasOwnProperty.call(body, field));
+  if (chartFieldsPresent.length === 0) return null;
+  if (chartFieldsPresent.length !== CHART_FIELDS.length) {
+    return apiFailure(400, 'INVALID_PAYLOAD', '차트 상태 값을 모두 함께 보내주세요.');
+  }
+
+  const marketResult = optionalEnum(body.lastChartMarket, MARKETS, '시장');
+  if (!marketResult.ok) return marketResult;
+  const market = marketResult.data ?? null;
+
+  const rawSymbol = body.lastChartSymbol;
+  let symbol: string | null = null;
+  if (rawSymbol !== null && rawSymbol !== undefined) {
+    if (typeof rawSymbol !== 'string') {
+      return apiFailure(400, 'INVALID_PAYLOAD', '종목 코드 값을 확인해 주세요.');
+    }
+    const trimmed = rawSymbol.trim().toUpperCase();
+    if (trimmed) {
+      if (market === 'KR' && isKrSymbol(trimmed)) {
+        symbol = trimmed;
+      } else if (market === 'US' && isUsSymbol(trimmed)) {
+        symbol = trimmed;
+      } else {
+        return apiFailure(400, 'INVALID_PAYLOAD', '종목 코드 형식을 확인해 주세요.');
+      }
+    }
+  }
+
+  const nameResult = optionalBoundedString(body.lastChartName, 160, '종목명');
+  if (!nameResult.ok) return nameResult;
+  const name = nameResult.data ?? null;
+
+  const timeframeResult = optionalEnum(body.lastChartTimeframe, CHART_TIMEFRAMES, '기간');
+  if (!timeframeResult.ok) return timeframeResult;
+  const timeframe = timeframeResult.data ?? null;
+
+  const isFullyCleared = market === null && symbol === null && name === null && timeframe === null;
+  const isFullyIdentified = market !== null && symbol !== null;
+  if (!isFullyCleared && !isFullyIdentified) {
+    return apiFailure(400, 'INVALID_PAYLOAD', '차트 상태가 올바르지 않습니다.');
+  }
+
+  return apiSuccess({
+    last_chart_market: market,
+    last_chart_symbol: symbol,
+    last_chart_name: name,
+    last_chart_timeframe: timeframe,
+  });
+};
+
+/**
+ * Pure validation reused by both Chart AI resume state and the watchlist (§5D) -- the same KR/US
+ * symbol contract, never a third convention. Returns the normalized (trimmed, uppercased) symbol
+ * on success.
+ */
+export const validateMarketSymbol = (market: (typeof MARKETS)[number], rawSymbol: string): ApiResult<string> => {
+  const trimmed = rawSymbol.trim().toUpperCase();
+  const valid = (market === 'KR' && isKrSymbol(trimmed)) || (market === 'US' && isUsSymbol(trimmed));
+  if (!valid) return apiFailure(400, 'INVALID_PAYLOAD', '종목 코드 형식을 확인해 주세요.');
+  return apiSuccess(trimmed);
+};
+
 export const updatePreferences = async (userId: string, body: Record<string, unknown>) => {
   const updates: Record<string, unknown> = {};
 
@@ -240,29 +317,15 @@ export const updatePreferences = async (userId: string, body: Record<string, unk
     }
   }
 
-  const lastChartMarket = optionalEnum(body.lastChartMarket, MARKETS, '시장');
-  if (!lastChartMarket.ok) return lastChartMarket;
-  if (lastChartMarket.data !== undefined) updates.last_chart_market = lastChartMarket.data;
-
-  const lastChartSymbol = optionalBoundedString(body.lastChartSymbol, 32, '종목 코드');
-  if (!lastChartSymbol.ok) return lastChartSymbol;
-  if (lastChartSymbol.data !== undefined) updates.last_chart_symbol = lastChartSymbol.data;
-
-  const lastChartName = optionalBoundedString(body.lastChartName, 160, '종목명');
-  if (!lastChartName.ok) return lastChartName;
-  if (lastChartName.data !== undefined) updates.last_chart_name = lastChartName.data;
-
-  const lastChartTimeframe = optionalBoundedString(body.lastChartTimeframe, 16, '기간');
-  if (!lastChartTimeframe.ok) return lastChartTimeframe;
-  if (lastChartTimeframe.data !== undefined) updates.last_chart_timeframe = lastChartTimeframe.data;
-
-  const lastActivityAt = optionalIsoTimestamp(body.lastActivityAt, '활동 시각');
-  if (!lastActivityAt.ok) return lastActivityAt;
-  updates.last_activity_at = lastActivityAt.data !== undefined ? lastActivityAt.data : new Date().toISOString();
-
-  if (Object.keys(updates).length === 0) {
-    return apiFailure(400, 'INVALID_PAYLOAD', '수정할 항목이 없습니다.');
+  const chartState = validateChartResumeState(body);
+  if (chartState) {
+    if (!chartState.ok) return chartState;
+    Object.assign(updates, chartState.data);
   }
+
+  // The activity timestamp is always server-generated -- a client-supplied value is never trusted
+  // or even read, so a caller cannot backdate/forward-date this column.
+  updates.last_activity_at = new Date().toISOString();
 
   const { data, error } = await getSupabaseAdminClient()
     .from('user_preferences')
@@ -282,11 +345,9 @@ export const addWatchlistItem = async (userId: string, body: Record<string, unkn
   if (!market.ok) return market;
   if (!market.data) return apiFailure(400, 'INVALID_PAYLOAD', '시장 값을 확인해 주세요.');
 
-  const symbolText = asString(body.symbol);
-  if (!symbolText || symbolText.length > 32) {
-    return apiFailure(400, 'INVALID_PAYLOAD', '종목 코드를 확인해 주세요.');
-  }
-  const symbol = symbolText.toUpperCase();
+  const symbolResult = validateMarketSymbol(market.data, asString(body.symbol));
+  if (!symbolResult.ok) return symbolResult;
+  const symbol = symbolResult.data;
 
   const assetType = requiredAssetType(body.assetType);
   if (!assetType.ok) return assetType;

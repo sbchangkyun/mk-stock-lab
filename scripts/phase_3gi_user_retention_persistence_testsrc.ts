@@ -12,8 +12,9 @@
 import {
   optionalEnum,
   optionalBoundedString,
-  optionalIsoTimestamp,
   isMissingRetentionTableError,
+  validateChartResumeState,
+  validateMarketSymbol,
 } from '../src/lib/server/userRetention';
 
 let passed = 0;
@@ -66,28 +67,153 @@ const check = (name: string, cond: boolean) => {
   check('optionalBoundedString non-string -> rejected', !wrongType.ok);
 }
 
-// 3. optionalIsoTimestamp: valid date strings normalize to ISO, invalid strings rejected.
+// 3. validateChartResumeState (Phase 3GI-HF1): chart resume state is only ever meaningful as a
+//    complete unit -- fully cleared (all four null) or fully identified (market + symbol present).
 //    There is no free-form URL field anywhere in this validation surface -- every accepted field is
-//    either an enum, a bounded string, a UUID (checked via ensurePortfolioOwned), or a timestamp --
-//    so an arbitrary URL can never reach persistence, by construction rather than a reject-list.
+//    either an enum, a bounded string, or a KR/US-pattern symbol -- so an arbitrary URL can never
+//    reach persistence, by construction rather than a reject-list.
 {
-  const undef = optionalIsoTimestamp(undefined, '활동 시각');
-  check('optionalIsoTimestamp undefined -> ok with undefined', undef.ok === true && undef.data === undefined);
+  const none = validateChartResumeState({});
+  check('validateChartResumeState no chart fields present -> null (nothing to update)', none === null);
 
-  const nul = optionalIsoTimestamp(null, '활동 시각');
-  check('optionalIsoTimestamp null -> ok with null', nul.ok === true && nul.data === null);
+  const marketWithoutSymbol = validateChartResumeState({
+    lastChartMarket: 'KR',
+    lastChartSymbol: null,
+    lastChartName: null,
+    lastChartTimeframe: null,
+  });
+  check(
+    'validateChartResumeState market without symbol -> rejected 400',
+    marketWithoutSymbol !== null && !marketWithoutSymbol.ok && marketWithoutSymbol.status === 400,
+  );
 
-  const valid = optionalIsoTimestamp('2026-07-24T05:00:00.000Z', '활동 시각');
-  check('optionalIsoTimestamp valid ISO string -> ok, normalized', valid.ok === true && valid.data === '2026-07-24T05:00:00.000Z');
+  const symbolWithoutMarket = validateChartResumeState({
+    lastChartMarket: null,
+    lastChartSymbol: '005930',
+    lastChartName: null,
+    lastChartTimeframe: null,
+  });
+  check(
+    'validateChartResumeState symbol without market -> rejected 400',
+    symbolWithoutMarket !== null && !symbolWithoutMarket.ok,
+  );
 
-  const invalid = optionalIsoTimestamp('not-a-date', '활동 시각');
-  check('optionalIsoTimestamp invalid string -> rejected 400', !invalid.ok && invalid.status === 400);
+  const nameWithoutIdentity = validateChartResumeState({
+    lastChartMarket: null,
+    lastChartSymbol: null,
+    lastChartName: '삼성전자',
+    lastChartTimeframe: null,
+  });
+  check(
+    'validateChartResumeState name set without market+symbol -> rejected 400',
+    nameWithoutIdentity !== null && !nameWithoutIdentity.ok,
+  );
 
-  const url = optionalIsoTimestamp('https://evil.example.com/track', '활동 시각');
-  check('optionalIsoTimestamp rejects an arbitrary URL passed where a timestamp is expected', !url.ok);
+  const timeframeWithoutIdentity = validateChartResumeState({
+    lastChartMarket: null,
+    lastChartSymbol: null,
+    lastChartName: null,
+    lastChartTimeframe: '1y',
+  });
+  check(
+    'validateChartResumeState timeframe set without market+symbol -> rejected 400',
+    timeframeWithoutIdentity !== null && !timeframeWithoutIdentity.ok,
+  );
 
-  const wrongType = optionalIsoTimestamp(1721800000000, '활동 시각');
-  check('optionalIsoTimestamp non-string (e.g. epoch number) -> rejected', !wrongType.ok);
+  const fullyCleared = validateChartResumeState({
+    lastChartMarket: null,
+    lastChartSymbol: null,
+    lastChartName: null,
+    lastChartTimeframe: null,
+  });
+  check(
+    'validateChartResumeState all four null -> accepted (fully cleared)',
+    fullyCleared !== null && fullyCleared.ok === true,
+  );
+
+  const validKr = validateChartResumeState({
+    lastChartMarket: 'KR',
+    lastChartSymbol: '005930',
+    lastChartName: '삼성전자',
+    lastChartTimeframe: '1y',
+  });
+  check(
+    'validateChartResumeState valid KR market+symbol+name+timeframe -> accepted',
+    validKr !== null &&
+      validKr.ok === true &&
+      validKr.data.last_chart_market === 'KR' &&
+      validKr.data.last_chart_symbol === '005930' &&
+      validKr.data.last_chart_timeframe === '1y',
+  );
+
+  const validUs = validateChartResumeState({
+    lastChartMarket: 'US',
+    lastChartSymbol: 'aapl',
+    lastChartName: null,
+    lastChartTimeframe: null,
+  });
+  check(
+    'validateChartResumeState valid US market+symbol, optional fields null -> accepted, symbol normalized',
+    validUs !== null && validUs.ok === true && validUs.data.last_chart_symbol === 'AAPL',
+  );
+
+  const unsupportedTimeframe = validateChartResumeState({
+    lastChartMarket: 'KR',
+    lastChartSymbol: '005930',
+    lastChartName: null,
+    lastChartTimeframe: '5y',
+  });
+  check(
+    'validateChartResumeState unsupported timeframe -> rejected 400',
+    unsupportedTimeframe !== null && !unsupportedTimeframe.ok,
+  );
+
+  const malformedKr = validateChartResumeState({
+    lastChartMarket: 'KR',
+    lastChartSymbol: 'AAPL',
+    lastChartName: null,
+    lastChartTimeframe: null,
+  });
+  check(
+    'validateChartResumeState malformed KR symbol (US-shaped) -> rejected 400',
+    malformedKr !== null && !malformedKr.ok,
+  );
+
+  const malformedUs = validateChartResumeState({
+    lastChartMarket: 'US',
+    lastChartSymbol: '005930',
+    lastChartName: null,
+    lastChartTimeframe: null,
+  });
+  check(
+    'validateChartResumeState malformed US symbol (KR-shaped) -> rejected 400',
+    malformedUs !== null && !malformedUs.ok,
+  );
+
+  const partialFieldSet = validateChartResumeState({ lastChartMarket: 'KR' });
+  check(
+    'validateChartResumeState only one of the four chart fields present -> rejected 400 (must send all four together)',
+    partialFieldSet !== null && !partialFieldSet.ok,
+  );
+}
+
+// 3b. validateMarketSymbol (Phase 3GI-HF1): reused by both chart resume state and the watchlist --
+//     the same KR/US symbol contract, never a third convention.
+{
+  const validKr = validateMarketSymbol('KR', '  005930  ');
+  check('validateMarketSymbol valid KR symbol -> normalized, accepted', validKr.ok === true && validKr.data === '005930');
+
+  const validUs = validateMarketSymbol('US', 'aapl');
+  check('validateMarketSymbol valid US symbol -> uppercased, accepted', validUs.ok === true && validUs.data === 'AAPL');
+
+  const malformedKr = validateMarketSymbol('KR', 'AAPL');
+  check('validateMarketSymbol malformed KR symbol -> rejected 400', !malformedKr.ok && malformedKr.status === 400);
+
+  const malformedUs = validateMarketSymbol('US', '005930');
+  check('validateMarketSymbol malformed US symbol -> rejected 400', !malformedUs.ok);
+
+  const emptySymbol = validateMarketSymbol('KR', '');
+  check('validateMarketSymbol empty symbol -> rejected 400', !emptySymbol.ok);
 }
 
 // 4. isMissingRetentionTableError: recognizes Postgres/PostgREST missing-table signatures, rejects

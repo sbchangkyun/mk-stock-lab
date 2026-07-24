@@ -508,6 +508,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             <span class="chart-real-meta-source" id="chartAiRealChartSourceNote">실시간 지연 시세 · KIS</span>
             <span class="chart-real-meta-asof" id="chartAiRealChartAsOf">데이터 기준 시각 확인 중</span>
             <button type="button" id="chartAiWatchlistToggleBtn" class="chart-watchlist-toggle-btn" hidden aria-pressed="false">관심 종목 추가</button>
+            <p class="chart-watchlist-toggle-status" id="chartAiWatchlistToggleStatus" role="status" aria-live="polite" hidden></p>
           </div>
         ) : (
           <p class="chart-real-meta chart-real-meta--sample">샘플 OHLC·거래량 데이터 · 실제 시세 아님 · 투자 참고용</p>
@@ -2457,11 +2458,13 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       // Phase 3GI: best-effort cross-device resume-state + watchlist persistence. Auth-gated (silently
       // no-ops when signed out or the migration is not yet applied), deduplicated by instrument identity
       // so a stable chart never re-writes on every render, and never blocks or alters chart rendering.
-      let lastPersistedChartIdentity = '';
+      let lastPersistedChartKey = '';
       let watchlistToggleInFlight = false;
       let watchlistCurrentItemId: string | null = null;
 
       const chartWatchlistToggleBtn = () => document.getElementById('chartAiWatchlistToggleBtn') as HTMLButtonElement | null;
+      const chartWatchlistToggleStatusEl = () => document.getElementById('chartAiWatchlistToggleStatus') as HTMLParagraphElement | null;
+      let watchlistToggleStatusTimer: ReturnType<typeof setTimeout> | null = null;
 
       const setWatchlistToggleState = (inWatchlist: boolean) => {
         const btn = chartWatchlistToggleBtn();
@@ -2472,9 +2475,34 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         btn.textContent = inWatchlist ? '관심 종목에서 제거' : '관심 종목 추가';
       };
 
+      // Sanitized, non-raw-error status text next to the toggle. Never shows a provider/Supabase/API
+      // error message directly -- only these fixed, pre-written Korean strings.
+      const showWatchlistToggleStatus = (message: string) => {
+        const el = chartWatchlistToggleStatusEl();
+        if (!el) return;
+        el.hidden = false;
+        el.textContent = message;
+        if (watchlistToggleStatusTimer) clearTimeout(watchlistToggleStatusTimer);
+        watchlistToggleStatusTimer = setTimeout(() => {
+          el.hidden = true;
+          el.textContent = '';
+        }, 4000);
+      };
+
+      const watchlistToggleErrorMessage = (error: unknown) => {
+        if (error instanceof UserRetentionApiError) {
+          if (error.code === 'RETENTION_API_NOT_READY') return '관심 종목 저장 기능이 아직 준비되지 않았습니다.';
+          if (error.code === 'WATCHLIST_LIMIT_EXCEEDED') return '관심 종목은 최대 50개까지 등록할 수 있습니다.';
+        }
+        return null;
+      };
+
       const hideWatchlistToggle = () => {
         const btn = chartWatchlistToggleBtn();
         if (btn) btn.hidden = true;
+        const statusEl = chartWatchlistToggleStatusEl();
+        if (statusEl) { statusEl.hidden = true; statusEl.textContent = ''; }
+        if (watchlistToggleStatusTimer) { clearTimeout(watchlistToggleStatusTimer); watchlistToggleStatusTimer = null; }
         watchlistCurrentItemId = null;
       };
 
@@ -2500,8 +2528,9 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       chartWatchlistToggleBtn()?.addEventListener('click', async () => {
         const active = integrity.getActiveContext();
         if (!active || watchlistToggleInFlight) return;
+        const wasInWatchlist = Boolean(watchlistCurrentItemId);
         watchlistToggleInFlight = true;
-        setWatchlistToggleState(Boolean(watchlistCurrentItemId));
+        setWatchlistToggleState(wasInWatchlist);
         try {
           if (watchlistCurrentItemId) {
             await userRetentionApi.removeWatchlistItem(watchlistCurrentItemId);
@@ -2516,22 +2545,36 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             });
             watchlistCurrentItemId = item.id;
           }
-        } catch {
-          // Sanitized best-effort: leave the toggle at its pre-click state, no raw error surfaced.
+        } catch (error) {
+          // Sanitized best-effort: leave the toggle at its pre-click state, no raw error surfaced,
+          // no automatic retry.
+          const message =
+            watchlistToggleErrorMessage(error) ??
+            (wasInWatchlist ? '관심 종목 삭제에 실패했습니다.' : '관심 종목 저장에 실패했습니다.');
+          showWatchlistToggleStatus(message);
         } finally {
           watchlistToggleInFlight = false;
           setWatchlistToggleState(Boolean(watchlistCurrentItemId));
         }
       });
 
+      // Dedup key combines instrument identity + the timeframe being persisted, so a timeframe
+      // change on an otherwise-unchanged instrument still triggers exactly one write. The key is
+      // recorded only AFTER a write succeeds, so a failed/transient write remains retryable rather
+      // than being permanently (and incorrectly) treated as already persisted. The in-flight guard
+      // prevents two concurrent calls (e.g. rapid range clicks) from racing a duplicate write.
+      let chartResumePersistInFlight = false;
+
       const persistChartResumeState = (instrument: any, timeframe: string) => {
         const identity = integrity.identityKey(instrument);
-        if (!identity || identity === lastPersistedChartIdentity) return;
+        if (!identity) return;
+        const key = `${identity}|${timeframe}`;
+        if (key === lastPersistedChartKey || chartResumePersistInFlight) return;
+        chartResumePersistInFlight = true;
         void (async () => {
-          const hasSession = await hasRetentionSession();
-          if (!hasSession) return;
-          lastPersistedChartIdentity = identity;
           try {
+            const hasSession = await hasRetentionSession();
+            if (!hasSession) return;
             await userRetentionApi.updatePreferences({
               lastSurface: 'chart_ai',
               lastChartMarket: String(instrument.country || '').toUpperCase() === 'US' ? 'US' : 'KR',
@@ -2539,8 +2582,12 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
               lastChartName: selectedName || null,
               lastChartTimeframe: timeframe,
             });
+            lastPersistedChartKey = key;
           } catch {
-            // Best-effort only -- resume state failing to save must never affect the chart itself.
+            // Best-effort only -- resume state failing to save must never affect the chart itself,
+            // and leaving lastPersistedChartKey unset here keeps the write retryable.
+          } finally {
+            chartResumePersistInFlight = false;
           }
         })();
       };

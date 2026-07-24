@@ -27,6 +27,8 @@ const HOME_RETENTION_PANEL = join(root, 'src', 'components', 'HomeRetentionPanel
 const INDEX_ASTRO = join(root, 'src', 'pages', 'index.astro');
 const CHART_AI_ASTRO = join(root, 'src', 'pages', 'chart-ai.astro');
 const PORTFOLIO_ASTRO = join(root, 'src', 'pages', 'portfolio.astro');
+const LAB_ASTRO = join(root, 'src', 'pages', 'lab.astro');
+const INSTRUMENT_LIB = join(root, 'src', 'lib', 'market-data', 'instrument.ts');
 const PACKAGE_JSON = join(root, 'package.json');
 
 const log = (msg) => process.stdout.write(msg + '\n');
@@ -58,6 +60,8 @@ const homeRetentionPanel = readOr(HOME_RETENTION_PANEL);
 const indexAstro = readOr(INDEX_ASTRO);
 const chartAiAstro = readOr(CHART_AI_ASTRO);
 const portfolioAstro = readOr(PORTFOLIO_ASTRO);
+const labAstro = readOr(LAB_ASTRO);
+const instrumentLib = readOr(INSTRUMENT_LIB);
 let pkg = {};
 try { pkg = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')); } catch {}
 
@@ -72,6 +76,9 @@ check('PATCH /api/user/preferences route exists', existsSync(ROUTE_PREFERENCES))
 check('GET/POST/DELETE /api/user/watchlist route exists', existsSync(ROUTE_WATCHLIST));
 check('userRetentionClient.ts shared client module exists', existsSync(CLIENT_LIB));
 check('HomeRetentionPanel.astro exists', existsSync(HOME_RETENTION_PANEL));
+check('lab.astro exists', existsSync(LAB_ASTRO));
+check('only one migration file matches the Phase 3GI naming under supabase/migrations (no HF1 second migration)',
+  migrationFiles.length === 1);
 
 // ---------------------------------------------------------------------------
 // Group 2: Migration — not applied, additive, bounded, RLS own-row-only, no anon
@@ -83,12 +90,27 @@ check('migration creates public.user_preferences', /create table public\.user_pr
 check('migration creates public.user_watchlist_items', /create table public\.user_watchlist_items/.test(migration));
 check('user_preferences.user_id references auth.users with cascade delete',
   /user_id uuid primary key references auth\.users\(id\) on delete cascade/.test(migration));
-check('user_preferences.last_surface is CHECK-bounded to an enum', /last_surface text check \(last_surface in \('home', 'chart_ai', 'portfolio'\)\)/.test(migration));
+check('user_preferences.last_surface includes lab and is NOT NULL / DEFAULT home (HF1)',
+  /last_surface text not null default 'home' check \(last_surface in \('home', 'chart_ai', 'portfolio', 'lab'\)\)/.test(migration));
 check('user_preferences.last_portfolio_id references public.portfolios ON DELETE SET NULL (never cascaded)',
   /last_portfolio_id uuid references public\.portfolios\(id\) on delete set null/.test(migration));
 check('user_preferences.last_chart_market is CHECK-bounded to KR/US', /last_chart_market text check \(last_chart_market in \('KR', 'US'\)\)/.test(migration));
 check('user_preferences.last_chart_symbol has a length CHECK bound', /last_chart_symbol text check \(char_length\(last_chart_symbol\) between 1 and 32\)/.test(migration));
 check('user_preferences.last_chart_name has a length CHECK bound', /last_chart_name text check \(char_length\(last_chart_name\) <= 160\)/.test(migration));
+check('user_preferences.last_chart_timeframe is CHECK-bounded to the exact supported timeframe set (HF1)',
+  /last_chart_timeframe text check \(last_chart_timeframe in \('1m', '3m', '6m', '1y'\)\)/.test(migration));
+check('user_preferences has a chart-state-consistency CHECK rejecting a partial resume pointer (HF1)',
+  /constraint user_preferences_chart_state_consistent check/.test(migration));
+check('user_preferences chart-symbol format CHECK matches the KR/US instrument.ts patterns (HF1)',
+  /constraint user_preferences_chart_symbol_format check/.test(migration) &&
+  migration.includes("last_chart_market = 'KR' and last_chart_symbol ~ '^[0-9A-Z]{6}$'") &&
+  migration.includes("last_chart_market = 'US' and last_chart_symbol ~ '^[A-Z][A-Z0-9.-]{0,9}$'"));
+check('user_watchlist_items symbol format CHECK matches the KR/US instrument.ts patterns (HF1)',
+  /constraint user_watchlist_items_symbol_format check/.test(migration) &&
+  migration.includes("market = 'KR' and symbol ~ '^[0-9A-Z]{6}$'") &&
+  migration.includes("market = 'US' and symbol ~ '^[A-Z][A-Z0-9.-]{0,9}$'"));
+check('user_preferences INSERT/UPDATE RLS policies independently re-verify last_portfolio_id ownership via an EXISTS subquery (HF1)',
+  (migration.match(/exists \(\s*select 1\s*from public\.portfolios p\s*where p\.id = last_portfolio_id\s*and p\.user_id = \(select auth\.uid\(\)\)\s*\)/g) || []).length >= 2);
 check('migration reuses the existing public.set_updated_at() trigger function (not redefined)',
   /execute function public\.set_updated_at\(\)/.test(migration) && !/create (or replace )?function public\.set_updated_at/.test(migration));
 check('user_watchlist_items.market/symbol/asset_type are CHECK-bounded', /market text not null check \(market in \('KR', 'US'\)\)/.test(migration) &&
@@ -130,6 +152,19 @@ check('watchlist item lookup is scoped by user_id (no cross-user read)',
 check('removeWatchlistItem deletes scoped by both id and user_id (cross-user isolation)',
   /\.delete\(\)\s*\.eq\('id', id\)\s*\.eq\('user_id', userId\)/.test(server));
 check('server module never references a provider/quote/KIS endpoint', !/kis|quote|provider/i.test(server));
+check('server imports isKrSymbol/isUsSymbol from the single authoritative instrument module (HF1)',
+  /import \{ isKrSymbol, isUsSymbol \} from '\.\.\/market-data\/instrument'/.test(server));
+check('validateChartResumeState is exported for direct pure-function testing (HF1)',
+  /export const validateChartResumeState/.test(server));
+check('validateMarketSymbol is exported and reused by both chart resume state and the watchlist (HF1)',
+  /export const validateMarketSymbol/.test(server) &&
+  server.includes('validateMarketSymbol(market.data, asString(body.symbol))'));
+check('updatePreferences never reads a client-supplied lastActivityAt field (server-generated only, HF1)',
+  !/body\.lastActivityAt/.test(server));
+check('updatePreferences always sets last_activity_at from the server clock (HF1)',
+  /updates\.last_activity_at = new Date\(\)\.toISOString\(\)/.test(server));
+check('CHART_TIMEFRAMES mirrors the migration\'s last_chart_timeframe CHECK set exactly (HF1)',
+  /CHART_TIMEFRAMES = \['1m', '3m', '6m', '1y'\] as const/.test(server));
 
 // ---------------------------------------------------------------------------
 // Group 4: Route contracts — auth-before-body, no-store, method allow-lists
@@ -199,14 +234,35 @@ check('watchlist toggle is hidden until an active chart instrument is resolved',
   /const active = integrity\.getActiveContext\(\);\s*\n\s*if \(!active\) \{ hideWatchlistToggle\(\); return; \}/.test(chartAiAstro));
 check('watchlist toggle checks hasRetentionSession before listing/mutating (auth-gated)',
   /await hasRetentionSession\(\)/.test(chartAiAstro));
-check('persistChartResumeState is deduplicated by instrument identity (no write storm)',
-  /identity === lastPersistedChartIdentity/.test(chartAiAstro));
+check('persistChartResumeState dedup key combines instrument identity AND timeframe (HF1: a timeframe-only change must still persist)',
+  /const key = `\$\{identity\}\|\$\{timeframe\}`/.test(chartAiAstro) && /key === lastPersistedChartKey/.test(chartAiAstro));
+check('persistChartResumeState only records the dedup key AFTER a successful write, so a failed write stays retryable (HF1)',
+  (() => {
+    const fnStart = chartAiAstro.indexOf('const persistChartResumeState');
+    if (fnStart === -1) return false;
+    const fnSlice = chartAiAstro.slice(fnStart, fnStart + 2000);
+    const updateIdx = fnSlice.indexOf('userRetentionApi.updatePreferences');
+    const keySetIdx = fnSlice.indexOf('lastPersistedChartKey = key');
+    return updateIdx !== -1 && keySetIdx !== -1 && updateIdx < keySetIdx;
+  })());
+check('persistChartResumeState guards against concurrent overlapping writes (chartResumePersistInFlight)',
+  /chartResumePersistInFlight/.test(chartAiAstro));
 check('persistChartResumeState sets lastSurface: \'chart_ai\'', /lastSurface: 'chart_ai'/.test(chartAiAstro));
 check('resume/watchlist persistence never blocks chart rendering (fire-and-forget void + try/catch)',
   /void \(async \(\) => \{[\s\S]{0,60}?const hasSession = await hasRetentionSession\(\);/.test(chartAiAstro) || /void refreshWatchlistToggleForActiveInstrument\(\)/.test(chartAiAstro));
 check('watchlist add/remove is single in-flight (watchlistToggleInFlight guard)', /watchlistToggleInFlight/.test(chartAiAstro));
 check('chart-ai.astro never triggers analysis or usage-quota consumption from the watchlist/resume paths',
   !/persistChartResumeState[\s\S]{0,300}(runAnalysis|consumeUsage|similarity\.json|mk-analysis\.json)/.test(chartAiAstro));
+check('watchlist failure shows sanitized status feedback with no raw error text (HF1)',
+  /const watchlistToggleErrorMessage = \(error: unknown\) => \{/.test(chartAiAstro) &&
+  chartAiAstro.includes("if (error.code === 'RETENTION_API_NOT_READY')") &&
+  chartAiAstro.includes("if (error.code === 'WATCHLIST_LIMIT_EXCEEDED')") &&
+  /showWatchlistToggleStatus\(message\)/.test(chartAiAstro));
+check('watchlist failure preserves the pre-click toggle state instead of assuming success (HF1)',
+  /const wasInWatchlist = Boolean\(watchlistCurrentItemId\)/.test(chartAiAstro) &&
+  /setWatchlistToggleState\(Boolean\(watchlistCurrentItemId\)\)/.test(chartAiAstro));
+check('watchlist status feedback element is aria-live=polite and starts hidden (HF1)',
+  /id="chartAiWatchlistToggleStatus"[^>]*role="status"[^>]*aria-live="polite"[^>]*hidden/.test(chartAiAstro));
 
 // ---------------------------------------------------------------------------
 // Group 9: Portfolio UI integration — real owned ids only, deep link, dedup
@@ -226,6 +282,20 @@ check('an unowned/invalid `?portfolio=` id falls back to normal aggregate/last-s
 check('tab-click selection also persists resume state', /await loadPositions\(id\);\s*\n\s*persistPortfolioResumeState\(id\);/.test(portfolioAstro));
 
 // ---------------------------------------------------------------------------
+// Group 9b: Lab UI integration (HF1) — surface persistence only, no provider/redirect
+// ---------------------------------------------------------------------------
+log('--- Group 9b: Lab UI integration (HF1) ---');
+check('lab.astro imports userRetentionApi/hasRetentionSession', labAstro.includes("from '../lib/userRetentionClient'"));
+check('lab.astro checks hasRetentionSession before persisting (zero-request signed-out)',
+  /await hasRetentionSession\(\)/.test(labAstro) && labAstro.indexOf('if (!hasSession) return;') < labAstro.indexOf("lastSurface: 'lab'"));
+check('lab.astro persists lastSurface: \'lab\'', /lastSurface: 'lab'/.test(labAstro));
+check('lab.astro persistence failure is caught and never affects the page (best-effort, no throw)',
+  /catch \{[\s\S]{0,120}?Best-effort only/.test(labAstro));
+check('lab.astro persistence causes zero provider/KIS/analysis calls (only updatePreferences)',
+  !/similarity\.json|mk-analysis\.json|market-intelligence\.json|fetch\(/i.test(labAstro) &&
+  !/from ['"].*kis/i.test(labAstro));
+
+// ---------------------------------------------------------------------------
 // Group 10: No account/trading/provider surfaces introduced
 // ---------------------------------------------------------------------------
 log('--- Group 10: No account / trading / provider surfaces ---');
@@ -234,6 +304,8 @@ for (const source of [server, routeRetention, routePreferences, routeWatchlist, 
   check('no reference to an order/trade/balance endpoint in Phase 3GI sources', !/\/api\/(?:kis-)?(?:order|trade|balance|account)/i.test(source));
 }
 check('watchlist persistence never introduces quote polling (no setInterval/pollQuote)', !/setInterval|pollQuote/.test(client) && !/setInterval|pollQuote/.test(homeRetentionPanel));
+check('the reused isKrSymbol/isUsSymbol functions are the single authoritative source (src/lib/market-data/instrument.ts, HF1)',
+  /export const isKrSymbol/.test(instrumentLib) && /export const isUsSymbol/.test(instrumentLib));
 
 // ---------------------------------------------------------------------------
 // Group 11: package.json wiring
