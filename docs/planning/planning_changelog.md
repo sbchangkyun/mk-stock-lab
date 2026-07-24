@@ -1,5 +1,45 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GH - 2026-07-24
+
+### Authenticated KR portfolio live valuation MVP — `CODE_TEST_VERIFIED`, `PREVIEW_VERIFIED`; not yet `PRODUCTION_VERIFIED` (PR #4 open, unmerged)
+
+- New `POST /api/portfolio/valuation`: client sends only `portfolioId`; server independently resolves auth,
+  ownership, and positions, then resolves KR/KRW quotes via the existing KIS orchestration and computes
+  costBasis/currentPrice/marketValue/unrealizedPnl/weight per row. Aggregate states `full`/`partial`/
+  `unavailable`/`empty`; partial totals always labeled "지원 종목 기준," never presented as full-portfolio
+  value. Never fabricates a quote. Scale limits (50 rows / 30 unique KR symbols / concurrency 3) enforced
+  before any provider call. Aggregate `__all_portfolios__` resolved as one authenticated request.
+- Retired the old Owner-Preview / mocked-FX / fixture-provider valuation contract entirely (10 scripts + their
+  `package.json` entries removed); live authenticated valuation is the only browser contract on this feature
+  branch/PR (not yet Production — see roadmap §1a).
+- `portfolioClient.ts` gains `getValuation(portfolioId)` on the existing authenticated `requestJson` helper;
+  `portfolio.astro` rewritten with a request-sequence guard, pending-refresh disable, and sanitized Korean
+  copy for every state including unsupported US/USD rows (shown, never hidden).
+- No migration created or applied; no Production deploy; no Production Supabase mutation.
+- Tests (initial): `smoke:phase-3gh-portfolio-live-valuation-mvp` 40/40; new
+  `check:phase-3gh-portfolio-live-valuation-mvp` static contract checker 79/79. See the HF1 entry below for
+  updated totals.
+- New `docs/planning/mk_stock_lab_master_roadmap_v2.0.md` supersedes the incompatible Phase 0–10 numbering in
+  `roadmap_v0.1.md` (preserved unmodified as a historical artifact) as the authoritative forward roadmap.
+- See `docs/planning/phase_3gh_portfolio_live_valuation_mvp_result_v0.1.md` for full detail.
+
+### Phase 3GH-HF1 - 2026-07-24 — aggregate fail-closed correction (pre-merge hotfix on PR #4)
+
+- Fixed `src/pages/api/portfolio/valuation.ts`: the aggregate (`__all_portfolios__`) branch previously
+  converted an authoritative `listPositions` failure for any one owned portfolio into a silently empty
+  position array, which could return an incomplete aggregate valuation under HTTP 200 instead of failing
+  closed. Extracted an exported, dependency-injected, sequential fail-closed loader
+  (`loadAggregateRecords`) that aborts the whole request and returns the existing sanitized failure response
+  on any position-load failure, with no quote/provider work started afterward. Single-portfolio ownership
+  behavior unchanged.
+- Tests: `smoke:phase-3gh-portfolio-live-valuation-mvp` 40 → 55/55 (6 new test blocks, 15 assertions);
+  `check:phase-3gh-portfolio-live-valuation-mvp` 79 → 86/86 (new Group 13: aggregate fail-closed error
+  handling).
+- Roadmap corrected to distinguish Production-verified functionality from this still-unmerged Phase 3GH
+  release candidate (see `mk_stock_lab_master_roadmap_v2.0.md` §1/§1a/§4/§8).
+- Same branch, same PR #4; no new branch, no new PR, no merge, no Production deploy, no Supabase mutation.
+
 ## Phase 3GG-U-HF1 - 2026-07-23
 
 ### Usage-limit policy pinning (pre-application hotfix in PR #2)
