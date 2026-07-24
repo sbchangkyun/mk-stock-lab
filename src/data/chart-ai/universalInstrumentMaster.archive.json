@@ -625,6 +625,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "KR|012510|KOSPI|stock",
+      "country": "KR",
+      "priorSymbol": "012510",
+      "priorNames": [
+        "더존비즈온"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "stock",
+      "standardCode": "KR7012510004",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-24",
+      "inactiveAt": "2026-07-24",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16038"
     }
   ]
 }
