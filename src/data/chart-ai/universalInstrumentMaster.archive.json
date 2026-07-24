@@ -1,5 +1,647 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 inactive instrument archive. Compact record of instruments removed from the active KIS-supported master (delisted / source-absent / type-changed). Retention: INDEFINITE. Excluded from ordinary search; may resolve legacy URLs/snapshots with an inactive notice. Populated by scripts/automation/refresh_kis_instrument_master.mjs.",
   "schemaVersion": 1,
-  "instruments": []
+  "instruments": [
+    {
+      "canonicalIdentity": "KR|0021C0|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "0021C0",
+      "priorNames": [
+        "ACE TDF장기자산배분액티브"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR70021C0005",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "KR|0021D0|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "0021D0",
+      "priorNames": [
+        "ACE TDF2030액티브 적격"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR70021D0004",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "KR|0021E0|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "0021E0",
+      "priorNames": [
+        "ACE TDF2050액티브 적격"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR70021E0003",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "KR|483420|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "483420",
+      "priorNames": [
+        "ACE 애플밸류체인액티브"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR7483420006",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "KR|203690|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "203690",
+      "priorNames": [
+        "아크솔루션스"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7203690003",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "KR|222160|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "222160",
+      "priorNames": [
+        "NPX"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7222160004",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|ABNY|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "ABNY",
+      "priorNames": [
+        "YIELDMAX ABNB OPTION INCOME STRATEGY ETF",
+        "YIELDMAX ABNB OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|BULX|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "BULX",
+      "priorNames": [
+        "GRANITESHARES 2X LONG BULL DAILY ETF",
+        "GRANITESHARES 2X LONG BULL DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|CIF|NYSE|etf",
+      "country": "US",
+      "priorSymbol": "CIF",
+      "priorNames": [
+        "MFS INTERMEDIATE HIGH INCOME FUND",
+        "MFS INTERMEDIATE HIGH INCOME FUND"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|COIO|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "COIO",
+      "priorNames": [
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED COIN MONTHLY ETF",
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED COIN MONTHLY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|DISO|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "DISO",
+      "priorNames": [
+        "TIDAL TRUST II YIELDMAX DIS OPTION INCOME STRATEGY ETF",
+        "TIDAL TRUST II YIELDMAX DIS OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|ETRL|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "ETRL",
+      "priorNames": [
+        "GRANITESHARES 2X LONG ETOR DAILY ETF",
+        "GRANITESHARES 2X LONG ETOR DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|FEAT|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "FEAT",
+      "priorNames": [
+        "YIELDMAX DORSEY WRIGHT FEATURED 5 INCOME ETF",
+        "YIELDMAX DORSEY WRIGHT FEATURED 5 INCOME ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|FIVY|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "FIVY",
+      "priorNames": [
+        "YIELDMAX DORSEY WRIGHT HYBRID 5 INCOME ETF",
+        "YIELDMAX DORSEY WRIGHT HYBRID 5 INCOME ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|MCR|NYSE|etf",
+      "country": "US",
+      "priorSymbol": "MCR",
+      "priorNames": [
+        "MFS CHARTER INCOME TRUST",
+        "MFS CHARTER INCOME TRUST"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|MSDD|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "MSDD",
+      "priorNames": [
+        "GRANITESHARES 2X SHORT MSTR DAILY ETF",
+        "GRANITESHARES 2X SHORT MSTR DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|MSOO|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "MSOO",
+      "priorNames": [
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED MSTR MONTHLY ETF",
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED MSTR MONTHLY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|NVDO|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "NVDO",
+      "priorNames": [
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED NVDA MONTHLY ETF",
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED NVDA MONTHLY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|PLOO|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "PLOO",
+      "priorNames": [
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED PLTR MONTHLY ETF",
+        "LEVERAGE SHARES 2X CAPPED ACCELERATED PLTR MONTHLY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|RSHO|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "RSHO",
+      "priorNames": [
+        "TEMA U.S. MANUFACTURING & RESHORING ETF",
+        "TEMA U.S. MANUFACTURING & RESHORING ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|SCLS|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "SCLS",
+      "priorNames": [
+        "STONEPORT ADVISORS COMMODITY LONG SHORT ETF",
+        "STONEPORT ADVISORS COMMODITY LONG SHORT ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|TSLO|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "TSLO",
+      "priorNames": [
+        "THEMES ETF TRUST LEVERAGE SHARES 2X CAPPED ACCE TSLA MON",
+        "THEMES ETF TRUST LEVERAGE SHARES 2X CAPPED ACCE TSLA MON"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|ASRT|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "ASRT",
+      "priorNames": [
+        "ASSERTIO HOLDINGS INC",
+        "ASSERTIO HOLDINGS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|GOCO|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "GOCO",
+      "priorNames": [
+        "GOHEALTH INC",
+        "GOHEALTH INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|JMG|AMEX|stock",
+      "country": "US",
+      "priorSymbol": "JMG",
+      "priorNames": [
+        "JM GROUP LTD",
+        "JM GROUP LTD"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|KW|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "KW",
+      "priorNames": [
+        "KENNEDY-WILSON HOLDINGS INC",
+        "KENNEDY-WILSON HOLDINGS INC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|LC|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "LC",
+      "priorNames": [
+        "LENDING CLUB CORP",
+        "LENDING CLUB CORP"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|MEHA|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "MEHA",
+      "priorNames": [
+        "FUNCTIONAL BRANDS INC",
+        "FUNCTIONAL BRANDS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|PMNT|AMEX|stock",
+      "country": "US",
+      "priorSymbol": "PMNT",
+      "priorNames": [
+        "PERFECT MOMENT LTD",
+        "PERFECT MOMENT LTD"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|RZB|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "RZB",
+      "priorNames": [
+        "REINSURANCE GROUP OF AMERICA 5.75% FXD TO FLTNG SUB ORD 15/6",
+        "REINSURANCE GROUP OF AMERICA 5.75% FXD TO FLTNG SUB ORD 15/6"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|SKBL|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SKBL",
+      "priorNames": [
+        "SKYLINE BUILDERS GROUP HOLDING",
+        "SKYLINE BUILDERS GROUP HOLDING"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|SKLZ|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "SKLZ",
+      "priorNames": [
+        "SKILLZ INC",
+        "SKILLZ INC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|SNSE|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SNSE",
+      "priorNames": [
+        "SENSEI BIOTHERAPEUTICS INC",
+        "SENSEI BIOTHERAPEUTICS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|TCGL|AMEX|stock",
+      "country": "US",
+      "priorSymbol": "TCGL",
+      "priorNames": [
+        "TECHCREATE GROUP LTD",
+        "TECHCREATE GROUP LTD"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "US|UGRO|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "UGRO",
+      "priorNames": [
+        "URBAN GRO INC",
+        "URBAN GRO INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-23",
+      "inactiveAt": "2026-07-23",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16033"
+    },
+    {
+      "canonicalIdentity": "KR|012510|KOSPI|stock",
+      "country": "KR",
+      "priorSymbol": "012510",
+      "priorNames": [
+        "더존비즈온"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "stock",
+      "standardCode": "KR7012510004",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-24",
+      "inactiveAt": "2026-07-24",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16038"
+    }
+  ]
 }
