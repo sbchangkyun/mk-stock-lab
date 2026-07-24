@@ -1,5 +1,40 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GI - 2026-07-24
+
+### Session restoration hardening, persistent resume state, and cross-device watchlist — `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING`
+
+- Session restoration hardening: Supabase client now sets `persistSession`/`autoRefreshToken` explicitly;
+  profile bootstrap runs once per real auth transition (`INITIAL_SESSION`/`TOKEN_REFRESHED` explicitly
+  skipped, not re-bootstrapped); `SIGNED_OUT` clears UI state via `mk:auth-state`; no token or `Session`
+  object is ever manually stored or logged.
+- Persistent resume state: new `public.user_preferences` stores last surface, last owned portfolio, last
+  Chart AI instrument/market/display-name/timeframe, and last activity timestamp — every field a closed
+  enum, bounded string, ownership-validated UUID, or ISO timestamp (no free-form URL field exists in the
+  schema, so an arbitrary URL can never be persisted). Resume only ever happens on an explicit user click.
+- Cross-device watchlist: new `public.user_watchlist_items` (KR/US stocks/ETFs, server-enforced 50-item cap),
+  new authenticated `GET /api/user/retention`, `PATCH /api/user/preferences`, `GET/POST/DELETE
+  /api/user/watchlist` routes (bearer-auth-before-DB-work, sanitized errors, `Cache-Control: no-store`,
+  `RETENTION_API_NOT_READY` degradation while the migration is unapplied), a Home compact view, and a Chart
+  AI toggle + deep link. Zero quote polling, zero provider/KIS calls, zero Similarity/MK-Analysis triggering
+  or usage-quota consumption from this feature.
+- Exactly one new, additive, collision-free migration
+  (`supabase/migrations/20260724_user_retention_persistence.sql`) — **intentionally not applied** by any
+  means this phase.
+- Portfolio deep link (`?portfolio=<id>`) only honored when the id is present in the user's own loaded
+  portfolio list; the aggregate sentinel `__all_portfolios__` is explicitly excluded from resume-state writes.
+- New tests: `smoke:phase-3gi-user-retention-persistence` 24/24;
+  `check:phase-3gi-user-retention-persistence` 106/106. Full pre-existing regression gate list re-run; the
+  only failures are the same non-blocking working-tree-scope-freeze pattern already documented in prior
+  phases' changelog entries, plus a re-confirmed pre-existing `check:provider-boundaries` false positive on
+  `chart-ai.astro` (SSR-frontmatter-only `lib/server` imports, unrelated to this phase's own new
+  `lib/userRetentionClient` import).
+- Renamed `docs/planning/mk_stock_lab_master_roadmap_v2.0.md` →
+  `docs/planning/mk_stock_lab_master_roadmap_v2.1.md`; corrected Phase 3GH's status to `MERGED_TO_MAIN` (PR #4
+  merged as `64d58e9`, which v2.0 had recorded as still open) and recorded Phase 3GI's status. Phase 3GJ/3GK/
+  3GL remain `PLANNED` and are explicitly not started by this phase.
+- See `docs/planning/phase_3gi_user_retention_persistence_result_v0.1.md` for full detail.
+
 ## Phase 3GH - 2026-07-24
 
 ### Authenticated KR portfolio live valuation MVP — `CODE_TEST_VERIFIED`, `PREVIEW_VERIFIED`; not yet `PRODUCTION_VERIFIED` (PR #4 open, unmerged)

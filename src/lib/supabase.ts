@@ -11,7 +11,14 @@ export const getBrowserSupabaseClient = () => {
   if (!isSupabaseConfigured()) return null;
 
   if (!browserSupabaseClient) {
-    browserSupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    // Explicit (not relying on library defaults) so session restoration across page loads and
+    // tabs stays a deliberate, documented contract rather than an implicit default.
+    browserSupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
   }
 
   return browserSupabaseClient;
