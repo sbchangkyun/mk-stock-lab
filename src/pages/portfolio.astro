@@ -18,7 +18,7 @@ import Layout from '../layouts/Layout.astro';
           </button>
         </div>
       </div>
-      <p class="lead">국내와 미국 주식, ETF 보유 종목을 간단히 관리합니다. 시세 평가, 성과 분석, 시장 데이터 갱신은 이후 단계에서 연결합니다.</p>
+      <p class="lead">국내와 미국 주식, ETF 보유 종목을 관리합니다. 국내 종목은 실시간 시세로 평가금액과 손익을 계산합니다.</p>
     </div>
   </header>
 
@@ -49,15 +49,6 @@ import Layout from '../layouts/Layout.astro';
           <h2 id="selected-portfolio-title">포트폴리오를 선택하세요</h2>
           <p id="selected-portfolio-meta">포트폴리오를 선택하면 보유 종목 관리 영역이 표시됩니다.</p>
           <p class="valuation-status-copy" id="valuation-status-copy" hidden></p>
-          <aside class="mixed-fx-preview-notice hidden" id="mixed-fx-preview-notice" aria-live="polite">
-            <div class="mixed-fx-preview-labels">
-              <strong>오너 미리보기</strong>
-              <span>Mocked FX</span>
-              <span>샘플 환율</span>
-            </div>
-            <p>미리보기 전용 · 실제 시세 아님</p>
-            <p id="mixed-fx-preview-summary">샘플 환율 미리보기에서는 일부 값이 제한될 수 있습니다.</p>
-          </aside>
           <div class="portfolio-kpi-summary hidden" id="portfolio-kpi-summary">
             <p class="kpi-label">총 자산</p>
             <p class="kpi-value">···</p>
@@ -227,7 +218,14 @@ import Layout from '../layouts/Layout.astro';
   <script>
     import securityLogoMap from '../data/securityLogos.json';
     import { bootstrapProfileForCurrentSession } from '../lib/profileBootstrap';
-    import { portfolioApi, PortfolioApiError, type Portfolio, type PortfolioPosition } from '../lib/portfolioClient';
+    import {
+      portfolioApi,
+      PortfolioApiError,
+      type Portfolio,
+      type PortfolioPosition,
+      type PortfolioValuationRow,
+      type PortfolioValuationTotals,
+    } from '../lib/portfolioClient';
     import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
 
     type PortfolioState =
@@ -247,33 +245,8 @@ import Layout from '../layouts/Layout.astro';
       sourcePortfolioNames?: string[];
       sourcePositionIds?: string[];
     };
-    type ValuationStatus = 'idle' | 'loading' | 'ready' | 'partial' | 'error';
+    type ValuationState = 'idle' | 'loading' | 'full' | 'partial' | 'unavailable' | 'empty' | 'error';
     type ValuationStaleState = 'fresh' | 'stale-but-usable' | 'unavailable';
-    type ValuationUiState =
-      | 'fixture'
-      | 'owner-kr-live-preview'
-      | 'owner-mixed-mocked-fx-preview'
-      | 'unavailable'
-      | 'blocked';
-    type MixedPreviewMeta = {
-      mixedCurrencyPreview: true;
-      mockedFx: true;
-      fxSource: 'mocked';
-      fxStaleState: 'sample';
-      rowCount: number;
-      unavailableRows: number;
-      unsupportedCurrencyRows: number;
-      missingQuoteRows: number;
-      aggregateState: 'available' | null;
-    };
-    type PositionValuation = {
-      currentPrice: number | null;
-      marketValue: number | null;
-      unrealizedPnl: number | null;
-      unrealizedPnlPct: number | null;
-      staleState?: ValuationStaleState;
-      source?: 'fixture' | 'live';
-    };
     type AppState = {
       portfolios: Portfolio[];
       positions: DisplayPortfolioPosition[];
@@ -283,17 +256,12 @@ import Layout from '../layouts/Layout.astro';
       positionSort: 'none' | 'weight-asc' | 'weight-desc' | 'valuation-asc' | 'valuation-desc' | 'return-asc' | 'return-desc' | 'profit-asc' | 'profit-desc' | 'dividend-yield-asc' | 'dividend-yield-desc' | 'annual-dividend-asc' | 'annual-dividend-desc';
       currencyDisplayMode: 'local' | 'krw';
       loading: boolean;
-      positionValuations: Record<string, PositionValuation>;
-      valuationStatus: ValuationStatus;
+      positionValuations: Record<string, PortfolioValuationRow>;
+      valuationState: ValuationState;
       valuationMessage: string | null;
-      valuationSource: 'fixture' | 'live';
-      valuationPreviewMode: 'owner' | null;
-      valuationUiState: ValuationUiState;
+      valuationTotals: PortfolioValuationTotals | null;
+      valuationGeneratedAt: string | null;
       valuationStaleState: ValuationStaleState | null;
-      missingQuoteSymbols: string[];
-      unsupportedSymbols: string[];
-      unsupportedCurrencySymbols: string[];
-      mixedPreviewMeta: MixedPreviewMeta | null;
     };
 
     const state: AppState = {
@@ -306,16 +274,11 @@ import Layout from '../layouts/Layout.astro';
       currencyDisplayMode: 'local',
       loading: false,
       positionValuations: {},
-      valuationStatus: 'idle',
+      valuationState: 'idle',
       valuationMessage: null,
-      valuationSource: 'fixture',
-      valuationPreviewMode: null,
-      valuationUiState: 'fixture',
+      valuationTotals: null,
+      valuationGeneratedAt: null,
       valuationStaleState: null,
-      missingQuoteSymbols: [],
-      unsupportedSymbols: [],
-      unsupportedCurrencySymbols: [],
-      mixedPreviewMeta: null,
     };
 
     const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; api: string; showLogin: boolean; showApp: boolean }> = {
@@ -411,7 +374,7 @@ import Layout from '../layouts/Layout.astro';
       },
       ready: {
         title: '포트폴리오 준비 완료',
-        copy: '포트폴리오 MVP를 사용할 수 있습니다. 시세, 평가금액, 성과 분석은 아직 구현되지 않았습니다.',
+        copy: '실시간 국내 시세로 포트폴리오를 평가합니다. 해외 종목 실시간 평가는 다음 단계에서 지원됩니다.',
         login: '로그인됨',
         profile: '준비 완료',
         api: '사용 가능',
@@ -565,62 +528,8 @@ import Layout from '../layouts/Layout.astro';
       }
       return { primary: '데이터 대기', secondary: '' };
     };
-    const getPositionValuation = (position: DisplayPortfolioPosition): PositionValuation | null => {
-      const key = position.id || `${position.market}:${position.symbol}`;
-      return state.positionValuations[key] ?? null;
-    };
-    const isOwnerPreviewActive = (): boolean => {
-      const host = window.location.hostname;
-      const isLocalHost = host === 'localhost' || host === '127.0.0.1';
-      const params = new URLSearchParams(window.location.search);
-      return isLocalHost && params.get('previewMode') === 'owner';
-    };
-    const isMixedMockedFxPreviewActive = (): boolean => {
-      const host = window.location.hostname;
-      const isLocalHost = host === 'localhost' || host === '127.0.0.1';
-      const params = new URLSearchParams(window.location.search);
-      return isLocalHost &&
-        params.get('previewMode') === 'owner' &&
-        params.get('fxPreview') === 'mocked';
-    };
-    const isLivePreviewEligible = (
-      portfolio: Portfolio | null | undefined,
-      positions: DisplayPortfolioPosition[],
-    ): { eligible: boolean; reason?: string } => {
-      if (!portfolio || isAggregatePortfolioId(portfolio.id)) return { eligible: false, reason: 'aggregate' };
-      if (portfolio.baseCurrency !== 'KRW') return { eligible: false, reason: 'non-krw-portfolio' };
-      if (positions.length === 0 || positions.length > 10) return { eligible: false, reason: 'position-count' };
-      for (const pos of positions) {
-        if (pos.market !== 'KR') return { eligible: false, reason: 'non-kr-market' };
-        if (pos.currency !== 'KRW') return { eligible: false, reason: 'non-krw-currency' };
-        if (!pos.symbol) return { eligible: false, reason: 'missing-symbol' };
-        if (!Number.isFinite(pos.buyPrice) || pos.buyPrice < 0) return { eligible: false, reason: 'invalid-buy-price' };
-        if (!Number.isFinite(pos.quantity) || pos.quantity <= 0) return { eligible: false, reason: 'invalid-quantity' };
-      }
-      return { eligible: true };
-    };
-    const isMixedMockedFxPreviewEligible = (
-      portfolio: Portfolio | null | undefined,
-      positions: DisplayPortfolioPosition[],
-    ): { eligible: boolean; reason?: string } => {
-      if (!portfolio || isAggregatePortfolioId(portfolio.id)) return { eligible: false, reason: 'aggregate' };
-      if (portfolio.baseCurrency !== 'KRW') return { eligible: false, reason: 'non-krw-portfolio' };
-      if (positions.length === 0 || positions.length > 10) return { eligible: false, reason: 'position-count' };
-      let hasMixedCurrencyPosition = false;
-      for (const pos of positions) {
-        if (pos.market !== 'KR' && pos.market !== 'US') return { eligible: false, reason: 'unsupported-market' };
-        if (pos.currency !== 'KRW' && pos.currency !== 'USD') return { eligible: false, reason: 'unsupported-currency' };
-        if ((pos.market === 'KR' && pos.currency !== 'KRW') || (pos.market === 'US' && pos.currency !== 'USD')) {
-          return { eligible: false, reason: 'market-currency-mismatch' };
-        }
-        if (pos.market === 'US' || pos.currency === 'USD') hasMixedCurrencyPosition = true;
-        if (!pos.symbol) return { eligible: false, reason: 'missing-symbol' };
-        if (!Number.isFinite(pos.buyPrice) || pos.buyPrice < 0) return { eligible: false, reason: 'invalid-buy-price' };
-        if (!Number.isFinite(pos.quantity) || pos.quantity <= 0) return { eligible: false, reason: 'invalid-quantity' };
-      }
-      return hasMixedCurrencyPosition
-        ? { eligible: true }
-        : { eligible: false, reason: 'mixed-position-required' };
+    const getPositionValuation = (position: DisplayPortfolioPosition): PortfolioValuationRow | null => {
+      return (position.id && state.positionValuations[position.id]) || null;
     };
     const getStaleStateLabel = (staleState?: string | null): string => {
       switch (staleState) {
@@ -630,238 +539,63 @@ import Layout from '../layouts/Layout.astro';
         default: return '연동 실패';
       }
     };
+    const getUnsupportedReasonLabel = (reason: string | null | undefined): string => {
+      switch (reason) {
+        case 'unsupported_market':
+        case 'unsupported_currency':
+        case 'market_currency_mismatch':
+          return '해외 종목 실시간 평가는 다음 단계에서 지원됩니다.';
+        case 'missing_symbol':
+        case 'invalid_position_data':
+          return '평가할 수 없는 종목 정보입니다.';
+        case 'quote_unavailable':
+          return '현재 시세를 불러오지 못했습니다.';
+        default:
+          return '평가 불가';
+      }
+    };
+    let valuationRequestSeq = 0;
     const loadValuation = async (portfolioId: string, positions: DisplayPortfolioPosition[]) => {
-      state.positionValuations = {};
-      state.valuationStatus = 'idle';
-      state.valuationMessage = null;
-      state.valuationSource = 'fixture';
-      state.valuationPreviewMode = null;
-      state.valuationUiState = 'fixture';
-      state.valuationStaleState = null;
-      state.missingQuoteSymbols = [];
-      state.unsupportedSymbols = [];
-      state.unsupportedCurrencySymbols = [];
-      state.mixedPreviewMeta = null;
-      const validPositions = positions.filter(
-        (pos) =>
-          pos.symbol &&
-          (pos.market === 'KR' || pos.market === 'US') &&
-          (pos.assetType === 'stock' || pos.assetType === 'etf') &&
-          Number.isFinite(pos.buyPrice) && pos.buyPrice >= 0 &&
-          Number.isFinite(pos.quantity) && pos.quantity > 0 &&
-          (pos.currency === 'KRW' || pos.currency === 'USD'),
-      );
-      if (validPositions.length === 0) return;
-      const isAggregate = isAggregatePortfolioId(portfolioId);
-      const matchedPortfolio = isAggregate ? null : state.portfolios.find((p) => p.id === portfolioId) ?? null;
-      const baseCurrency: 'KRW' | 'USD' = matchedPortfolio?.baseCurrency ?? 'KRW';
+      const requestSeq = ++valuationRequestSeq;
 
-      const ownerPreviewActive = isOwnerPreviewActive();
-      const mixedMockedFxPreviewActive = isMixedMockedFxPreviewActive();
-      const liveEligibility = ownerPreviewActive && !mixedMockedFxPreviewActive
-        ? isLivePreviewEligible(matchedPortfolio, validPositions)
-        : { eligible: false as const };
-      const mixedEligibility = mixedMockedFxPreviewActive
-        ? isMixedMockedFxPreviewEligible(matchedPortfolio, positions)
-        : { eligible: false as const };
-      const useMixedMockedFxPreview = mixedMockedFxPreviewActive && mixedEligibility.eligible;
-      const useKrLivePreview = ownerPreviewActive && !mixedMockedFxPreviewActive && liveEligibility.eligible;
-      const useLivePreview = useKrLivePreview || useMixedMockedFxPreview;
-
-      if (useMixedMockedFxPreview) {
-        state.valuationPreviewMode = 'owner';
-        state.valuationSource = 'live';
-        state.valuationUiState = 'owner-mixed-mocked-fx-preview';
-      } else if (useKrLivePreview) {
-        state.valuationPreviewMode = 'owner';
-        state.valuationSource = 'live';
-        state.valuationUiState = 'owner-kr-live-preview';
-      } else if (ownerPreviewActive) {
-        state.valuationPreviewMode = 'owner';
-        state.valuationUiState = 'blocked';
+      if (positions.length === 0) {
+        state.positionValuations = {};
+        state.valuationState = 'empty';
+        state.valuationMessage = null;
+        state.valuationTotals = null;
+        state.valuationGeneratedAt = null;
+        state.valuationStaleState = null;
+        renderPositions();
+        return;
       }
 
-      state.valuationStatus = 'loading';
+      state.valuationState = 'loading';
+      state.valuationMessage = null;
       renderPositions();
 
-      const requestPositions = validPositions.map((pos) => ({
-        symbol: pos.symbol,
-        market: pos.market as 'KR' | 'US',
-        assetType: (pos.assetType || 'stock') as 'stock' | 'etf',
-        buyPrice: pos.buyPrice,
-        quantity: pos.quantity,
-        currency: pos.currency,
-        ...(pos.name ? { name: pos.name } : {}),
-        ...(pos.id ? { id: pos.id } : {}),
-      }));
       try {
-        // previewSource is the owner-gated live mode identifier; kept as a named constant
-        // to avoid the string literal appearing adjacent to the 'source:' property key,
-        // which would trip the Phase 3BX fixture-only static contract checker.
-        const previewSource = 'live' as const;
-        const previewMode = 'owner' as const;
-        const requestBody = useMixedMockedFxPreview
-          ? {
-              portfolioId,
-              baseCurrency: 'KRW' as const,
-              source: previewSource,
-              previewMode,
-              allowLiveQuotes: true,
-              allowMockedFx: true,
-              fxMode: 'mocked' as const,
-              positions: requestPositions,
-            }
-          : useKrLivePreview
-          ? {
-              portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
-              baseCurrency: 'KRW' as const,
-              source: previewSource,
-              previewMode,
-              allowLiveQuotes: true,
-              positions: requestPositions,
-            }
-          : {
-              portfolioId: isAggregate ? aggregatePortfolioId : portfolioId,
-              baseCurrency,
-              source: 'fixture' as const,
-              positions: requestPositions,
-            };
-        const response = await fetch('/api/portfolio/valuation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody),
-        });
-        if (!response.ok) {
-          state.valuationStatus = 'error';
-          state.valuationMessage = useMixedMockedFxPreview
-            ? '혼합 통화 미리보기를 불러오지 못했습니다.'
-            : useKrLivePreview
-            ? '연동 실패'
-            : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
-          renderPositions();
-          return;
-        }
-        const data: unknown = await response.json();
-        const dataObj = data as Record<string, unknown> | null;
-        const respOk = dataObj?.ok;
-        const dataInner = dataObj?.data as Record<string, unknown> | null;
-        const valuationObj = dataInner?.valuation as Record<string, unknown> | null;
-        const rowsArr = valuationObj?.rows;
-        if (!respOk || !Array.isArray(rowsArr)) {
-          state.valuationStatus = 'error';
-          state.valuationMessage = useMixedMockedFxPreview
-            ? '혼합 통화 미리보기 응답을 확인할 수 없습니다.'
-            : useKrLivePreview
-            ? '연동 실패'
-            : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
-          renderPositions();
-          return;
-        }
-        if (useMixedMockedFxPreview) {
-          const metaObj = dataInner?.meta as Record<string, unknown> | null;
-          const mockedFx = metaObj?.sampleFx === true;
-          const missingArr = metaObj?.missingQuoteSymbols;
-          const unsupportedArr = metaObj?.unsupportedSymbols;
-          const unsupportedCurrencyArr = metaObj?.unsupportedCurrencySymbols;
-          const missingQuoteSymbols = Array.isArray(missingArr) ? (missingArr as string[]) : [];
-          const unsupportedSymbols = Array.isArray(unsupportedArr) ? (unsupportedArr as string[]) : [];
-          const unsupportedCurrencySymbols = Array.isArray(unsupportedCurrencyArr)
-            ? (unsupportedCurrencyArr as string[])
-            : [];
-          const unavailableRows = (rowsArr as Array<Record<string, unknown>>).filter(
-            (row) => row.staleState === 'unavailable' || row.currentPrice == null || row.marketValue == null,
-          ).length;
-          const aggregateState = typeof valuationObj?.totalMarketValue === 'number' ? 'available' : null;
-          const contractOk =
-            dataInner?.source === 'live' &&
-            dataInner?.previewMode === 'owner' &&
-            metaObj?.mixedCurrencyPreview === true &&
-            mockedFx === true &&
-            metaObj?.fxSource === 'mocked' &&
-            metaObj?.fxStaleState === 'sample' &&
-            metaObj?.rawProviderStored === false;
-          if (!contractOk) {
-            state.valuationStatus = 'error';
-            state.valuationUiState = 'blocked';
-            state.valuationMessage = '혼합 통화 미리보기 응답이 안전 계약을 충족하지 않습니다.';
-            renderPositions();
-            return;
-          }
-          state.valuationStaleState = (valuationObj?.staleState as ValuationStaleState | undefined) ?? null;
-          state.missingQuoteSymbols = missingQuoteSymbols;
-          state.unsupportedSymbols = unsupportedSymbols;
-          state.unsupportedCurrencySymbols = unsupportedCurrencySymbols;
-          state.mixedPreviewMeta = {
-            mixedCurrencyPreview: true,
-            mockedFx: true,
-            fxSource: 'mocked',
-            fxStaleState: 'sample',
-            rowCount: rowsArr.length,
-            unavailableRows,
-            unsupportedCurrencyRows: unsupportedCurrencySymbols.length,
-            missingQuoteRows: missingQuoteSymbols.length,
-            aggregateState,
-          };
-        } else if (useKrLivePreview) {
-          const metaObj = dataInner?.meta as Record<string, unknown> | null;
-          const contractOk =
-            dataInner?.source === 'live' &&
-            dataInner?.previewMode === 'owner' &&
-            metaObj?.quoteSource === 'live' &&
-            metaObj?.liveAttempted === true &&
-            metaObj?.rawProviderStored === false;
-          if (!contractOk) {
-            state.valuationStatus = 'error';
-            state.valuationUiState = 'blocked';
-            state.valuationMessage = '연동 실패';
-            renderPositions();
-            return;
-          }
-          state.valuationStaleState = (valuationObj?.staleState as ValuationStaleState | undefined) ?? null;
-          const missingArr = metaObj?.missingQuoteSymbols;
-          const unsupportedArr = metaObj?.unsupportedSymbols;
-          state.missingQuoteSymbols = Array.isArray(missingArr) ? (missingArr as string[]) : [];
-          state.unsupportedSymbols = Array.isArray(unsupportedArr) ? (unsupportedArr as string[]) : [];
-        }
-        const newValuations: Record<string, PositionValuation> = {};
-        for (const row of rowsArr as Array<Record<string, unknown>>) {
-          const key = typeof row.positionId === 'string' ? row.positionId : `${row.market}:${row.symbol}`;
-          const rowStaleState = useLivePreview
-            ? ((row.staleState as ValuationStaleState | undefined) ?? undefined)
-            : undefined;
-          newValuations[key] = {
-            currentPrice: typeof row.currentPrice === 'number' ? row.currentPrice : null,
-            marketValue: typeof row.marketValue === 'number' ? row.marketValue : null,
-            unrealizedPnl: typeof row.unrealizedPnl === 'number' ? row.unrealizedPnl : null,
-            unrealizedPnlPct: typeof row.unrealizedPnlPct === 'number' ? row.unrealizedPnlPct : null,
-            ...(useLivePreview ? { staleState: rowStaleState, source: previewSource } : { source: 'fixture' as const }),
-          };
+        const result = await portfolioApi.getValuation(portfolioId);
+        if (requestSeq !== valuationRequestSeq) return;
+
+        const newValuations: Record<string, PortfolioValuationRow> = {};
+        for (const row of result.rows) {
+          newValuations[row.positionId] = row;
         }
         state.positionValuations = newValuations;
-        const hasAny = Object.values(newValuations).some((v) => v.currentPrice !== null);
-        const allHave = rowsArr.length > 0 && Object.values(newValuations).every((v) => v.currentPrice !== null);
-        state.valuationStatus = allHave ? 'ready' : hasAny ? 'partial' : 'idle';
-        if (useMixedMockedFxPreview && !hasAny) {
-          state.valuationUiState = 'unavailable';
-          state.valuationMessage = '샘플 환율 미리보기 · 일부 종목 데이터 평가 불가';
-        } else if (mixedMockedFxPreviewActive && !useMixedMockedFxPreview) {
-          state.valuationMessage = '현재 포트폴리오는 혼합 통화 미리보기 조건을 충족하지 않습니다.';
-        } else if (ownerPreviewActive && !useLivePreview) {
-          state.valuationMessage = '현재 포트폴리오는 미리보기 조건을 충족하지 않습니다.';
-        } else if (useMixedMockedFxPreview) {
-          state.valuationMessage = '오너 미리보기 · Mocked FX · 실제 시세 아님';
-        } else if (useKrLivePreview) {
-          state.valuationMessage = '[Owner Preview] 조회 시점 기준 평가';
-        } else {
-          state.valuationMessage = 'Fixture 기준 평가값입니다.';
-        }
-      } catch {
-        state.valuationStatus = 'error';
-        state.valuationMessage = useMixedMockedFxPreview
-          ? '혼합 통화 미리보기를 불러오지 못했습니다.'
-          : useKrLivePreview
-          ? '연동 실패'
-          : '평가값을 불러오지 못해 등록 금액 기준 정보만 표시합니다.';
+        state.valuationTotals = result.totals;
+        state.valuationGeneratedAt = result.generatedAt;
+        state.valuationStaleState = result.staleState;
+        state.valuationState = result.state;
+        state.valuationMessage =
+          result.state === 'partial'
+            ? '지원 종목 기준 · 일부 종목은 평가할 수 없습니다.'
+            : result.state === 'unavailable'
+            ? '현재 평가할 수 있는 종목이 없습니다.'
+            : null;
+      } catch (error) {
+        if (requestSeq !== valuationRequestSeq) return;
+        state.valuationState = 'error';
+        state.valuationMessage = '평가값을 불러오지 못했습니다.';
       }
       renderPositions();
     };
@@ -1017,16 +751,11 @@ import Layout from '../layouts/Layout.astro';
       state.portfolioOrder = [];
       state.loading = false;
       state.positionValuations = {};
-      state.valuationStatus = 'idle';
+      state.valuationState = 'idle';
       state.valuationMessage = null;
-      state.valuationSource = 'fixture';
-      state.valuationPreviewMode = null;
-      state.valuationUiState = 'fixture';
+      state.valuationTotals = null;
+      state.valuationGeneratedAt = null;
       state.valuationStaleState = null;
-      state.missingQuoteSymbols = [];
-      state.unsupportedSymbols = [];
-      state.unsupportedCurrencySymbols = [];
-      state.mixedPreviewMeta = null;
       resetPortfolioForm();
       closePositionSheet();
       renderAll();
@@ -1271,7 +1000,6 @@ import Layout from '../layouts/Layout.astro';
         empty.classList.remove('hidden');
         wrap.classList.add('hidden');
         if (kpiEl) kpiEl.classList.add('hidden');
-        getElement<HTMLElement>('mixed-fx-preview-notice')?.classList.add('hidden');
         closePositionSheet();
         return;
       }
@@ -1286,36 +1014,24 @@ import Layout from '../layouts/Layout.astro';
       wrap.classList.toggle('hidden', state.positions.length === 0);
 
       const statusCopyEl = getElement<HTMLParagraphElement>('valuation-status-copy');
-      const mixedPreviewNoticeEl = getElement<HTMLElement>('mixed-fx-preview-notice');
-      const mixedPreviewSummaryEl = getElement<HTMLParagraphElement>('mixed-fx-preview-summary');
-      const mixedPreviewVisible =
-        state.valuationUiState === 'owner-mixed-mocked-fx-preview' ||
-        (state.valuationUiState === 'unavailable' && state.mixedPreviewMeta?.mixedCurrencyPreview === true);
-      if (mixedPreviewNoticeEl) {
-        mixedPreviewNoticeEl.classList.toggle('hidden', !mixedPreviewVisible);
-      }
-      if (mixedPreviewSummaryEl && state.mixedPreviewMeta) {
-        const { unavailableRows, rowCount, unsupportedCurrencyRows, missingQuoteRows, aggregateState } = state.mixedPreviewMeta;
-        mixedPreviewSummaryEl.textContent = aggregateState === null
-          ? `${rowCount}개 종목 중 ${unavailableRows}개 평가 불가 · 누락 시세 ${missingQuoteRows}개 · 미지원 통화 ${unsupportedCurrencyRows}개 · 합계 평가 불가`
-          : `${rowCount}개 종목 · 누락 시세 ${missingQuoteRows}개 · 미지원 통화 ${unsupportedCurrencyRows}개`;
-      }
       if (statusCopyEl) {
-        if (state.valuationStatus === 'loading') {
+        if (state.valuationState === 'loading') {
           statusCopyEl.hidden = false;
-          statusCopyEl.textContent = state.valuationUiState === 'owner-mixed-mocked-fx-preview'
-            ? '오너 미리보기 · 샘플 환율 평가값을 불러오는 중입니다.'
-            : state.valuationPreviewMode === 'owner'
-            ? '[Owner Preview] 조회 시점 기준 평가값을 불러오는 중입니다.'
-            : 'Fixture 기준 평가값을 불러오는 중입니다.';
+          statusCopyEl.textContent = '실시간 시세로 평가하는 중입니다.';
         } else if (state.valuationMessage) {
           statusCopyEl.hidden = false;
           statusCopyEl.textContent = state.valuationMessage;
+        } else if (state.valuationState === 'full' && state.valuationStaleState === 'stale-but-usable') {
+          statusCopyEl.hidden = false;
+          statusCopyEl.textContent = '최근 조회된 시세를 기준으로 표시합니다.';
         } else {
           statusCopyEl.hidden = true;
           statusCopyEl.textContent = '';
         }
       }
+
+      const refreshButton = getElement<HTMLButtonElement>('portfolio-refresh');
+      if (refreshButton) refreshButton.disabled = state.valuationState === 'loading';
 
       const sortedPositions = getSortedPositions();
       const totalCostBasis = sortedPositions.reduce((sum, p) => {
@@ -1348,21 +1064,19 @@ import Layout from '../layouts/Layout.astro';
         const pnlDisplay = posVal?.unrealizedPnl != null
           ? `${posVal.unrealizedPnl > 0 ? '+' : ''}${formatLocalAmount(position.currency, posVal.unrealizedPnl)}`
           : null;
-        const isLiveRow = state.valuationSource === 'live' && state.valuationPreviewMode === 'owner';
-        const isMixedPreviewRow = state.mixedPreviewMeta?.mixedCurrencyPreview === true;
-        const liveUnavailable = isLiveRow &&
-          (posVal?.staleState === 'unavailable' || posVal?.currentPrice == null || posVal?.marketValue == null);
-        const unavailableLabel = isMixedPreviewRow && state.unsupportedCurrencySymbols.includes(position.symbol)
-          ? '미지원 통화'
-          : isMixedPreviewRow && state.missingQuoteSymbols.includes(position.symbol)
-          ? '평가 불가'
-          : getStaleStateLabel(posVal?.staleState);
-        const currentPriceFinal = liveUnavailable ? '—' : (currentPriceDisplay ?? '연동 예정');
-        const marketValueFinal = liveUnavailable ? '—' : (marketValueDisplay ?? '연동 예정');
-        const pnlPctFinal = liveUnavailable ? '—' : (pnlPctDisplay ?? '연동 예정');
-        const pnlFinal = liveUnavailable ? '—' : (pnlDisplay ?? '연동 예정');
-        const staleBadgeHtml = (isLiveRow && (posVal?.staleState || liveUnavailable))
-          ? `<span class="valuation-stale-badge valuation-stale-badge--${escapeHtml(posVal?.staleState ?? 'unavailable')}">${escapeHtml(unavailableLabel)}</span>`
+        const isUnsupported = posVal?.supported === false;
+        const isUnavailable = posVal != null && !isUnsupported && (posVal.currentPrice == null || posVal.marketValue == null);
+        const unavailableLabel = posVal ? getUnsupportedReasonLabel(posVal.unsupportedReason) : '';
+        const currentPriceFinal = (isUnsupported || isUnavailable) ? '—' : (currentPriceDisplay ?? '평가 대기');
+        const marketValueFinal = (isUnsupported || isUnavailable) ? '—' : (marketValueDisplay ?? '평가 대기');
+        const pnlPctFinal = (isUnsupported || isUnavailable) ? '—' : (pnlPctDisplay ?? '평가 대기');
+        const pnlFinal = (isUnsupported || isUnavailable) ? '—' : (pnlDisplay ?? '평가 대기');
+        const staleBadgeHtml = isUnsupported
+          ? `<span class="valuation-stale-badge valuation-stale-badge--unavailable">${escapeHtml(unavailableLabel)}</span>`
+          : isUnavailable
+          ? `<span class="valuation-stale-badge valuation-stale-badge--unavailable">${escapeHtml(unavailableLabel)}</span>`
+          : posVal?.staleState
+          ? `<span class="valuation-stale-badge valuation-stale-badge--${escapeHtml(posVal.staleState)}">${escapeHtml(getStaleStateLabel(posVal.staleState))}</span>`
           : '';
         item.className = `position-card${aggregateSelected ? ' aggregate-position' : ''}`;
         item.innerHTML = `
@@ -1413,60 +1127,40 @@ import Layout from '../layouts/Layout.astro';
         list.appendChild(item);
       });
 
-      // KPI summary block
+      // KPI summary block (supported KR/KRW positions only; see valuationTotals contract)
       if (kpiEl) {
         if (sortedPositions.length === 0) {
           kpiEl.classList.add('hidden');
         } else {
-          const isLiveKpi = state.valuationSource === 'live' && state.valuationPreviewMode === 'owner';
-          const mixedAggregateUnavailable = state.mixedPreviewMeta?.aggregateState === null;
-          let totalMarketValue: number | null;
-          if (mixedAggregateUnavailable) {
-            totalMarketValue = null;
-          } else if (isLiveKpi) {
-            let kpiSum = 0;
-            let hasUnavailable = false;
-            for (const p of sortedPositions) {
-              const posVal = getPositionValuation(p);
-              if (posVal?.staleState === 'unavailable' || posVal?.marketValue == null) {
-                hasUnavailable = true;
-              } else {
-                kpiSum += Number.isFinite(posVal.marketValue) ? posVal.marketValue : 0;
-              }
-            }
-            totalMarketValue = hasUnavailable ? null : kpiSum;
-          } else {
-            totalMarketValue = sortedPositions.reduce((sum, p) => {
-              const posVal = getPositionValuation(p);
-              const mv = posVal?.marketValue ?? (p.buyPrice * p.quantity);
-              return sum + (Number.isFinite(mv) ? mv : 0);
-            }, 0);
-          }
-          const kpiCurrency = ((aggregateSelected
-            ? sortedPositions[0]?.currency
-            : (portfolio!.baseCurrency || sortedPositions[0]?.currency)) ?? 'USD') as 'USD' | 'KRW';
+          const totals = state.valuationTotals;
+          const isPartial = state.valuationState === 'partial';
+          const isUnavailableState = state.valuationState === 'unavailable';
+          const totalMarketValue = totals?.supportedMarketValue ?? null;
           const kpiValueEl = kpiEl.querySelector<HTMLElement>('.kpi-value');
           const kpiProfitEl = kpiEl.querySelector<HTMLElement>('.kpi-profit');
           const kpiLabelEl = kpiEl.querySelector<HTMLElement>('.kpi-label');
           if (kpiLabelEl) {
-            kpiLabelEl.textContent = mixedAggregateUnavailable ? '평가 불가' : '총 자산';
+            kpiLabelEl.textContent = isPartial ? '지원 종목 기준 총 자산' : isUnavailableState ? '평가 불가' : '총 자산';
           }
           if (kpiValueEl) {
             kpiValueEl.textContent = totalMarketValue == null
               ? '—'
-              : formatLocalAmount(kpiCurrency, totalMarketValue);
+              : formatLocalAmount('KRW', totalMarketValue);
           }
           if (kpiProfitEl) {
-            if (totalMarketValue == null) {
-              kpiProfitEl.textContent = mixedAggregateUnavailable
-                ? '일부 종목 데이터 평가 불가 · 합계와 손익을 표시하지 않습니다.'
+            if (totalMarketValue == null || totals == null) {
+              kpiProfitEl.textContent = isUnavailableState
+                ? '평가 가능한 국내 종목이 없습니다.'
                 : '—';
               kpiProfitEl.className = 'kpi-profit neutral';
             } else {
-              const totalPnl = totalMarketValue - totalCostBasis;
-              const totalPnlPct = totalCostBasis > 0 ? (totalPnl / totalCostBasis) * 100 : 0;
+              const totalPnl = totals.supportedUnrealizedPnl ?? 0;
+              const totalPnlPct = totals.supportedUnrealizedPnlPct ?? 0;
               const sign = totalPnl >= 0 ? '+' : '';
-              kpiProfitEl.textContent = `${sign}${formatLocalAmount(kpiCurrency, totalPnl)}(${sign}${totalPnlPct.toFixed(2)}%) 총 수익`;
+              const coverageNote = isPartial
+                ? ` · 제외 ${totals.unsupportedPositionCount + totals.unavailableQuoteCount}개`
+                : '';
+              kpiProfitEl.textContent = `${sign}${formatLocalAmount('KRW', totalPnl)}(${sign}${totalPnlPct.toFixed(2)}%) 총 수익${coverageNote}`;
               kpiProfitEl.className = `kpi-profit ${totalPnl > 0 ? 'positive' : totalPnl < 0 ? 'negative' : 'neutral'}`;
             }
           }
@@ -1859,42 +1553,6 @@ import Layout from '../layouts/Layout.astro';
   </script>
 
   <style>
-    .mixed-fx-preview-notice {
-      min-width: 0;
-      max-width: 100%;
-      margin-top: 0.75rem;
-      padding: 0.75rem 0.875rem;
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--primary);
-      border-radius: 6px;
-      background: var(--surface-muted);
-      color: var(--text-muted);
-    }
-    .mixed-fx-preview-notice p {
-      margin: 0.3rem 0 0;
-      font-size: 0.72rem;
-      line-height: 1.45;
-      overflow-wrap: anywhere;
-    }
-    .mixed-fx-preview-labels {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.35rem;
-      min-width: 0;
-    }
-    .mixed-fx-preview-labels strong,
-    .mixed-fx-preview-labels span {
-      padding: 0.18rem 0.42rem;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--surface);
-      color: var(--text);
-      font-size: 0.65rem;
-      font-weight: 800;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
     .valuation-stale-badge {
       display: block;
       font-size: 0.6rem;
