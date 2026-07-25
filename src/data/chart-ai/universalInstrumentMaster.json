@@ -2,7 +2,7 @@
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
   "masterVersion": "hf3b-hf2-kis-16038",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-07-24",
+  "sourceAsOf": "2026-07-25",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -56018,8 +56018,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "bdvg",
-        "litman gregory fds tr imgp berkshire dividend growth etf"
+        "bdvg"
       ],
       "active": true
     },
@@ -64534,8 +64533,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "dbmf",
-        "litman gregory fds tr imgp dbi managed futures strategy etf"
+        "dbmf"
       ],
       "active": true
     },
@@ -100753,7 +100751,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "litman gregory fds tr polen capital china growth etf",
         "pcce"
       ],
       "active": true
@@ -100819,7 +100816,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "litman gregory fds tr polen capital global growth etf",
         "pcgg"
       ],
       "active": true
@@ -100859,7 +100855,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "litman gregory fds tr polen capital international growth etf",
         "pcig"
       ],
       "active": true
@@ -159837,7 +159832,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "grandstand limited",
         "grsd"
       ],
       "active": true
@@ -203666,7 +203660,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "velos acquisition i corp",
         "vlos"
       ],
       "active": true
@@ -203680,7 +203673,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "velos acquisition i corp units 1 com & 1/2 wt exp",
         "vlosu"
       ],
       "active": true
