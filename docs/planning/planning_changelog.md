@@ -1,5 +1,32 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GI-HF2 - 2026-07-25
+
+### Table privilege lockdown (same PR #5, one new forward-only migration file)
+
+- Owner-reported: `20260724_user_retention_persistence.sql` applied to Production Supabase (`MK-STOCK-LAB`,
+  ref `mbiysqkxfpkpqarksrap`); live structural verification then found the `authenticated` role held unintended
+  `TRUNCATE`/`REFERENCES`/`TRIGGER` table privileges on both `public.user_preferences` and
+  `public.user_watchlist_items` — a gap RLS does not cover, since RLS governs row visibility, not table-level
+  privilege grants.
+- Added new file `supabase/migrations/20260725_user_retention_table_privilege_lockdown.sql` (the original
+  migration is untouched, byte-for-byte, and was not edited or reapplied): for each of the two tables, revokes
+  all privileges from `public`/`anon`/`authenticated`, re-grants only `SELECT, INSERT, UPDATE, DELETE` to
+  `authenticated`, and preserves full `service_role` access. No schema/RLS/trigger/constraint/data change.
+- Owner reports the HF2 migration applied to Production and verified live: `authenticated` retains
+  SELECT/INSERT/UPDATE/DELETE, TRUNCATE/REFERENCES/TRIGGER denied (an actual TRUNCATE attempt returned
+  permission denied), `anon` has no privileges, `service_role` fully preserved, both tables remain at 0 rows,
+  no new Security Advisor finding. Not independently re-verified in this session (no Supabase tool connected).
+- Tests: `smoke:phase-3gi-user-retention-persistence` unchanged at 35/35 (HF2 is pure SQL, no new TypeScript
+  logic); `check:phase-3gi-user-retention-persistence` grew from 130/130 to 149/149 with new assertions
+  confirming the exact revoke/grant shape, the absence of TRUNCATE/REFERENCES/TRIGGER, preserved
+  `service_role` access, and that the original migration file is unchanged. Also ran `npm ls --depth=0`,
+  `npm run build`, and `git diff --check` — all clean.
+- Merge of PR #5 to `main` and the resulting Git-integrated Production deployment follow as a separate,
+  explicitly Owner-authorized step in the same governing spec — see
+  `phase_3gi_user_retention_persistence_result_v0.1.md` §10 and the accompanying final report for the confirmed
+  outcome.
+
 ## Phase 3GI-HF1 - 2026-07-25
 
 ### Pre-migration contract hardening (same PR #5, no second migration file) — `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING`

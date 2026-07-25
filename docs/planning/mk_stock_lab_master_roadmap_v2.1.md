@@ -40,9 +40,11 @@ not describe Phase 3GH as `PRODUCTION_VERIFIED` in this document until an Owner 
 
 ## 2. Phase 3GI — User Retention and Persistence (this phase)
 
-Status label: `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING` (final classification recorded
-in `phase_3gi_user_retention_persistence_result_v0.1.md`; not `PRODUCTION_VERIFIED` — unmerged, and its new
-migration has intentionally not been applied anywhere).
+Status label: see `phase_3gi_user_retention_persistence_result_v0.1.md` for the current classification. Both
+the original migration (`20260724_user_retention_persistence.sql`) and the Phase 3GI-HF2 forward-only
+privilege-lockdown migration (`20260725_user_retention_table_privilege_lockdown.sql`) have been applied to
+Production Supabase (Owner-reported, applied externally via the Supabase Dashboard SQL Editor — not applied by
+this assistant, and not independently re-verified in this session since no Supabase tool was connected).
 
 - **Session restoration hardening**: explicit `persistSession`/`autoRefreshToken` on the Supabase client;
   a single profile-bootstrap per auth transition; no duplicate init on `TOKEN_REFRESHED`; UI state cleared on
@@ -60,9 +62,10 @@ migration has intentionally not been applied anywhere).
 - Exactly one new, additive, collision-free migration (`20260724_user_retention_persistence.sql`) creating
   `public.user_preferences` and `public.user_watchlist_items` with RLS — **intentionally not applied** by any
   means this phase; every server code path degrades silently (not an error) when the tables don't exist yet.
-- New tests: `smoke:phase-3gi-user-retention-persistence` (35/35) and
-  `check:phase-3gi-user-retention-persistence` (130/130), plus a full pre-existing regression gate re-run (see
-  `phase_3gi_user_retention_persistence_result_v0.1.md` for the complete list and non-blocking classifications).
+- New tests: `smoke:phase-3gi-user-retention-persistence` (35/35, unchanged by HF2 — HF2 adds no new
+  TypeScript logic) and `check:phase-3gi-user-retention-persistence` (149/149 after HF2's added assertions),
+  plus a full pre-existing regression gate re-run (see `phase_3gi_user_retention_persistence_result_v0.1.md`
+  for the complete list and non-blocking classifications).
 - **Phase 3GI-HF1 (pre-migration contract hardening, same PR, no second migration file)**: before the
   migration's first application anywhere, the still-unapplied `20260724_user_retention_persistence.sql` was
   edited in place to add a `lab` surface value (Home/Chart AI/Portfolio/Lab now all persist resume state) with
@@ -76,6 +79,18 @@ migration has intentionally not been applied anywhere).
   now includes the timeframe (a timeframe-only change on the same instrument still persists) and is recorded
   only after a successful write (a failed write stays retryable); a watchlist add/remove failure now shows
   sanitized Korean status feedback and preserves the pre-click toggle state instead of assuming success.
+- **Phase 3GI-HF2 (forward-only table privilege lockdown, applied after the original migration went live)**:
+  after the Owner applied `20260724_user_retention_persistence.sql` to Production Supabase, live structural
+  verification found the `authenticated` role held unintended `TRUNCATE`/`REFERENCES`/`TRIGGER` table
+  privileges on both `public.user_preferences` and `public.user_watchlist_items` — a gap RLS does not cover,
+  since RLS governs row visibility, not table-level privilege grants. Rather than edit the already-applied
+  migration, a second, strictly additive migration
+  (`supabase/migrations/20260725_user_retention_table_privilege_lockdown.sql`) revokes all privileges from
+  `public`/`anon`/`authenticated` on both tables, re-grants only `SELECT, INSERT, UPDATE, DELETE` to
+  `authenticated`, and preserves full `service_role` access — no schema, RLS, trigger, constraint, index, or
+  data change. The Owner reports this HF2 migration applied and TRUNCATE denial verified live (0 rows in
+  either table, no new Security Advisor finding). Not independently re-verified in this session (no Supabase
+  tool connected).
 
 ## 3. Explicitly deferred scope (not Phase 3GI, not Phase 3GH)
 
@@ -92,8 +107,8 @@ migration has intentionally not been applied anywhere).
 
 - **Phase 3GH — Portfolio Live Valuation MVP.** `MERGED_TO_MAIN` (PR #4, `64d58e9`). Production
   deployment/migration-application status is Owner-confirm. See §1a.
-- **Phase 3GI — User Retention and Persistence.** `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING`.
-  See §2.
+- **Phase 3GI — User Retention and Persistence, including HF2 privilege lockdown.** See
+  `phase_3gi_user_retention_persistence_result_v0.1.md` for the current classification. See §2.
 
 ### Next sequential product phases
 

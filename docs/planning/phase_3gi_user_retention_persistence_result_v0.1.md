@@ -4,14 +4,21 @@ Implements session restoration hardening, persistent cross-session resume state,
 authenticated end-to-end and degrading silently (never erroring) while its new migration is unapplied.
 **Explicitly not this phase:** any account/trading surface, quote polling, provider/KIS calls triggered by
 retention or watchlist features, Similarity/MK-Analysis triggering or usage-quota consumption from this
-surface, and persistence of any arbitrary/free-form URL. The new migration was **not applied** by any means,
-and no merge, no Production deploy, and no Production Supabase mutation were performed — all per explicit
-governing-spec instruction.
+surface, and persistence of any arbitrary/free-form URL.
+
+**Update (HF2):** the Owner has since reported that `20260724_user_retention_persistence.sql` was applied to
+Production Supabase, and that live verification found the `authenticated` role held unintended
+`TRUNCATE`/`REFERENCES`/`TRIGGER` table privileges on both new tables (a gap RLS does not cover). A second,
+forward-only migration, `20260725_user_retention_table_privilege_lockdown.sql`, was authored to revoke those
+privileges and re-grant only `SELECT, INSERT, UPDATE, DELETE` to `authenticated` — see §10. Neither migration's
+application was performed or independently re-verified by this assistant in-session (no Supabase tool
+connected); the Owner reports both applied and the privilege lockdown verified live.
 
 ## 1. Executive classification
 
-`IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING` (final value confirmed once push and Preview
-verification complete — see the accompanying final report).
+See the accompanying final report for the confirmed value (`PASS_PHASE_3GI_RETENTION_PERSISTENCE_PRODUCTION_RELEASE`
+or `MERGED_PRODUCTION_READY_OWNER_RETENTION_QA_PENDING`, both qualified with `DETAILED_QA_DEFERRED_BY_OWNER`,
+depending on authenticated-QA availability at merge time).
 
 ## 2. Product policy implemented
 
@@ -59,13 +66,15 @@ verification complete — see the accompanying final report).
   Analysis or consumes their daily usage quota — it stores only a market/symbol/name/asset-type identity, no
   price or analysis data.
 
-## 3. New migration — not applied
+## 3. New migration — Owner-reported applied to Production (see §10 for the HF2 follow-up)
 
 `supabase/migrations/20260724_user_retention_persistence.sql` — additive only (`CREATE TABLE`, RLS policies
 mirroring `public.portfolios`' `(select auth.uid()) = user_id` pattern, a `CHECK` constraint on `market`/
 `asset_type` enums, a foreign key from `user_watchlist_items`/`user_preferences.last_portfolio_id` to
 `public.portfolios`, reuse — not redefinition — of the existing `public.set_updated_at()` trigger function). No
-`DROP`/`DELETE`/`TRUNCATE`. **Not applied** to any Supabase project by this phase. Every server code path in
+`DROP`/`DELETE`/`TRUNCATE`. The Owner reports this migration applied to Production Supabase (`MK-STOCK-LAB`,
+ref `mbiysqkxfpkpqarksrap`), both tables existing with 0 rows — not independently re-verified in this session
+(no Supabase tool connected). Every server code path in
 `src/lib/server/userRetention.ts` detects a missing-table error (`isMissingRetentionTableError`: Postgres
 `42P01`, PostgREST `PGRST205`, or a bare "does not exist" message) and maps it to a sanitized
 `RETENTION_API_NOT_READY` (503) rather than surfacing a raw DB error — so every consuming UI surface degrades
@@ -159,10 +168,14 @@ checker's pattern. This is the same false positive already documented against th
 
 ## 8. Owner-only items (not performed by this phase)
 
-- Review and, if approved, apply `20260724_user_retention_persistence.sql`.
-- Authenticated Preview QA of the resume card, watchlist (Home + Chart AI), and Portfolio deep-link behavior.
-- Confirm the PR's Preview deployment reaches READY with no secret printed and Netlify Preview is not red.
-- Decide whether to merge the Phase 3GI PR.
+- ~~Review and, if approved, apply `20260724_user_retention_persistence.sql`.~~ Owner-reported applied.
+- ~~Author and apply the HF2 privilege-lockdown migration.~~ Repo-side HF2 migration file authored this phase
+  (§10); Owner reports it applied to Production and privilege lockdown verified live.
+- Authenticated Preview/Production QA of the resume card, watchlist (Home + Chart AI), and Portfolio deep-link
+  behavior remains Owner-pending (`DETAILED_QA_DEFERRED_BY_OWNER`) — not performed by this assistant (no
+  authenticated browser session available; credentials are never requested or entered).
+- Confirm Production Supabase migration/privilege state independently (this assistant has no connected
+  Supabase tool this session and relies on the Owner's reported verification).
 
 ## 9. Phase 3GI-HF1 — pre-migration contract hardening (same PR #5, no second migration file)
 
@@ -274,3 +287,72 @@ branch/PR. **Not** a new phase, branch, or PR; the migration is still not applie
 No second migration file. Migration not applied. No merge. No Production deploy. No Production Supabase
 mutation. No new branch or PR — same `feature/phase-3gi-user-retention-persistence` branch, same PR #5, one
 additional commit (`Phase 3GI-HF1: harden retention persistence contracts`).
+
+## 10. Phase 3GI-HF2 — table privilege lockdown (same PR #5, one new forward-only migration file)
+
+Landed 2026-07-25, after the Owner reported the original migration applied to Production and a live
+privilege-scan finding.
+
+### 10a. The finding
+
+With `20260724_user_retention_persistence.sql` applied, the Owner's live structural verification found the
+`authenticated` role held `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges on both `public.user_preferences`
+and `public.user_watchlist_items` — an artifact of PostgreSQL's default table-level grants, which RLS does not
+restrict (RLS governs row visibility for `SELECT`/`INSERT`/`UPDATE`/`DELETE`, not table-level privilege grants
+such as `TRUNCATE`). This is a real production security gap: any authenticated user could truncate either
+table outright, bypassing RLS entirely.
+
+### 10b. The fix — forward-only, not an edit to the applied migration
+
+New file `supabase/migrations/20260725_user_retention_table_privilege_lockdown.sql` — the original
+`20260724_user_retention_persistence.sql` is byte-for-byte unchanged (verified via `git diff --stat`). For each
+of the two tables the HF2 migration:
+
+- `revoke all privileges on table public.<table> from public, anon, authenticated;`
+- `grant select, insert, update, delete on table public.<table> to authenticated;`
+- `grant all privileges on table public.<table> to service_role;`
+
+No schema, RLS policy, trigger, constraint, index, or data change; no dynamic SQL; no auth user IDs or
+environment references; targets only the two retention tables.
+
+### 10c. Owner-reported live verification (not independently re-verified in-session)
+
+Applied to Production Supabase `MK-STOCK-LAB` (ref `mbiysqkxfpkpqarksrap`). Reported: `authenticated` retains
+`SELECT`/`INSERT`/`UPDATE`/`DELETE`; `TRUNCATE`/`REFERENCES`/`TRIGGER` denied (an actual `TRUNCATE` attempt
+returned permission denied); `anon` has no privileges; `service_role` privileges fully preserved; both tables
+remain at 0 rows; no new Security Advisor finding for either table; Performance Advisor notes (missing FK
+covering index on `user_preferences.last_portfolio_id`, an unused index on `user_watchlist_items`) are
+non-blocking INFO, not remediated in HF2.
+
+### 10d. Tests
+
+- `scripts/phase_3gi_user_retention_persistence_testsrc.ts` /
+  `scripts/smoke_phase_3gi_user_retention_persistence.mjs`: unchanged at **35/35** — HF2 is pure SQL privilege
+  grants with no new TypeScript logic to unit-test.
+- `scripts/check_phase_3gi_user_retention_persistence_contract.mjs`: grew from 130/130 to **149/149** — new
+  "Group 2b" assertions confirm: exactly one HF2 migration file exists; the original migration is unchanged;
+  HF2 targets only the two retention tables; it revokes all privileges from `public`/`anon`/`authenticated`
+  before re-granting; it grants exactly `SELECT, INSERT, UPDATE, DELETE` to `authenticated`; it never grants
+  `TRUNCATE`/`REFERENCES`/`TRIGGER`; it preserves full `service_role` access; and it makes no RLS, schema,
+  destructive, data, or schema-wide-grant change.
+
+### 10e. Regression gate re-run
+
+| Gate | Result | Notes |
+|---|---|---|
+| `smoke:phase-3gi-user-retention-persistence` | 35/35 PASS | unchanged |
+| `check:phase-3gi-user-retention-persistence` | 149/149 PASS | grew from 130/130 |
+| `npm ls --depth=0` | clean | no dependency issues |
+| `npm run build` | clean | Astro + Vite build completed, no errors |
+| `git diff --check` | clean (exit 0) | only benign LF→CRLF line-ending notice |
+
+No other regression gates were re-run for HF2 since the change is scoped to a single new SQL file and static
+checker assertions with no server/client code touched.
+
+### 10f. Scope discipline
+
+Exactly one new migration file. The original migration file is untouched. No edit to migration history. No
+Supabase DDL executed by this assistant. No merge performed by this hotfix step itself (merge follows as a
+separate, explicitly authorized step in the same governing spec — see the accompanying final report). Same
+`feature/phase-3gi-user-retention-persistence` branch, same PR #5, one additional commit (`Phase 3GI-HF2: lock
+down retention table privileges`).

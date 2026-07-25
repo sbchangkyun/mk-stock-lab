@@ -49,6 +49,10 @@ const migrationFiles = existsSync(MIGRATIONS_DIR)
   ? readdirSync(MIGRATIONS_DIR).filter((name) => name.endsWith('user_retention_persistence.sql'))
   : [];
 const migration = migrationFiles.length === 1 ? readOr(join(MIGRATIONS_DIR, migrationFiles[0])) : '';
+const hf2MigrationFiles = existsSync(MIGRATIONS_DIR)
+  ? readdirSync(MIGRATIONS_DIR).filter((name) => name.endsWith('user_retention_table_privilege_lockdown.sql'))
+  : [];
+const hf2Migration = hf2MigrationFiles.length === 1 ? readOr(join(MIGRATIONS_DIR, hf2MigrationFiles[0])) : '';
 const server = readOr(SERVER_LIB);
 const routeRetention = readOr(ROUTE_RETENTION);
 const routePreferences = readOr(ROUTE_PREFERENCES);
@@ -129,6 +133,46 @@ for (const table of ['user_preferences', 'user_watchlist_items']) {
   check(`${table}: policies scope to (select auth.uid()) = user_id (initplan-cached form)`,
     (migration.match(new RegExp(`${table}[\\s\\S]{0,400}?\\(select auth\\.uid\\(\\)\\) = user_id`, 'g')) || []).length >= 1);
 }
+
+// ---------------------------------------------------------------------------
+// Group 2b: HF2 forward-only privilege lockdown migration
+// ---------------------------------------------------------------------------
+log('--- Group 2b: HF2 table privilege lockdown migration ---');
+check('exactly one HF2 privilege-lockdown migration file exists', hf2MigrationFiles.length === 1);
+check('no second privilege-lockdown migration exists', hf2MigrationFiles.length <= 1);
+check('the original 20260724 migration filename is unchanged (no HF2 content merged into it)',
+  migrationFiles.length === 1 && migrationFiles[0] === '20260724_user_retention_persistence.sql' &&
+  !migration.includes('revoke all privileges on table public.user_preferences from public, anon, authenticated'));
+check('HF2 migration is ordered after the original migration by filename date (20260725 > 20260724)',
+  hf2MigrationFiles.length === 1 && hf2MigrationFiles[0] > '20260724_user_retention_persistence.sql');
+check('HF2 targets only public.user_preferences and public.user_watchlist_items',
+  hf2Migration.length > 0 &&
+  (hf2Migration.match(/on table public\.\w+/g) || []).every((ref) =>
+    ref === 'on table public.user_preferences' || ref === 'on table public.user_watchlist_items'));
+check('HF2 revokes ALL privileges from public on both tables',
+  hf2Migration.includes('revoke all privileges on table public.user_preferences from public, anon, authenticated') &&
+  hf2Migration.includes('revoke all privileges on table public.user_watchlist_items from public, anon, authenticated'));
+check('HF2 revokes ALL privileges from anon on both tables (same revoke statement covers anon)',
+  hf2Migration.includes('from public, anon, authenticated'));
+check('HF2 revokes ALL privileges from authenticated before re-granting only DML',
+  (hf2Migration.match(/from public, anon, authenticated/g) || []).length === 2);
+check('HF2 grants exactly select, insert, update, delete to authenticated on user_preferences',
+  hf2Migration.includes('grant select, insert, update, delete on table public.user_preferences to authenticated'));
+check('HF2 grants exactly select, insert, update, delete to authenticated on user_watchlist_items',
+  hf2Migration.includes('grant select, insert, update, delete on table public.user_watchlist_items to authenticated'));
+check('HF2 never grants TRUNCATE', !/truncate/i.test(hf2Migration));
+check('HF2 never grants REFERENCES', !/\breferences\b/i.test(hf2Migration));
+check('HF2 never grants TRIGGER', !/trigger/i.test(hf2Migration));
+check('HF2 preserves full service_role privileges on both tables',
+  hf2Migration.includes('grant all privileges on table public.user_preferences to service_role') &&
+  hf2Migration.includes('grant all privileges on table public.user_watchlist_items to service_role'));
+check('HF2 does not modify RLS policies or row-level security state', !/policy|row level security/i.test(hf2Migration));
+check('HF2 does not modify constraints, columns, or run any ALTER TABLE', !/alter table|constraint/i.test(hf2Migration));
+check('HF2 contains no destructive DROP', !/drop\s/i.test(hf2Migration));
+check('HF2 contains no data mutation (only privilege grant/revoke statements)',
+  !/insert into|update\s+\w+\s+set|delete from/i.test(hf2Migration));
+check('HF2 contains no schema-wide grant (scoped to the two named tables only)',
+  !/on all tables in schema|on schema public to/i.test(hf2Migration));
 
 // ---------------------------------------------------------------------------
 // Group 3: Server module — auth boundary, sanitized missing-table mapping, limits
