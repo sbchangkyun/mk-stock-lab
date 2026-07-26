@@ -115,6 +115,10 @@ check('exports computeTrendVsSma60Pct', metrics.includes('export const computeTr
 check('exports aggregateWeightedBreadth', metrics.includes('export const aggregateWeightedBreadth'));
 check('exports meetsMinimumRenderThreshold', metrics.includes('export const meetsMinimumRenderThreshold'));
 check('exports classifyOverallFreshness', metrics.includes('export const classifyOverallFreshness'));
+check('classifyOverallFreshness accepts a cachedCount 4th parameter (spec section 7)',
+  /classifyOverallFreshness\s*=\s*\([\s\S]{0,220}cachedCount:\s*number/.test(metrics));
+check('classifyOverallFreshness precedence never classifies cached data as fresh',
+  /if\s*\(cachedCount > 0\) return ['"]cached['"];\s*return ['"]fresh['"];/.test(metrics));
 check('module has zero fetch/network calls (pure calc only)', !/\bfetch\s*\(/.test(metrics));
 
 // ---------------------------------------------------------------------------
@@ -135,7 +139,7 @@ check('module has zero fetch/network calls (pure formatting only)', !/\bfetch\s*
 // ---------------------------------------------------------------------------
 log('--- Group 5: Server orchestration boundary ---');
 check('service reuses fetchLongHistoryOhlcv (shared cached OHLCV orchestration)',
-  service.includes("import { fetchLongHistoryOhlcv } from '../chart-ai/universalOhlcvProvider'"));
+  /import\s*\{[^}]*\bfetchLongHistoryOhlcv\b[^}]*\}\s*from\s*['"]\.\.\/chart-ai\/universalOhlcvProvider['"]/.test(service));
 check('service reuses findUniversalInstrument (shared instrument resolver)',
   service.includes("import { findUniversalInstrument } from '../chart-ai/universal-instrument-search.mjs'"));
 check('service never imports the KIS transport client directly',
@@ -161,6 +165,28 @@ check('a failed constituent is marked unresolved/unavailable, never silently coe
   /status:\s*['"]unresolved['"]/.test(service) && /periodReturnPct:\s*null/.test(service));
 check('getMarketOverview only resolves the four registry benchmark proxies, never a client symbol',
   /getMarketOverview\s*=\s*async[\s\S]{0,900}mapWithConcurrency\(MARKET_TRACKED_UNIVERSES/.test(service));
+check('closed status enum includes insufficient-history (transport ok, metric unavailable) — spec section 6',
+  /status:\s*['"]ok['"]\s*\|\s*['"]unresolved['"]\s*\|\s*['"]unavailable['"]\s*\|\s*['"]insufficient-history['"]/.test(service));
+check('valid coverage requires periodReturnPct !== null, never merely a successful transport (spec section 6)',
+  /hasValidPeriodReturn\s*=\s*metrics\.periodReturnPct\s*!==\s*null/.test(service) &&
+  /status\s*=\s*hasValidPeriodReturn\s*\?\s*['"]ok['"]\s*:\s*['"]insufficient-history['"]/.test(service));
+check('breadth exposes commonAsOf (renamed from latestAsOf) — spec section 8', service.includes('commonAsOf'));
+check('service never reintroduces the old latestAsOf field name', !service.includes('latestAsOf'));
+check('commonAsOf is computed as the MINIMUM/oldest valid as-of date, never the max/latest (spec section 8)',
+  /validAsOfDates\.slice\(\)\.sort\(\)\[0\]/.test(service) && !/\.sort\(\)\[[a-zA-Z.]*length\s*-\s*1\]/.test(service.slice(service.indexOf('commonAsOf'))));
+check('service defines an allFailuresRateLimited helper distinguishing pure rate-limit failure from generic unavailability (spec section 5)',
+  service.includes('const allFailuresRateLimited'));
+check('both getMarketDashboard and getMarketOverview route a zero-successful-count result through allFailuresRateLimited',
+  (service.match(/allFailuresRateLimited\(/g) || []).length >= 2);
+check('service threads a sanitized, per-request ConstituentDiagnostic[] (no symbols/tokens) — spec section 4',
+  (() => {
+    const match = /export type ConstituentDiagnostic = \{([\s\S]*?)\};/.exec(service);
+    return !!match && !/symbol|token/i.test(match[1]);
+  })());
+check('service logs one sanitized aggregate diagnostic summary per request via logDiagnosticSummary (spec section 4)',
+  service.includes('const logDiagnosticSummary') && (service.match(/logDiagnosticSummary\(/g) || []).length >= 3);
+check('diagnostic log line never includes a raw symbol or provider token/secret field',
+  /logDiagnosticSummary[\s\S]{0,1400}console\.log/.test(service) && !/console\.log\([\s\S]{0,400}(token|secret|symbol:)/i.test(service));
 
 // ---------------------------------------------------------------------------
 // Group 6: Production/Preview gating wiring
@@ -211,9 +237,10 @@ check('routes never call a KIS transport function directly (readiness check only
 // Group 8: Client UI — single request on load, explicit-refresh-only, no polling
 // ---------------------------------------------------------------------------
 log('--- Group 8: Client UI behavior ---');
-check('LiveMarketDashboard has no setInterval / polling loop', !liveDashboard.includes('setInterval'));
+check('LiveMarketDashboard has no data-polling setInterval (only the refresh-cooldown UI ticker is allowed — spec section 12)',
+  !/setInterval\(\s*(?:loadOverview|loadDashboard|fetchJsonCached)\b/.test(liveDashboard));
 check('LiveMarketDashboard has no auto-retry / recursive refresh timer', !/setTimeout\(\s*load(Dashboard|Overview)/.test(liveDashboard));
-check('LiveMarketDashboard fetches overview exactly once via a dedicated loader', liveDashboard.includes("fetch('/api/market/overview.json"));
+check('LiveMarketDashboard fetches overview exactly once via a dedicated cached loader', liveDashboard.includes("'/api/market/overview.json?period=1d'"));
 check('LiveMarketDashboard fetches the dashboard via a dedicated loader keyed by universe+period',
   liveDashboard.includes('/api/market/dashboard.json?universe='));
 check('LiveMarketDashboard refresh is gated by explicit tab click listeners',
@@ -227,6 +254,26 @@ check('LiveMarketDashboard never labels a proxy as the exact index/현재가',
   !/지수\s*현재가|실시간\s*값/.test(liveDashboard));
 check('LiveMarketDashboard preserves the MarketLiveQuoteCard integration (out of scope, untouched)',
   liveDashboard.includes('MarketLiveQuoteCard') && liveDashboard.includes('KIS_ENABLE_MARKET_QUOTE_CARD'));
+check('LiveMarketDashboard never claims real-time OHLCV/market-data/return terminology (spec section 9)',
+  !/실시간\s*OHLCV|실시간\s*시장\s*데이터|실시간\s*수익률/.test(liveDashboard));
+check('LiveMarketDashboard implements a browser-memory response cache with a >=60s TTL (spec section 10)',
+  liveDashboard.includes('CACHE_TTL_MS = 60_000') && liveDashboard.includes('responseCache'));
+check('LiveMarketDashboard dedups in-flight requests via an inFlightRequests map (spec section 10)',
+  liveDashboard.includes('inFlightRequests'));
+check('LiveMarketDashboard never persists the response cache to localStorage (spec section 10)',
+  !/localStorage\.(?:setItem|getItem|removeItem)|window\.localStorage/.test(liveDashboard));
+check('LiveMarketDashboard overview cache is keyed independently of the dashboard cache',
+  liveDashboard.includes("fetchJsonCached('overview:1d'") && /fetchJsonCached\(cacheKey/.test(liveDashboard));
+check('LiveMarketDashboard dashboard cache key is scoped by universeId and period (spec section 10)',
+  /cacheKey\s*=\s*`dashboard:\$\{universeId\}:\$\{period\}`/.test(liveDashboard));
+check('LiveMarketDashboard sequences the initial overview and dashboard requests instead of firing them concurrently (spec section 11)',
+  /await loadOverview\(\);[\s\S]{0,200}await loadDashboard\(/.test(liveDashboard));
+check('LiveMarketDashboard exposes exactly one explicit refresh control (spec section 12)',
+  (liveDashboard.match(/data-market-refresh-button/g) || []).length >= 2);
+check('LiveMarketDashboard enforces a >=30s refresh cooldown (spec section 12)',
+  liveDashboard.includes('REFRESH_COOLDOWN_MS = 30_000'));
+check('LiveMarketDashboard refresh handler bypasses only the client-side cache, never a server cache-bypass query param',
+  !/[?&](forceRefresh|bypassCache|refresh)=/i.test(liveDashboard) && /loadOverview\(true\)/.test(liveDashboard) && /loadDashboard\([^)]*,\s*true\)/.test(liveDashboard));
 
 log('--- Group 8b: Home live market snapshot ---');
 check('HomeLiveMarketSnapshot has no setInterval / polling loop', !homeSnapshot.includes('setInterval'));

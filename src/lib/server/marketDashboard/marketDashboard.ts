@@ -19,7 +19,7 @@ import {
   type BenchmarkProxy,
 } from '../../../data/marketTrackedUniverses';
 import { findUniversalInstrument } from '../chart-ai/universal-instrument-search.mjs';
-import { fetchLongHistoryOhlcv } from '../chart-ai/universalOhlcvProvider';
+import { fetchLongHistoryOhlcv, OHLCV_SANITIZED_ERROR_CODES } from '../chart-ai/universalOhlcvProvider';
 import {
   computeConstituentMetrics,
   aggregateWeightedBreadth,
@@ -98,6 +98,12 @@ const classifyResultFreshness = (result: LongHistoryResult, nowMs: number): Fres
 const extractCloses = (result: LongHistoryResult): number[] =>
   result.ok ? result.candles.map((candle) => candle.close).filter((close) => Number.isFinite(close) && close > 0) : [];
 
+/**
+ * 'ok' means a real, usable periodReturnPct was computed -- not merely that the OHLCV fetch
+ * succeeded. 'insufficient-history' is the closed state for "transport succeeded but the selected
+ * period's metric could not be computed" (too little history, malformed closes, no usable period
+ * base close); it never counts toward valid coverage (Phase 3GJ-HF1 spec section 6).
+ */
 export type ResolvedConstituentMetrics = {
   symbol: string;
   country: 'KR' | 'US';
@@ -105,12 +111,22 @@ export type ResolvedConstituentMetrics = {
   displayName?: string;
   sector: string;
   relativeWeight: number;
-  status: 'ok' | 'unresolved' | 'unavailable';
+  status: 'ok' | 'unresolved' | 'unavailable' | 'insufficient-history';
   periodReturnPct: number | null;
   momentum20dPct: number | null;
   trendVsSma60Pct: number | null;
   asOf: string | null;
   freshness: FreshnessState;
+  /** Sanitized transport-level error code (set only when status is 'unavailable'); never the raw provider code. */
+  providerErrorCode?: string;
+};
+
+export type ConstituentDiagnostic = {
+  country: 'KR' | 'US';
+  status: ResolvedConstituentMetrics['status'];
+  providerErrorCode?: string;
+  pagesFetched?: number;
+  cacheState?: string;
 };
 
 const resolveAndComputeConstituent = async (
@@ -118,6 +134,7 @@ const resolveAndComputeConstituent = async (
   period: MarketDashboardPeriodId,
   deps: MarketDashboardDeps,
   allowProductionMarketDashboardLiveData: boolean,
+  diagnostics?: ConstituentDiagnostic[],
 ): Promise<ResolvedConstituentMetrics> => {
   const base = {
     symbol: constituent.symbol,
@@ -130,6 +147,7 @@ const resolveAndComputeConstituent = async (
 
   const instrument = deps.findUniversalInstrument(constituent.symbol, constituent.country);
   if (!instrument) {
+    diagnostics?.push({ country: constituent.country, status: 'unresolved' });
     return { ...base, status: 'unresolved', periodReturnPct: null, momentum20dPct: null, trendVsSma60Pct: null, asOf: null, freshness: 'unavailable' };
   }
 
@@ -142,20 +160,77 @@ const resolveAndComputeConstituent = async (
   const nowMs = deps.now();
   const freshness = classifyResultFreshness(result, nowMs);
   if (freshness === 'unavailable') {
-    return { ...base, status: 'unavailable', periodReturnPct: null, momentum20dPct: null, trendVsSma60Pct: null, asOf: null, freshness };
+    const providerErrorCode = result.ok ? undefined : result.sanitizedErrorCode;
+    diagnostics?.push({
+      country: constituent.country,
+      status: 'unavailable',
+      providerErrorCode,
+      pagesFetched: result.pagesFetched,
+      cacheState: result.cacheState,
+    });
+    return { ...base, status: 'unavailable', periodReturnPct: null, momentum20dPct: null, trendVsSma60Pct: null, asOf: null, freshness, ...(providerErrorCode ? { providerErrorCode } : {}) };
   }
 
   const closes = extractCloses(result);
   const metrics = computeConstituentMetrics(closes, period);
+  const hasValidPeriodReturn = metrics.periodReturnPct !== null && Number.isFinite(metrics.periodReturnPct);
+  const status = hasValidPeriodReturn ? 'ok' : 'insufficient-history';
+  diagnostics?.push({ country: constituent.country, status, pagesFetched: result.pagesFetched, cacheState: result.cacheState });
   return {
     ...base,
-    status: 'ok',
+    status,
     periodReturnPct: metrics.periodReturnPct,
     momentum20dPct: metrics.momentum20dPct,
     trendVsSma60Pct: metrics.trendVsSma60Pct,
     asOf: result.historyRange?.end ?? null,
     freshness,
   };
+};
+
+const logDiagnosticSummary = (
+  route: 'dashboard' | 'overview',
+  universeId: string | null,
+  period: string | null,
+  diagnostics: ConstituentDiagnostic[],
+): void => {
+  const byStatus: Record<string, number> = {};
+  const byErrorCode: Record<string, number> = {};
+  const byCacheState: Record<string, number> = {};
+  let krTotal = 0;
+  let krOk = 0;
+  let usTotal = 0;
+  let usOk = 0;
+  let pagesFetchedTotal = 0;
+  for (const d of diagnostics) {
+    byStatus[d.status] = (byStatus[d.status] ?? 0) + 1;
+    if (d.providerErrorCode) byErrorCode[d.providerErrorCode] = (byErrorCode[d.providerErrorCode] ?? 0) + 1;
+    if (d.cacheState) byCacheState[d.cacheState] = (byCacheState[d.cacheState] ?? 0) + 1;
+    if (typeof d.pagesFetched === 'number') pagesFetchedTotal += d.pagesFetched;
+    if (d.country === 'KR') {
+      krTotal += 1;
+      if (d.status === 'ok') krOk += 1;
+    } else if (d.country === 'US') {
+      usTotal += 1;
+      if (d.status === 'ok') usOk += 1;
+    }
+  }
+  // Sanitized, aggregate-only diagnostic (Phase 3GJ-HF1 spec section 4): no symbols, no tokens, no
+  // raw provider payloads -- only closed-enum statuses/codes and counts, safe for Vercel runtime logs.
+  console.log(
+    '[market-dashboard-diag]',
+    JSON.stringify({ route, universeId, period, total: diagnostics.length, byStatus, byErrorCode, byCacheState, pagesFetchedTotal, kr: { total: krTotal, ok: krOk }, us: { total: usTotal, ok: usOk } }),
+  );
+};
+
+/**
+ * True only when every non-'ok' member failed specifically because the provider rate-limited the
+ * request (Phase 3GJ-HF1 spec section 5) -- lets a zero-successful-count result surface the honest
+ * PROVIDER_RATE_LIMITED code instead of the generic MARKET_DATA_UNAVAILABLE when that is the true cause.
+ */
+const allFailuresRateLimited = (members: ResolvedConstituentMetrics[]): boolean => {
+  const failed = members.filter((member) => member.status !== 'ok');
+  if (failed.length === 0) return false;
+  return failed.every((member) => member.providerErrorCode === OHLCV_SANITIZED_ERROR_CODES.PROVIDER_RATE_LIMITED);
 };
 
 export type MarketSectorSummary = {
@@ -213,7 +288,12 @@ export type MarketBreadthSummary = {
   medianPeriodReturnPct: number | null;
   strongestSector: string | null;
   weakestSector: string | null;
-  latestAsOf: string | null;
+  /**
+   * The OLDEST as-of date among valid (status 'ok') constituents -- a date every displayed
+   * constituent's metric can honestly be said to share, not the most-recent individual date
+   * (Phase 3GJ-HF1 spec section 8). Never the maximum/latest date.
+   */
+  commonAsOf: string | null;
 };
 
 const buildBreadthSummary = (
@@ -232,8 +312,11 @@ const buildBreadthSummary = (
     .filter((sector) => sector.weightedPeriodReturnPct !== null)
     .sort((a, b) => (b.weightedPeriodReturnPct as number) - (a.weightedPeriodReturnPct as number));
 
-  const asOfDates = constituents.map((member) => member.asOf).filter((value): value is string => typeof value === 'string');
-  const latestAsOf = asOfDates.length > 0 ? asOfDates.sort().reverse()[0] : null;
+  const validAsOfDates = constituents
+    .filter((member) => member.status === 'ok')
+    .map((member) => member.asOf)
+    .filter((value): value is string => typeof value === 'string');
+  const commonAsOf = validAsOfDates.length > 0 ? validAsOfDates.slice().sort()[0] : null;
 
   return {
     requestedCount: constituents.length,
@@ -247,7 +330,7 @@ const buildBreadthSummary = (
     medianPeriodReturnPct: summary.medianPeriodReturnPct,
     strongestSector: rankedSectors.length > 0 ? rankedSectors[0].sector : null,
     weakestSector: rankedSectors.length > 0 ? rankedSectors[rankedSectors.length - 1].sector : null,
-    latestAsOf,
+    commonAsOf,
   };
 };
 
@@ -304,19 +387,23 @@ export const getMarketDashboard = async (
   }
 
   const allow = input.allowProductionMarketDashboardLiveData === true;
+  const diagnostics: ConstituentDiagnostic[] = [];
   const constituents = await mapWithConcurrency(universe.constituents, CONCURRENCY_LIMIT, (constituent) =>
-    resolveAndComputeConstituent(constituent, periodCandidate, resolvedDeps, allow),
+    resolveAndComputeConstituent(constituent, periodCandidate, resolvedDeps, allow, diagnostics),
   );
 
   const requestedCount = constituents.length;
   const successfulCount = constituents.filter((c) => c.status === 'ok').length;
 
   if (!meetsMinimumRenderThreshold(successfulCount, requestedCount)) {
+    logDiagnosticSummary('dashboard', universe.id, periodCandidate, diagnostics);
     return unavailableDashboardResult(
       universe.id,
       periodCandidate,
       successfulCount === 0
-        ? MARKET_DASHBOARD_SANITIZED_ERROR_CODES.MARKET_DATA_UNAVAILABLE
+        ? (allFailuresRateLimited(constituents)
+            ? MARKET_DASHBOARD_SANITIZED_ERROR_CODES.PROVIDER_RATE_LIMITED
+            : MARKET_DASHBOARD_SANITIZED_ERROR_CODES.MARKET_DATA_UNAVAILABLE)
         : MARKET_DASHBOARD_SANITIZED_ERROR_CODES.MARKET_DATA_PARTIAL_BELOW_THRESHOLD,
     );
   }
@@ -324,7 +411,9 @@ export const getMarketDashboard = async (
   const sectors = buildSectorSummaries(constituents);
   const breadth = buildBreadthSummary(constituents, sectors);
   const staleCount = constituents.filter((c) => c.freshness === 'stale-but-usable').length;
-  const freshness = classifyOverallFreshness(successfulCount, requestedCount, staleCount);
+  const cachedCount = constituents.filter((c) => c.status === 'ok' && c.freshness === 'cached').length;
+  const freshness = classifyOverallFreshness(successfulCount, requestedCount, staleCount, cachedCount);
+  logDiagnosticSummary('dashboard', universe.id, periodCandidate, diagnostics);
 
   return {
     ok: true,
@@ -344,12 +433,13 @@ export type MarketOverviewProxyResult = {
   universeId: MarketUniverseId;
   universeLabel: string;
   proxy: BenchmarkProxy;
-  status: 'ok' | 'unresolved' | 'unavailable';
+  status: 'ok' | 'unresolved' | 'unavailable' | 'insufficient-history';
   periodReturnPct: number | null;
   momentum20dPct: number | null;
   trendVsSma60Pct: number | null;
   asOf: string | null;
   freshness: FreshnessState;
+  providerErrorCode?: string;
 };
 
 export type MarketOverviewResult = {
@@ -376,6 +466,7 @@ export const getMarketOverview = async (
   }
 
   const allow = input.allowProductionMarketDashboardLiveData === true;
+  const diagnostics: ConstituentDiagnostic[] = [];
   const proxies = await mapWithConcurrency(MARKET_TRACKED_UNIVERSES, CONCURRENCY_LIMIT, async (universe) => {
     const proxyAsConstituent: TrackedConstituent = {
       symbol: universe.benchmarkProxy.symbol,
@@ -384,7 +475,7 @@ export const getMarketOverview = async (
       sector: universe.label,
       relativeWeight: 1,
     };
-    const resolved = await resolveAndComputeConstituent(proxyAsConstituent, periodCandidate, resolvedDeps, allow);
+    const resolved = await resolveAndComputeConstituent(proxyAsConstituent, periodCandidate, resolvedDeps, allow, diagnostics);
     const result: MarketOverviewProxyResult = {
       universeId: universe.id,
       universeLabel: universe.label,
@@ -395,17 +486,24 @@ export const getMarketOverview = async (
       trendVsSma60Pct: resolved.trendVsSma60Pct,
       asOf: resolved.asOf,
       freshness: resolved.freshness,
+      ...(resolved.providerErrorCode ? { providerErrorCode: resolved.providerErrorCode } : {}),
     };
     return result;
   });
 
   const successfulCount = proxies.filter((p) => p.status === 'ok').length;
   if (successfulCount === 0) {
-    return { ok: false, period: periodCandidate, proxies, freshness: 'unavailable', sanitizedErrorCode: MARKET_DASHBOARD_SANITIZED_ERROR_CODES.MARKET_DATA_UNAVAILABLE };
+    logDiagnosticSummary('overview', null, periodCandidate, diagnostics);
+    const sanitizedErrorCode = allFailuresRateLimited(proxies)
+      ? MARKET_DASHBOARD_SANITIZED_ERROR_CODES.PROVIDER_RATE_LIMITED
+      : MARKET_DASHBOARD_SANITIZED_ERROR_CODES.MARKET_DATA_UNAVAILABLE;
+    return { ok: false, period: periodCandidate, proxies, freshness: 'unavailable', sanitizedErrorCode };
   }
 
   const staleCount = proxies.filter((p) => p.freshness === 'stale-but-usable').length;
-  const freshness = classifyOverallFreshness(successfulCount, proxies.length, staleCount);
+  const cachedCount = proxies.filter((p) => p.status === 'ok' && p.freshness === 'cached').length;
+  const freshness = classifyOverallFreshness(successfulCount, proxies.length, staleCount, cachedCount);
+  logDiagnosticSummary('overview', null, periodCandidate, diagnostics);
 
   return { ok: true, period: periodCandidate, proxies, freshness, sanitizedErrorCode: MARKET_DASHBOARD_SANITIZED_ERROR_CODES.NONE };
 };

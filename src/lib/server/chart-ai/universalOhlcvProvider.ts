@@ -37,8 +37,22 @@ export const OHLCV_SANITIZED_ERROR_CODES = {
   NONE: 'NONE',
   INVALID_INSTRUMENT: 'INVALID_INSTRUMENT',
   PROVIDER_UNAVAILABLE: 'PROVIDER_UNAVAILABLE',
+  PROVIDER_RATE_LIMITED: 'PROVIDER_RATE_LIMITED',
+  CONFIG_MISSING: 'CONFIG_MISSING',
   NO_DATA: 'NO_DATA',
 } as const;
+
+/**
+ * Phase 3GJ-HF1: preserves the fine-grained transport-level ProviderErrorCode (kisClient already
+ * distinguishes rate-limit vs config/readiness vs generic unavailable) as a distinguishable sanitized
+ * OHLCV code, without ever surfacing the raw provider code/message/payload to a client. Any code not
+ * explicitly mapped collapses to the existing generic PROVIDER_UNAVAILABLE (unchanged behavior).
+ */
+const mapTransportErrorToSanitizedOhlcvCode = (code: string | undefined): string => {
+  if (code === 'PROVIDER_RATE_LIMITED') return OHLCV_SANITIZED_ERROR_CODES.PROVIDER_RATE_LIMITED;
+  if (code === 'CONFIG_MISSING' || code === 'AUTH_REQUIRED') return OHLCV_SANITIZED_ERROR_CODES.CONFIG_MISSING;
+  return OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE;
+};
 
 export type OhlcvSourceStatus = 'ok' | 'blocked' | 'unavailable' | 'no-data';
 
@@ -186,8 +200,16 @@ export const fetchUniversalOhlcv = async (
     }
 
     if (!providerResult.ok) {
-      // Sanitized: provider error code is not surfaced verbatim; only a coarse status is exposed.
-      return buildResponse(instrument, range, [], 'unavailable', OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE, nowIso);
+      // Sanitized: the raw provider code/message is never surfaced, but rate-limit vs config/auth vs
+      // generic unavailable stays distinguishable internally (Phase 3GJ-HF1 spec section 5).
+      return buildResponse(
+        instrument,
+        range,
+        [],
+        'unavailable',
+        mapTransportErrorToSanitizedOhlcvCode(providerResult.code),
+        nowIso,
+      );
     }
 
     const rawPoints: KisDailyOhlcPoint[] = providerResult.data.points;
@@ -318,6 +340,7 @@ export const fetchLongHistoryOhlcv = async (
     let endDate = new Date(now());
     let pagesFetched = 0;
     let firstPageFailed = false;
+    let firstPageErrorCode: string | undefined;
 
     for (let page = 0; page < LONG_HISTORY_MAX_PAGES; page += 1) {
       if (rawRows.length >= targetBars) break;
@@ -338,7 +361,10 @@ export const fetchLongHistoryOhlcv = async (
 
       pagesFetched += 1;
       if (!result.ok) {
-        if (page === 0) firstPageFailed = true;
+        if (page === 0) {
+          firstPageFailed = true;
+          firstPageErrorCode = result.code;
+        }
         break;
       }
       const points = result.data.points;
@@ -358,7 +384,7 @@ export const fetchLongHistoryOhlcv = async (
       return {
         ok: false,
         sourceStatus: 'unavailable',
-        sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE,
+        sanitizedErrorCode: mapTransportErrorToSanitizedOhlcvCode(firstPageErrorCode),
         instrument: toInstrumentSummary(instrument),
         candles: [],
         barCount: 0,

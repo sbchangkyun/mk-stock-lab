@@ -192,9 +192,16 @@ type Member = { relativeWeight: number; periodReturnPct: number | null; freshnes
 {
   check('classifyOverallFreshness: zero successes -> unavailable', classifyOverallFreshness(0, 12, 0) === 'unavailable');
   check('classifyOverallFreshness: below render threshold -> partial', classifyOverallFreshness(3, 12, 0) === 'partial');
-  check('classifyOverallFreshness: threshold met, some stale -> stale-but-usable', classifyOverallFreshness(6, 12, 2) === 'stale-but-usable');
+  check('classifyOverallFreshness: full coverage, some stale -> stale-but-usable', classifyOverallFreshness(12, 12, 2) === 'stale-but-usable');
   check('classifyOverallFreshness: threshold met, none stale, partial coverage -> partial', classifyOverallFreshness(6, 12, 0) === 'partial');
   check('classifyOverallFreshness: full coverage, none stale -> fresh', classifyOverallFreshness(12, 12, 0) === 'fresh');
+
+  // Phase 3GJ-HF1 spec section 7: cachedCount is the new 4th parameter -- reachable 'cached' state,
+  // stale still outranks cached, and partial-coverage still outranks both (cached data is never fresh).
+  check('classifyOverallFreshness: cachedCount omitted -> cached state never reachable', classifyOverallFreshness(12, 12, 0) === 'fresh');
+  check('classifyOverallFreshness: full coverage, no stale, some cached -> cached', classifyOverallFreshness(12, 12, 0, 3) === 'cached');
+  check('classifyOverallFreshness: full coverage, stale outranks cached', classifyOverallFreshness(12, 12, 2, 3) === 'stale-but-usable');
+  check('classifyOverallFreshness: partial coverage outranks both stale and cached', classifyOverallFreshness(6, 12, 2, 3) === 'partial');
 }
 
 // =====================================================================================
@@ -299,6 +306,15 @@ const failResult: LongHistoryOhlcvResult = {
   asOf: new Date().toISOString(),
   currency: null,
   pagesFetched: 0,
+};
+
+// Phase 3GJ-HF1 spec section 5: the same shape as failResult but with the finer-grained sanitized
+// code a rate-limited transport call now surfaces (see universalOhlcvProvider.ts's
+// mapTransportErrorToSanitizedOhlcvCode), so orchestration tests can tell rate-limit apart from
+// generic unavailability.
+const rateLimitedFailResult: LongHistoryOhlcvResult = {
+  ...failResult,
+  sanitizedErrorCode: 'PROVIDER_RATE_LIMITED',
 };
 
 const FIXED_NOW_MS = Date.UTC(2026, 6, 25); // 2026-07-25 -- one calendar day after the fake asOf below.
@@ -439,11 +455,162 @@ const fakeInstrument = { symbol: 'FAKE', country: 'KR', providerSymbol: 'FAKE' }
   check('getMarketDashboard: stale-but-usable when the latest candle is more than 4 days old', result.freshness === 'stale-but-usable');
 }
 
+// 9. Every constituent's transport fails specifically with PROVIDER_RATE_LIMITED -> the aggregate
+//    code is PROVIDER_RATE_LIMITED, not the generic MARKET_DATA_UNAVAILABLE (spec section 5).
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => rateLimitedFailResult, findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: all failures rate-limited -> ok false', result.ok === false);
+  check(
+    'getMarketDashboard: all failures rate-limited -> PROVIDER_RATE_LIMITED (honest, not generic unavailable)',
+    result.sanitizedErrorCode === 'PROVIDER_RATE_LIMITED',
+  );
+}
+
+// 10. Mixed failure causes (some rate-limited, some generically unavailable) -> stays the generic
+//     MARKET_DATA_UNAVAILABLE code -- only an ALL-rate-limited failure set may claim rate-limited.
+{
+  let call = 0;
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        call += 1;
+        return call === 1 ? rateLimitedFailResult : failResult;
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check(
+    'getMarketDashboard: mixed failure causes -> generic MARKET_DATA_UNAVAILABLE, not rate-limited',
+    result.sanitizedErrorCode === 'MARKET_DATA_UNAVAILABLE',
+  );
+}
+
+// 11. Transport succeeds for every constituent but history is too short for the selected period's
+//     offset -> every constituent is 'insufficient-history', none count toward successfulCount, and
+//     the below-threshold branch fires exactly as it would for a transport failure (spec section 6).
+{
+  const shortCloses = Array.from({ length: 10 }, (_, i) => 100 + i);
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1m' },
+    { fetchLongHistoryOhlcv: async () => okResult(shortCloses, FAKE_ASOF), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: transport ok but history too short for the period -> ok false', result.ok === false);
+  check(
+    'getMarketDashboard: all-insufficient-history -> MARKET_DATA_UNAVAILABLE (zero valid constituents)',
+    result.sanitizedErrorCode === 'MARKET_DATA_UNAVAILABLE',
+  );
+  check(
+    'getMarketDashboard: insufficient-history constituents are never silently reported as ok',
+    result.constituents.every((c) => c.status === 'insufficient-history'),
+  );
+}
+
+// 12. A mix of real 'ok' constituents and 'insufficient-history' ones -- only the 'ok' subset counts
+//     toward successfulCount, so a universe with too few valid returns hits the partial-below-threshold
+//     gate even though every transport call reported success.
+{
+  let call = 0;
+  const tooShortForOneMonth = Array.from({ length: 5 }, (_, i) => 100 + i);
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1m' },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        call += 1;
+        return call <= 3 ? okResult(fakeCloses, FAKE_ASOF) : okResult(tooShortForOneMonth, FAKE_ASOF);
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check('getMarketDashboard: insufficient-history constituents never inflate successfulCount -> ok false', result.ok === false);
+  check(
+    'getMarketDashboard: 3 valid of 12 -> MARKET_DATA_PARTIAL_BELOW_THRESHOLD',
+    result.sanitizedErrorCode === 'MARKET_DATA_PARTIAL_BELOW_THRESHOLD',
+  );
+}
+
+// 13. All valid constituents come from cache (not stale) -> overall freshness is 'cached', reachable
+//     now that cachedCount is threaded through (spec section 7) -- cached data is never labeled fresh.
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1m' },
+    { fetchLongHistoryOhlcv: async () => okResult(fakeCloses, FAKE_ASOF, true), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: full success, all cached, none stale -> ok true', result.ok === true);
+  check('getMarketDashboard: full success, all cached, none stale -> freshness cached, never fresh', result.freshness === 'cached');
+}
+
+// 14. A mix of fresh and cached (no stale) valid constituents -> overall freshness must still be
+//     'cached', not 'fresh' -- any cached member disqualifies the fresh label.
+{
+  let call = 0;
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1m' },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        call += 1;
+        return okResult(fakeCloses, FAKE_ASOF, call % 2 === 0);
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check('getMarketDashboard: mixed fresh/cached, none stale -> freshness cached, never mislabeled fresh', result.freshness === 'cached');
+}
+
+// 15. commonAsOf resolves to the earliest (minimum) as-of date across valid constituents only --
+//     never the latest/maximum date (spec section 8's renamed, corrected common-data-basis field).
+{
+  let call = 0;
+  const asOfDates = ['20260701', '20260710', '20260715'];
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1m' },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        const asOf = asOfDates[call % asOfDates.length];
+        call += 1;
+        return okResult(fakeCloses, asOf);
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check('getMarketDashboard: commonAsOf uses the earliest valid-constituent date, not the latest', result.breadth?.commonAsOf === '20260701');
+}
+
+// 16. Partial coverage (successfulCount < requestedCount) with some stale valid members -> overall
+//     freshness stays 'partial', never 'stale-but-usable' -- partial coverage outranks staleness in
+//     the corrected precedence (spec section 7).
+{
+  let call = 0;
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        call += 1;
+        return call <= 6 ? okResult(fakeCloses, '20260101') : failResult;
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check('getMarketDashboard: 6 of 12 valid (all stale) still meets the render threshold -> ok true', result.ok === true);
+  check(
+    'getMarketDashboard: partial coverage outranks stale-but-usable in the precedence order',
+    result.freshness === 'partial',
+  );
+}
+
 // =====================================================================================
 // Group 7: marketDashboard.ts -- overview (four validated benchmark proxies only)
 // =====================================================================================
 
-// 9. Invalid period -> VALIDATION_FAILED, no proxies returned.
+// 17. Invalid period -> VALIDATION_FAILED, no proxies returned.
 {
   const result = await getMarketOverview(
     { period: 'bogus' },
@@ -454,7 +621,7 @@ const fakeInstrument = { symbol: 'FAKE', country: 'KR', providerSymbol: 'FAKE' }
   check('getMarketOverview: invalid period -> zero proxies', result.proxies.length === 0);
 }
 
-// 10. Default period (omitted) defaults to 1d and resolves exactly the four benchmark proxies.
+// 18. Default period (omitted) defaults to 1d and resolves exactly the four benchmark proxies.
 {
   const requestedSymbols: string[] = [];
   const result = await getMarketOverview(
@@ -481,7 +648,7 @@ const fakeInstrument = { symbol: 'FAKE', country: 'KR', providerSymbol: 'FAKE' }
   );
 }
 
-// 11. All four proxies fail -> MARKET_DATA_UNAVAILABLE, but proxies array (with unavailable statuses)
+// 19. All four proxies fail -> MARKET_DATA_UNAVAILABLE, but proxies array (with unavailable statuses)
 //     is still returned for honest per-proxy UI messaging.
 {
   const result = await getMarketOverview(
@@ -492,6 +659,33 @@ const fakeInstrument = { symbol: 'FAKE', country: 'KR', providerSymbol: 'FAKE' }
   check('getMarketOverview: total failure -> MARKET_DATA_UNAVAILABLE', result.sanitizedErrorCode === 'MARKET_DATA_UNAVAILABLE');
   check('getMarketOverview: total failure -> proxies array still present for per-card unavailable state', result.proxies.length === 4);
   check('getMarketOverview: total failure -> every proxy marked unavailable, none fabricated', result.proxies.every((p) => p.status === 'unavailable'));
+}
+
+// 20. All four proxies fail specifically with PROVIDER_RATE_LIMITED -> the aggregate code is
+//     PROVIDER_RATE_LIMITED, mirroring the dashboard-level aggregation (spec section 5).
+{
+  const result = await getMarketOverview(
+    { period: '1d' },
+    { fetchLongHistoryOhlcv: async () => rateLimitedFailResult, findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketOverview: all proxies rate-limited -> ok false', result.ok === false);
+  check(
+    'getMarketOverview: all proxies rate-limited -> PROVIDER_RATE_LIMITED (honest, not generic unavailable)',
+    result.sanitizedErrorCode === 'PROVIDER_RATE_LIMITED',
+  );
+}
+
+// 21. A rate-limited proxy carries its providerErrorCode through to the per-proxy result, so the
+//     client can render an honest per-card rate-limited message instead of a generic failure.
+{
+  const result = await getMarketOverview(
+    { period: '1d' },
+    { fetchLongHistoryOhlcv: async () => rateLimitedFailResult, findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check(
+    'getMarketOverview: rate-limited proxies carry providerErrorCode for per-card messaging',
+    result.proxies.every((p) => p.providerErrorCode === 'PROVIDER_RATE_LIMITED'),
+  );
 }
 
 export const runAll = async (): Promise<number> => {

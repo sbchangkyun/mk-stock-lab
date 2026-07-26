@@ -1652,6 +1652,31 @@ a.header-button {
   max-width: 880px;
 }
 
+.market-refresh-button {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.market-refresh-button:hover:not(:disabled) {
+  border-color: rgba(15, 79, 216, 0.45);
+  color: var(--primary);
+}
+
+.market-refresh-button:disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+
 .market-control-panel {
   display: grid;
   gap: 12px;

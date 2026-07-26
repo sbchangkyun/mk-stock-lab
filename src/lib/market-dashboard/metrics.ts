@@ -164,18 +164,23 @@ export const meetsMinimumRenderThreshold = (successfulCount: number, requestedCo
 };
 
 /**
- * Classifies overall freshness from per-member states: fresh only when every resolved member is
- * fresh/cached with no failures; stale-but-usable when some members are stale but coverage still
- * clears the render threshold; partial when coverage is below the render threshold but still
- * renderable-with-caveats; unavailable when nothing resolved.
+ * Classifies overall freshness from per-member states (Phase 3GJ-HF1 spec section 7). Precedence,
+ * evaluated in order: (1) unavailable -- zero valid members; (2) partial -- valid members either miss
+ * the render threshold or fall short of full requested coverage; (3) stale-but-usable -- full valid
+ * coverage but at least one valid member is stale; (4) cached -- full valid coverage, no stale member,
+ * at least one valid member came from cache; (5) fresh -- full valid coverage, every valid member is
+ * provider-fresh. Cached data is never classified as fresh.
  */
 export const classifyOverallFreshness = (
   successfulCount: number,
   requestedCount: number,
   staleCount: number,
+  cachedCount: number = 0,
 ): FreshnessState => {
   if (successfulCount <= 0) return 'unavailable';
   if (!meetsMinimumRenderThreshold(successfulCount, requestedCount)) return 'partial';
+  if (successfulCount < requestedCount) return 'partial';
   if (staleCount > 0) return 'stale-but-usable';
-  return successfulCount < requestedCount ? 'partial' : 'fresh';
+  if (cachedCount > 0) return 'cached';
+  return 'fresh';
 };

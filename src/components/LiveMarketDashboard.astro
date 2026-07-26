@@ -33,10 +33,12 @@ const returnScale = [
     <p class="eyebrow">Market</p>
     <h1>시장</h1>
     <p class="lead">
-      KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100 대표 ETF와 실제 편입 종목의 실시간 OHLCV로 계산한 라이브 시장 대시보드입니다.
-      지수 자체가 아닌 <strong>대표 ETF(proxy)</strong> 기준이며, 데이터를 불러올 수 없을 때는 있는 그대로 알려드립니다.
+      KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100 대표 ETF와 실제 편입 종목의 최근 종가 기준 OHLCV로 계산한 시장 대시보드입니다.
+      실시간 시세가 아닌 지연된 종가 기준이며, 지수 자체가 아닌 <strong>대표 ETF(proxy)</strong> 기준입니다.
+      데이터를 불러올 수 없을 때는 있는 그대로 알려드립니다.
     </p>
   </div>
+  <button type="button" class="market-refresh-button" data-market-refresh-button aria-live="polite">새로고침</button>
 </header>
 
 <MarketLiveQuoteCard enabled={isMarketQuoteCardEnabled} />
@@ -210,7 +212,7 @@ const returnScale = [
     universeId: string;
     universeLabel: string;
     proxy: { symbol: string; country: string; label: string };
-    status: 'ok' | 'unresolved' | 'unavailable';
+    status: 'ok' | 'unresolved' | 'unavailable' | 'insufficient-history';
     periodReturnPct: number | null;
     asOf: string | null;
     freshness: string;
@@ -222,7 +224,7 @@ const returnScale = [
     displayName?: string;
     sector: string;
     relativeWeight: number;
-    status: 'ok' | 'unresolved' | 'unavailable';
+    status: 'ok' | 'unresolved' | 'unavailable' | 'insufficient-history';
     periodReturnPct: number | null;
     momentum20dPct: number | null;
     trendVsSma60Pct: number | null;
@@ -245,7 +247,7 @@ const returnScale = [
       weightedPeriodReturnPct: number | null;
       strongestSector: string | null;
       weakestSector: string | null;
-      latestAsOf: string | null;
+      commonAsOf: string | null;
     } | null;
     freshness: string;
   };
@@ -258,6 +260,36 @@ const returnScale = [
     return node;
   };
 
+  // Phase 3GJ-HF1 spec section 10: browser-memory-only (no localStorage) cache with a >=60s TTL, plus
+  // in-flight request deduplication so overlapping loads for the same key share one network request.
+  const CACHE_TTL_MS = 60_000;
+  type CachedFetch = { ok: boolean; body: any };
+  const responseCache = new Map<string, { data: CachedFetch; timestamp: number }>();
+  const inFlightRequests = new Map<string, Promise<CachedFetch>>();
+
+  const fetchJsonCached = async (key: string, url: string, forceRefresh: boolean): Promise<CachedFetch> => {
+    const now = Date.now();
+    if (!forceRefresh) {
+      const cached = responseCache.get(key);
+      if (cached && now - cached.timestamp < CACHE_TTL_MS) return cached.data;
+      const pending = inFlightRequests.get(key);
+      if (pending) return pending;
+    }
+    const request = (async (): Promise<CachedFetch> => {
+      const res = await fetch(url);
+      const body = await res.json();
+      const result: CachedFetch = { ok: res.ok, body };
+      responseCache.set(key, { data: result, timestamp: Date.now() });
+      return result;
+    })();
+    inFlightRequests.set(key, request);
+    try {
+      return await request;
+    } finally {
+      inFlightRequests.delete(key);
+    }
+  };
+
   const setup = () => {
     const overviewRoot = document.querySelector<HTMLElement>('[data-market-overview]');
     const dashboardRoot = document.querySelector<HTMLElement>('[data-market-dashboard]');
@@ -268,11 +300,10 @@ const returnScale = [
     const overviewGrid = overviewRoot?.querySelector<HTMLElement>('[data-market-overview-grid]');
     const overviewUnavailable = overviewRoot?.querySelector<HTMLElement>('[data-market-overview-unavailable]');
 
-    const loadOverview = async () => {
+    const loadOverview = async (forceRefresh = false) => {
       try {
-        const res = await fetch('/api/market/overview.json?period=1d');
-        const body = await res.json();
-        if (!res.ok || body?.ok !== true || !Array.isArray(body?.overview?.proxies)) {
+        const { ok, body } = await fetchJsonCached('overview:1d', '/api/market/overview.json?period=1d', forceRefresh);
+        if (!ok || body?.ok !== true || !Array.isArray(body?.overview?.proxies)) {
           overviewLoading?.classList.add('hidden');
           overviewUnavailable?.classList.remove('hidden');
           return;
@@ -466,7 +497,7 @@ const returnScale = [
         <span>가중평균 ${formatSignedPct(b.weightedPeriodReturnPct)}</span>
         ${b.strongestSector ? `<span>강세 ${b.strongestSector}</span>` : ''}
         ${b.weakestSector ? `<span>약세 ${b.weakestSector}</span>` : ''}
-        <span>${formatAsOfDate(b.latestAsOf)}</span>
+        <span>${formatAsOfDate(b.commonAsOf)}</span>
       `;
     };
 
@@ -474,7 +505,7 @@ const returnScale = [
     const periodLabelOf = (id: string) => periodTabs.find((tab) => tab.dataset.marketPeriodTab === id)?.textContent?.trim() ?? id;
 
     let requestToken = 0;
-    const loadDashboard = async (universeId: string, period: string) => {
+    const loadDashboard = async (universeId: string, period: string, forceRefresh = false) => {
       const token = ++requestToken;
       dashboardRoot.dataset.activeUniverse = universeId;
       dashboardRoot.dataset.activePeriod = period;
@@ -483,11 +514,12 @@ const returnScale = [
       panel?.classList.add('hidden');
 
       try {
-        const res = await fetch(`/api/market/dashboard.json?universe=${encodeURIComponent(universeId)}&period=${encodeURIComponent(period)}`);
-        const body = await res.json();
+        const cacheKey = `dashboard:${universeId}:${period}`;
+        const url = `/api/market/dashboard.json?universe=${encodeURIComponent(universeId)}&period=${encodeURIComponent(period)}`;
+        const { ok, body } = await fetchJsonCached(cacheKey, url, forceRefresh);
         if (token !== requestToken) return;
 
-        if (!res.ok || body?.ok !== true || !body?.dashboard) {
+        if (!ok || body?.ok !== true || !body?.dashboard) {
           dashboardLoading?.classList.add('hidden');
           if (dashboardUnavailableMsg) {
             dashboardUnavailableMsg.textContent =
@@ -503,7 +535,7 @@ const returnScale = [
         if (panelEyebrow) panelEyebrow.textContent = 'Live Dashboard';
         if (panelTitle) panelTitle.textContent = `${universeLabelOf(universeId)} · ${periodLabelOf(period)} (${dashboard.benchmarkProxy.label})`;
         if (panelMetrics && dashboard.breadth) {
-          panelMetrics.innerHTML = `<span><strong>${dashboard.breadth.advancers}</strong> 상승</span><span><strong>${dashboard.breadth.decliners}</strong> 하락</span><span>${formatAsOfDate(dashboard.breadth.latestAsOf)}</span>`;
+          panelMetrics.innerHTML = `<span><strong>${dashboard.breadth.advancers}</strong> 상승</span><span><strong>${dashboard.breadth.decliners}</strong> 하락</span><span>${formatAsOfDate(dashboard.breadth.commonAsOf)}</span>`;
         }
 
         await renderTreemap(dashboard.constituents, dashboard.currency);
@@ -548,8 +580,49 @@ const returnScale = [
       });
     });
 
-    loadOverview();
-    loadDashboard(dashboardRoot.dataset.activeUniverse || 'kospi200', dashboardRoot.dataset.activePeriod || '1d');
+    // Phase 3GJ-HF1 spec section 11: sequence the initial loads instead of firing them concurrently.
+    void (async () => {
+      await loadOverview();
+      await loadDashboard(dashboardRoot.dataset.activeUniverse || 'kospi200', dashboardRoot.dataset.activePeriod || '1d');
+    })();
+
+    // Phase 3GJ-HF1 spec section 12: one explicit refresh control with a >=30s cooldown. No
+    // cache-bypass query params are sent -- the client simply re-requests past its own memory cache.
+    const REFRESH_COOLDOWN_MS = 30_000;
+    const refreshButton = document.querySelector<HTMLButtonElement>('[data-market-refresh-button]');
+    let lastRefreshAt = 0;
+    let cooldownTimer: number | undefined;
+
+    const updateRefreshButtonState = () => {
+      if (!refreshButton) return;
+      const remainingMs = REFRESH_COOLDOWN_MS - (Date.now() - lastRefreshAt);
+      if (remainingMs > 0) {
+        refreshButton.disabled = true;
+        refreshButton.textContent = `새로고침 (${Math.ceil(remainingMs / 1000)}초 후 가능)`;
+      } else {
+        refreshButton.disabled = false;
+        refreshButton.textContent = '새로고침';
+        if (cooldownTimer !== undefined) {
+          window.clearInterval(cooldownTimer);
+          cooldownTimer = undefined;
+        }
+      }
+    };
+
+    refreshButton?.addEventListener('click', () => {
+      if (Date.now() - lastRefreshAt < REFRESH_COOLDOWN_MS) return;
+      lastRefreshAt = Date.now();
+      updateRefreshButtonState();
+      if (cooldownTimer === undefined) {
+        cooldownTimer = window.setInterval(updateRefreshButtonState, 1000);
+      }
+      const universeId = dashboardRoot.dataset.activeUniverse || universeTabs[0]?.dataset.marketUniverseTab || 'kospi200';
+      const period = dashboardRoot.dataset.activePeriod || periodTabs[0]?.dataset.marketPeriodTab || '1d';
+      void (async () => {
+        await loadOverview(true);
+        await loadDashboard(universeId, period, true);
+      })();
+    });
   };
 
   const setupMarketCardModal = () => {
