@@ -1,5 +1,110 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GJ-HF2 - 2026-07-26
+
+### Live market dashboard OHLCV data-basis parser fix
+
+- A protected-Preview check after HF1 still returned `GET /api/market/overview.json` → HTTP 200,
+  `{"ok": false, "code": "MARKET_DATA_UNAVAILABLE"}`, with sanitized Runtime Log evidence of
+  `byStatus: {"unavailable": 4}` and an **empty** `byErrorCode` — proof the provider call succeeded but the
+  result was still misclassified unavailable.
+- **Root cause**: the shared OHLCV normalizer emits ISO-8601 dates, but `marketDashboard.ts`'s freshness parser
+  used an unanchored `/^\d{8}/` prefix test that silently rejects ISO strings, so `classifyResultFreshness`
+  treated every real, successful long-history result as unparseable and therefore unavailable.
+- **Fix**: replaced the parser with `parseMarketDataTimestampToUtcMs()` — closed, fully-anchored
+  `YYYYMMDD_PATTERN`/`ISO_DATE_TIME_PATTERN`, plus a `roundTripUtcMs` component-reconstruction check that
+  rejects "impossible" dates (e.g. `2026-02-30`) which `Date.parse`/`Date.UTC` would otherwise silently roll
+  over. Rejects non-string/empty/malformed/impossible values and never falls back to the current date. The
+  4-calendar-day stale-but-usable threshold and all provider/cache behavior are unchanged.
+- Added a closed, internal-only diagnostic-reason enum (`OK`/`PROVIDER_ERROR`/`HISTORY_RANGE_MISSING`/
+  `HISTORY_RANGE_INVALID`/`INSUFFICIENT_HISTORY`), aggregated in the existing sanitized diagnostic log;
+  structurally verified (type-body extraction) to never appear in any public result type.
+- Tests: `smoke:phase-3gj-live-market-dashboard` 156/156 (was 139/139), `check:phase-3gj-live-market-dashboard`
+  158/158 (was 134/134). Full regression re-run (`phase-3gi-user-retention-persistence`,
+  `phase-3gh-portfolio-live-valuation-mvp`, `npm ls`, `npm run build`, `git diff --check`) unaffected/clean. See
+  `docs/planning/phase_3gj_live_market_dashboard_result_v0.1.md` §9/§10 for full detail.
+- No migration, no merge, no Production deploy, no environment/Supabase mutation, no Phase 3GK work. One
+  additional commit on `feature/phase-3gj-live-market-dashboard` (PR #6, unchanged title).
+
+## Phase 3GJ-HF1 - 2026-07-26
+
+### Live market dashboard pre-merge correctness hardening
+
+- A protected-Preview check of `GET /api/market/overview.json` returned HTTP 200 with
+  `{"ok": false, "code": "MARKET_DATA_UNAVAILABLE"}`. Diagnosed using only sanitized aggregate signals (status
+  counts, provider error codes, cache state) and hardened without touching KIS endpoints, TR IDs, Supabase, or
+  env vars.
+- Provider rate-limit responses now surface a distinguishable `PROVIDER_RATE_LIMITED` code end-to-end instead of
+  collapsing into a generic unavailable code. "Valid" coverage now requires a real, finite `periodReturnPct`;
+  constituents with insufficient history are tagged `insufficient-history` and never count toward the render
+  threshold. `classifyOverallFreshness` precedence corrected (`unavailable > partial > stale-but-usable > cached
+  > fresh`). `commonAsOf` now uses the minimum (oldest) as-of date across valid constituents. Removed misleading
+  "실시간" copy in favor of accurate delayed/close-based wording. Added a 60s browser-memory cache with
+  in-flight de-duplication, sequenced initial requests, and an explicit refresh button with a 30s cooldown.
+  Added sanitized, aggregate-only diagnostic logging at every orchestration exit path.
+- Tests: `smoke:phase-3gj-live-market-dashboard` 139/139 (was 118/118), `check:phase-3gj-live-market-dashboard`
+  134/134 (was 112/112). Full regression re-run clean.
+- Preview still returned `MARKET_DATA_UNAVAILABLE` after this hotfix — see Phase 3GJ-HF2 above for the actual
+  root cause and fix. No migration, no merge, no Production deploy, no environment mutation.
+
+## Phase 3GJ - 2026-07-26
+
+### Live market dashboard MVP — `IMPLEMENTED_PUSHED_PREVIEW_READY_PRODUCTION_ACTIVATION_APPROVAL_PENDING`
+
+- Retired the fixture-driven Home index cards and Market page (`MarketShell.astro`,
+  `MarketFixtureDashboard.astro`, `marketTreemapSamples.ts`, `marketFixtureDashboard.json`,
+  `HomeIndexCards.astro`, `homeIndexCards.json`) in favor of a live market dashboard sourced entirely from real
+  KIS OHLCV through the existing shared orchestration (`fetchLongHistoryOhlcv`/`universalOhlcvProvider.ts`) and
+  the existing durable KIS token manager — no new KIS endpoint, no invented index API/TR ID, no second
+  market-data provider. `MarketLiveQuoteCard.astro` (a separate, already-real, already-gated feature) was left
+  untouched.
+- New closed tracked-universe registry `src/data/marketTrackedUniverses.ts` covering `kospi200`/`kosdaq150`/
+  `sp500`/`nasdaq100`, 12 constituents each (verified against the existing instrument master), a labeled
+  benchmark proxy per universe (KOSPI200→069500 KODEX 200, KOSDAQ150→229200 KODEX 코스닥150, S&P500→SPY,
+  NASDAQ100→QQQ) — never presented as the exact index. Static metadata only: no sample `asOf`, static
+  `baseChangePct`, multiplier-generated return, or static momentum/trend score was carried forward from the
+  retired fixtures.
+- New pure metrics module `src/lib/market-dashboard/metrics.ts` (period return over 1d/1w/1m/3m trading-day
+  offsets, 20-session momentum, 60-close SMA trend, weighted/median/advance-decline breadth aggregation,
+  minimum-render-threshold and freshness classification) — every function returns `null` on insufficient
+  history, never a substituted zero, and is directly unit-tested with no network dependency.
+- New server orchestration `src/lib/server/marketDashboard/marketDashboard.ts`
+  (`getMarketDashboard`/`getMarketOverview`, dependency-injectable for offline testing) bounds constituent/proxy
+  resolution to 3 concurrent requests via a worker-pool helper (never an unbounded `Promise.all`), marks a
+  failed constituent `unresolved`/`null` rather than a fabricated zero return, and returns a sanitized
+  `MARKET_DATA_UNAVAILABLE`/`MARKET_DATA_PARTIAL_BELOW_THRESHOLD` result below the render threshold — no raw
+  provider payload, token, header, or internal error text ever reaches the response.
+- New independent, non-secret env contract `KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD` (referenced, not set this
+  phase), gating Production access alongside a new `productionMarketDashboardExceptionAllowed` scoped exception
+  in `getKisQuoteConfigReadiness` (`src/lib/server/providers/kisClient.ts`) — independently OR'd with the
+  existing Chart AI beta exception, requiring `vercel-production` runtime AND a caller-supplied option AND the
+  new flag; every other readiness check (`KIS_ACCOUNT_NO` absent, live-quotes flag, credentials, durable-token
+  readiness) is unaffected, and the exception cannot reach `/api/market/quote`, Chart AI, Portfolio, or any
+  account/trading surface. Preview continues to obey the existing, unchanged `KIS_ENABLE_PREVIEW_LIVE_QUOTES`
+  guard.
+- New public (no Supabase-session-required) routes `GET /api/market/dashboard.json` and
+  `GET /api/market/overview.json`, each with a closed enum query parser (`universe`/`period` only — no client
+  symbol array, arbitrary sector, exchange code, provider name, cache-bypass flag, or Chart AI beta flag
+  accepted), sanitized error codes, and cache headers (`public, s-maxage=60, stale-while-revalidate=300` on
+  success, `no-store` otherwise).
+- `LiveMarketDashboard.astro` (new, replacing `MarketShell`/`MarketFixtureDashboard`) performs exactly one
+  overview request and one dashboard request on initial load, with additional requests only on an explicit tab
+  click (a `requestToken` staleness guard discards superseded in-flight responses) — no polling, no
+  `setInterval`, no auto-loop anywhere. Preserves the existing d3-hierarchy treemap + scatter SVG visualization,
+  now populated from the live fetch response. `HomeLiveMarketSnapshot.astro` (new, replacing `HomeIndexCards`)
+  performs exactly one overview fetch per page load and falls back to a non-error unavailable state on any
+  malformed/failed response — never fixture numbers.
+- Tests: new `smoke:phase-3gj-live-market-dashboard` (118/118, pure-function + dependency-injected service
+  scenarios) and `check:phase-3gj-live-market-dashboard` (112/112 static contract assertions across 11 groups).
+  Full regression re-run: `phase-3gi-user-retention-persistence` (35/35 smoke, 149/149 check) and
+  `phase-3gh-portfolio-live-valuation-mvp` (55/55 smoke, 86/86 check) both unaffected, plus `npm ls --depth=0`,
+  `npm run build`, and `git diff --check` all clean. See
+  `docs/planning/phase_3gj_live_market_dashboard_result_v0.1.md` for full detail.
+- No migration, no merge, no Production deploy, no Production/Preview env mutation, no Supabase settings
+  change, no account-trading API call, no LLM call, no second market-data provider, no Phase 3GK work — branch
+  `feature/phase-3gj-live-market-dashboard` created from `origin/main` at
+  `16eee948c0ce34f5b92394e98b3527e5545bf4a7` (the Phase 3GI-HF2 merge commit).
+
 ## Phase 3GI-HF2 - 2026-07-25
 
 ### Table privilege lockdown (same PR #5, one new forward-only migration file)

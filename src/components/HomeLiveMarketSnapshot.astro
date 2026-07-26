@@ -1,0 +1,93 @@
+---
+/**
+ * Phase 3GJ replacement for the retired HomeIndexCards.astro fixture. Renders only the static shell —
+ * heading, loading state, empty grid — at request time. The four benchmark-proxy cards themselves are
+ * populated from a single client-side GET /api/market/overview.json call after page load, and never
+ * refreshed automatically. An unavailable response renders an honest message, never a fabricated number.
+ */
+---
+
+<section class="index-snapshot-section" aria-labelledby="index-snapshot-heading" data-home-market-snapshot>
+  <p class="eyebrow">MARKET SNAPSHOT</p>
+  <h2 id="index-snapshot-heading">주요 시장 대표 ETF 한눈에 보기</h2>
+  <p class="index-snapshot-desc">
+    KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100 대표 ETF의 실제 시세 기준 수익률입니다. 지수 자체가 아닌 대표
+    ETF(proxy) 기준이며, 데이터를 불러올 수 없으면 있는 그대로 알려드립니다.
+  </p>
+  <p class="index-snapshot-loading" data-home-snapshot-loading role="status" aria-live="polite">불러오는 중...</p>
+  <div class="index-card-grid hidden" data-home-snapshot-grid></div>
+  <p class="index-snapshot-unavailable hidden" data-home-snapshot-unavailable role="status" aria-live="polite">
+    지금은 대표 벤치마크 정보를 불러올 수 없습니다.
+  </p>
+</section>
+
+<script>
+  import { formatSignedPct, changeToneClass, freshnessLabel, formatAsOfDate } from '../lib/market-dashboard/formatters';
+
+  type OverviewProxy = {
+    universeLabel: string;
+    proxy: { label: string };
+    status: 'ok' | 'unresolved' | 'unavailable';
+    periodReturnPct: number | null;
+    asOf: string | null;
+    freshness: string;
+  };
+
+  const toneToDirection = (tone: 'positive' | 'negative' | 'neutral'): 'up' | 'down' | 'flat' =>
+    tone === 'positive' ? 'up' : tone === 'negative' ? 'down' : 'flat';
+
+  const setup = () => {
+    const root = document.querySelector<HTMLElement>('[data-home-market-snapshot]');
+    if (!root || root.dataset.ready === 'true') return;
+    root.dataset.ready = 'true';
+
+    const loading = root.querySelector<HTMLElement>('[data-home-snapshot-loading]');
+    const grid = root.querySelector<HTMLElement>('[data-home-snapshot-grid]');
+    const unavailable = root.querySelector<HTMLElement>('[data-home-snapshot-unavailable]');
+
+    fetch('/api/market/overview.json?period=1d')
+      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
+      .then(({ ok, body }) => {
+        if (!ok || body?.ok !== true || !Array.isArray(body?.overview?.proxies)) {
+          throw new Error('overview_unavailable');
+        }
+        const proxies: OverviewProxy[] = body.overview.proxies;
+        if (grid) {
+          grid.innerHTML = proxies
+            .map((proxy) => {
+              if (proxy.status !== 'ok') {
+                return `<div class="index-card index-card--flat">
+  <div class="index-card-main">
+    <div class="index-card-label">${proxy.universeLabel}</div>
+    <div class="index-card-caption">${proxy.proxy.label}</div>
+    <div class="index-card-value">이용 불가</div>
+  </div>
+</div>`;
+              }
+              const direction = toneToDirection(changeToneClass(proxy.periodReturnPct));
+              return `<div class="index-card index-card--${direction}">
+  <div class="index-card-main">
+    <div class="index-card-label">${proxy.universeLabel}</div>
+    <div class="index-card-caption">${proxy.proxy.label}</div>
+    <div class="index-card-value">${formatSignedPct(proxy.periodReturnPct)}</div>
+    <div class="index-card-footer">
+      <span class="index-card-change">${freshnessLabel(proxy.freshness)}</span>
+      <span class="index-card-as-of">${formatAsOfDate(proxy.asOf)}</span>
+    </div>
+  </div>
+</div>`;
+            })
+            .join('');
+        }
+        loading?.classList.add('hidden');
+        grid?.classList.remove('hidden');
+      })
+      .catch(() => {
+        loading?.classList.add('hidden');
+        unavailable?.classList.remove('hidden');
+      });
+  };
+
+  document.addEventListener('astro:page-load', setup);
+  setup();
+</script>
