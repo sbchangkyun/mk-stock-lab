@@ -119,6 +119,9 @@ check('classifyOverallFreshness accepts a cachedCount 4th parameter (spec sectio
   /classifyOverallFreshness\s*=\s*\([\s\S]{0,220}cachedCount:\s*number/.test(metrics));
 check('classifyOverallFreshness precedence never classifies cached data as fresh',
   /if\s*\(cachedCount > 0\) return ['"]cached['"];\s*return ['"]fresh['"];/.test(metrics));
+check('classifyOverallFreshness (HF3) does not re-apply meetsMinimumRenderThreshold\'s absolute floor -- ' +
+  'that floor is a dashboard-only render gate already enforced upstream; small fixed-size callers (e.g. the 4-proxy overview) must be able to reach fresh/cached/stale-but-usable at full coverage',
+  !/classifyOverallFreshness\s*=\s*\([\s\S]{0,400}meetsMinimumRenderThreshold/.test(metrics));
 check('module has zero fetch/network calls (pure calc only)', !/\bfetch\s*\(/.test(metrics));
 
 // ---------------------------------------------------------------------------

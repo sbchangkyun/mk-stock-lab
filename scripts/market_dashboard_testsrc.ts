@@ -202,6 +202,17 @@ type Member = { relativeWeight: number; periodReturnPct: number | null; freshnes
   check('classifyOverallFreshness: full coverage, no stale, some cached -> cached', classifyOverallFreshness(12, 12, 0, 3) === 'cached');
   check('classifyOverallFreshness: full coverage, stale outranks cached', classifyOverallFreshness(12, 12, 2, 3) === 'stale-but-usable');
   check('classifyOverallFreshness: partial coverage outranks both stale and cached', classifyOverallFreshness(6, 12, 2, 3) === 'partial');
+
+  // Phase 3GJ-HF3: classifyOverallFreshness must not re-apply meetsMinimumRenderThreshold's absolute
+  // 5-constituent floor -- that floor is a dashboard-only render gate already enforced upstream by
+  // callers that need it. Callers with a small fixed requestedCount (e.g. the 4-proxy overview) can
+  // never reach 5 successes and must still be able to report 'fresh'/'cached'/'stale-but-usable' at
+  // full coverage instead of being forced to 'partial' unconditionally.
+  check('classifyOverallFreshness: full coverage below the 5-count floor -> fresh (HF3 regression)', classifyOverallFreshness(4, 4, 0) === 'fresh');
+  check('classifyOverallFreshness: full coverage below the floor, some cached -> cached (HF3)', classifyOverallFreshness(4, 4, 0, 1) === 'cached');
+  check('classifyOverallFreshness: full coverage below the floor, some stale -> stale-but-usable (HF3)', classifyOverallFreshness(4, 4, 1, 0) === 'stale-but-usable');
+  check('classifyOverallFreshness: below the floor, partial coverage -> partial (HF3, still gated by coverage)', classifyOverallFreshness(3, 4, 0) === 'partial');
+  check('classifyOverallFreshness: single successful proxy out of one requested -> fresh (HF3)', classifyOverallFreshness(1, 1, 0) === 'fresh');
 }
 
 // =====================================================================================
@@ -645,6 +656,10 @@ const fakeInstrument = { symbol: 'FAKE', country: 'KR', providerSymbol: 'FAKE' }
   check(
     'getMarketOverview: each proxy is explicitly labeled, never presented as the exact index',
     result.proxies.every((p) => typeof p.proxy.label === 'string' && p.proxy.label.length > 0),
+  );
+  check(
+    'getMarketOverview: full coverage, all proxies fresh -> overall freshness fresh (HF3 fix; the 4-proxy set can never satisfy the dashboard-only 5-count floor)',
+    result.freshness === 'fresh',
   );
 }
 

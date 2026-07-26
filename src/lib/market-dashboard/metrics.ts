@@ -165,11 +165,17 @@ export const meetsMinimumRenderThreshold = (successfulCount: number, requestedCo
 
 /**
  * Classifies overall freshness from per-member states (Phase 3GJ-HF1 spec section 7). Precedence,
- * evaluated in order: (1) unavailable -- zero valid members; (2) partial -- valid members either miss
- * the render threshold or fall short of full requested coverage; (3) stale-but-usable -- full valid
- * coverage but at least one valid member is stale; (4) cached -- full valid coverage, no stale member,
- * at least one valid member came from cache; (5) fresh -- full valid coverage, every valid member is
- * provider-fresh. Cached data is never classified as fresh.
+ * evaluated in order: (1) unavailable -- zero valid members; (2) partial -- valid members fall short
+ * of full requested coverage; (3) stale-but-usable -- full valid coverage but at least one valid
+ * member is stale; (4) cached -- full valid coverage, no stale member, at least one valid member
+ * came from cache; (5) fresh -- full valid coverage, every valid member is provider-fresh. Cached
+ * data is never classified as fresh.
+ *
+ * Deliberately does not re-apply meetsMinimumRenderThreshold's absolute MIN_VALID_CONSTITUENTS floor:
+ * that floor is a dashboard-only render gate already enforced upstream by callers that need it (see
+ * getMarketDashboard), and callers with a small fixed requestedCount (e.g. the 4-proxy overview) can
+ * never satisfy an absolute floor of 5 -- applying it here forced 'partial' unconditionally for those
+ * callers even at full coverage (Phase 3GJ-HF3).
  */
 export const classifyOverallFreshness = (
   successfulCount: number,
@@ -178,7 +184,6 @@ export const classifyOverallFreshness = (
   cachedCount: number = 0,
 ): FreshnessState => {
   if (successfulCount <= 0) return 'unavailable';
-  if (!meetsMinimumRenderThreshold(successfulCount, requestedCount)) return 'partial';
   if (successfulCount < requestedCount) return 'partial';
   if (staleCount > 0) return 'stale-but-usable';
   if (cachedCount > 0) return 'cached';
