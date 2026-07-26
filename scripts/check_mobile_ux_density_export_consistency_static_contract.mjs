@@ -23,7 +23,9 @@ const INDEX      = join(root, 'src', 'pages', 'index.astro');
 const MATRIX     = join(root, 'src', 'components', 'LabReturnMatrix.astro');
 const ASSET_PAGE = join(root, 'src', 'pages', 'lab', 'asset-class-returns.astro');
 const SECTOR_PAGE= join(root, 'src', 'pages', 'lab', 'sp500-sectors.astro');
-const MARKET     = join(root, 'src', 'components', 'MarketShell.astro');
+// Phase 3GJ: MarketShell.astro (fixture) was retired in favor of LiveMarketDashboard.astro (live data);
+// the export-button width convention it originally checked is carried forward unchanged.
+const MARKET     = join(root, 'src', 'components', 'LiveMarketDashboard.astro');
 const PACKAGE    = join(root, 'package.json');
 const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3dj_hf1_mobile_ux_density_export_consistency_result_v0.1.md');
 
@@ -46,7 +48,7 @@ check('index.astro exists',  existsSync(INDEX));
 check('LabReturnMatrix exists', existsSync(MATRIX));
 check('asset-class-returns page exists', existsSync(ASSET_PAGE));
 check('sp500-sectors page exists', existsSync(SECTOR_PAGE));
-check('MarketShell exists',  existsSync(MARKET));
+check('LiveMarketDashboard exists',  existsSync(MARKET));
 check('result doc exists',   existsSync(RESULT_DOC));
 
 // ── Group 2: Export library — viewport-independent ───────────────────────────
@@ -113,8 +115,8 @@ check('asset page: data-export-width added to camera button', /data-export-width
 check('sector page: lab-matrix-export-label span removed', !/<span class="lab-matrix-export-label">/.test(sectorPage));
 check('sector page: data-export-width added to camera button', /data-export-width="800"/.test(sectorPage));
 
-// ── Group 8: MarketShell — data-export-width on export buttons ───────────────
-log('\nGroup 8: MarketShell — data-export-width on treemap/scatter buttons');
+// ── Group 8: LiveMarketDashboard — data-export-width on export buttons ───────
+log('\nGroup 8: LiveMarketDashboard — data-export-width on treemap/scatter buttons');
 const market = read(MARKET);
 check('treemap export button has data-export-width="1200"', /data-export-width="1200"/.test(market));
 check('scatter export button has data-export-width="800"', /data-export-width="800"/.test(market));

@@ -28,6 +28,11 @@ const previewGuardFlagEnvName = 'KIS_ENABLE_PREVIEW_LIVE_QUOTES';
 // the Vercel Production hard block below for the current_price quote scope ONLY. Its mere
 // presence never opens generic production KIS usage: the scoped call option must also be set.
 const productionChartAiBetaFlagEnvName = 'CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA';
+// Phase 3GJ: a second, independent, OR'd Vercel Production exception -- structurally identical to
+// the Chart AI beta one above but scoped to the public live market dashboard's read-only OHLCV
+// orchestration ONLY. Does not reuse Chart AI's query-string beta gate and does not widen any other
+// KIS scope (account/order/balance stay untouched and KIS_ACCOUNT_NO must still be absent below).
+const productionMarketDashboardFlagEnvName = 'KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD';
 const quotePath = '/uapi/domestic-stock/v1/quotations/inquire-price';
 const dailyOhlcPath = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice';
 const tokenPath = '/oauth2/tokenP';
@@ -153,7 +158,10 @@ const getRuntimeConfig = (): KisRuntimeConfig | null => {
 };
 
 export const getKisQuoteConfigReadiness = (
-  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+  options: {
+    allowProductionChartAiBetaLiveQuotes?: boolean;
+    allowProductionMarketDashboardLiveData?: boolean;
+  } = {},
 ): KisQuoteConfigReadiness => {
   assertServerRuntime(moduleName);
   const missingEnvNames = getMissingEnvNames();
@@ -175,10 +183,23 @@ export const getKisQuoteConfigReadiness = (
     options.allowProductionChartAiBetaLiveQuotes === true &&
     readEnvValue(productionChartAiBetaFlagEnvName) === 'true';
 
-  // Hard block: Vercel Production (unless the scoped Chart AI beta exception applies),
-  // non-Vercel NODE_ENV=production, unknown VERCEL_ENV value
+  // Phase 3GJ: mirrors the exception above, scoped independently to the public live market
+  // dashboard's read-only OHLCV orchestration. The calling route sets the per-call signal only after
+  // its own guard (VERCEL_ENV=production + KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD=true + the request
+  // is the closed market-dashboard route) has already passed. Either exception independently lifts
+  // ONLY the runtime hard block below; every other check (KIS_ACCOUNT_NO absent, live-quotes flag,
+  // required credentials present) still runs unchanged.
+  const productionMarketDashboardExceptionAllowed =
+    runtimeClass === 'vercel-production' &&
+    options.allowProductionMarketDashboardLiveData === true &&
+    readEnvValue(productionMarketDashboardFlagEnvName) === 'true';
+
+  // Hard block: Vercel Production (unless a scoped exception applies), non-Vercel
+  // NODE_ENV=production, unknown VERCEL_ENV value
   if (
-    (runtimeClass === 'vercel-production' && !productionChartAiBetaExceptionAllowed) ||
+    (runtimeClass === 'vercel-production' &&
+      !productionChartAiBetaExceptionAllowed &&
+      !productionMarketDashboardExceptionAllowed) ||
     runtimeClass === 'node-production' ||
     runtimeClass === 'unknown'
   ) {
@@ -463,7 +484,10 @@ export const getKisDomesticDailyOhlcSeries = async (
     symbol: string;
     query: Record<string, string>;
   },
-  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+  options: {
+    allowProductionChartAiBetaLiveQuotes?: boolean;
+    allowProductionMarketDashboardLiveData?: boolean;
+  } = {},
 ): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
   assertServerRuntime(moduleName);
 
@@ -478,9 +502,11 @@ export const getKisDomesticDailyOhlcSeries = async (
   // Phase 3GG-OP-FAST: forward the same scoped production Chart AI beta signal the current_price
   // path uses (Phase 3GG-M-PROD-HF1). historical OHLCV is an explicitly in-scope read; the scope
   // stays quote-level (no KIS_ACCOUNT_NO, no order/account endpoint). kisClient re-verifies the
-  // Production flag before lifting its hard block, so this remains fail-closed.
+  // Production flag before lifting its hard block, so this remains fail-closed. Phase 3GJ adds an
+  // independent, OR'd market-dashboard exception (see getKisQuoteConfigReadiness).
   const readiness = getKisQuoteConfigReadiness({
     allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+    allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 
@@ -581,7 +607,10 @@ const isValidUsExchangeCode = (code: string) => US_EXCHANGE_CODES.includes(code)
  */
 export const getKisOverseasDailyOhlcSeries = async (
   input: { symbol: string; exchangeCode: string; bymd?: string },
-  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+  options: {
+    allowProductionChartAiBetaLiveQuotes?: boolean;
+    allowProductionMarketDashboardLiveData?: boolean;
+  } = {},
 ): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
   assertServerRuntime(moduleName);
 
@@ -599,6 +628,7 @@ export const getKisOverseasDailyOhlcSeries = async (
 
   const readiness = getKisQuoteConfigReadiness({
     allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+    allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 

@@ -118,9 +118,10 @@ process.stdout.write('\n');
 
 process.stdout.write('Home and responsive layout:\n');
 const mobilePosition = home.indexOf('<HomeMobileAd');
-const indexPosition = home.indexOf('<HomeIndexCards');
+// Phase 3GJ: HomeIndexCards.astro (fixture) was retired in favor of HomeLiveMarketSnapshot.astro (live data).
+const indexPosition = home.indexOf('<HomeLiveMarketSnapshot');
 check('Home imports HomeMobileAd', home.includes("import HomeMobileAd from '../components/HomeMobileAd.astro'"));
-check('Home renders mobile ad before HomeIndexCards',
+check('Home renders mobile ad before HomeLiveMarketSnapshot',
   mobilePosition !== -1 && indexPosition !== -1 && mobilePosition < indexPosition);
 check('Mobile viewport reserves 720 / 225 aspect ratio', styles.includes('aspect-ratio: 720 / 225'));
 check('Mobile images use object-fit contain',

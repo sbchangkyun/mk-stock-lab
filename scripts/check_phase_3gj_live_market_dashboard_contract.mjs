@@ -1,0 +1,286 @@
+/**
+ * Static contract check for Phase 3GJ — Live Market Dashboard.
+ * Verifies the closed tracked-universe registry, pure metrics/formatters, the server orchestration
+ * boundary (no direct KIS transport calls, bounded concurrency, honest error codes), the closed
+ * query-parameter contract on both API routes, Production/Preview gating wiring, client UI single-
+ * request-on-load + explicit-refresh-only behavior, fixture retirement, and package.json wiring.
+ * No network calls. No .env reads.
+ */
+
+globalThis.fetch = async (url) => {
+  throw new Error(`[checker] BLOCKED unexpected network call to: ${String(url).slice(0, 60)}`);
+};
+
+import { readFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = join(__dirname, '..');
+
+const UNIVERSES = join(root, 'src', 'data', 'marketTrackedUniverses.ts');
+const METRICS = join(root, 'src', 'lib', 'market-dashboard', 'metrics.ts');
+const FORMATTERS = join(root, 'src', 'lib', 'market-dashboard', 'formatters.ts');
+const SERVICE = join(root, 'src', 'lib', 'server', 'marketDashboard', 'marketDashboard.ts');
+const DASHBOARD_ROUTE = join(root, 'src', 'pages', 'api', 'market', 'dashboard.json.ts');
+const OVERVIEW_ROUTE = join(root, 'src', 'pages', 'api', 'market', 'overview.json.ts');
+const KIS_CLIENT = join(root, 'src', 'lib', 'server', 'providers', 'kisClient.ts');
+const LIVE_DASHBOARD = join(root, 'src', 'components', 'LiveMarketDashboard.astro');
+const HOME_SNAPSHOT = join(root, 'src', 'components', 'HomeLiveMarketSnapshot.astro');
+const MARKET_PAGE = join(root, 'src', 'pages', 'market.astro');
+const HOME_PAGE = join(root, 'src', 'pages', 'index.astro');
+const QUOTE_CARD = join(root, 'src', 'components', 'MarketLiveQuoteCard.astro');
+const PACKAGE_JSON = join(root, 'package.json');
+
+const log = (msg) => process.stdout.write(msg + '\n');
+let passes = 0;
+let failures = 0;
+const check = (label, pass) => {
+  log(`  [${pass ? 'PASS' : 'FAIL'}] ${label}`);
+  if (pass) passes++; else failures++;
+};
+const readOr = (path) => (existsSync(path) ? readFileSync(path, 'utf8') : '');
+
+log('=== Phase 3GJ Live Market Dashboard Static Contract ===');
+log('');
+
+// ---------------------------------------------------------------------------
+// Group 1: File existence
+// ---------------------------------------------------------------------------
+log('--- Group 1: File existence ---');
+for (const [name, path] of [
+  ['marketTrackedUniverses.ts', UNIVERSES],
+  ['metrics.ts', METRICS],
+  ['formatters.ts', FORMATTERS],
+  ['marketDashboard.ts (service)', SERVICE],
+  ['dashboard.json.ts route', DASHBOARD_ROUTE],
+  ['overview.json.ts route', OVERVIEW_ROUTE],
+  ['LiveMarketDashboard.astro', LIVE_DASHBOARD],
+  ['HomeLiveMarketSnapshot.astro', HOME_SNAPSHOT],
+  ['market.astro', MARKET_PAGE],
+]) {
+  check(`${name} exists`, existsSync(path));
+}
+
+const universes = readOr(UNIVERSES);
+const metrics = readOr(METRICS);
+const formatters = readOr(FORMATTERS);
+const service = readOr(SERVICE);
+const dashboardRoute = readOr(DASHBOARD_ROUTE);
+const overviewRoute = readOr(OVERVIEW_ROUTE);
+const kisClient = readOr(KIS_CLIENT);
+const liveDashboard = readOr(LIVE_DASHBOARD);
+const homeSnapshot = readOr(HOME_SNAPSHOT);
+const marketPage = readOr(MARKET_PAGE);
+const homePage = readOr(HOME_PAGE);
+const quoteCard = readOr(QUOTE_CARD);
+let pkg = {};
+try { pkg = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')); } catch {}
+
+// ---------------------------------------------------------------------------
+// Group 2: Tracked-universe registry — closed contract
+// ---------------------------------------------------------------------------
+log('--- Group 2: Tracked-universe registry ---');
+check('exports MARKET_UNIVERSE_IDS', universes.includes('MARKET_UNIVERSE_IDS'));
+check('exports findTrackedUniverse', universes.includes('export const findTrackedUniverse'));
+check('never exposes a my-portfolio universe id', !/['"]my-portfolio['"]/.test(universes));
+for (const id of ['kospi200', 'kosdaq150', 'sp500', 'nasdaq100']) {
+  check(`registry defines universe id ${id}`, universes.includes(`'${id}'`));
+}
+for (const [symbol, country] of [['069500', 'KR'], ['229200', 'KR'], ['SPY', 'US'], ['QQQ', 'US']]) {
+  check(`registry references benchmark proxy ${symbol}/${country}`, universes.includes(symbol) && universes.includes(`'${country}'`));
+}
+check('constituent metadata never carries a fake asOf field', !/asOf:\s*['"]2/.test(universes));
+check('constituent metadata never carries a fake baseChangePct field', !universes.includes('baseChangePct'));
+check('constituent metadata never carries fake momentum/trend fields', !/momentum\s*:|trend\s*:/.test(universes));
+
+// ---------------------------------------------------------------------------
+// Group 3: Pure metrics module — formula + boundary contract
+// ---------------------------------------------------------------------------
+log('--- Group 3: Pure metrics module ---');
+check('MARKET_DASHBOARD_PERIOD_IDS is exactly 1d/1w/1m/3m (no 6m/1y)',
+  /MARKET_DASHBOARD_PERIOD_IDS[\s\S]{0,40}=\s*\[\s*'1d',\s*'1w',\s*'1m',\s*'3m'\s*\]/.test(metrics));
+check('does not define a 6m period offset', !metrics.includes("'6m'"));
+check('does not define a 1y period offset', !metrics.includes("'1y'"));
+check('trading-day offsets match spec (1d=1, 1w=5, 1m=21, 3m=63)',
+  /1d['"]?:\s*1\b/.test(metrics) && /1w['"]?:\s*5\b/.test(metrics) && /1m['"]?:\s*21\b/.test(metrics) && /3m['"]?:\s*63\b/.test(metrics));
+check('MOMENTUM_WINDOW_TRADING_DAYS = 20', /MOMENTUM_WINDOW_TRADING_DAYS\s*=\s*20/.test(metrics));
+check('TREND_SMA_WINDOW_TRADING_DAYS = 60', /TREND_SMA_WINDOW_TRADING_DAYS\s*=\s*60/.test(metrics));
+check('MARKET_DASHBOARD_MIN_VALID_CONSTITUENTS = 5', /MARKET_DASHBOARD_MIN_VALID_CONSTITUENTS\s*=\s*5/.test(metrics));
+check('MARKET_DASHBOARD_MIN_COVERAGE_RATIO = 0.4', /MARKET_DASHBOARD_MIN_COVERAGE_RATIO\s*=\s*0\.4/.test(metrics));
+check('exports computePeriodReturnPct', metrics.includes('export const computePeriodReturnPct'));
+check('exports computeMomentum20dPct', metrics.includes('export const computeMomentum20dPct'));
+check('exports computeSma60', metrics.includes('export const computeSma60'));
+check('exports computeTrendVsSma60Pct', metrics.includes('export const computeTrendVsSma60Pct'));
+check('exports aggregateWeightedBreadth', metrics.includes('export const aggregateWeightedBreadth'));
+check('exports meetsMinimumRenderThreshold', metrics.includes('export const meetsMinimumRenderThreshold'));
+check('exports classifyOverallFreshness', metrics.includes('export const classifyOverallFreshness'));
+check('module has zero fetch/network calls (pure calc only)', !/\bfetch\s*\(/.test(metrics));
+
+// ---------------------------------------------------------------------------
+// Group 4: Formatters — client-safe, never fabricates a placeholder as real data
+// ---------------------------------------------------------------------------
+log('--- Group 4: Display formatters ---');
+check('exports formatSignedPct', formatters.includes('export const formatSignedPct'));
+check('exports changeToneClass', formatters.includes('export const changeToneClass'));
+check('exports colorForReturn', formatters.includes('export const colorForReturn'));
+check('exports freshnessLabel', formatters.includes('export const freshnessLabel'));
+check('exports formatAsOfDate', formatters.includes('export const formatAsOfDate'));
+check('PERIOD_LABELS has no 6m/1y keys', !formatters.includes("'6m'") && !formatters.includes("'1y'"));
+check('formatAsOfDate validates the yyyymmdd shape before formatting', /\/\^\\d\{8\}\$\//.test(formatters));
+check('module has zero fetch/network calls (pure formatting only)', !/\bfetch\s*\(/.test(formatters));
+
+// ---------------------------------------------------------------------------
+// Group 5: Server orchestration — provider boundary, concurrency, honest errors
+// ---------------------------------------------------------------------------
+log('--- Group 5: Server orchestration boundary ---');
+check('service reuses fetchLongHistoryOhlcv (shared cached OHLCV orchestration)',
+  service.includes("import { fetchLongHistoryOhlcv } from '../chart-ai/universalOhlcvProvider'"));
+check('service reuses findUniversalInstrument (shared instrument resolver)',
+  service.includes("import { findUniversalInstrument } from '../chart-ai/universal-instrument-search.mjs'"));
+check('service never imports the KIS transport client directly',
+  !/from ['"].*providers\/kisClient['"]/.test(service));
+check('service never references a KIS TR id or endpoint path literal',
+  !/FHKST\d|\/uapi\//.test(service));
+check('service exposes a deps-injection seam (getMarketDashboard accepts deps)',
+  /getMarketDashboard\s*=\s*async\s*\(/.test(service) && /deps:\s*Partial<MarketDashboardDeps>/.test(service));
+check('CONCURRENCY_LIMIT = 3 (spec section 10: max 3 concurrent resolutions)', /CONCURRENCY_LIMIT\s*=\s*3/.test(service));
+check('mapWithConcurrency never expands into an unbounded Promise.all over all items',
+  !/Promise\.all\(\s*items\.map/.test(service));
+check('STALE_AFTER_CALENDAR_DAYS = 4', /STALE_AFTER_CALENDAR_DAYS\s*=\s*4/.test(service));
+for (const code of [
+  'VALIDATION_FAILED',
+  'MARKET_DASHBOARD_DISABLED',
+  'MARKET_DATA_UNAVAILABLE',
+  'MARKET_DATA_PARTIAL_BELOW_THRESHOLD',
+  'PROVIDER_RATE_LIMITED',
+]) {
+  check(`service defines sanitized error code ${code}`, service.includes(code));
+}
+check('a failed constituent is marked unresolved/unavailable, never silently coerced to a zero return',
+  /status:\s*['"]unresolved['"]/.test(service) && /periodReturnPct:\s*null/.test(service));
+check('getMarketOverview only resolves the four registry benchmark proxies, never a client symbol',
+  /getMarketOverview\s*=\s*async[\s\S]{0,900}mapWithConcurrency\(MARKET_TRACKED_UNIVERSES/.test(service));
+
+// ---------------------------------------------------------------------------
+// Group 6: Production/Preview gating wiring
+// ---------------------------------------------------------------------------
+log('--- Group 6: Production/Preview gating ---');
+check('kisClient defines the independent KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD flag',
+  kisClient.includes("'KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD'"));
+check('readiness accepts an allowProductionMarketDashboardLiveData option',
+  kisClient.includes('allowProductionMarketDashboardLiveData'));
+check('the market-dashboard Production exception requires vercel-production runtime AND the scoped option AND the env flag',
+  /productionMarketDashboardExceptionAllowed\s*=\s*\s*[\s\S]{0,160}runtimeClass === ['"]vercel-production['"][\s\S]{0,160}options\.allowProductionMarketDashboardLiveData === true[\s\S]{0,160}productionMarketDashboardFlagEnvName/.test(kisClient));
+check('routes pass allowProductionMarketDashboardLiveData: true (the internal scoped signal) only from this dedicated route',
+  dashboardRoute.includes('allowProductionMarketDashboardLiveData: true') && overviewRoute.includes('allowProductionMarketDashboardLiveData: true'));
+check('routes never enable the Chart AI beta exception',
+  !dashboardRoute.includes('allowProductionChartAiBetaLiveQuotes') && !overviewRoute.includes('allowProductionChartAiBetaLiveQuotes'));
+check('the market-dashboard exception is independently OR-able with the Chart AI exception, not a replacement for it',
+  kisClient.includes('productionChartAiBetaExceptionAllowed') && kisClient.includes('productionMarketDashboardExceptionAllowed'));
+
+// ---------------------------------------------------------------------------
+// Group 7: API routes — closed query-parameter contract, honest cache headers
+// ---------------------------------------------------------------------------
+log('--- Group 7: API routes — closed query contract ---');
+check('dashboard route is server-rendered (prerender = false)', /export const prerender = false/.test(dashboardRoute));
+check('overview route is server-rendered (prerender = false)', /export const prerender = false/.test(overviewRoute));
+check('dashboard route reads only universe and period from the query string',
+  (dashboardRoute.match(/url\.searchParams\.get\(/g) || []).length === 2 &&
+  dashboardRoute.includes("searchParams.get('universe')") &&
+  dashboardRoute.includes("searchParams.get('period')"));
+check('overview route reads only period from the query string',
+  (overviewRoute.match(/url\.searchParams\.get\(/g) || []).length === 1 &&
+  overviewRoute.includes("searchParams.get('period')"));
+check('dashboard route validates universe against the closed MARKET_UNIVERSE_IDS enum',
+  dashboardRoute.includes('MARKET_UNIVERSE_IDS.includes('));
+check('both routes validate period against the closed MARKET_DASHBOARD_PERIOD_IDS enum',
+  dashboardRoute.includes('MARKET_DASHBOARD_PERIOD_IDS.includes(') && overviewRoute.includes('MARKET_DASHBOARD_PERIOD_IDS.includes('));
+check('dashboard route never reads a symbol/sector/exchange/provider/force-refresh param',
+  !/searchParams\.get\((['"])(?:symbol|symbols|sector|exchange|provider|forceRefresh|bypassCache|chartAiBeta)\1\)/.test(dashboardRoute));
+check('overview route never reads a symbol/sector/exchange/provider/force-refresh param',
+  !/searchParams\.get\((['"])(?:symbol|symbols|sector|exchange|provider|forceRefresh|bypassCache|chartAiBeta)\1\)/.test(overviewRoute));
+check('success responses use the documented cache-control (s-maxage=60, stale-while-revalidate=300)',
+  dashboardRoute.includes('s-maxage=60, stale-while-revalidate=300') && overviewRoute.includes('s-maxage=60, stale-while-revalidate=300'));
+check('error/unavailable responses use no-store', dashboardRoute.includes("NO_STORE = 'no-store'") && overviewRoute.includes("NO_STORE = 'no-store'"));
+check('both routes reject non-GET methods (ALL handler)', dashboardRoute.includes('export const ALL') && overviewRoute.includes('export const ALL'));
+check('routes never call a KIS transport function directly (readiness check only)',
+  !/getKisDomesticQuoteSnapshot|getKisOverseasQuoteSnapshot|getKisDailyOhlcSeries|getKisOverseasDailyOhlcSeries/.test(dashboardRoute + overviewRoute));
+
+// ---------------------------------------------------------------------------
+// Group 8: Client UI — single request on load, explicit-refresh-only, no polling
+// ---------------------------------------------------------------------------
+log('--- Group 8: Client UI behavior ---');
+check('LiveMarketDashboard has no setInterval / polling loop', !liveDashboard.includes('setInterval'));
+check('LiveMarketDashboard has no auto-retry / recursive refresh timer', !/setTimeout\(\s*load(Dashboard|Overview)/.test(liveDashboard));
+check('LiveMarketDashboard fetches overview exactly once via a dedicated loader', liveDashboard.includes("fetch('/api/market/overview.json"));
+check('LiveMarketDashboard fetches the dashboard via a dedicated loader keyed by universe+period',
+  liveDashboard.includes('/api/market/dashboard.json?universe='));
+check('LiveMarketDashboard refresh is gated by explicit tab click listeners',
+  /universeTabs\.forEach\(\(tab\)\s*=>\s*\{\s*tab\.addEventListener\('click'/.test(liveDashboard) &&
+  /periodTabs\.forEach\(\(tab\)\s*=>\s*\{\s*tab\.addEventListener\('click'/.test(liveDashboard));
+check('LiveMarketDashboard guards against stale out-of-order responses (requestToken)', liveDashboard.includes('requestToken'));
+check('LiveMarketDashboard renders an honest partial-below-threshold message, never a fabricated chart',
+  liveDashboard.includes('MARKET_DATA_PARTIAL_BELOW_THRESHOLD'));
+check('LiveMarketDashboard reuses the d3-hierarchy treemap approach', liveDashboard.includes("import('d3-hierarchy')"));
+check('LiveMarketDashboard never labels a proxy as the exact index/현재가',
+  !/지수\s*현재가|실시간\s*값/.test(liveDashboard));
+check('LiveMarketDashboard preserves the MarketLiveQuoteCard integration (out of scope, untouched)',
+  liveDashboard.includes('MarketLiveQuoteCard') && liveDashboard.includes('KIS_ENABLE_MARKET_QUOTE_CARD'));
+
+log('--- Group 8b: Home live market snapshot ---');
+check('HomeLiveMarketSnapshot has no setInterval / polling loop', !homeSnapshot.includes('setInterval'));
+check('HomeLiveMarketSnapshot fetches overview exactly once (single script-level fetch call)',
+  (homeSnapshot.match(/fetch\(/g) || []).length === 1 && homeSnapshot.includes("fetch('/api/market/overview.json"));
+check('HomeLiveMarketSnapshot renders an honest unavailable state, never a fabricated card',
+  homeSnapshot.includes('data-home-snapshot-unavailable'));
+check('Home page renders HomeLiveMarketSnapshot', homePage.includes('HomeLiveMarketSnapshot'));
+
+// ---------------------------------------------------------------------------
+// Group 9: Fixture retirement
+// ---------------------------------------------------------------------------
+log('--- Group 9: Fixture retirement ---');
+for (const retiredPath of [
+  join(root, 'src', 'components', 'MarketShell.astro'),
+  join(root, 'src', 'components', 'MarketFixtureDashboard.astro'),
+  join(root, 'src', 'data', 'marketTreemapSamples.ts'),
+  join(root, 'src', 'data', 'marketFixtureDashboard.json'),
+  join(root, 'src', 'components', 'HomeIndexCards.astro'),
+  join(root, 'src', 'data', 'homeIndexCards.json'),
+]) {
+  check(`retired fixture no longer exists: ${retiredPath.slice(root.length + 1)}`, !existsSync(retiredPath));
+}
+check('market.astro no longer imports the retired MarketShell/MarketFixtureDashboard fixtures',
+  !marketPage.includes('MarketShell') && !marketPage.includes('MarketFixtureDashboard'));
+check('market.astro renders LiveMarketDashboard', marketPage.includes('LiveMarketDashboard'));
+check('index.astro no longer imports the retired HomeIndexCards fixture', !homePage.includes('HomeIndexCards'));
+check('MarketLiveQuoteCard.astro (explicitly out of scope) still exists untouched', existsSync(QUOTE_CARD));
+check('quote card still targets /api/market/quote (separate, already-gated feature)', quoteCard.includes('/api/market/quote'));
+
+// ---------------------------------------------------------------------------
+// Group 10: No account/trading/LLM/second-provider surfaces introduced
+// ---------------------------------------------------------------------------
+log('--- Group 10: No prohibited surfaces ---');
+const allNewServerCode = [service, dashboardRoute, overviewRoute].join('\n');
+check('no KIS_ACCOUNT_NO reference in the new market-dashboard server code', !allNewServerCode.includes('KIS_ACCOUNT_NO'));
+check('no order/balance/trading/account endpoint reference', !/\/api\/(?:kis-)?(?:order|trade|balance|account)/i.test(allNewServerCode));
+check('no external LLM client import', !/openai|gemini|anthropic/i.test(allNewServerCode));
+check('no second market-data provider introduced', !/yfinance|alpha_?vantage|polygon\.io|finnhub/i.test(allNewServerCode));
+check('no raw provider payload / header / Supabase internals ever exposed in a route response',
+  !/candles:\s*result\.candles(?!\s*\.map)/.test(allNewServerCode) || service.includes('extractCloses'));
+
+// ---------------------------------------------------------------------------
+// Group 11: package.json wiring
+// ---------------------------------------------------------------------------
+log('--- Group 11: package.json wiring ---');
+check('package.json has smoke:phase-3gj-live-market-dashboard script',
+  typeof pkg.scripts?.['smoke:phase-3gj-live-market-dashboard'] === 'string');
+check('package.json has check:phase-3gj-live-market-dashboard script',
+  typeof pkg.scripts?.['check:phase-3gj-live-market-dashboard'] === 'string');
+
+// ---------------------------------------------------------------------------
+// Summary
+// ---------------------------------------------------------------------------
+log('');
+log(`Total: ${passes + failures} | Passed: ${passes} | Failed: ${failures}`);
+process.exit(failures === 0 ? 0 : 1);
