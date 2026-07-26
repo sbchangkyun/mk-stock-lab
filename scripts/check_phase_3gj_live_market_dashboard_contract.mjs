@@ -263,8 +263,11 @@ check('routes pass allowProductionMarketDashboardLiveData: true (the internal sc
   dashboardRoute.includes('allowProductionMarketDashboardLiveData: true') && overviewRoute.includes('allowProductionMarketDashboardLiveData: true'));
 check('routes never enable the Chart AI beta exception',
   !dashboardRoute.includes('allowProductionChartAiBetaLiveQuotes') && !overviewRoute.includes('allowProductionChartAiBetaLiveQuotes'));
+// Phase 3GK renamed productionChartAiBetaExceptionAllowed -> productionChartAiExceptionAllowed when the
+// Production Chart AI beta gate was retired (Chart AI is now a stable, always-on Production product);
+// the OR-able independence from the market-dashboard exception is unchanged, only the name changed.
 check('the market-dashboard exception is independently OR-able with the Chart AI exception, not a replacement for it',
-  kisClient.includes('productionChartAiBetaExceptionAllowed') && kisClient.includes('productionMarketDashboardExceptionAllowed'));
+  kisClient.includes('productionChartAiExceptionAllowed') && kisClient.includes('productionMarketDashboardExceptionAllowed'));
 
 // ---------------------------------------------------------------------------
 // Group 7: API routes — closed query-parameter contract, honest cache headers

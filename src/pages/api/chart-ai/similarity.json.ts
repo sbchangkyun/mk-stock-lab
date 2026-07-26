@@ -4,7 +4,7 @@
  * GET /api/chart-ai/similarity.json?country=&symbol=&window=&topK=
  *
  * Guarded exactly like the OHLCV/summary routes (localhost owner opt-in `?ownerLocalSimilarity=1`,
- * protected Preview beta, or production Chart AI beta; only the production-beta path forwards the
+ * protected Preview beta, or stable Vercel Production; only the Production path forwards the
  * scoped live-quote exception). Fetches multi-year REAL OHLCV via the provider-neutral long-history
  * pager, runs the deterministic similarity engine, and returns sanitized Top-K matches + aggregate
  * historical outcomes. No sample/synthetic fallback, no fabricated dates/scores/returns, no LLM, no
@@ -15,7 +15,7 @@
 import type { APIRoute } from 'astro';
 import {
   evaluateProtectedPreviewBetaAccess,
-  evaluateProductionChartAiBetaAccess,
+  evaluateStableProductionChartAiAccess,
 } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
 import { validateUserFromBearerToken } from '../../../lib/server/supabaseAdmin';
@@ -116,12 +116,8 @@ export const GET: APIRoute = async ({ url, request }) => {
       CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA: readServerEnvValue('CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA'),
     },
   });
-  const prodBetaAccess = evaluateProductionChartAiBetaAccess({
-    betaQueryOptIn: url.searchParams.get('chartAiProdBeta') === '1',
-    env: {
-      VERCEL_ENV: readServerEnvValue('VERCEL_ENV'),
-      CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA: readServerEnvValue('CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA'),
-    },
+  const prodBetaAccess = evaluateStableProductionChartAiAccess({
+    env: { VERCEL_ENV: readServerEnvValue('VERCEL_ENV') },
   });
 
   if (!localOwnerAllowed && !betaAccess.allowed && !prodBetaAccess.allowed) {
@@ -197,7 +193,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   try {
     const history = await fetchLongHistoryOhlcv({
       instrument,
-      allowProductionChartAiBetaLiveQuotes: allowProd,
+      allowProductionChartAiLiveData: allowProd,
     });
     const ohlcvCacheState = typeof history.cacheState === 'string' ? history.cacheState : 'MISS';
 

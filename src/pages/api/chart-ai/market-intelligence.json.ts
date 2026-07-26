@@ -4,7 +4,7 @@
  * GET /api/chart-ai/market-intelligence.json?country=&symbol=
  *
  * Guarded exactly like the OHLCV/similarity/MK-AI routes (localhost `?ownerLocalMarketIntel=1`,
- * protected Preview beta, or production `?chartAiProdBeta=1`; only the production-beta path forwards
+ * protected Preview beta, or stable Vercel Production; only the Production path forwards
  * the scoped live-quote exception). Resolves a real representative benchmark + (optional verified)
  * sector, fetches REAL long-history OHLCV for the selected / benchmark / sector / gold / oil ETFs (via
  * the existing provider) and USD/KRW from the free ECB Frankfurter API, then runs the DETERMINISTIC
@@ -16,7 +16,7 @@
 import type { APIRoute } from 'astro';
 import {
   evaluateProtectedPreviewBetaAccess,
-  evaluateProductionChartAiBetaAccess,
+  evaluateStableProductionChartAiAccess,
 } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
 import { validateUserFromBearerToken } from '../../../lib/server/supabaseAdmin';
@@ -82,9 +82,8 @@ export const GET: APIRoute = async ({ url, request }) => {
     betaQueryOptIn: url.searchParams.get('chartAiBetaPreview') === '1',
     env: { VERCEL_ENV: readServerEnvValue('VERCEL_ENV'), NODE_ENV: readServerEnvValue('NODE_ENV'), CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA: readServerEnvValue('CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA') },
   });
-  const prodBetaAccess = evaluateProductionChartAiBetaAccess({
-    betaQueryOptIn: url.searchParams.get('chartAiProdBeta') === '1',
-    env: { VERCEL_ENV: readServerEnvValue('VERCEL_ENV'), CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA: readServerEnvValue('CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA') },
+  const prodBetaAccess = evaluateStableProductionChartAiAccess({
+    env: { VERCEL_ENV: readServerEnvValue('VERCEL_ENV') },
   });
   if (!ownerLocal && !betaAccess.allowed && !prodBetaAccess.allowed) {
     return jsonResponse({ ok: true, marketIntel: blocked(SANITIZED.NON_LOCAL_REQUEST) });
@@ -112,7 +111,7 @@ export const GET: APIRoute = async ({ url, request }) => {
     // cached (6h), so after warm-up only the selected instrument is fetched fresh.
     const TARGET_BARS = 220;
     const fetchOhlcv = (inst: any) =>
-      fetchLongHistoryOhlcv({ instrument: inst, allowProductionChartAiBetaLiveQuotes: allowProd, targetBars: TARGET_BARS }).catch(() => null);
+      fetchLongHistoryOhlcv({ instrument: inst, allowProductionChartAiLiveData: allowProd, targetBars: TARGET_BARS }).catch(() => null);
 
     // Serialize the KIS OHLCV fetches (concurrency 1) so parallel paginated requests do not trip KIS
     // rate limits; run the independent FX fetch (different host) concurrently.

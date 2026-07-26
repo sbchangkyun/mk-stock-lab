@@ -8,10 +8,7 @@ import {
 } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
 import { createChartAiKisMarketDataContext } from '../../../lib/server/chart-ai/kis-market-data-to-chart-ai-context.mjs';
 import { runLocalOnlyLlmRuntimeBridge } from '../../../lib/server/chart-ai/local-only-llm-runtime-bridge.mjs';
-import {
-  evaluateProtectedPreviewBetaAccess,
-  evaluateProductionChartAiBetaAccess,
-} from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
+import { evaluateProtectedPreviewBetaAccess } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { getKisDomesticQuoteSnapshot } from '../../../lib/server/providers/kisClient';
 
 export const prerender = false;
@@ -65,19 +62,18 @@ const readServerEnvValue = (name: string): string | undefined => {
 
 const fetchQuote = async ({
   symbol,
-  allowProductionChartAiBetaLiveQuotes,
+  allowProductionChartAiLiveData,
 }: {
   symbol: string;
   category: string;
-  allowProductionChartAiBetaLiveQuotes?: boolean;
+  allowProductionChartAiLiveData?: boolean;
 }) => {
-  // Phase 3GG-M-PROD-HF1: forward the scoped production Chart AI beta signal to the provider client.
-  // It is true only when the GET handler's production beta guard (VERCEL_ENV=production +
-  // CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true + ?chartAiProdBeta=1) has already passed; kisClient
-  // re-checks the Production flag itself before lifting its hard block, and the scope stays current_price.
+  // Phase 3GK: this debug/local-only summary route never runs on Production (see the GET handler's
+  // gate below), so this is always false here -- kept only to satisfy the shared fetchQuote/
+  // getKisDomesticQuoteSnapshot signature used by the localhost-owner and Preview paths.
   const result = await getKisDomesticQuoteSnapshot(
     { market: 'KR', symbol },
-    { allowProductionChartAiBetaLiveQuotes: allowProductionChartAiBetaLiveQuotes === true },
+    { allowProductionChartAiLiveData: allowProductionChartAiLiveData === true },
   );
   if (!result.ok) return { ok: false as const, code: 'PROVIDER_UNAVAILABLE' };
   return {
@@ -122,24 +118,12 @@ export const GET: APIRoute = async ({ url, request }) => {
     },
   });
 
-  // Path 3 (Phase 3GG-M-PROD-BETA-DEPLOY): production Chart AI beta flow. Separate fail-closed guard
-  // -- grants access ONLY on the actual Vercel Production deployment (VERCEL_ENV=production) with the
-  // owner flag CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true AND the explicit ?chartAiProdBeta=1
-  // opt-in. Any non-production runtime (including Preview) fails closed on this path.
-  const prodBetaOptIn = url.searchParams.get('chartAiProdBeta') === '1';
-  const prodBetaAccess = evaluateProductionChartAiBetaAccess({
-    betaQueryOptIn: prodBetaOptIn,
-    env: {
-      VERCEL_ENV: readServerEnvValue('VERCEL_ENV'),
-      CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA: readServerEnvValue('CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA'),
-    },
-  });
-
-  // Phase 3GG-T-HF1: the low-value three-line MK AI 시세 요약 is REMOVED from the Production Chart AI
-  // UI and this route is Production-disabled. The production beta path (path 3) no longer grants
-  // access, so any deployed Production request fails closed here. The localhost owner path (path 1) and
-  // the protected Preview beta path (path 2) remain ONLY for historical localhost/Preview regression
-  // compatibility — the Production UI never renders or calls this route (verified by browser QA).
+  // Phase 3GG-T-HF1 / Phase 3GK: the low-value three-line MK AI 시세 요약 stays REMOVED from the stable
+  // Production Chart AI UI, and this route stays Production-disabled by construction -- there is no
+  // Production access path here at all (only path 1 and path 2 above can pass this gate), so any
+  // deployed Production request fails closed. The localhost owner path (path 1) and the protected
+  // Preview beta path (path 2) remain ONLY for historical localhost/Preview regression compatibility —
+  // the Production UI never renders or calls this route (verified by browser QA).
   if (!localOwnerAllowed && !betaAccess.allowed) {
     return jsonResponse({ ok: true, summary: blockedSummaryResponse(SANITIZED_ERROR_CODES.NON_LOCAL_REQUEST) });
   }
@@ -171,12 +155,11 @@ export const GET: APIRoute = async ({ url, request }) => {
     ? { NODE_ENV: process.env.NODE_ENV, VERCEL_ENV: process.env.VERCEL_ENV, VERCEL: process.env.VERCEL }
     : {};
 
-  // Phase 3GG-M-PROD-HF1: the scoped production KIS live-quote exception is enabled ONLY for an
-  // authorized production beta request (prodBetaAccess.allowed). The localhost owner path and the
-  // Preview beta path leave this false, so their behavior is unchanged (and on those runtimes
-  // kisClient's production hard block does not apply anyway). kisClient independently re-verifies the
-  // Production flag before honoring the signal, so this remains fail-closed and current_price-scoped.
-  const allowProductionChartAiBetaLiveQuotes = prodBetaAccess.allowed === true;
+  // Phase 3GK: this route has no Production access path (see the gate above), so the scoped
+  // production KIS live-quote exception never needs to be lifted here -- always false. The localhost
+  // owner path and the Preview beta path never needed it either (kisClient's production hard block
+  // does not apply on those runtimes anyway).
+  const allowProductionChartAiLiveData = false;
 
   const sanitizedKis = await runLocalOnlyLiveKisMarketDataRequest(
     {
@@ -185,7 +168,7 @@ export const GET: APIRoute = async ({ url, request }) => {
       symbol,
       category: 'current_price',
       nowMs: Date.now(),
-      allowProductionChartAiBetaLiveQuotes,
+      allowProductionChartAiLiveData,
     },
     { rateLimiter, cache, hasEnvValue, fetchQuote, now: () => Date.now(), timeoutMs: 8000 },
   );

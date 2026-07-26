@@ -115,34 +115,37 @@ to Production Supabase (via the Supabase Dashboard SQL Editor), not independentl
 - **Phase 3GI — User Retention and Persistence, including HF2 privilege lockdown.** `MERGED_TO_MAIN` (PR #5,
   merge commit `16eee94`). See `phase_3gi_user_retention_persistence_result_v0.1.md` for the full
   classification. See §1b.
+- **Phase 3GJ — Live Market Dashboard, including HF1/HF2/HF3 pre-merge correctness hotfixes.** `MERGED_TO_MAIN`
+  (PR #6, `668e528`). Replaces the fixture-driven Home index-card snapshot and public Market page with a live
+  dashboard for `kospi200`/`kosdaq150`/`sp500`/`nasdaq100`, sourced entirely from the existing shared KIS OHLCV
+  orchestration and durable token manager. See `phase_3gj_live_market_dashboard_result_v0.1.md` for the full
+  classification.
 
 ### In progress
 
-- **Phase 3GJ — Live Market Dashboard, including HF1/HF2 pre-merge correctness hotfixes.** A protected-Preview
-  check surfaced `MARKET_DATA_UNAVAILABLE` on `GET /api/market/overview.json` after the base MVP; HF1 hardened
-  rate-limit/coverage/freshness-precedence/`commonAsOf` correctness but Preview still returned
-  `MARKET_DATA_UNAVAILABLE`; HF2 then found and fixed the actual root cause — an unanchored `/^\d{8}/` prefix
-  test in the freshness parser silently rejecting the shared normalizer's ISO-8601 dates — replacing it with a
-  closed, anchored, round-trip-validated `parseMarketDataTimestampToUtcMs()`. See
-  `phase_3gj_live_market_dashboard_result_v0.1.md` §9/§10 for full detail and the authoritative classification.
-  Replaces the fixture-driven Home index-card snapshot and public Market page with a live dashboard for
-  `kospi200`/`kosdaq150`/`sp500`/`nasdaq100`, sourced entirely from the existing shared KIS OHLCV orchestration
-  and durable token manager — no new KIS endpoint, no second data provider. Branch
-  `feature/phase-3gj-live-market-dashboard`, created from `origin/main` at `16eee948c0ce34f5b92394e98b3527e5545bf4a7`
-  (the Phase 3GI-HF2 merge commit), PR #6. Not yet merged; Production activation flag
-  (`KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD`) referenced but not set.
+- **Phase 3GK — Chart AI Beta Productization.** Graduates Chart AI from "beta preview gated behind
+  `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA` + `?chartAiProdBeta=1`" to a stable, always-on, authenticated
+  Production product: the new `evaluateStableProductionChartAiAccess` guard allows on `VERCEL_ENV=production`
+  alone (no flag/query), the protected-Preview beta guard stays fully untouched and independent, and
+  `allowProductionChartAiBetaLiveQuotes` is renamed `allowProductionChartAiLiveData` end-to-end. New
+  `smoke:phase-3gk-chart-ai-beta-productization` (17/17) and `check:phase-3gk-chart-ai-beta-productization`
+  (115/115) suites; full regression gate (3GJ/3GI/3GH smoke+check, `npm ls`, `npm run build`,
+  `git diff --check`) clean. Detailed responsive/cross-browser/accessibility/all-symbol/all-market/
+  long-session QA is explicitly deferred to Phase 3 Closeout (after Phase 3GL). See
+  `phase_3gk_chart_ai_beta_productization_result_v0.1.md` for full detail. Branch
+  `feature/phase-3gk-chart-ai-beta-productization`, created from `origin/main` at `668e528` (the Phase 3GJ
+  merge commit). PR not yet opened at the point this line was written.
 
 ### Next sequential product phases
 
-1. **Phase 3GK — Chart AI Beta Productization.** `PLANNED`. Graduate Chart AI from "beta preview gated behind
-   `chartAiBetaPreview`" toward a stable, fully-Production, no-flag experience — closing out remaining HF-scale
-   UX debt (mobile/a11y edge cases, similarity explainability polish) identified across the 3GG-T-HF3B
-   sub-phases.
-2. **Phase 3GL — Operations and Admin MVP.** `PLANNED`. Minimal internal visibility into usage-guard counters,
+1. **Phase 3GL — Operations and Admin MVP.** `PLANNED`. Minimal internal visibility into usage-guard counters,
    KIS token health, and quote-cache staleness — currently only inspectable via ad hoc Owner smoke scripts and
    Supabase Dashboard queries, not a real operational surface.
+2. **Phase 3 Closeout.** `PLANNED`. Runs after Phase 3GL — performs the detailed responsive/cross-browser/
+   accessibility/all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc), plus
+   any other cross-cutting Phase 3 closeout verification.
 
-Phase 3GK is explicitly **not** started by this document or this phase — this section only records that it is
+Phase 3GL is explicitly **not** started by this document or this phase — this section only records that it is
 next in sequence, per the governing spec's instruction not to begin it here.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
@@ -181,9 +184,12 @@ next in sequence, per the governing spec's instruction not to begin it here.
 5. **US/USD valuation gap** (carried from the prior version) remains unresolved and increasingly visible as
    more surfaces (now including the watchlist, which is market-agnostic) add cross-market functionality
    around it.
-6. **Phase 3GJ Production activation is gated but unset.** `KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD` is
-   referenced by the new readiness exception but not set in any environment this phase — the live market
-   dashboard cannot serve real data in Production until an Owner reviews and sets it.
+6. **Phase 3GJ Production activation completed** (`KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD=true` set, PR #6
+   merged, Production deployment reached READY, controlled live-data acceptance passed) — no longer an open
+   risk; carried here only as a closed-item reference.
+7. **Phase 3GK PR not yet opened** at the point this document was updated. The stable Production access model
+   (§4 "In progress") is implemented and gate-clean on the feature branch but has not had a Preview deployment
+   verified yet — see `phase_3gk_chart_ai_beta_productization_result_v0.1.md` §1.
 
 ## 6. Owner-only QA / decision items
 
@@ -193,10 +199,11 @@ next in sequence, per the governing spec's instruction not to begin it here.
   migrations (Owner-reported applied) are actually live and correct on the target Supabase project(s).
 - Authenticated Preview/Production QA of Phase 3GI's resume card, watchlist (Home + Chart AI), and Portfolio
   deep-link behavior.
-- Review and, if approved, set `KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD=true` in Production to activate Phase
-  3GJ's live market dashboard — not performed by this phase per explicit instruction.
-- Signed-out/public Preview QA of Phase 3GJ's Market dashboard (all four universes/periods) and Home live
-  snapshot, including mobile viewport and treemap/scatter export.
-- Confirm the Phase 3GJ PR's Preview deployment reaches READY with no secret printed, and that Netlify Preview
-  is not red.
-- Decide whether to merge the Phase 3GJ PR (not performed by this phase per explicit instruction).
+- ~~Review and, if approved, set `KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD=true` in Production~~ — done; Phase
+  3GJ is merged and its live market dashboard is Production-activated.
+- Full signed-out/public detailed QA of Phase 3GJ's Market dashboard (all four universes/periods) and Home live
+  snapshot, including mobile viewport and treemap/scatter export, plus the analogous detailed sweep for Phase
+  3GK — both explicitly deferred to Phase 3 Closeout (see Phase 3GK result doc §7).
+- Confirm the Phase 3GK PR's Preview deployment reaches READY with no secret printed, and that Netlify Preview
+  is not red, once the PR is opened.
+- Decide whether to merge the Phase 3GK PR (not performed by this phase per explicit instruction).

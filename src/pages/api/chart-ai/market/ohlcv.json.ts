@@ -5,7 +5,7 @@
  *
  * Returns real, delayed OHLCV candles for a selected instrument. Guarded exactly like the KIS+LLM
  * summary route: a localhost owner opt-in (?ownerLocalOhlcv=1), the protected Vercel Preview beta,
- * or the production Chart AI beta. Only the production-beta path forwards the scoped live-quote
+ * or stable Vercel Production. Only the Production path forwards the scoped live-quote
  * exception to kisClient. No sample/synthetic OHLCV fallback: an unavailable/no-data result is
  * returned honestly with a sanitized error code. Numeric OHLCV is intentional on this dedicated
  * chart-data path and is kept separate from the non-numeric LLM summary contract.
@@ -14,7 +14,7 @@
 import type { APIRoute } from 'astro';
 import {
   evaluateProtectedPreviewBetaAccess,
-  evaluateProductionChartAiBetaAccess,
+  evaluateStableProductionChartAiAccess,
 } from '../../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
 import { validateUserFromBearerToken } from '../../../../lib/server/supabaseAdmin';
@@ -117,12 +117,8 @@ export const GET: APIRoute = async ({ url, request }) => {
     },
   });
 
-  const prodBetaAccess = evaluateProductionChartAiBetaAccess({
-    betaQueryOptIn: url.searchParams.get('chartAiProdBeta') === '1',
-    env: {
-      VERCEL_ENV: readServerEnvValue('VERCEL_ENV'),
-      CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA: readServerEnvValue('CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA'),
-    },
+  const prodBetaAccess = evaluateStableProductionChartAiAccess({
+    env: { VERCEL_ENV: readServerEnvValue('VERCEL_ENV') },
   });
 
   // Stage 1 — access guard. Distinguish "beta opt-in present but the protected-Preview guard denied it"
@@ -155,7 +151,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   // but a required Preview-scoped KIS variable is absent/disabled, classify it honestly (config, not
   // access rights) BEFORE any token/provider work. This never issues a token and never reads a value —
   // only the coarse readiness reason enum is surfaced.
-  const readiness = getKisQuoteConfigReadiness({ allowProductionChartAiBetaLiveQuotes: allowProd });
+  const readiness = getKisQuoteConfigReadiness({ allowProductionChartAiLiveData: allowProd });
   const readinessState = typeof readiness.reason === 'string' ? readiness.reason : 'unknown';
   if (!readiness.ready) {
     const code = READINESS_CODE[readinessState] ?? CHART_AI_ACCESS_CODE.KIS_CONFIG_MISSING;
@@ -166,7 +162,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   }
 
   // Stage 3 — provider fetch (token lifecycle handled by the existing durable manager; unchanged).
-  const ohlcv = await fetchUniversalOhlcv({ instrument, range, allowProductionChartAiBetaLiveQuotes: allowProd });
+  const ohlcv = await fetchUniversalOhlcv({ instrument, range, allowProductionChartAiLiveData: allowProd });
 
   // A provider failure AFTER a ready readiness is a token/data failure, not an access/config problem —
   // surface a coarse KIS_PROVIDER_UNAVAILABLE (never the raw provider error). no-data stays NO_DATA.
