@@ -186,7 +186,65 @@ check('service threads a sanitized, per-request ConstituentDiagnostic[] (no symb
 check('service logs one sanitized aggregate diagnostic summary per request via logDiagnosticSummary (spec section 4)',
   service.includes('const logDiagnosticSummary') && (service.match(/logDiagnosticSummary\(/g) || []).length >= 3);
 check('diagnostic log line never includes a raw symbol or provider token/secret field',
-  /logDiagnosticSummary[\s\S]{0,1400}console\.log/.test(service) && !/console\.log\([\s\S]{0,400}(token|secret|symbol:)/i.test(service));
+  /logDiagnosticSummary[\s\S]{0,2200}console\.log/.test(service) && !/console\.log\([\s\S]{0,400}(token|secret|symbol:)/i.test(service));
+
+// ---------------------------------------------------------------------------
+// Group 5b: HF2 data-basis timestamp parser + internal diagnostic-reason contract
+// ---------------------------------------------------------------------------
+log('--- Group 5b: HF2 data-basis parser (parseMarketDataTimestampToUtcMs) ---');
+check('service defines the renamed parseMarketDataTimestampToUtcMs parser (HF2 spec section 4)',
+  service.includes('const parseMarketDataTimestampToUtcMs'));
+check('the old narrow parseYyyymmddToUtcMs parser no longer exists (HF2 replaced it, not wrapped it)',
+  !service.includes('parseYyyymmddToUtcMs'));
+check('the old permissive classifyResultFreshness boolean classifier no longer exists (replaced by resolveFreshnessDiagnosis)',
+  !service.includes('classifyResultFreshness'));
+check('service defines resolveFreshnessDiagnosis returning both freshness and an internal reason',
+  /const resolveFreshnessDiagnosis\s*=\s*\(/.test(service) && /internalReason:\s*MarketDashboardInternalDiagnosticReason/.test(service));
+check('YYYYMMDD pattern is anchored at both ends (never an unanchored prefix test)',
+  service.includes('YYYYMMDD_PATTERN = /^\\d{8}$/'));
+check('service never uses the old unanchored /^\\d{8}/ prefix test to validate a date string',
+  !/\/\^\\d\{8\}\/\.test/.test(service));
+check('service defines an ISO-8601 date/timestamp pattern (accepts date-only and full timestamp shapes)',
+  service.includes('ISO_DATE_TIME_PATTERN'));
+check('parser rejects non-string input before any date construction',
+  /parseMarketDataTimestampToUtcMs\s*=\s*\([\s\S]{0,80}typeof value !== ['"]string['"]/.test(service));
+check('parser defines a round-trip UTC-component validator to reject impossible calendar dates (HF2 spec section 4)',
+  service.includes('const roundTripUtcMs'));
+check('round-trip validator checks year/month/day AND hour/minute/second components, never just a finite-timestamp check',
+  /roundTrip\.getUTCFullYear\(\)\s*===\s*year[\s\S]{0,200}roundTrip\.getUTCSeconds\(\)\s*===\s*second/.test(service));
+check('parser never falls back to the current date/time on failure (returns null instead)',
+  !/parseMarketDataTimestampToUtcMs[\s\S]{0,1400}Date\.now\(\)/.test(service) && !/parseMarketDataTimestampToUtcMs[\s\S]{0,1400}new Date\(\)(?!\.)/.test(service));
+check('service defines the closed internal diagnostic-reason enum (HF2 spec section 6)',
+  service.includes('MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS'));
+for (const reason of ['OK', 'PROVIDER_ERROR', 'HISTORY_RANGE_MISSING', 'HISTORY_RANGE_INVALID', 'INSUFFICIENT_HISTORY']) {
+  check(`internal diagnostic-reason enum includes ${reason}`,
+    new RegExp(`${reason}:\\s*['"]${reason}['"]`).test(service));
+}
+check('ConstituentDiagnostic carries an optional internalReason field (internal-only, sanitized)',
+  /export type ConstituentDiagnostic = \{[\s\S]*?internalReason\?:\s*MarketDashboardInternalDiagnosticReason[\s\S]*?\};/.test(service));
+check('logDiagnosticSummary aggregates and logs byInternalReason counts (never raw reasons per-item)',
+  service.includes('byInternalReason') && /byInternalReason\[d\.internalReason\]/.test(service));
+check('the internal diagnostic reason is never present on the public MarketDashboardResult type',
+  (() => {
+    const match = /export type MarketDashboardResult = \{([\s\S]*?)\};/.exec(service);
+    return !!match && !/internalReason/.test(match[1]);
+  })());
+check('the internal diagnostic reason is never present on the public MarketOverviewResult/MarketOverviewProxyResult types',
+  (() => {
+    const proxy = /export type MarketOverviewProxyResult = \{([\s\S]*?)\};/.exec(service);
+    const overview = /export type MarketOverviewResult = \{([\s\S]*?)\};/.exec(service);
+    return !!proxy && !!overview && !/internalReason/.test(proxy[1]) && !/internalReason/.test(overview[1]);
+  })());
+check('the internal diagnostic reason is never present on the public ResolvedConstituentMetrics type',
+  (() => {
+    const match = /export type ResolvedConstituentMetrics = \{([\s\S]*?)\};/.exec(service);
+    return !!match && !/internalReason/.test(match[1]);
+  })());
+check('a provider-level failure is tagged PROVIDER_ERROR, distinguishable from a data-basis parsing failure',
+  /MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS\.PROVIDER_ERROR/.test(service));
+check('a missing historyRange is tagged HISTORY_RANGE_MISSING, distinguishable from an invalid/unparseable one',
+  /MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS\.HISTORY_RANGE_MISSING/.test(service) &&
+  /MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS\.HISTORY_RANGE_INVALID/.test(service));
 
 // ---------------------------------------------------------------------------
 // Group 6: Production/Preview gating wiring

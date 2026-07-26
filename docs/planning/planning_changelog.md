@@ -1,5 +1,52 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GJ-HF2 - 2026-07-26
+
+### Live market dashboard OHLCV data-basis parser fix
+
+- A protected-Preview check after HF1 still returned `GET /api/market/overview.json` → HTTP 200,
+  `{"ok": false, "code": "MARKET_DATA_UNAVAILABLE"}`, with sanitized Runtime Log evidence of
+  `byStatus: {"unavailable": 4}` and an **empty** `byErrorCode` — proof the provider call succeeded but the
+  result was still misclassified unavailable.
+- **Root cause**: the shared OHLCV normalizer emits ISO-8601 dates, but `marketDashboard.ts`'s freshness parser
+  used an unanchored `/^\d{8}/` prefix test that silently rejects ISO strings, so `classifyResultFreshness`
+  treated every real, successful long-history result as unparseable and therefore unavailable.
+- **Fix**: replaced the parser with `parseMarketDataTimestampToUtcMs()` — closed, fully-anchored
+  `YYYYMMDD_PATTERN`/`ISO_DATE_TIME_PATTERN`, plus a `roundTripUtcMs` component-reconstruction check that
+  rejects "impossible" dates (e.g. `2026-02-30`) which `Date.parse`/`Date.UTC` would otherwise silently roll
+  over. Rejects non-string/empty/malformed/impossible values and never falls back to the current date. The
+  4-calendar-day stale-but-usable threshold and all provider/cache behavior are unchanged.
+- Added a closed, internal-only diagnostic-reason enum (`OK`/`PROVIDER_ERROR`/`HISTORY_RANGE_MISSING`/
+  `HISTORY_RANGE_INVALID`/`INSUFFICIENT_HISTORY`), aggregated in the existing sanitized diagnostic log;
+  structurally verified (type-body extraction) to never appear in any public result type.
+- Tests: `smoke:phase-3gj-live-market-dashboard` 156/156 (was 139/139), `check:phase-3gj-live-market-dashboard`
+  158/158 (was 134/134). Full regression re-run (`phase-3gi-user-retention-persistence`,
+  `phase-3gh-portfolio-live-valuation-mvp`, `npm ls`, `npm run build`, `git diff --check`) unaffected/clean. See
+  `docs/planning/phase_3gj_live_market_dashboard_result_v0.1.md` §9/§10 for full detail.
+- No migration, no merge, no Production deploy, no environment/Supabase mutation, no Phase 3GK work. One
+  additional commit on `feature/phase-3gj-live-market-dashboard` (PR #6, unchanged title).
+
+## Phase 3GJ-HF1 - 2026-07-26
+
+### Live market dashboard pre-merge correctness hardening
+
+- A protected-Preview check of `GET /api/market/overview.json` returned HTTP 200 with
+  `{"ok": false, "code": "MARKET_DATA_UNAVAILABLE"}`. Diagnosed using only sanitized aggregate signals (status
+  counts, provider error codes, cache state) and hardened without touching KIS endpoints, TR IDs, Supabase, or
+  env vars.
+- Provider rate-limit responses now surface a distinguishable `PROVIDER_RATE_LIMITED` code end-to-end instead of
+  collapsing into a generic unavailable code. "Valid" coverage now requires a real, finite `periodReturnPct`;
+  constituents with insufficient history are tagged `insufficient-history` and never count toward the render
+  threshold. `classifyOverallFreshness` precedence corrected (`unavailable > partial > stale-but-usable > cached
+  > fresh`). `commonAsOf` now uses the minimum (oldest) as-of date across valid constituents. Removed misleading
+  "실시간" copy in favor of accurate delayed/close-based wording. Added a 60s browser-memory cache with
+  in-flight de-duplication, sequenced initial requests, and an explicit refresh button with a 30s cooldown.
+  Added sanitized, aggregate-only diagnostic logging at every orchestration exit path.
+- Tests: `smoke:phase-3gj-live-market-dashboard` 139/139 (was 118/118), `check:phase-3gj-live-market-dashboard`
+  134/134 (was 112/112). Full regression re-run clean.
+- Preview still returned `MARKET_DATA_UNAVAILABLE` after this hotfix — see Phase 3GJ-HF2 above for the actual
+  root cause and fix. No migration, no merge, no Production deploy, no environment mutation.
+
 ## Phase 3GJ - 2026-07-26
 
 ### Live market dashboard MVP — `IMPLEMENTED_PUSHED_PREVIEW_READY_PRODUCTION_ACTIVATION_APPROVAL_PENDING`

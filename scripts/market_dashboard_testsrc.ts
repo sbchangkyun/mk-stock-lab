@@ -688,6 +688,149 @@ const fakeInstrument = { symbol: 'FAKE', country: 'KR', providerSymbol: 'FAKE' }
   );
 }
 
+// =====================================================================================
+// Group 8: marketDashboard.ts -- HF2 data-basis timestamp parsing (parseMarketDataTimestampToUtcMs)
+// =====================================================================================
+//
+// historyRange.end can legitimately arrive as a bare YYYYMMDD string OR as the ISO-8601 string the
+// shared OHLCV normalizer converts it to. The pre-HF2 parser used an unanchored /^\d{8}/ prefix test
+// that silently rejected every ISO value, so a real, successful, ok=true/sourceStatus=ok long-history
+// result was misclassified 'unavailable' end-to-end -- exactly the Preview MARKET_DATA_UNAVAILABLE
+// regression this hotfix corrects (spec sections 2-5). These fixtures exercise the ISO, malformed, and
+// missing-historyRange paths the pre-HF2 test suite could not have caught (every prior fixture only
+// ever used YYYYMMDD).
+
+const okResultWithEnd = (closes: number[], end: string, cached = false): LongHistoryOhlcvResult => ({
+  ...okResult(closes, FAKE_ASOF, cached),
+  historyRange: { start: '20260101', end },
+});
+
+const okResultWithNoHistoryRange = (closes: number[]): LongHistoryOhlcvResult => ({
+  ...okResult(closes, FAKE_ASOF),
+  historyRange: null,
+});
+
+// 22. A full ISO-8601 timestamp (the shared normalizer's actual output shape) in historyRange.end,
+//     same day as "now" -> every constituent resolves 'ok', never 'unavailable' (the core HF2 fix).
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithEnd(fakeCloses, '2026-07-25T00:00:00.000Z'), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: full ISO timestamp historyRange.end -> ok true (HF2 fix)', result.ok === true);
+  check('getMarketDashboard: full ISO timestamp -> every constituent ok, never unavailable', result.constituents.every((c) => c.status === 'ok'));
+  check('getMarketDashboard: full ISO timestamp, same-day, not cached -> freshness fresh', result.freshness === 'fresh');
+}
+
+// 23. A bare ISO date (no time-of-day component) in historyRange.end is also accepted.
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithEnd(fakeCloses, '2026-07-25'), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: bare ISO date (no time) historyRange.end -> ok true', result.ok === true);
+  check('getMarketDashboard: bare ISO date -> freshness fresh', result.freshness === 'fresh');
+}
+
+// 24. A cached result with a same-day ISO timestamp -> freshness cached, never fresh (mirrors the
+//     existing YYYYMMDD cached test, now proven for the ISO path too).
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithEnd(fakeCloses, '2026-07-25T00:00:00.000Z', true), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: cached result with ISO historyRange.end -> freshness cached, never fresh', result.freshness === 'cached');
+}
+
+// 25. An ISO timestamp older than the 4-calendar-day staleness threshold -> stale-but-usable, not
+//     unavailable -- the ISO path preserves the exact same STALE_AFTER_CALENDAR_DAYS policy as YYYYMMDD.
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithEnd(fakeCloses, '2026-07-01T00:00:00.000Z'), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: old ISO historyRange.end (24 days) -> ok true, not unavailable', result.ok === true);
+  check('getMarketDashboard: old ISO historyRange.end beyond the 4-day threshold -> stale-but-usable', result.freshness === 'stale-but-usable');
+}
+
+// 26. An impossible calendar date (Feb 30) shaped like ISO-8601 must fail closed -- never silently
+//     roll over to a different, finite-looking date (spec section 4's explicit round-trip requirement).
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithEnd(fakeCloses, '2026-02-30T00:00:00.000Z'), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: impossible calendar date (Feb 30) in historyRange.end -> ok false, never rolled over', result.ok === false);
+  check('getMarketDashboard: impossible date -> MARKET_DATA_UNAVAILABLE, not fabricated success', result.sanitizedErrorCode === 'MARKET_DATA_UNAVAILABLE');
+}
+
+// 27. A malformed, non-date string in historyRange.end must fail closed -- never coerced to the
+//     current date (spec section 4's explicit prohibition).
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithEnd(fakeCloses, 'not-a-real-date'), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: garbage historyRange.end string -> ok false, never coerced to the current date', result.ok === false);
+}
+
+// 28. Provider succeeds but historyRange is entirely missing (null) -> still unavailable -- a
+//     data-basis gap must never be silently treated as fresh.
+{
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithNoHistoryRange(fakeCloses), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check('getMarketDashboard: transport ok but historyRange missing -> ok false', result.ok === false);
+}
+
+// 29. Mixed YYYYMMDD and ISO historyRange.end formats across constituents in the same request -> both
+//     resolve 'ok'; neither format regresses the other (HF1 YYYYMMDD compatibility preserved by HF2).
+{
+  let call = 0;
+  const result = await getMarketDashboard(
+    { universeId: 'kospi200', period: '1d' },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        call += 1;
+        return call % 2 === 0 ? okResultWithEnd(fakeCloses, '2026-07-25T00:00:00.000Z') : okResult(fakeCloses, '20260725');
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check('getMarketDashboard: mixed YYYYMMDD and ISO historyRange.end formats -> ok true, both parsed', result.ok === true);
+  check('getMarketDashboard: mixed formats -> every constituent resolves ok', result.constituents.every((c) => c.status === 'ok'));
+}
+
+// 30. Provider failure remains unavailable after the HF2 parser change -- the parser fix must never
+//     mask a genuine transport failure as usable data (non-regression, overview level).
+{
+  const result = await getMarketOverview(
+    { period: '1d' },
+    { fetchLongHistoryOhlcv: async () => failResult, findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check(
+    'getMarketOverview: provider failure remains unavailable after the HF2 parser fix (non-regression)',
+    result.ok === false && result.proxies.every((p) => p.status === 'unavailable'),
+  );
+}
+
+// 31. getMarketOverview with a real ISO historyRange.end -> ok true, every proxy 'ok' -- this exact
+//     shape (ok=true, sourceStatus=ok, ISO historyRange.end) is what the confirmed live Preview
+//     Runtime Log showed misclassified as unavailable before HF2 (spec section 2/3).
+{
+  const result = await getMarketOverview(
+    { period: '1d' },
+    { fetchLongHistoryOhlcv: async () => okResultWithEnd(fakeCloses, '2026-07-25T00:00:00.000Z'), findUniversalInstrument: () => fakeInstrument, now: () => FIXED_NOW_MS },
+  );
+  check(
+    'getMarketOverview: real ISO historyRange.end -> ok true (reproduces & fixes the exact Preview MARKET_DATA_UNAVAILABLE regression)',
+    result.ok === true,
+  );
+  check('getMarketOverview: real ISO historyRange.end -> every proxy ok, none unavailable', result.proxies.every((p) => p.status === 'ok'));
+}
+
 export const runAll = async (): Promise<number> => {
   console.log(`\nTotal: ${passed + failed} | Passed: ${passed} | Failed: ${failed}`);
   return failed === 0 ? 0 : 1;

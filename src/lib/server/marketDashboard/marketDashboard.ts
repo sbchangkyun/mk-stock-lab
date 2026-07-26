@@ -77,22 +77,111 @@ const mapWithConcurrency = async <T, R>(
   return results;
 };
 
-const parseYyyymmddToUtcMs = (value: string | null | undefined): number | null => {
-  if (typeof value !== 'string' || !/^\d{8}/.test(value)) return null;
-  const y = Number(value.slice(0, 4));
-  const m = Number(value.slice(4, 6));
-  const d = Number(value.slice(6, 8));
-  const ms = Date.UTC(y, m - 1, d);
-  return Number.isFinite(ms) ? ms : null;
+const YYYYMMDD_PATTERN = /^\d{8}$/;
+const ISO_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?Z?)?$/;
+
+/**
+ * Constructs a UTC timestamp from calendar components and rejects it unless the constructed Date
+ * round-trips back to the exact same components -- this is what catches an impossible date (e.g. day
+ * 30 of a 28/29-day month, hour 25) that Date.UTC/Date.parse would otherwise silently roll over into
+ * a *different*, finite, valid-looking timestamp (Phase 3GJ-HF2 spec section 4).
+ */
+const roundTripUtcMs = (
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+  millis: number,
+): number | null => {
+  const ms = Date.UTC(year, month - 1, day, hour, minute, second, millis);
+  if (!Number.isFinite(ms)) return null;
+  const roundTrip = new Date(ms);
+  const matches =
+    roundTrip.getUTCFullYear() === year &&
+    roundTrip.getUTCMonth() === month - 1 &&
+    roundTrip.getUTCDate() === day &&
+    roundTrip.getUTCHours() === hour &&
+    roundTrip.getUTCMinutes() === minute &&
+    roundTrip.getUTCSeconds() === second;
+  return matches ? ms : null;
 };
 
-const classifyResultFreshness = (result: LongHistoryResult, nowMs: number): FreshnessState => {
-  if (!result.ok || result.sourceStatus !== 'ok') return 'unavailable';
-  const lastCandleMs = parseYyyymmddToUtcMs(result.historyRange?.end);
-  if (lastCandleMs === null) return 'unavailable';
+/**
+ * Accepts every timestamp shape the shared long-history OHLCV service can put into
+ * historyRange.start/end: the KIS-native YYYYMMDD string, and the ISO-8601 date/timestamp the shared
+ * normalizer converts it to. Never a permissive prefix test -- a value must match one of the two
+ * closed shapes in full, and its calendar components must round-trip, or it is rejected as null
+ * (Phase 3GJ-HF2 spec section 4; fixes the ISO/YYYYMMDD parser mismatch that made every real,
+ * successful long-history result read as unavailable).
+ */
+const parseMarketDataTimestampToUtcMs = (value: string | null | undefined): number | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return null;
+
+  if (YYYYMMDD_PATTERN.test(trimmed)) {
+    const year = Number(trimmed.slice(0, 4));
+    const month = Number(trimmed.slice(4, 6));
+    const day = Number(trimmed.slice(6, 8));
+    return roundTripUtcMs(year, month, day, 0, 0, 0, 0);
+  }
+
+  const isoMatch = ISO_DATE_TIME_PATTERN.exec(trimmed);
+  if (isoMatch) {
+    const [, y, mo, d, h, mi, s, msFraction] = isoMatch;
+    const year = Number(y);
+    const month = Number(mo);
+    const day = Number(d);
+    const hour = h ? Number(h) : 0;
+    const minute = mi ? Number(mi) : 0;
+    const second = s ? Number(s) : 0;
+    const millis = msFraction ? Number(msFraction.padEnd(3, '0')) : 0;
+    return roundTripUtcMs(year, month, day, hour, minute, second, millis);
+  }
+
+  return null;
+};
+
+/**
+ * Closed, internal-only diagnostic reasons (Phase 3GJ-HF2 spec section 6) -- distinguish a genuine
+ * provider failure from a post-provider data-basis parsing failure so a future regression is
+ * diagnosable from aggregate Vercel log counts alone. Never surfaced in a public API response.
+ */
+export const MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS = {
+  OK: 'OK',
+  PROVIDER_ERROR: 'PROVIDER_ERROR',
+  HISTORY_RANGE_MISSING: 'HISTORY_RANGE_MISSING',
+  HISTORY_RANGE_INVALID: 'HISTORY_RANGE_INVALID',
+  INSUFFICIENT_HISTORY: 'INSUFFICIENT_HISTORY',
+} as const;
+
+export type MarketDashboardInternalDiagnosticReason =
+  (typeof MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS)[keyof typeof MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS];
+
+const resolveFreshnessDiagnosis = (
+  result: LongHistoryResult,
+  nowMs: number,
+): { freshness: FreshnessState; internalReason: MarketDashboardInternalDiagnosticReason } => {
+  if (!result.ok || result.sourceStatus !== 'ok') {
+    return { freshness: 'unavailable', internalReason: MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS.PROVIDER_ERROR };
+  }
+
+  const rawEnd = result.historyRange?.end;
+  if (typeof rawEnd !== 'string' || rawEnd.trim().length === 0) {
+    return { freshness: 'unavailable', internalReason: MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS.HISTORY_RANGE_MISSING };
+  }
+
+  const lastCandleMs = parseMarketDataTimestampToUtcMs(rawEnd);
+  if (lastCandleMs === null) {
+    return { freshness: 'unavailable', internalReason: MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS.HISTORY_RANGE_INVALID };
+  }
+
   const ageDays = (nowMs - lastCandleMs) / (24 * 60 * 60 * 1000);
-  if (ageDays > STALE_AFTER_CALENDAR_DAYS) return 'stale-but-usable';
-  return result.cached ? 'cached' : 'fresh';
+  const freshness: FreshnessState =
+    ageDays > STALE_AFTER_CALENDAR_DAYS ? 'stale-but-usable' : result.cached ? 'cached' : 'fresh';
+  return { freshness, internalReason: MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS.OK };
 };
 
 const extractCloses = (result: LongHistoryResult): number[] =>
@@ -125,6 +214,8 @@ export type ConstituentDiagnostic = {
   country: 'KR' | 'US';
   status: ResolvedConstituentMetrics['status'];
   providerErrorCode?: string;
+  /** Internal-only closed reason (section 6); never included in a public API response. */
+  internalReason?: MarketDashboardInternalDiagnosticReason;
   pagesFetched?: number;
   cacheState?: string;
 };
@@ -158,13 +249,14 @@ const resolveAndComputeConstituent = async (
   });
 
   const nowMs = deps.now();
-  const freshness = classifyResultFreshness(result, nowMs);
+  const { freshness, internalReason } = resolveFreshnessDiagnosis(result, nowMs);
   if (freshness === 'unavailable') {
     const providerErrorCode = result.ok ? undefined : result.sanitizedErrorCode;
     diagnostics?.push({
       country: constituent.country,
       status: 'unavailable',
       providerErrorCode,
+      internalReason,
       pagesFetched: result.pagesFetched,
       cacheState: result.cacheState,
     });
@@ -175,7 +267,15 @@ const resolveAndComputeConstituent = async (
   const metrics = computeConstituentMetrics(closes, period);
   const hasValidPeriodReturn = metrics.periodReturnPct !== null && Number.isFinite(metrics.periodReturnPct);
   const status = hasValidPeriodReturn ? 'ok' : 'insufficient-history';
-  diagnostics?.push({ country: constituent.country, status, pagesFetched: result.pagesFetched, cacheState: result.cacheState });
+  diagnostics?.push({
+    country: constituent.country,
+    status,
+    internalReason: hasValidPeriodReturn
+      ? MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS.OK
+      : MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS.INSUFFICIENT_HISTORY,
+    pagesFetched: result.pagesFetched,
+    cacheState: result.cacheState,
+  });
   return {
     ...base,
     status,
@@ -195,6 +295,7 @@ const logDiagnosticSummary = (
 ): void => {
   const byStatus: Record<string, number> = {};
   const byErrorCode: Record<string, number> = {};
+  const byInternalReason: Record<string, number> = {};
   const byCacheState: Record<string, number> = {};
   let krTotal = 0;
   let krOk = 0;
@@ -204,6 +305,7 @@ const logDiagnosticSummary = (
   for (const d of diagnostics) {
     byStatus[d.status] = (byStatus[d.status] ?? 0) + 1;
     if (d.providerErrorCode) byErrorCode[d.providerErrorCode] = (byErrorCode[d.providerErrorCode] ?? 0) + 1;
+    if (d.internalReason) byInternalReason[d.internalReason] = (byInternalReason[d.internalReason] ?? 0) + 1;
     if (d.cacheState) byCacheState[d.cacheState] = (byCacheState[d.cacheState] ?? 0) + 1;
     if (typeof d.pagesFetched === 'number') pagesFetchedTotal += d.pagesFetched;
     if (d.country === 'KR') {
@@ -214,11 +316,25 @@ const logDiagnosticSummary = (
       if (d.status === 'ok') usOk += 1;
     }
   }
-  // Sanitized, aggregate-only diagnostic (Phase 3GJ-HF1 spec section 4): no symbols, no tokens, no
-  // raw provider payloads -- only closed-enum statuses/codes and counts, safe for Vercel runtime logs.
+  // Sanitized, aggregate-only diagnostic (Phase 3GJ-HF1/HF2 spec sections 4/6): no symbols, no
+  // tokens, no raw provider payloads -- only closed-enum statuses/codes/internal-reasons and counts,
+  // safe for Vercel runtime logs. byInternalReason distinguishes a genuine provider failure from a
+  // post-provider data-basis parsing failure without ever exposing that reason in a public response.
   console.log(
     '[market-dashboard-diag]',
-    JSON.stringify({ route, universeId, period, total: diagnostics.length, byStatus, byErrorCode, byCacheState, pagesFetchedTotal, kr: { total: krTotal, ok: krOk }, us: { total: usTotal, ok: usOk } }),
+    JSON.stringify({
+      route,
+      universeId,
+      period,
+      total: diagnostics.length,
+      byStatus,
+      byErrorCode,
+      byInternalReason,
+      byCacheState,
+      pagesFetchedTotal,
+      kr: { total: krTotal, ok: krOk },
+      us: { total: usTotal, ok: usOk },
+    }),
   );
 };
 
@@ -227,7 +343,9 @@ const logDiagnosticSummary = (
  * request (Phase 3GJ-HF1 spec section 5) -- lets a zero-successful-count result surface the honest
  * PROVIDER_RATE_LIMITED code instead of the generic MARKET_DATA_UNAVAILABLE when that is the true cause.
  */
-const allFailuresRateLimited = (members: ResolvedConstituentMetrics[]): boolean => {
+type RateLimitAggregationMember = Pick<ResolvedConstituentMetrics, 'status' | 'providerErrorCode'>;
+
+const allFailuresRateLimited = (members: RateLimitAggregationMember[]): boolean => {
   const failed = members.filter((member) => member.status !== 'ok');
   if (failed.length === 0) return false;
   return failed.every((member) => member.providerErrorCode === OHLCV_SANITIZED_ERROR_CODES.PROVIDER_RATE_LIMITED);

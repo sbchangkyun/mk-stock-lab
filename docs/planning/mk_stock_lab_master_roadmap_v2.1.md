@@ -118,13 +118,18 @@ to Production Supabase (via the Supabase Dashboard SQL Editor), not independentl
 
 ### In progress
 
-- **Phase 3GJ — Live Market Dashboard.** `IMPLEMENTED_PUSHED_PREVIEW_READY_PRODUCTION_ACTIVATION_APPROVAL_PENDING`.
+- **Phase 3GJ — Live Market Dashboard, including HF1/HF2 pre-merge correctness hotfixes.** A protected-Preview
+  check surfaced `MARKET_DATA_UNAVAILABLE` on `GET /api/market/overview.json` after the base MVP; HF1 hardened
+  rate-limit/coverage/freshness-precedence/`commonAsOf` correctness but Preview still returned
+  `MARKET_DATA_UNAVAILABLE`; HF2 then found and fixed the actual root cause — an unanchored `/^\d{8}/` prefix
+  test in the freshness parser silently rejecting the shared normalizer's ISO-8601 dates — replacing it with a
+  closed, anchored, round-trip-validated `parseMarketDataTimestampToUtcMs()`. See
+  `phase_3gj_live_market_dashboard_result_v0.1.md` §9/§10 for full detail and the authoritative classification.
   Replaces the fixture-driven Home index-card snapshot and public Market page with a live dashboard for
   `kospi200`/`kosdaq150`/`sp500`/`nasdaq100`, sourced entirely from the existing shared KIS OHLCV orchestration
-  and durable token manager — no new KIS endpoint, no second data provider. See
-  `phase_3gj_live_market_dashboard_result_v0.1.md` for the full classification. Branch
+  and durable token manager — no new KIS endpoint, no second data provider. Branch
   `feature/phase-3gj-live-market-dashboard`, created from `origin/main` at `16eee948c0ce34f5b92394e98b3527e5545bf4a7`
-  (the Phase 3GI-HF2 merge commit). Not yet merged; Production activation flag
+  (the Phase 3GI-HF2 merge commit), PR #6. Not yet merged; Production activation flag
   (`KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD`) referenced but not set.
 
 ### Next sequential product phases
