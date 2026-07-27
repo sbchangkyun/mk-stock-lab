@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16038",
+  "masterVersion": "hf3b-hf2-kis-16048",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-07-25",
+  "sourceAsOf": "2026-07-27",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -23931,6 +23931,19 @@
       "standardCode": "KR7021880000",
       "aliases": [
         "021880"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0218L0",
+      "displayName": "네오뷰",
+      "country": "KR",
+      "exchange": "KOSDAQ",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "standardCode": "KR70218L0007",
+      "aliases": [
+        "0218l0"
       ],
       "active": true
     },
@@ -54931,6 +54944,19 @@
       "active": true
     },
     {
+      "symbol": "BAGX",
+      "displayName": "EA BRIDGEWAY AGGRESSIVE INVESTORS ETF",
+      "englishName": "EA BRIDGEWAY AGGRESSIVE INVESTORS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "bagx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BAGY",
       "displayName": "AMPLIFY BITCOIN MAX INCOME COVERED CALL ETF",
       "englishName": "AMPLIFY BITCOIN MAX INCOME COVERED CALL ETF",
@@ -56491,6 +56517,19 @@
       "active": true
     },
     {
+      "symbol": "BGFI",
+      "displayName": "BNY MELLON GLOBAL FIXED INCOME ETF",
+      "englishName": "BNY MELLON GLOBAL FIXED INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "bgfi"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BGGG",
       "displayName": "BAILLIE GIFFORD LONG TERM GLOBAL GROWTH ETF",
       "englishName": "BAILLIE GIFFORD LONG TERM GLOBAL GROWTH ETF",
@@ -57752,6 +57791,19 @@
       "active": true
     },
     {
+      "symbol": "BMSI",
+      "displayName": "BNY MELLON MUTI-SECTOR INCOME ETF",
+      "englishName": "BNY MELLON MUTI-SECTOR INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "bmsi"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BMVP",
       "displayName": "INVESCO EXCHANGE TRADED FD TR BLOOMBERG MVP MULTI FACTOR ETF",
       "englishName": "INVESCO EXCHANGE TRADED FD TR BLOOMBERG MVP MULTI FACTOR ETF",
@@ -58450,6 +58502,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "brsm"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BRSV",
+      "displayName": "EA BRIDGEWAY SELECT SMALL-CAP VALUE ETF",
+      "englishName": "EA BRIDGEWAY SELECT SMALL-CAP VALUE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "brsv"
       ],
       "active": true
     },
@@ -59672,6 +59737,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "busa"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BUSM",
+      "displayName": "EA BRIDGEWAY ULTRA-SMALL COMPANY MARKET ETF",
+      "englishName": "EA BRIDGEWAY ULTRA-SMALL COMPANY MARKET ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "busm"
       ],
       "active": true
     },
@@ -91280,14 +91358,15 @@
     },
     {
       "symbol": "LGHT",
-      "displayName": "SPINNAKER ETF SERIES LANGAR GLOBAL HEALTHTECH ETF",
-      "englishName": "SPINNAKER ETF SERIES LANGAR GLOBAL HEALTHTECH ETF",
+      "displayName": "LANGAR GLOBAL HEALTHTECH ETF",
+      "englishName": "LANGAR GLOBAL HEALTHTECH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "lght"
+        "lght",
+        "spinnaker etf series langar global healthtech etf"
       ],
       "active": true
     },
@@ -92385,13 +92464,14 @@
     },
     {
       "symbol": "MAGA",
-      "displayName": "ETF SERIES SOLUTIONS POINT BRIDGE AMERICA FIRST ETF",
-      "englishName": "ETF SERIES SOLUTIONS POINT BRIDGE AMERICA FIRST ETF",
+      "displayName": "TRUTH SOCIAL AMERICA FIRST ETF",
+      "englishName": "TRUTH SOCIAL AMERICA FIRST ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "etf series solutions point bridge america first etf",
         "maga"
       ],
       "active": true
@@ -137747,14 +137827,15 @@
     },
     {
       "symbol": "BIOT",
-      "displayName": "INSTINCT BIO TECHNICAL COMPANY HOLDINGS INC",
-      "englishName": "INSTINCT BIO TECHNICAL COMPANY HOLDINGS INC",
+      "displayName": "INSTINCT BIO TECHNICAL COMPANY HOLD",
+      "englishName": "INSTINCT BIO TECHNICAL COMPANY HOLD",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "biot"
+        "biot",
+        "instinct bio technical company holdings inc"
       ],
       "active": true
     },
@@ -156635,6 +156716,19 @@
       "active": true
     },
     {
+      "symbol": "FTRA",
+      "displayName": "FUTURECORP SPACE ACQUISITION 1",
+      "englishName": "FUTURECORP SPACE ACQUISITION 1",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "ftra"
+      ],
+      "active": true
+    },
+    {
       "symbol": "FTRE",
       "displayName": "FORTREA HOLDINGS INC.",
       "englishName": "FORTREA HOLDINGS INC.",
@@ -165453,6 +165547,19 @@
       "active": true
     },
     {
+      "symbol": "IPVV",
+      "displayName": "INTERPRIVATE INVESTMENT PARTNERS V INC",
+      "englishName": "INTERPRIVATE INVESTMENT PARTNERS V INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ipvv"
+      ],
+      "active": true
+    },
+    {
       "symbol": "IPVVU",
       "displayName": "INTERPRIVATE INVESTMENT PARTNERS V UNIT EACH 1 ORD CL A &38",
       "englishName": "INTERPRIVATE INVESTMENT PARTNERS V UNIT EACH 1 ORD CL A &38",
@@ -171396,6 +171503,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "ltc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "LTGR",
+      "displayName": "LONG TABLE GROWTH CORPORATION",
+      "englishName": "LONG TABLE GROWTH CORPORATION",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ltgr"
       ],
       "active": true
     },
@@ -184696,13 +184816,14 @@
     },
     {
       "symbol": "PLCIU",
-      "displayName": "PELICAN ACQUISITION II CORPORATION UNIT CONSIST OF 1 ORD SHS",
-      "englishName": "PELICAN ACQUISITION II CORPORATION UNIT CONSIST OF 1 ORD SHS",
+      "displayName": "PELICAN ACQUISITION II CORPORATION UNIT CONSI 1 SHS & 1",
+      "englishName": "PELICAN ACQUISITION II CORPORATION UNIT CONSI 1 SHS & 1",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "pelican acquisition ii corporation unit consist of 1 ord shs",
         "plciu"
       ],
       "active": true
@@ -187052,9 +187173,9 @@
       "displayName": "D-WAVE QUANTUM INC",
       "englishName": "D-WAVE QUANTUM INC",
       "country": "US",
-      "exchange": "NYSE",
+      "exchange": "NASDAQ",
       "assetType": "stock",
-      "exchangeCode": "NYS",
+      "exchangeCode": "NAS",
       "aliases": [
         "qbts"
       ],
@@ -199632,6 +199753,19 @@
       "active": true
     },
     {
+      "symbol": "TONT",
+      "displayName": "GRAF GLOBAL CORP",
+      "englishName": "GRAF GLOBAL CORP",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tont"
+      ],
+      "active": true
+    },
+    {
       "symbol": "TONX",
       "displayName": "TON STRATEGY COMPANY",
       "englishName": "TON STRATEGY COMPANY",
@@ -200088,14 +200222,15 @@
     },
     {
       "symbol": "TRIB",
-      "displayName": "TRINITY BIOTECH PLC SPON ADR EACH REP 20 ORD",
-      "englishName": "TRINITY BIOTECH PLC SPON ADR EACH REP 20 ORD",
+      "displayName": "TRINITY BIOTECH PLC SPON ADS EACH REP 600 ORD(R/S)",
+      "englishName": "TRINITY BIOTECH PLC SPON ADS EACH REP 600 ORD(R/S)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "trib"
+        "trib",
+        "trinity biotech plc spon adr each rep 20 ord"
       ],
       "active": true
     },
@@ -200104,9 +200239,9 @@
       "displayName": "TRINITY CAPITAL INC",
       "englishName": "TRINITY CAPITAL INC",
       "country": "US",
-      "exchange": "NASDAQ",
+      "exchange": "NYSE",
       "assetType": "stock",
-      "exchangeCode": "NAS",
+      "exchangeCode": "NYS",
       "aliases": [
         "trin"
       ],

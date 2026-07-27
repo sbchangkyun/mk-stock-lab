@@ -1,9 +1,75 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 refresh state. Tracks per-symbol consecutive source-absence counts for the two-consecutive-valid-snapshot missing policy and the last-known-good master version. Updated by scripts/automation/refresh_kis_instrument_master.mjs only after all Safety Gates pass.",
   "schemaVersion": 1,
-  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16038",
-  "lastRefreshAt": "2026-07-25",
-  "pendingInactive": {},
+  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16048",
+  "lastRefreshAt": "2026-07-27",
+  "pendingInactive": {
+    "KR|424460": {
+      "symbol": "424460",
+      "country": "KR",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|MARB": {
+      "symbol": "MARB",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|ADTX": {
+      "symbol": "ADTX",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|CNTA": {
+      "symbol": "CNTA",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|CWAN": {
+      "symbol": "CWAN",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|DEVS": {
+      "symbol": "DEVS",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|LOKV": {
+      "symbol": "LOKV",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|LOKVU": {
+      "symbol": "LOKVU",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|ORIS": {
+      "symbol": "ORIS",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|PRA": {
+      "symbol": "PRA",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|SATS": {
+      "symbol": "SATS",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|SDM": {
+      "symbol": "SDM",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    },
+    "US|SNBR": {
+      "symbol": "SNBR",
+      "country": "US",
+      "sinceAsOf": "2026-07-27"
+    }
+  },
   "missingCounts": {
     "KR|0021C0": 2,
     "KR|0021D0": 2,
@@ -40,6 +106,19 @@
     "US|SNSE": 2,
     "US|TCGL": 2,
     "US|UGRO": 2,
-    "KR|012510": 2
+    "KR|012510": 2,
+    "KR|424460": 1,
+    "US|MARB": 1,
+    "US|ADTX": 1,
+    "US|CNTA": 1,
+    "US|CWAN": 1,
+    "US|DEVS": 1,
+    "US|LOKV": 1,
+    "US|LOKVU": 1,
+    "US|ORIS": 1,
+    "US|PRA": 1,
+    "US|SATS": 1,
+    "US|SDM": 1,
+    "US|SNBR": 1
   }
 }
