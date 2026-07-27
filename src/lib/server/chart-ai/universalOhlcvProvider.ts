@@ -37,8 +37,22 @@ export const OHLCV_SANITIZED_ERROR_CODES = {
   NONE: 'NONE',
   INVALID_INSTRUMENT: 'INVALID_INSTRUMENT',
   PROVIDER_UNAVAILABLE: 'PROVIDER_UNAVAILABLE',
+  PROVIDER_RATE_LIMITED: 'PROVIDER_RATE_LIMITED',
+  CONFIG_MISSING: 'CONFIG_MISSING',
   NO_DATA: 'NO_DATA',
 } as const;
+
+/**
+ * Phase 3GJ-HF1: preserves the fine-grained transport-level ProviderErrorCode (kisClient already
+ * distinguishes rate-limit vs config/readiness vs generic unavailable) as a distinguishable sanitized
+ * OHLCV code, without ever surfacing the raw provider code/message/payload to a client. Any code not
+ * explicitly mapped collapses to the existing generic PROVIDER_UNAVAILABLE (unchanged behavior).
+ */
+const mapTransportErrorToSanitizedOhlcvCode = (code: string | undefined): string => {
+  if (code === 'PROVIDER_RATE_LIMITED') return OHLCV_SANITIZED_ERROR_CODES.PROVIDER_RATE_LIMITED;
+  if (code === 'CONFIG_MISSING' || code === 'AUTH_REQUIRED') return OHLCV_SANITIZED_ERROR_CODES.CONFIG_MISSING;
+  return OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE;
+};
 
 export type OhlcvSourceStatus = 'ok' | 'blocked' | 'unavailable' | 'no-data';
 
@@ -131,6 +145,8 @@ export type FetchUniversalOhlcvInput = {
   instrument: NormalizedInstrument;
   range: string;
   allowProductionChartAiBetaLiveQuotes?: boolean;
+  /** Phase 3GJ: independent, OR'd Production exception scoped to the live market dashboard. */
+  allowProductionMarketDashboardLiveData?: boolean;
 };
 
 /** Fetches, normalizes, caches and sanitizes a real OHLCV series for one instrument + range. */
@@ -168,18 +184,32 @@ export const fetchUniversalOhlcv = async (
     if (instrument.country === 'KR') {
       providerResult = await getKisDomesticDailyOhlcSeries(
         { symbol: instrument.symbol, query: buildDomesticQuery(instrument.symbol, range) },
-        { allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true },
+        {
+          allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true,
+          allowProductionMarketDashboardLiveData: input.allowProductionMarketDashboardLiveData === true,
+        },
       );
     } else {
       providerResult = await getKisOverseasDailyOhlcSeries(
         { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '' },
-        { allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true },
+        {
+          allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true,
+          allowProductionMarketDashboardLiveData: input.allowProductionMarketDashboardLiveData === true,
+        },
       );
     }
 
     if (!providerResult.ok) {
-      // Sanitized: provider error code is not surfaced verbatim; only a coarse status is exposed.
-      return buildResponse(instrument, range, [], 'unavailable', OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE, nowIso);
+      // Sanitized: the raw provider code/message is never surfaced, but rate-limit vs config/auth vs
+      // generic unavailable stays distinguishable internally (Phase 3GJ-HF1 spec section 5).
+      return buildResponse(
+        instrument,
+        range,
+        [],
+        'unavailable',
+        mapTransportErrorToSanitizedOhlcvCode(providerResult.code),
+        nowIso,
+      );
     }
 
     const rawPoints: KisDailyOhlcPoint[] = providerResult.data.points;
@@ -255,13 +285,20 @@ const buildLongDomesticQuery = (symbol: string, startDate: Date, endDate: Date):
  * is sufficient).
  */
 export const fetchLongHistoryOhlcv = async (
-  input: { instrument: NormalizedInstrument; allowProductionChartAiBetaLiveQuotes?: boolean; targetBars?: number },
+  input: {
+    instrument: NormalizedInstrument;
+    allowProductionChartAiBetaLiveQuotes?: boolean;
+    /** Phase 3GJ: independent, OR'd Production exception scoped to the live market dashboard. */
+    allowProductionMarketDashboardLiveData?: boolean;
+    targetBars?: number;
+  },
   deps: { now?: () => number } = {},
 ): Promise<LongHistoryOhlcvResult> => {
   const now = deps.now ?? (() => Date.now());
   const instrument = input.instrument;
   const nowIso = new Date(now()).toISOString();
   const allow = input.allowProductionChartAiBetaLiveQuotes === true;
+  const allowMarketDashboard = input.allowProductionMarketDashboardLiveData === true;
   // Callers that only need ~6-12 months (e.g. market-intelligence relative strength) can request fewer
   // bars so fewer paginated KIS calls are made per instrument (default = the full ~3-year target).
   const targetBars = Number.isFinite(input.targetBars) && (input.targetBars as number) > 0
@@ -303,6 +340,7 @@ export const fetchLongHistoryOhlcv = async (
     let endDate = new Date(now());
     let pagesFetched = 0;
     let firstPageFailed = false;
+    let firstPageErrorCode: string | undefined;
 
     for (let page = 0; page < LONG_HISTORY_MAX_PAGES; page += 1) {
       if (rawRows.length >= targetBars) break;
@@ -312,18 +350,21 @@ export const fetchLongHistoryOhlcv = async (
         const startDate = new Date(endDate.getTime() - LONG_HISTORY_PAGE_SPAN_DAYS * 24 * 60 * 60 * 1000);
         result = await getKisDomesticDailyOhlcSeries(
           { symbol: instrument.symbol, query: buildLongDomesticQuery(instrument.symbol, startDate, endDate) },
-          { allowProductionChartAiBetaLiveQuotes: allow },
+          { allowProductionChartAiBetaLiveQuotes: allow, allowProductionMarketDashboardLiveData: allowMarketDashboard },
         );
       } else {
         result = await getKisOverseasDailyOhlcSeries(
           { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '', bymd: page === 0 ? '' : yyyymmdd(endDate) },
-          { allowProductionChartAiBetaLiveQuotes: allow },
+          { allowProductionChartAiBetaLiveQuotes: allow, allowProductionMarketDashboardLiveData: allowMarketDashboard },
         );
       }
 
       pagesFetched += 1;
       if (!result.ok) {
-        if (page === 0) firstPageFailed = true;
+        if (page === 0) {
+          firstPageFailed = true;
+          firstPageErrorCode = result.code;
+        }
         break;
       }
       const points = result.data.points;
@@ -343,7 +384,7 @@ export const fetchLongHistoryOhlcv = async (
       return {
         ok: false,
         sourceStatus: 'unavailable',
-        sanitizedErrorCode: OHLCV_SANITIZED_ERROR_CODES.PROVIDER_UNAVAILABLE,
+        sanitizedErrorCode: mapTransportErrorToSanitizedOhlcvCode(firstPageErrorCode),
         instrument: toInstrumentSummary(instrument),
         candles: [],
         barCount: 0,

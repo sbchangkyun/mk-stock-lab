@@ -150,7 +150,13 @@ import AuthModal from './Auth/AuthModal.astro';
     updateAuthButtons(data.session ? 'signed_in' : 'signed_out');
     await syncProfileBootstrap(data.session);
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      // INITIAL_SESSION is already handled by the getSession()/syncProfileBootstrap call above,
+      // and TOKEN_REFRESHED must never re-trigger a profile bootstrap or a signed-in re-render --
+      // it carries the same user as before, just a rotated access token (read fresh via
+      // getCurrentSession() wherever a request needs it). Only a real state transition
+      // (SIGNED_IN / SIGNED_OUT / USER_UPDATED) should re-run the bootstrap.
+      if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') return;
       updateAuthButtons(session ? 'signed_in' : 'signed_out');
       void syncProfileBootstrap(session);
     });

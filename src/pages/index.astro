@@ -1,9 +1,10 @@
 ---
-import HomeIndexCards from '../components/HomeIndexCards.astro';
+import HomeLiveMarketSnapshot from '../components/HomeLiveMarketSnapshot.astro';
 import HomeMobileAd from '../components/HomeMobileAd.astro';
 import HomeRailAd from '../components/HomeRailAd.astro';
 import HomeMarketNews from '../components/HomeMarketNews.astro';
 import HomePortfolioPanel from '../components/HomePortfolioPanel.astro';
+import HomeRetentionPanel from '../components/HomeRetentionPanel.astro';
 import Layout from '../layouts/Layout.astro';
 
 // SSR fetch: /api/news/market-feed?mode=home (no source param — uses fixture default)
@@ -64,7 +65,9 @@ try {
 
   <HomeMobileAd />
 
-  <HomeIndexCards />
+  <HomeLiveMarketSnapshot />
+
+  <HomeRetentionPanel />
 
   <HomeMarketNews articles={newsArticles} />
 

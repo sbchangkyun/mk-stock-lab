@@ -227,6 +227,7 @@ import Layout from '../layouts/Layout.astro';
       type PortfolioValuationTotals,
     } from '../lib/portfolioClient';
     import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
+    import { userRetentionApi, hasRetentionSession } from '../lib/userRetentionClient';
 
     type PortfolioState =
       | 'checking'
@@ -1197,6 +1198,37 @@ import Layout from '../layouts/Layout.astro';
       await loadValuation(portfolioId, state.positions);
     };
 
+    // Phase 3GI: best-effort cross-device resume-state persistence. Only ever persists a real,
+    // owned portfolio id -- never the aggregate `__all_portfolios__` sentinel -- and is
+    // deduplicated so re-selecting the same portfolio does not re-write on every render.
+    let lastPersistedPortfolioId: string | null = null;
+
+    const persistPortfolioResumeState = (id: string) => {
+      if (isAggregatePortfolioId(id) || id === lastPersistedPortfolioId) return;
+      void (async () => {
+        const hasSession = await hasRetentionSession();
+        if (!hasSession) return;
+        lastPersistedPortfolioId = id;
+        try {
+          await userRetentionApi.updatePreferences({
+            lastSurface: 'portfolio',
+            lastPortfolioId: id,
+          });
+        } catch {
+          // Best-effort only -- resume state failing to save must never affect the portfolio UI.
+        }
+      })();
+    };
+
+    const consumeRequestedPortfolioIdFromUrl = (): string | null => {
+      try {
+        const requested = new URL(window.location.href).searchParams.get('portfolio');
+        return requested && requested.trim() ? requested.trim() : null;
+      } catch {
+        return null;
+      }
+    };
+
     const loadPortfolios = async () => {
       state.portfolios = await portfolioApi.listPortfolios();
       const knownIds = new Set(state.portfolios.map((portfolio) => portfolio.id));
@@ -1210,7 +1242,14 @@ import Layout from '../layouts/Layout.astro';
         ...state.portfolios.map((portfolio) => portfolio.id).filter((id) => !baseOrder.includes(id)),
       ];
       saveTabOrderToStorage(state.portfolioOrder);
-      if (state.portfolios.length === 0) {
+
+      // A `?portfolio=<id>` deep link (from the Home resume card) only ever wins when it names a
+      // portfolio the signed-in user actually owns -- otherwise it silently falls back to the
+      // normal aggregate/last-selection behavior below.
+      const requestedId = consumeRequestedPortfolioIdFromUrl();
+      if (requestedId && state.portfolios.some((portfolio) => portfolio.id === requestedId)) {
+        state.selectedPortfolioId = requestedId;
+      } else if (state.portfolios.length === 0) {
         state.selectedPortfolioId = null;
       } else if (
         !state.selectedPortfolioId ||
@@ -1219,7 +1258,10 @@ import Layout from '../layouts/Layout.astro';
         state.selectedPortfolioId = aggregatePortfolioId;
       }
       renderAll();
-      if (state.selectedPortfolioId) await loadPositions(state.selectedPortfolioId, true);
+      if (state.selectedPortfolioId) {
+        await loadPositions(state.selectedPortfolioId, true);
+        persistPortfolioResumeState(state.selectedPortfolioId);
+      }
     };
 
     const loadPortfolioMvp = async () => {
@@ -1398,6 +1440,7 @@ import Layout from '../layouts/Layout.astro';
         resetPositionForm();
         renderAll();
         await loadPositions(id);
+        persistPortfolioResumeState(id);
       }
 
       if (target.dataset.action === 'move-portfolio-up' || target.dataset.action === 'move-portfolio-down') {

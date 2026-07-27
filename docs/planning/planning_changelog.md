@@ -1,5 +1,214 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GJ-HF2 - 2026-07-26
+
+### Live market dashboard OHLCV data-basis parser fix
+
+- A protected-Preview check after HF1 still returned `GET /api/market/overview.json` → HTTP 200,
+  `{"ok": false, "code": "MARKET_DATA_UNAVAILABLE"}`, with sanitized Runtime Log evidence of
+  `byStatus: {"unavailable": 4}` and an **empty** `byErrorCode` — proof the provider call succeeded but the
+  result was still misclassified unavailable.
+- **Root cause**: the shared OHLCV normalizer emits ISO-8601 dates, but `marketDashboard.ts`'s freshness parser
+  used an unanchored `/^\d{8}/` prefix test that silently rejects ISO strings, so `classifyResultFreshness`
+  treated every real, successful long-history result as unparseable and therefore unavailable.
+- **Fix**: replaced the parser with `parseMarketDataTimestampToUtcMs()` — closed, fully-anchored
+  `YYYYMMDD_PATTERN`/`ISO_DATE_TIME_PATTERN`, plus a `roundTripUtcMs` component-reconstruction check that
+  rejects "impossible" dates (e.g. `2026-02-30`) which `Date.parse`/`Date.UTC` would otherwise silently roll
+  over. Rejects non-string/empty/malformed/impossible values and never falls back to the current date. The
+  4-calendar-day stale-but-usable threshold and all provider/cache behavior are unchanged.
+- Added a closed, internal-only diagnostic-reason enum (`OK`/`PROVIDER_ERROR`/`HISTORY_RANGE_MISSING`/
+  `HISTORY_RANGE_INVALID`/`INSUFFICIENT_HISTORY`), aggregated in the existing sanitized diagnostic log;
+  structurally verified (type-body extraction) to never appear in any public result type.
+- Tests: `smoke:phase-3gj-live-market-dashboard` 156/156 (was 139/139), `check:phase-3gj-live-market-dashboard`
+  158/158 (was 134/134). Full regression re-run (`phase-3gi-user-retention-persistence`,
+  `phase-3gh-portfolio-live-valuation-mvp`, `npm ls`, `npm run build`, `git diff --check`) unaffected/clean. See
+  `docs/planning/phase_3gj_live_market_dashboard_result_v0.1.md` §9/§10 for full detail.
+- No migration, no merge, no Production deploy, no environment/Supabase mutation, no Phase 3GK work. One
+  additional commit on `feature/phase-3gj-live-market-dashboard` (PR #6, unchanged title).
+
+## Phase 3GJ-HF1 - 2026-07-26
+
+### Live market dashboard pre-merge correctness hardening
+
+- A protected-Preview check of `GET /api/market/overview.json` returned HTTP 200 with
+  `{"ok": false, "code": "MARKET_DATA_UNAVAILABLE"}`. Diagnosed using only sanitized aggregate signals (status
+  counts, provider error codes, cache state) and hardened without touching KIS endpoints, TR IDs, Supabase, or
+  env vars.
+- Provider rate-limit responses now surface a distinguishable `PROVIDER_RATE_LIMITED` code end-to-end instead of
+  collapsing into a generic unavailable code. "Valid" coverage now requires a real, finite `periodReturnPct`;
+  constituents with insufficient history are tagged `insufficient-history` and never count toward the render
+  threshold. `classifyOverallFreshness` precedence corrected (`unavailable > partial > stale-but-usable > cached
+  > fresh`). `commonAsOf` now uses the minimum (oldest) as-of date across valid constituents. Removed misleading
+  "실시간" copy in favor of accurate delayed/close-based wording. Added a 60s browser-memory cache with
+  in-flight de-duplication, sequenced initial requests, and an explicit refresh button with a 30s cooldown.
+  Added sanitized, aggregate-only diagnostic logging at every orchestration exit path.
+- Tests: `smoke:phase-3gj-live-market-dashboard` 139/139 (was 118/118), `check:phase-3gj-live-market-dashboard`
+  134/134 (was 112/112). Full regression re-run clean.
+- Preview still returned `MARKET_DATA_UNAVAILABLE` after this hotfix — see Phase 3GJ-HF2 above for the actual
+  root cause and fix. No migration, no merge, no Production deploy, no environment mutation.
+
+## Phase 3GJ - 2026-07-26
+
+### Live market dashboard MVP — `IMPLEMENTED_PUSHED_PREVIEW_READY_PRODUCTION_ACTIVATION_APPROVAL_PENDING`
+
+- Retired the fixture-driven Home index cards and Market page (`MarketShell.astro`,
+  `MarketFixtureDashboard.astro`, `marketTreemapSamples.ts`, `marketFixtureDashboard.json`,
+  `HomeIndexCards.astro`, `homeIndexCards.json`) in favor of a live market dashboard sourced entirely from real
+  KIS OHLCV through the existing shared orchestration (`fetchLongHistoryOhlcv`/`universalOhlcvProvider.ts`) and
+  the existing durable KIS token manager — no new KIS endpoint, no invented index API/TR ID, no second
+  market-data provider. `MarketLiveQuoteCard.astro` (a separate, already-real, already-gated feature) was left
+  untouched.
+- New closed tracked-universe registry `src/data/marketTrackedUniverses.ts` covering `kospi200`/`kosdaq150`/
+  `sp500`/`nasdaq100`, 12 constituents each (verified against the existing instrument master), a labeled
+  benchmark proxy per universe (KOSPI200→069500 KODEX 200, KOSDAQ150→229200 KODEX 코스닥150, S&P500→SPY,
+  NASDAQ100→QQQ) — never presented as the exact index. Static metadata only: no sample `asOf`, static
+  `baseChangePct`, multiplier-generated return, or static momentum/trend score was carried forward from the
+  retired fixtures.
+- New pure metrics module `src/lib/market-dashboard/metrics.ts` (period return over 1d/1w/1m/3m trading-day
+  offsets, 20-session momentum, 60-close SMA trend, weighted/median/advance-decline breadth aggregation,
+  minimum-render-threshold and freshness classification) — every function returns `null` on insufficient
+  history, never a substituted zero, and is directly unit-tested with no network dependency.
+- New server orchestration `src/lib/server/marketDashboard/marketDashboard.ts`
+  (`getMarketDashboard`/`getMarketOverview`, dependency-injectable for offline testing) bounds constituent/proxy
+  resolution to 3 concurrent requests via a worker-pool helper (never an unbounded `Promise.all`), marks a
+  failed constituent `unresolved`/`null` rather than a fabricated zero return, and returns a sanitized
+  `MARKET_DATA_UNAVAILABLE`/`MARKET_DATA_PARTIAL_BELOW_THRESHOLD` result below the render threshold — no raw
+  provider payload, token, header, or internal error text ever reaches the response.
+- New independent, non-secret env contract `KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD` (referenced, not set this
+  phase), gating Production access alongside a new `productionMarketDashboardExceptionAllowed` scoped exception
+  in `getKisQuoteConfigReadiness` (`src/lib/server/providers/kisClient.ts`) — independently OR'd with the
+  existing Chart AI beta exception, requiring `vercel-production` runtime AND a caller-supplied option AND the
+  new flag; every other readiness check (`KIS_ACCOUNT_NO` absent, live-quotes flag, credentials, durable-token
+  readiness) is unaffected, and the exception cannot reach `/api/market/quote`, Chart AI, Portfolio, or any
+  account/trading surface. Preview continues to obey the existing, unchanged `KIS_ENABLE_PREVIEW_LIVE_QUOTES`
+  guard.
+- New public (no Supabase-session-required) routes `GET /api/market/dashboard.json` and
+  `GET /api/market/overview.json`, each with a closed enum query parser (`universe`/`period` only — no client
+  symbol array, arbitrary sector, exchange code, provider name, cache-bypass flag, or Chart AI beta flag
+  accepted), sanitized error codes, and cache headers (`public, s-maxage=60, stale-while-revalidate=300` on
+  success, `no-store` otherwise).
+- `LiveMarketDashboard.astro` (new, replacing `MarketShell`/`MarketFixtureDashboard`) performs exactly one
+  overview request and one dashboard request on initial load, with additional requests only on an explicit tab
+  click (a `requestToken` staleness guard discards superseded in-flight responses) — no polling, no
+  `setInterval`, no auto-loop anywhere. Preserves the existing d3-hierarchy treemap + scatter SVG visualization,
+  now populated from the live fetch response. `HomeLiveMarketSnapshot.astro` (new, replacing `HomeIndexCards`)
+  performs exactly one overview fetch per page load and falls back to a non-error unavailable state on any
+  malformed/failed response — never fixture numbers.
+- Tests: new `smoke:phase-3gj-live-market-dashboard` (118/118, pure-function + dependency-injected service
+  scenarios) and `check:phase-3gj-live-market-dashboard` (112/112 static contract assertions across 11 groups).
+  Full regression re-run: `phase-3gi-user-retention-persistence` (35/35 smoke, 149/149 check) and
+  `phase-3gh-portfolio-live-valuation-mvp` (55/55 smoke, 86/86 check) both unaffected, plus `npm ls --depth=0`,
+  `npm run build`, and `git diff --check` all clean. See
+  `docs/planning/phase_3gj_live_market_dashboard_result_v0.1.md` for full detail.
+- No migration, no merge, no Production deploy, no Production/Preview env mutation, no Supabase settings
+  change, no account-trading API call, no LLM call, no second market-data provider, no Phase 3GK work — branch
+  `feature/phase-3gj-live-market-dashboard` created from `origin/main` at
+  `16eee948c0ce34f5b92394e98b3527e5545bf4a7` (the Phase 3GI-HF2 merge commit).
+
+## Phase 3GI-HF2 - 2026-07-25
+
+### Table privilege lockdown (same PR #5, one new forward-only migration file)
+
+- Owner-reported: `20260724_user_retention_persistence.sql` applied to Production Supabase (`MK-STOCK-LAB`,
+  ref `mbiysqkxfpkpqarksrap`); live structural verification then found the `authenticated` role held unintended
+  `TRUNCATE`/`REFERENCES`/`TRIGGER` table privileges on both `public.user_preferences` and
+  `public.user_watchlist_items` — a gap RLS does not cover, since RLS governs row visibility, not table-level
+  privilege grants.
+- Added new file `supabase/migrations/20260725_user_retention_table_privilege_lockdown.sql` (the original
+  migration is untouched, byte-for-byte, and was not edited or reapplied): for each of the two tables, revokes
+  all privileges from `public`/`anon`/`authenticated`, re-grants only `SELECT, INSERT, UPDATE, DELETE` to
+  `authenticated`, and preserves full `service_role` access. No schema/RLS/trigger/constraint/data change.
+- Owner reports the HF2 migration applied to Production and verified live: `authenticated` retains
+  SELECT/INSERT/UPDATE/DELETE, TRUNCATE/REFERENCES/TRIGGER denied (an actual TRUNCATE attempt returned
+  permission denied), `anon` has no privileges, `service_role` fully preserved, both tables remain at 0 rows,
+  no new Security Advisor finding. Not independently re-verified in this session (no Supabase tool connected).
+- Tests: `smoke:phase-3gi-user-retention-persistence` unchanged at 35/35 (HF2 is pure SQL, no new TypeScript
+  logic); `check:phase-3gi-user-retention-persistence` grew from 130/130 to 149/149 with new assertions
+  confirming the exact revoke/grant shape, the absence of TRUNCATE/REFERENCES/TRIGGER, preserved
+  `service_role` access, and that the original migration file is unchanged. Also ran `npm ls --depth=0`,
+  `npm run build`, and `git diff --check` — all clean.
+- Merge of PR #5 to `main` and the resulting Git-integrated Production deployment follow as a separate,
+  explicitly Owner-authorized step in the same governing spec — see
+  `phase_3gi_user_retention_persistence_result_v0.1.md` §10 and the accompanying final report for the confirmed
+  outcome.
+
+## Phase 3GI-HF1 - 2026-07-25
+
+### Pre-migration contract hardening (same PR #5, no second migration file) — `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING`
+
+- Edited the still-unapplied `supabase/migrations/20260724_user_retention_persistence.sql` in place (no
+  second migration file): `last_surface` gained a `lab` value plus a `NOT NULL DEFAULT 'home'` contract; a new
+  `user_preferences_chart_state_consistent` `CHECK` rejects a partial chart resume pointer (market without
+  symbol, symbol without market, or name/timeframe without both); new `user_preferences_chart_symbol_format`
+  and `user_watchlist_items_symbol_format` `CHECK` constraints validate against the same KR/US symbol patterns
+  already authoritative in `src/lib/market-data/instrument.ts`; `last_chart_timeframe` is now bounded to
+  Chart AI's exact supported set (`1m`/`3m`/`6m`/`1y`); and the `user_preferences` INSERT/UPDATE RLS policies
+  now independently re-verify `last_portfolio_id` ownership via an `EXISTS` subquery against
+  `public.portfolios`, so a client bypassing the server route still cannot point another user's row at a
+  foreign portfolio.
+- `src/lib/server/userRetention.ts`: `last_activity_at` is now always server-generated (a client-supplied
+  `lastActivityAt` is never read or trusted); chart resume state is validated as one complete unit via a new
+  exported `validateChartResumeState`; watchlist symbol validation now reuses a new exported
+  `validateMarketSymbol` (the same KR/US rules, not a separate convention); `lab` added to the server-side
+  surface enum.
+- `src/pages/chart-ai.astro`: the resume-state dedup key now combines instrument identity with the timeframe
+  being persisted, so a timeframe-only change on an otherwise-unchanged instrument still triggers exactly one
+  write; the key is recorded only after the write succeeds, so a failed/transient write remains retryable; an
+  in-flight guard prevents a concurrent duplicate write. A watchlist add/remove failure now shows sanitized
+  Korean status feedback (mapped from `RETENTION_API_NOT_READY`/`WATCHLIST_LIMIT_EXCEEDED`, generic fallback
+  otherwise — never raw error text) and preserves the pre-click toggle state instead of assuming success; at
+  most one request per click, no automatic retry.
+- `src/pages/lab.astro`: added best-effort `lastSurface: 'lab'` resume-state persistence, following the same
+  pattern already used on Home/Chart AI/Portfolio — session-gated, fire-and-forget, never affects the page on
+  failure, zero provider/KIS/analysis calls.
+- Tests extended: `smoke:phase-3gi-user-retention-persistence` grew from 24/24 to 35/35 (new coverage for
+  `validateChartResumeState`/`validateMarketSymbol`, replacing the removed `optionalIsoTimestamp` cases since
+  that function is no longer used); `check:phase-3gi-user-retention-persistence` grew from 106/106 to 130/130
+  (new migration/server/chart-ai/lab static assertions covering the HF1 hardening above). Re-ran the Phase 3GI
+  focused totals plus the current-contract regression gate list (`phase-3gh-portfolio-live-valuation-mvp`,
+  `phase-3gg-t-hf1`, `phase-3gg-u-chart-ai-live-usage-guard`, `kis-runtime-guard`, `kis-error-fallback`,
+  `phase-3gg-t-hf2`, `provider-boundaries`, `phase-3gg-t-hf3a`) plus `npm ls --depth=0`, `npm run build`, and
+  `git diff --check` — all green except the same non-blocking working-tree-scope-freeze pattern and the same
+  pre-existing `check:provider-boundaries` false positive already documented for Phase 3GI proper.
+- No second migration file, no migration applied, no merge, no Production deploy, no Production Supabase
+  mutation — same PR #5, one additional commit.
+- See `docs/planning/phase_3gi_user_retention_persistence_result_v0.1.md` (HF1 section) for full detail.
+
+## Phase 3GI - 2026-07-24
+
+### Session restoration hardening, persistent resume state, and cross-device watchlist — `IMPLEMENTED_PUSHED_PREVIEW_READY_DB_MIGRATION_APPROVAL_PENDING`
+
+- Session restoration hardening: Supabase client now sets `persistSession`/`autoRefreshToken` explicitly;
+  profile bootstrap runs once per real auth transition (`INITIAL_SESSION`/`TOKEN_REFRESHED` explicitly
+  skipped, not re-bootstrapped); `SIGNED_OUT` clears UI state via `mk:auth-state`; no token or `Session`
+  object is ever manually stored or logged.
+- Persistent resume state: new `public.user_preferences` stores last surface, last owned portfolio, last
+  Chart AI instrument/market/display-name/timeframe, and last activity timestamp — every field a closed
+  enum, bounded string, ownership-validated UUID, or ISO timestamp (no free-form URL field exists in the
+  schema, so an arbitrary URL can never be persisted). Resume only ever happens on an explicit user click.
+- Cross-device watchlist: new `public.user_watchlist_items` (KR/US stocks/ETFs, server-enforced 50-item cap),
+  new authenticated `GET /api/user/retention`, `PATCH /api/user/preferences`, `GET/POST/DELETE
+  /api/user/watchlist` routes (bearer-auth-before-DB-work, sanitized errors, `Cache-Control: no-store`,
+  `RETENTION_API_NOT_READY` degradation while the migration is unapplied), a Home compact view, and a Chart
+  AI toggle + deep link. Zero quote polling, zero provider/KIS calls, zero Similarity/MK-Analysis triggering
+  or usage-quota consumption from this feature.
+- Exactly one new, additive, collision-free migration
+  (`supabase/migrations/20260724_user_retention_persistence.sql`) — **intentionally not applied** by any
+  means this phase.
+- Portfolio deep link (`?portfolio=<id>`) only honored when the id is present in the user's own loaded
+  portfolio list; the aggregate sentinel `__all_portfolios__` is explicitly excluded from resume-state writes.
+- New tests: `smoke:phase-3gi-user-retention-persistence` 24/24;
+  `check:phase-3gi-user-retention-persistence` 106/106. Full pre-existing regression gate list re-run; the
+  only failures are the same non-blocking working-tree-scope-freeze pattern already documented in prior
+  phases' changelog entries, plus a re-confirmed pre-existing `check:provider-boundaries` false positive on
+  `chart-ai.astro` (SSR-frontmatter-only `lib/server` imports, unrelated to this phase's own new
+  `lib/userRetentionClient` import).
+- Renamed `docs/planning/mk_stock_lab_master_roadmap_v2.0.md` →
+  `docs/planning/mk_stock_lab_master_roadmap_v2.1.md`; corrected Phase 3GH's status to `MERGED_TO_MAIN` (PR #4
+  merged as `64d58e9`, which v2.0 had recorded as still open) and recorded Phase 3GI's status. Phase 3GJ/3GK/
+  3GL remain `PLANNED` and are explicitly not started by this phase.
+- See `docs/planning/phase_3gi_user_retention_persistence_result_v0.1.md` for full detail.
+
 ## Phase 3GH - 2026-07-24
 
 ### Authenticated KR portfolio live valuation MVP — `CODE_TEST_VERIFIED`, `PREVIEW_VERIFIED`; not yet `PRODUCTION_VERIFIED` (PR #4 open, unmerged)

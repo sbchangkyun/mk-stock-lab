@@ -1,0 +1,131 @@
+---
+// HomeRetentionPanel.astro
+// Home "이어서 보기" resume card + compact cross-device watchlist.
+// Hidden by default (SSR + pre-auth-check) so signed-out visitors trigger zero requests and see
+// nothing. Only fetches /api/user/retention after Header confirms a signed-in session. Degrades
+// silently (stays hidden) while the Phase 3GI migration is not yet applied
+// (RETENTION_API_NOT_READY) or on any other error -- never shows a raw error to the visitor.
+---
+
+<section class="panel home-retention-panel hidden" id="home-retention-panel" aria-label="이어서 보기 및 관심 종목">
+  <div class="home-retention-resume hidden" id="home-retention-resume">
+    <p class="eyebrow">이어서 보기</p>
+    <p class="home-retention-resume-text" id="home-retention-resume-text"></p>
+    <a class="button-link secondary home-retention-resume-cta" id="home-retention-resume-cta" href="#">이어서 보기</a>
+  </div>
+
+  <div class="home-retention-watchlist hidden" id="home-retention-watchlist">
+    <p class="eyebrow">관심 종목</p>
+    <div class="home-retention-watchlist-items" id="home-retention-watchlist-items"></div>
+  </div>
+</section>
+
+<script>
+  import { userRetentionApi, hasRetentionSession, type RetentionSnapshot } from '../lib/userRetentionClient';
+
+  const SURFACE_LABEL: Record<string, string> = {
+    chart_ai: 'Chart AI',
+    portfolio: '포트폴리오',
+    home: '홈',
+  };
+
+  const escapeHtml = (text: string) =>
+    text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c));
+
+  const buildResumeHref = (preferences: RetentionSnapshot['preferences']) => {
+    if (!preferences) return null;
+    if (preferences.lastSurface === 'chart_ai' && preferences.lastChartSymbol && preferences.lastChartMarket) {
+      const params = new URLSearchParams();
+      params.set('symbol', preferences.lastChartSymbol);
+      params.set('market', preferences.lastChartMarket);
+      if (preferences.lastChartName) params.set('name', preferences.lastChartName);
+      return { href: `/chart-ai?${params.toString()}`, label: preferences.lastChartName || preferences.lastChartSymbol };
+    }
+    if (preferences.lastSurface === 'portfolio' && preferences.lastPortfolioId) {
+      return { href: `/portfolio?portfolio=${encodeURIComponent(preferences.lastPortfolioId)}`, label: '포트폴리오' };
+    }
+    return null;
+  };
+
+  const renderResume = (preferences: RetentionSnapshot['preferences']) => {
+    const wrap = document.getElementById('home-retention-resume');
+    const text = document.getElementById('home-retention-resume-text');
+    const cta = document.getElementById('home-retention-resume-cta') as HTMLAnchorElement | null;
+    if (!wrap || !text || !cta) return false;
+
+    const resume = buildResumeHref(preferences);
+    if (!resume) {
+      wrap.classList.add('hidden');
+      return false;
+    }
+
+    const surfaceLabel = preferences?.lastSurface ? SURFACE_LABEL[preferences.lastSurface] ?? '' : '';
+    text.textContent = `${surfaceLabel} · ${resume.label}`;
+    cta.href = resume.href;
+    wrap.classList.remove('hidden');
+    return true;
+  };
+
+  const renderWatchlist = (watchlist: RetentionSnapshot['watchlist']) => {
+    const wrap = document.getElementById('home-retention-watchlist');
+    const list = document.getElementById('home-retention-watchlist-items');
+    if (!wrap || !list) return false;
+
+    if (!watchlist || watchlist.length === 0) {
+      wrap.classList.add('hidden');
+      return false;
+    }
+
+    list.innerHTML = '';
+    watchlist.slice(0, 8).forEach((item) => {
+      const params = new URLSearchParams();
+      params.set('symbol', item.symbol);
+      params.set('market', item.market);
+      if (item.name) params.set('name', item.name);
+
+      const link = document.createElement('a');
+      link.className = 'home-retention-watchlist-chip';
+      link.href = `/chart-ai?${params.toString()}`;
+      link.innerHTML = `<span class="home-retention-watchlist-market">${escapeHtml(item.market)}</span><span>${escapeHtml(item.name || item.symbol)}</span>`;
+      list.appendChild(link);
+    });
+
+    wrap.classList.remove('hidden');
+    return true;
+  };
+
+  const loadRetentionPanel = async () => {
+    const panel = document.getElementById('home-retention-panel');
+    if (!panel) return;
+
+    const hasSession = await hasRetentionSession();
+    if (!hasSession) {
+      panel.classList.add('hidden');
+      return;
+    }
+
+    try {
+      const snapshot = await userRetentionApi.getSnapshot();
+      const showedResume = renderResume(snapshot.preferences);
+      const showedWatchlist = renderWatchlist(snapshot.watchlist);
+      panel.classList.toggle('hidden', !showedResume && !showedWatchlist);
+    } catch {
+      // Migration not yet applied, session race, or transient error -- stay hidden, no retry.
+      panel.classList.add('hidden');
+    }
+  };
+
+  window.addEventListener('mk:auth-state', (event) => {
+    const detail = (event as CustomEvent<{ status: string }>).detail;
+    if (detail?.status === 'signed_out') {
+      document.getElementById('home-retention-panel')?.classList.add('hidden');
+      return;
+    }
+    if (detail?.status === 'signed_in') {
+      void loadRetentionPanel();
+    }
+  });
+
+  document.addEventListener('astro:page-load', () => { void loadRetentionPanel(); });
+  void loadRetentionPanel();
+</script>

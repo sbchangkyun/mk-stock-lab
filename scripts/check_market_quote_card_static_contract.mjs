@@ -11,7 +11,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 
 const CARD_PATH = join(root, 'src', 'components', 'MarketLiveQuoteCard.astro');
-const SHELL_PATH = join(root, 'src', 'components', 'MarketShell.astro');
+// Phase 3GJ: MarketShell.astro (fixture) was retired in favor of LiveMarketDashboard.astro (live data);
+// MarketLiveQuoteCard stayed out of scope and is still rendered ahead of the dashboard section there.
+const SHELL_PATH = join(root, 'src', 'components', 'LiveMarketDashboard.astro');
 
 const FORBIDDEN_KIS_FIELDS = [
   'stck_prpr', 'rt_cd', 'prdy_vrss', 'acml_vol', 'msg_cd',
@@ -59,7 +61,7 @@ log('File existence:');
 const cardExists = existsSync(CARD_PATH);
 check('MarketLiveQuoteCard.astro exists', cardExists);
 const shellExists = existsSync(SHELL_PATH);
-check('MarketShell.astro exists', shellExists);
+check('LiveMarketDashboard.astro exists', shellExists);
 log('');
 
 if (!cardExists || !shellExists) {
@@ -70,15 +72,15 @@ if (!cardExists || !shellExists) {
 const cardContent = readFileSync(CARD_PATH, 'utf8');
 const shellContent = readFileSync(SHELL_PATH, 'utf8');
 
-// --- Integration in MarketShell ---
-log('MarketShell integration:');
-check('MarketShell imports MarketLiveQuoteCard', shellContent.includes('MarketLiveQuoteCard'));
-check('MarketShell references KIS_ENABLE_MARKET_QUOTE_CARD', shellContent.includes('KIS_ENABLE_MARKET_QUOTE_CARD'));
+// --- Integration in LiveMarketDashboard ---
+log('LiveMarketDashboard integration:');
+check('LiveMarketDashboard imports MarketLiveQuoteCard', shellContent.includes('MarketLiveQuoteCard'));
+check('LiveMarketDashboard references KIS_ENABLE_MARKET_QUOTE_CARD', shellContent.includes('KIS_ENABLE_MARKET_QUOTE_CARD'));
 
 const cardIdx = shellContent.indexOf('MarketLiveQuoteCard');
 const dashIdx = shellContent.indexOf('market-dashboard');
 check(
-  'MarketLiveQuoteCard placed before market-dashboard in MarketShell',
+  'MarketLiveQuoteCard placed before market-dashboard in LiveMarketDashboard',
   cardIdx !== -1 && dashIdx !== -1 && cardIdx < dashIdx,
 );
 log('');

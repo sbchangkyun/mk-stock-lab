@@ -6,8 +6,12 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "smoke:phase-3gj-live-market-dashboard": "node scripts/smoke_phase_3gj_live_market_dashboard.mjs",
+    "check:phase-3gj-live-market-dashboard": "node scripts/check_phase_3gj_live_market_dashboard_contract.mjs",
     "smoke:phase-3gh-portfolio-live-valuation-mvp": "node scripts/smoke_phase_3gh_portfolio_live_valuation_mvp.mjs",
     "check:phase-3gh-portfolio-live-valuation-mvp": "node scripts/check_phase_3gh_portfolio_live_valuation_mvp_contract.mjs",
+    "smoke:phase-3gi-user-retention-persistence": "node scripts/smoke_phase_3gi_user_retention_persistence.mjs",
+    "check:phase-3gi-user-retention-persistence": "node scripts/check_phase_3gi_user_retention_persistence_contract.mjs",
     "dev": "astro dev",
     "build": "astro build",
     "postbuild": "node scripts/repair-vercel-output.mjs",
