@@ -642,6 +642,239 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16038"
+    },
+    {
+      "canonicalIdentity": "KR|424460|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "424460",
+      "priorNames": [
+        "HANARO 글로벌워터MSCI(합성)"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR7424460004",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|MARB|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "MARB",
+      "priorNames": [
+        "FIRST TR EXCHANGE-TRADED FD III FIRST TRUST MERGER ARBITRAGE",
+        "FIRST TR EXCHANGE-TRADED FD III FIRST TRUST MERGER ARBITRAGE"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|ADTX|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "ADTX",
+      "priorNames": [
+        "ADITXT INC",
+        "ADITXT INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|CNTA|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "CNTA",
+      "priorNames": [
+        "CENTESSA PHARMACEUTICALS PLC SPON ADS EACH REPR 1 ORD SHS",
+        "CENTESSA PHARMACEUTICALS PLC SPON ADS EACH REPR 1 ORD SHS"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|CWAN|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "CWAN",
+      "priorNames": [
+        "CLEARWATER ANALYTICS HLDGS INC",
+        "CLEARWATER ANALYTICS HLDGS INC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|DEVS|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "DEVS",
+      "priorNames": [
+        "DEVVSTREAM CORP",
+        "DEVVSTREAM CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|LOKV|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "LOKV",
+      "priorNames": [
+        "LIVE OAK ACQUISITION CORP V",
+        "LIVE OAK ACQUISITION CORP V"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|LOKVU|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "LOKVU",
+      "priorNames": [
+        "LIVE OAK ACQUISITION CORP V UNITS 1 CL A & 1/2 RED WT",
+        "LIVE OAK ACQUISITION CORP V UNITS 1 CL A & 1/2 RED WT"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|ORIS|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "ORIS",
+      "priorNames": [
+        "ORIENTAL RISE HOLDINGS LIMITED",
+        "ORIENTAL RISE HOLDINGS LIMITED"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|PRA|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "PRA",
+      "priorNames": [
+        "PROASSURANCE CORP",
+        "PROASSURANCE CORP"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|SATS|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SATS",
+      "priorNames": [
+        "ECHOSTAR CORPORATION",
+        "ECHOSTAR CORPORATION"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|SDM|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SDM",
+      "priorNames": [
+        "SMART DIGITAL GROUP LIMITED",
+        "SMART DIGITAL GROUP LIMITED"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "US|SNBR|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SNBR",
+      "priorNames": [
+        "SLEEP NUMBER CORPORATION",
+        "SLEEP NUMBER CORPORATION"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16039"
     }
   ]
 }

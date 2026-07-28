@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16048",
+  "masterVersion": "hf3b-hf2-kis-16040",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-07-27",
+  "sourceAsOf": "2026-07-28",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -3541,6 +3541,19 @@
       "active": true
     },
     {
+      "symbol": "0214M0",
+      "displayName": "MIDAS 바이오헬스케어액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70214M0000",
+      "aliases": [
+        "0214m0"
+      ],
+      "active": true
+    },
+    {
       "symbol": "0215T0",
       "displayName": "HANARO 미국AI광통신TOP10",
       "country": "KR",
@@ -3684,6 +3697,32 @@
       "active": true
     },
     {
+      "symbol": "0222D0",
+      "displayName": "KoAct 고배당액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70222D0001",
+      "aliases": [
+        "0222d0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0223A0",
+      "displayName": "RISE 코스닥커버드콜액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70223A0003",
+      "aliases": [
+        "0223a0"
+      ],
+      "active": true
+    },
+    {
       "symbol": "0223R0",
       "displayName": "TIGER 미국테크NYSE100액티브",
       "country": "KR",
@@ -3693,6 +3732,32 @@
       "standardCode": "KR70223R0004",
       "aliases": [
         "0223r0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0224D0",
+      "displayName": "KIWOOM 미국CPU반도체TOP4+",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70224D0009",
+      "aliases": [
+        "0224d0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0224X0",
+      "displayName": "1Q 엔비디아알파벳미국채혼합50",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70224X0005",
+      "aliases": [
+        "0224x0"
       ],
       "active": true
     },
@@ -10053,19 +10118,6 @@
       "standardCode": "KR7423920008",
       "aliases": [
         "423920"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "424460",
-      "displayName": "HANARO 글로벌워터MSCI(합성)",
-      "country": "KR",
-      "exchange": "KOSPI",
-      "assetType": "etf",
-      "exchangeCode": null,
-      "standardCode": "KR7424460004",
-      "aliases": [
-        "424460"
       ],
       "active": true
     },
@@ -43410,14 +43462,15 @@
     },
     {
       "symbol": "290690",
-      "displayName": "소룩스",
+      "displayName": "아리바이오홀딩스",
       "country": "KR",
       "exchange": "KOSDAQ",
       "assetType": "stock",
       "exchangeCode": null,
       "standardCode": "KR7290690007",
       "aliases": [
-        "290690"
+        "290690",
+        "소룩스"
       ],
       "active": true
     },
@@ -91365,8 +91418,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "lght",
-        "spinnaker etf series langar global healthtech etf"
+        "lght"
       ],
       "active": true
     },
@@ -92471,7 +92523,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "etf series solutions point bridge america first etf",
         "maga"
       ],
       "active": true
@@ -92603,19 +92654,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "mapp"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "MARB",
-      "displayName": "FIRST TR EXCHANGE-TRADED FD III FIRST TRUST MERGER ARBITRAGE",
-      "englishName": "FIRST TR EXCHANGE-TRADED FD III FIRST TRUST MERGER ARBITRAGE",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "marb"
       ],
       "active": true
     },
@@ -129256,19 +129294,6 @@
       "active": true
     },
     {
-      "symbol": "ADTX",
-      "displayName": "ADITXT INC",
-      "englishName": "ADITXT INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "adtx"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ADUR",
       "displayName": "ADURO CLEAN TECHNOLOGIES INC",
       "englishName": "ADURO CLEAN TECHNOLOGIES INC",
@@ -137834,8 +137859,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "biot",
-        "instinct bio technical company holdings inc"
+        "biot"
       ],
       "active": true
     },
@@ -144990,19 +145014,6 @@
       "active": true
     },
     {
-      "symbol": "CNTA",
-      "displayName": "CENTESSA PHARMACEUTICALS PLC SPON ADS EACH REPR 1 ORD SHS",
-      "englishName": "CENTESSA PHARMACEUTICALS PLC SPON ADS EACH REPR 1 ORD SHS",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "cnta"
-      ],
-      "active": true
-    },
-    {
       "symbol": "CNTB",
       "displayName": "CONNECT BIOPHARMA HLDGS LTD",
       "englishName": "CONNECT BIOPHARMA HLDGS LTD",
@@ -147577,19 +147588,6 @@
       "active": true
     },
     {
-      "symbol": "CWAN",
-      "displayName": "CLEARWATER ANALYTICS HLDGS INC",
-      "englishName": "CLEARWATER ANALYTICS HLDGS INC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "cwan"
-      ],
-      "active": true
-    },
-    {
       "symbol": "CWBC",
       "displayName": "COMMUNITY WEST BANCSHARES",
       "englishName": "COMMUNITY WEST BANCSHARES",
@@ -148665,19 +148663,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "detx"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "DEVS",
-      "displayName": "DEVVSTREAM CORP",
-      "englishName": "DEVVSTREAM CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "devs"
       ],
       "active": true
     },
@@ -170961,32 +170946,6 @@
       "active": true
     },
     {
-      "symbol": "LOKV",
-      "displayName": "LIVE OAK ACQUISITION CORP V",
-      "englishName": "LIVE OAK ACQUISITION CORP V",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lokv"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "LOKVU",
-      "displayName": "LIVE OAK ACQUISITION CORP V UNITS 1 CL A & 1/2 RED WT",
-      "englishName": "LIVE OAK ACQUISITION CORP V UNITS 1 CL A & 1/2 RED WT",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lokvu"
-      ],
-      "active": true
-    },
-    {
       "symbol": "LOMA",
       "displayName": "LOMA NEGRA CIA IND ARGENTINA SA SPON ADS EACH REP 5 ORD SHS",
       "englishName": "LOMA NEGRA CIA IND ARGENTINA SA SPON ADS EACH REP 5 ORD SHS",
@@ -181968,19 +181927,6 @@
       "active": true
     },
     {
-      "symbol": "ORIS",
-      "displayName": "ORIENTAL RISE HOLDINGS LIMITED",
-      "englishName": "ORIENTAL RISE HOLDINGS LIMITED",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "oris"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ORKA",
       "displayName": "ORUKA THERAPEUTICS INC",
       "englishName": "ORUKA THERAPEUTICS INC",
@@ -184823,7 +184769,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "pelican acquisition ii corporation unit consist of 1 ord shs",
         "plciu"
       ],
       "active": true
@@ -185852,19 +185797,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "pr"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "PRA",
-      "displayName": "PROASSURANCE CORP",
-      "englishName": "PROASSURANCE CORP",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "pra"
       ],
       "active": true
     },
@@ -191381,19 +191313,6 @@
       "active": true
     },
     {
-      "symbol": "SATS",
-      "displayName": "ECHOSTAR CORPORATION",
-      "englishName": "ECHOSTAR CORPORATION",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "sats"
-      ],
-      "active": true
-    },
-    {
       "symbol": "SAV",
       "displayName": "SARATOGA INVESTMENT CORP 7.50% NOTES DUE 06/02/2031",
       "englishName": "SARATOGA INVESTMENT CORP 7.50% NOTES DUE 06/02/2031",
@@ -192131,19 +192050,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "sdhiu"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SDM",
-      "displayName": "SMART DIGITAL GROUP LIMITED",
-      "englishName": "SMART DIGITAL GROUP LIMITED",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "sdm"
       ],
       "active": true
     },
@@ -194471,19 +194377,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "snap"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SNBR",
-      "displayName": "SLEEP NUMBER CORPORATION",
-      "englishName": "SLEEP NUMBER CORPORATION",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "snbr"
       ],
       "active": true
     },
@@ -200229,8 +200122,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "trib",
-        "trinity biotech plc spon adr each rep 20 ord"
+        "trib"
       ],
       "active": true
     },
