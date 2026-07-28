@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16040",
+  "masterVersion": "hf3b-hf2-kis-16048",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-07-28",
   "instruments": [
@@ -29780,19 +29780,6 @@
       "active": true
     },
     {
-      "symbol": "057050",
-      "displayName": "현대홈쇼핑",
-      "country": "KR",
-      "exchange": "KOSPI",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7057050007",
-      "aliases": [
-        "057050"
-      ],
-      "active": true
-    },
-    {
       "symbol": "057540",
       "displayName": "옴니시스템",
       "country": "KR",
@@ -43469,8 +43456,7 @@
       "exchangeCode": null,
       "standardCode": "KR7290690007",
       "aliases": [
-        "290690",
-        "소룩스"
+        "290690"
       ],
       "active": true
     },
@@ -56696,6 +56682,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "bgt"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BGUS",
+      "displayName": "BAILLIE GIFFORD U.S. EQUITY GROWTH ETF",
+      "englishName": "BAILLIE GIFFORD U.S. EQUITY GROWTH ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "bgus"
       ],
       "active": true
     },
@@ -95154,6 +95153,19 @@
       "active": true
     },
     {
+      "symbol": "MSOL",
+      "displayName": "MORGAN STANLEY SOLANA TRUST",
+      "englishName": "MORGAN STANLEY SOLANA TRUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "msol"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MSOS",
       "displayName": "ADVISORSHARES TRUST PURE US CANNABIS ETF",
       "englishName": "ADVISORSHARES TRUST PURE US CANNABIS ETF",
@@ -95189,6 +95201,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "msr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MSSE",
+      "displayName": "MORGAN STANLEY ETHEREUM TRUST",
+      "englishName": "MORGAN STANLEY ETHEREUM TRUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "msse"
       ],
       "active": true
     },
@@ -106480,6 +106505,19 @@
       "active": true
     },
     {
+      "symbol": "RAMZ",
+      "displayName": "T-REX 2X INVERSE DRAM DAILY TARGET ETF",
+      "englishName": "T-REX 2X INVERSE DRAM DAILY TARGET ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ramz"
+      ],
+      "active": true
+    },
+    {
       "symbol": "RANK",
       "displayName": "DEFIANCE KSM TIPRANKS ANALYST ETF",
       "englishName": "DEFIANCE KSM TIPRANKS ANALYST ETF",
@@ -111407,6 +111445,19 @@
       "active": true
     },
     {
+      "symbol": "SKHA",
+      "displayName": "TRADR 2X LONG SK HYNIX DAILY ETF",
+      "englishName": "TRADR 2X LONG SK HYNIX DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "skha"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SKHL",
       "displayName": "DIREXION DAILY SK HYNIX BULL 2X ETF",
       "englishName": "DIREXION DAILY SK HYNIX BULL 2X ETF",
@@ -111416,6 +111467,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "skhl"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SKHN",
+      "displayName": "TRADR 2X SHORT SK HYNIX DAILY ETF",
+      "englishName": "TRADR 2X SHORT SK HYNIX DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "skhn"
       ],
       "active": true
     },
@@ -114297,13 +114361,14 @@
     },
     {
       "symbol": "STCE",
-      "displayName": "SCHWAB STRATEGIC TR CRYPTO THEMATIC ETF",
-      "englishName": "SCHWAB STRATEGIC TR CRYPTO THEMATIC ETF",
+      "displayName": "SCHWAB CRYPTO THEMATIC NATURAL LANGUAGE PROCESSING ETF",
+      "englishName": "SCHWAB CRYPTO THEMATIC NATURAL LANGUAGE PROCESSING ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "schwab strategic tr crypto thematic etf",
         "stce"
       ],
       "active": true
@@ -141452,6 +141517,19 @@
       "active": true
     },
     {
+      "symbol": "CATLU",
+      "displayName": "CATALYST PARTNERS ACQUISITION CORP UNIT CONSIST OF 1 CL A &",
+      "englishName": "CATALYST PARTNERS ACQUISITION CORP UNIT CONSIST OF 1 CL A &",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "catlu"
+      ],
+      "active": true
+    },
+    {
       "symbol": "CATO",
       "displayName": "CATO CORP",
       "englishName": "CATO CORP",
@@ -165216,6 +165294,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "invz"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "IOND",
+      "displayName": "IONIC DIGITAL INC",
+      "englishName": "IONIC DIGITAL INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "iond"
       ],
       "active": true
     },
@@ -196280,13 +196371,14 @@
     },
     {
       "symbol": "STKH",
-      "displayName": "STEAKHOLDER FOODS LTD SPON ADS EACH REP 4000 ORD",
-      "englishName": "STEAKHOLDER FOODS LTD SPON ADS EACH REP 4000 ORD",
+      "displayName": "STEAKHOLDER FOODS LTD SPON ADS EACH REP 12000 ORD(R/S)",
+      "englishName": "STEAKHOLDER FOODS LTD SPON ADS EACH REP 12000 ORD(R/S)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "steakholder foods ltd spon ads each rep 4000 ord",
         "stkh"
       ],
       "active": true
@@ -205500,13 +205592,14 @@
     },
     {
       "symbol": "WHLR",
-      "displayName": "WHEELER REAL ESTATE INVT TR INC",
-      "englishName": "WHEELER REAL ESTATE INVT TR INC",
+      "displayName": "WHEELER REAL ESTATE INVESTMENT TRUST INC",
+      "englishName": "WHEELER REAL ESTATE INVESTMENT TRUST INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "wheeler real estate invt tr inc",
         "whlr"
       ],
       "active": true
@@ -207536,6 +207629,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "yala"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "YARW",
+      "displayName": "YARROW BIOSCIENCE INC",
+      "englishName": "YARROW BIOSCIENCE INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "yarw"
       ],
       "active": true
     },

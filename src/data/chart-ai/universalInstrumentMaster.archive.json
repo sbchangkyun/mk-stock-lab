@@ -875,6 +875,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16039"
+    },
+    {
+      "canonicalIdentity": "KR|057050|KOSPI|stock",
+      "country": "KR",
+      "priorSymbol": "057050",
+      "priorNames": [
+        "현대홈쇼핑"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "stock",
+      "standardCode": "KR7057050007",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-07-28",
+      "inactiveAt": "2026-07-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16048"
     }
   ]
 }
