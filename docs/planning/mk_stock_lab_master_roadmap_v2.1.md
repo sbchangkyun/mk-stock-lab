@@ -129,12 +129,16 @@ to Production Supabase (via the Supabase Dashboard SQL Editor), not independentl
   alone (no flag/query), the protected-Preview beta guard stays fully untouched and independent, and
   `allowProductionChartAiBetaLiveQuotes` is renamed `allowProductionChartAiLiveData` end-to-end. New
   `smoke:phase-3gk-chart-ai-beta-productization` (17/17) and `check:phase-3gk-chart-ai-beta-productization`
-  (115/115) suites; full regression gate (3GJ/3GI/3GH smoke+check, `npm ls`, `npm run build`,
+  (116/116) suites; full regression gate (3GJ/3GI/3GH smoke+check, `npm ls`, `npm run build`,
   `git diff --check`) clean. Detailed responsive/cross-browser/accessibility/all-symbol/all-market/
   long-session QA is explicitly deferred to Phase 3 Closeout (after Phase 3GL). See
   `phase_3gk_chart_ai_beta_productization_result_v0.1.md` for full detail. Branch
   `feature/phase-3gk-chart-ai-beta-productization`, created from `origin/main` at `668e528` (the Phase 3GJ
-  merge commit). PR not yet opened at the point this line was written.
+  merge commit); implementation commit `a0ae043`. PR #7 ("Phase 3GK: productize stable Chart AI") is open
+  against `main`, state `OPEN`, `mergeable: MERGEABLE`, not merged. Its Vercel Preview deployment
+  (`dpl_69TReFxXBWKMMweUMP248Q24uSV3`, commit `a0ae043`) reached `READY`; both the Vercel and Netlify PR
+  checks are green. The Preview is gated by Vercel's own account-level Deployment Protection (SSO), so
+  authenticated route/UI verification is Owner-pending — see the result doc §1/§8.
 
 ### Next sequential product phases
 
@@ -187,9 +191,10 @@ next in sequence, per the governing spec's instruction not to begin it here.
 6. **Phase 3GJ Production activation completed** (`KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD=true` set, PR #6
    merged, Production deployment reached READY, controlled live-data acceptance passed) — no longer an open
    risk; carried here only as a closed-item reference.
-7. **Phase 3GK PR not yet opened** at the point this document was updated. The stable Production access model
-   (§4 "In progress") is implemented and gate-clean on the feature branch but has not had a Preview deployment
-   verified yet — see `phase_3gk_chart_ai_beta_productization_result_v0.1.md` §1.
+7. **Phase 3GK PR #7 open, Preview READY, authenticated verification Owner-pending.** The stable Production
+   access model (§4 "In progress") is implemented, gate-clean, committed, pushed, and its PR's Vercel Preview
+   reached `READY`; the Preview's Vercel-level SSO Deployment Protection means authenticated route/UI
+   verification is Owner-pending — see `phase_3gk_chart_ai_beta_productization_result_v0.1.md` §1/§8.
 
 ## 6. Owner-only QA / decision items
 
@@ -204,6 +209,7 @@ next in sequence, per the governing spec's instruction not to begin it here.
 - Full signed-out/public detailed QA of Phase 3GJ's Market dashboard (all four universes/periods) and Home live
   snapshot, including mobile viewport and treemap/scatter export, plus the analogous detailed sweep for Phase
   3GK — both explicitly deferred to Phase 3 Closeout (see Phase 3GK result doc §7).
-- Confirm the Phase 3GK PR's Preview deployment reaches READY with no secret printed, and that Netlify Preview
-  is not red, once the PR is opened.
-- Decide whether to merge the Phase 3GK PR (not performed by this phase per explicit instruction).
+- Perform authenticated Preview click-through verification of Phase 3GK PR #7's deployment (SSO-protected;
+  Owner-only) — its Vercel Preview reached READY and Netlify's PR check is green, both confirmed by
+  unauthenticated reachability checks only.
+- Decide whether to merge the Phase 3GK PR #7 (not performed by this phase per explicit instruction).

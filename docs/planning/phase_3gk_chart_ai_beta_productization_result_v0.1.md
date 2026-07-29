@@ -9,11 +9,19 @@ endpoint or TR ID, automatic LLM execution, or starting Phase 3GL.
 
 ## 1. Executive classification
 
-`IMPLEMENTED_PUSHED_PREVIEW_READY_PRODUCTION_RELEASE_APPROVAL_PENDING`. All implementation, test-suite, and
-regression-gate work for this phase is complete and green on branch `feature/phase-3gk-chart-ai-beta-
-productization` (created from `origin/main` at `668e528`, the Phase 3GJ merge commit). Not yet committed,
-pushed, or opened as a PR at the point this document is written (see §6/§8 for the remaining sequencing) — the
-final classification is confirmed once the PR is open and its Preview deployment reaches READY.
+`IMPLEMENTED_PUSHED_PREVIEW_READY_PRODUCTION_RELEASE_APPROVAL_PENDING`. `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_
+CLOSEOUT` also applies (see §7). All implementation, test-suite, and regression-gate work for this phase is
+complete and green on branch `feature/phase-3gk-chart-ai-beta-productization` (created from `origin/main` at
+`668e528`, the Phase 3GJ merge commit). Implementation commit `a0ae043` is committed and pushed. PR #7
+("Phase 3GK: productize stable Chart AI") is open against `main`, state `OPEN`, `mergeable: MERGEABLE`, not
+merged. Its Vercel Preview deployment (`dpl_69TReFxXBWKMMweUMP248Q24uSV3`, commit `a0ae043`) reached `READY`.
+The Preview is gated by Vercel's own account-level Deployment Protection (SSO); unauthenticated requests to
+`/chart-ai` and `/api/chart-ai/market/ohlcv.json` both return `302 Found` to `vercel.com/sso-api`, confirming
+the platform-level protection is active and fail-closed. Netlify's parallel `deploy-preview` check is also
+green, but Netlify is not the app's authoritative runtime host (it serves only header/redirect-rule checks;
+`/chart-ai` returns `404` there) — Vercel remains the deployment target for verification purposes. No merge,
+no Production deployment, no environment mutation, and no Supabase migration have been performed by this
+phase.
 
 ## 2. Production access model
 
@@ -80,9 +88,10 @@ by the beta-gate retirement.
   ordering invariant (`auth` → `previewGuard`/`stableProductionGuard` → `usageGuard` → `provider`), and the
   three honest delayed-data wording strings.
 - `scripts/check_phase_3gk_chart_ai_beta_productization_contract.mjs` — static, no-network, no-build contract
-  checker. **115/115 passed** (as of this document landing; 108/115 before this document existed — the
-  remaining 7 were exactly this document's presence plus 6 required content tokens). Asserts: guard source
-  behavior, byte-identity of the untouched preview guard (line-ending-normalized against the `668e528`
+  checker. **116/116 passed** (final, authoritative total; historically 108/115 before this document existed,
+  then 115/115 once this document's presence plus 6 required content tokens were added, then 116/116 after a
+  further fix added a roadmap-file tracking assertion — see §6 of the HF1 hotfix changelog entry). Asserts:
+  guard source behavior, byte-identity of the untouched preview guard (line-ending-normalized against the `668e528`
   baseline blob), renamed-option consistency across all 8 touched files, full absence of every retired beta
   identifier from live code, auth-before-guard ordering in all 4 routes, the client's rewired
   `productionRealChartEnabled` flag, the three honest-wording fixes, immutability of `chartAiUsage.ts` /
@@ -124,9 +133,12 @@ this phase; the full manual sweep is deferred to Phase 3 Closeout, which runs af
 
 - Detailed cross-browser/accessibility/all-symbol/all-market/long-session QA (deferred to Phase 3 Closeout per
   §7 — not performed by this phase per explicit instruction).
+- Authenticated Preview click-through verification of PR #7's deployment — the Preview is gated by Vercel's
+  own account-level Deployment Protection (SSO), so any route/UI-level verification beyond the unauthenticated
+  reachability check already performed (§1) requires the Owner's own authenticated Vercel session.
 - Decide whether to merge this phase's PR (not performed by this phase per explicit instruction).
-- Review and confirm the stable Production access model (§2) has the intended effect once the PR's Preview
-  deployment is reachable (no env mutation, no migration, no deploy performed by this phase).
+- Review and confirm the stable Production access model (§2) has the intended effect once authenticated
+  Preview access confirms it (no env mutation, no migration, no deploy performed by this phase).
 
 ## 9. Next phase
 

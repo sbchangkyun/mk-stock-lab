@@ -22,7 +22,7 @@
   protected-Preview beta opt-in only (no prod-beta flag); three honest delayed-data wording fixes verified
   present in the real (non-mock) chart-loading flow.
 - Tests: new `smoke:phase-3gk-chart-ai-beta-productization` (17/17) and
-  `check:phase-3gk-chart-ai-beta-productization` (115/115). Full regression re-run
+  `check:phase-3gk-chart-ai-beta-productization` (116/116). Full regression re-run
   (`phase-3gj-live-market-dashboard` smoke 162/162 + check 159/159, `phase-3gi-user-retention-persistence`
   smoke 35/35 + check 149/149, `phase-3gh-portfolio-live-valuation-mvp` smoke 55/55 + check 86/86, `npm ls`,
   `npm run build`, `git diff --check`) clean. One sibling-checker reconciliation: the Phase 3GJ checker's
@@ -33,7 +33,9 @@
   `docs/planning/phase_3gk_chart_ai_beta_productization_result_v0.1.md` for full detail.
 - No migration, no merge, no Production deploy, no environment/Supabase mutation, no Phase 3GL work. Branch
   `feature/phase-3gk-chart-ai-beta-productization`, created from `origin/main` at `668e528` (the Phase 3GJ
-  merge commit).
+  merge commit); implementation commit `a0ae043`, pushed, PR #7 open against `main` (not merged), Vercel
+  Preview `dpl_69TReFxXBWKMMweUMP248Q24uSV3` reached `READY` (SSO-protected; authenticated verification
+  Owner-pending).
 
 ## Phase 3GJ-HF2 - 2026-07-26
 
