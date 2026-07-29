@@ -2,7 +2,7 @@
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
   "masterVersion": "hf3b-hf2-kis-16048",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-07-28",
+  "sourceAsOf": "2026-07-29",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -41603,14 +41603,15 @@
     },
     {
       "symbol": "242040",
-      "displayName": "나무기술",
+      "displayName": "나무에이엑스",
       "country": "KR",
       "exchange": "KOSDAQ",
       "assetType": "stock",
       "exchangeCode": null,
       "standardCode": "KR7242040004",
       "aliases": [
-        "242040"
+        "242040",
+        "나무기술"
       ],
       "active": true
     },
@@ -114368,7 +114369,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "schwab strategic tr crypto thematic etf",
         "stce"
       ],
       "active": true
@@ -196378,7 +196378,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "steakholder foods ltd spon ads each rep 4000 ord",
         "stkh"
       ],
       "active": true
@@ -205599,7 +205598,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "wheeler real estate invt tr inc",
         "whlr"
       ],
       "active": true
