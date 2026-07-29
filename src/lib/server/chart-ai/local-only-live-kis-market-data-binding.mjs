@@ -254,7 +254,7 @@ export async function runLocalOnlyLiveKisMarketDataRequest(input, deps) {
     // into the delegated fetchQuote transport (step 7 below) so the provider client can narrowly lift
     // its Vercel Production hard block for the current_price quote scope. It does NOT relax this
     // module's own local-only guard, endpoint allowlist, symbol, credential, or rate-limit checks.
-    allowProductionChartAiBetaLiveQuotes = false,
+    allowProductionChartAiLiveData = false,
   } = input;
   const {
     rateLimiter,
@@ -335,7 +335,7 @@ export async function runLocalOnlyLiveKisMarketDataRequest(input, deps) {
   // transport has no timeout guarantee of its own).
   const startedAtMs = now();
   const result = await callWithTimeout(
-    () => fetchQuote({ symbol, category, allowProductionChartAiBetaLiveQuotes }),
+    () => fetchQuote({ symbol, category, allowProductionChartAiLiveData }),
     timeoutMs,
   );
   const latencyMs = now() - startedAtMs;

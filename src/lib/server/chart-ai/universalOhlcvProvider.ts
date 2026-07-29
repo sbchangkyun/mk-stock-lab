@@ -144,7 +144,7 @@ const buildResponse = (
 export type FetchUniversalOhlcvInput = {
   instrument: NormalizedInstrument;
   range: string;
-  allowProductionChartAiBetaLiveQuotes?: boolean;
+  allowProductionChartAiLiveData?: boolean;
   /** Phase 3GJ: independent, OR'd Production exception scoped to the live market dashboard. */
   allowProductionMarketDashboardLiveData?: boolean;
 };
@@ -185,7 +185,7 @@ export const fetchUniversalOhlcv = async (
       providerResult = await getKisDomesticDailyOhlcSeries(
         { symbol: instrument.symbol, query: buildDomesticQuery(instrument.symbol, range) },
         {
-          allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true,
+          allowProductionChartAiLiveData: input.allowProductionChartAiLiveData === true,
           allowProductionMarketDashboardLiveData: input.allowProductionMarketDashboardLiveData === true,
         },
       );
@@ -193,7 +193,7 @@ export const fetchUniversalOhlcv = async (
       providerResult = await getKisOverseasDailyOhlcSeries(
         { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '' },
         {
-          allowProductionChartAiBetaLiveQuotes: input.allowProductionChartAiBetaLiveQuotes === true,
+          allowProductionChartAiLiveData: input.allowProductionChartAiLiveData === true,
           allowProductionMarketDashboardLiveData: input.allowProductionMarketDashboardLiveData === true,
         },
       );
@@ -287,7 +287,7 @@ const buildLongDomesticQuery = (symbol: string, startDate: Date, endDate: Date):
 export const fetchLongHistoryOhlcv = async (
   input: {
     instrument: NormalizedInstrument;
-    allowProductionChartAiBetaLiveQuotes?: boolean;
+    allowProductionChartAiLiveData?: boolean;
     /** Phase 3GJ: independent, OR'd Production exception scoped to the live market dashboard. */
     allowProductionMarketDashboardLiveData?: boolean;
     targetBars?: number;
@@ -297,7 +297,7 @@ export const fetchLongHistoryOhlcv = async (
   const now = deps.now ?? (() => Date.now());
   const instrument = input.instrument;
   const nowIso = new Date(now()).toISOString();
-  const allow = input.allowProductionChartAiBetaLiveQuotes === true;
+  const allow = input.allowProductionChartAiLiveData === true;
   const allowMarketDashboard = input.allowProductionMarketDashboardLiveData === true;
   // Callers that only need ~6-12 months (e.g. market-intelligence relative strength) can request fewer
   // bars so fewer paginated KIS calls are made per instrument (default = the full ~3-year target).
@@ -350,12 +350,12 @@ export const fetchLongHistoryOhlcv = async (
         const startDate = new Date(endDate.getTime() - LONG_HISTORY_PAGE_SPAN_DAYS * 24 * 60 * 60 * 1000);
         result = await getKisDomesticDailyOhlcSeries(
           { symbol: instrument.symbol, query: buildLongDomesticQuery(instrument.symbol, startDate, endDate) },
-          { allowProductionChartAiBetaLiveQuotes: allow, allowProductionMarketDashboardLiveData: allowMarketDashboard },
+          { allowProductionChartAiLiveData: allow, allowProductionMarketDashboardLiveData: allowMarketDashboard },
         );
       } else {
         result = await getKisOverseasDailyOhlcSeries(
           { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '', bymd: page === 0 ? '' : yyyymmdd(endDate) },
-          { allowProductionChartAiBetaLiveQuotes: allow, allowProductionMarketDashboardLiveData: allowMarketDashboard },
+          { allowProductionChartAiLiveData: allow, allowProductionMarketDashboardLiveData: allowMarketDashboard },
         );
       }
 
