@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16048",
+  "masterVersion": "hf3b-hf2-kis-16057",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-07-29",
   "instruments": [
@@ -41610,8 +41610,7 @@
       "exchangeCode": null,
       "standardCode": "KR7242040004",
       "aliases": [
-        "242040",
-        "나무기술"
+        "242040"
       ],
       "active": true
     },
@@ -57866,6 +57865,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "bmvp"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BNAV",
+      "displayName": "AMPLIFY FAIRLEAD TACTICAL BITCOIN ETF",
+      "englishName": "AMPLIFY FAIRLEAD TACTICAL BITCOIN ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "bnav"
       ],
       "active": true
     },
@@ -79281,6 +79293,19 @@
       "active": true
     },
     {
+      "symbol": "GOIB",
+      "displayName": "DIREXION GOOGL DEFINED INCOME BOOST ETF",
+      "englishName": "DIREXION GOOGL DEFINED INCOME BOOST ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "goib"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GOLI",
       "displayName": "DEFIANCE GOLD ENHANCED OPTIONS INCOME ETF",
       "englishName": "DEFIANCE GOLD ENHANCED OPTIONS INCOME ETF",
@@ -93347,6 +93372,19 @@
       "active": true
     },
     {
+      "symbol": "MEIB",
+      "displayName": "DIREXION META DEFINED INCOME BOOST ETF",
+      "englishName": "DIREXION META DEFINED INCOME BOOST ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "meib"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MEM",
       "displayName": "MATTHEWS ASIAN FUNDS EMERGING MARKETS EQUITY ACTIVE ETF",
       "englishName": "MATTHEWS ASIAN FUNDS EMERGING MARKETS EQUITY ACTIVE ETF",
@@ -93738,14 +93776,15 @@
     },
     {
       "symbol": "MGC",
-      "displayName": "VANGUARD WORLD FUND MEGA CAP 300 INDEX-ETF",
-      "englishName": "VANGUARD WORLD FUND MEGA CAP 300 INDEX-ETF",
+      "displayName": "VANGUARD MORNINGSTAR MEGA CAP ETF",
+      "englishName": "VANGUARD MORNINGSTAR MEGA CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgc"
+        "mgc",
+        "vanguard world fund mega cap 300 index-etf"
       ],
       "active": true
     },
@@ -93764,14 +93803,15 @@
     },
     {
       "symbol": "MGK",
-      "displayName": "VANGUARD WORLD FUND MEGA CAP GROWTH ETF",
-      "englishName": "VANGUARD WORLD FUND MEGA CAP GROWTH ETF",
+      "displayName": "VANGUARD MORNINGSTAR MEGA CAP GROWTH ETF",
+      "englishName": "VANGUARD MORNINGSTAR MEGA CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgk"
+        "mgk",
+        "vanguard world fund mega cap growth etf"
       ],
       "active": true
     },
@@ -93829,14 +93869,15 @@
     },
     {
       "symbol": "MGV",
-      "displayName": "VANGUARD WORLD FUND MEGA CAP VALUE ETF",
-      "englishName": "VANGUARD WORLD FUND MEGA CAP VALUE ETF",
+      "displayName": "VANGUARD MORNINGSTAR MEGA CAP VALUE ETF",
+      "englishName": "VANGUARD MORNINGSTAR MEGA CAP VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgv"
+        "mgv",
+        "vanguard world fund mega cap value etf"
       ],
       "active": true
     },
@@ -95540,6 +95581,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "mud"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MUIB",
+      "displayName": "DIREXION MU DEFINED INCOME BOOST ETF",
+      "englishName": "DIREXION MU DEFINED INCOME BOOST ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "muib"
       ],
       "active": true
     },
@@ -98569,6 +98623,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "nvg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "NVIB",
+      "displayName": "DIREXION NVDA DEFINED INCOME BOOST ETF",
+      "englishName": "DIREXION NVDA DEFINED INCOME BOOST ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "nvib"
       ],
       "active": true
     },
@@ -102261,6 +102328,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "plgi"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PLIB",
+      "displayName": "DIREXION PLTR DEFINED INCOME BOOST ETF",
+      "englishName": "DIREXION PLTR DEFINED INCOME BOOST ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "plib"
       ],
       "active": true
     },
@@ -118183,6 +118263,19 @@
       "active": true
     },
     {
+      "symbol": "TSIB",
+      "displayName": "DIREXION TSLA DEFINED INCOME BOOST ETF",
+      "englishName": "DIREXION TSLA DEFINED INCOME BOOST ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tsib"
+      ],
+      "active": true
+    },
+    {
       "symbol": "TSIC",
       "displayName": "TRUTH SOCIAL AMERICAN ICONS ETF",
       "englishName": "TRUTH SOCIAL AMERICAN ICONS ETF",
@@ -121187,13 +121280,14 @@
     },
     {
       "symbol": "VB",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD SMALL-CAP ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD SMALL-CAP ETF",
+      "displayName": "VANGUARD MORNINGSTAR SMALL-CAP ETF",
+      "englishName": "VANGUARD MORNINGSTAR SMALL-CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard small-cap etf",
         "vb"
       ],
       "active": true
@@ -121356,13 +121450,14 @@
     },
     {
       "symbol": "VBK",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD SMALL-CAP GROWTH ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD SMALL-CAP GROWTH ETF",
+      "displayName": "VANGUARD MORNINGSTAR SMALL-CAP GROWTH ETF",
+      "englishName": "VANGUARD MORNINGSTAR SMALL-CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard small-cap growth etf",
         "vbk"
       ],
       "active": true
@@ -121395,13 +121490,14 @@
     },
     {
       "symbol": "VBR",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD SMALL-CAP VALUE ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD SMALL-CAP VALUE ETF",
+      "displayName": "VANGUARD MORNINGSTAR SMALL-CAP VALUE ETF",
+      "englishName": "VANGUARD MORNINGSTAR SMALL-CAP VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard small-cap value etf",
         "vbr"
       ],
       "active": true
@@ -122461,26 +122557,28 @@
     },
     {
       "symbol": "VO",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD MID-CAP ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD MID-CAP ETF",
+      "displayName": "VANGUARD MORNINGSTAR MID-CAP ETF",
+      "englishName": "VANGUARD MORNINGSTAR MID-CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard mid-cap etf",
         "vo"
       ],
       "active": true
     },
     {
       "symbol": "VOE",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD MID-CAP VALUE ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD MID-CAP VALUE ETF",
+      "displayName": "VANGUARD MORNINGSTAR MID-CAP VALUE ETF",
+      "englishName": "VANGUARD MORNINGSTAR MID-CAP VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard mid-cap value etf",
         "voe"
       ],
       "active": true
@@ -122594,13 +122692,14 @@
     },
     {
       "symbol": "VOT",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD MID-CAP GROWTH ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD MID-CAP GROWTH ETF",
+      "displayName": "VANGUARD MORNINGSTAR MID-CAP GROWTH ETF",
+      "englishName": "VANGUARD MORNINGSTAR MID-CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard mid-cap growth etf",
         "vot"
       ],
       "active": true
@@ -123049,13 +123148,14 @@
     },
     {
       "symbol": "VTI",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD TOTAL STOCK MARKET ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD TOTAL STOCK MARKET ETF",
+      "displayName": "VANGUARD MORNINGSTAR TOTAL STOCK MARKET ETF",
+      "englishName": "VANGUARD MORNINGSTAR TOTAL STOCK MARKET ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard total stock market etf",
         "vanguard total",
         "vanguard total stock market etf",
         "vti",
@@ -123104,13 +123204,14 @@
     },
     {
       "symbol": "VTV",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD VALUE ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD VALUE ETF",
+      "displayName": "VANGUARD MORNINGSTAR VALUE ETF",
+      "englishName": "VANGUARD MORNINGSTAR VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard value etf",
         "vtv"
       ],
       "active": true
@@ -123156,13 +123257,14 @@
     },
     {
       "symbol": "VUG",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD GROWTH ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD GROWTH ETF",
+      "displayName": "VANGUARD MORNINGSTAR GROWTH ETF",
+      "englishName": "VANGUARD MORNINGSTAR GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard growth etf",
         "vug"
       ],
       "active": true
@@ -123247,13 +123349,14 @@
     },
     {
       "symbol": "VV",
-      "displayName": "VANGUARD INDEX FUNDS VANGUARD LARGE-CAP ETF",
-      "englishName": "VANGUARD INDEX FUNDS VANGUARD LARGE-CAP ETF",
+      "displayName": "VANGUARD MORNINGSTAR LARGE-CAP ETF",
+      "englishName": "VANGUARD MORNINGSTAR LARGE-CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard index funds vanguard large-cap etf",
         "vv"
       ],
       "active": true
@@ -124230,6 +124333,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "wsge"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "WSMD",
+      "displayName": "WASATCH SMALL/MID CAP ETF",
+      "englishName": "WASATCH SMALL/MID CAP ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "wsmd"
       ],
       "active": true
     },
@@ -146562,13 +146678,14 @@
     },
     {
       "symbol": "CRTO",
-      "displayName": "CRITEO S.A ADS EACH REPR 1 ORD SPONS EUR0.025",
-      "englishName": "CRITEO S.A ADS EACH REPR 1 ORD SPONS EUR0.025",
+      "displayName": "CRITEO S.A",
+      "englishName": "CRITEO S.A",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "criteo s.a ads each repr 1 ord spons eur0.025",
         "crto"
       ],
       "active": true
@@ -164297,6 +164414,19 @@
       "active": true
     },
     {
+      "symbol": "IMC",
+      "displayName": "IMC RARE EARTHS LTD",
+      "englishName": "IMC RARE EARTHS LTD",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "imc"
+      ],
+      "active": true
+    },
+    {
       "symbol": "IMCC",
       "displayName": "IM CANNABIS CORP",
       "englishName": "IM CANNABIS CORP",
@@ -165624,13 +165754,14 @@
     },
     {
       "symbol": "IPVV",
-      "displayName": "INTERPRIVATE INVESTMENT PARTNERS V INC",
-      "englishName": "INTERPRIVATE INVESTMENT PARTNERS V INC",
+      "displayName": "INTERPRIVATE INVESTMENT PARTNERS V",
+      "englishName": "INTERPRIVATE INVESTMENT PARTNERS V",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "interprivate investment partners v inc",
         "ipvv"
       ],
       "active": true
