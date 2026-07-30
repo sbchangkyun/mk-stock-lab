@@ -341,11 +341,16 @@ check('LiveMarketDashboard refresh handler bypasses only the client-side cache, 
 
 log('--- Group 8b: Home live market snapshot ---');
 check('HomeLiveMarketSnapshot has no setInterval / polling loop', !homeSnapshot.includes('setInterval'));
-check('HomeLiveMarketSnapshot fetches its market data exactly once (single script-level fetch call)',
+check('HomeLiveMarketSnapshot sources its market data via at most one fetch path (own call, or the Phase 3GL-HF1 shared controller broadcast)',
   // Phase 3GL superseded the direct /api/market/overview.json call with the shared
-  // /api/home/live-market.json route (one resolution pass serving Ticker + Snapshot together).
-  (homeSnapshot.match(/fetch\(/g) || []).length === 1 &&
-  (homeSnapshot.includes("fetch('/api/market/overview.json") || homeSnapshot.includes("fetch('/api/home/live-market.json")));
+  // /api/home/live-market.json route. Phase 3GL-HF1 went further and unified Ticker +
+  // HomeLiveMarketSnapshot behind ONE site-wide controller (homeLiveMarketController.ts, mounted
+  // in Layout.astro) -- the component itself now owns zero fetch calls and instead consumes the
+  // controller's mk-home-live-market CustomEvent broadcast.
+  (homeSnapshot.match(/fetch\(/g) || []).length === 0
+    ? homeSnapshot.includes('getLatestHomeLiveMarketPayload') && homeSnapshot.includes('HOME_LIVE_MARKET_EVENT')
+    : (homeSnapshot.match(/fetch\(/g) || []).length === 1 &&
+      (homeSnapshot.includes("fetch('/api/market/overview.json") || homeSnapshot.includes("fetch('/api/home/live-market.json")));
 check('HomeLiveMarketSnapshot renders an honest unavailable state, never a fabricated card',
   homeSnapshot.includes('data-home-snapshot-unavailable'));
 check('Home page renders HomeLiveMarketSnapshot', homePage.includes('HomeLiveMarketSnapshot'));

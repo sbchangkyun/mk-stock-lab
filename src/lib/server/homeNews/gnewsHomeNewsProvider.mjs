@@ -69,24 +69,69 @@ const classifyArticle = (title, description) => {
   return 'GENERAL_MARKET';
 };
 
-/** Maps a raw GNews article to client-safe fields only. Returns null when title/url is missing. */
+const MAX_TITLE_LEN = 240;
+const MAX_DESCRIPTION_LEN = 600;
+const MAX_SOURCE_NAME_LEN = 120;
+const MAX_URL_LEN = 2048;
+
+/** True only for a well-formed http/https URL within the given length bound. */
+const isSafeHttpUrl = (value, maxLen) => {
+  if (typeof value !== 'string' || value.length === 0 || value.length > maxLen) return false;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+/** True only for a string that parses as a real, non-NaN point in time. */
+const isValidIsoDate = (value) => {
+  if (typeof value !== 'string' || value.trim().length === 0) return false;
+  const ms = Date.parse(value);
+  return Number.isFinite(ms);
+};
+
+const truncate = (value, maxLen) => (value.length > maxLen ? value.slice(0, maxLen) : value);
+
+/**
+ * Maps a raw GNews article to client-safe fields only. Returns null when any required field
+ * (title, url, publishedAt) is missing, malformed, non-HTTP(S), or out of its length bound —
+ * this is the only gate between untrusted provider content and the client response.
+ */
 export const normalizeGnewsHomeArticle = (rawArticle) => {
   if (!rawArticle || typeof rawArticle !== 'object') return null;
-  const title = typeof rawArticle.title === 'string' ? rawArticle.title.trim() : '';
-  const url = typeof rawArticle.url === 'string' ? rawArticle.url.trim() : '';
-  if (!title || !url) return null;
 
-  const description = typeof rawArticle.description === 'string' ? rawArticle.description.trim() : null;
+  const title = typeof rawArticle.title === 'string' ? rawArticle.title.trim() : '';
+  if (!title || title.length > MAX_TITLE_LEN) return null;
+
+  const url = typeof rawArticle.url === 'string' ? rawArticle.url.trim() : '';
+  if (!isSafeHttpUrl(url, MAX_URL_LEN)) return null;
+
+  const publishedAt = typeof rawArticle.publishedAt === 'string' ? rawArticle.publishedAt.trim() : '';
+  if (!isValidIsoDate(publishedAt)) return null;
+
+  const rawDescription = typeof rawArticle.description === 'string' ? rawArticle.description.trim() : '';
+  const description = rawDescription ? truncate(rawDescription, MAX_DESCRIPTION_LEN) : null;
+
+  const rawSourceName = typeof rawArticle.source?.name === 'string' ? rawArticle.source.name.trim() : '';
+  const sourceName = rawSourceName ? truncate(rawSourceName, MAX_SOURCE_NAME_LEN) : '알 수 없음';
+
+  const rawImage = typeof rawArticle.image === 'string' ? rawArticle.image.trim() : '';
+  const image = isSafeHttpUrl(rawImage, MAX_URL_LEN) ? rawImage : null;
+
+  const rawSourceUrl = typeof rawArticle.source?.url === 'string' ? rawArticle.source.url.trim() : '';
+  const sourceUrl = isSafeHttpUrl(rawSourceUrl, MAX_URL_LEN) ? rawSourceUrl : null;
 
   return {
     id: canonicalizeUrl(url),
     title,
     description,
     url,
-    image: typeof rawArticle.image === 'string' ? rawArticle.image : null,
-    publishedAt: typeof rawArticle.publishedAt === 'string' ? rawArticle.publishedAt : null,
-    sourceName: typeof rawArticle.source?.name === 'string' ? rawArticle.source.name : '알 수 없음',
-    sourceUrl: typeof rawArticle.source?.url === 'string' ? rawArticle.source.url : null,
+    image,
+    publishedAt,
+    sourceName,
+    sourceUrl,
     category: classifyArticle(title, description),
     titleKey: normalizeTitleKey(title),
   };

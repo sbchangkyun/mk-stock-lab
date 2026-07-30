@@ -11,6 +11,7 @@
 
 import { getHomeLiveMarket } from '../src/lib/server/homeLiveMarket/homeLiveMarket';
 import type { LongHistoryOhlcvResult } from '../src/lib/server/chart-ai/universalOhlcvProvider';
+import type { ProviderResult, QuoteSnapshot } from '../src/lib/server/providers/types';
 import {
   getHomeNewsFeed,
   normalizeGnewsHomeArticle,
@@ -87,6 +88,31 @@ const unavailableFx = {
   sanitizedErrorCode: 'NOT_SOURCED',
 };
 
+// Phase 3GL-HF1 quote-first fixtures: every existing Group-1 block below forces the quote step to
+// fail closed so it deterministically exercises the (pre-existing) OHLCV-fallback path -- the
+// dedicated quote-first blocks further down inject a succeeding quote instead. Never the real
+// getKisDomesticQuoteSnapshot/getKisOverseasQuoteSnapshot (those would read env/attempt network).
+const failingQuoteResult: ProviderResult<QuoteSnapshot> = {
+  ok: false,
+  code: 'PROVIDER_UNAVAILABLE',
+  message: 'test-fixture-quote-unavailable',
+};
+
+const okQuoteResult = (price: number, change: number | null, changePct: number | null, asOf: string): ProviderResult<QuoteSnapshot> => ({
+  ok: true,
+  data: {
+    market: 'KR',
+    symbol: 'FAKE',
+    price,
+    currency: 'KRW',
+    change,
+    changePct,
+    marketState: 'open',
+    asOf,
+    staleState: 'fresh',
+  },
+});
+
 // 1. All 9 items resolve ok -> ticker has 9 items, snapshot is exactly the 4-item subset.
 {
   const result = await getHomeLiveMarket(
@@ -95,6 +121,8 @@ const unavailableFx = {
       fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
     },
   );
@@ -127,6 +155,23 @@ const unavailableFx = {
     'getHomeLiveMarket: every item carries a non-empty honest basisLabel (never claims to be the literal index)',
     result.ticker.every((item) => typeof item.basisLabel === 'string' && item.basisLabel.length > 0),
   );
+  check(
+    'getHomeLiveMarket: quote-fail-forced KIS items carry dataBasis latest_close (OHLCV fallback path)',
+    result.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.dataBasis === 'latest_close'),
+  );
+  check('getHomeLiveMarket: usdkrw carries dataBasis reference_fx (never a KIS basis)', result.ticker.find((item) => item.id === 'usdkrw')?.dataBasis === 'reference_fx');
+  check(
+    'getHomeLiveMarket: dataBasis is always one of the 4 closed enum values',
+    result.ticker.every((item) => ['current_quote', 'latest_close', 'reference_fx', 'unavailable'].includes(item.dataBasis)),
+  );
+  check(
+    'getHomeLiveMarket: freshness is always one of the 4 closed enum values',
+    result.ticker.every((item) => ['fresh', 'cached', 'stale', 'unavailable'].includes(item.freshness)),
+  );
+  check(
+    'getHomeLiveMarket: snapshot uses the exact Snapshot-only display labels, not the ticker belt labels',
+    result.snapshot.map((item) => item.label).join(',') === 'KOSPI200,KOSDAQ150,S&P500,NASDAQ100',
+  );
 }
 
 // 2. Every KIS-backed item fails to resolve (instrument not found) but FX still resolves -> partial
@@ -139,6 +184,8 @@ const unavailableFx = {
       fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
       findUniversalInstrument: () => null,
       fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
     },
   );
@@ -170,12 +217,17 @@ const unavailableFx = {
       fetchLongHistoryOhlcv: async () => failOhlcvResult,
       findUniversalInstrument: () => null,
       fetchUsdKrwContext: async () => unavailableFx,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
     },
   );
   check('getHomeLiveMarket: total failure -> ok false', result.ok === false);
   check('getHomeLiveMarket: total failure -> sanitizedErrorCode MARKET_DATA_UNAVAILABLE', result.sanitizedErrorCode === 'MARKET_DATA_UNAVAILABLE');
-  check('getHomeLiveMarket: total failure -> empty snapshot', result.snapshot.length === 0);
+  check(
+    'getHomeLiveMarket: total failure -> snapshot still stays exactly 4 items, marked unavailable rather than emptied (§9)',
+    result.snapshot.length === 4 && result.snapshot.every((item) => item.status === 'unavailable'),
+  );
   check('getHomeLiveMarket: total failure -> ticker still lists all 9 items as unavailable', result.ticker.length === 9 && result.ticker.every((item) => item.status === 'unavailable'));
 }
 
@@ -188,6 +240,8 @@ const unavailableFx = {
       fetchLongHistoryOhlcv: async () => okOhlcvResult([100], FAKE_ASOF),
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
     },
   );
@@ -214,11 +268,110 @@ const unavailableFx = {
       fetchLongHistoryOhlcv: trackedFetch,
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
     },
   );
   check('getHomeLiveMarket: never exceeds the 3-concurrent-resolution cap', maxInFlight <= 3);
   check('getHomeLiveMarket: concurrency is actually used (not fully serial)', maxInFlight > 1);
+}
+
+// 6. Quote-first success (Phase 3GL-HF1 §6): when the current-price quote call succeeds, the item is
+//    built from the quote alone -- dataBasis current_quote, freshness fresh -- and OHLCV is never
+//    called for that item at all (no fallback triggered after a successful quote).
+{
+  let ohlcvCalls = 0;
+  const result = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        ohlcvCalls += 1;
+        return okOhlcvResult(fakeCloses, FAKE_ASOF);
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, 1.31, '2026-07-24T06:00:00Z'),
+      getKisOverseasQuoteSnapshot: async () => okQuoteResult(552.4, -1.2, -0.22, '2026-07-24T20:00:00Z'),
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check(
+    'getHomeLiveMarket: quote success -> all KIS items resolve ok with dataBasis current_quote',
+    result.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.status === 'ok' && item.dataBasis === 'current_quote'),
+  );
+  check(
+    'getHomeLiveMarket: quote success -> freshness fresh',
+    result.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.freshness === 'fresh'),
+  );
+  check('getHomeLiveMarket: quote success -> OHLCV is never called for that item (no fallback after success)', ohlcvCalls === 0);
+  const kospiItem = result.ticker.find((item) => item.id === 'kospi');
+  check('getHomeLiveMarket: KR quote item takes its price from the domestic quote snapshot', kospiItem?.price === 271000);
+  check('getHomeLiveMarket: KR quote item takes its change from the domestic quote snapshot', kospiItem?.changeAmount === 3500);
+  const spItem = result.ticker.find((item) => item.id === 'sp500');
+  check('getHomeLiveMarket: US quote item takes its price from the overseas quote snapshot', spItem?.price === 552.4);
+}
+
+// 7. Quote-failure-fallback-once: quote fails for a KIS item -> exactly one OHLCV call for that item
+//    (never issued concurrently with the quote call, never retried more than once), dataBasis becomes
+//    latest_close.
+{
+  const ohlcvCallOrder: string[] = [];
+  const quoteCallOrder: string[] = [];
+  let ohlcvCallCount = 0;
+  const result = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        ohlcvCallCount += 1;
+        ohlcvCallOrder.push('ohlcv');
+        return okOhlcvResult(fakeCloses, FAKE_ASOF);
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => {
+        quoteCallOrder.push('quote');
+        return failingQuoteResult;
+      },
+      getKisOverseasQuoteSnapshot: async () => {
+        quoteCallOrder.push('quote');
+        return failingQuoteResult;
+      },
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  const kisItemCount = result.ticker.filter((item) => item.id !== 'usdkrw').length;
+  check('getHomeLiveMarket: quote failure -> exactly one OHLCV call per KIS item (never retried)', ohlcvCallCount === kisItemCount);
+  check(
+    'getHomeLiveMarket: quote failure -> falls back to dataBasis latest_close',
+    result.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.dataBasis === 'latest_close'),
+  );
+  check('getHomeLiveMarket: a quote call happened for every KIS item before falling back', quoteCallOrder.length === kisItemCount);
+}
+
+// 8. Partial success across the quote-first/OHLCV-fallback split: KR items resolve via a succeeding
+//    quote, US items fall back to OHLCV -- each item's own dataBasis reflects its own resolution path
+//    independently (one item's quote outcome never leaks into another's).
+{
+  const result = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, 1.31, '2026-07-24T06:00:00Z'),
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check(
+    'getHomeLiveMarket: partial quote success -> KR items are current_quote',
+    result.ticker.filter((item) => item.currency === 'KRW' && item.id !== 'usdkrw').every((item) => item.dataBasis === 'current_quote'),
+  );
+  check(
+    'getHomeLiveMarket: partial quote success -> US items independently fall back to latest_close',
+    result.ticker.filter((item) => item.currency === 'USD').every((item) => item.dataBasis === 'latest_close'),
+  );
 }
 
 // =====================================================================================
@@ -254,10 +407,55 @@ const unavailableFx = {
   );
 }
 
+// Phase 3GL-HF1 §10: hardened validation -- non-HTTP(S) protocol, malformed/missing/unparseable
+// publishedAt, and bounded field lengths are all rejection or truncation conditions.
+{
+  const base = { title: '유효한 제목', url: 'https://news.example.com/valid', publishedAt: '2026-07-24T09:00:00Z' };
+
+  check('normalizeGnewsHomeArticle: rejects missing publishedAt', normalizeGnewsHomeArticle({ title: base.title, url: base.url }) === null);
+  check(
+    'normalizeGnewsHomeArticle: rejects an unparseable publishedAt string',
+    normalizeGnewsHomeArticle({ ...base, publishedAt: 'not-a-real-date' }) === null,
+  );
+  check(
+    'normalizeGnewsHomeArticle: rejects a non-HTTP(S) protocol url (javascript:)',
+    normalizeGnewsHomeArticle({ ...base, url: 'javascript:alert(1)' }) === null,
+  );
+  check(
+    'normalizeGnewsHomeArticle: rejects a non-HTTP(S) protocol url (ftp:)',
+    normalizeGnewsHomeArticle({ ...base, url: 'ftp://example.com/a' }) === null,
+  );
+  check(
+    'normalizeGnewsHomeArticle: rejects a url that exceeds the 2048-char bound',
+    normalizeGnewsHomeArticle({ ...base, url: `https://example.com/${'a'.repeat(2100)}` }) === null,
+  );
+  check(
+    'normalizeGnewsHomeArticle: rejects a title that exceeds the 240-char bound',
+    normalizeGnewsHomeArticle({ ...base, title: '가'.repeat(241) }) === null,
+  );
+  check('normalizeGnewsHomeArticle: rejects an empty (whitespace-only) title', normalizeGnewsHomeArticle({ ...base, title: '   ' }) === null);
+
+  const truncatedDescription = normalizeGnewsHomeArticle({ ...base, description: '나'.repeat(700) });
+  check('normalizeGnewsHomeArticle: truncates an over-length description to the 600-char bound', truncatedDescription?.description?.length === 600);
+
+  const truncatedSource = normalizeGnewsHomeArticle({ ...base, source: { name: '다'.repeat(150) } });
+  check('normalizeGnewsHomeArticle: truncates an over-length source name to the 120-char bound', truncatedSource?.sourceName?.length === 120);
+
+  const droppedImage = normalizeGnewsHomeArticle({ ...base, image: 'javascript:alert(1)' });
+  check('normalizeGnewsHomeArticle: drops an unsafe image url rather than passing it through', droppedImage?.image === null);
+
+  const keptImage = normalizeGnewsHomeArticle({ ...base, image: 'https://news.example.com/thumb.jpg' });
+  check('normalizeGnewsHomeArticle: keeps a safe, bounded image url', keptImage?.image === 'https://news.example.com/thumb.jpg');
+
+  const droppedSourceUrl = normalizeGnewsHomeArticle({ ...base, source: { name: '예시', url: 'not-a-url' } });
+  check('normalizeGnewsHomeArticle: drops an unsafe source url rather than passing it through', droppedSourceUrl?.sourceUrl === null);
+}
+
 // classifyArticle priority order (via normalizeGnewsHomeArticle): FX -> COMMODITIES -> MACRO ->
 // DOMESTIC_STOCKS -> OVERSEAS_STOCKS -> GENERAL_MARKET default.
 {
-  const classify = (title: string) => normalizeGnewsHomeArticle({ title, url: `https://example.com/${encodeURIComponent(title)}` })?.category;
+  const classify = (title: string) =>
+    normalizeGnewsHomeArticle({ title, url: `https://example.com/${encodeURIComponent(title)}`, publishedAt: '2026-07-24T00:00:00Z' })?.category;
   check('classifyArticle: 환율 -> FX', classify('오늘 환율 급등') === 'FX');
   check('classifyArticle: 유가 -> COMMODITIES', classify('국제 유가 상승세') === 'COMMODITIES');
   check('classifyArticle: 기준금리 -> MACRO', classify('한국은행 기준금리 동결') === 'MACRO');

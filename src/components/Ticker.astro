@@ -1,8 +1,11 @@
 ---
 /**
- * Phase 3GL — Home ticker belt. Static shell only at request time; all 9 items are populated from a
- * single client-side GET /api/home/live-market.json call (the same shared route that also feeds
- * HomeLiveMarketSnapshot.astro, so one request per refresh never duplicates a provider call).
+ * Phase 3GL — Home ticker belt. Static shell only at request time. Phase 3GL-HF1: this component owns
+ * no fetch/timer/visibility-listener/in-flight state of its own — it is a pure consumer of the single
+ * `mk-home-live-market` CustomEvent broadcast by the shared controller in Layout.astro
+ * (src/lib/home-live-market/homeLiveMarketController.ts), which is the sole owner of
+ * GET /api/home/live-market.json for the whole page (Ticker is rendered site-wide via Layout.astro,
+ * so the controller lives there rather than on the Home page alone).
  */
 const tickerPlaceholders = [
   { id: 'sp500', label: 'S&P 500' },
@@ -30,24 +33,17 @@ const tickerPlaceholders = [
 
 <script>
   import { formatSignedPct, changeToneClass } from '../lib/market-dashboard/formatters';
-
-  type HomeTickerItem = {
-    id: string;
-    label: string;
-    status: 'ok' | 'unavailable';
-    price: number | null;
-    changePct: number | null;
-    currency: 'KRW' | 'USD';
-    basisLabel: string;
-    periodLabel: string;
-  };
-
-  const REFRESH_MS = 60_000;
+  import {
+    HOME_LIVE_MARKET_EVENT,
+    getLatestHomeLiveMarketPayload,
+    type HomeLiveMarketItem,
+    type HomeLiveMarketPayload,
+  } from '../lib/home-live-market/homeLiveMarketController';
 
   const toneToChipClass = (tone: 'positive' | 'negative' | 'neutral'): string =>
     tone === 'positive' ? 'ticker-chip--up' : tone === 'negative' ? 'ticker-chip--down' : 'ticker-chip--flat';
 
-  const formatPrice = (item: HomeTickerItem): string => {
+  const formatPrice = (item: HomeLiveMarketItem): string => {
     if (item.price === null) return '—';
     if (item.id === 'usdkrw') {
       return item.price.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -56,7 +52,7 @@ const tickerPlaceholders = [
     return item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const renderTicker = (items: HomeTickerItem[]) => {
+  const renderTicker = (items: HomeLiveMarketItem[]) => {
     const track = document.querySelector<HTMLElement>('[data-ticker-track]');
     if (!track) return;
     track.innerHTML = items
@@ -70,41 +66,19 @@ const tickerPlaceholders = [
       .join('');
   };
 
-  let inFlight = false;
-  let timerId: number | null = null;
-
-  const load = () => {
-    if (inFlight || document.hidden) return;
-    inFlight = true;
-    fetch('/api/home/live-market.json')
-      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
-      .then(({ ok, body }) => {
-        if (!ok || body?.ok !== true || !Array.isArray(body?.ticker)) return;
-        renderTicker(body.ticker as HomeTickerItem[]);
-      })
-      .catch(() => {})
-      .finally(() => {
-        inFlight = false;
-      });
-  };
-
-  const scheduleNext = () => {
-    if (timerId !== null) window.clearTimeout(timerId);
-    timerId = window.setTimeout(() => {
-      load();
-      scheduleNext();
-    }, REFRESH_MS);
+  const applyPayload = (payload: HomeLiveMarketPayload | null) => {
+    if (payload?.ok === true) renderTicker(payload.ticker);
   };
 
   const setup = () => {
     const area = document.getElementById('ticker_area');
     if (!area || area.dataset.ready === 'true') return;
     area.dataset.ready = 'true';
-    load();
-    scheduleNext();
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) load();
-    });
+
+    applyPayload(getLatestHomeLiveMarketPayload());
+    window.addEventListener(HOME_LIVE_MARKET_EVENT, ((event: CustomEvent<HomeLiveMarketPayload>) => {
+      applyPayload(event.detail);
+    }) as EventListener);
   };
 
   document.addEventListener('astro:page-load', setup);

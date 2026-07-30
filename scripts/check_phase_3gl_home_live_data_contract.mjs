@@ -23,10 +23,12 @@ const HOME_LIVE_MARKET = join(root, 'src', 'lib', 'server', 'homeLiveMarket', 'h
 const LIVE_MARKET_ROUTE = join(root, 'src', 'pages', 'api', 'home', 'live-market.json.ts');
 const GNEWS_PROVIDER = join(root, 'src', 'lib', 'server', 'homeNews', 'gnewsHomeNewsProvider.mjs');
 const HOME_NEWS_ROUTE = join(root, 'src', 'pages', 'api', 'news', 'home.json.ts');
+const HOME_CONTROLLER = join(root, 'src', 'lib', 'home-live-market', 'homeLiveMarketController.ts');
 const TICKER = join(root, 'src', 'components', 'Ticker.astro');
 const HOME_SNAPSHOT = join(root, 'src', 'components', 'HomeLiveMarketSnapshot.astro');
 const HOME_NEWS = join(root, 'src', 'components', 'HomeMarketNews.astro');
 const HOME_PAGE = join(root, 'src', 'pages', 'index.astro');
+const LAYOUT = join(root, 'src', 'layouts', 'Layout.astro');
 const CROSS_ASSET_PROVIDER = join(root, 'src', 'lib', 'server', 'chart-ai', 'marketIntelligence', 'crossAssetProvider.mjs');
 const PACKAGE_JSON = join(root, 'package.json');
 
@@ -51,6 +53,7 @@ for (const [name, path] of [
   ['live-market.json.ts route', LIVE_MARKET_ROUTE],
   ['gnewsHomeNewsProvider.mjs', GNEWS_PROVIDER],
   ['home.json.ts route', HOME_NEWS_ROUTE],
+  ['homeLiveMarketController.ts', HOME_CONTROLLER],
   ['Ticker.astro', TICKER],
   ['HomeLiveMarketSnapshot.astro', HOME_SNAPSHOT],
   ['HomeMarketNews.astro', HOME_NEWS],
@@ -63,10 +66,12 @@ const homeLiveMarket = readOr(HOME_LIVE_MARKET);
 const liveMarketRoute = readOr(LIVE_MARKET_ROUTE);
 const gnewsProvider = readOr(GNEWS_PROVIDER);
 const homeNewsRoute = readOr(HOME_NEWS_ROUTE);
+const homeController = readOr(HOME_CONTROLLER);
 const ticker = readOr(TICKER);
 const homeSnapshot = readOr(HOME_SNAPSHOT);
 const homeNews = readOr(HOME_NEWS);
 const homePage = readOr(HOME_PAGE);
+const layout = readOr(LAYOUT);
 const crossAssetProvider = readOr(CROSS_ASSET_PROVIDER);
 let pkg = {};
 try { pkg = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')); } catch {}
@@ -86,7 +91,7 @@ check(
   'snapshot subset is exactly {kospi, kosdaq, sp500, nasdaq100}',
   /HOME_SNAPSHOT_IDS\s*=\s*\[\s*'kospi',\s*'kosdaq',\s*'sp500',\s*'nasdaq100'\s*\]/.test(homeLiveMarket),
 );
-check('every registry entry carries an honest basisLabel field (never claims to be the literal index)', (homeLiveMarket.match(/basisLabel:/g) || []).length >= 9);
+check('every registry entry carries an honest proxyLabel disclosure field (never claims to be the literal index)', (homeLiveMarket.match(/proxyLabel:/g) || []).length >= 9);
 check('usdkrw entry is FX kind, not KIS', /id:\s*'usdkrw',\s*label:\s*'원\/달러',\s*kind:\s*'fx'/.test(homeLiveMarket));
 
 // ---------------------------------------------------------------------------
@@ -102,18 +107,55 @@ check('reuses fetchUsdKrwContext for FX (no new FX provider introduced)',
 check('reuses the existing bounded-concurrency helper from marketDashboard.ts',
   homeLiveMarket.includes('mapWithConcurrency') && /from\s*['"]\.\.\/marketDashboard\/marketDashboard['"]/.test(homeLiveMarket));
 check('CONCURRENCY_LIMIT = 3 (same bound as Phase 3GJ)', /CONCURRENCY_LIMIT\s*=\s*3/.test(homeLiveMarket));
-check('never imports the KIS transport client directly', !/from ['"].*providers\/kisClient['"]/.test(homeLiveMarket));
+check('imports the KIS transport client only for the two current-quote snapshot functions (§6), never the raw client',
+  /import\s*\{\s*getKisDomesticQuoteSnapshot,\s*getKisOverseasQuoteSnapshot\s*\}\s*from\s*['"].*providers\/kisClient['"]/.test(homeLiveMarket));
+check('never imports the raw kisClient default/namespace export (named quote-function imports only)',
+  !/import\s+kisClient|import\s*\*\s*as\s*kisClient/.test(homeLiveMarket));
 check('never references a KIS TR id or endpoint path literal', !/FHKST\d|\/uapi\//.test(homeLiveMarket));
 check('exposes a deps-injection seam (getHomeLiveMarket accepts deps)',
   /getHomeLiveMarket\s*=\s*async\s*\(/.test(homeLiveMarket) && /deps:\s*Partial<HomeLiveMarketDeps>/.test(homeLiveMarket));
+check('deps-injection seam covers both quote functions (getKisDomesticQuoteSnapshot, getKisOverseasQuoteSnapshot)',
+  /getKisDomesticQuoteSnapshot/.test(homeLiveMarket) && /getKisOverseasQuoteSnapshot/.test(homeLiveMarket) && homeLiveMarket.includes('HomeLiveMarketDeps'));
 check('a failed item degrades to status unavailable with null fields, never a fabricated value',
   /status:\s*['"]unavailable['"]/.test(homeLiveMarket) && /price:\s*null/.test(homeLiveMarket));
 check('a total failure (0 resolved) maps to MARKET_DATA_UNAVAILABLE via the shared sanitized error codes',
   homeLiveMarket.includes('MARKET_DASHBOARD_SANITIZED_ERROR_CODES.MARKET_DATA_UNAVAILABLE'));
-check('ticker is never dropped to empty on partial failure (only snapshot narrows)',
-  /ticker,\s*\n\s*snapshot:\s*\[\]/.test(homeLiveMarket));
+check('snapshot is never a literal empty array (both branches derive it from buildSnapshot)',
+  !/snapshot:\s*\[\]/.test(homeLiveMarket));
+{
+  const snapshotAssignIdx = homeLiveMarket.search(/const\s+snapshot\s*=\s*buildSnapshot\(ticker\)/);
+  const branchIdx = homeLiveMarket.search(/successfulCount\s*===\s*0/);
+  check('snapshot is computed via buildSnapshot(ticker) once, before the total-failure branch splits (§9)',
+    snapshotAssignIdx >= 0 && branchIdx >= 0 && snapshotAssignIdx < branchIdx);
+  check('both the total-failure and success return objects reuse that same snapshot variable (shorthand, never re-literalized)',
+    (homeLiveMarket.match(/\bsnapshot,/g) || []).length >= 2);
+}
+check('buildSnapshot derives a fixed-length 4-item array from the closed HOME_SNAPSHOT_IDS registry (never narrows on partial failure)',
+  /HOME_SNAPSHOT_IDS\.map/.test(homeLiveMarket));
 check('crossAssetProvider.mjs (the reused FX source) was not modified to add a second FX endpoint',
   crossAssetProvider.includes("const FX_BASE = 'https://api.frankfurter.dev/v1'") && (crossAssetProvider.match(/https?:\/\/[^'"\s]+/g) || []).every((u) => u.includes('frankfurter')));
+
+// ---------------------------------------------------------------------------
+// Group 3b: Quote-first resolution order (§6/§7) — current-quote is tried before the OHLCV
+// fallback, sequentially (never concurrently) per item, never retried.
+// ---------------------------------------------------------------------------
+log('--- Group 3b: Quote-first resolution order ---');
+check('declares the closed HomeDataBasis enum (current_quote | latest_close | reference_fx | unavailable)',
+  /HomeDataBasis\s*=\s*['"]current_quote['"]\s*\|\s*['"]latest_close['"]\s*\|\s*['"]reference_fx['"]\s*\|\s*['"]unavailable['"]/.test(homeLiveMarket));
+check('declares the closed HomeFreshness enum (fresh | cached | stale | unavailable)',
+  /HomeFreshness\s*=\s*['"]fresh['"]\s*\|\s*['"]cached['"]\s*\|\s*['"]stale['"]\s*\|\s*['"]unavailable['"]/.test(homeLiveMarket));
+{
+  const resolverMatch = homeLiveMarket.match(/resolveKisTickerItem[\s\S]*?(?=\nconst\s+\w+\s*=|\nexport\s+const)/);
+  const resolverBody = resolverMatch ? resolverMatch[0] : '';
+  const quoteCallIdx = resolverBody.search(/deps\.getKis(?:Domestic|Overseas)QuoteSnapshot/);
+  const ohlcvFallbackIdx = resolverBody.search(/resolveOhlcvFallbackItem/);
+  check('resolveKisTickerItem calls the current-quote function before falling back to OHLCV (textual order)',
+    quoteCallIdx >= 0 && ohlcvFallbackIdx >= 0 && quoteCallIdx < ohlcvFallbackIdx);
+  check('resolveKisTickerItem never combines the quote call and the OHLCV fallback via Promise.all/Promise.race (sequential only)',
+    !/Promise\.(all|race)\(\s*\[[\s\S]{0,200}(?:getKisDomesticQuoteSnapshot|getKisOverseasQuoteSnapshot|resolveOhlcvFallbackItem)/.test(resolverBody));
+}
+check('a successful quote resolves via toCurrentQuoteItem without a second (OHLCV) network attempt for that item',
+  /if\s*\(\s*quoteResult\.ok[\s\S]{0,120}return\s+toCurrentQuoteItem/.test(homeLiveMarket));
 
 // ---------------------------------------------------------------------------
 // Group 4: /api/home/live-market.json route — closed contract, honest cache headers
@@ -147,8 +189,29 @@ check('absent/empty key returns NEWS_NOT_CONFIGURED, never a fixture fallback (n
   gnewsProvider.includes('NEWS_NOT_CONFIGURED') && !/import[^\n]*fixture/i.test(gnewsProvider) && !/const\s+\w*[Ff]ixture\w*\s*=/.test(gnewsProvider));
 check('provider never requests/stores the full article content field',
   !/\bcontent\b\s*:/.test(gnewsProvider.replace(/\/\*[\s\S]*?\*\//g, '')));
-check('normalizeGnewsHomeArticle returns null when title or url is missing (never fabricates a headline)',
-  /if\s*\(!title\s*\|\|\s*!url\)\s*return null/.test(gnewsProvider));
+check('normalizeGnewsHomeArticle rejects a missing/empty or over-length title (never fabricates a headline)',
+  /if\s*\(!title\s*\|\|\s*title\.length\s*>\s*MAX_TITLE_LEN\)\s*return null/.test(gnewsProvider));
+check('normalizeGnewsHomeArticle rejects a url that fails the safe-http-url gate (missing, malformed, or non-http(s))',
+  /if\s*\(!isSafeHttpUrl\(url,\s*MAX_URL_LEN\)\)\s*return null/.test(gnewsProvider));
+check('normalizeGnewsHomeArticle rejects a missing or unparseable publishedAt (§10 hardening)',
+  /if\s*\(!isValidIsoDate\(publishedAt\)\)\s*return null/.test(gnewsProvider));
+check('defines a closed set of length bounds: MAX_TITLE_LEN=240, MAX_DESCRIPTION_LEN=600, MAX_SOURCE_NAME_LEN=120, MAX_URL_LEN=2048',
+  /MAX_TITLE_LEN\s*=\s*240/.test(gnewsProvider) &&
+  /MAX_DESCRIPTION_LEN\s*=\s*600/.test(gnewsProvider) &&
+  /MAX_SOURCE_NAME_LEN\s*=\s*120/.test(gnewsProvider) &&
+  /MAX_URL_LEN\s*=\s*2048/.test(gnewsProvider));
+check('isSafeHttpUrl only accepts a bounded-length, well-formed http(s) URL (rejects javascript:/ftp: and other protocols)',
+  /isSafeHttpUrl\s*=\s*\([\s\S]{0,300}parsed\.protocol\s*===\s*['"]http:['"]\s*\|\|\s*parsed\.protocol\s*===\s*['"]https:['"]/.test(gnewsProvider));
+check('isValidIsoDate rejects a non-parseable date string (Date.parse yields NaN)',
+  /isValidIsoDate\s*=\s*\([\s\S]{0,200}Date\.parse/.test(gnewsProvider) && /Number\.isFinite\(ms\)/.test(gnewsProvider));
+check('optional image url is dropped (set to null) rather than passed through when unsafe',
+  /image\s*=\s*isSafeHttpUrl\(rawImage,\s*MAX_URL_LEN\)\s*\?\s*rawImage\s*:\s*null/.test(gnewsProvider));
+check('optional source url is dropped (set to null) rather than passed through when unsafe',
+  /sourceUrl\s*=\s*isSafeHttpUrl\(rawSourceUrl,\s*MAX_URL_LEN\)\s*\?\s*rawSourceUrl\s*:\s*null/.test(gnewsProvider));
+check('description is truncated (not rejected) when it exceeds MAX_DESCRIPTION_LEN',
+  /truncate\(rawDescription,\s*MAX_DESCRIPTION_LEN\)/.test(gnewsProvider));
+check('source name is truncated (not rejected) when it exceeds MAX_SOURCE_NAME_LEN',
+  /truncate\(rawSourceName,\s*MAX_SOURCE_NAME_LEN\)/.test(gnewsProvider));
 check('exports the closed HOME_NEWS_CATEGORIES enum (6 categories)',
   /HOME_NEWS_CATEGORIES\s*=\s*\[[\s\S]{0,200}\]/.test(gnewsProvider) &&
   ['DOMESTIC_STOCKS', 'OVERSEAS_STOCKS', 'FX', 'MACRO', 'COMMODITIES', 'GENERAL_MARKET'].every((c) => gnewsProvider.includes(c)));
@@ -175,28 +238,75 @@ check('route rejects non-GET methods (ALL handler)', homeNewsRoute.includes('exp
 check('route never logs or embeds the raw api key value in a response', !/console\.(log|error|warn)\([^)]*apiKey/.test(homeNewsRoute));
 
 // ---------------------------------------------------------------------------
-// Group 7: Client components — no polling beyond documented refresh, no localStorage cache,
-// no cache-bypass params, pause-when-hidden, in-flight guard
+// Group 7: Client-side data ownership — Phase 3GL-HF1 §5 unifies Ticker + Snapshot behind ONE
+// controller (Layout.astro-mounted, site-wide); HomeMarketNews keeps owning its own fetch (§12).
 // ---------------------------------------------------------------------------
-log('--- Group 7: Client component behavior ---');
-for (const [name, src] of [['Ticker.astro', ticker], ['HomeLiveMarketSnapshot.astro', homeSnapshot], ['HomeMarketNews.astro', homeNews]]) {
+log('--- Group 7: homeLiveMarketController.ts (the single Home market fetch owner) ---');
+check('fetches the shared live-market route exactly once per module (single fetch call)', (homeController.match(/fetch\(/g) || []).length === 1);
+check('fetches /api/home/live-market.json specifically', homeController.includes("fetch('/api/home/live-market.json')"));
+check('refreshes on a 60s interval', /REFRESH_MS\s*=\s*60_000/.test(homeController));
+check('uses a recursive setTimeout refresh loop (never setInterval polling)', !homeController.includes('setInterval') && homeController.includes('window.setTimeout'));
+check('guards against overlapping in-flight requests', /inFlight/.test(homeController));
+check('pauses/resumes on document visibility change', homeController.includes('document.hidden') && homeController.includes('visibilitychange'));
+check('never persists market data to localStorage', !/localStorage\.setItem/.test(homeController));
+check('never appends a cache-bypass/force-refresh query parameter', !/[?&](forceRefresh|bypassCache|refresh|_ts|cacheBust)=/i.test(homeController));
+check('is idempotent per page-load via a module-level started flag (not a DOM dataset guard, since it is not tied to one element)',
+  /let\s+started\s*=\s*false/.test(homeController) && /if\s*\(started\)\s*return;/.test(homeController));
+check('exports the HOME_LIVE_MARKET_EVENT CustomEvent name', /HOME_LIVE_MARKET_EVENT\s*=\s*['"]mk-home-live-market['"]/.test(homeController));
+check('broadcasts every fetch outcome (success or failure) via that CustomEvent on window', /window\.dispatchEvent\(new CustomEvent/.test(homeController));
+check('exports getLatestHomeLiveMarketPayload for consumers that mount after the first fetch resolved', homeController.includes('export const getLatestHomeLiveMarketPayload'));
+check('exports the single entry point startHomeLiveMarketController', homeController.includes('export const startHomeLiveMarketController'));
+
+log('--- Group 7: Ticker.astro / HomeLiveMarketSnapshot.astro — pure event consumers, no fetch/timer/listener of their own ---');
+for (const [name, src] of [['Ticker.astro', ticker], ['HomeLiveMarketSnapshot.astro', homeSnapshot]]) {
+  check(`${name}: owns no fetch call of its own (consumes the controller's broadcast instead)`, !/fetch\(/.test(src));
+  check(`${name}: owns no setTimeout/setInterval refresh timer of its own`, !/setTimeout|setInterval/.test(src));
+  check(`${name}: owns no inFlight guard of its own`, !/inFlight/.test(src));
+  check(`${name}: owns no visibilitychange listener of its own`, !/visibilitychange/.test(src));
+  check(`${name}: imports HOME_LIVE_MARKET_EVENT and getLatestHomeLiveMarketPayload from the shared controller`,
+    /from\s*['"]\.\.\/lib\/home-live-market\/homeLiveMarketController['"]/.test(src) &&
+    src.includes('HOME_LIVE_MARKET_EVENT') && src.includes('getLatestHomeLiveMarketPayload'));
+  check(`${name}: listens for the shared broadcast via window.addEventListener(HOME_LIVE_MARKET_EVENT, ...)`,
+    /window\.addEventListener\(\s*HOME_LIVE_MARKET_EVENT/.test(src));
+  check(`${name}: renders the already-resolved payload immediately on mount (handles late-mount after first fetch)`,
+    src.includes('getLatestHomeLiveMarketPayload()'));
+  check(`${name}: wires its own render setup via astro:page-load with an idempotent ready guard`,
+    src.includes("addEventListener('astro:page-load'") && src.includes("dataset.ready === 'true'"));
+}
+check('Ticker.astro reads the ticker field of the broadcast payload', ticker.includes('payload.ticker'));
+check('HomeLiveMarketSnapshot.astro reads the snapshot field of the broadcast payload (no duplicate provider call)', homeSnapshot.includes('payload.snapshot'));
+check('HomeLiveMarketSnapshot.astro renders an honest unavailable state, never a fabricated card', homeSnapshot.includes('data-home-snapshot-unavailable'));
+
+log('--- Group 7: Layout.astro wires the single controller site-wide ---');
+check('imports startHomeLiveMarketController from the shared controller module',
+  /import\s*\{\s*startHomeLiveMarketController\s*\}\s*from\s*['"]\.\.\/lib\/home-live-market\/homeLiveMarketController['"]/.test(layout));
+check('wires it to astro:page-load (repeat navigations)', /addEventListener\(\s*['"]astro:page-load['"]\s*,\s*startHomeLiveMarketController\s*\)/.test(layout));
+check('also calls it directly (first paint, before any astro:page-load event fires)', layout.includes('startHomeLiveMarketController();'));
+
+log('--- Group 7: HomeMarketNews.astro — still owns its own fetch/timer/listener (§12), no polling beyond documented refresh ---');
+{
+  const name = 'HomeMarketNews.astro';
+  const src = homeNews;
   check(`${name}: fetches its route exactly once per script (single script-level fetch call)`, (src.match(/fetch\(/g) || []).length === 1);
   check(`${name}: uses a recursive setTimeout refresh loop (never setInterval polling)`, !src.includes('setInterval') && src.includes('window.setTimeout'));
-  check(`${name}: never persists market/news data to localStorage`, !/localStorage\.setItem/.test(src));
+  check(`${name}: never persists news data to localStorage`, !/localStorage\.setItem/.test(src));
   check(`${name}: never appends a cache-bypass/force-refresh query parameter`, !/[?&](forceRefresh|bypassCache|refresh|_ts|cacheBust)=/i.test(src));
   check(`${name}: guards against overlapping in-flight requests`, /inFlight/.test(src));
   check(`${name}: pauses/resumes on document visibility change`, src.includes('document.hidden') && src.includes('visibilitychange'));
   check(`${name}: wires setup via astro:page-load with an idempotent ready guard`, src.includes("addEventListener('astro:page-load'") && src.includes("dataset.ready === 'true'"));
+  check(`${name}: refreshes on a 5-minute interval`, /REFRESH_MS\s*=\s*5\s*\*\s*60\s*\*\s*1000/.test(src));
+  check(`${name}: fetches the dedicated GNews route`, src.includes("fetch('/api/news/home.json')"));
+  check(`${name}: renders an honest empty state, never a fabricated article`, src.includes('data-home-news-empty'));
 }
-check('Ticker.astro refreshes on a 60s interval', /REFRESH_MS\s*=\s*60_000/.test(ticker));
-check('HomeLiveMarketSnapshot.astro refreshes on a 60s interval', /REFRESH_MS\s*=\s*60_000/.test(homeSnapshot));
-check('HomeMarketNews.astro refreshes on a 5-minute interval', /REFRESH_MS\s*=\s*5\s*\*\s*60\s*\*\s*1000/.test(homeNews));
-check('Ticker.astro fetches the shared live-market route', ticker.includes("fetch('/api/home/live-market.json')") && ticker.includes('body?.ticker'));
-check('HomeLiveMarketSnapshot.astro fetches the same shared live-market route (no duplicate provider call)',
-  homeSnapshot.includes("fetch('/api/home/live-market.json')") && homeSnapshot.includes('body?.snapshot'));
-check('HomeMarketNews.astro fetches the dedicated GNews route', homeNews.includes("fetch('/api/news/home.json')"));
-check('HomeLiveMarketSnapshot.astro renders an honest unavailable state, never a fabricated card', homeSnapshot.includes('data-home-snapshot-unavailable'));
-check('HomeMarketNews.astro renders an honest empty state, never a fabricated article', homeNews.includes('data-home-news-empty'));
+
+log('--- Group 7: HomeMarketNews.astro §12 hardening — no fixed 15s retry, delayed-status distinct from first-load-failure ---');
+check('never hardcodes a 15-second retry delay (no RETRY_DELAY_MS / 15000 / 15_000 literal)',
+  !/RETRY_DELAY_MS/.test(homeNews) && !/\b15000\b/.test(homeNews) && !/\b15_000\b/.test(homeNews));
+check('renders a distinct "delayed" status element (data-home-news-delayed), separate from the empty/unavailable element', homeNews.includes('data-home-news-delayed'));
+check('tracks hasRenderedOnce to distinguish a first-load failure from a failure after a successful render', /hasRenderedOnce/.test(homeNews));
+check('a post-success failure preserves the already-rendered articles (does not clear the grid) and instead shows the delayed notice',
+  /if\s*\(hasRenderedOnce\)\s*\{[\s\S]{0,350}delayed\?\.classList\.remove\(['"]hidden['"]\)/.test(homeNews) &&
+  !/if\s*\(hasRenderedOnce\)\s*\{[\s\S]{0,350}grid\?\.innerHTML\s*=\s*['"]['"]/.test(homeNews));
 
 log('--- Group 7b: HomeMarketNews XSS-safety (untrusted external GNews content) ---');
 check('defines an escapeHtml helper applied before innerHTML insertion', homeNews.includes('const escapeHtml'));

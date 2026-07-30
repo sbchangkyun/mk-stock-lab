@@ -366,18 +366,20 @@ export const validateKisDomesticQuoteInput = (input: SecurityIdentity): Provider
 
 export const getKisDomesticQuoteSnapshot = async (
   input: SecurityIdentity,
-  options: { allowProductionChartAiLiveData?: boolean } = {},
+  options: { allowProductionChartAiLiveData?: boolean; allowProductionMarketDashboardLiveData?: boolean } = {},
 ): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
   const inputError = validateKisDomesticQuoteInput(input);
   if (inputError) return inputError;
 
-  // Only the scoped current_price quote snapshot forwards the production Chart AI beta exception.
-  // The generic getKisQuoteSnapshot wrapper and the OHLC series path call getKisQuoteConfigReadiness()
-  // with no options, so they remain fully fail-closed on production.
+  // The scoped current_price quote snapshot forwards either the production Chart AI beta exception
+  // or the independent production Market Dashboard/Home exception (Phase 3GL-HF1) -- both remain
+  // narrow, per-call, route-gated signals. The generic getKisQuoteSnapshot wrapper and the OHLC series
+  // path call getKisQuoteConfigReadiness() with no options, so they remain fully fail-closed on production.
   const readiness = getKisQuoteConfigReadiness({
     allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
+    allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 
@@ -580,7 +582,7 @@ type KisOverseasDailyResponse = {
 
 type KisOverseasQuoteResponse = {
   rt_cd?: unknown;
-  output?: { last?: unknown; tvol?: unknown };
+  output?: { last?: unknown; tvol?: unknown; diff?: unknown; rate?: unknown };
 };
 
 const US_SYMBOL_PATTERN = /^[A-Z][A-Z0-9.\-]{0,9}$/;
@@ -700,7 +702,7 @@ export const getKisOverseasDailyOhlcSeries = async (
  */
 export const getKisOverseasQuoteSnapshot = async (
   input: { symbol: string; exchangeCode: string },
-  options: { allowProductionChartAiLiveData?: boolean } = {},
+  options: { allowProductionChartAiLiveData?: boolean; allowProductionMarketDashboardLiveData?: boolean } = {},
 ): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
@@ -715,6 +717,7 @@ export const getKisOverseasQuoteSnapshot = async (
 
   const readiness = getKisQuoteConfigReadiness({
     allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
+    allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 
@@ -775,8 +778,8 @@ export const getKisOverseasQuoteSnapshot = async (
       symbol,
       price,
       currency: 'USD',
-      change: null,
-      changePct: null,
+      change: parseNumericText(payload.output.diff),
+      changePct: parseNumericText(payload.output.rate),
       volume: parseNumericText(payload.output.tvol) ?? undefined,
       marketState: 'unknown',
       asOf: new Date().toISOString(),

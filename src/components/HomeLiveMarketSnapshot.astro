@@ -1,10 +1,12 @@
 ---
 /**
  * Phase 3GL replacement for the Phase 3GJ overview-only snapshot. Renders only the static shell —
- * heading, loading state, empty grid — at request time. The four cards are populated from the shared
- * GET /api/home/live-market.json `snapshot` array (the same request that also feeds Ticker.astro, so
- * this component never triggers its own duplicate provider call). An unavailable response renders an
- * honest message, never a fabricated number.
+ * heading, loading state, empty grid — at request time. Phase 3GL-HF1: this component owns no
+ * fetch/timer/visibility-listener/in-flight state of its own — it is a pure consumer of the single
+ * `mk-home-live-market` CustomEvent broadcast by the shared controller in Layout.astro
+ * (src/lib/home-live-market/homeLiveMarketController.ts), reading the event's `snapshot` array (the
+ * same underlying request that also feeds Ticker.astro, so this never triggers its own duplicate
+ * provider call). An unavailable response renders an honest message, never a fabricated number.
  */
 ---
 
@@ -24,20 +26,12 @@
 
 <script>
   import { formatSignedPct, changeToneClass, formatAsOfDate } from '../lib/market-dashboard/formatters';
-
-  type SnapshotItem = {
-    id: string;
-    label: string;
-    status: 'ok' | 'unavailable';
-    price: number | null;
-    changeAmount: number | null;
-    changePct: number | null;
-    asOf: string | null;
-    currency: 'KRW' | 'USD';
-    basisLabel: string;
-  };
-
-  const REFRESH_MS = 60_000;
+  import {
+    HOME_LIVE_MARKET_EVENT,
+    getLatestHomeLiveMarketPayload,
+    type HomeLiveMarketItem as SnapshotItem,
+    type HomeLiveMarketPayload,
+  } from '../lib/home-live-market/homeLiveMarketController';
 
   const toneToDirection = (tone: 'positive' | 'negative' | 'neutral'): 'up' | 'down' | 'flat' =>
     tone === 'positive' ? 'up' : tone === 'negative' ? 'down' : 'flat';
@@ -85,44 +79,22 @@
       .join('');
   };
 
-  let inFlight = false;
-  let timerId: number | null = null;
-
-  const load = (root: HTMLElement) => {
-    if (inFlight || document.hidden) return;
-    inFlight = true;
-
+  const applyPayload = (root: HTMLElement, payload: HomeLiveMarketPayload | null) => {
     const loading = root.querySelector<HTMLElement>('[data-home-snapshot-loading]');
     const grid = root.querySelector<HTMLElement>('[data-home-snapshot-grid]');
     const unavailable = root.querySelector<HTMLElement>('[data-home-snapshot-unavailable]');
 
-    fetch('/api/home/live-market.json')
-      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
-      .then(({ ok, body }) => {
-        if (!ok || body?.ok !== true || !Array.isArray(body?.snapshot) || body.snapshot.length === 0) {
-          throw new Error('snapshot_unavailable');
-        }
-        if (grid) renderSnapshot(body.snapshot as SnapshotItem[], grid);
-        loading?.classList.add('hidden');
-        unavailable?.classList.add('hidden');
-        grid?.classList.remove('hidden');
-      })
-      .catch(() => {
-        loading?.classList.add('hidden');
-        grid?.classList.add('hidden');
-        unavailable?.classList.remove('hidden');
-      })
-      .finally(() => {
-        inFlight = false;
-      });
-  };
+    if (!payload || payload.ok !== true || payload.snapshot.length === 0) {
+      loading?.classList.add('hidden');
+      grid?.classList.add('hidden');
+      unavailable?.classList.remove('hidden');
+      return;
+    }
 
-  const scheduleNext = (root: HTMLElement) => {
-    if (timerId !== null) window.clearTimeout(timerId);
-    timerId = window.setTimeout(() => {
-      load(root);
-      scheduleNext(root);
-    }, REFRESH_MS);
+    if (grid) renderSnapshot(payload.snapshot, grid);
+    loading?.classList.add('hidden');
+    unavailable?.classList.add('hidden');
+    grid?.classList.remove('hidden');
   };
 
   const setup = () => {
@@ -130,11 +102,10 @@
     if (!root || root.dataset.ready === 'true') return;
     root.dataset.ready = 'true';
 
-    load(root);
-    scheduleNext(root);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) load(root);
-    });
+    applyPayload(root, getLatestHomeLiveMarketPayload());
+    window.addEventListener(HOME_LIVE_MARKET_EVENT, ((event: CustomEvent<HomeLiveMarketPayload>) => {
+      applyPayload(root, event.detail);
+    }) as EventListener);
   };
 
   document.addEventListener('astro:page-load', setup);

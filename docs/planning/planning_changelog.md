@@ -27,6 +27,28 @@
 - New `smoke:phase-3gl-home-live-data` and `check:phase-3gl-home-live-data` suites. See
   `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail and exact test counts.
 
+### HF1 hotfix - 2026-07-31: corrected live-data contract
+
+- `resolveKisTickerItem` now tries the existing KIS current-quote snapshot functions first (sequential, never
+  parallel) and only falls back to the pre-existing OHLCV-based resolution on failure; added closed
+  `HomeDataBasis`/`HomeFreshness` enums so every ticker/snapshot item carries an honest basis and freshness.
+  No new KIS endpoint/TR ID.
+- `getHomeLiveMarket` now computes the 4-item Market Snapshot exactly once via `buildSnapshot(ticker)` before
+  the total-failure/success branch split, so both return paths share one fixed-length snapshot instead of
+  risking a re-literalized empty array.
+- Replaced the original per-component fetch design with one site-wide `homeLiveMarketController.ts`, mounted
+  in `Layout.astro`, that owns the sole fetch/timer/in-flight/visibilitychange lifecycle and broadcasts a
+  `mk-home-live-market` event; `Ticker.astro` and `HomeLiveMarketSnapshot.astro` became pure consumers.
+- Hardened `gnewsHomeNewsProvider.mjs` article normalization with closed length bounds, a safe-http-url gate
+  (url/image/sourceUrl), and an ISO-date gate (publishedAt) — required fields reject on failure, optional
+  fields truncate or null out rather than reject.
+- `HomeMarketNews.astro` now tracks `hasRenderedOnce` to distinguish a first-load failure from a post-success
+  refresh failure, preserving already-rendered articles instead of a fixed retry delay.
+- Extended `smoke:phase-3gl-home-live-data` (86/86) and `check:phase-3gl-home-live-data` (157/157); widened
+  one pre-existing assertion in `check:phase-3gj-live-market-dashboard` (159/159) to also tolerate
+  `HomeLiveMarketSnapshot.astro`'s new zero-fetch, broadcast-consumer architecture. PR title unchanged
+  ("Phase 3GL: add live Home data and GNews feed").
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization

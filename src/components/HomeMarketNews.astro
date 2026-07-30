@@ -16,6 +16,9 @@
   </div>
 
   <p class="home-news-loading" data-home-news-loading role="status" aria-live="polite">불러오는 중...</p>
+  <p class="home-news-delayed hidden" data-home-news-delayed role="status" aria-live="polite">
+    뉴스 업데이트가 지연되고 있습니다.
+  </p>
   <div class="home-news-grid hidden" data-home-news-grid></div>
   <div class="home-news-empty hidden" data-home-news-empty>
     <p>표시할 시장 뉴스가 없습니다.</p>
@@ -36,7 +39,6 @@
   };
 
   const REFRESH_MS = 5 * 60 * 1000;
-  const RETRY_DELAY_MS = 15_000;
 
   const CATEGORY_LABELS: Record<string, string> = {
     DOMESTIC_STOCKS: '국내주식',
@@ -98,7 +100,6 @@
 
   let inFlight = false;
   let timerId: number | null = null;
-  let retryUsedThisCycle = false;
   let hasRenderedOnce = false;
 
   const load = (root: HTMLElement) => {
@@ -106,6 +107,7 @@
     inFlight = true;
 
     const loading = root.querySelector<HTMLElement>('[data-home-news-loading]');
+    const delayed = root.querySelector<HTMLElement>('[data-home-news-delayed]');
     const grid = root.querySelector<HTMLElement>('[data-home-news-grid]');
     const empty = root.querySelector<HTMLElement>('[data-home-news-empty]');
 
@@ -115,8 +117,8 @@
         if (!ok || body?.ok !== true || !Array.isArray(body?.articles)) {
           throw new Error('home_news_unavailable');
         }
-        retryUsedThisCycle = false;
         loading?.classList.add('hidden');
+        delayed?.classList.add('hidden');
         if (body.articles.length === 0) {
           grid?.classList.add('hidden');
           empty?.classList.remove('hidden');
@@ -129,14 +131,12 @@
       })
       .catch(() => {
         if (hasRenderedOnce) {
-          // Preserve the last successfully rendered articles; no additional retry.
+          // Preserve the last successfully rendered articles; surface a delayed notice instead of
+          // clearing them. No retry before the normal 5-minute schedule — no fixture fallback.
+          delayed?.classList.remove('hidden');
           return;
         }
-        if (!retryUsedThisCycle) {
-          retryUsedThisCycle = true;
-          window.setTimeout(() => load(root), RETRY_DELAY_MS);
-          return;
-        }
+        // First-load failure: one clean unavailable state, no retry before the normal schedule.
         loading?.classList.add('hidden');
         grid?.classList.add('hidden');
         empty?.classList.remove('hidden');
@@ -149,7 +149,6 @@
   const scheduleNext = (root: HTMLElement) => {
     if (timerId !== null) window.clearTimeout(timerId);
     timerId = window.setTimeout(() => {
-      retryUsedThisCycle = false;
       load(root);
       scheduleNext(root);
     }, REFRESH_MS);
