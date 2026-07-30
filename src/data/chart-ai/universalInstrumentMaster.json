@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16057",
+  "masterVersion": "hf3b-hf2-kis-16066",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-07-30",
   "instruments": [
@@ -53358,6 +53358,19 @@
       "active": true
     },
     {
+      "symbol": "ARCP",
+      "displayName": "ARISTOTLE CORE PLUS INCOME ETF",
+      "englishName": "ARISTOTLE CORE PLUS INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "arcp"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ARCX",
       "displayName": "TRADR 2X LONG ACHR DAILY ETF",
       "englishName": "TRADR 2X LONG ACHR DAILY ETF",
@@ -53601,6 +53614,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "armh"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ARMS",
+      "displayName": "ARISTOTLE MULTI-SECTOR INCOME ETF",
+      "englishName": "ARISTOTLE MULTI-SECTOR INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "arms"
       ],
       "active": true
     },
@@ -69669,6 +69695,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "elm"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ELOL",
+      "displayName": "LEVERAGE SHARES 100% TSLA AND 100% SPCX DAILY ETF",
+      "englishName": "LEVERAGE SHARES 100% TSLA AND 100% SPCX DAILY ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "elol"
       ],
       "active": true
     },
@@ -92463,13 +92502,14 @@
     },
     {
       "symbol": "LVHI",
-      "displayName": "LEGG MASON ETF INVESTMENT TRUST FRANKLIN INTL LOW VOLATILITY",
-      "englishName": "LEGG MASON ETF INVESTMENT TRUST FRANKLIN INTL LOW VOLATILITY",
+      "displayName": "LEGG MASON ETF INVESTMENT TRUST",
+      "englishName": "LEGG MASON ETF INVESTMENT TRUST",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "legg mason etf investment trust franklin intl low volatility",
         "lvhi"
       ],
       "active": true
@@ -93776,14 +93816,15 @@
     },
     {
       "symbol": "MGC",
-      "displayName": "VANGUARD MORNINGSTAR MEGA CAP ETF",
-      "englishName": "VANGUARD MORNINGSTAR MEGA CAP ETF",
+      "displayName": "VANGUARD WORLD FUND MORNINGSTAR MEGA CAP ETF",
+      "englishName": "VANGUARD WORLD FUND MORNINGSTAR MEGA CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgc"
+        "mgc",
+        "vanguard morningstar mega cap etf"
       ],
       "active": true
     },
@@ -93802,14 +93843,15 @@
     },
     {
       "symbol": "MGK",
-      "displayName": "VANGUARD MORNINGSTAR MEGA CAP GROWTH ETF",
-      "englishName": "VANGUARD MORNINGSTAR MEGA CAP GROWTH ETF",
+      "displayName": "VANGUARD WORLD FUND MORNINGSTAR MEGA CAP GROWTH ETF",
+      "englishName": "VANGUARD WORLD FUND MORNINGSTAR MEGA CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgk"
+        "mgk",
+        "vanguard morningstar mega cap growth etf"
       ],
       "active": true
     },
@@ -93867,14 +93909,15 @@
     },
     {
       "symbol": "MGV",
-      "displayName": "VANGUARD MORNINGSTAR MEGA CAP VALUE ETF",
-      "englishName": "VANGUARD MORNINGSTAR MEGA CAP VALUE ETF",
+      "displayName": "VANGUARD WORLD FUND MORNINGSTAR MEGA CAP VALUE ETF",
+      "englishName": "VANGUARD WORLD FUND MORNINGSTAR MEGA CAP VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgv"
+        "mgv",
+        "vanguard morningstar mega cap value etf"
       ],
       "active": true
     },
@@ -110288,6 +110331,19 @@
       "active": true
     },
     {
+      "symbol": "SDUR",
+      "displayName": "ARISTOTLE SHORT TERM INCOME ETF",
+      "englishName": "ARISTOTLE SHORT TERM INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "sdur"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SDVD",
       "displayName": "FIRST TR EXCHANGE TRADED FD IV VEST SMID RISING DIVIDEND ACH",
       "englishName": "FIRST TR EXCHANGE TRADED FD IV VEST SMID RISING DIVIDEND ACH",
@@ -121277,13 +121333,14 @@
     },
     {
       "symbol": "VB",
-      "displayName": "VANGUARD MORNINGSTAR SMALL-CAP ETF",
-      "englishName": "VANGUARD MORNINGSTAR SMALL-CAP ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR SMALL-CAP ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR SMALL-CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar small-cap etf",
         "vb"
       ],
       "active": true
@@ -121446,13 +121503,14 @@
     },
     {
       "symbol": "VBK",
-      "displayName": "VANGUARD MORNINGSTAR SMALL-CAP GROWTH ETF",
-      "englishName": "VANGUARD MORNINGSTAR SMALL-CAP GROWTH ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR SMALL-CAP GROWTH ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR SMALL-CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar small-cap growth etf",
         "vbk"
       ],
       "active": true
@@ -121485,13 +121543,14 @@
     },
     {
       "symbol": "VBR",
-      "displayName": "VANGUARD MORNINGSTAR SMALL-CAP VALUE ETF",
-      "englishName": "VANGUARD MORNINGSTAR SMALL-CAP VALUE ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR SMALL-CAP VALUE ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR SMALL-CAP VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar small-cap value etf",
         "vbr"
       ],
       "active": true
@@ -122551,26 +122610,28 @@
     },
     {
       "symbol": "VO",
-      "displayName": "VANGUARD MORNINGSTAR MID-CAP ETF",
-      "englishName": "VANGUARD MORNINGSTAR MID-CAP ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR MID CAP ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR MID CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar mid-cap etf",
         "vo"
       ],
       "active": true
     },
     {
       "symbol": "VOE",
-      "displayName": "VANGUARD MORNINGSTAR MID-CAP VALUE ETF",
-      "englishName": "VANGUARD MORNINGSTAR MID-CAP VALUE ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR MID-CAP VALUE ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR MID-CAP VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar mid-cap value etf",
         "voe"
       ],
       "active": true
@@ -122684,13 +122745,14 @@
     },
     {
       "symbol": "VOT",
-      "displayName": "VANGUARD MORNINGSTAR MID-CAP GROWTH ETF",
-      "englishName": "VANGUARD MORNINGSTAR MID-CAP GROWTH ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR MID-CAP GROWTH ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR MID-CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar mid-cap growth etf",
         "vot"
       ],
       "active": true
@@ -123139,13 +123201,14 @@
     },
     {
       "symbol": "VTI",
-      "displayName": "VANGUARD MORNINGSTAR TOTAL STOCK MARKET ETF",
-      "englishName": "VANGUARD MORNINGSTAR TOTAL STOCK MARKET ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR TOTAL STK MARKET ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR TOTAL STK MARKET ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar total stock market etf",
         "vanguard total",
         "vanguard total stock market etf",
         "vti",
@@ -123194,13 +123257,14 @@
     },
     {
       "symbol": "VTV",
-      "displayName": "VANGUARD MORNINGSTAR VALUE ETF",
-      "englishName": "VANGUARD MORNINGSTAR VALUE ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR VALUE ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR VALUE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar value etf",
         "vtv"
       ],
       "active": true
@@ -123246,13 +123310,14 @@
     },
     {
       "symbol": "VUG",
-      "displayName": "VANGUARD MORNINGSTAR GROWTH ETF",
-      "englishName": "VANGUARD MORNINGSTAR GROWTH ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR GROWTH ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar growth etf",
         "vug"
       ],
       "active": true
@@ -123337,13 +123402,14 @@
     },
     {
       "symbol": "VV",
-      "displayName": "VANGUARD MORNINGSTAR LARGE-CAP ETF",
-      "englishName": "VANGUARD MORNINGSTAR LARGE-CAP ETF",
+      "displayName": "VANGUARD INDEX FUNDS MORNINGSTAR LARGE-CAP ETF",
+      "englishName": "VANGUARD INDEX FUNDS MORNINGSTAR LARGE-CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "vanguard morningstar large-cap etf",
         "vv"
       ],
       "active": true
@@ -137032,14 +137098,15 @@
     },
     {
       "symbol": "BDRX",
-      "displayName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EACH RP 500000 ORD",
-      "englishName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EACH RP 500000 ORD",
+      "displayName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EACH RP 50 ORD",
+      "englishName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EACH RP 50 ORD",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "bdrx"
+        "bdrx",
+        "biodexa pharmaceuticals plc spon ads each rp 500000 ord"
       ],
       "active": true
     },
@@ -160734,6 +160801,19 @@
       "active": true
     },
     {
+      "symbol": "GYGY",
+      "displayName": "GAME YOUR GAME INC",
+      "englishName": "GAME YOUR GAME INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "gygy"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GYRE",
       "displayName": "GYRE THERAPEUTICS INC",
       "englishName": "GYRE THERAPEUTICS INC",
@@ -166064,6 +166144,19 @@
       "active": true
     },
     {
+      "symbol": "ISNR",
+      "displayName": "SNOW ROTHSCHILD ACQUISITION CORP",
+      "englishName": "SNOW ROTHSCHILD ACQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "isnr"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ISNRU",
       "displayName": "SNOW ROTHSCHILD ACQUISITION CORP UNIT CON 1 CL A ORD & 0",
       "englishName": "SNOW ROTHSCHILD ACQUISITION CORP UNIT CON 1 CL A ORD & 0",
@@ -167087,6 +167180,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "jmia"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "JMKE",
+      "displayName": "JERSEY MIKES SUBS INC",
+      "englishName": "JERSEY MIKES SUBS INC",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "jmke"
       ],
       "active": true
     },
@@ -183421,6 +183527,19 @@
       "active": true
     },
     {
+      "symbol": "PBAM",
+      "displayName": "PRIVATE BANCORP OF AMERICA INC",
+      "englishName": "PRIVATE BANCORP OF AMERICA INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "pbam"
+      ],
+      "active": true
+    },
+    {
       "symbol": "PBF",
       "displayName": "PBF ENERGY INC",
       "englishName": "PBF ENERGY INC",
@@ -188734,6 +188853,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "reed"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "REF",
+      "displayName": "REFORMATION INC",
+      "englishName": "REFORMATION INC",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "ref"
       ],
       "active": true
     },
@@ -201196,13 +201328,14 @@
     },
     {
       "symbol": "TVGN",
-      "displayName": "TEVOGEN BIO HOLDINGS INC",
-      "englishName": "TEVOGEN BIO HOLDINGS INC",
+      "displayName": "TEVOGEN INC",
+      "englishName": "TEVOGEN INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "tevogen bio holdings inc",
         "tvgn"
       ],
       "active": true
