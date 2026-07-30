@@ -6,22 +6,6 @@ import HomeMarketNews from '../components/HomeMarketNews.astro';
 import HomePortfolioPanel from '../components/HomePortfolioPanel.astro';
 import HomeRetentionPanel from '../components/HomeRetentionPanel.astro';
 import Layout from '../layouts/Layout.astro';
-
-// SSR fetch: /api/news/market-feed?mode=home (no source param — uses fixture default)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let newsArticles: any[] = [];
-try {
-  const newsUrl = new URL('/api/news/market-feed?mode=home', Astro.url);
-  const res = await fetch(newsUrl);
-  if (res.ok) {
-    const data = await res.json() as Record<string, unknown>;
-    if (Array.isArray(data?.articles)) {
-      newsArticles = data.articles.slice(0, 6);
-    }
-  }
-} catch {
-  // SSR fetch failed — HomeMarketNews renders empty fallback state
-}
 ---
 
 <Layout title="MK Stock Lab | 투자 데이터 플랫폼" activePath="/" pageClass="home-page">
@@ -69,7 +53,7 @@ try {
 
   <HomeRetentionPanel />
 
-  <HomeMarketNews articles={newsArticles} />
+  <HomeMarketNews />
 
     </div>
 

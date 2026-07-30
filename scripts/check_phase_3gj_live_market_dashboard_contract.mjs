@@ -341,8 +341,11 @@ check('LiveMarketDashboard refresh handler bypasses only the client-side cache, 
 
 log('--- Group 8b: Home live market snapshot ---');
 check('HomeLiveMarketSnapshot has no setInterval / polling loop', !homeSnapshot.includes('setInterval'));
-check('HomeLiveMarketSnapshot fetches overview exactly once (single script-level fetch call)',
-  (homeSnapshot.match(/fetch\(/g) || []).length === 1 && homeSnapshot.includes("fetch('/api/market/overview.json"));
+check('HomeLiveMarketSnapshot fetches its market data exactly once (single script-level fetch call)',
+  // Phase 3GL superseded the direct /api/market/overview.json call with the shared
+  // /api/home/live-market.json route (one resolution pass serving Ticker + Snapshot together).
+  (homeSnapshot.match(/fetch\(/g) || []).length === 1 &&
+  (homeSnapshot.includes("fetch('/api/market/overview.json") || homeSnapshot.includes("fetch('/api/home/live-market.json")));
 check('HomeLiveMarketSnapshot renders an honest unavailable state, never a fabricated card',
   homeSnapshot.includes('data-home-snapshot-unavailable'));
 check('Home page renders HomeLiveMarketSnapshot', homePage.includes('HomeLiveMarketSnapshot'));

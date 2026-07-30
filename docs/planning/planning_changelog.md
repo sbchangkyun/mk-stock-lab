@@ -1,5 +1,32 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GL - 2026-07-30
+
+### Home live market data and GNews feed; roadmap reprioritization
+
+- Roadmap reprioritized in place (`mk_stock_lab_master_roadmap_v2.1.md`, no new version file): recorded Phase
+  3GK's Production merge/release (PR #7, merge commit `0e53cde`, deployment `dpl_CRd7KFZ2eyscG1tbAfxdqMgPhh1A`
+  READY); inserted Phase 3GL (Home Live Data and GNews) as the in-progress phase; renamed the prior
+  "Operations and Admin MVP" phase from 3GL to 3GM; Phase 3 Closeout now runs after 3GM.
+- Added one shared server-side Home market orchestrator + `GET /api/home/live-market.json`, serving both the
+  9-item ticker belt and the 4-card Market Snapshot from the same closed-registry instrument fetch (bounded
+  concurrency 3, no duplicate provider calls) — reusing the existing shared KIS OHLCV orchestration/durable
+  token manager for the 7 ETF-proxy items and the existing Frankfurter FX source for USD/KRW; no new KIS
+  endpoint/TR ID and no new FX provider were added.
+- Rewrote `Ticker.astro` and `HomeLiveMarketSnapshot.astro` to consume the new shared route (60s client
+  refresh, pause on hidden document, in-flight coalescing, no localStorage cache, no cache-bypass params);
+  Home no longer calls `/api/market/overview.json` (the `/market` page's own use of that route is untouched).
+- Added a new server-only GNews client + `GET /api/news/home.json` reading `GNEWS_API_KEY` only (never the
+  pre-existing client-exposed `PUBLIC_GNEWS_API_KEY`), issuing one combined query per cache refresh, returning
+  at most 6 client-safe normalized articles, deterministically classified into 국내주식/해외주식/환율/거시경제/
+  원자재/시장일반. No fixture fallback: an absent key returns a sanitized `NEWS_NOT_CONFIGURED` state with an
+  honest UI message. Rewrote `HomeMarketNews.astro` into a client-fetching component (5-minute refresh,
+  visibility pause, one delayed retry, preserves last-good articles on a refresh failure).
+- Left the pre-existing `market-feed.ts` route and `lib/news/gnews*.mjs` fixture-based pipeline in place but
+  unreferenced by Home (out of scope to remove this phase).
+- New `smoke:phase-3gl-home-live-data` and `check:phase-3gl-home-live-data` suites. See
+  `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail and exact test counts.
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization

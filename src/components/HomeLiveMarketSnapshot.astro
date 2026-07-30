@@ -1,9 +1,10 @@
 ---
 /**
- * Phase 3GJ replacement for the retired HomeIndexCards.astro fixture. Renders only the static shell —
- * heading, loading state, empty grid — at request time. The four benchmark-proxy cards themselves are
- * populated from a single client-side GET /api/market/overview.json call after page load, and never
- * refreshed automatically. An unavailable response renders an honest message, never a fabricated number.
+ * Phase 3GL replacement for the Phase 3GJ overview-only snapshot. Renders only the static shell —
+ * heading, loading state, empty grid — at request time. The four cards are populated from the shared
+ * GET /api/home/live-market.json `snapshot` array (the same request that also feeds Ticker.astro, so
+ * this component never triggers its own duplicate provider call). An unavailable response renders an
+ * honest message, never a fabricated number.
  */
 ---
 
@@ -11,8 +12,8 @@
   <p class="eyebrow">MARKET SNAPSHOT</p>
   <h2 id="index-snapshot-heading">주요 시장 대표 ETF 한눈에 보기</h2>
   <p class="index-snapshot-desc">
-    KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100 대표 ETF의 실제 시세 기준 수익률입니다. 지수 자체가 아닌 대표
-    ETF(proxy) 기준이며, 데이터를 불러올 수 없으면 있는 그대로 알려드립니다.
+    KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100 대표 ETF의 실제 시세 기준입니다. 지수 자체가 아닌 대표 ETF(proxy)
+    기준이며, 데이터를 불러올 수 없으면 있는 그대로 알려드립니다.
   </p>
   <p class="index-snapshot-loading" data-home-snapshot-loading role="status" aria-live="polite">불러오는 중...</p>
   <div class="index-card-grid hidden" data-home-snapshot-grid></div>
@@ -22,70 +23,118 @@
 </section>
 
 <script>
-  import { formatSignedPct, changeToneClass, freshnessLabel, formatAsOfDate } from '../lib/market-dashboard/formatters';
+  import { formatSignedPct, changeToneClass, formatAsOfDate } from '../lib/market-dashboard/formatters';
 
-  type OverviewProxy = {
-    universeLabel: string;
-    proxy: { label: string };
-    status: 'ok' | 'unresolved' | 'unavailable';
-    periodReturnPct: number | null;
+  type SnapshotItem = {
+    id: string;
+    label: string;
+    status: 'ok' | 'unavailable';
+    price: number | null;
+    changeAmount: number | null;
+    changePct: number | null;
     asOf: string | null;
-    freshness: string;
+    currency: 'KRW' | 'USD';
+    basisLabel: string;
   };
+
+  const REFRESH_MS = 60_000;
 
   const toneToDirection = (tone: 'positive' | 'negative' | 'neutral'): 'up' | 'down' | 'flat' =>
     tone === 'positive' ? 'up' : tone === 'negative' ? 'down' : 'flat';
+
+  const formatPrice = (item: SnapshotItem): string => {
+    if (item.price === null) return '—';
+    return item.currency === 'KRW'
+      ? item.price.toLocaleString('ko-KR', { maximumFractionDigits: 0 })
+      : item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const formatSignedAmount = (value: number | null, currency: 'KRW' | 'USD'): string => {
+    if (value === null || !Number.isFinite(value)) return '';
+    const magnitude = currency === 'KRW' ? Math.round(Math.abs(value)).toLocaleString('ko-KR') : Math.abs(value).toFixed(2);
+    if (value > 0) return `+${magnitude}`;
+    if (value < 0) return `-${magnitude}`;
+    return magnitude;
+  };
+
+  const renderSnapshot = (items: SnapshotItem[], grid: HTMLElement) => {
+    grid.innerHTML = items
+      .map((item) => {
+        if (item.status !== 'ok') {
+          return `<div class="index-card index-card--flat">
+  <div class="index-card-main">
+    <div class="index-card-label">${item.label}</div>
+    <div class="index-card-caption">${item.basisLabel}</div>
+    <div class="index-card-value">이용 불가</div>
+  </div>
+</div>`;
+        }
+        const direction = toneToDirection(changeToneClass(item.changePct));
+        return `<div class="index-card index-card--${direction}">
+  <div class="index-card-main">
+    <div class="index-card-label">${item.label}</div>
+    <div class="index-card-caption">${item.basisLabel}</div>
+    <div class="index-card-value">${formatPrice(item)}</div>
+    <div class="index-card-footer">
+      <span class="index-card-change">${formatSignedAmount(item.changeAmount, item.currency)} (${formatSignedPct(item.changePct)})</span>
+      <span class="index-card-as-of">${formatAsOfDate(item.asOf)}</span>
+    </div>
+  </div>
+</div>`;
+      })
+      .join('');
+  };
+
+  let inFlight = false;
+  let timerId: number | null = null;
+
+  const load = (root: HTMLElement) => {
+    if (inFlight || document.hidden) return;
+    inFlight = true;
+
+    const loading = root.querySelector<HTMLElement>('[data-home-snapshot-loading]');
+    const grid = root.querySelector<HTMLElement>('[data-home-snapshot-grid]');
+    const unavailable = root.querySelector<HTMLElement>('[data-home-snapshot-unavailable]');
+
+    fetch('/api/home/live-market.json')
+      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
+      .then(({ ok, body }) => {
+        if (!ok || body?.ok !== true || !Array.isArray(body?.snapshot) || body.snapshot.length === 0) {
+          throw new Error('snapshot_unavailable');
+        }
+        if (grid) renderSnapshot(body.snapshot as SnapshotItem[], grid);
+        loading?.classList.add('hidden');
+        unavailable?.classList.add('hidden');
+        grid?.classList.remove('hidden');
+      })
+      .catch(() => {
+        loading?.classList.add('hidden');
+        grid?.classList.add('hidden');
+        unavailable?.classList.remove('hidden');
+      })
+      .finally(() => {
+        inFlight = false;
+      });
+  };
+
+  const scheduleNext = (root: HTMLElement) => {
+    if (timerId !== null) window.clearTimeout(timerId);
+    timerId = window.setTimeout(() => {
+      load(root);
+      scheduleNext(root);
+    }, REFRESH_MS);
+  };
 
   const setup = () => {
     const root = document.querySelector<HTMLElement>('[data-home-market-snapshot]');
     if (!root || root.dataset.ready === 'true') return;
     root.dataset.ready = 'true';
 
-    const loading = root.querySelector<HTMLElement>('[data-home-snapshot-loading]');
-    const grid = root.querySelector<HTMLElement>('[data-home-snapshot-grid]');
-    const unavailable = root.querySelector<HTMLElement>('[data-home-snapshot-unavailable]');
-
-    fetch('/api/market/overview.json?period=1d')
-      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
-      .then(({ ok, body }) => {
-        if (!ok || body?.ok !== true || !Array.isArray(body?.overview?.proxies)) {
-          throw new Error('overview_unavailable');
-        }
-        const proxies: OverviewProxy[] = body.overview.proxies;
-        if (grid) {
-          grid.innerHTML = proxies
-            .map((proxy) => {
-              if (proxy.status !== 'ok') {
-                return `<div class="index-card index-card--flat">
-  <div class="index-card-main">
-    <div class="index-card-label">${proxy.universeLabel}</div>
-    <div class="index-card-caption">${proxy.proxy.label}</div>
-    <div class="index-card-value">이용 불가</div>
-  </div>
-</div>`;
-              }
-              const direction = toneToDirection(changeToneClass(proxy.periodReturnPct));
-              return `<div class="index-card index-card--${direction}">
-  <div class="index-card-main">
-    <div class="index-card-label">${proxy.universeLabel}</div>
-    <div class="index-card-caption">${proxy.proxy.label}</div>
-    <div class="index-card-value">${formatSignedPct(proxy.periodReturnPct)}</div>
-    <div class="index-card-footer">
-      <span class="index-card-change">${freshnessLabel(proxy.freshness)}</span>
-      <span class="index-card-as-of">${formatAsOfDate(proxy.asOf)}</span>
-    </div>
-  </div>
-</div>`;
-            })
-            .join('');
-        }
-        loading?.classList.add('hidden');
-        grid?.classList.remove('hidden');
-      })
-      .catch(() => {
-        loading?.classList.add('hidden');
-        unavailable?.classList.remove('hidden');
-      });
+    load(root);
+    scheduleNext(root);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) load(root);
+    });
   };
 
   document.addEventListener('astro:page-load', setup);

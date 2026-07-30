@@ -252,6 +252,22 @@ html.auth-hint-signed-in #logout-btn.hidden {
   font-size: 13px;
 }
 
+.ticker-chip-price {
+  color: var(--text);
+}
+
+.ticker-chip--up .ticker-chip-change {
+  color: var(--positive);
+}
+
+.ticker-chip--down .ticker-chip-change {
+  color: var(--negative);
+}
+
+.ticker-chip--flat .ticker-chip-change {
+  color: var(--neutral);
+}
+
 .primary-nav {
   position: sticky;
   top: 0;

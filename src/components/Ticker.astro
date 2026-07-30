@@ -1,34 +1,121 @@
 ---
-const tickerItems = [
-  { label: 'S&P 500', value: '미국 대형주' },
-  { label: 'Nasdaq 100', value: '성장주 지수' },
-  { label: 'Dow Jones', value: '우량주 지수' },
-  { label: 'KOSPI', value: '국내 대표 시장' },
-  { label: 'KOSDAQ', value: '국내 성장 시장' },
-  { label: 'USD/KRW', value: '환율 점검' },
-  { label: 'Dollar Index', value: '달러 흐름' },
-  { label: 'Gold', value: '안전자산' },
-  { label: 'WTI Oil', value: '에너지 기준가' },
+/**
+ * Phase 3GL — Home ticker belt. Static shell only at request time; all 9 items are populated from a
+ * single client-side GET /api/home/live-market.json call (the same shared route that also feeds
+ * HomeLiveMarketSnapshot.astro, so one request per refresh never duplicates a provider call).
+ */
+const tickerPlaceholders = [
+  { id: 'sp500', label: 'S&P 500' },
+  { id: 'nasdaq100', label: '나스닥 100' },
+  { id: 'dowjones', label: '다우존스' },
+  { id: 'kospi', label: '코스피' },
+  { id: 'kosdaq', label: '코스닥' },
+  { id: 'usdkrw', label: '원/달러' },
+  { id: 'dollarindex', label: '달러 인덱스' },
+  { id: 'gold', label: '금' },
+  { id: 'wti', label: 'WTI 원유' },
 ];
 ---
 
 <div class="ticker-belt" id="ticker_area" aria-label="시장 지표">
-  <div class="ticker-track">
-    {tickerItems.map((item) => (
-      <span class="ticker-chip">
+  <div class="ticker-track" data-ticker-track>
+    {tickerPlaceholders.map((item) => (
+      <span class="ticker-chip" data-ticker-chip={item.id}>
         <strong>{item.label}</strong>
-        <span>{item.value}</span>
+        <span>불러오는 중</span>
       </span>
     ))}
   </div>
 </div>
+
+<script>
+  import { formatSignedPct, changeToneClass } from '../lib/market-dashboard/formatters';
+
+  type HomeTickerItem = {
+    id: string;
+    label: string;
+    status: 'ok' | 'unavailable';
+    price: number | null;
+    changePct: number | null;
+    currency: 'KRW' | 'USD';
+    basisLabel: string;
+    periodLabel: string;
+  };
+
+  const REFRESH_MS = 60_000;
+
+  const toneToChipClass = (tone: 'positive' | 'negative' | 'neutral'): string =>
+    tone === 'positive' ? 'ticker-chip--up' : tone === 'negative' ? 'ticker-chip--down' : 'ticker-chip--flat';
+
+  const formatPrice = (item: HomeTickerItem): string => {
+    if (item.price === null) return '—';
+    if (item.id === 'usdkrw') {
+      return item.price.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    if (item.currency === 'KRW') return item.price.toLocaleString('ko-KR', { maximumFractionDigits: 0 });
+    return item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const renderTicker = (items: HomeTickerItem[]) => {
+    const track = document.querySelector<HTMLElement>('[data-ticker-track]');
+    if (!track) return;
+    track.innerHTML = items
+      .map((item) => {
+        if (item.status !== 'ok') {
+          return `<span class="ticker-chip" title="${item.basisLabel}"><strong>${item.label}</strong><span>이용 불가</span></span>`;
+        }
+        const chipClass = toneToChipClass(changeToneClass(item.changePct));
+        return `<span class="ticker-chip ${chipClass}" title="${item.basisLabel} · ${item.periodLabel}"><strong>${item.label}</strong><span class="ticker-chip-price">${formatPrice(item)}</span><span class="ticker-chip-change">${formatSignedPct(item.changePct)}</span></span>`;
+      })
+      .join('');
+  };
+
+  let inFlight = false;
+  let timerId: number | null = null;
+
+  const load = () => {
+    if (inFlight || document.hidden) return;
+    inFlight = true;
+    fetch('/api/home/live-market.json')
+      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
+      .then(({ ok, body }) => {
+        if (!ok || body?.ok !== true || !Array.isArray(body?.ticker)) return;
+        renderTicker(body.ticker as HomeTickerItem[]);
+      })
+      .catch(() => {})
+      .finally(() => {
+        inFlight = false;
+      });
+  };
+
+  const scheduleNext = () => {
+    if (timerId !== null) window.clearTimeout(timerId);
+    timerId = window.setTimeout(() => {
+      load();
+      scheduleNext();
+    }, REFRESH_MS);
+  };
+
+  const setup = () => {
+    const area = document.getElementById('ticker_area');
+    if (!area || area.dataset.ready === 'true') return;
+    area.dataset.ready = 'true';
+    load();
+    scheduleNext();
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) load();
+    });
+  };
+
+  document.addEventListener('astro:page-load', setup);
+  setup();
+</script>
 
 <script is:inline>
   function renderMarketTicker(theme) {
     const area = document.getElementById('ticker_area');
     if (!area) return;
     area.dataset.theme = theme || 'light';
-    area.dataset.ready = 'true';
   }
 
   window.renderMarketTicker = renderMarketTicker;
