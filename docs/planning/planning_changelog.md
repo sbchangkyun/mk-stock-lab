@@ -1,5 +1,42 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GK - 2026-07-26
+
+### Chart AI beta productization
+
+- Retired the Production Chart AI beta gate: `evaluateProductionChartAiBetaAccess`
+  (`CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA` env flag + `?chartAiProdBeta=1` query opt-in) is fully removed
+  from every route, `kisClient.ts`, and `chart-ai.astro`.
+- Added `evaluateStableProductionChartAiAccess({ env })` — allows on `VERCEL_ENV=production` alone (no flag,
+  no query), denies everything else with `not_production_env`. The protected-Preview beta guard
+  (`evaluateProtectedPreviewBetaAccess`) is verified byte-identical to the Phase 3GJ baseline and remains fully
+  independent (each guard allows/denies without affecting the other; explicit Production still fails the
+  preview guard closed via its own `production_fail_closed` rule).
+- Renamed `allowProductionChartAiBetaLiveQuotes` → `allowProductionChartAiLiveData` end-to-end across
+  `kisClient.ts`, `universalOhlcvProvider.ts`, the local-only KIS binding, and all 5 Chart AI API routes.
+- Confirmed the Supabase auth boundary (`validateUserFromBearerToken`) still runs before both guard
+  evaluations in all 4 Production-facing routes, the combined usage-guard contract
+  (`chartAiUsage.ts`) is byte-for-byte unchanged, and zero-automatic-execution guarantees are intact (no
+  auto-fetch on entry; `setup()` never runs before an explicit chart-load action).
+- Client rewiring: `productionRealChartEnabled` now derives from the stable Production runtime OR the
+  protected-Preview beta opt-in only (no prod-beta flag); three honest delayed-data wording fixes verified
+  present in the real (non-mock) chart-loading flow.
+- Tests: new `smoke:phase-3gk-chart-ai-beta-productization` (17/17) and
+  `check:phase-3gk-chart-ai-beta-productization` (116/116). Full regression re-run
+  (`phase-3gj-live-market-dashboard` smoke 162/162 + check 159/159, `phase-3gi-user-retention-persistence`
+  smoke 35/35 + check 149/149, `phase-3gh-portfolio-live-valuation-mvp` smoke 55/55 + check 86/86, `npm ls`,
+  `npm run build`, `git diff --check`) clean. One sibling-checker reconciliation: the Phase 3GJ checker's
+  hardcoded `productionChartAiBetaExceptionAllowed` string was updated to the renamed
+  `productionChartAiExceptionAllowed` (an unrelated `kisClient.ts` exception flag also renamed by this phase).
+- Detailed responsive/cross-browser/accessibility/all-symbol/all-market/long-session QA is explicitly deferred
+  to Phase 3 Closeout (after Phase 3GL) per the governing instruction — not performed this phase. See
+  `docs/planning/phase_3gk_chart_ai_beta_productization_result_v0.1.md` for full detail.
+- No migration, no merge, no Production deploy, no environment/Supabase mutation, no Phase 3GL work. Branch
+  `feature/phase-3gk-chart-ai-beta-productization`, created from `origin/main` at `668e528` (the Phase 3GJ
+  merge commit); implementation commit `a0ae043`, pushed, PR #7 open against `main` (not merged), Vercel
+  Preview `dpl_69TReFxXBWKMMweUMP248Q24uSV3` reached `READY` (SSO-protected; authenticated verification
+  Owner-pending).
+
 ## Phase 3GJ-HF2 - 2026-07-26
 
 ### Live market dashboard OHLCV data-basis parser fix

@@ -4,7 +4,7 @@
  * GET /api/chart-ai/mk-analysis.json?country=&symbol=
  *
  * Guarded exactly like the OHLCV / similarity / summary routes (localhost `?ownerLocalMkAnalysis=1`,
- * protected Preview beta, or production `?chartAiProdBeta=1`; only the production-beta path forwards
+ * protected Preview beta, or stable Vercel Production; only the Production path forwards
  * the scoped live-quote exception). Fetches REAL long-history OHLCV, runs the REAL similarity engine,
  * and runs the DETERMINISTIC MK AI analysis engine + formatter over both. No LLM is called here (the
  * existing 3-line LLM summary route is untouched and kept separately). No sample/synthetic fallback,
@@ -15,7 +15,7 @@
 import type { APIRoute } from 'astro';
 import {
   evaluateProtectedPreviewBetaAccess,
-  evaluateProductionChartAiBetaAccess,
+  evaluateStableProductionChartAiAccess,
 } from '../../../lib/server/chart-ai/protected-preview-beta-guard.mjs';
 import { LOCAL_ONLY_ALLOWED_HOSTNAMES } from '../../../lib/server/chart-ai/local-only-live-kis-market-data-binding.mjs';
 import { validateUserFromBearerToken } from '../../../lib/server/supabaseAdmin';
@@ -102,12 +102,8 @@ export const GET: APIRoute = async ({ url, request }) => {
       CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA: readServerEnvValue('CHART_AI_ENABLE_PROTECTED_PREVIEW_BETA'),
     },
   });
-  const prodBetaAccess = evaluateProductionChartAiBetaAccess({
-    betaQueryOptIn: url.searchParams.get('chartAiProdBeta') === '1',
-    env: {
-      VERCEL_ENV: readServerEnvValue('VERCEL_ENV'),
-      CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA: readServerEnvValue('CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA'),
-    },
+  const prodBetaAccess = evaluateStableProductionChartAiAccess({
+    env: { VERCEL_ENV: readServerEnvValue('VERCEL_ENV') },
   });
 
   if (!localOwnerAllowed && !betaAccess.allowed && !prodBetaAccess.allowed) {
@@ -176,7 +172,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   }
 
   try {
-    const history = await fetchLongHistoryOhlcv({ instrument, allowProductionChartAiBetaLiveQuotes: allowProd });
+    const history = await fetchLongHistoryOhlcv({ instrument, allowProductionChartAiLiveData: allowProd });
     const ohlcvCacheState = typeof history.cacheState === 'string' ? history.cacheState : 'MISS';
     if (!history.ok || history.candles.length === 0) {
       const code =

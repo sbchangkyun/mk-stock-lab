@@ -23,15 +23,10 @@ const requiredEnvNames = ['KIS_APP_KEY', 'KIS_APP_SECRET', 'KIS_BASE_URL'];
 const optionalEnvNames = ['KIS_ACCOUNT_NO'];
 const featureFlagEnvName = 'KIS_ENABLE_LIVE_QUOTES';
 const previewGuardFlagEnvName = 'KIS_ENABLE_PREVIEW_LIVE_QUOTES';
-// Phase 3GG-M-PROD-HF1: the non-secret Production flag that -- together with an explicit
-// per-call scoped signal from the Chart AI production beta summary route -- narrowly lifts
-// the Vercel Production hard block below for the current_price quote scope ONLY. Its mere
-// presence never opens generic production KIS usage: the scoped call option must also be set.
-const productionChartAiBetaFlagEnvName = 'CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA';
-// Phase 3GJ: a second, independent, OR'd Vercel Production exception -- structurally identical to
-// the Chart AI beta one above but scoped to the public live market dashboard's read-only OHLCV
-// orchestration ONLY. Does not reuse Chart AI's query-string beta gate and does not widen any other
-// KIS scope (account/order/balance stay untouched and KIS_ACCOUNT_NO must still be absent below).
+// Phase 3GJ: an independent Vercel Production exception scoped to the public live market
+// dashboard's read-only OHLCV orchestration ONLY. Structurally parallel to (but independent from)
+// the stable Chart AI Production exception below. Does not widen any other KIS scope (account/order
+// /balance stay untouched and KIS_ACCOUNT_NO must still be absent below).
 const productionMarketDashboardFlagEnvName = 'KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD';
 const quotePath = '/uapi/domestic-stock/v1/quotations/inquire-price';
 const dailyOhlcPath = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice';
@@ -41,7 +36,7 @@ const domesticDailyOhlcTrId = 'FHKST03010100';
 // Phase 3GG-OP-FAST: KIS overseas (US) read-only market-data endpoints. Historical OHLCV +
 // current price only -- no account/order/balance endpoint is referenced here. These sit behind
 // the same fail-closed readiness gate as the domestic quote/OHLC transports (quote scope,
-// KIS_ACCOUNT_NO must be absent) and forward the same narrowly-scoped production Chart AI beta
+// KIS_ACCOUNT_NO must be absent) and forward the same narrowly-scoped stable production Chart AI
 // exception. US market data additionally requires the KIS account to hold overseas data
 // permission; when it does not, the provider fails closed with a sanitized PROVIDER_UNAVAILABLE.
 const overseasDailyOhlcPath = '/uapi/overseas-price/v1/quotations/dailyprice';
@@ -159,7 +154,7 @@ const getRuntimeConfig = (): KisRuntimeConfig | null => {
 
 export const getKisQuoteConfigReadiness = (
   options: {
-    allowProductionChartAiBetaLiveQuotes?: boolean;
+    allowProductionChartAiLiveData?: boolean;
     allowProductionMarketDashboardLiveData?: boolean;
   } = {},
 ): KisQuoteConfigReadiness => {
@@ -170,20 +165,17 @@ export const getKisQuoteConfigReadiness = (
 
   const base = { provider, requiredEnvNames, missingEnvNames, optionalEnvNames, featureFlagEnvName, productionAllowed: false } as const;
 
-  // Phase 3GG-M-PROD-HF1: narrowly-scoped Vercel Production exception for the Chart AI production
-  // beta summary flow ONLY. All three must hold: the runtime really is Vercel Production, the caller
-  // passed the explicit per-call scoped signal (set by the H route only after its own production
-  // beta guard -- VERCEL_ENV=production + CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA=true +
-  // ?chartAiProdBeta=1 -- has already passed), AND the non-secret Production flag is enabled. Absent
-  // any one of these, production stays fully fail-closed. This lifts ONLY the runtime hard block; the
-  // KIS_ACCOUNT_NO-absent, KIS_ENABLE_LIVE_QUOTES=true, and credential-present checks below still run,
-  // and the scope remains current_price (the only endpoint this readiness gate serves).
-  const productionChartAiBetaExceptionAllowed =
-    runtimeClass === 'vercel-production' &&
-    options.allowProductionChartAiBetaLiveQuotes === true &&
-    readEnvValue(productionChartAiBetaFlagEnvName) === 'true';
+  // Phase 3GK: stable, route-scoped Vercel Production exception for Chart AI's closed live-data
+  // routes. Both must hold: the runtime really is Vercel Production, AND the calling route passed the
+  // explicit per-call scoped signal (only Chart AI's own closed routes ever set this -- it is never a
+  // generic global flag). Absent either, production stays fully fail-closed. This lifts ONLY the
+  // runtime hard block below; the KIS_ACCOUNT_NO-absent, KIS_ENABLE_LIVE_QUOTES=true, and
+  // credential-present checks below still run unchanged, and the scope stays limited to whatever
+  // endpoint the calling route serves (current_price / daily OHLC only -- no account/order/balance).
+  const productionChartAiExceptionAllowed =
+    runtimeClass === 'vercel-production' && options.allowProductionChartAiLiveData === true;
 
-  // Phase 3GJ: mirrors the exception above, scoped independently to the public live market
+  // Phase 3GJ: an independent exception, scoped separately to the public live market
   // dashboard's read-only OHLCV orchestration. The calling route sets the per-call signal only after
   // its own guard (VERCEL_ENV=production + KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD=true + the request
   // is the closed market-dashboard route) has already passed. Either exception independently lifts
@@ -198,7 +190,7 @@ export const getKisQuoteConfigReadiness = (
   // NODE_ENV=production, unknown VERCEL_ENV value
   if (
     (runtimeClass === 'vercel-production' &&
-      !productionChartAiBetaExceptionAllowed &&
+      !productionChartAiExceptionAllowed &&
       !productionMarketDashboardExceptionAllowed) ||
     runtimeClass === 'node-production' ||
     runtimeClass === 'unknown'
@@ -374,7 +366,7 @@ export const validateKisDomesticQuoteInput = (input: SecurityIdentity): Provider
 
 export const getKisDomesticQuoteSnapshot = async (
   input: SecurityIdentity,
-  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+  options: { allowProductionChartAiLiveData?: boolean } = {},
 ): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
@@ -385,7 +377,7 @@ export const getKisDomesticQuoteSnapshot = async (
   // The generic getKisQuoteSnapshot wrapper and the OHLC series path call getKisQuoteConfigReadiness()
   // with no options, so they remain fully fail-closed on production.
   const readiness = getKisQuoteConfigReadiness({
-    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+    allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 
@@ -485,7 +477,7 @@ export const getKisDomesticDailyOhlcSeries = async (
     query: Record<string, string>;
   },
   options: {
-    allowProductionChartAiBetaLiveQuotes?: boolean;
+    allowProductionChartAiLiveData?: boolean;
     allowProductionMarketDashboardLiveData?: boolean;
   } = {},
 ): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
@@ -505,7 +497,7 @@ export const getKisDomesticDailyOhlcSeries = async (
   // Production flag before lifting its hard block, so this remains fail-closed. Phase 3GJ adds an
   // independent, OR'd market-dashboard exception (see getKisQuoteConfigReadiness).
   const readiness = getKisQuoteConfigReadiness({
-    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+    allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
     allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
@@ -608,7 +600,7 @@ const isValidUsExchangeCode = (code: string) => US_EXCHANGE_CODES.includes(code)
 export const getKisOverseasDailyOhlcSeries = async (
   input: { symbol: string; exchangeCode: string; bymd?: string },
   options: {
-    allowProductionChartAiBetaLiveQuotes?: boolean;
+    allowProductionChartAiLiveData?: boolean;
     allowProductionMarketDashboardLiveData?: boolean;
   } = {},
 ): Promise<ProviderResult<{ symbol: string; points: KisDailyOhlcPoint[] }>> => {
@@ -627,7 +619,7 @@ export const getKisOverseasDailyOhlcSeries = async (
   }
 
   const readiness = getKisQuoteConfigReadiness({
-    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+    allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
     allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
@@ -708,7 +700,7 @@ export const getKisOverseasDailyOhlcSeries = async (
  */
 export const getKisOverseasQuoteSnapshot = async (
   input: { symbol: string; exchangeCode: string },
-  options: { allowProductionChartAiBetaLiveQuotes?: boolean } = {},
+  options: { allowProductionChartAiLiveData?: boolean } = {},
 ): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
@@ -722,7 +714,7 @@ export const getKisOverseasQuoteSnapshot = async (
   }
 
   const readiness = getKisQuoteConfigReadiness({
-    allowProductionChartAiBetaLiveQuotes: options.allowProductionChartAiBetaLiveQuotes === true,
+    allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 
