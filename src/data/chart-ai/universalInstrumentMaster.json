@@ -2,7 +2,7 @@
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
   "masterVersion": "hf3b-hf2-kis-16057",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-07-29",
+  "sourceAsOf": "2026-07-30",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -93783,8 +93783,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgc",
-        "vanguard world fund mega cap 300 index-etf"
+        "mgc"
       ],
       "active": true
     },
@@ -93810,8 +93809,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgk",
-        "vanguard world fund mega cap growth etf"
+        "mgk"
       ],
       "active": true
     },
@@ -93876,8 +93874,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mgv",
-        "vanguard world fund mega cap value etf"
+        "mgv"
       ],
       "active": true
     },
@@ -121287,7 +121284,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard small-cap etf",
         "vb"
       ],
       "active": true
@@ -121457,7 +121453,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard small-cap growth etf",
         "vbk"
       ],
       "active": true
@@ -121497,7 +121492,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard small-cap value etf",
         "vbr"
       ],
       "active": true
@@ -122564,7 +122558,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard mid-cap etf",
         "vo"
       ],
       "active": true
@@ -122578,7 +122571,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard mid-cap value etf",
         "voe"
       ],
       "active": true
@@ -122699,7 +122691,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard mid-cap growth etf",
         "vot"
       ],
       "active": true
@@ -123155,7 +123146,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard total stock market etf",
         "vanguard total",
         "vanguard total stock market etf",
         "vti",
@@ -123211,7 +123201,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard value etf",
         "vtv"
       ],
       "active": true
@@ -123264,7 +123253,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard growth etf",
         "vug"
       ],
       "active": true
@@ -123356,7 +123344,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "vanguard index funds vanguard large-cap etf",
         "vv"
       ],
       "active": true
@@ -146685,7 +146672,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "criteo s.a ads each repr 1 ord spons eur0.025",
         "crto"
       ],
       "active": true
@@ -165761,7 +165747,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "interprivate investment partners v inc",
         "ipvv"
       ],
       "active": true
