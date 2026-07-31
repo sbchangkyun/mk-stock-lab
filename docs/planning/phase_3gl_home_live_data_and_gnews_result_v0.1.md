@@ -10,12 +10,25 @@ Vercel environment mutation, any Supabase migration, or starting Phase 3GM.
 
 ## 1. Executive classification
 
-`IMPLEMENTED_PUSHED_PREVIEW_READY_HOME_MARKET_AND_GNEWS_VERIFICATION_PENDING`. All implementation and test
-work for this phase, including the **Phase 3GL-HF1 hotfix** (§1a) and the **Phase 3GL-HF2 hotfix** (§1b), is
-complete on branch `feature/phase-3gl-home-live-data-and-gnews` (created from `origin/main` at `0e53cde`, the
-Phase 3GK merge commit; PR #8). The full focused regression gate for this phase (3GL smoke/check, 3GJ
-smoke/check, `npm ls --depth=0`, `npm run build`, `git diff --check`) is green (see §5). No Production deploy,
-no Vercel environment mutation, and no Supabase migration have been performed by this phase.
+`IMPLEMENTED_PUSHED_PREVIEW_READY_HOME_MARKET_AND_GNEWS_FUNCTIONAL_VERIFICATION_OWNER_PENDING`. All
+implementation and test work for this phase, including the **Phase 3GL-HF1 hotfix** (§1a) and the **Phase
+3GL-HF2 hotfix** (§1b), is complete and pushed on branch `feature/phase-3gl-home-live-data-and-gnews`
+(created from `origin/main` at `0e53cde`, the Phase 3GK merge commit; PR #8, HF2 commit `354c454`). The full
+focused regression gate for this phase (3GL smoke/check, 3GJ smoke/check, `npm ls --depth=0`,
+`npm run build`, `git diff --check`) is green (see §5). The Vercel Preview deployment for `354c454` reached
+`Ready` (`gh api .../commits/354c454/statuses` reports the `Vercel` context as `success`, "Deployment has
+completed"; the `vercel[bot]` PR comment shows the `Ready` badge and the same commit/branch); the Netlify
+deploy-preview also reached `success`. The Preview app itself
+(`https://mkstocklab-git-feature-phase-8e5209-sbchangkyun-2946s-projects.vercel.app`) responds `302` to
+`https://vercel.com/sso-api?...` — i.e. it is gated behind Vercel Deployment Protection (SSO), consistent
+with every prior Preview in this project's history. This is a clean SSO redirect (not a platform/alias
+error page), which is the best available unauthenticated signal that the alias resolved correctly
+(`aliasError` effectively null), but it means the §15 functional checklist (Home 200 with real content,
+ticker length 9, snapshot length 4 with exact labels, no contradictory change directions, corrected basis
+label, GNews single-request/diagnostics/zero-or-nonzero-result behavior, no secret/raw-payload exposure)
+cannot be performed by this assistant without owner credentials, which this phase does not enter under any
+circumstance (see §2 of the governing spec). No Production deploy, no Vercel environment mutation, and no
+Supabase migration have been performed by this phase.
 
 ### 1b. HF2 hotfix — corrected quote direction and honest GNews empty-feed handling
 
@@ -219,8 +232,12 @@ own fetching.
 
 ## 6. Not yet performed (next steps in sequence)
 
-- HF2 commit and push, PR #8 body update, and new-Preview verification against the §15 checklist (task in
-  progress next).
+- Functional/authenticated verification of the HF2 Preview against the §15 checklist (Home content, ticker/
+  snapshot shape, quote-direction consistency, basis label, GNews single-request behavior and result count,
+  diagnostics, no secret exposure) is **Owner-pending**: the Preview is Vercel-SSO-protected, and this
+  assistant does not hold or enter owner credentials. Deployment-level metadata (state = Ready/success,
+  correct git branch/commit, no alias error) was verified without authentication; page/route content was
+  not.
 - Merging the PR, Production deployment, and Production QA are Owner-only items not performed by this phase.
 
 ## 7. Next phase

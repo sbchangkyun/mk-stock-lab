@@ -70,6 +70,11 @@
   articles.
 - Simplified `COMBINED_QUERY` from a 16-term to a conservative 8-term OR expression after the 16-term version
   returned zero live articles in Preview.
+- Committed (`354c454`) and pushed to PR #8. Vercel and Netlify Previews both reached `Ready`/`success`; the
+  Vercel Preview is Vercel-SSO-protected (as with every prior Preview in this project), so the §15 functional
+  checklist (Home content, ticker/snapshot shape, quote-direction consistency, GNews result count) is
+  Owner-pending — this assistant verified deployment state/branch/commit only, never page content, and never
+  entered owner credentials.
 - Extended `smoke:phase-3gl-home-live-data` to 117/117 and `check:phase-3gl-home-live-data` to 183/183; no
   ripple into `check:phase-3gj-live-market-dashboard` (still 159/159). PR title and scope unchanged.
 
