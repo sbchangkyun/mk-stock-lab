@@ -23,6 +23,8 @@ const HOME_LIVE_MARKET = join(root, 'src', 'lib', 'server', 'homeLiveMarket', 'h
 const LIVE_MARKET_ROUTE = join(root, 'src', 'pages', 'api', 'home', 'live-market.json.ts');
 const GNEWS_PROVIDER = join(root, 'src', 'lib', 'server', 'homeNews', 'gnewsHomeNewsProvider.mjs');
 const HOME_NEWS_ROUTE = join(root, 'src', 'pages', 'api', 'news', 'home.json.ts');
+const KIS_CLIENT = join(root, 'src', 'lib', 'server', 'providers', 'kisClient.ts');
+const KIS_SIGN_NORMALIZATION = join(root, 'src', 'lib', 'server', 'providers', 'kis', 'kisQuoteSignNormalization.ts');
 const HOME_CONTROLLER = join(root, 'src', 'lib', 'home-live-market', 'homeLiveMarketController.ts');
 const TICKER = join(root, 'src', 'components', 'Ticker.astro');
 const HOME_SNAPSHOT = join(root, 'src', 'components', 'HomeLiveMarketSnapshot.astro');
@@ -58,6 +60,7 @@ for (const [name, path] of [
   ['HomeLiveMarketSnapshot.astro', HOME_SNAPSHOT],
   ['HomeMarketNews.astro', HOME_NEWS],
   ['index.astro', HOME_PAGE],
+  ['kisQuoteSignNormalization.ts (HF2)', KIS_SIGN_NORMALIZATION],
 ]) {
   check(`${name} exists`, existsSync(path));
 }
@@ -66,6 +69,8 @@ const homeLiveMarket = readOr(HOME_LIVE_MARKET);
 const liveMarketRoute = readOr(LIVE_MARKET_ROUTE);
 const gnewsProvider = readOr(GNEWS_PROVIDER);
 const homeNewsRoute = readOr(HOME_NEWS_ROUTE);
+const kisClient = readOr(KIS_CLIENT);
+const kisSignNormalization = readOr(KIS_SIGN_NORMALIZATION);
 const homeController = readOr(HOME_CONTROLLER);
 const ticker = readOr(TICKER);
 const homeSnapshot = readOr(HOME_SNAPSHOT);
@@ -343,6 +348,105 @@ check('no second general stock-market data provider introduced', !/yfinance|alph
 check('no Supabase migration file referenced or added by this phase\'s new server code', !/supabase\/migrations/.test(allNewServerCode));
 check('the new server code never contains a literal API key value (only the env var name)',
   !/apikey['"]?\s*[:=]\s*['"][A-Za-z0-9_-]{16,}['"]/.test(allNewServerCode));
+
+// ---------------------------------------------------------------------------
+// Group 11: Phase 3GL-HF2 — KIS quote direction normalization (§3-§7)
+// ---------------------------------------------------------------------------
+log('--- Group 11: KIS quote direction normalization (HF2) ---');
+check(
+  'kisQuoteSignNormalization.ts exports normalizeKisQuoteSign (the single shared sign helper)',
+  /export const normalizeKisQuoteSign/.test(kisSignNormalization),
+);
+check(
+  'the sign helper input/output shape never includes a price field (it only ever resolves change/changePct)',
+  !/price\s*:/.test(kisSignNormalization),
+);
+check(
+  'the sign helper uses the documented 5-value KIS sign-code convention (1 upper-limit-up, 2 up, 3 unchanged, 4 lower-limit-down, 5 down)',
+  /'1':\s*1/.test(kisSignNormalization) && /'2':\s*1/.test(kisSignNormalization) && /'3':\s*0/.test(kisSignNormalization) &&
+    /'4':\s*-1/.test(kisSignNormalization) && /'5':\s*-1/.test(kisSignNormalization),
+);
+check('kisClient.ts imports the shared sign helper (no duplicated ad hoc sign logic)', /import\s*\{\s*normalizeKisQuoteSign\s*\}\s*from\s*['"]\.\/kis\/kisQuoteSignNormalization['"]/.test(kisClient));
+check(
+  'kisClient.ts uses the helper in both the domestic and overseas quote functions (never a second bespoke sign implementation)',
+  (kisClient.match(/normalizeKisQuoteSign\(/g) || []).length === 2,
+);
+check(
+  'getKisDomesticQuoteSnapshot parses the official prdy_vrss_sign direction code',
+  /prdy_vrss_sign/.test(kisClient),
+);
+check(
+  'getKisDomesticQuoteSnapshot never maps prdy_vrss/prdy_ctrt directly to change/changePct without going through the sign helper',
+  !/change:\s*parseNumericText\(payload\.output\.prdy_vrss\)/.test(kisClient),
+);
+check(
+  'getKisDomesticQuoteSnapshot cross-checks price against stck_sdpr (previous close) before trusting the resolved change amount',
+  /stck_sdpr/.test(kisClient) && /previousClose/.test(kisClient) && /expectedChange/.test(kisClient),
+);
+check(
+  'the price/previous-close consistency check nulls only the change field on conflict (changePct and price stay usable)',
+  /change\s*=\s*null;/.test(kisClient) && !/changePct\s*=\s*null;/.test(kisClient),
+);
+check('getKisOverseasQuoteSnapshot parses the official overseas sign direction code', /overseasSignCode/.test(kisClient) && /payload\.output\.sign/.test(kisClient));
+check(
+  'getKisOverseasQuoteSnapshot no longer maps diff/rate directly to change/changePct (the root cause of the observed sign-contradiction bug)',
+  !/change:\s*parseNumericText\(payload\.output\.diff\)/.test(kisClient) && !/changePct:\s*parseNumericText\(payload\.output\.rate\)/.test(kisClient),
+);
+check(
+  'getKisOverseasQuoteSnapshot builds its QuoteSnapshot from the normalized sign result, not the raw diff/rate fields',
+  /change:\s*normalizedOverseasSign\.change/.test(kisClient) && /changePct:\s*normalizedOverseasSign\.changePct/.test(kisClient),
+);
+
+log('--- Group 11: Home-layer defensive contradiction safety net + honest basis wording (§7-§8) ---');
+check(
+  'homeLiveMarket.ts no longer claims real-time delivery in the current-quote basis label',
+  !homeLiveMarket.includes('실시간(지연) 시세 기준'),
+);
+check(
+  'homeLiveMarket.ts uses the corrected 현재가 조회 기준 basis wording',
+  /CURRENT_QUOTE_BASIS_TEXT\s*=\s*'[^']*현재가 조회 기준'/.test(homeLiveMarket),
+);
+check(
+  'toCurrentQuoteItem compares Math.sign(changeAmount) against Math.sign(changePct) before trusting a non-null pair',
+  /Math\.sign\(changeAmount\)\s*!==\s*Math\.sign\(changePct\)/.test(homeLiveMarket),
+);
+check(
+  'the Home-layer safety net nulls changeAmount on conflict, never changePct (matches §7 exactly)',
+  /changeAmount:\s*directionsConflict\s*\?\s*null\s*:\s*changeAmount/.test(homeLiveMarket) &&
+    !/changePct:\s*directionsConflict\s*\?\s*null/.test(homeLiveMarket),
+);
+
+log('--- Group 11: GNews empty-feed diagnostics + zero-result contract (§9-§11) ---');
+check(
+  'gnewsHomeNewsProvider.mjs computes all three sanitized diagnostic counters',
+  /providerArticleCount/.test(gnewsProvider) && /normalizedArticleCount/.test(gnewsProvider) && /returnedArticleCount/.test(gnewsProvider),
+);
+check(
+  'diagnostics counters are plain integers derived from array lengths, never raw article content',
+  /providerArticleCount\s*=\s*result\.articles\.length/.test(gnewsProvider) &&
+    /normalizedArticleCount\s*=\s*normalized\.length/.test(gnewsProvider) &&
+    /returnedArticleCount\s*=\s*articles\.length/.test(gnewsProvider),
+);
+check('a zero-return feed reports the honest NEWS_NO_RESULTS code (never an indistinguishable ok:true with an empty array)', /NEWS_NO_RESULTS/.test(gnewsProvider));
+check(
+  'the zero-result branch is keyed on returnedArticleCount === 0 (post-normalization, not just a raw-provider-empty check)',
+  /returnedArticleCount\s*===\s*0/.test(gnewsProvider),
+);
+check('a NEWS_NO_RESULTS outcome is cached like a success (preserves the one-request-per-window invariant)', /cache\s*=\s*\{\s*value,\s*storedAtMs:\s*now\(\)\s*\}/.test(gnewsProvider));
+check(
+  'the combined query is the simplified conservative 8-term set (§10), not the old 16-term expression',
+  gnewsProvider.includes("'코스피 OR 코스닥 OR 국내증시 OR 뉴욕증시 OR 나스닥 OR 환율 OR 금리 OR 유가'"),
+);
+check('home.json.ts route surfaces diagnostics on success responses', /diagnostics:\s*result\.diagnostics/.test(homeNewsRoute));
+check(
+  'home.json.ts route only attaches diagnostics to an error response when present (never fabricates one for NEWS_NOT_CONFIGURED/NEWS_UNAUTHORIZED/etc)',
+  /result\.diagnostics\s*\n?\s*\?\s*\{[\s\S]{0,80}diagnostics:\s*result\.diagnostics/.test(homeNewsRoute),
+);
+check(
+  'no diagnostics-related code path ever references a raw article title/content/query/api-key field',
+  !/diagnostics[\s\S]{0,10}(apiKey|COMBINED_QUERY|rawArticle|\.title\b|\.content\b)/.test(gnewsProvider) &&
+    !/diagnostics[\s\S]{0,10}(apiKey|rawArticle|\.title\b|\.content\b)/.test(homeNewsRoute),
+);
 
 // ---------------------------------------------------------------------------
 // Group 10: package.json wiring

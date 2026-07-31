@@ -17,8 +17,11 @@ const HOME_NEWS_TTL_MS = 5 * 60 * 1000;
 const MAX_ARTICLES = 6;
 const PROVIDER_MAX = 20;
 
-const COMBINED_QUERY =
-  '코스피 OR 코스닥 OR 국내증시 OR 나스닥 OR 다우존스 OR 뉴욕증시 OR 환율 OR 원달러 OR 기준금리 OR 한국은행 OR 연준 OR FOMC OR 유가 OR 금값 OR 원자재 OR 증시';
+// Phase 3GL-HF2 §10: simplified to a conservative 8-term OR expression after the 16-term version
+// returned zero articles in Preview -- kept well within the provider's practical query-length
+// tolerance while still covering the same core market-news surface (domestic stocks, overseas
+// stocks, FX, rates, oil).
+const COMBINED_QUERY = '코스피 OR 코스닥 OR 국내증시 OR 뉴욕증시 OR 나스닥 OR 환율 OR 금리 OR 유가';
 
 const TRACKING_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'ref'];
 
@@ -212,10 +215,30 @@ export const getHomeNewsFeed = async (deps = {}) => {
     return { ok: false, code: result.code, generatedAt: new Date(now()).toISOString(), articles: [] };
   }
 
+  // Phase 3GL-HF2 §9: sanitized, non-secret counts only -- never the raw provider payload, query, or
+  // rejected article contents -- so a zero-result feed is distinguishable from a genuinely broken one.
+  const providerArticleCount = result.articles.length;
   const normalized = result.articles.map(normalizeGnewsHomeArticle).filter(Boolean);
+  const normalizedArticleCount = normalized.length;
   const articles = dedupeAndRankHomeArticles(normalized, MAX_ARTICLES);
+  const returnedArticleCount = articles.length;
+  const diagnostics = { providerArticleCount, normalizedArticleCount, returnedArticleCount };
 
-  const value = { ok: true, code: 'NONE', generatedAt: new Date(now()).toISOString(), articles };
+  // Phase 3GL-HF2 §11: a successful provider call that yields no usable article is not an
+  // indistinguishable "ok" live feed -- report it honestly so the client shows its unavailable state.
+  if (returnedArticleCount === 0) {
+    const value = {
+      ok: false,
+      code: 'NEWS_NO_RESULTS',
+      generatedAt: new Date(now()).toISOString(),
+      articles: [],
+      diagnostics,
+    };
+    cache = { value, storedAtMs: now() };
+    return { ...value };
+  }
+
+  const value = { ok: true, code: 'NONE', generatedAt: new Date(now()).toISOString(), articles, diagnostics };
   cache = { value, storedAtMs: now() };
   return { ...value };
 };

@@ -49,6 +49,30 @@
   `HomeLiveMarketSnapshot.astro`'s new zero-fetch, broadcast-consumer architecture. PR title unchanged
   ("Phase 3GL: add live Home data and GNews feed").
 
+### HF2 hotfix - 2026-07-31: corrected quote direction and honest GNews empty-feed handling
+
+- Added a shared pure module `kisQuoteSignNormalization.ts` (`normalizeKisQuoteSign`) used by both
+  `getKisDomesticQuoteSnapshot` and `getKisOverseasQuoteSnapshot`; priority is the official KIS
+  direction/sign code first (`prdy_vrss_sign` domestic, `sign` overseas), then agreeing raw signs, then a
+  guarded fallback that applies a signed non-zero pct's direction to an unsigned amount. Fixes the
+  observed Preview bug where the overseas `diff` field (an unsigned magnitude per the official KIS contract)
+  was being mapped directly to `change` as if already signed, producing sign-contradictory Dollar Index/WTI
+  Oil quotes.
+- Domestic quote now cross-checks the resolved change against `stck_prpr - stck_sdpr`, nulling only `change`
+  (never `changePct` or `price`) on a material mismatch.
+- Added a final independent contradiction check in `homeLiveMarket.ts`'s `toCurrentQuoteItem` (Home-layer
+  safety net) that nulls only `changeAmount` when directions conflict.
+- Replaced the inaccurate `실시간(지연) 시세 기준` basis label with `KIS 현재가 조회 기준`; the
+  `dataBasis: 'current_quote'` enum is unchanged.
+- `getHomeNewsFeed` now attaches sanitized `{providerArticleCount, normalizedArticleCount,
+  returnedArticleCount}` diagnostics to every successful/zero-result response, and returns an honest `{ok:
+  false, code: 'NEWS_NO_RESULTS'}` (cached, HTTP 200) instead of an indistinguishable `ok: true` with zero
+  articles.
+- Simplified `COMBINED_QUERY` from a 16-term to a conservative 8-term OR expression after the 16-term version
+  returned zero live articles in Preview.
+- Extended `smoke:phase-3gl-home-live-data` to 117/117 and `check:phase-3gl-home-live-data` to 183/183; no
+  ripple into `check:phase-3gj-live-market-dashboard` (still 159/159). PR title and scope unchanged.
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization

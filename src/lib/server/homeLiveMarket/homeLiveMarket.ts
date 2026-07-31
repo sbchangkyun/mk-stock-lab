@@ -129,7 +129,10 @@ const toYyyymmdd = (value: string | null | undefined): string | null => {
   return `${match[1]}${match[2]}${match[3]}`;
 };
 
-const CURRENT_QUOTE_BASIS_TEXT = '실시간(지연) 시세 기준';
+// Phase 3GL-HF2: the current-price quote endpoints are current-price SNAPSHOT reads (called once per
+// Home request), not the KIS WebSocket real-time tick stream -- '조회 기준' rather than '실시간' avoids
+// implying tick-by-tick real-time delivery.
+const CURRENT_QUOTE_BASIS_TEXT = 'KIS 현재가 조회 기준';
 const LATEST_CLOSE_BASIS_TEXT = '최근 거래일 종가 기준';
 
 const unavailableItem = (entry: HomeTickerRegistryEntry): HomeLiveMarketItem => ({
@@ -147,21 +150,39 @@ const unavailableItem = (entry: HomeTickerRegistryEntry): HomeLiveMarketItem => 
   freshness: 'unavailable',
 });
 
-/** Maps a successful current-price QuoteSnapshot into a Home ticker item. */
-const toCurrentQuoteItem = (entry: HomeTickerRegistryEntry, quote: QuoteSnapshot): HomeLiveMarketItem => ({
-  id: entry.id,
-  label: entry.label,
-  status: 'ok',
-  price: round2(quote.price),
-  changeAmount: quote.change !== null ? round2(quote.change) : null,
-  changePct: quote.changePct,
-  asOf: toYyyymmdd(quote.asOf) ?? toYyyymmdd(new Date(quote.asOf).toISOString()),
-  currency: entry.currency,
-  basisLabel: `${entry.proxyLabel} · ${CURRENT_QUOTE_BASIS_TEXT}`,
-  periodLabel: entry.periodLabel,
-  dataBasis: 'current_quote',
-  freshness: 'fresh',
-});
+/**
+ * Maps a successful current-price QuoteSnapshot into a Home ticker item.
+ *
+ * Phase 3GL-HF2 §7: the provider layer (kisClient.ts) is the authoritative source of a trustworthy
+ * sign, but this is a final defensive check before the value reaches the browser -- if the two
+ * normalized fields still disagree in direction, the amount is nulled rather than shipped
+ * contradictory. changePct is kept as-is since it already came from the provider's normalization.
+ */
+const toCurrentQuoteItem = (entry: HomeTickerRegistryEntry, quote: QuoteSnapshot): HomeLiveMarketItem => {
+  const changeAmount = quote.change !== null ? round2(quote.change) : null;
+  const changePct = quote.changePct;
+  const directionsConflict =
+    changeAmount !== null &&
+    changePct !== null &&
+    changeAmount !== 0 &&
+    changePct !== 0 &&
+    Math.sign(changeAmount) !== Math.sign(changePct);
+
+  return {
+    id: entry.id,
+    label: entry.label,
+    status: 'ok',
+    price: round2(quote.price),
+    changeAmount: directionsConflict ? null : changeAmount,
+    changePct,
+    asOf: toYyyymmdd(quote.asOf) ?? toYyyymmdd(new Date(quote.asOf).toISOString()),
+    currency: entry.currency,
+    basisLabel: `${entry.proxyLabel} · ${CURRENT_QUOTE_BASIS_TEXT}`,
+    periodLabel: entry.periodLabel,
+    dataBasis: 'current_quote',
+    freshness: 'fresh',
+  };
+};
 
 const mapOhlcvFreshness = (freshness: ReturnType<typeof resolveFreshnessDiagnosis>['freshness']): HomeFreshness => {
   if (freshness === 'fresh') return 'fresh';

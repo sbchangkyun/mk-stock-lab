@@ -10,13 +10,60 @@ Vercel environment mutation, any Supabase migration, or starting Phase 3GM.
 
 ## 1. Executive classification
 
-`IMPLEMENTED_LOCAL_REGRESSION_GATE_GREEN_COMMIT_PUSH_PR_VERIFICATION_PENDING`. All implementation and new
-test-suite work for this phase, including the **Phase 3GL-HF1 hotfix** (§1a), is complete on branch
-`feature/phase-3gl-home-live-data-and-gnews` (created from `origin/main` at `0e53cde`, the Phase 3GK merge
-commit). The full focused regression gate for this phase (3GL smoke/check, 3GJ smoke/check, `npm ls
---depth=0`, `npm run build`, `git diff --check`) is green (see §5). No commit, no push, and no PR have been
-created yet — that is the next task in sequence (§6). No Production deploy, no Vercel environment mutation,
-and no Supabase migration have been performed by this phase.
+`IMPLEMENTED_PUSHED_PREVIEW_READY_HOME_MARKET_AND_GNEWS_VERIFICATION_PENDING`. All implementation and test
+work for this phase, including the **Phase 3GL-HF1 hotfix** (§1a) and the **Phase 3GL-HF2 hotfix** (§1b), is
+complete on branch `feature/phase-3gl-home-live-data-and-gnews` (created from `origin/main` at `0e53cde`, the
+Phase 3GK merge commit; PR #8). The full focused regression gate for this phase (3GL smoke/check, 3GJ
+smoke/check, `npm ls --depth=0`, `npm run build`, `git diff --check`) is green (see §5). No Production deploy,
+no Vercel environment mutation, and no Supabase migration have been performed by this phase.
+
+### 1b. HF2 hotfix — corrected quote direction and honest GNews empty-feed handling
+
+Phase 3GL-HF2 was a narrow, release-blocking correction of two bugs observed on the HF1 Preview: KIS quote
+items occasionally showed a positive change amount alongside a negative change percentage (or vice versa),
+and a genuinely empty GNews result was indistinguishable from a successful feed (`ok: true, articleCount: 0`).
+Scope and PR title are unchanged from HF1.
+
+- **Shared KIS sign-normalization helper**: new pure module
+  `src/lib/server/providers/kis/kisQuoteSignNormalization.ts` exports `normalizeKisQuoteSign`, a single
+  deterministic helper used by both the domestic and overseas quote functions. Priority order: (1) the
+  official KIS direction/sign code (`prdy_vrss_sign` domestic, `sign` overseas — the shared 5-value
+  convention: `1` upper-limit-up, `2` up, `3` unchanged, `4` lower-limit-down, `5` down) always wins; (2)
+  when no sign code is available, already-agreeing raw amount/pct signs pass through unchanged; (3) an
+  unsigned amount paired with a signed, non-zero pct takes the pct's sign (this is the exact shape of both
+  observed Preview bugs); (4) both-null or single-null fields pass through without fabrication. Verified by a
+  12-case invariant sweep: `change` and `changePct` never land on opposite non-zero signs.
+- **Domestic quote correction**: `getKisDomesticQuoteSnapshot` now parses `prdy_vrss_sign`, resolves
+  `change`/`changePct` through the shared helper (no more direct `prdy_vrss`/`prdy_ctrt` mapping), and
+  cross-checks the resolved change against `stck_prpr - stck_sdpr` (current price minus previous close); on a
+  material mismatch only the `change` field is nulled — `changePct` and `price` stay usable. No movement is
+  ever rejected merely for being large.
+- **Overseas quote correction**: `getKisOverseasQuoteSnapshot` now parses the official overseas `sign` field
+  (same 5-value convention as domestic) and resolves through the same shared helper, replacing the previous
+  direct `diff -> change` / `rate -> changePct` mapping that was the root cause of the Dollar Index and WTI
+  Oil sign-contradiction bugs (`diff` is an unsigned magnitude per the official KIS overseas contract, but was
+  being treated as already-signed).
+- **Home-layer defensive safety net**: `toCurrentQuoteItem` in `homeLiveMarket.ts` adds a final,
+  independent contradiction check (`Math.sign(changeAmount) !== Math.sign(changePct)` when both are non-null
+  and non-zero) that nulls only `changeAmount` — never `changePct`, and never a silent value inversion.
+- **Honest basis wording**: the current-quote basis label changed from the inaccurate `실시간(지연) 시세
+  기준` ("real-time (delayed) quote basis") to `KIS 현재가 조회 기준` ("KIS current-price lookup basis"); the
+  `dataBasis: 'current_quote'` enum value is unchanged.
+- **GNews empty-feed diagnosis and honest zero-result contract**: `getHomeNewsFeed` now computes three
+  sanitized integer counters — `providerArticleCount` (raw provider array length), `normalizedArticleCount`
+  (survivors of `normalizeGnewsHomeArticle`), `returnedArticleCount` (post-dedupe/cap final count) — attached
+  as `diagnostics` on every successful and zero-result response (never on a provider-failure response, where
+  there is nothing meaningful to count). When `returnedArticleCount === 0`, the route now returns `{ ok:
+  false, code: 'NEWS_NO_RESULTS', diagnostics }` (HTTP 200, `no-store`) instead of an indistinguishable
+  `ok: true` with an empty array; this zero-result outcome is still cached for the same 5-minute window as a
+  success, preserving the one-provider-request-per-window invariant.
+- **GNews query simplification**: `COMBINED_QUERY` was reduced from a 16-term OR expression to a conservative
+  8-term set — `코스피 OR 코스닥 OR 국내증시 OR 뉴욕증시 OR 나스닥 OR 환율 OR 금리 OR 유가` — after the
+  16-term version returned zero articles against the live provider in Preview; still exactly one combined
+  query per cache window, no per-category fan-out, no second fallback provider request, no LLM, no fixture
+  fallback.
+- No new KIS endpoint, no new KIS TR ID, no second market-data provider, no second FX provider, and no
+  account/order/balance/trading capability were introduced.
 
 ### 1a. HF1 hotfix — corrected live-data contract
 
@@ -110,8 +157,11 @@ own fetching.
 ## 4. New test suites
 
 - `scripts/smoke_phase_3gl_home_live_data.mjs` (bundles `scripts/home_live_data_testsrc.ts` via esbuild, no
-  network, no Supabase, no env read) — **86/86 passed** (extended in HF1 to cover quote-first resolution and
-  the sequential-not-parallel quote/OHLCV call order). Covers `getHomeLiveMarket`: full success (9/9
+  network, no Supabase, no env read) — **117/117 passed** (extended in HF1 to cover quote-first resolution and
+  the sequential-not-parallel quote/OHLCV call order; extended in HF2 to add direct unit coverage of
+  `normalizeKisQuoteSign` — including named reproductions of both observed Preview bugs — plus the
+  Home-layer contradiction safety-net test and the GNews diagnostics/zero-result/cache-recovery tests).
+  Covers `getHomeLiveMarket`: full success (9/9
   ticker, snapshot exactly `[kospi, kosdaq, sp500, nasdaq100]` in order, `usdkrw` price sourced from FX not
   OHLCV, every item carries a non-empty `basisLabel`); a successful current-quote resolution short-circuits
   before any OHLCV call; partial KIS failure with FX still available (ticker degrades individual items to
@@ -123,17 +173,22 @@ own fetching.
   dedupe-and-rank behavior, and `getHomeNewsFeed`'s not-configured/401/429/malformed-body/success/cache-hit/
   cache-expiry paths (including a direct assertion that the fake API key string is never echoed in any
   returned JSON).
-- `scripts/check_phase_3gl_home_live_data_contract.mjs` (static, no-network) — **157/157 passed** (extended
+- `scripts/check_phase_3gl_home_live_data_contract.mjs` (static, no-network) — **183/183 passed** (extended
   in HF1 to cover the quote-first resolver order, the single `buildSnapshot` computation, the
   `homeLiveMarketController.ts` single-owner contract, `Layout.astro` wiring, the pure-consumer contract for
   `Ticker.astro`/`HomeLiveMarketSnapshot.astro`, the GNews normalization hardening, and the
-  `HomeMarketNews.astro` §12 retry-preservation behavior). Asserts the closed 9-item registry and 4-item
-  snapshot subset, the orchestration boundary (reuse only, no new KIS/FX surface, no direct KIS transport
-  import — only the two named current-quote functions), the `live-market.json` route's closed
-  query/cache/error contract, the GNews provider's key handling and no-fixture-fallback guarantee, the
-  `home.json` route's contract, all client components' polling/localStorage/cache-bypass/visibility/
-  in-flight/idempotent-setup discipline, `HomeMarketNews.astro`'s XSS-safe rendering, Home page wiring,
-  absence of prohibited surfaces, and `package.json` script wiring.
+  `HomeMarketNews.astro` §12 retry-preservation behavior; extended in HF2 with a new "Group 11" section
+  asserting the shared `normalizeKisQuoteSign` helper's shape and sign-code convention, both KIS quote
+  functions' use of it (including the price/previous-close consistency check and the overseas `sign`-field
+  parsing), the Home-layer contradiction safety net, the corrected basis wording, the GNews diagnostics
+  counters and `NEWS_NO_RESULTS` zero-result contract, and the simplified 8-term combined query). Asserts the
+  closed 9-item registry and 4-item snapshot subset, the orchestration boundary (reuse only, no new KIS/FX
+  surface, no direct KIS transport import — only the two named current-quote functions), the
+  `live-market.json` route's closed query/cache/error contract, the GNews provider's key handling and
+  no-fixture-fallback guarantee, the `home.json` route's contract, all client components'
+  polling/localStorage/cache-bypass/visibility/in-flight/idempotent-setup discipline,
+  `HomeMarketNews.astro`'s XSS-safe rendering, Home page wiring, absence of prohibited surfaces, and
+  `package.json` script wiring.
 - Four checker-authoring false positives were found and fixed during authoring (not source defects): a URL
   match regex that captured only the `https://` protocol prefix instead of the full literal (fixed to capture
   the full URL before checking it points at `frankfurter`); an overly broad `header` word match that flagged
@@ -146,8 +201,8 @@ own fetching.
 
 ## 5. Regression gate
 
-- `npm run smoke:phase-3gl-home-live-data` — 86/86 passed.
-- `npm run check:phase-3gl-home-live-data` — 157/157 passed.
+- `npm run smoke:phase-3gl-home-live-data` — 117/117 passed (HF2).
+- `npm run check:phase-3gl-home-live-data` — 183/183 passed (HF2).
 - `npm run smoke:phase-3gj-live-market-dashboard` — 162/162 passed.
 - `npm run check:phase-3gj-live-market-dashboard` — 159/159 passed. Two ripples fixed across this phase and
   HF1, both to the checker only, never to the tested implementation: (1) the original §2 migration caused
@@ -155,7 +210,8 @@ own fetching.
   route while still requiring exactly one script-level `fetch()` call; (2) HF1's controller unification
   (§1a) went further and removed that component's own `fetch()` call entirely, so the same assertion was
   widened again to also accept zero `fetch()` calls when the component instead consumes the shared
-  controller's broadcast (`getLatestHomeLiveMarketPayload`/`HOME_LIVE_MARKET_EVENT`).
+  controller's broadcast (`getLatestHomeLiveMarketPayload`/`HOME_LIVE_MARKET_EVENT`). HF2 introduced no
+  further ripple into this checker.
 - `npm ls --depth=0` — clean, no unmet/invalid dependency.
 - `npm run build` — Astro/Vite/Vercel-adapter build completed successfully, no error.
 - `git diff --check` — exit 0 (only benign CRLF/LF line-ending advisories, no conflict markers, no
@@ -163,10 +219,8 @@ own fetching.
 
 ## 6. Not yet performed (next steps in sequence)
 
-- Pre-commit inspection (git status/diff/staged-diff review, staged secret scan, staged NUL-byte scan), one
-  commit ("Phase 3GL: add live Home data and GNews feed"), push `feature/phase-3gl-home-live-data-and-gnews`,
-  open one PR to `main`, wait for Vercel Preview `READY` and Netlify not-red, and perform the minimum Preview
-  checklist — explicitly without merging (task in progress next).
+- HF2 commit and push, PR #8 body update, and new-Preview verification against the §15 checklist (task in
+  progress next).
 - Merging the PR, Production deployment, and Production QA are Owner-only items not performed by this phase.
 
 ## 7. Next phase

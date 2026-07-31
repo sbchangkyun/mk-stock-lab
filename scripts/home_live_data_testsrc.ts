@@ -12,6 +12,7 @@
 import { getHomeLiveMarket } from '../src/lib/server/homeLiveMarket/homeLiveMarket';
 import type { LongHistoryOhlcvResult } from '../src/lib/server/chart-ai/universalOhlcvProvider';
 import type { ProviderResult, QuoteSnapshot } from '../src/lib/server/providers/types';
+import { normalizeKisQuoteSign } from '../src/lib/server/providers/kis/kisQuoteSignNormalization';
 import {
   getHomeNewsFeed,
   normalizeGnewsHomeArticle,
@@ -375,6 +376,147 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
 }
 
 // =====================================================================================
+// Group 1b (Phase 3GL-HF2 §4/§6/§12): normalizeKisQuoteSign -- direct unit tests of the shared
+// direction/sign helper. Covers the exact bug scenarios observed in Preview (Dollar Index and WTI
+// Oil reporting a positive changeAmount alongside a negative changePct) plus the full required
+// scenario matrix: rising, falling, unchanged, unsigned-amount conflicts (both directions), a sign
+// code that overrides a conflicting raw percentage, a missing sign field, and malformed/null input.
+// =====================================================================================
+{
+  check(
+    'normalizeKisQuoteSign: rising (sign code "2") applies a positive direction to both fields',
+    JSON.stringify(normalizeKisQuoteSign({ rawAmount: 3500, rawPct: 1.31, signCode: '2' })) ===
+      JSON.stringify({ change: 3500, changePct: 1.31 }),
+  );
+  check(
+    'normalizeKisQuoteSign: falling (sign code "5") applies a negative direction to both fields',
+    JSON.stringify(normalizeKisQuoteSign({ rawAmount: 1.83, rawPct: 1.42, signCode: '5' })) ===
+      JSON.stringify({ change: -1.83, changePct: -1.42 }),
+  );
+  check(
+    'normalizeKisQuoteSign: unchanged (sign code "3") zeroes both fields regardless of raw magnitude',
+    JSON.stringify(normalizeKisQuoteSign({ rawAmount: 0.28, rawPct: 0, signCode: '3' })) ===
+      JSON.stringify({ change: 0, changePct: 0 }),
+  );
+  {
+    // Reproduces the observed Dollar Index bug: unsigned/mismarked positive amount + genuinely
+    // negative percentage, no usable sign code -- the guarded fallback trusts the percentage's sign.
+    const dollarIndexBug = normalizeKisQuoteSign({ rawAmount: 0.28, rawPct: -0.99, signCode: null });
+    check('normalizeKisQuoteSign: unsigned amount + negative pct -> amount takes the pct sign (Dollar Index bug case)', dollarIndexBug.change === -0.28);
+    check('normalizeKisQuoteSign: unsigned amount + negative pct -> pct is preserved as-is', dollarIndexBug.changePct === -0.99);
+  }
+  {
+    // Reproduces the observed WTI Oil bug: unsigned/mismarked negative amount + genuinely positive
+    // percentage.
+    const wtiBug = normalizeKisQuoteSign({ rawAmount: -1.83, rawPct: 1.42, signCode: undefined });
+    check('normalizeKisQuoteSign: unsigned amount + positive pct -> amount takes the pct sign (WTI Oil bug case)', wtiBug.change === 1.83);
+    check('normalizeKisQuoteSign: unsigned amount + positive pct -> pct is preserved as-is', wtiBug.changePct === 1.42);
+  }
+  {
+    // A recognized sign code always wins over a raw percentage that disagrees with it.
+    const signCodeWins = normalizeKisQuoteSign({ rawAmount: 900, rawPct: 0.4, signCode: '4' });
+    check('normalizeKisQuoteSign: a recognized sign code overrides a conflicting raw percentage sign', signCodeWins.change === -900 && signCodeWins.changePct === -0.4);
+  }
+  {
+    // Missing sign field, but the two raw fields already agree in sign -- passed through unchanged.
+    const agreeing = normalizeKisQuoteSign({ rawAmount: -450, rawPct: -0.61, signCode: null });
+    check('normalizeKisQuoteSign: missing sign code, agreeing raw signs -> passthrough unchanged', agreeing.change === -450 && agreeing.changePct === -0.61);
+  }
+  check(
+    'normalizeKisQuoteSign: only one raw field present (other null) -> passthrough, nothing to contradict',
+    JSON.stringify(normalizeKisQuoteSign({ rawAmount: null, rawPct: 5, signCode: null })) === JSON.stringify({ change: null, changePct: 5 }),
+  );
+  check(
+    'normalizeKisQuoteSign: both raw fields null and no sign code -> both null (never fabricated)',
+    JSON.stringify(normalizeKisQuoteSign({ rawAmount: null, rawPct: null, signCode: null })) === JSON.stringify({ change: null, changePct: null }),
+  );
+  check(
+    'normalizeKisQuoteSign: an unrecognized sign code string falls back to the raw-field comparison',
+    JSON.stringify(normalizeKisQuoteSign({ rawAmount: 10, rawPct: 0.5, signCode: 'X' })) === JSON.stringify({ change: 10, changePct: 0.5 }),
+  );
+
+  // Invariant sweep: across every case above (plus a few extra), change and changePct must never end
+  // up on opposite non-zero signs.
+  const invariantCases: Array<{ rawAmount: number | null; rawPct: number | null; signCode: string | null | undefined }> = [
+    { rawAmount: 3500, rawPct: 1.31, signCode: '2' },
+    { rawAmount: 1.83, rawPct: 1.42, signCode: '5' },
+    { rawAmount: 0.28, rawPct: 0, signCode: '3' },
+    { rawAmount: 0.28, rawPct: -0.99, signCode: null },
+    { rawAmount: -1.83, rawPct: 1.42, signCode: undefined },
+    { rawAmount: 900, rawPct: 0.4, signCode: '4' },
+    { rawAmount: -450, rawPct: -0.61, signCode: null },
+    { rawAmount: null, rawPct: 5, signCode: null },
+    { rawAmount: null, rawPct: null, signCode: null },
+    { rawAmount: 10, rawPct: 0.5, signCode: 'X' },
+    { rawAmount: 0, rawPct: -2.5, signCode: null },
+    { rawAmount: -2.5, rawPct: 0, signCode: null },
+  ];
+  const invariantHolds = invariantCases.every(({ rawAmount, rawPct, signCode }) => {
+    const { change, changePct } = normalizeKisQuoteSign({ rawAmount, rawPct, signCode });
+    if (change === null || changePct === null || change === 0 || changePct === 0) return true;
+    return Math.sign(change) === Math.sign(changePct);
+  });
+  check('normalizeKisQuoteSign: invariant holds across every case -- change and changePct never land on opposite non-zero signs', invariantHolds);
+}
+
+// =====================================================================================
+// Group 1c (Phase 3GL-HF2 §7/§12): Home-layer defensive contradiction safety net -- even if a
+// provider-layer normalization bug somehow slipped a contradictory pair through, toCurrentQuoteItem
+// (exercised end-to-end via getHomeLiveMarket) must null changeAmount rather than ship it, and the
+// basis label must no longer claim real-time delivery.
+// =====================================================================================
+{
+  const result = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      // Deliberately contradictory: positive changeAmount paired with a negative changePct, as if a
+      // provider-layer bug had somehow slipped through despite kisClient.ts's own normalization.
+      getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, -1.31, '2026-07-24T06:00:00Z'),
+      getKisOverseasQuoteSnapshot: async () => okQuoteResult(552.4, -1.2, 0.22, '2026-07-24T20:00:00Z'),
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  const kisItems = result.ticker.filter((item) => item.id !== 'usdkrw');
+  check(
+    'getHomeLiveMarket: Home-layer safety net nulls changeAmount when directions conflict',
+    kisItems.every((item) => item.changeAmount === null),
+  );
+  check(
+    'getHomeLiveMarket: Home-layer safety net preserves changePct even when changeAmount is nulled',
+    kisItems.every((item) => item.changePct !== null),
+  );
+  check(
+    'getHomeLiveMarket: contradictory items still carry dataBasis current_quote (safety net does not degrade the whole item)',
+    kisItems.every((item) => item.dataBasis === 'current_quote'),
+  );
+  check(
+    'getHomeLiveMarket: basis label no longer claims real-time delivery',
+    kisItems.every((item) => item.basisLabel.includes('현재가 조회 기준') && !item.basisLabel.includes('실시간(지연) 시세 기준')),
+  );
+
+  // A non-contradictory quote success (Group 6 above) must NOT have its changeAmount nulled -- the
+  // safety net only fires on a genuine sign conflict.
+  const nonContradictory = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, 1.31, '2026-07-24T06:00:00Z'),
+      getKisOverseasQuoteSnapshot: async () => okQuoteResult(552.4, -1.2, -0.22, '2026-07-24T20:00:00Z'),
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check(
+    'getHomeLiveMarket: agreeing-direction quotes keep a non-null changeAmount (safety net does not over-fire)',
+    nonContradictory.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.changeAmount !== null),
+  );
+}
+
+// =====================================================================================
 // Group 2: gnewsHomeNewsProvider.mjs -- normalize / dedupe / classify / cache / not-configured
 // =====================================================================================
 
@@ -541,6 +683,73 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
 
   const resultAfterTtl = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: successFetch, now: () => FIXED_NOW_MS + 6 * 60 * 1000 });
   check('getHomeNewsFeed: a call after the TTL expires triggers a fresh provider fetch', successCalls === 2 && resultAfterTtl.ok === true);
+
+  // Phase 3GL-HF2 §9/§11/§12: sanitized diagnostics counts and the NEWS_NO_RESULTS zero-result
+  // contract. Every `now()` below is spaced well beyond the 5-minute TTL from any prior call in this
+  // block so each exercises a genuine fresh provider fetch rather than a cache hit.
+  check('getHomeNewsFeed: provider failure (401) never carries a diagnostics field (nothing meaningful to count)', !('diagnostics' in resultUnauthorized));
+  check('getHomeNewsFeed: provider failure (429) never carries a diagnostics field', !('diagnostics' in resultRateLimited));
+  check('getHomeNewsFeed: malformed provider body never carries a diagnostics field', !('diagnostics' in resultMalformed));
+  check('getHomeNewsFeed: absent key never carries a diagnostics field', !('diagnostics' in resultNoKey));
+  check(
+    'getHomeNewsFeed: success result carries accurate sanitized diagnostics counts (2 provider, 2 normalized, 2 returned)',
+    resultSuccess.diagnostics?.providerArticleCount === 2 &&
+      resultSuccess.diagnostics?.normalizedArticleCount === 2 &&
+      resultSuccess.diagnostics?.returnedArticleCount === 2,
+  );
+
+  const providerZeroFetch = async () => ({ ok: true, status: 200, json: async () => ({ articles: [] }) }) as unknown as Response;
+  const resultProviderZero = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: providerZeroFetch,
+    now: () => FIXED_NOW_MS + 20 * 60 * 1000,
+  });
+  check('getHomeNewsFeed: provider itself returns zero articles -> ok false with NEWS_NO_RESULTS', resultProviderZero.ok === false && resultProviderZero.code === 'NEWS_NO_RESULTS');
+  check(
+    'getHomeNewsFeed: provider-zero diagnostics are all zero',
+    resultProviderZero.diagnostics?.providerArticleCount === 0 &&
+      resultProviderZero.diagnostics?.normalizedArticleCount === 0 &&
+      resultProviderZero.diagnostics?.returnedArticleCount === 0,
+  );
+  check('getHomeNewsFeed: NEWS_NO_RESULTS response uses HTTP-200-style ok:false shape, not a thrown error', typeof resultProviderZero.code === 'string');
+
+  const allRejectedFetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      articles: [
+        { title: '   ', url: 'https://example.com/only-whitespace-title-never-survives-normalization' },
+        { title: 'missing url entirely -- this exact text must never leak into diagnostics or a response' },
+      ],
+    }),
+  }) as unknown as Response;
+  const resultAllRejected = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: allRejectedFetch,
+    now: () => FIXED_NOW_MS + 40 * 60 * 1000,
+  });
+  check('getHomeNewsFeed: provider returns articles but none survive normalization -> NEWS_NO_RESULTS', resultAllRejected.ok === false && resultAllRejected.code === 'NEWS_NO_RESULTS');
+  check(
+    'getHomeNewsFeed: all-rejected diagnostics report the provider count but zero normalized/returned',
+    resultAllRejected.diagnostics?.providerArticleCount === 2 &&
+      resultAllRejected.diagnostics?.normalizedArticleCount === 0 &&
+      resultAllRejected.diagnostics?.returnedArticleCount === 0,
+  );
+  check(
+    'getHomeNewsFeed: NEWS_NO_RESULTS never leaks a rejected article\'s raw title/content into the response',
+    !JSON.stringify(resultAllRejected).includes('this exact text must never leak'),
+  );
+  check('getHomeNewsFeed: NEWS_NO_RESULTS still returns an empty articles array (never a fabricated one)', Array.isArray(resultAllRejected.articles) && resultAllRejected.articles.length === 0);
+
+  const resultNoResultsThenSuccess = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: successFetch,
+    now: () => FIXED_NOW_MS + 60 * 60 * 1000,
+  });
+  check(
+    'getHomeNewsFeed: a genuinely successful fetch after a cached NEWS_NO_RESULTS still returns real articles (zero-result caching does not wedge the feed)',
+    resultNoResultsThenSuccess.ok === true && resultNoResultsThenSuccess.articles.length > 0,
+  );
 }
 
 export const runAll = async (): Promise<number> => {

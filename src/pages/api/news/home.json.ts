@@ -37,11 +37,21 @@ export const GET: APIRoute = async () => {
   const apiKey = readServerEnvValue('GNEWS_API_KEY');
   const result = await getHomeNewsFeed({ apiKey });
 
+  // Phase 3GL-HF2 §9: diagnostics is present only when the provider request itself succeeded (it is
+  // absent for NEWS_NOT_CONFIGURED / NEWS_UNAUTHORIZED / NEWS_RATE_LIMITED / NEWS_PROVIDER_ERROR,
+  // where there is nothing meaningful to count) -- sanitized integer counts only, never raw payloads.
   if (!result.ok) {
-    return jsonResponse({ ok: false, code: result.code }, 200, NO_STORE);
+    const body = result.diagnostics
+      ? { ok: false, code: result.code, diagnostics: result.diagnostics }
+      : { ok: false, code: result.code };
+    return jsonResponse(body, 200, NO_STORE);
   }
 
-  return jsonResponse({ ok: true, generatedAt: result.generatedAt, articles: result.articles }, 200, SUCCESS_CACHE);
+  return jsonResponse(
+    { ok: true, generatedAt: result.generatedAt, articles: result.articles, diagnostics: result.diagnostics },
+    200,
+    SUCCESS_CACHE,
+  );
 };
 
 export const ALL: APIRoute = () => jsonResponse({ ok: false, code: 'VALIDATION_FAILED' }, 405, NO_STORE);
