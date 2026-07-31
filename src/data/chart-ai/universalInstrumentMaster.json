@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16066",
+  "masterVersion": "hf3b-hf2-kis-16072",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-07-31",
   "instruments": [
@@ -23696,8 +23696,7 @@
       "exchangeCode": null,
       "standardCode": "KR7019570001",
       "aliases": [
-        "019570",
-        "플루토스"
+        "019570"
       ],
       "active": true
     },
@@ -40662,8 +40661,7 @@
       "exchangeCode": null,
       "standardCode": "KR7220180004",
       "aliases": [
-        "220180",
-        "핸디소프트"
+        "220180"
       ],
       "active": true
     },
@@ -79452,14 +79450,15 @@
     },
     {
       "symbol": "GOP",
-      "displayName": "UNUSUAL WHALES SUBVERSIVE REPUBLICAN TRADING ETF",
-      "englishName": "UNUSUAL WHALES SUBVERSIVE REPUBLICAN TRADING ETF",
+      "displayName": "SUBVERSIVE CONGRESSIONAL REPUBLICANS TRADING ETF",
+      "englishName": "SUBVERSIVE CONGRESSIONAL REPUBLICANS TRADING ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "gop"
+        "gop",
+        "unusual whales subversive republican trading etf"
       ],
       "active": true
     },
@@ -88486,6 +88485,19 @@
       "active": true
     },
     {
+      "symbol": "JLVP",
+      "displayName": "JPMORGAN U.S. LARGE CAP VALUE PLUS ETF",
+      "englishName": "JPMORGAN U.S. LARGE CAP VALUE PLUS ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "jlvp"
+      ],
+      "active": true
+    },
+    {
       "symbol": "JMBS",
       "displayName": "JANUS DETROIT STREET TRUST HENDERSON MORTGAGE BACKED SECURIT",
       "englishName": "JANUS DETROIT STREET TRUST HENDERSON MORTGAGE BACKED SECURIT",
@@ -96417,14 +96429,15 @@
     },
     {
       "symbol": "NANC",
-      "displayName": "UNUSUAL WHALES SUBVERSIVE DEMOCRATIC TRADING ETF",
-      "englishName": "UNUSUAL WHALES SUBVERSIVE DEMOCRATIC TRADING ETF",
+      "displayName": "SUBVERSIVE CONGRESSIONAL DEMOCRATS TRADING ETF",
+      "englishName": "SUBVERSIVE CONGRESSIONAL DEMOCRATS TRADING ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "nanc"
+        "nanc",
+        "unusual whales subversive democratic trading etf"
       ],
       "active": true
     },
@@ -133211,6 +133224,19 @@
       "active": true
     },
     {
+      "symbol": "APMD",
+      "displayName": "APNIMED INC",
+      "englishName": "APNIMED INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "apmd"
+      ],
+      "active": true
+    },
+    {
       "symbol": "APO",
       "displayName": "APOLLO GLOBAL MANAGEMENT INC",
       "englishName": "APOLLO GLOBAL MANAGEMENT INC",
@@ -137086,14 +137112,15 @@
     },
     {
       "symbol": "BDRX",
-      "displayName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EACH RP 50 ORD",
-      "englishName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EACH RP 50 ORD",
+      "displayName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EA RP 50 ORD SHS",
+      "englishName": "BIODEXA PHARMACEUTICALS PLC SPON ADS EA RP 50 ORD SHS",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "bdrx"
+        "bdrx",
+        "biodexa pharmaceuticals plc spon ads each rp 50 ord"
       ],
       "active": true
     },
@@ -142099,6 +142126,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "cccc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CCCT",
+      "displayName": "COLUMBUS CIRCLE CAPITAL CORP III",
+      "englishName": "COLUMBUS CIRCLE CAPITAL CORP III",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ccct"
       ],
       "active": true
     },
@@ -157244,6 +157284,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "fvrr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "FWAC",
+      "displayName": "FUTUREWAVE ACQUISITION CORPORATION",
+      "englishName": "FUTUREWAVE ACQUISITION CORPORATION",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "fwac"
       ],
       "active": true
     },
@@ -177384,6 +177437,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ncno"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "NCO",
+      "displayName": "SOUTHERN CROSS ACQUISITION I CORP",
+      "englishName": "SOUTHERN CROSS ACQUISITION I CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "nco"
       ],
       "active": true
     },
@@ -198959,13 +199025,14 @@
     },
     {
       "symbol": "TGLS",
-      "displayName": "TECNOGLASS INC",
-      "englishName": "TECNOGLASS INC",
+      "displayName": "TECNOGLASS HOLDINGS INC",
+      "englishName": "TECNOGLASS HOLDINGS INC",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
+        "tecnoglass inc",
         "tgls"
       ],
       "active": true
@@ -205813,13 +205880,14 @@
     },
     {
       "symbol": "WHK",
-      "displayName": "WHITEHAWK MINERALS CORP",
-      "englishName": "WHITEHAWK MINERALS CORP",
+      "displayName": "WHITEHAWK MINERALS CORPORATION",
+      "englishName": "WHITEHAWK MINERALS CORPORATION",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
+        "whitehawk minerals corp",
         "whk"
       ],
       "active": true
@@ -207342,6 +207410,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "xifr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XIIIU",
+      "displayName": "CHURCHILL CAPITAL CORPORATION XIII UNIT CONSIST OF 1 CL A OR",
+      "englishName": "CHURCHILL CAPITAL CORPORATION XIII UNIT CONSIST OF 1 CL A OR",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "xiiiu"
       ],
       "active": true
     },
