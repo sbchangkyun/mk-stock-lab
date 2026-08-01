@@ -10,9 +10,12 @@ Vercel environment mutation, any Supabase migration, or starting Phase 3GM.
 
 ## 1. Executive classification
 
-`IMPLEMENTED_PUSHED_PREVIEW_READY_HOME_MARKET_AND_GNEWS_FUNCTIONAL_VERIFICATION_OWNER_PENDING`. All
-implementation and test work for this phase, including the **Phase 3GL-HF1 hotfix** (§1a) and the **Phase
-3GL-HF2 hotfix** (§1b), is complete and pushed on branch `feature/phase-3gl-home-live-data-and-gnews`
+`IMPLEMENTED_PUSHED_PREVIEW_READY_HOME_MARKET_AND_GNEWS_FUNCTIONAL_VERIFICATION_OWNER_PENDING` (HF2 state;
+see §1c for the HF3 hotfix's own classification,
+`IMPLEMENTED_PUSHED_PREVIEW_READY_ROLLING_TICKER_AND_SNAPSHOT_SPARKLINES_OWNER_VISUAL_VERIFICATION_PENDING`,
+reported in the final HF3 phase report once commit/push/Preview-check complete). All implementation and test
+work for this phase, including the **Phase 3GL-HF1 hotfix** (§1a), the **Phase 3GL-HF2 hotfix** (§1b), and
+the **Phase 3GL-HF3 hotfix** (§1c), is complete and pushed on branch `feature/phase-3gl-home-live-data-and-gnews`
 (created from `origin/main` at `0e53cde`, the Phase 3GK merge commit; PR #8, HF2 commit `354c454`). The full
 focused regression gate for this phase (3GL smoke/check, 3GJ smoke/check, `npm ls --depth=0`,
 `npm run build`, `git diff --check`) is green (see §5). The Vercel Preview deployment for `354c454` reached
@@ -29,6 +32,97 @@ label, GNews single-request/diagnostics/zero-or-nonzero-result behavior, no secr
 cannot be performed by this assistant without owner credentials, which this phase does not enter under any
 circumstance (see §2 of the governing spec). No Production deploy, no Vercel environment mutation, and no
 Supabase migration have been performed by this phase.
+
+### 1c. HF3 hotfix — continuous ticker motion and Snapshot sparklines
+
+Phase 3GL-HF3 is a follow-up enhancement on the same branch/PR (`feature/phase-3gl-home-live-data-and-gnews`,
+PR #8), addressing four owner observations on the HF2 Preview: (1) the top ticker belt should roll
+continuously left instead of sitting static; (2) the Market Snapshot should cover more market types; (3)
+every Snapshot card should carry a miniature line chart; (4) the GNews `NEWS_NO_RESULTS` empty state was
+confirmed as an honest, expected outcome (see `GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED` below) and
+required no change.
+
+- **Continuous rolling ticker belt**: `Ticker.astro` now owns a self-contained marquee animation, entirely
+  separate from market-data fetching. On setup (skipped when `prefers-reduced-motion: reduce`), it clones the
+  semantic `.ticker-track` into a second, `aria-hidden="true"` visual track inside `.ticker-rail`, then drives
+  a CSS `transform: translate3d(...)` animation across both tracks at a fixed ~48px/s (clamped to a
+  15-90s cycle regardless of measured content width). Every payload refresh calls `relayoutRolling`, which
+  reads the rail's current computed transform to derive in-progress-fraction, recomputes the loop distance
+  from the newly-rendered track's real `scrollWidth`, and re-applies the animation with a negative
+  `animation-delay` equal to that same progress — so a 60s content refresh never causes a visible jump or
+  restart. Only non-clone chips are made keyboard-tabbable (`rollingActive` gate); the clone track is fully
+  `aria-hidden` and non-tabbable. `Ticker.astro` adds its own `visibilitychange` listener whose entire body is
+  `rail.classList.toggle('ticker-rail--paused', document.hidden)` — this pauses the CSS animation only, never
+  fetches or re-renders, and is intentionally distinct from (not a duplicate of) the shared
+  `homeLiveMarketController.ts`'s own visibility-driven fetch-pausing.
+- **Market Snapshot expanded to the full 9-item registry**: the Snapshot grid now renders all 9
+  `HOME_TICKER_REGISTRY` entries (previously a fixed 4-item subset: `kospi`, `kosdaq`, `sp500`, `nasdaq100`)
+  — adding `dowjones`, `usdkrw`, `dollarindex`, `gold`, `wti` — using the exact same one-request,
+  closed-registry resolution the ticker belt already relies on. No new instrument, KIS endpoint/TR ID, or FX
+  provider was introduced; the grid is now responsive (3 columns / 2 columns / 1 column by viewport width)
+  instead of a fixed 4-card row.
+- **Sparkline data contract**: `homeLiveMarket.ts` adds a closed `HomeSparklineStatus`
+  (`'ok' | 'unavailable'`) and `HomeSparklineBasis` (`'daily_close' | 'reference_fx' | 'unavailable'`) pair,
+  plus `sparklinePeriodLabel` and a `sparkline: { date, value }[]` array capped at `HOME_SPARKLINE_POINTS = 20`
+  points, always ascending by date, with every `value` finite and strictly positive; a shared
+  `UNAVAILABLE_SPARKLINE` constant is returned whenever fewer than 2 usable points exist, never a fabricated
+  or interpolated value.
+- **Quote-first-then-unconditional-OHLCV resolution**: `resolveKisTickerItem` still calls the current-quote
+  snapshot first and derives `quoteOk` from it exactly as before, but now **unconditionally** calls
+  `deps.fetchLongHistoryOhlcv` regardless of `quoteOk` — previously this call only happened as a fallback when
+  the quote failed. The headline price/change fields are computed exactly as before
+  (`quoteOk ? toCurrentQuoteItem(...) : buildOhlcvFallbackItem(...)`) and are never touched by the sparkline
+  step; the sparkline is built independently via `buildKisSparkline(historyResult, ...)` and merged in without
+  overwriting any headline field (`{ ...headline, ...buildKisSparkline(...) }`). `buildKisSparkline`
+  deduplicates candles by date, sorts, keeps the last 20, and falls back to `UNAVAILABLE_SPARKLINE` on
+  insufficient/stale history — it never blocks or degrades the headline quote.
+- **FX sparkline via the existing Frankfurter/ECB source**: `crossAssetProvider.mjs` adds
+  `fetchUsdKrwSparklineSeries` (cached 6 hours, capped to 20 points, `available`/`series`/
+  `sanitizedErrorCode` shape), imported into `homeLiveMarket.ts` alongside the pre-existing
+  `fetchUsdKrwContext`. No new FX provider was introduced.
+- **Dependency-free inline SVG rendering**: `HomeLiveMarketSnapshot.astro` renders each card's sparkline as a
+  hand-built `<svg><polyline>` (fixed 88×32 viewBox, no charting library, no new dependency), with the
+  up/down/flat direction class derived from the sparkline's own first/last point — deliberately independent
+  of the card's `changePct` sign, since the two can legitimately disagree over different windows. A card with
+  `sparklineStatus !== 'ok'` or fewer than 2 points renders an honest "차트 데이터 없음" placeholder instead
+  of an empty or fabricated chart.
+- **`GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED`**: the HF2 `NEWS_NO_RESULTS` contract (§1b) was
+  reviewed against this observation and confirmed correct as-is — a genuinely empty GNews feed is expected,
+  honest behavior, not a bug. No fixture, second provider, LLM, or validation change was made.
+- No new KIS endpoint/TR ID, no new FX provider, no second market-data provider, and no
+  account/order/balance/trading capability were introduced. Commit message for this hotfix: "Phase 3GL-HF3:
+  add rolling ticker and Snapshot sparklines".
+- **Test suite extension**: `scripts/home_live_data_testsrc.ts` grew to **138/138** passing (new Group 1d:
+  KIS sparkline capping/ordering, sparkline-failure-never-blocks-headline, FX sparkline ok/unavailable, and a
+  no-duplicate-fetch guarantee). `scripts/check_phase_3gl_home_live_data_contract.mjs` grew to **210/210**
+  passing after 4 checker-staleness fixes (not source defects — the implementation was already correct; the
+  static assertions had not been updated to match the intentional HF3 design changes): the FX-sparkline
+  import-string assertion was widened for the two-name `fetchUsdKrwContext, fetchUsdKrwSparklineSeries`
+  import; the obsolete `resolveOhlcvFallbackItem`-based ordering check (that function was renamed to
+  `buildOhlcvFallbackItem`) was replaced with an assertion on the real `deps.fetchLongHistoryOhlcv`/
+  `const headline = quoteOk` unconditional-fetch shape; the obsolete "quote success skips a second OHLCV
+  attempt" assertion (testing the pre-HF3 early-return design that HF3 deliberately replaced) was replaced
+  with an assertion on the `quoteOk ? toCurrentQuoteItem(...) : buildOhlcvFallbackItem(...)` ternary; and the
+  shared "owns no visibilitychange listener of its own" check was scoped to only
+  `HomeLiveMarketSnapshot.astro` (still true) with a new, narrowly-scoped positive check added confirming
+  `Ticker.astro`'s own listener body is exactly the animation-pause toggle and nothing else (no fetch/render
+  call inside it).
+- **Regression gate**: `npm run smoke:phase-3gl-home-live-data` 138/138; `npm run check:phase-3gl-home-live-data`
+  210/210; `npm run smoke:phase-3gj-live-market-dashboard` 162/162 (no ripple); `npm run check:phase-3gj-live-market-dashboard`
+  159/159 (no ripple); `npm ls --depth=0` clean; `git diff --check` exit 0 (only benign CRLF/LF advisories).
+  `npm run build` (Astro 6.1.1 / Node v24.14.1 / `@astrojs/vercel@10.0.4`) completed every logged build stage
+  with zero errors or warnings and produced complete `dist/client`, `dist/server`, `.vercel/output/server`,
+  and `.vercel/output/static` artifacts, but the Node process then crashed on exit with a native
+  `STATUS_STACK_BUFFER_OVERRUN` (exit code `-1073740791`), reproduced identically across 3 runs with no
+  crash-dump found. This is recorded honestly as a build-content **pass with a process-exit anomaly**, not
+  silently upgraded to an unqualified pass: all real build work completes and all artifacts are verified
+  complete before the native crash, and it is assessed as a pre-existing Node/esbuild-on-Windows
+  process-teardown issue unrelated to the HF3 diff (a clean-baseline comparison via `git stash` or a fresh
+  `git worktree` + `npm install` was not attempted, since both are prohibited by this phase's governing
+  constraints).
+- **Preview verification**: not yet performed as of this writing — commit, push, and the §15 Preview check
+  (deployment-level state plus the 13 functional checks) are the immediate next steps in this same phase,
+  reported in the final phase report rather than re-stated here.
 
 ### 1b. HF2 hotfix — corrected quote direction and honest GNews empty-feed handling
 
@@ -214,19 +308,22 @@ own fetching.
 
 ## 5. Regression gate
 
-- `npm run smoke:phase-3gl-home-live-data` — 117/117 passed (HF2).
-- `npm run check:phase-3gl-home-live-data` — 183/183 passed (HF2).
-- `npm run smoke:phase-3gj-live-market-dashboard` — 162/162 passed.
-- `npm run check:phase-3gj-live-market-dashboard` — 159/159 passed. Two ripples fixed across this phase and
-  HF1, both to the checker only, never to the tested implementation: (1) the original §2 migration caused
-  the checker's `HomeLiveMarketSnapshot.astro` fetch assertion to be updated to accept either the old or new
-  route while still requiring exactly one script-level `fetch()` call; (2) HF1's controller unification
-  (§1a) went further and removed that component's own `fetch()` call entirely, so the same assertion was
-  widened again to also accept zero `fetch()` calls when the component instead consumes the shared
-  controller's broadcast (`getLatestHomeLiveMarketPayload`/`HOME_LIVE_MARKET_EVENT`). HF2 introduced no
-  further ripple into this checker.
+- `npm run smoke:phase-3gl-home-live-data` — 138/138 passed (HF3; 117/117 at HF2).
+- `npm run check:phase-3gl-home-live-data` — 210/210 passed (HF3; 183/183 at HF2).
+- `npm run smoke:phase-3gj-live-market-dashboard` — 162/162 passed (no ripple from HF3).
+- `npm run check:phase-3gj-live-market-dashboard` — 159/159 passed (no ripple from HF3). Two ripples fixed
+  across this phase and HF1, both to the checker only, never to the tested implementation: (1) the original
+  §2 migration caused the checker's `HomeLiveMarketSnapshot.astro` fetch assertion to be updated to accept
+  either the old or new route while still requiring exactly one script-level `fetch()` call; (2) HF1's
+  controller unification (§1a) went further and removed that component's own `fetch()` call entirely, so the
+  same assertion was widened again to also accept zero `fetch()` calls when the component instead consumes
+  the shared controller's broadcast (`getLatestHomeLiveMarketPayload`/`HOME_LIVE_MARKET_EVENT`). HF2 and HF3
+  introduced no further ripple into this checker.
 - `npm ls --depth=0` — clean, no unmet/invalid dependency.
-- `npm run build` — Astro/Vite/Vercel-adapter build completed successfully, no error.
+- `npm run build` — Astro/Vite/Vercel-adapter build completed successfully, no error, at HF1/HF2. At HF3,
+  the build again completed every logged stage with zero errors and produced complete output artifacts, but
+  the Node process crashed on exit with a native `STATUS_STACK_BUFFER_OVERRUN`; see §1c for the full
+  assessment (build content pass, process-exit anomaly, not a code defect).
 - `git diff --check` — exit 0 (only benign CRLF/LF line-ending advisories, no conflict markers, no
   trailing-whitespace errors).
 
@@ -238,6 +335,10 @@ own fetching.
   assistant does not hold or enter owner credentials. Deployment-level metadata (state = Ready/success,
   correct git branch/commit, no alias error) was verified without authentication; page/route content was
   not.
+- The HF3 hotfix's own commit/push and its §15 Preview verification (new Preview deployment state plus the
+  13 functional checks — rolling belt, 9-item Snapshot, sparkline contract, honest `NEWS_NO_RESULTS`) are the
+  immediate next steps in this phase, reported in the final HF3 phase report; **direct browser-based visual
+  inspection of the rolling-belt motion is Owner-pending** for the same SSO-credential reason as above.
 - Merging the PR, Production deployment, and Production QA are Owner-only items not performed by this phase.
 
 ## 7. Next phase

@@ -89,6 +89,47 @@ const unavailableFx = {
   sanitizedErrorCode: 'NOT_SOURCED',
 };
 
+// Phase 3GL-HF3 §7 fixtures: fetchUsdKrwSparklineSeries is now called independently of
+// fetchUsdKrwContext whenever the FX headline resolves -- every fixture below that injects okFx must
+// also inject a fake sparkline series so the test never falls through to the real Frankfurter network
+// call.
+const okFxSparkline = {
+  available: true,
+  series: Array.from({ length: 20 }, (_, i) => ({ date: `202606${String(i + 1).padStart(2, '0')}`, value: 1330 + i })),
+  sanitizedErrorCode: 'NONE',
+};
+
+const unavailableFxSparkline = {
+  available: false,
+  series: [],
+  sanitizedErrorCode: 'NOT_SOURCED',
+};
+
+// Phase 3GL-HF3 §6 fixtures: dated OHLCV candles for exercising the KIS sparkline builder, which reads
+// candle.timestamp (absent from the plain `okOhlcvResult` fixture above, which is why that fixture
+// always yields an unavailable sparkline). 25 sequential daily closes so the 20-point cap is
+// exercised too.
+type DatedFakeCandle = { close: number; timestamp: string };
+const DATED_ASOF = '20260725';
+const fakeDatedCloses = Array.from({ length: 25 }, (_, i) => ({
+  date: `2026-07-${String(i + 1).padStart(2, '0')}`,
+  close: 100 + i,
+}));
+
+const okOhlcvResultWithDates = (points: Array<{ date: string; close: number }>, asOfYyyymmdd: string): LongHistoryOhlcvResult => ({
+  ok: true,
+  sourceStatus: 'ok',
+  sanitizedErrorCode: 'NONE',
+  instrument: null,
+  candles: points.map(({ date, close }): DatedFakeCandle => ({ close, timestamp: date })) as unknown as LongHistoryOhlcvResult['candles'],
+  barCount: points.length,
+  historyRange: { start: points[0]?.date ?? asOfYyyymmdd, end: asOfYyyymmdd },
+  cached: false,
+  asOf: new Date().toISOString(),
+  currency: null,
+  pagesFetched: 1,
+});
+
 // Phase 3GL-HF1 quote-first fixtures: every existing Group-1 block below forces the quote step to
 // fail closed so it deterministically exercises the (pre-existing) OHLCV-fallback path -- the
 // dedicated quote-first blocks further down inject a succeeding quote instead. Never the real
@@ -122,6 +163,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
       getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
@@ -136,10 +178,10 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
     ),
   );
   check('getHomeLiveMarket: every ticker item resolves ok', result.ticker.every((item) => item.status === 'ok'));
-  check('getHomeLiveMarket: snapshot has exactly 4 items', result.snapshot.length === 4);
+  check('getHomeLiveMarket: snapshot has exactly 9 items (Phase 3GL-HF3 §4)', result.snapshot.length === 9);
   check(
-    'getHomeLiveMarket: snapshot is exactly {kospi, kosdaq, sp500, nasdaq100} in that order',
-    result.snapshot.map((item) => item.id).join(',') === 'kospi,kosdaq,sp500,nasdaq100',
+    'getHomeLiveMarket: snapshot is exactly the 9-item registry in the required order (Phase 3GL-HF3 §4)',
+    result.snapshot.map((item) => item.id).join(',') === 'kospi,kosdaq,sp500,nasdaq100,dowjones,usdkrw,dollarindex,gold,wti',
   );
   check(
     'getHomeLiveMarket: snapshot items are the same resolved objects as their ticker counterparts (no duplicate fetch)',
@@ -170,8 +212,9 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
     result.ticker.every((item) => ['fresh', 'cached', 'stale', 'unavailable'].includes(item.freshness)),
   );
   check(
-    'getHomeLiveMarket: snapshot uses the exact Snapshot-only display labels, not the ticker belt labels',
-    result.snapshot.map((item) => item.label).join(',') === 'KOSPI200,KOSDAQ150,S&P500,NASDAQ100',
+    'getHomeLiveMarket: snapshot uses the exact Snapshot-only display labels, not the ticker belt labels (Phase 3GL-HF3 §4)',
+    result.snapshot.map((item) => item.label).join(',') ===
+      'KOSPI200,KOSDAQ150,S&P500,NASDAQ100,DOW30,USD/KRW,달러 인덱스,금,WTI 원유',
   );
 }
 
@@ -185,6 +228,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
       findUniversalInstrument: () => null,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
       getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
@@ -203,10 +247,10 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
   );
   check('getHomeLiveMarket: usdkrw still resolves ok on its own', result.ticker.find((item) => item.id === 'usdkrw')?.status === 'ok');
   check(
-    'getHomeLiveMarket: snapshot still carries all 4 fixed subset ids, marked unavailable rather than dropped',
-    result.snapshot.length === 4 && result.snapshot.every((item) => item.status === 'unavailable'),
+    'getHomeLiveMarket: snapshot still carries all 9 registry ids, unresolvable KIS ones marked unavailable rather than dropped (Phase 3GL-HF3 §4)',
+    result.snapshot.length === 9 && result.snapshot.filter((item) => item.id !== 'usdkrw').every((item) => item.status === 'unavailable'),
   );
-  check('getHomeLiveMarket: snapshot excludes the 5 non-snapshot registry ids', result.snapshot.every((item) => ['kospi', 'kosdaq', 'sp500', 'nasdaq100'].includes(item.id)));
+  check('getHomeLiveMarket: snapshot is exactly the closed 9-item registry (no id outside it)', result.snapshot.every((item) => ['kospi', 'kosdaq', 'sp500', 'nasdaq100', 'dowjones', 'usdkrw', 'dollarindex', 'gold', 'wti'].includes(item.id)));
 }
 
 // 3. Every single item fails (KIS unresolvable AND FX unavailable) -> ok false, MARKET_DATA_UNAVAILABLE,
@@ -226,8 +270,8 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
   check('getHomeLiveMarket: total failure -> ok false', result.ok === false);
   check('getHomeLiveMarket: total failure -> sanitizedErrorCode MARKET_DATA_UNAVAILABLE', result.sanitizedErrorCode === 'MARKET_DATA_UNAVAILABLE');
   check(
-    'getHomeLiveMarket: total failure -> snapshot still stays exactly 4 items, marked unavailable rather than emptied (§9)',
-    result.snapshot.length === 4 && result.snapshot.every((item) => item.status === 'unavailable'),
+    'getHomeLiveMarket: total failure -> snapshot still stays exactly 9 items, marked unavailable rather than emptied (Phase 3GL-HF3 §4/§9)',
+    result.snapshot.length === 9 && result.snapshot.every((item) => item.status === 'unavailable'),
   );
   check('getHomeLiveMarket: total failure -> ticker still lists all 9 items as unavailable', result.ticker.length === 9 && result.ticker.every((item) => item.status === 'unavailable'));
 }
@@ -241,6 +285,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       fetchLongHistoryOhlcv: async () => okOhlcvResult([100], FAKE_ASOF),
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
       getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
@@ -269,6 +314,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       fetchLongHistoryOhlcv: trackedFetch,
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
       getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
@@ -278,9 +324,11 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
   check('getHomeLiveMarket: concurrency is actually used (not fully serial)', maxInFlight > 1);
 }
 
-// 6. Quote-first success (Phase 3GL-HF1 §6): when the current-price quote call succeeds, the item is
-//    built from the quote alone -- dataBasis current_quote, freshness fresh -- and OHLCV is never
-//    called for that item at all (no fallback triggered after a successful quote).
+// 6. Quote-first success (Phase 3GL-HF1 §6, revised Phase 3GL-HF3 §6): when the current-price quote
+//    call succeeds, the HEADLINE is built from the quote alone -- dataBasis current_quote, freshness
+//    fresh, and the quote's own price/change is never overwritten by history. OHLCV is still fetched
+//    exactly once per item (Phase 3GL-HF3: now unconditional, since it also feeds the independent
+//    sparkline) but that fetch never influences the headline on a quote success.
 {
   let ohlcvCalls = 0;
   const result = await getHomeLiveMarket(
@@ -292,6 +340,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       },
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, 1.31, '2026-07-24T06:00:00Z'),
       getKisOverseasQuoteSnapshot: async () => okQuoteResult(552.4, -1.2, -0.22, '2026-07-24T20:00:00Z'),
       now: () => FIXED_NOW_MS,
@@ -305,12 +354,20 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
     'getHomeLiveMarket: quote success -> freshness fresh',
     result.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.freshness === 'fresh'),
   );
-  check('getHomeLiveMarket: quote success -> OHLCV is never called for that item (no fallback after success)', ohlcvCalls === 0);
+  const kisItemCountG6 = result.ticker.filter((item) => item.id !== 'usdkrw').length;
+  check(
+    'getHomeLiveMarket: quote success -> OHLCV is still fetched exactly once per KIS item for the sparkline (Phase 3GL-HF3 §6, never zero, never duplicated)',
+    ohlcvCalls === kisItemCountG6,
+  );
   const kospiItem = result.ticker.find((item) => item.id === 'kospi');
   check('getHomeLiveMarket: KR quote item takes its price from the domestic quote snapshot', kospiItem?.price === 271000);
   check('getHomeLiveMarket: KR quote item takes its change from the domestic quote snapshot', kospiItem?.changeAmount === 3500);
   const spItem = result.ticker.find((item) => item.id === 'sp500');
   check('getHomeLiveMarket: US quote item takes its price from the overseas quote snapshot', spItem?.price === 552.4);
+  check(
+    'getHomeLiveMarket: quote-success headline price is never overwritten by the independently-fetched OHLCV history (Phase 3GL-HF3 §6)',
+    kospiItem?.price === 271000 && kospiItem?.dataBasis === 'current_quote',
+  );
 }
 
 // 7. Quote-failure-fallback-once: quote fails for a KIS item -> exactly one OHLCV call for that item
@@ -330,6 +387,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       },
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => {
         quoteCallOrder.push('quote');
         return failingQuoteResult;
@@ -360,6 +418,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, 1.31, '2026-07-24T06:00:00Z'),
       getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
       now: () => FIXED_NOW_MS,
@@ -472,6 +531,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       // Deliberately contradictory: positive changeAmount paired with a negative changePct, as if a
       // provider-layer bug had somehow slipped through despite kisClient.ts's own normalization.
       getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, -1.31, '2026-07-24T06:00:00Z'),
@@ -505,6 +565,7 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
       findUniversalInstrument: () => fakeInstrument,
       fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
       getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, 1.31, '2026-07-24T06:00:00Z'),
       getKisOverseasQuoteSnapshot: async () => okQuoteResult(552.4, -1.2, -0.22, '2026-07-24T20:00:00Z'),
       now: () => FIXED_NOW_MS,
@@ -514,6 +575,134 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
     'getHomeLiveMarket: agreeing-direction quotes keep a non-null changeAmount (safety net does not over-fire)',
     nonContradictory.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.changeAmount !== null),
   );
+}
+
+// =====================================================================================
+// Group 1d (Phase 3GL-HF3 §5/§6/§7): the sparkline data contract -- KIS daily-close series, the
+// USD/KRW reference-FX series, the never-fabricated-when-unavailable rule, and the no-duplicate-fetch
+// guarantee, all independent of which headline path (quote vs. OHLCV fallback) produced the price.
+// =====================================================================================
+
+// 1. KIS sparkline built from the same OHLCV history already fetched for the (quote-failure) fallback
+//    headline: capped to the last 20 points, ascending date order, correct basis/period label.
+{
+  const result = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => okOhlcvResultWithDates(fakeDatedCloses, DATED_ASOF),
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  const kisItems = result.ticker.filter((item) => item.id !== 'usdkrw');
+  check('getHomeLiveMarket: sparkline -> every resolvable KIS item carries sparklineStatus ok', kisItems.every((item) => item.sparklineStatus === 'ok'));
+  check('getHomeLiveMarket: sparkline -> every resolvable KIS item carries sparklineBasis daily_close', kisItems.every((item) => item.sparklineBasis === 'daily_close'));
+  check(
+    'getHomeLiveMarket: sparkline -> every resolvable KIS item carries the exact KIS period label',
+    kisItems.every((item) => item.sparklinePeriodLabel === '최근 20거래일 종가 추이'),
+  );
+  check('getHomeLiveMarket: sparkline -> capped to the last 20 points even though 25 were available', kisItems.every((item) => item.sparkline.length === 20));
+  check(
+    'getHomeLiveMarket: sparkline -> points are in ascending chronological order',
+    kisItems.every((item) => item.sparkline.every((point, i) => i === 0 || point.date > item.sparkline[i - 1].date)),
+  );
+  check(
+    'getHomeLiveMarket: sparkline -> every value is a finite positive number',
+    kisItems.every((item) => item.sparkline.every((point) => Number.isFinite(point.value) && point.value > 0)),
+  );
+  check(
+    'getHomeLiveMarket: sparkline -> retains only the most recent 20 of the 25 fake daily closes (dates 07-06..07-25)',
+    kisItems.every((item) => item.sparkline[0].date === '20260706' && item.sparkline[19].date === '20260725'),
+  );
+}
+
+// 2. Sparkline unavailable (insufficient history) never blocks a successful quote-based headline, and
+//    never fabricates a flat/placeholder line.
+{
+  const result = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => failOhlcvResult,
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
+      getKisDomesticQuoteSnapshot: async () => okQuoteResult(271000, 3500, 1.31, '2026-07-24T06:00:00Z'),
+      getKisOverseasQuoteSnapshot: async () => okQuoteResult(552.4, -1.2, -0.22, '2026-07-24T20:00:00Z'),
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  const kisItems = result.ticker.filter((item) => item.id !== 'usdkrw');
+  check('getHomeLiveMarket: sparkline -> a failed history fetch never blocks the already-resolved quote headline', kisItems.every((item) => item.status === 'ok' && item.dataBasis === 'current_quote'));
+  check('getHomeLiveMarket: sparkline -> failed history reports sparklineStatus unavailable (never fabricated)', kisItems.every((item) => item.sparklineStatus === 'unavailable'));
+  check('getHomeLiveMarket: sparkline -> unavailable sparkline carries an empty points array, not a placeholder', kisItems.every((item) => item.sparkline.length === 0));
+  check('getHomeLiveMarket: sparkline -> unavailable sparkline carries a null period label', kisItems.every((item) => item.sparklinePeriodLabel === null));
+  const kospiItem = result.ticker.find((item) => item.id === 'kospi');
+  check('getHomeLiveMarket: sparkline -> the quote headline price is untouched by the sparkline failure', kospiItem?.price === 271000);
+}
+
+// 3. USD/KRW reference-FX sparkline: ok case carries the injected series verbatim with the FX basis
+//    and period label; unavailable case leaves the FX headline (rate/change) fully intact.
+{
+  const resultOk = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  const usdkrwOk = resultOk.ticker.find((item) => item.id === 'usdkrw');
+  check('getHomeLiveMarket: FX sparkline ok -> sparklineStatus ok', usdkrwOk?.sparklineStatus === 'ok');
+  check('getHomeLiveMarket: FX sparkline ok -> sparklineBasis reference_fx', usdkrwOk?.sparklineBasis === 'reference_fx');
+  check('getHomeLiveMarket: FX sparkline ok -> the exact FX period label', usdkrwOk?.sparklinePeriodLabel === '최근 20공시일 환율 추이');
+  check('getHomeLiveMarket: FX sparkline ok -> carries the injected series verbatim', JSON.stringify(usdkrwOk?.sparkline) === JSON.stringify(okFxSparkline.series));
+
+  const resultFxSparklineDown = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => okOhlcvResult(fakeCloses, FAKE_ASOF),
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => unavailableFxSparkline,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  const usdkrwDegraded = resultFxSparklineDown.ticker.find((item) => item.id === 'usdkrw');
+  check('getHomeLiveMarket: FX sparkline unavailable -> the FX headline (rate) stays fully intact', usdkrwDegraded?.status === 'ok' && usdkrwDegraded?.price === okFx.rate);
+  check('getHomeLiveMarket: FX sparkline unavailable -> sparklineStatus unavailable, never fabricated', usdkrwDegraded?.sparklineStatus === 'unavailable' && usdkrwDegraded?.sparkline.length === 0);
+}
+
+// 4. No duplicate history fetch: across a full 9-item request, fetchLongHistoryOhlcv is called exactly
+//    once per KIS-backed item (8 times), never for usdkrw (which uses the FX sparkline series instead).
+{
+  let ohlcvCalls = 0;
+  const result = await getHomeLiveMarket(
+    { allowProductionMarketDashboardLiveData: true },
+    {
+      fetchLongHistoryOhlcv: async () => {
+        ohlcvCalls += 1;
+        return okOhlcvResultWithDates(fakeDatedCloses, DATED_ASOF);
+      },
+      findUniversalInstrument: () => fakeInstrument,
+      fetchUsdKrwContext: async () => okFx,
+      fetchUsdKrwSparklineSeries: async () => okFxSparkline,
+      getKisDomesticQuoteSnapshot: async () => failingQuoteResult,
+      getKisOverseasQuoteSnapshot: async () => failingQuoteResult,
+      now: () => FIXED_NOW_MS,
+    },
+  );
+  check('getHomeLiveMarket: sparkline -> exactly 8 OHLCV calls for a full 9-item request (one per KIS item, none for usdkrw)', ohlcvCalls === 8);
+  check('getHomeLiveMarket: sparkline -> every KIS item resolves with a usable sparkline from that single call', result.ticker.filter((item) => item.id !== 'usdkrw').every((item) => item.sparklineStatus === 'ok'));
 }
 
 // =====================================================================================

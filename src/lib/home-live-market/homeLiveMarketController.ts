@@ -10,6 +10,8 @@
  * resolved). Neither consumer may open its own fetch/timer/listener/in-flight state.
  */
 
+export type HomeSparklinePoint = { date: string; value: number };
+
 export type HomeLiveMarketItem = {
   id: string;
   label: string;
@@ -23,6 +25,10 @@ export type HomeLiveMarketItem = {
   periodLabel: string;
   dataBasis: 'current_quote' | 'latest_close' | 'reference_fx' | 'unavailable';
   freshness: 'fresh' | 'cached' | 'stale' | 'unavailable';
+  sparklineStatus: 'ok' | 'unavailable';
+  sparklineBasis: 'daily_close' | 'reference_fx' | 'unavailable';
+  sparklinePeriodLabel: string | null;
+  sparkline: HomeSparklinePoint[];
 };
 
 export type HomeLiveMarketPayload =

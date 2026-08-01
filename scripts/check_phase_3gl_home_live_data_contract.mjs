@@ -33,6 +33,7 @@ const HOME_PAGE = join(root, 'src', 'pages', 'index.astro');
 const LAYOUT = join(root, 'src', 'layouts', 'Layout.astro');
 const CROSS_ASSET_PROVIDER = join(root, 'src', 'lib', 'server', 'chart-ai', 'marketIntelligence', 'crossAssetProvider.mjs');
 const PACKAGE_JSON = join(root, 'package.json');
+const STYLE_CSS_PATH = join(root, 'src', 'styles', 'style.css');
 
 const log = (msg) => process.stdout.write(msg + '\n');
 let passes = 0;
@@ -78,6 +79,7 @@ const homeNews = readOr(HOME_NEWS);
 const homePage = readOr(HOME_PAGE);
 const layout = readOr(LAYOUT);
 const crossAssetProvider = readOr(CROSS_ASSET_PROVIDER);
+const STYLE_CSS = readOr(STYLE_CSS_PATH);
 let pkg = {};
 try { pkg = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')); } catch {}
 
@@ -92,12 +94,12 @@ for (const symbol of ['SPY', 'QQQ', 'DIA', '069500', '229200', 'UUP', 'GLD', 'US
   check(`registry references KIS symbol ${symbol}`, homeLiveMarket.includes(`'${symbol}'`));
 }
 check('registry defines exactly 9 entries (no client-controlled fan-out)', (homeLiveMarket.match(/\{ id: '/g) || []).length === 9);
-check(
-  'snapshot subset is exactly {kospi, kosdaq, sp500, nasdaq100}',
-  /HOME_SNAPSHOT_IDS\s*=\s*\[\s*'kospi',\s*'kosdaq',\s*'sp500',\s*'nasdaq100'\s*\]/.test(homeLiveMarket),
-);
 check('every registry entry carries an honest proxyLabel disclosure field (never claims to be the literal index)', (homeLiveMarket.match(/proxyLabel:/g) || []).length >= 9);
 check('usdkrw entry is FX kind, not KIS', /id:\s*'usdkrw',\s*label:\s*'원\/달러',\s*kind:\s*'fx'/.test(homeLiveMarket));
+check(
+  'Phase 3GL-HF3 §4: HOME_SNAPSHOT_IDS is the full 9-item closed registry, in the specified order',
+  /HOME_SNAPSHOT_IDS\s*=\s*\[\s*'kospi',\s*'kosdaq',\s*'sp500',\s*'nasdaq100',\s*'dowjones',\s*'usdkrw',\s*'dollarindex',\s*'gold',\s*'wti'\s*\]/.test(homeLiveMarket),
+);
 
 // ---------------------------------------------------------------------------
 // Group 3: Server orchestration — single shared resolution, reuse, no new KIS/FX surfaces
@@ -108,7 +110,7 @@ check('reuses fetchLongHistoryOhlcv (shared cached OHLCV orchestration)',
 check('reuses findUniversalInstrument (shared instrument resolver)',
   homeLiveMarket.includes("import { findUniversalInstrument } from '../chart-ai/universal-instrument-search.mjs'"));
 check('reuses fetchUsdKrwContext for FX (no new FX provider introduced)',
-  homeLiveMarket.includes("import { fetchUsdKrwContext } from '../chart-ai/marketIntelligence/crossAssetProvider.mjs'"));
+  /import\s*\{\s*fetchUsdKrwContext\s*,\s*fetchUsdKrwSparklineSeries\s*\}\s*from\s*['"]\.\.\/chart-ai\/marketIntelligence\/crossAssetProvider\.mjs['"]/.test(homeLiveMarket));
 check('reuses the existing bounded-concurrency helper from marketDashboard.ts',
   homeLiveMarket.includes('mapWithConcurrency') && /from\s*['"]\.\.\/marketDashboard\/marketDashboard['"]/.test(homeLiveMarket));
 check('CONCURRENCY_LIMIT = 3 (same bound as Phase 3GJ)', /CONCURRENCY_LIMIT\s*=\s*3/.test(homeLiveMarket));
@@ -135,7 +137,7 @@ check('snapshot is never a literal empty array (both branches derive it from bui
   check('both the total-failure and success return objects reuse that same snapshot variable (shorthand, never re-literalized)',
     (homeLiveMarket.match(/\bsnapshot,/g) || []).length >= 2);
 }
-check('buildSnapshot derives a fixed-length 4-item array from the closed HOME_SNAPSHOT_IDS registry (never narrows on partial failure)',
+check('buildSnapshot derives a fixed-length 9-item array from the closed HOME_SNAPSHOT_IDS registry (never narrows on partial failure)',
   /HOME_SNAPSHOT_IDS\.map/.test(homeLiveMarket));
 check('crossAssetProvider.mjs (the reused FX source) was not modified to add a second FX endpoint',
   crossAssetProvider.includes("const FX_BASE = 'https://api.frankfurter.dev/v1'") && (crossAssetProvider.match(/https?:\/\/[^'"\s]+/g) || []).every((u) => u.includes('frankfurter')));
@@ -153,14 +155,18 @@ check('declares the closed HomeFreshness enum (fresh | cached | stale | unavaila
   const resolverMatch = homeLiveMarket.match(/resolveKisTickerItem[\s\S]*?(?=\nconst\s+\w+\s*=|\nexport\s+const)/);
   const resolverBody = resolverMatch ? resolverMatch[0] : '';
   const quoteCallIdx = resolverBody.search(/deps\.getKis(?:Domestic|Overseas)QuoteSnapshot/);
-  const ohlcvFallbackIdx = resolverBody.search(/resolveOhlcvFallbackItem/);
-  check('resolveKisTickerItem calls the current-quote function before falling back to OHLCV (textual order)',
-    quoteCallIdx >= 0 && ohlcvFallbackIdx >= 0 && quoteCallIdx < ohlcvFallbackIdx);
-  check('resolveKisTickerItem never combines the quote call and the OHLCV fallback via Promise.all/Promise.race (sequential only)',
-    !/Promise\.(all|race)\(\s*\[[\s\S]{0,200}(?:getKisDomesticQuoteSnapshot|getKisOverseasQuoteSnapshot|resolveOhlcvFallbackItem)/.test(resolverBody));
+  const historyCallIdx = resolverBody.search(/deps\.fetchLongHistoryOhlcv/);
+  const headlineIdx = resolverBody.search(/const\s+headline\s*=\s*quoteOk/);
+  check('resolveKisTickerItem calls the current-quote function before the OHLCV history fetch (textual order)',
+    quoteCallIdx >= 0 && historyCallIdx >= 0 && quoteCallIdx < historyCallIdx);
+  check('resolveKisTickerItem never combines the quote call and the OHLCV fetch via Promise.all/Promise.race (sequential only)',
+    !/Promise\.(all|race)\(\s*\[[\s\S]{0,200}(?:getKisDomesticQuoteSnapshot|getKisOverseasQuoteSnapshot|fetchLongHistoryOhlcv)/.test(resolverBody));
+  check('resolveKisTickerItem fetches OHLCV history unconditionally (before the quoteOk headline branch), never gated behind a quote-failure check (Phase 3GL-HF3 §6)',
+    historyCallIdx >= 0 && headlineIdx >= 0 && historyCallIdx < headlineIdx &&
+    !/if\s*\(\s*!?\s*quoteOk\s*\)[\s\S]{0,120}fetchLongHistoryOhlcv/.test(resolverBody));
 }
-check('a successful quote resolves via toCurrentQuoteItem without a second (OHLCV) network attempt for that item',
-  /if\s*\(\s*quoteResult\.ok[\s\S]{0,120}return\s+toCurrentQuoteItem/.test(homeLiveMarket));
+check('a successful quote resolves its headline via toCurrentQuoteItem, while the unconditionally-fetched OHLCV history only feeds the independent sparkline and never the headline price (Phase 3GL-HF3 §6)',
+  /const\s+headline\s*=\s*quoteOk\s*\?\s*toCurrentQuoteItem\(entry,\s*quoteResult\.data\)\s*:\s*buildOhlcvFallbackItem\(/.test(homeLiveMarket));
 
 // ---------------------------------------------------------------------------
 // Group 4: /api/home/live-market.json route — closed contract, honest cache headers
@@ -267,7 +273,9 @@ for (const [name, src] of [['Ticker.astro', ticker], ['HomeLiveMarketSnapshot.as
   check(`${name}: owns no fetch call of its own (consumes the controller's broadcast instead)`, !/fetch\(/.test(src));
   check(`${name}: owns no setTimeout/setInterval refresh timer of its own`, !/setTimeout|setInterval/.test(src));
   check(`${name}: owns no inFlight guard of its own`, !/inFlight/.test(src));
-  check(`${name}: owns no visibilitychange listener of its own`, !/visibilitychange/.test(src));
+  if (name === 'HomeLiveMarketSnapshot.astro') {
+    check(`${name}: owns no visibilitychange listener of its own`, !/visibilitychange/.test(src));
+  }
   check(`${name}: imports HOME_LIVE_MARKET_EVENT and getLatestHomeLiveMarketPayload from the shared controller`,
     /from\s*['"]\.\.\/lib\/home-live-market\/homeLiveMarketController['"]/.test(src) &&
     src.includes('HOME_LIVE_MARKET_EVENT') && src.includes('getLatestHomeLiveMarketPayload'));
@@ -278,6 +286,8 @@ for (const [name, src] of [['Ticker.astro', ticker], ['HomeLiveMarketSnapshot.as
   check(`${name}: wires its own render setup via astro:page-load with an idempotent ready guard`,
     src.includes("addEventListener('astro:page-load'") && src.includes("dataset.ready === 'true'"));
 }
+check('Ticker.astro: its own visibilitychange listener (Phase 3GL-HF3 §3) only toggles the CSS pause class in its callback body, never fetches/re-renders market data or duplicates the shared controller\'s listener',
+  /document\.addEventListener\(\s*['"]visibilitychange['"]\s*,\s*\(\)\s*=>\s*\{\s*rail\.classList\.toggle\(\s*['"]ticker-rail--paused['"][^)]*\)\s*;\s*\}\s*\)\s*;/.test(ticker));
 check('Ticker.astro reads the ticker field of the broadcast payload', ticker.includes('payload.ticker'));
 check('HomeLiveMarketSnapshot.astro reads the snapshot field of the broadcast payload (no duplicate provider call)', homeSnapshot.includes('payload.snapshot'));
 check('HomeLiveMarketSnapshot.astro renders an honest unavailable state, never a fabricated card', homeSnapshot.includes('data-home-snapshot-unavailable'));
@@ -447,6 +457,71 @@ check(
   !/diagnostics[\s\S]{0,10}(apiKey|COMBINED_QUERY|rawArticle|\.title\b|\.content\b)/.test(gnewsProvider) &&
     !/diagnostics[\s\S]{0,10}(apiKey|rawArticle|\.title\b|\.content\b)/.test(homeNewsRoute),
 );
+
+// ---------------------------------------------------------------------------
+// Group 12: Phase 3GL-HF3 — rolling ticker belt + 9-card Snapshot sparklines
+// ---------------------------------------------------------------------------
+log('--- Group 12: HF3 §5-§7 server-side sparkline contract ---');
+check('declares the closed HomeSparklineStatus/HomeSparklineBasis enums and a HomeSparklineFields shape carrying them',
+  /HomeSparklineStatus\s*=\s*['"]ok['"]\s*\|\s*['"]unavailable['"]/.test(homeLiveMarket) &&
+    /HomeSparklineBasis\s*=\s*['"]daily_close['"]\s*\|\s*['"]reference_fx['"]\s*\|\s*['"]unavailable['"]/.test(homeLiveMarket) &&
+    /sparklineStatus:\s*HomeSparklineStatus/.test(homeLiveMarket) && /sparklineBasis:\s*HomeSparklineBasis/.test(homeLiveMarket));
+check('defines the honest KIS/FX sparkline period-label copy', /최근 20거래일 종가 추이/.test(homeLiveMarket) && /최근 20공시일 환율 추이/.test(homeLiveMarket));
+check('defines an UNAVAILABLE_SPARKLINE constant reused wherever a sparkline cannot be resolved (never a fabricated flat line)',
+  /UNAVAILABLE_SPARKLINE/.test(homeLiveMarket));
+check('builds the KIS sparkline from the same shared fetchLongHistoryOhlcv call already reused for the quote/OHLCV fallback (no second history provider)',
+  /buildKisSparkline/.test(homeLiveMarket) && (homeLiveMarket.match(/fetchLongHistoryOhlcv\(/g) || []).length === 1);
+check('caps the KIS sparkline to the last 20 valid points',
+  /HOME_SPARKLINE_POINTS\s*=\s*20/.test(homeLiveMarket) && /slice\(-HOME_SPARKLINE_POINTS\)/.test(homeLiveMarket));
+check('reuses fetchUsdKrwSparklineSeries for the FX sparkline (no second FX provider)',
+  homeLiveMarket.includes("fetchUsdKrwSparklineSeries") && /from\s*['"]\.\.\/chart-ai\/marketIntelligence\/crossAssetProvider\.mjs['"]/.test(homeLiveMarket));
+check('crossAssetProvider.mjs exports fetchUsdKrwSparklineSeries reusing the same FX_BASE (no new endpoint)',
+  crossAssetProvider.includes('export const fetchUsdKrwSparklineSeries') &&
+    (crossAssetProvider.match(/https?:\/\/[^'"\s]+/g) || []).every((u) => u.includes('frankfurter')));
+check('the FX sparkline series is deduped/sorted ascending and capped to 20 points',
+  /FX_SPARKLINE_POINTS\s*=\s*20/.test(crossAssetProvider) && /sort\(\(a,\s*b\)/.test(crossAssetProvider));
+
+log('--- Group 12: HF3 §3 rolling ticker belt (Ticker.astro) ---');
+check('renders a .ticker-rail wrapper around the semantic .ticker-track (the animated element)', /class="ticker-rail"\s+data-ticker-rail/.test(ticker));
+check('creates the aria-hidden visual clone track only in client JS (no SSR-duplicated markup)',
+  ticker.includes("data-ticker-track-clone") && ticker.includes("setAttribute('aria-hidden', 'true')"));
+check('gates clone creation on prefers-reduced-motion (no animated clone when motion is reduced)',
+  /matchMedia\(\s*['"]\(prefers-reduced-motion:\s*reduce\)['"]\s*\)/.test(ticker) && /!reduceMotion/.test(ticker));
+check('never animates via `left`/margin (transform-only distance/duration wiring via CSS custom properties)',
+  ticker.includes('--ticker-distance') && ticker.includes('--ticker-duration') && !/style\.left\s*=/.test(ticker));
+check('re-anchors the animation with a negative animation-delay computed from current progress (no restart-from-zero on data refresh)',
+  ticker.includes('animationDelay') && ticker.includes('currentTranslateX'));
+check('adds a document-hidden pause class on the rail (independent of the shared controller\'s own fetch-pausing listener)',
+  /rail\.classList\.toggle\(\s*['"]ticker-rail--paused['"]\s*,\s*document\.hidden\s*\)/.test(ticker));
+check('clone chips are forced non-tabbable (tabindex -1) so aria-hidden content is never a tab stop',
+  ticker.includes("chip.setAttribute('tabindex', '-1')"));
+
+log('--- Group 12: HF3 §8-§9 Snapshot inline sparkline + stable layout (HomeLiveMarketSnapshot.astro) ---');
+check('renders one inline SVG sparkline per card with no new charting dependency (role=img, Korean aria-label, fixed viewBox)',
+  homeSnapshot.includes('role="img"') && homeSnapshot.includes('viewBox="0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}"') &&
+    /SPARK_WIDTH\s*=\s*88/.test(homeSnapshot) && /SPARK_HEIGHT\s*=\s*32/.test(homeSnapshot));
+check('honest unavailable-chart state ("차트 데이터 없음"), never a fabricated flat line',
+  homeSnapshot.includes('차트 데이터 없음'));
+check('direction is derived from the sparkline\'s own first/last point (distinct from the card headline changePct tone)',
+  /sparklineDirection/.test(homeSnapshot) && /points\[0\]\.value/.test(homeSnapshot) && /points\[points\.length\s*-\s*1\]\.value/.test(homeSnapshot));
+check('normalizes x/y coordinates with padding and guards div-by-zero (span > 0 check)', /span\s*>\s*0/.test(homeSnapshot));
+check('shows a freshness badge only for the stale case (§HF2/§9 disclosure), text 갱신 지연', /갱신 지연/.test(homeSnapshot) && /freshness\s*===\s*['"]stale['"]/.test(homeSnapshot));
+check('both ok and unavailable card branches render an index-card-sparkline slot (stable height regardless of availability)',
+  (homeSnapshot.match(/class="index-card-sparkline"/g) || []).length >= 2);
+
+log('--- Group 12: HF3 CSS foundation (style.css) ---');
+check('defines the seamless-loop keyframes (translate3d only, never left/margin)',
+  STYLE_CSS.includes('@keyframes mk-ticker-roll') && /translate3d\(0,\s*0,\s*0\)/.test(STYLE_CSS) && /translate3d\(calc\(-1 \* var\(--ticker-distance/.test(STYLE_CSS));
+check('pauses on hover, keyboard focus-within, and the JS-toggled paused class',
+  STYLE_CSS.includes('.ticker-rail--rolling:hover') && STYLE_CSS.includes('.ticker-rail--paused') && STYLE_CSS.includes(':focus-within .ticker-rail--rolling'));
+check('prefers-reduced-motion disables the animation at the CSS level too (defense in depth)',
+  /@media \(prefers-reduced-motion:\s*reduce\)\s*\{\s*\.ticker-rail--rolling\s*\{\s*animation:\s*none;/.test(STYLE_CSS));
+check('defines the new sparkline-card CSS classes (empty state + period caption + freshness badge)',
+  STYLE_CSS.includes('.index-card-sparkline-empty') && STYLE_CSS.includes('.index-card-sparkline-period') && STYLE_CSS.includes('.index-card-freshness'));
+check('Snapshot grid has a 3/2/1 responsive breakpoint ladder for the expanded 9-card layout',
+  /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/.test(STYLE_CSS) &&
+    /max-width:\s*860px[\s\S]{0,120}grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/.test(STYLE_CSS) &&
+    /max-width:\s*560px[\s\S]{0,80}grid-template-columns:\s*1fr/.test(STYLE_CSS));
 
 // ---------------------------------------------------------------------------
 // Group 10: package.json wiring

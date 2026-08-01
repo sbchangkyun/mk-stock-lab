@@ -78,6 +78,34 @@
 - Extended `smoke:phase-3gl-home-live-data` to 117/117 and `check:phase-3gl-home-live-data` to 183/183; no
   ripple into `check:phase-3gj-live-market-dashboard` (still 159/159). PR title and scope unchanged.
 
+### HF3 hotfix - 2026-08-01: continuous ticker motion and Snapshot sparklines
+
+- `Ticker.astro` now rolls continuously left: a duplicated `aria-hidden` visual track plus a
+  `transform: translate3d(...)` CSS animation (~48px/s, clamped 15-90s cycle), re-anchored on every data
+  refresh via a negative `animation-delay` computed from the rail's current progress so a 60s content
+  refresh never jumps or restarts; disabled entirely under `prefers-reduced-motion: reduce`. The component's
+  own `visibilitychange` listener only toggles the animation-pause class — it never fetches, staying
+  distinct from the shared controller's own visibility-driven fetch pause.
+- Market Snapshot expanded from a fixed 4-item subset to the full closed 9-item `HOME_TICKER_REGISTRY`
+  (adds `dowjones`, `usdkrw`, `dollarindex`, `gold`, `wti`), now in a responsive 3/2/1-column grid; no new
+  instrument, KIS endpoint/TR ID, or FX provider.
+- Every Snapshot card now renders a dependency-free inline `<svg><polyline>` sparkline. `homeLiveMarket.ts`
+  adds a closed `sparklineStatus`/`sparklineBasis` contract (`HOME_SPARKLINE_POINTS = 20`, ascending,
+  finite-positive, never fabricated); KIS items source it from the same `fetchLongHistoryOhlcv` call already
+  used for fallback resolution (now called unconditionally, regardless of quote success, without ever
+  touching the headline price); `usdkrw` sources it from a new `fetchUsdKrwSparklineSeries` in the existing
+  Frankfurter/ECB provider (6h cache, capped 20 points).
+- Reviewed the HF2 `NEWS_NO_RESULTS` empty-feed contract against the owner's report of a genuinely empty
+  GNews result: confirmed as expected, honest behavior (`GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED`) —
+  no fixture, second provider, LLM, or validation change made.
+- Extended `smoke:phase-3gl-home-live-data` to 138/138 and `check:phase-3gl-home-live-data` to 210/210 (4
+  checker-staleness fixes for the intentional unconditional-OHLCV-fetch and Ticker-owned-listener design
+  changes — not source defects); no ripple into `check:phase-3gj-live-market-dashboard` (still 159/159).
+  `npm run build` completed all stages cleanly with complete output artifacts, but the Node process crashed
+  on exit with a native `STATUS_STACK_BUFFER_OVERRUN` — assessed as a pre-existing Node/esbuild-on-Windows
+  process-teardown issue unrelated to this diff, recorded as a documented anomaly rather than silently
+  treated as a full pass. Commit message: "Phase 3GL-HF3: add rolling ticker and Snapshot sparklines".
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization

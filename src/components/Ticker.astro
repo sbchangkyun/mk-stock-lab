@@ -6,6 +6,10 @@
  * (src/lib/home-live-market/homeLiveMarketController.ts), which is the sole owner of
  * GET /api/home/live-market.json for the whole page (Ticker is rendered site-wide via Layout.astro,
  * so the controller lives there rather than on the Home page alone).
+ *
+ * Phase 3GL-HF3 §3: the belt now rolls continuously left. The client script owns ONLY the belt's own
+ * animation (a duplicated aria-hidden visual track, transform-based motion, pause/reduced-motion
+ * handling) — it never opens a fetch, timer, or visibility listener for market data itself.
  */
 const tickerPlaceholders = [
   { id: 'sp500', label: 'S&P 500' },
@@ -21,13 +25,15 @@ const tickerPlaceholders = [
 ---
 
 <div class="ticker-belt" id="ticker_area" aria-label="시장 지표">
-  <div class="ticker-track" data-ticker-track>
-    {tickerPlaceholders.map((item) => (
-      <span class="ticker-chip" data-ticker-chip={item.id}>
-        <strong>{item.label}</strong>
-        <span>불러오는 중</span>
-      </span>
-    ))}
+  <div class="ticker-rail" data-ticker-rail>
+    <div class="ticker-track" data-ticker-track>
+      {tickerPlaceholders.map((item) => (
+        <span class="ticker-chip" data-ticker-chip={item.id}>
+          <strong>{item.label}</strong>
+          <span>불러오는 중</span>
+        </span>
+      ))}
+    </div>
   </div>
 </div>
 
@@ -39,6 +45,13 @@ const tickerPlaceholders = [
     type HomeLiveMarketItem,
     type HomeLiveMarketPayload,
   } from '../lib/home-live-market/homeLiveMarketController';
+
+  // §3: target ~40-55 px/sec, clamped to a sane duration regardless of measured belt width.
+  const ROLL_SPEED_PX_PER_SEC = 48;
+  const MIN_ROLL_DURATION_S = 15;
+  const MAX_ROLL_DURATION_S = 90;
+
+  let rollingActive = false;
 
   const toneToChipClass = (tone: 'positive' | 'negative' | 'neutral'): string =>
     tone === 'positive' ? 'ticker-chip--up' : tone === 'negative' ? 'ticker-chip--down' : 'ticker-chip--flat';
@@ -52,22 +65,71 @@ const tickerPlaceholders = [
     return item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const renderTicker = (items: HomeLiveMarketItem[]) => {
-    const track = document.querySelector<HTMLElement>('[data-ticker-track]');
-    if (!track) return;
-    track.innerHTML = items
-      .map((item) => {
-        if (item.status !== 'ok') {
-          return `<span class="ticker-chip" title="${item.basisLabel}"><strong>${item.label}</strong><span>이용 불가</span></span>`;
-        }
-        const chipClass = toneToChipClass(changeToneClass(item.changePct));
-        return `<span class="ticker-chip ${chipClass}" title="${item.basisLabel} · ${item.periodLabel}"><strong>${item.label}</strong><span class="ticker-chip-price">${formatPrice(item)}</span><span class="ticker-chip-change">${formatSignedPct(item.changePct)}</span></span>`;
-      })
-      .join('');
+  /** `forClone` chips are always non-tabbable (they live in the aria-hidden visual duplicate). */
+  const buildChipHtml = (item: HomeLiveMarketItem, forClone: boolean): string => {
+    const tab = !forClone && rollingActive ? '0' : '-1';
+    if (item.status !== 'ok') {
+      return `<span class="ticker-chip" tabindex="${tab}" title="${item.basisLabel}"><strong>${item.label}</strong><span>이용 불가</span></span>`;
+    }
+    const chipClass = toneToChipClass(changeToneClass(item.changePct));
+    return `<span class="ticker-chip ${chipClass}" tabindex="${tab}" title="${item.basisLabel} · ${item.periodLabel}"><strong>${item.label}</strong><span class="ticker-chip-price">${formatPrice(item)}</span><span class="ticker-chip-change">${formatSignedPct(item.changePct)}</span></span>`;
   };
 
-  const applyPayload = (payload: HomeLiveMarketPayload | null) => {
-    if (payload?.ok === true) renderTicker(payload.ticker);
+  /** Reads the element's current translateX (px) off its live computed transform matrix. */
+  const currentTranslateX = (el: HTMLElement): number => {
+    const transform = getComputedStyle(el).transform;
+    if (!transform || transform === 'none') return 0;
+    const values = transform
+      .slice(transform.indexOf('(') + 1, -1)
+      .split(',')
+      .map((value) => Number.parseFloat(value.trim()));
+    const txIndex = values.length === 16 ? 12 : 4; // matrix3d(...) vs matrix(...)
+    const tx = values[txIndex];
+    return Number.isFinite(tx) ? tx : 0;
+  };
+
+  /**
+   * Recomputes the seamless-loop distance/duration from the real track's current rendered width, then
+   * re-anchors the animation with a negative animation-delay equal to its current progress. This is
+   * what lets a 60s data refresh (which only replaces a track's innerHTML) update the belt's content
+   * without the motion visibly jumping or restarting from position zero.
+   */
+  const relayoutRolling = (rail: HTMLElement, track: HTMLElement) => {
+    const priorDistance = Number.parseFloat(rail.dataset.tickerDistance || '0');
+    const priorX = currentTranslateX(rail);
+    const progress = priorDistance > 0 ? Math.min(1, Math.max(0, -priorX / priorDistance)) : 0;
+
+    const railGap = Number.parseFloat(getComputedStyle(rail).columnGap || '0') || 0;
+    const distance = track.scrollWidth + railGap;
+    if (distance <= 0) return;
+    const duration = Math.min(MAX_ROLL_DURATION_S, Math.max(MIN_ROLL_DURATION_S, distance / ROLL_SPEED_PX_PER_SEC));
+
+    rail.dataset.tickerDistance = String(distance);
+    rail.style.setProperty('--ticker-distance', `${distance}px`);
+    rail.style.setProperty('--ticker-duration', `${duration}s`);
+    rail.style.animationDelay = `-${(progress * duration).toFixed(3)}s`;
+
+    // Re-apply the class so the browser picks up the new distance/duration/delay together, instead of
+    // mid-cycle (which is what produces a visible stutter).
+    rail.classList.remove('ticker-rail--rolling');
+    void rail.offsetWidth;
+    rail.classList.add('ticker-rail--rolling');
+  };
+
+  const renderTicker = (items: HomeLiveMarketItem[], area: HTMLElement) => {
+    const track = area.querySelector<HTMLElement>('[data-ticker-track]');
+    const clone = area.querySelector<HTMLElement>('[data-ticker-track-clone]');
+    if (!track) return;
+
+    track.innerHTML = items.map((item) => buildChipHtml(item, false)).join('');
+    if (clone) clone.innerHTML = items.map((item) => buildChipHtml(item, true)).join('');
+
+    const rail = area.querySelector<HTMLElement>('[data-ticker-rail]');
+    if (rail && clone) relayoutRolling(rail, track);
+  };
+
+  const applyPayload = (area: HTMLElement, payload: HomeLiveMarketPayload | null) => {
+    if (payload?.ok === true) renderTicker(payload.ticker, area);
   };
 
   const setup = () => {
@@ -75,9 +137,34 @@ const tickerPlaceholders = [
     if (!area || area.dataset.ready === 'true') return;
     area.dataset.ready = 'true';
 
-    applyPayload(getLatestHomeLiveMarketPayload());
+    const rail = area.querySelector<HTMLElement>('[data-ticker-rail]');
+    const track = area.querySelector<HTMLElement>('[data-ticker-track]');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // §3: reduced motion (or no rail/track found) keeps a single, non-duplicated static row — no
+    // animated clone is created at all.
+    if (rail && track && !reduceMotion) {
+      rollingActive = true;
+      track.querySelectorAll<HTMLElement>('.ticker-chip').forEach((chip) => chip.setAttribute('tabindex', '0'));
+
+      const clone = track.cloneNode(true) as HTMLElement;
+      clone.removeAttribute('data-ticker-track');
+      clone.setAttribute('data-ticker-track-clone', '');
+      clone.setAttribute('aria-hidden', 'true');
+      clone.querySelectorAll<HTMLElement>('.ticker-chip').forEach((chip) => chip.setAttribute('tabindex', '-1'));
+      rail.appendChild(clone);
+
+      rail.classList.add('ticker-rail--rolling');
+      area.classList.add('ticker-belt--rolling');
+
+      document.addEventListener('visibilitychange', () => {
+        rail.classList.toggle('ticker-rail--paused', document.hidden);
+      });
+    }
+
+    applyPayload(area, getLatestHomeLiveMarketPayload());
     window.addEventListener(HOME_LIVE_MARKET_EVENT, ((event: CustomEvent<HomeLiveMarketPayload>) => {
-      applyPayload(event.detail);
+      applyPayload(area, event.detail);
     }) as EventListener);
   };
 

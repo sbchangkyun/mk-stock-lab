@@ -11,8 +11,13 @@
 const FX_BASE = 'https://api.frankfurter.dev/v1';
 const FX_TIMEOUT_MS = 3500;
 const FX_TTL_MS = 6 * 60 * 60 * 1000;
+/** Phase 3GL-HF3 §7: a 20-point reference-FX sparkline reusing this same free ECB-backed source. */
+const FX_SPARKLINE_TTL_MS = 6 * 60 * 60 * 1000;
+const FX_SPARKLINE_LOOKBACK_DAYS = 35;
+const FX_SPARKLINE_POINTS = 20;
 
 let fxCache = null;
+let fxSparklineCache = null;
 
 const yyyymmdd = (date) =>
   `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
@@ -65,5 +70,48 @@ export const fetchUsdKrwContext = async (deps = {}) => {
     sanitizedErrorCode: 'NONE',
   };
   fxCache = { value, storedAtMs: now() };
+  return { ...value };
+};
+
+const isYyyyMmDd = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+
+/**
+ * Phase 3GL-HF3 §7: read-only reference-FX sparkline series for the Home Market Snapshot USD/KRW
+ * card. Reuses the same Frankfurter/ECB base and bounded-fetch helper as fetchUsdKrwContext above --
+ * no new provider. Requests one bounded date range (~35 calendar days, enough to cover weekends/ECB
+ * holidays) and returns the latest 20 valid daily reference rates, oldest to newest. Cached separately
+ * from the single-date context above since it is a different endpoint shape. Never labeled real-time.
+ *
+ * @returns { available, series: Array<{ date: string, value: number }> (date is YYYYMMDD), sanitizedErrorCode }
+ */
+export const fetchUsdKrwSparklineSeries = async (deps = {}) => {
+  const now = deps.now ?? (() => Date.now());
+  if (fxSparklineCache && now() - fxSparklineCache.storedAtMs < FX_SPARKLINE_TTL_MS) {
+    return { ...fxSparklineCache.value };
+  }
+
+  const end = new Date(now());
+  const start = new Date(now() - FX_SPARKLINE_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
+  const payload = await fetchJson(`${FX_BASE}/${yyyymmdd(start)}..${yyyymmdd(end)}?base=USD&symbols=KRW`);
+  const rates = payload && payload.rates && typeof payload.rates === 'object' ? payload.rates : null;
+
+  const points = rates
+    ? Object.entries(rates)
+        .filter(([date]) => isYyyyMmDd(date))
+        .map(([date, entry]) => {
+          const value = entry && typeof entry.KRW === 'number' ? entry.KRW : null;
+          return Number.isFinite(value) && value > 0 ? { date: date.replace(/-/g, ''), value: Math.round(value * 100) / 100 } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    : [];
+
+  const series = points.slice(-FX_SPARKLINE_POINTS);
+  const value =
+    series.length >= 2
+      ? { available: true, series, sanitizedErrorCode: 'NONE' }
+      : { available: false, series: [], sanitizedErrorCode: 'NOT_SOURCED' };
+
+  fxSparklineCache = { value, storedAtMs: now() };
   return { ...value };
 };
