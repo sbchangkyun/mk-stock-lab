@@ -17,9 +17,9 @@
     {
       "family": "kis-kosdaq",
       "file": "kosdaq_code.mst",
-      "zipBytes": 102091,
+      "zipBytes": 102094,
       "bytes": 515909,
-      "sha256": "deee1ac8676151ba8c0aba6e1528b56f2aefe9cdc0031444ad8678dc0d2b104c"
+      "sha256": "16eae8c5a8a55e2cf340498c5ed09e78c1eebe520a0dc783ac4450164071c577"
     },
     {
       "family": "kis-overseas-nasdaq",
@@ -70,8 +70,8 @@
   },
   "krSymbolRule": "^[0-9A-Z]{6}$ (six-character KRX code; numeric or alphanumeric; ASCII-uppercased).",
   "usSymbolRule": "^[A-Z][A-Z0-9.]{0,9}$ (KIS overseas ticker).",
-  "sourceAsOf": "2026-07-31",
-  "refreshedAt": "2026-07-31",
+  "sourceAsOf": "2026-08-01",
+  "refreshedAt": "2026-08-01",
   "activeCount": 16072,
   "inactiveArchiveCount": 50,
   "pendingInactiveCount": 0
