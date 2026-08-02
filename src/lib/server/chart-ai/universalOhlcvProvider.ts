@@ -33,6 +33,17 @@ const RECENT_CHART_TTL_MS = 5 * 60 * 1000; // recent chart ranges refresh ~every
 const NEGATIVE_TTL_MS = 30 * 1000; // stable no-data / unsupported: short negative cache
 const OHLCV_METHOD_VERSION = 'ohlcv-v1';
 
+/**
+ * Phase 3GM: read-only health snapshot of the single shared normalized-OHLCV cache used by both
+ * fetchUniversalOhlcv and fetchLongHistoryOhlcv. Never returns candle data -- only per-entry
+ * freshness metadata (the entry's `key` is a market-data cache key such as
+ * "country=kr|symbol=005930|...", built by buildOhlcvCacheKey, which never contains user/auth/
+ * token fields -- see FORBIDDEN_KEY_FIELDS in normalizedOhlcvCache.mjs). Instance-local: this cache
+ * exists only within the current warm serverless instance, not across all Production instances.
+ */
+export const getOhlcvCacheHealthSnapshot = (nowMs: number = Date.now()) =>
+  normalizedOhlcvCache.entriesHealthSnapshot(nowMs);
+
 export const OHLCV_SANITIZED_ERROR_CODES = {
   NONE: 'NONE',
   INVALID_INSTRUMENT: 'INVALID_INSTRUMENT',

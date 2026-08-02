@@ -6,6 +6,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "smoke:phase-3gm-operations-admin-mvp": "node scripts/smoke_phase_3gm_operations_admin_mvp.mjs",
+    "check:phase-3gm-operations-admin-mvp": "node scripts/check_phase_3gm_operations_admin_mvp_contract.mjs",
     "smoke:phase-3gl-home-live-data": "node scripts/smoke_phase_3gl_home_live_data.mjs",
     "check:phase-3gl-home-live-data": "node scripts/check_phase_3gl_home_live_data_contract.mjs",
     "smoke:phase-3gk-chart-ai-beta-productization": "node scripts/smoke_phase_3gk_chart_ai_beta_productization.mjs",

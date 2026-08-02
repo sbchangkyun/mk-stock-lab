@@ -1,5 +1,45 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GM - 2026-08-02
+
+### Operations and Admin MVP (implemented, PR opened, Owner Preview verification pending)
+
+- Closed out Phase 3GL / PR #9 with a final top-level comment recording the HF4 hotfix
+  (`43518b6a5e1ac6cc71bbea96f6cb52405353eb3f`), merge commit `dc4f3b0c018aa16acee3d6c4bcaced5bc7ca1df4`,
+  Production deployment `dpl_9qQHPbH9amFKvuGkhwdYxXDSYcv6`, and classification
+  `PHASE_3GL_HF4_MERGED_PRODUCTION_VERIFIED`. Roadmap updated in place: Phase 3GL moved to
+  `PRODUCTION_VERIFIED`; Phase 3GM moved from `PLANNED` to `IN_PROGRESS`.
+- Added one minimal, read-only, administrator-only operational surface: `GET
+  /api/admin/operations/overview.json` + `/admin/operations` page, covering (A) Chart AI usage-guard
+  counters, (B) KIS token health, (C) quote/OHLCV cache staleness. New `src/lib/server/adminOperations/`
+  module set (`types.ts`, `adminAuthorization.ts`, `usageGuardHealth.ts`, `kisTokenHealth.ts`,
+  `quoteCacheHealth.ts`, `operationsAggregator.ts`).
+- Authorization reuses the existing bearer-token resolver (`validateUserFromBearerToken`) and the
+  existing `public.site_admins` registry (migration `20260625_site_admins_and_settings.sql`, not
+  modified) via a new server-side service-role lookup — explicitly not a second admin-role system; no
+  migration, no new table/column/RPC. Non-admin and admin-check-failure both return the identical
+  sanitized 403 so the response never leaks `site_admins` membership.
+- Added four small, additive, non-behavioral read-only inspection exports to existing modules —
+  `getKisTokenHealthSnapshot()` (`kisClient.ts`, uses the existing `peekL1()` accessor, never issues a
+  token), `getQuoteCacheHealthSnapshot()` (`quoteCache.ts`), `entriesHealthSnapshot()`
+  (`normalizedOhlcvCache.mjs`), `getOhlcvCacheHealthSnapshot()` (`universalOhlcvProvider.ts`) — and one
+  additive dependency-injection parameter on `authorizeAdminOperationsRequest` for testability. None of
+  these edits change any existing caller's behavior (confirmed via focused regression suites below).
+- New `smoke:phase-3gm-operations-admin-mvp` (38/38 passed, zero real network/DB/KIS calls, injected
+  fakes only) and `check:phase-3gm-operations-admin-mvp` (70/70 passed, static contract + secret/PII/
+  mutation-control absence assertions). Focused regressions for reused modules all passed:
+  `smoke:phase-3gg-t-hf2` (44/44), `smoke:phase-3gg-t-hf2-hf1` (11/11),
+  `smoke:phase-3gg-u-chart-ai-usage` (13/13), `smoke:phase-3gg-op-fast` (32/32).
+- `npm run build` completed every reported stage (types, server entrypoints, three Vite builds, asset
+  rearrangement, `dist/` and `.vercel/output/{server,static}` produced) but the process still exited
+  non-zero (exit 9) — the previously-documented Windows-local build-exit anomaly, not a compile/type
+  error. Remote Preview confirmation of a clean `Ready` build was **not** obtained this phase and is
+  recorded as pending Owner verification.
+- No admin nav link was added: `Glob src/pages/admin/**` confirmed no pre-existing `/admin` route or
+  nav convention before this phase, so per the task's own instruction none was invented.
+- See `phase_3gm_operations_and_admin_mvp_plan_v0.1.md` and
+  `phase_3gm_operations_and_admin_mvp_result_v0.1.md` for full detail and exact field contracts.
+
 ## Phase 3GL - 2026-07-30
 
 ### Home live market data and GNews feed; roadmap reprioritization
