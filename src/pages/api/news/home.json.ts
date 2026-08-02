@@ -37,9 +37,10 @@ export const GET: APIRoute = async () => {
   const apiKey = readServerEnvValue('GNEWS_API_KEY');
   const result = await getHomeNewsFeed({ apiKey });
 
-  // Phase 3GL-HF2 §9: diagnostics is present only when the provider request itself succeeded (it is
-  // absent for NEWS_NOT_CONFIGURED / NEWS_UNAUTHORIZED / NEWS_RATE_LIMITED / NEWS_PROVIDER_ERROR,
-  // where there is nothing meaningful to count) -- sanitized integer counts only, never raw payloads.
+  // Phase 3GL-HF2 §9 (codes extended in HF4): diagnostics is present only when the provider request
+  // itself succeeded (it is absent for NEWS_NOT_CONFIGURED / NEWS_BAD_REQUEST / NEWS_UNAUTHORIZED /
+  // NEWS_QUOTA_EXHAUSTED / NEWS_RATE_LIMITED / NEWS_PROVIDER_ERROR, where there is nothing meaningful
+  // to count) -- sanitized integer counts only, never raw payloads.
   if (!result.ok) {
     const body = result.diagnostics
       ? { ok: false, code: result.code, diagnostics: result.diagnostics }

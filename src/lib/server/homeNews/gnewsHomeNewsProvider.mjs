@@ -15,7 +15,8 @@ const GNEWS_BASE = 'https://gnews.io/api/v4/search';
 const GNEWS_TIMEOUT_MS = 6000;
 const HOME_NEWS_TTL_MS = 5 * 60 * 1000;
 const MAX_ARTICLES = 6;
-const PROVIDER_MAX = 20;
+// Phase 3GL-HF4: GNews Free plan caps `max` at 10 per request (20 returned HTTP 400).
+const PROVIDER_MAX = 10;
 
 // Phase 3GL-HF2 §10: simplified to a conservative 8-term OR expression after the 16-term version
 // returned zero articles in Preview -- kept well within the provider's practical query-length
@@ -168,9 +169,11 @@ export const dedupeAndRankHomeArticles = (articles, limit = MAX_ARTICLES) => {
 };
 
 const fetchGnewsSearch = async (apiKey, fetchFn) => {
+  // Phase 3GL-HF4: the Search endpoint's supported-language list does not include Korean, so `lang`
+  // is omitted entirely -- the Korean-keyword COMBINED_QUERY itself is the Korean-news targeting
+  // mechanism, not a `lang` filter.
   const params = new URLSearchParams({
     q: COMBINED_QUERY,
-    lang: 'ko',
     max: String(PROVIDER_MAX),
     sortby: 'publishedAt',
     apikey: apiKey,
@@ -180,7 +183,9 @@ const fetchGnewsSearch = async (apiKey, fetchFn) => {
   const timer = setTimeout(() => controller.abort(), GNEWS_TIMEOUT_MS);
   try {
     const res = await fetchFn(`${GNEWS_BASE}?${params.toString()}`, { method: 'GET', signal: controller.signal });
-    if (res.status === 401 || res.status === 403) return { ok: false, code: 'NEWS_UNAUTHORIZED' };
+    if (res.status === 400) return { ok: false, code: 'NEWS_BAD_REQUEST' };
+    if (res.status === 401) return { ok: false, code: 'NEWS_UNAUTHORIZED' };
+    if (res.status === 403) return { ok: false, code: 'NEWS_QUOTA_EXHAUSTED' };
     if (res.status === 429) return { ok: false, code: 'NEWS_RATE_LIMITED' };
     if (!res.ok) return { ok: false, code: 'NEWS_PROVIDER_ERROR' };
     const body = await res.json();
