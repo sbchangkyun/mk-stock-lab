@@ -1,37 +1,46 @@
 # Phase 3GL — Home Live Data and GNews — Result v0.1
 
 Replaces the Home page's static/fixture-era market ticker and market-news list with real, live data: one
-shared server-side orchestrator serves both the 9-item ticker belt and the 4-card Market Snapshot from a
+shared server-side orchestrator serves both the 9-item ticker belt and the 9-card Market Snapshot from a
 single closed-registry resolution pass, and a new server-only GNews client feeds a real, capped,
 deterministically-classified market-news list. **Explicitly not this phase:** a client-controlled symbol
 fan-out API, a second general stock-market data provider, a new KIS endpoint/TR ID, a new FX provider, any
-account/order/balance/funds/trading capability, broad manual QA, merging the PR, a Production deploy, any
-Vercel environment mutation, any Supabase migration, or starting Phase 3GM.
+account/order/balance/funds/trading capability, broad manual QA, starting Phase 3GM, and (prior to release
+approval) merging the PR or a Production deploy.
 
 ## 1. Executive classification
 
-`IMPLEMENTED_PUSHED_PREVIEW_READY_HOME_MARKET_AND_GNEWS_FUNCTIONAL_VERIFICATION_OWNER_PENDING` (HF2 state;
-see §1c for the HF3 hotfix's own classification,
-`IMPLEMENTED_PUSHED_PREVIEW_READY_ROLLING_TICKER_AND_SNAPSHOT_SPARKLINES_OWNER_VISUAL_VERIFICATION_PENDING`,
-reported in the final HF3 phase report once commit/push/Preview-check complete). All implementation and test
-work for this phase, including the **Phase 3GL-HF1 hotfix** (§1a), the **Phase 3GL-HF2 hotfix** (§1b), and
-the **Phase 3GL-HF3 hotfix** (§1c), is complete and pushed on branch `feature/phase-3gl-home-live-data-and-gnews`
-(created from `origin/main` at `0e53cde`, the Phase 3GK merge commit; PR #8, HF2 commit `354c454`). The full
-focused regression gate for this phase (3GL smoke/check, 3GJ smoke/check, `npm ls --depth=0`,
-`npm run build`, `git diff --check`) is green (see §5). The Vercel Preview deployment for `354c454` reached
-`Ready` (`gh api .../commits/354c454/statuses` reports the `Vercel` context as `success`, "Deployment has
-completed"; the `vercel[bot]` PR comment shows the `Ready` badge and the same commit/branch); the Netlify
-deploy-preview also reached `success`. The Preview app itself
-(`https://mkstocklab-git-feature-phase-8e5209-sbchangkyun-2946s-projects.vercel.app`) responds `302` to
-`https://vercel.com/sso-api?...` — i.e. it is gated behind Vercel Deployment Protection (SSO), consistent
-with every prior Preview in this project's history. This is a clean SSO redirect (not a platform/alias
-error page), which is the best available unauthenticated signal that the alias resolved correctly
-(`aliasError` effectively null), but it means the §15 functional checklist (Home 200 with real content,
-ticker length 9, snapshot length 4 with exact labels, no contradictory change directions, corrected basis
-label, GNews single-request/diagnostics/zero-or-nonzero-result behavior, no secret/raw-payload exposure)
-cannot be performed by this assistant without owner credentials, which this phase does not enter under any
-circumstance (see §2 of the governing spec). No Production deploy, no Vercel environment mutation, and no
-Supabase migration have been performed by this phase.
+`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`. All implementation and test work for this phase,
+including the **Phase 3GL-HF1 hotfix** (§1a), the **Phase 3GL-HF2 hotfix** (§1b), and the **Phase 3GL-HF3
+hotfix** (§1c), is complete and pushed on branch `feature/phase-3gl-home-live-data-and-gnews` (created from
+`origin/main` at `0e53cde`, the Phase 3GK merge commit; PR #8). The final HF3 implementation commit is
+`bb80c994902b9540e658287169e66678586dc434`. The full focused regression gate for this phase (3GL smoke/check,
+3GJ smoke/check, `npm ls --depth=0`, `npm run build`, `git diff --check`) is green (see §5).
+
+The Vercel Preview deployment for `bb80c99` reached `Ready` (deployment `dpl_8EVXmV1BZf6yb7GvhpZVuwe3kmAM`,
+source `git`, target `Preview`, `aliasError: null`, commit `bb80c994902b9540e658287169e66678586dc434`; the
+`Vercel` commit-status context reports `success`); the Netlify deploy-preview also reached `success`. Unlike
+HF1/HF2, this Preview received full **Owner functional and visual verification** rather than only an
+unauthenticated deployment-level check:
+
+- `GET /api/home/live-market.json` returned HTTP 200 with `ticker.length = 9` and `snapshot.length = 9`, in
+  the exact order KOSPI200 / KOSDAQ150 / S&P500 / NASDAQ100 / DOW30 / USD/KRW / 달러 인덱스 / 금 / WTI 원유.
+- All 9 Snapshot entries returned a valid, non-fabricated 20-point sparkline; `usdkrw` used
+  `sparklineBasis: 'reference_fx'` and every KIS-backed entry used `sparklineBasis: 'daily_close'`.
+- No quote amount/percentage sign contradiction was observed (confirming the HF2 fix held under live data).
+- The rolling ticker belt was visually verified by the Owner as rolling continuously left with no visible
+  jump or restart across a data refresh.
+- The Market Snapshot's 9 cards and their mini line charts were visually verified by the Owner.
+- The GNews `NEWS_NO_RESULTS` empty state was verified live: `ok: false`, `code: 'NEWS_NO_RESULTS'`, and
+  `providerArticleCount`/`normalizedArticleCount`/`returnedArticleCount` all `0`; the Korean empty-state copy
+  rendered correctly. This is the expected, honest outcome for a genuinely empty provider feed (see
+  `GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED` in §1c), not a defect.
+- No secret, API key, token, or raw provider payload was observed in any response.
+
+Based on this completed Owner verification, release approval was granted
+(`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`). No Production deploy, no Vercel environment
+mutation, and no Supabase migration have been performed as part of implementation or verification; the PR
+merge and Git-integrated Production deployment are the next, separately-authorized step (see §6).
 
 ### 1c. HF3 hotfix — continuous ticker motion and Snapshot sparklines
 
@@ -110,19 +119,25 @@ required no change.
 - **Regression gate**: `npm run smoke:phase-3gl-home-live-data` 138/138; `npm run check:phase-3gl-home-live-data`
   210/210; `npm run smoke:phase-3gj-live-market-dashboard` 162/162 (no ripple); `npm run check:phase-3gj-live-market-dashboard`
   159/159 (no ripple); `npm ls --depth=0` clean; `git diff --check` exit 0 (only benign CRLF/LF advisories).
-  `npm run build` (Astro 6.1.1 / Node v24.14.1 / `@astrojs/vercel@10.0.4`) completed every logged build stage
-  with zero errors or warnings and produced complete `dist/client`, `dist/server`, `.vercel/output/server`,
-  and `.vercel/output/static` artifacts, but the Node process then crashed on exit with a native
-  `STATUS_STACK_BUFFER_OVERRUN` (exit code `-1073740791`), reproduced identically across 3 runs with no
-  crash-dump found. This is recorded honestly as a build-content **pass with a process-exit anomaly**, not
-  silently upgraded to an unqualified pass: all real build work completes and all artifacts are verified
-  complete before the native crash, and it is assessed as a pre-existing Node/esbuild-on-Windows
-  process-teardown issue unrelated to the HF3 diff (a clean-baseline comparison via `git stash` or a fresh
+  `npm run build` (Astro 6.1.1 / `@astrojs/vercel@10.0.4`) completed every logged build stage with zero errors
+  or warnings and produced complete `dist/client`, `dist/server`, `.vercel/output/server`, and
+  `.vercel/output/static` artifacts on both Node 22.23.1 and Node 24.14.1, but the local Windows process then
+  exited with a native Windows access violation, `0xC0000005` (decimal exit code `-1073741819`), reproduced
+  identically on both Node versions when the Astro build step is run directly; running the `postbuild` step
+  directly exits `0` with no anomaly. This is classified
+  `LOCAL_WINDOWS_ASTRO_TEARDOWN_ACCESS_VIOLATION_RECORDED_NON_RELEASE_BLOCKING`: all real build work completes
+  and all artifacts are verified complete before the native exit, no stderr, Node diagnostic report, or
+  matching Windows Application-log event was produced, and — decisively — the authoritative remote Vercel
+  build for this exact commit (`npm run build` → Astro/Vite build → `@astrojs/vercel` function bundling →
+  static output copying → `postbuild` → deployment) completed successfully and produced the `Ready` Preview
+  deployment described above
+  (`REMOTE_EXACT_COMMIT_BUILD_AND_POSTBUILD_VERIFIED`). A clean-baseline comparison via `git stash` or a fresh
   `git worktree` + `npm install` was not attempted, since both are prohibited by this phase's governing
-  constraints).
-- **Preview verification**: not yet performed as of this writing — commit, push, and the §15 Preview check
-  (deployment-level state plus the 13 functional checks) are the immediate next steps in this same phase,
-  reported in the final phase report rather than re-stated here.
+  constraints; it is not needed to establish non-release-blocking status given the successful remote build of
+  the identical commit.
+- **Preview verification**: completed. See §1 for the full Owner-verified functional/visual evidence
+  (Home API contract, all 9 Snapshot sparklines, rolling-ticker motion, Snapshot cards, and the
+  `NEWS_NO_RESULTS` empty state) that led to `PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`.
 
 ### 1b. HF2 hotfix — corrected quote direction and honest GNews empty-feed handling
 
@@ -221,10 +236,13 @@ Resolution runs with the same bounded concurrency (limit 3) reused from `marketD
 
 `GET /api/home/live-market.json` calls this orchestrator once per request and returns `{ ok, generatedAt,
 ticker, snapshot }`: `ticker` always carries all 9 items (each individually `status: 'ok'` or
-`'unavailable'`, never fabricated), and `snapshot` is a fixed 4-item subset (`kospi`, `kosdaq`, `sp500`,
-`nasdaq100`) that is **always present at length 4** — items that failed to resolve are included as
-individually-unavailable cards rather than being dropped, so the Market Snapshot grid never reflows based on
-data availability. The route reuses the existing `allowProductionMarketDashboardLiveData` readiness
+`'unavailable'`, never fabricated), and — since the HF3 hotfix (§1c) — `snapshot` covers the full 9-item
+registry in the same fixed order (KOSPI200, KOSDAQ150, S&P500, NASDAQ100, DOW30, USD/KRW, 달러 인덱스, 금,
+WTI 원유) and is **always present at length 9**; items that failed to resolve are included as
+individually-unavailable cards (preserving identity and order) rather than being dropped, so the Market
+Snapshot grid never reflows based on data availability. (Prior to HF3, `snapshot` was a fixed 4-item subset —
+`kospi`, `kosdaq`, `sp500`, `nasdaq100` — see §1a/§1b for that history.) The route reuses the existing
+`allowProductionMarketDashboardLiveData` readiness
 exception (no new Vercel environment variable), returns `MARKET_DASHBOARD_SANITIZED_ERROR_CODES` values,
 uses a 45s `s-maxage`/`stale-while-revalidate` cache on success and `no-store` on failure, reads zero query
 parameters, and rejects non-GET methods.
@@ -321,25 +339,26 @@ own fetching.
   introduced no further ripple into this checker.
 - `npm ls --depth=0` — clean, no unmet/invalid dependency.
 - `npm run build` — Astro/Vite/Vercel-adapter build completed successfully, no error, at HF1/HF2. At HF3,
-  the build again completed every logged stage with zero errors and produced complete output artifacts, but
-  the Node process crashed on exit with a native `STATUS_STACK_BUFFER_OVERRUN`; see §1c for the full
-  assessment (build content pass, process-exit anomaly, not a code defect).
+  the build again completed every logged stage with zero errors and produced complete output artifacts on
+  both Node 22 and Node 24, but the local Windows process exited with a native `0xC0000005` access violation;
+  see §1c for the full assessment (`LOCAL_WINDOWS_ASTRO_TEARDOWN_ACCESS_VIOLATION_RECORDED_NON_RELEASE_BLOCKING`,
+  corroborated by `REMOTE_EXACT_COMMIT_BUILD_AND_POSTBUILD_VERIFIED` — the exact same commit's Vercel build
+  and postbuild completed successfully and deployed).
 - `git diff --check` — exit 0 (only benign CRLF/LF line-ending advisories, no conflict markers, no
   trailing-whitespace errors).
 
-## 6. Not yet performed (next steps in sequence)
+## 6. Status and next steps
 
-- Functional/authenticated verification of the HF2 Preview against the §15 checklist (Home content, ticker/
-  snapshot shape, quote-direction consistency, basis label, GNews single-request behavior and result count,
-  diagnostics, no secret exposure) is **Owner-pending**: the Preview is Vercel-SSO-protected, and this
-  assistant does not hold or enter owner credentials. Deployment-level metadata (state = Ready/success,
-  correct git branch/commit, no alias error) was verified without authentication; page/route content was
-  not.
-- The HF3 hotfix's own commit/push and its §15 Preview verification (new Preview deployment state plus the
-  13 functional checks — rolling belt, 9-item Snapshot, sparkline contract, honest `NEWS_NO_RESULTS`) are the
-  immediate next steps in this phase, reported in the final HF3 phase report; **direct browser-based visual
-  inspection of the rolling-belt motion is Owner-pending** for the same SSO-credential reason as above.
-- Merging the PR, Production deployment, and Production QA are Owner-only items not performed by this phase.
+- Owner Preview verification is **complete** (see §1): the Owner authenticated against the Vercel-SSO-gated
+  Preview and confirmed the Home API contract, all 9 Snapshot sparklines and their exact labels/order, the
+  rolling-ticker motion, the Snapshot mini charts, and the honest `NEWS_NO_RESULTS` empty state.
+- Release approval has been **granted**
+  (`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`). The next action is merging PR #8 and verifying
+  the resulting Git-integrated Production deployment — tracked as part of this same release-approval work,
+  not a new phase.
+- Comprehensive/broad Phase 3 responsive, accessibility, and symbol-matrix QA remains deferred until Phase 3
+  Closeout (`COMPREHENSIVE_QA_AND_OPTIMIZATION_DEFERRED_UNTIL_PHASE_3_CLOSEOUT`); only the focused Production
+  checks in this release's scope are performed now.
 
 ## 7. Next phase
 

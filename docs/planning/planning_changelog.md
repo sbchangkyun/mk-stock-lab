@@ -106,6 +106,23 @@
   process-teardown issue unrelated to this diff, recorded as a documented anomaly rather than silently
   treated as a full pass. Commit message: "Phase 3GL-HF3: add rolling ticker and Snapshot sparklines".
 
+### Release approval - 2026-08-02: Owner Preview verification complete
+
+- Owner completed full authenticated verification of the HF3 Preview (commit `bb80c99`): rolling ticker
+  belt confirmed rolling continuously left with no visible jump/restart; all 9 Market Snapshot cards and
+  their mini line charts confirmed rendering correctly; `GET /api/home/live-market.json` confirmed
+  `ticker.length = 9`, `snapshot.length = 9`, exact label order, all 9 sparklines valid, no quote sign
+  contradiction; `GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED` re-verified live (all diagnostic counters
+  zero, honest Korean empty-state copy rendered).
+- Re-examined the local `npm run build` exit anomaly on both Node 22.23.1 and Node 24.14.1: both reproduce a
+  Windows `0xC0000005` access violation on process exit after the Astro build step (direct `postbuild`
+  execution exits `0`); classified `LOCAL_WINDOWS_ASTRO_TEARDOWN_ACCESS_VIOLATION_RECORDED_NON_RELEASE_BLOCKING`
+  and corroborated by the exact-commit remote Vercel build/postbuild completing successfully
+  (`REMOTE_EXACT_COMMIT_BUILD_AND_POSTBUILD_VERIFIED`).
+- Classification: `PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`. PR #8 approved for merge; the
+  Git-integrated Production deployment and a focused Production verification follow as the next step. Phase
+  3GM (Operations and Admin MVP) remains `PLANNED`, not started.
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization
