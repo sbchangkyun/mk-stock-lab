@@ -4,8 +4,10 @@ Baseline: `origin/main` = `dc4f3b0c018aa16acee3d6c4bcaced5bc7ca1df4` (Phase 3GL-
 closeout comment: https://github.com/sbchangkyun/mk-stock-lab/pull/9#issuecomment-5156323909).
 Branch: `feature/phase-3gm-operations-admin-mvp`.
 
-Status: **IMPLEMENTED, TESTED LOCALLY, PUSHED, PR OPENED — Owner Preview verification pending.**
-No merge, no manual deploy, no environment-variable change, no Supabase migration was performed.
+Status: **IMPLEMENTED (original + HF1 + HF2), TESTED LOCALLY, PUSHED, PR OPENED — Owner functional
+verification of HF1 is complete (see §0b); Owner visual/UX verification of the HF2 redesign is
+pending.** No merge, no manual deploy, no environment-variable change, no Supabase migration was
+performed.
 
 ## 0. Phase 3GM-HF1 hotfix (same branch, same PR #10, 2026-08-02)
 
@@ -13,8 +15,9 @@ A follow-up hotfix corrected two display-layer defects found before Owner Previe
 original commit `8fc3372`:
 
 1. **Visible Korean text corruption.** `src/pages/admin/operations.astro`'s initial (pre-load)
-   "last refreshed" placeholder rendered the corrupted string `마지막 �-신: -` (containing a Unicode
-   replacement character, U+FFFD) instead of the intended `마지막 갱신: -`. The dynamically-rendered
+   "last refreshed" placeholder rendered a corrupted variant of the intended `마지막 갱신: -` string
+   (its second syllable had been replaced by a Unicode replacement character, U+FFFD, in the source
+   literal) instead of the intended text. The dynamically-rendered
    post-load label further down the same file (`renderOverview()`) was already correct — only the
    static placeholder was corrupted. The complete Phase 3GM diff (all files touched in `8fc3372`) was
    re-scanned for any other U+FFFD occurrence; none was found.
@@ -38,6 +41,104 @@ and asserts zero deleted lines, confirming they remain purely-additive, unchange
 hooks. No migration, no environment-variable mutation, no Supabase change, no provider/KIS request,
 and no token issuance occurred as part of this hotfix. Full detail in `planning_changelog.md`'s
 "Phase 3GM-HF1" entry and in §6/§10 below.
+
+## 0b. Phase 3GM-HF2 hotfix — UI/UX completion pass (same branch, same PR #10, 2026-08-03)
+
+Owner completed an authenticated click-through of the HF1 commit and confirmed the page was
+**functionally correct** (signed-out lock state shown correctly, admin sees full real data, no
+secret/PII leakage) but **not visually release-ready**: an oversized English-first heading, the
+site-wide floating slide-ad and bottom ad banner bleeding into the admin screen, a lock icon floating
+off-center at the left edge in the signed-out state, plain 예/아니오-style KIS booleans, and a login
+button that was never actually shown for the signed-out case. HF2 is a **presentation-layer-only**
+rewrite of `src/pages/admin/operations.astro` addressing all of these; it changes **zero** API
+response fields/shape, authorization logic, Supabase queries, usage-aggregation logic, KIS
+token-inspection logic, cache-inspection logic, cache TTL behavior, or KIS issuance behavior.
+
+- **Korean-first header**: eyebrow "관리자 전용", a single `<h1>운영 현황</h1>` with a scoped
+  `.ops-h1 { font-size: 28px; }` override (previously inherited the site's bare global
+  `h1 { font-size: 44px; }` rule with no override — the root cause of the oversized heading), and
+  "Operations Overview" kept only as a small non-heading subtitle.
+- **Client-side-only overall status**: a `worstStatus()` precedence helper (`unavailable` >
+  `warning` > `healthy`) derives one "전체 상태" summary card purely in the browser from the three
+  already-returned closed statuses (`usageGuard.status`, `kisToken.status`, worst of
+  `quoteCaches[].status`). **No new API field was added** — `overview.json.ts`,
+  `operationsAggregator.ts`, and `types.ts` are byte-for-byte unmodified by this hotfix.
+- **Shared badge component**: one `buildBadge()` builder used everywhere a status is shown, always
+  pairing an `aria-hidden` icon with a visible 정상/주의/정보 없음 text node (never color-only), with
+  a dark-mode-safe warning color override.
+- **Section A (Chart AI 사용량)**: promotes 오늘 사용 횟수 / 이용자 수 / 한도 도달 이용자 수 / 일일
+  한도 to a top highlight-stat row; 기준 날짜 / 가장 최근 사용 시각 / 저장소 상태 moved to a
+  secondary detail row.
+- **Section B (KIS 토큰 상태)**: replaces plain 예/아니오 booleans with semantic wording
+  (사용 가능/비활성, 토큰 있음/토큰 없음, 만료되지 않음/만료 또는 사용 불가); shows a
+  "현재 운영 영향 없음" note **only** when `durableStoreReady` is false **and** the returned overall
+  `kis.status` is genuinely `'healthy'` — never when the real status is `warning`/`unavailable`.
+- **Section C (시세 캐시 상태)**: per-cache sub-cards (2-col desktop / 1-col mobile) with an honest
+  empty-state ("현재 인스턴스에 저장된 캐시가 없습니다." / "실제 시세 조회 후 상태가
+  표시됩니다.") when `entryCount === 0`, conditional age/update rows shown only when non-null, and
+  the exact HF1-established null-age note ("이 캐시는 생성 시각을 저장하지 않아 항목 나이를
+  제공하지 않습니다.") otherwise — no change to the underlying null-vs-real-age contract from HF1
+  (§0/§7).
+- **Instance-local disclosure**: a fixed notice above the cache cards
+  ("캐시 정보는 현재 요청을 처리한 서버 인스턴스 기준입니다. 전체 Production 인스턴스의 합산
+  상태가 아닙니다.").
+- **Refresh toolbar**: last-refreshed timestamp left, a styled refresh button right; the existing
+  `refreshInFlight` overlap guard is preserved (early-`return`, not replaced with an
+  `AbortController`); the button label toggles 새로고침 ↔ 갱신 중 while a request is in flight; a
+  `role="status" aria-live="polite"` region announces "운영 현황을 갱신했습니다." on success and
+  "최신 정보를 불러오지 못해 이전 결과를 표시합니다." on failure while the previous good `lastGoodOverview`
+  stays visible (this replaces HF1's shorter "이전 데이터를 표시합니다" copy with a more complete
+  sentence — the underlying stale-data-preservation behavior is unchanged).
+- **Signed-out lock state, bug fixed**: `#admin-ops-login-action` previously carried a hard-coded
+  `hidden` attribute that was **never removed** for the signed-out (401) case — the login CTA was
+  invisible exactly when it was most needed. It is now shown via `classList.remove('hidden')`
+  whenever the signed-out state is entered, and dispatches the exact same
+  `window.dispatchEvent(new CustomEvent('mk:open-auth'))` event used by `Header.astro`,
+  `portfolio.astro`, and `chart-ai.astro` (no new auth-trigger mechanism invented). The lock-state
+  container also gained `display: grid; justify-items: center;` (matching `portfolio.astro`'s
+  `.portfolio-lock-state`), fixing a second bug where the shared 76×76px lock icon rendered pinned to
+  the left edge instead of centered (the previous container only had `text-align: center`, which does
+  not center a block-level child).
+- **Non-admin (403) state**: distinct title "접근 권한이 없습니다" and copy
+  "이 화면은 등록된 관리자만 볼 수 있습니다.", with the login button explicitly hidden (no CTA is
+  offered for a state a login action cannot fix).
+- **Admin-page-only distraction removal**: `<Layout pageClass="admin-operations-page">` (using
+  `Layout.astro`'s existing, unmodified `pageClass` prop — the same convention already used by
+  `index.astro`'s `home-page` class) plus a `:global()` rule scoped to
+  `body.admin-operations-page #slidePopup` / `#bottomAdBanner`, hiding only the floating slide ad
+  (`SlideAd.astro`) and the bottom ad banner (`Footer.astro`) on this one page. The wrapping
+  `#bottomDocumentArea` (which also contains the real `<footer class="site-footer">`) is intentionally
+  **not** hidden, so the real site footer is unaffected. Verified via the static checker that
+  `index.astro` does not carry the admin-only `pageClass` and that `Layout.astro` itself was not
+  touched.
+- **Responsive/accessibility**: summary and highlight-stat grids collapse 4→2→1 columns at 900px/640px
+  breakpoints; the cache grid collapses 2→1 column at 640px; a visible `:focus-visible` outline on all
+  interactive controls; `@media (prefers-reduced-motion: reduce)` disables the refresh-icon spin; all
+  decorative icons carry `aria-hidden="true"`; no external icon-font/library dependency was added (all
+  icons are small inline `<svg>` markup built at runtime).
+
+**Test-file scope decision**: `scripts/admin_operations_testsrc.ts` (the esbuild-bundled smoke suite)
+exercises only the server-side pure functions (`authorizeAdminOperationsRequest`,
+`getUsageGuardOverview`, `getKisTokenOverview`, `getQuoteCacheOverview`) via injected fakes — it has no
+DOM/UI assertions and none of those functions changed in this hotfix, so it was left unmodified
+(44/44 unchanged). All new UI-text/behavior/accessibility/responsive assertions for this hotfix were
+instead added to the static checker (`scripts/check_phase_3gm_operations_admin_mvp_contract.mjs`,
+new **Group 13**, 42 new checks), plus two pre-existing Group 7 assertions were updated in place to
+match intentional new copy (the failure-notice wording, and the section headings moving from
+mixed English/Korean to fully Korean) without weakening what they guarantee. See §6 for totals.
+
+While updating this doc for HF2, one **pre-existing, HF2-unrelated** static-checker false-positive was
+also corrected: `Group 10`'s repo-wide U+FFFD scan was flagging this result doc and
+`planning_changelog.md` themselves, because both files' HF1 section quoted the corrupted string
+verbatim (as an example of the bug) with the literal replacement character embedded in the Markdown.
+Both docs were confirmed unmodified since the HF1 commit before this edit (`git diff` against `HEAD`
+was empty for both paths), so this was not something HF2 introduced — the illustrative text was
+reworded above (§0) to describe the corruption without embedding the literal character, preserving the
+same historical meaning.
+
+Owner authenticated visual/interaction re-verification of the HF2 redesign (mobile 375-390px,
+touch/keyboard, non-admin 403 state specifically) is still **pending** — this hotfix has not yet had a
+fresh Owner Preview QA pass performed against it.
 
 ## 1. Objective (unchanged from plan)
 
@@ -117,20 +218,32 @@ first file under that path), so per the task's own instruction, **no new public 
   provider/network function, and (HF1) that the normalized-OHLCV summary's `newestEntryAgeMs`/
   `oldestEntryAgeMs`/`lastSuccessfulUpdateAtIso` stay `null` even when the fake snapshot supplies
   `msUntilExpiry` values, while the current-price cache's age fields stay real/non-null pass-throughs).
-- `npm run check:phase-3gm-operations-admin-mvp` → static contract checker. **101/101 passed** (70/70
-  original + 31 new HF1 assertions). Covers file existence, reused-resolver/reused-registry
-  assertions, no-second-admin-system assertion, no-mutation-control assertions (cache purge/token
-  refresh/role edit/trading/order/balance/env-edit — all absent), no-secret/PII assertions (no
-  `accessToken` field, no email selection, no hardcoded bearer/service-role literal), closed
-  health-enum assertions, additive-reuse assertions (health snapshot functions never call
-  `acquire`/`getTokenHandle`/`delete`/`set`), UI-page behavior assertions (auth gate, single fetch,
-  manual refresh, in-flight guard, last-good preservation, no `localStorage`, no cache-bypass param, no
-  polling, no mutation control, Korean section labels), nav convention assertion (`Layout.astro`
-  unmodified), package.json wiring assertions, and (HF1, Groups 10-12) a repo-wide U+FFFD scan across
-  every Phase 3GM UI/lib/doc file, an exact-match assertion on the corrected `마지막 갱신: -` label,
-  source-level assertions that OHLCV age is never computed from `msUntilExpiry`/`configuredTtlMs`
-  arithmetic, and an additive-diff guard (`git diff dc4f3b0..HEAD --numstat`) asserting the four
-  reused-cache files have zero deleted lines against the pre-3GM baseline.
+- `npm run check:phase-3gm-operations-admin-mvp` → static contract checker. **144/144 passed** (101/101
+  after HF1 + 43 net new/changed HF2 assertions: 2 pre-existing Group 7 assertions updated in place for
+  intentional new copy, plus a new Group 13 with 42 checks). Covers file existence,
+  reused-resolver/reused-registry assertions, no-second-admin-system assertion, no-mutation-control
+  assertions (cache purge/token refresh/role edit/trading/order/balance/env-edit — all absent),
+  no-secret/PII assertions (no `accessToken` field, no email selection, no hardcoded
+  bearer/service-role literal), closed health-enum assertions, additive-reuse assertions (health
+  snapshot functions never call `acquire`/`getTokenHandle`/`delete`/`set`), UI-page behavior assertions
+  (auth gate, single fetch, manual refresh, in-flight guard, last-good preservation, no `localStorage`,
+  no cache-bypass param, no polling, no mutation control, Korean section labels), nav convention
+  assertion (`Layout.astro` unmodified), package.json wiring assertions, (HF1, Groups 10-12) a
+  repo-wide U+FFFD scan across every Phase 3GM UI/lib/doc file, an exact-match assertion on the
+  corrected `마지막 갱신: -` label, source-level assertions that OHLCV age is never computed from
+  `msUntilExpiry`/`configuredTtlMs` arithmetic, an additive-diff guard (`git diff dc4f3b0..HEAD
+  --numstat`) asserting the four reused-cache files have zero deleted lines against the pre-3GM
+  baseline, and (HF2, Group 13) single-H1/Korean-header assertions, client-side-only overall-status
+  derivation assertions (and that no new `overallStatus`/`overallHealth` field was added to the
+  route/aggregator/types), shared-badge honesty assertions, per-section content assertions, KIS
+  semantic-wording assertions, the conditional "no operating impact" note assertion, empty/populated
+  cache-branch assertions and the null-age note assertion, the instance-local disclosure text
+  assertion, refresh-toolbar label-toggle and `aria-live` assertions, the signed-out/non-admin
+  lock-state correctness assertions (icon-centering fix, login-button-visibility fix, dispatched
+  `mk:open-auth` event, non-admin CTA absence), the admin-page-only ad-suppression scoping assertions
+  (present on this page, absent from `index.astro`, `Layout.astro` itself untouched, real footer
+  container never hidden), accessibility assertions (`:focus-visible`, reduced-motion,
+  `aria-hidden` icons), and responsive-breakpoint assertions.
 
 ### Focused regression suites for reused modules (all passed, zero real network)
 
@@ -140,6 +253,9 @@ first file under that path), so per the task's own instruction, **no new public 
 - `npm run smoke:phase-3gg-op-fast` (symbol search + OHLCV normalization/caching path) — **32/32 passed**.
 - Re-run identically after the HF1 hotfix (§0) — all four totals unchanged, confirming the hotfix (a
   display/aggregation-layer-only change) did not touch any of these reused code paths' behavior.
+- Re-run identically again after the HF2 hotfix (§0b) — all four totals unchanged (44/44, 11/11,
+  13/13, 32/32), confirming the presentation-only UI redesign did not touch any of these reused code
+  paths' behavior either.
 
 ### Environment/repo-hygiene checks
 
@@ -151,6 +267,15 @@ first file under that path), so per the task's own instruction, **no new public 
   `adminOperations/*.ts` modules, the route, the UI page, the two new test/smoke/check scripts, the
   test-source module, `package.json`, and this phase's plan doc) — **clean on every file** (no NUL
   byte, no secret-pattern match).
+
+**HF2 re-run**: `npm ls --depth=0` re-run — still clean. `git diff --check` re-run against the HF2
+working tree — clean (only benign LF/CRLF line-ending warnings on the three HF2-touched files, no
+actual whitespace-error conflict markers). `git status --short` confirmed exactly the four intended
+HF2 files modified (`docs/planning/phase_3gm_operations_and_admin_mvp_result_v0.1.md`,
+`docs/planning/planning_changelog.md`, `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs`,
+`src/pages/admin/operations.astro`) and every pre-existing untracked path
+(`.agents/`, `.claude/`, `.vscode/settings.json`, `docs/handoff/codex_state_inspection/`,
+`set-gnews-vercel-env.ps1`, `skills-lock.json`) left untouched.
 
 ### Build
 
@@ -172,6 +297,16 @@ and freshly written), then the Node process exited non-zero. The raw exit code o
 consistent with (though not necessarily byte-identical to) the previously-documented Windows-local
 build-exit anomaly, and again not a compilation or type error. Remote Preview confirmation for the
 HF1 commit is pending exactly as it was for the original commit.
+
+**HF2 re-run**: `npm run build` was re-run again after the HF2 hotfix (§0b) with the identical honest
+observation — every reported stage completed (`[types] Generated`, `[build] output: "server"`,
+`Collecting build info...` completed, `Building server entrypoints...` with three separate Vite builds
+each reporting `✓ built`, `Rearranging server assets... ✓ Completed`) and both `dist/` and
+`.vercel/output/{server,static}` were confirmed present via `Test-Path` immediately afterward, then the
+Node process exited non-zero with the exact same raw exit code as the HF1 run, `-1073740791`
+(`0xC0000409` / `STATUS_STACK_BUFFER_OVERRUN` as an unsigned 32-bit value) — again not a compilation or
+type error, and again only confirmable as non-blocking once the corresponding remote Vercel Preview
+build reaches `Ready`.
 
 ## 7. Field contract (as actually shipped — supersedes the plan doc's placeholder field names)
 

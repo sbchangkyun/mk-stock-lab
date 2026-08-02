@@ -1,12 +1,88 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GM-HF2 - 2026-08-03
+
+### Complete operations dashboard UI (hotfix on the same PR #10 branch)
+
+- Owner completed an authenticated click-through of the HF1 commit and confirmed it was
+  **functionally correct** (signed-out lock state, admin sees full real data, no secret/PII leakage)
+  but **not visually release-ready**. This hotfix is a presentation-layer-only rewrite of
+  `src/pages/admin/operations.astro`: zero API/schema/authorization/query/aggregation/cache/token
+  behavior change.
+- Rewrote the header to Korean-first: eyebrow "관리자 전용", single `<h1>운영 현황</h1>` with a
+  scoped `font-size: 28px` override (previously inherited the site's bare global
+  `h1 { font-size: 44px; }` with no override), "Operations Overview" demoted to a small subtitle.
+- Added a 4-card summary row (전체 상태/오늘 Chart AI 사용/KIS 토큰/캐시 상태) whose "전체 상태" is
+  computed **entirely client-side** via a `worstStatus()` precedence helper (`unavailable` >
+  `warning` > `healthy`) over the three closed statuses the API already returns — no new API field;
+  `overview.json.ts`/`operationsAggregator.ts`/`types.ts` are untouched.
+- Added one shared `buildBadge()` component used across every status display: an `aria-hidden` icon
+  always paired with visible 정상/주의/정보 없음 text (never color-only).
+- Section A (Chart AI 사용량) now highlights 오늘 사용 횟수/이용자 수/한도 도달 이용자 수/일일 한도;
+  Section B (KIS 토큰 상태) replaces plain 예/아니오 with semantic wording (사용 가능/비활성, 토큰
+  있음/토큰 없음, 만료되지 않음/만료 또는 사용 불가) and shows "현재 운영 영향 없음" only when
+  `durableStoreReady` is false **and** the real returned status is genuinely `healthy`; Section C
+  (시세 캐시 상태) gets per-cache sub-cards with an honest empty state, conditional (non-null-only)
+  age rows, and the HF1-established null-age note where applicable.
+- Added the instance-local disclosure notice above the cache cards, and a refresh toolbar whose
+  button label toggles 새로고침/갱신 중 and whose `aria-live="polite"` region announces success
+  ("운영 현황을 갱신했습니다.") or failure ("최신 정보를 불러오지 못해 이전 결과를 표시합니다.")
+  while preserving the existing `refreshInFlight` overlap guard and last-good-data-on-failure
+  behavior.
+- Fixed two genuine pre-existing bugs in the signed-out lock state: (1) `#admin-ops-login-action` had
+  a hard-coded `hidden` attribute that was never removed for the signed-out (401) case, so the login
+  CTA was invisible exactly when needed — now shown via `classList.remove('hidden')` and wired to the
+  same `window.dispatchEvent(new CustomEvent('mk:open-auth'))` event already used by `Header.astro`/
+  `portfolio.astro`/`chart-ai.astro`; (2) the lock-state container lacked
+  `display: grid; justify-items: center;` (unlike `portfolio.astro`'s equivalent), so the shared
+  76×76px lock icon rendered pinned to the left edge instead of centered — fixed by adding that rule.
+- Added a distinct non-admin (403) state: title "접근 권한이 없습니다", copy "이 화면은 등록된
+  관리자만 볼 수 있습니다.", login button explicitly hidden (no CTA offered for a state login cannot
+  fix).
+- Removed admin-page-only distractions: `<Layout pageClass="admin-operations-page">` (reusing
+  `Layout.astro`'s existing, unmodified `pageClass` prop, the same convention `index.astro` already
+  uses for `home-page`) plus a `:global()` rule scoped to `body.admin-operations-page #slidePopup` /
+  `#bottomAdBanner`, hiding only the floating slide ad and bottom ad banner on this page while leaving
+  the wrapping `#bottomDocumentArea` (which also holds the real site footer) untouched. Verified
+  `index.astro` does not carry the admin-only `pageClass` and `Layout.astro` itself was not modified.
+- Added responsive collapse (4→2→1 column summary/highlight grids at 900px/640px, cache grid 2→1 at
+  640px) and accessibility affordances (`:focus-visible` outlines, `prefers-reduced-motion` guard on
+  the refresh-icon spin, `aria-hidden` on every decorative icon, no external icon-font dependency —
+  all icons are small inline `<svg>`).
+- `scripts/admin_operations_testsrc.ts` (server-logic-only smoke suite) was left unmodified — no
+  server logic changed in this hotfix. All new UI-text/behavior/accessibility/responsive assertions
+  were added to `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs` instead (new Group 13, 42
+  checks), and two pre-existing Group 7 assertions were updated in place to match intentional new copy
+  (the failure-notice wording, and the section headings moving from mixed English/Korean to fully
+  Korean).
+- While updating this changelog and the result doc for HF2, corrected an unrelated pre-existing
+  false-positive in the checker's repo-wide U+FFFD scan (Group 10): both doc files' own HF1 section
+  quoted the historical text-corruption bug verbatim, embedding the literal replacement character in
+  the Markdown itself. Confirmed via `git diff` (empty) that neither doc had been touched since the
+  HF1 commit, so this was pre-existing and unrelated to HF2 — reworded the illustrative text to
+  describe the corruption without embedding the literal character, preserving the same meaning.
+- Test totals after this hotfix: `smoke:phase-3gm-operations-admin-mvp` unchanged at 44/44 (no server
+  logic changed), `check:phase-3gm-operations-admin-mvp` 144/144 (was 101/101, +43 net new/changed).
+  All four focused regression suites re-run unchanged: `smoke:phase-3gg-t-hf2` (44/44),
+  `smoke:phase-3gg-t-hf2-hf1` (11/11), `smoke:phase-3gg-u-chart-ai-usage` (13/13),
+  `smoke:phase-3gg-op-fast` (32/32). `npm ls --depth=0` clean; `git diff --check` clean (benign
+  LF/CRLF-only warnings); `npm run build` again completed every reported stage (types, server
+  entrypoints, three Vite builds, asset rearrangement, `dist/` and `.vercel/output/{server,static}`
+  confirmed present) before the process exited non-zero with the same previously-documented
+  Windows-local build-exit anomaly (`-1073740791` / `0xC0000409` `STATUS_STACK_BUFFER_OVERRUN`),
+  consistent with the HF1 run — not a compile/type error.
+- No API/schema/authorization/query/aggregation/cache/token/env/migration change of any kind occurred
+  as part of this hotfix. Same branch (`feature/phase-3gm-operations-admin-mvp`), same PR (#10) — no
+  new branch, no merge, no manual deploy.
+
 ## Phase 3GM-HF1 - 2026-08-02
 
 ### Correct operations cache health display (hotfix on the same PR #10 branch)
 
 - Fixed a visible Korean text-corruption bug on `/admin/operations`: the initial "last refreshed"
-  label rendered `마지막 �-신: -` (containing a Unicode replacement character, U+FFFD) instead of
-  `마지막 갱신: -`. Root cause: a mangled string literal in `src/pages/admin/operations.astro`
+  label rendered a corrupted variant of `마지막 갱신: -` (its second syllable replaced by a Unicode
+  replacement character, U+FFFD, in the source literal) instead of the correct text. Root cause: a
+  mangled string literal in `src/pages/admin/operations.astro`
   (the dynamically-rendered post-load label at the bottom of `renderOverview()` was already correct —
   only the static pre-load placeholder was corrupted). Searched the complete Phase 3GM diff (all files
   touched in commit `8fc3372`) for any other U+FFFD occurrence — none found.

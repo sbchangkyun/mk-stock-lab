@@ -175,9 +175,9 @@ check('UI page has no cache-bypass query parameter (no _=Date.now() / cachebust 
 check('UI page has no setInterval/setTimeout short-polling loop', !/setInterval\(|setTimeout\(\s*.*loadOverview/.test(ui));
 check('UI page has an explicit manual refresh control', /admin-ops-refresh/.test(ui) && /addEventListener\('click'/.test(ui));
 check('UI page guards against overlapping in-flight requests', /refreshInFlight/.test(ui));
-check('UI page preserves last-good data on a failed refresh (does not clear the body view on error)', /lastGoodOverview/.test(ui) && /이전 데이터를 표시합니다/.test(ui));
+check('UI page preserves last-good data on a failed refresh (does not clear the body view on error)', /lastGoodOverview/.test(ui) && /최신 정보를 불러오지 못해 이전 결과를 표시합니다/.test(ui));
 check('UI page has no mutation control (no button/action to reset/purge/refresh a token or clear a cache)', !/reset|purge|revoke|force.?refresh.?token/i.test(ui));
-check('UI page contains Korean labels for the three sections', /Usage Guard/.test(ui) && /KIS Token Health/.test(ui) && /Quote Cache Health/.test(ui) && /사용량/.test(ui) && /캐시/.test(ui));
+check('UI page contains fully-Korean labels for the three sections', /Chart AI 사용량/.test(ui) && /KIS 토큰 상태/.test(ui) && /시세 캐시 상태/.test(ui));
 check('UI page shows a locked/denied state distinct from the data body (does not render admin data before auth resolves)', /admin-ops-lock-state/.test(ui) && /admin-ops-body/.test(ui));
 
 // ---------------------------------------------------------------------------
@@ -320,6 +320,86 @@ if (gitDiffAvailable) {
 } else {
   check('reused-file additive-diff guard: git history reachable to verify additivity', false);
 }
+
+// ---------------------------------------------------------------------------
+// Group 13 (Phase 3GM-HF2): UI/UX completion pass -- Korean-first header, single H1, client-side-only
+// overall status, badge honesty, section content, empty/populated cache branches, disclosure notice,
+// refresh toolbar a11y, signed-out/non-admin lock-state correctness, admin-only distraction removal,
+// responsive layout, and no new API/behavior surface.
+// ---------------------------------------------------------------------------
+log('--- Group 13: Phase 3GM-HF2 UI/UX completion pass ---');
+
+// Header: exactly one H1, not oversized-by-default English, Korean-first copy.
+check('UI page has exactly one <h1> element', (ui.match(/<h1[\s>]/g) || []).length === 1);
+check('UI page H1 text is the Korean "운영 현황" (not the English "Operations Overview")', /<h1[^>]*>운영 현황<\/h1>/.test(ui));
+check('UI page keeps "Operations Overview" only as a non-H1 subtitle', /Operations Overview/.test(ui) && !/<h1[^>]*>Operations Overview/.test(ui));
+check('UI page H1 has a scoped font-size override (not left to the bare global 44px h1 rule)', /\.ops-h1\s*\{[^}]*font-size/s.test(ui));
+check('UI page has a Korean eyebrow label "관리자 전용"', /관리자 전용/.test(ui));
+
+// Client-side-only overall status derivation (no new API field).
+check('overall status is computed client-side via a worst-of precedence helper, not read from a new API field', /worstStatus/.test(ui) && !/overallStatus\s*[:,]/.test(route));
+check('overall status precedence is unavailable > warning > healthy (rank table)', /unavailable:\s*2/.test(ui) && /warning:\s*1/.test(ui) && /healthy:\s*0/.test(ui));
+check('route/aggregator/types were not extended with a new "overall" field for this HF2', !/overallStatus|overallHealth/.test(route) && !/overallStatus|overallHealth/.test(aggregator) && !/overallStatus|overallHealth/.test(types));
+
+// Shared badge component: never color-only, closed 3-state Korean mapping.
+check('UI page has one shared badge builder used across summary/section cards', /buildBadge/.test(ui));
+check('badge maps healthy/warning/unavailable to 정상/주의/정보 없음 text (never color-only)', /'정상'/.test(ui) && /'주의'/.test(ui) && /'정보 없음'/.test(ui));
+check('badge always pairs an icon element with a text node (icon aria-hidden, text visible)', /ops-badge-icon/.test(ui) && /ops-badge-text/.test(ui) && /setAttribute\('aria-hidden', 'true'\)/.test(ui));
+check('UI page does not load an external icon-font/library (e.g. Font Awesome, Material Icons CDN)', !/font-awesome|material-icons|fontawesome\.com|cdnjs.*icons/i.test(ui));
+
+// Section A: Chart AI usage highlights + secondary detail.
+check('Usage section highlights count/users/at-limit/daily-limit as top-level stats', /오늘 사용 횟수/.test(ui) && /이용자 수/.test(ui) && /한도 도달 이용자 수/.test(ui) && /일일 한도/.test(ui));
+check('Usage section shows base date / most-recent-use / store-status as secondary detail', /기준 날짜/.test(ui) && /가장 최근 사용 시각/.test(ui) && /저장소 상태/.test(ui));
+
+// Section B: KIS token semantic wording (never plain 예/아니오) + conditional impact note.
+check('KIS card uses semantic config-ready wording (사용 가능/비활성), not 예/아니오', /fmtConfigReady/.test(ui) && /사용 가능/.test(ui) && /비활성/.test(ui));
+check('KIS card uses semantic token-present wording (토큰 있음/토큰 없음)', /fmtTokenPresent/.test(ui) && /토큰 있음/.test(ui) && /토큰 없음/.test(ui));
+check('KIS card uses semantic expiry wording (만료되지 않음/만료 또는 사용 불가)', /fmtStaleOrExpired/.test(ui) && /만료되지 않음/.test(ui) && /만료 또는 사용 불가/.test(ui));
+check(
+  'KIS card only shows the "no current operating impact" note when overall kis.status is actually healthy (not unconditionally on !durableStoreReady)',
+  /if \(!kis\.durableStoreReady && kis\.status === 'healthy'\)/.test(ui) && /현재 운영 영향 없음/.test(ui),
+);
+
+// Section C: per-cache sub-cards, honest empty state, conditional age rows, null-age note.
+check('cache card shows the honest empty-state copy when entryCount === 0', /현재 인스턴스에 저장된 캐시가 없습니다\./.test(ui) && /실제 시세 조회 후 상태가 표시됩니다\./.test(ui));
+check('cache card only renders age/update rows when the value is non-null (conditional, not always-shown)', /if \(newestAge !== null\)/.test(ui) && /if \(oldestAge !== null\)/.test(ui) && /if \(cache\.lastSuccessfulUpdateAtIso !== null\)/.test(ui));
+check('cache card shows the exact null-age explanatory note when all age fields are null', /이 캐시는 생성 시각을 저장하지 않아 항목 나이를 제공하지 않습니다\./.test(ui));
+check('instance-local disclosure notice text is present above the cache cards', /캐시 정보는 현재 요청을 처리한 서버 인스턴스 기준입니다\. 전체 Production 인스턴스의 합산 상태가 아닙니다\./.test(ui));
+
+// Refresh toolbar: label toggle, aria-live success/failure messaging, no overlapping requests preserved.
+check('refresh button label toggles between 새로고침 and 갱신 중', /새로고침/.test(ui) && /갱신 중/.test(ui) && /admin-ops-refresh-label/.test(ui));
+check('UI page has an aria-live region for refresh announcements', /aria-live="polite"/.test(ui) && /admin-ops-live-region/.test(ui));
+check('successful refresh announces the Korean success message', /운영 현황을 갱신했습니다\./.test(ui));
+check('failed refresh announces the Korean stale-data message while keeping the body visible', /최신 정보를 불러오지 못해 이전 결과를 표시합니다\./.test(ui) && /showOnly\(bodyEl\)/.test(ui));
+check('refresh control still guards overlapping in-flight requests (early-return, not a new AbortController pattern)', /if \(refreshInFlight\) return/.test(ui));
+
+// Signed-out lock state: centered icon, visible login CTA wired to the shared mk:open-auth event.
+check('lock-state container centers its icon via display:grid + justify-items:center (fixes the left-edge-floating bug)', /\.ops-status-card\s*\{[^}]*display:\s*grid;[^}]*justify-items:\s*center;/s.test(ui));
+check('signed-out state shows the exact copy "로그인이 필요합니다"', /로그인이 필요합니다/.test(ui));
+check('signed-out state has a visible login button (no more hidden-forever bug) that dispatches mk:open-auth', /loginActionEl\?\.classList\.remove\('hidden'\)/.test(ui) && /window\.dispatchEvent\(new CustomEvent\('mk:open-auth'\)\)/.test(ui));
+
+// Non-admin state: distinct copy, explicitly no login CTA.
+check('non-admin state shows the exact title "접근 권한이 없습니다" and copy about registered admins only', /접근 권한이 없습니다/.test(ui) && /이 화면은 등록된 관리자만 볼 수 있습니다\./.test(ui));
+check('non-admin state hides the login action (no CTA offered for a state login cannot fix)', /loginActionEl\?\.classList\.add\('hidden'\)/.test(ui));
+
+// Admin-page-only distraction removal: scoped via pageClass, not a global style/Layout change.
+check('UI page passes a dedicated pageClass to Layout (scoped ad-suppression, no Layout.astro edit)', /pageClass="admin-operations-page"/.test(ui));
+check('ad-suppression CSS is scoped to body.admin-operations-page (does not hide the ads globally)', /body\.admin-operations-page #slidePopup/.test(ui) && /body\.admin-operations-page #bottomAdBanner/.test(ui));
+check('ad-suppression rule hides only #slidePopup/#bottomAdBanner, never the whole #bottomDocumentArea (real footer preserved)', !/#bottomDocumentArea\s*\{[^}]*display:\s*none/s.test(ui));
+check('a public page (index.astro) is not scoped with the admin-only pageClass (ad suppression stays admin-only)', !/pageClass="admin-operations-page"/.test(readOr(join(root, 'src', 'pages', 'index.astro'))));
+check('Layout.astro itself was not modified to hard-code the admin pageClass or hide ads globally', !/admin-operations-page/.test(layout));
+
+// Accessibility: keyboard focus, reduced motion, decorative icons.
+check('UI page defines a visible :focus-visible style for interactive controls', /:focus-visible\s*\{/.test(ui));
+check('UI page respects prefers-reduced-motion for the refresh spinner', /@media \(prefers-reduced-motion: reduce\)/.test(ui));
+check('decorative icons (lock icon, refresh icon, badge icons) are aria-hidden', (ui.match(/aria-hidden="true"/g) || []).length >= 2);
+
+// Responsive layout: summary/highlight grids collapse at documented breakpoints.
+check('summary card grid collapses from 4 columns to fewer at narrower breakpoints', /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/.test(ui) && /@media \(max-width: 900px\)/.test(ui) && /@media \(max-width: 640px\)/.test(ui));
+check('cache grid collapses to a single column on mobile', /\.ops-cache-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2/s.test(ui) && /\.ops-cache-grid\s*\{\s*grid-template-columns:\s*1fr;/.test(ui));
+
+// No new secret/PII surface introduced by this HF2 (route/aggregator/types unedited; UI has no raw ids).
+check('UI page never renders a raw user id/email/service-role key literal', !/service_role/i.test(ui) && !/user_id/i.test(ui) && !/@gmail\.com|@naver\.com/i.test(ui));
 
 log('');
 log(`Total: ${passes + failures} | Passed: ${passes} | Failed: ${failures}`);
