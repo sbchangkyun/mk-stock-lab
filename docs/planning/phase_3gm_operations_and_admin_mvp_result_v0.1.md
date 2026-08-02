@@ -7,6 +7,38 @@ Branch: `feature/phase-3gm-operations-admin-mvp`.
 Status: **IMPLEMENTED, TESTED LOCALLY, PUSHED, PR OPENED — Owner Preview verification pending.**
 No merge, no manual deploy, no environment-variable change, no Supabase migration was performed.
 
+## 0. Phase 3GM-HF1 hotfix (same branch, same PR #10, 2026-08-02)
+
+A follow-up hotfix corrected two display-layer defects found before Owner Preview verification of the
+original commit `8fc3372`:
+
+1. **Visible Korean text corruption.** `src/pages/admin/operations.astro`'s initial (pre-load)
+   "last refreshed" placeholder rendered the corrupted string `마지막 �-신: -` (containing a Unicode
+   replacement character, U+FFFD) instead of the intended `마지막 갱신: -`. The dynamically-rendered
+   post-load label further down the same file (`renderOverview()`) was already correct — only the
+   static placeholder was corrupted. The complete Phase 3GM diff (all files touched in `8fc3372`) was
+   re-scanned for any other U+FFFD occurrence; none was found.
+2. **Incorrect normalized-OHLCV cache age contract.** `src/lib/server/adminOperations/quoteCacheHealth.ts`
+   previously derived `newestEntryAgeMs` for the `normalized-ohlcv-cache` entry from remaining TTL
+   (`msUntilExpiry`), which is not the same as entry age — TTL can be refreshed independent of
+   insertion time, and the underlying cache (`src/lib/server/chart-ai/normalizedOhlcvCache.mjs`) never
+   stores an insertion timestamp to begin with. `newestEntryAgeMs`, `oldestEntryAgeMs`, and
+   `lastSuccessfulUpdateAtIso` for that cache entry now honestly return `null` rather than a fabricated
+   value. `entryCount`, `freshCount`, `expiredCount`, `status`, and `durability: 'instance-local'` are
+   unchanged. The **other** cache entry (`current-price-quote-cache`) was already correctly
+   timestamp-derived from real `cachedAtMs` values in `quoteCache.ts` and remains untouched and
+   unaffected by this fix (confirmed by a new regression assertion in the smoke suite).
+
+This was a **display/aggregation-layer correction only** — no change to any existing cache's data
+model, keys, values, TTLs, eviction, LRU, or single-flight behavior. The four existing-system files
+the original Phase 3GM PR modified to add read-only inspection hooks (`normalizedOhlcvCache.mjs`,
+`universalOhlcvProvider.ts`, `quoteCache.ts`, `kisClient.ts`) were **not** touched again in this
+hotfix; a new checker assertion (`Group 12`) diffs each against the pre-3GM baseline commit `dc4f3b0`
+and asserts zero deleted lines, confirming they remain purely-additive, unchanged read-only inspection
+hooks. No migration, no environment-variable mutation, no Supabase change, no provider/KIS request,
+and no token issuance occurred as part of this hotfix. Full detail in `planning_changelog.md`'s
+"Phase 3GM-HF1" entry and in §6/§10 below.
+
 ## 1. Objective (unchanged from plan)
 
 One minimal, authenticated, administrator-only, **read-only** operational surface for: (1) Chart AI
@@ -75,22 +107,30 @@ first file under that path), so per the task's own instruction, **no new public 
 ### New tests (Phase 3GM)
 
 - `npm run smoke:phase-3gm-operations-admin-mvp` → esbuild-bundles `scripts/admin_operations_testsrc.ts`
-  and runs it. **38/38 passed.** Covers: authorization (signed-out, bad scheme, non-admin, admin,
-  admin-check-failure parity, config-missing, no-identity-leak), usage guard (healthy aggregate, empty
-  day, config-unavailable, read-failure with no raw DB error leaked), KIS token (legacy L1 valid,
-  legacy expired, legacy absent, durable healthy, durable store-unavailable, durable misconfigured,
-  snapshot-throws, and a cross-scenario assertion that no scenario ever returns an `accessToken`
-  field), quote/OHLCV caches (fresh, empty/never-called, all-expired, snapshot-throws, and an assertion
-  that no cache-health scenario ever invokes a provider/network function).
-- `npm run check:phase-3gm-operations-admin-mvp` → static contract checker. **70/70 passed.** Covers
-  file existence, reused-resolver/reused-registry assertions, no-second-admin-system assertion,
-  no-mutation-control assertions (cache purge/token refresh/role edit/trading/order/balance/env-edit —
-  all absent), no-secret/PII assertions (no `accessToken` field, no email selection, no hardcoded
-  bearer/service-role literal), closed health-enum assertions, additive-reuse assertions (health
-  snapshot functions never call `acquire`/`getTokenHandle`/`delete`/`set`), UI-page behavior
-  assertions (auth gate, single fetch, manual refresh, in-flight guard, last-good preservation, no
-  `localStorage`, no cache-bypass param, no polling, no mutation control, Korean section labels), nav
-  convention assertion (`Layout.astro` unmodified), and package.json wiring assertions.
+  and runs it. **44/44 passed** (38/38 original + 6 new HF1 assertions). Covers: authorization
+  (signed-out, bad scheme, non-admin, admin, admin-check-failure parity, config-missing,
+  no-identity-leak), usage guard (healthy aggregate, empty day, config-unavailable, read-failure with
+  no raw DB error leaked), KIS token (legacy L1 valid, legacy expired, legacy absent, durable healthy,
+  durable store-unavailable, durable misconfigured, snapshot-throws, and a cross-scenario assertion
+  that no scenario ever returns an `accessToken` field), quote/OHLCV caches (fresh, empty/never-called,
+  all-expired, snapshot-throws, an assertion that no cache-health scenario ever invokes a
+  provider/network function, and (HF1) that the normalized-OHLCV summary's `newestEntryAgeMs`/
+  `oldestEntryAgeMs`/`lastSuccessfulUpdateAtIso` stay `null` even when the fake snapshot supplies
+  `msUntilExpiry` values, while the current-price cache's age fields stay real/non-null pass-throughs).
+- `npm run check:phase-3gm-operations-admin-mvp` → static contract checker. **101/101 passed** (70/70
+  original + 31 new HF1 assertions). Covers file existence, reused-resolver/reused-registry
+  assertions, no-second-admin-system assertion, no-mutation-control assertions (cache purge/token
+  refresh/role edit/trading/order/balance/env-edit — all absent), no-secret/PII assertions (no
+  `accessToken` field, no email selection, no hardcoded bearer/service-role literal), closed
+  health-enum assertions, additive-reuse assertions (health snapshot functions never call
+  `acquire`/`getTokenHandle`/`delete`/`set`), UI-page behavior assertions (auth gate, single fetch,
+  manual refresh, in-flight guard, last-good preservation, no `localStorage`, no cache-bypass param, no
+  polling, no mutation control, Korean section labels), nav convention assertion (`Layout.astro`
+  unmodified), package.json wiring assertions, and (HF1, Groups 10-12) a repo-wide U+FFFD scan across
+  every Phase 3GM UI/lib/doc file, an exact-match assertion on the corrected `마지막 갱신: -` label,
+  source-level assertions that OHLCV age is never computed from `msUntilExpiry`/`configuredTtlMs`
+  arithmetic, and an additive-diff guard (`git diff dc4f3b0..HEAD --numstat`) asserting the four
+  reused-cache files have zero deleted lines against the pre-3GM baseline.
 
 ### Focused regression suites for reused modules (all passed, zero real network)
 
@@ -98,6 +138,8 @@ first file under that path), so per the task's own instruction, **no new public 
 - `npm run smoke:phase-3gg-t-hf2-hf1` (KIS PostgREST RPC bridge) — **11/11 passed**.
 - `npm run smoke:phase-3gg-u-chart-ai-usage` (Chart AI usage guard RPC contract) — **13/13 passed**.
 - `npm run smoke:phase-3gg-op-fast` (symbol search + OHLCV normalization/caching path) — **32/32 passed**.
+- Re-run identically after the HF1 hotfix (§0) — all four totals unchanged, confirming the hotfix (a
+  display/aggregation-layer-only change) did not touch any of these reused code paths' behavior.
 
 ### Environment/repo-hygiene checks
 
@@ -122,6 +164,15 @@ was only confirmed non-blocking once the corresponding remote Vercel Preview bui
 **That confirmation has NOT been obtained for this commit** — Preview verification is explicitly
 listed as pending in §8. Node `v24.14.1`, npm `11.11.0`.
 
+**HF1 re-run**: `npm run build` was re-run after the HF1 hotfix (§0) with the identical honest
+observation — every reported stage completed (types, server entrypoints, three Vite builds, asset
+rearrangement) and both `dist/` and `.vercel/output/{server,static}` were produced (confirmed present
+and freshly written), then the Node process exited non-zero. The raw exit code observed this run was
+`-1073740791`, which as an unsigned 32-bit value is `0xC0000409` (`STATUS_STACK_BUFFER_OVERRUN`) —
+consistent with (though not necessarily byte-identical to) the previously-documented Windows-local
+build-exit anomaly, and again not a compilation or type error. Remote Preview confirmation for the
+HF1 commit is pending exactly as it was for the original commit.
+
 ## 7. Field contract (as actually shipped — supersedes the plan doc's placeholder field names)
 
 **A. `usageGuard`** (`UsageGuardOverview`): `status`, `storeReady`, `usageDateKst`,
@@ -138,6 +189,13 @@ token, ciphertext, IV, auth tag, encryption key, scope key, or namespace.
 `normalized-ohlcv-cache`): `cacheId`, `scope`, `durability: 'instance-local'`, `entryCount`,
 `configuredTtlMs`, `newestEntryAgeMs`, `oldestEntryAgeMs`, `freshCount`, `staleCount`,
 `expiredCount`, `lastSuccessfulUpdateAtIso`, `status`. No cached market payload, no cache key.
+
+**As of HF1 (§0)**: for the `normalized-ohlcv-cache` entry specifically, `newestEntryAgeMs`,
+`oldestEntryAgeMs`, and `lastSuccessfulUpdateAtIso` are always `null` — the underlying cache has no
+insertion timestamp to report, so these are honestly absent rather than derived from remaining TTL.
+`entryCount`, `freshCount`, `expiredCount`, `status`, and `durability` are unaffected. For the
+`current-price-quote-cache` entry these three fields are unchanged and remain real,
+timestamp-derived values whenever the cache has entries.
 
 ## 8. Explicit disclosures
 

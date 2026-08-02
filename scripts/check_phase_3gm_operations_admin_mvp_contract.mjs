@@ -18,6 +18,7 @@ globalThis.fetch = async (url) => {
 import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -192,6 +193,133 @@ check('Layout.astro was not modified to add a new public nav link to /admin/oper
 log('--- Group 9: package.json script wiring ---');
 check('smoke:phase-3gm-operations-admin-mvp script present and points at an existing file', /"smoke:phase-3gm-operations-admin-mvp":\s*"node scripts\/smoke_phase_3gm_operations_admin_mvp\.mjs"/.test(packageJson) && existsSync(join(root, 'scripts', 'smoke_phase_3gm_operations_admin_mvp.mjs')));
 check('check:phase-3gm-operations-admin-mvp script present and points at this file', /"check:phase-3gm-operations-admin-mvp":\s*"node scripts\/check_phase_3gm_operations_admin_mvp_contract\.mjs"/.test(packageJson));
+
+// ---------------------------------------------------------------------------
+// Group 10 (Phase 3GM-HF1): no Unicode replacement-character (U+FFFD) corruption, and the
+// operations.astro initial "last refreshed" label is the correct Korean text, not the corrupted one.
+// ---------------------------------------------------------------------------
+log('--- Group 10: Phase 3GM-HF1 text-corruption guard ---');
+const RESULT_DOC = join(root, 'docs', 'planning', 'phase_3gm_operations_and_admin_mvp_result_v0.1.md');
+const PLANNING_CHANGELOG = join(root, 'docs', 'planning', 'planning_changelog.md');
+const PLAN_DOC = join(root, 'docs', 'planning', 'phase_3gm_operations_and_admin_mvp_plan_v0.1.md');
+const PHASE_3GM_TEXT_FILES = {
+  'adminOperations/types.ts': TYPES,
+  'adminOperations/adminAuthorization.ts': AUTH,
+  'adminOperations/usageGuardHealth.ts': USAGE,
+  'adminOperations/kisTokenHealth.ts': KIS_HEALTH,
+  'adminOperations/quoteCacheHealth.ts': CACHE_HEALTH,
+  'adminOperations/operationsAggregator.ts': AGGREGATOR,
+  'api/admin/operations/overview.json.ts': ROUTE,
+  'admin/operations.astro': UI_PAGE,
+  'phase_3gm_operations_and_admin_mvp_result_v0.1.md': RESULT_DOC,
+  'planning_changelog.md': PLANNING_CHANGELOG,
+  'phase_3gm_operations_and_admin_mvp_plan_v0.1.md': PLAN_DOC,
+};
+const REPLACEMENT_CHAR = '�';
+for (const [name, path] of Object.entries(PHASE_3GM_TEXT_FILES)) {
+  const content = readOr(path);
+  check(`${name}: no U+FFFD replacement character (no corrupted text)`, !content.includes(REPLACEMENT_CHAR));
+}
+check(
+  "admin/operations.astro: initial 'last refreshed' label is the correct '마지막 갱신: -' (not corrupted)",
+  /id="admin-ops-refreshed">마지막 갱신: -<\/p>/.test(ui),
+);
+
+// ---------------------------------------------------------------------------
+// Group 11 (Phase 3GM-HF1): normalized-OHLCV cache age contract -- honest null, never derived from
+// remaining TTL (msUntilExpiry/configuredTtlMs), unlike the current-price quote cache which keeps
+// real timestamp-derived ages.
+// ---------------------------------------------------------------------------
+log('--- Group 11: Phase 3GM-HF1 OHLCV cache age honesty ---');
+const cacheHealthNoComments = cacheHealth.replace(/\/\/.*$/gm, '');
+check(
+  'quoteCacheHealth.ts: no computed `const newestEntryAgeMs = ...` for the OHLCV branch (age is not derived, only assigned null)',
+  !/const newestEntryAgeMs/.test(cacheHealth),
+);
+check(
+  'quoteCacheHealth.ts: msUntilExpiry is never referenced in executable code (only in the explanatory comment, which is stripped here)',
+  !/msUntilExpiry/.test(cacheHealthNoComments),
+);
+check(
+  'quoteCacheHealth.ts: remaining TTL is never subtracted from configuredTtlMs to fabricate an age (no configuredTtlMs - msUntilExpiry style arithmetic)',
+  !/configuredTtlMs\s*-\s*msUntilExpiry|msUntilExpiry\s*-\s*configuredTtlMs|-\s*Math\.max\(\s*\.\.\.snap\.entries/.test(cacheHealth),
+);
+check(
+  'quoteCacheHealth.ts: OHLCV summary hardcodes newestEntryAgeMs/oldestEntryAgeMs/lastSuccessfulUpdateAtIso to null on the success path',
+  (() => {
+    const start = cacheHealth.indexOf("cacheId: 'normalized-ohlcv-cache'");
+    const end = cacheHealth.indexOf('} catch {', start);
+    if (start === -1 || end === -1) return false;
+    const successBlock = cacheHealth.slice(start, end);
+    return (
+      /newestEntryAgeMs:\s*null,/.test(successBlock) &&
+      /oldestEntryAgeMs:\s*null,/.test(successBlock) &&
+      /lastSuccessfulUpdateAtIso:\s*null,/.test(successBlock)
+    );
+  })(),
+);
+check(
+  'quoteCacheHealth.ts: current-price cache success-path ages remain pass-through from the real snapshot (unchanged, not hardcoded null)',
+  (() => {
+    const start = cacheHealth.indexOf("cacheId: 'current-price-quote-cache'");
+    const end = cacheHealth.indexOf('} catch {', start);
+    if (start === -1 || end === -1) return false;
+    const successBlock = cacheHealth.slice(start, end);
+    return (
+      /newestEntryAgeMs:\s*snap\.newestEntryAgeMs,/.test(successBlock) &&
+      /oldestEntryAgeMs:\s*snap\.oldestEntryAgeMs,/.test(successBlock) &&
+      /lastSuccessfulUpdateAtIso:\s*snap\.lastCachedAtIso,/.test(successBlock)
+    );
+  })(),
+);
+check(
+  'quoteCacheHealth.ts: has a concise one-line comment explaining why OHLCV age/last-update is honestly null',
+  /\/\/ Phase 3GM-HF1:.*normalizedOhlcvCache\.mjs.*insertion timestamp.*honestly null/i.test(cacheHealth),
+);
+check(
+  'the four reused-cache files (normalizedOhlcvCache.mjs, universalOhlcvProvider.ts, quoteCache.ts, kisClient.ts) are untouched by this HF1 text/contract fix (no new cachedAtMs/insertion-timestamp field added)',
+  !/cachedAtMs/.test(ohlcvCache) && !/entryInsertedAtMs|insertedAtMs/.test(ohlcvCache + ohlcvProvider),
+);
+
+// ---------------------------------------------------------------------------
+// Group 12 (Phase 3GM-HF1): the four existing-system files the original Phase 3GM PR modified to add
+// read-only inspection hooks remain narrowly additive (zero deleted lines) against the pre-3GM
+// baseline commit -- confirms this hotfix (and the original phase) never changed their behavior.
+// ---------------------------------------------------------------------------
+log('--- Group 12: Phase 3GM-HF1 reused-file additive-diff guard ---');
+const PRE_3GM_BASELINE_SHA = 'dc4f3b0';
+const REUSED_HOOK_FILES = [
+  'src/lib/server/chart-ai/normalizedOhlcvCache.mjs',
+  'src/lib/server/chart-ai/universalOhlcvProvider.ts',
+  'src/lib/server/marketData/quoteCache.ts',
+  'src/lib/server/providers/kisClient.ts',
+];
+let gitDiffAvailable = true;
+let numstatOutput = '';
+try {
+  numstatOutput = execFileSync(
+    'git',
+    ['diff', `${PRE_3GM_BASELINE_SHA}..HEAD`, '--numstat', '--', ...REUSED_HOOK_FILES],
+    { cwd: root, encoding: 'utf8' },
+  );
+} catch (error) {
+  gitDiffAvailable = false;
+  log(`  [warn] could not run git diff against ${PRE_3GM_BASELINE_SHA}: ${error && error.message ? error.message : error}`);
+}
+if (gitDiffAvailable) {
+  const lines = numstatOutput.split('\n').filter((l) => l.trim().length > 0);
+  for (const file of REUSED_HOOK_FILES) {
+    const row = lines.find((l) => l.endsWith(file));
+    check(`${file}: touched vs. pre-3GM baseline (${PRE_3GM_BASELINE_SHA}) with additive hook`, Boolean(row));
+    if (row) {
+      const [added, deleted] = row.split('\t');
+      check(`${file}: zero deleted lines vs. pre-3GM baseline (purely additive, no behavior change)`, deleted === '0');
+      check(`${file}: at least one added line vs. pre-3GM baseline (the additive health-snapshot export exists)`, Number(added) > 0);
+    }
+  }
+} else {
+  check('reused-file additive-diff guard: git history reachable to verify additivity', false);
+}
 
 log('');
 log(`Total: ${passes + failures} | Passed: ${passes} | Failed: ${failures}`);

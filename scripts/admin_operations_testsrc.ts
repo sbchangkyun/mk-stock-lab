@@ -326,6 +326,19 @@ const runQuoteCacheTests = async () => {
   check('ohlcv cache fresh entries -> status healthy', ohlcvFresh[1].status === 'healthy');
   check('ohlcv cache summary never exposes a raw cache key', !JSON.stringify(ohlcvFresh[1]).includes('"key"'));
 
+  // Phase 3GM-HF1: even though the fake snapshot supplies msUntilExpiry per entry (60_000 / 30_000ms
+  // remaining), the OHLCV summary must NEVER turn that remaining-TTL number into a fabricated age --
+  // the underlying cache has no insertion timestamp, so age/last-update must stay honestly null.
+  check('ohlcv cache (HF1): newestEntryAgeMs is null, never derived from msUntilExpiry', ohlcvFresh[1].newestEntryAgeMs === null);
+  check('ohlcv cache (HF1): oldestEntryAgeMs is null, never derived from msUntilExpiry', ohlcvFresh[1].oldestEntryAgeMs === null);
+  check('ohlcv cache (HF1): lastSuccessfulUpdateAtIso is null (no insertion timestamp exists to report)', ohlcvFresh[1].lastSuccessfulUpdateAtIso === null);
+
+  // Phase 3GM-HF1: the OTHER cache entry (current-price quote cache) is unaffected -- its age fields
+  // stay real, non-null, timestamp-derived pass-throughs whenever the underlying snapshot has entries.
+  check('current-price quote cache (HF1 regression): newestEntryAgeMs stays non-null and pass-through', freshQuote[0].newestEntryAgeMs === 1000);
+  check('current-price quote cache (HF1 regression): oldestEntryAgeMs stays non-null and pass-through', freshQuote[0].oldestEntryAgeMs === 5000);
+  check('current-price quote cache (HF1 regression): lastSuccessfulUpdateAtIso stays non-null', freshQuote[0].lastSuccessfulUpdateAtIso !== null);
+
   check('no provider/network function was ever invoked by any cache health scenario', !providerCalled);
   void failIfCalled; // referenced only to satisfy no-unused-vars; intentionally never called above
 };

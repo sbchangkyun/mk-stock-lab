@@ -75,17 +75,14 @@ export const getQuoteCacheOverview = (deps: Partial<QuoteCacheHealthDeps> = {}):
     const snap = readOhlcvCacheSnapshot(nowMs);
     const freshCount = snap.entries.filter((e: { fresh: boolean }) => e.fresh).length;
     const expiredCount = snap.entries.length - freshCount;
-    const newestEntryAgeMs =
-      snap.entries.length === 0
-        ? null
-        : Math.max(0, -Math.max(...snap.entries.map((e: { msUntilExpiry: number }) => e.msUntilExpiry)));
+    // Phase 3GM-HF1: normalizedOhlcvCache.mjs entries only ever store expiresAtMs, never an insertion timestamp, so age/last-update are honestly null rather than fabricated from remaining TTL.
     summaries.push({
       cacheId: 'normalized-ohlcv-cache',
       scope: '차트 OHLCV (일봉/장기 히스토리, 공유 캐시)',
       durability: 'instance-local',
       entryCount: snap.entryCount,
       configuredTtlMs: null, // per-entry TTL varies by range/negative-hit classification, not a single constant
-      newestEntryAgeMs,
+      newestEntryAgeMs: null,
       oldestEntryAgeMs: null,
       freshCount,
       staleCount: 0,

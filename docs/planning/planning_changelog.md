@@ -1,5 +1,55 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GM-HF1 - 2026-08-02
+
+### Correct operations cache health display (hotfix on the same PR #10 branch)
+
+- Fixed a visible Korean text-corruption bug on `/admin/operations`: the initial "last refreshed"
+  label rendered `마지막 �-신: -` (containing a Unicode replacement character, U+FFFD) instead of
+  `마지막 갱신: -`. Root cause: a mangled string literal in `src/pages/admin/operations.astro`
+  (the dynamically-rendered post-load label at the bottom of `renderOverview()` was already correct —
+  only the static pre-load placeholder was corrupted). Searched the complete Phase 3GM diff (all files
+  touched in commit `8fc3372`) for any other U+FFFD occurrence — none found.
+- Fixed an incorrect cache-age contract for the normalized OHLCV (chart) cache entry in
+  `src/lib/server/adminOperations/quoteCacheHealth.ts`: `newestEntryAgeMs` was being derived from
+  remaining TTL (`msUntilExpiry`) via `Math.max(0, -Math.max(...entries.map(e => e.msUntilExpiry)))` —
+  i.e. treating "time until expiry" as if it were "time since insertion". Remaining TTL is not entry
+  age: the underlying cache (`src/lib/server/chart-ai/normalizedOhlcvCache.mjs`) only ever stores
+  `expiresAtMs`, never an insertion timestamp, and TTL can in principle be refreshed independent of
+  when an entry was first written, so any number derived from it would misrepresent staleness.
+  `newestEntryAgeMs`, `oldestEntryAgeMs`, and `lastSuccessfulUpdateAtIso` for the
+  `normalized-ohlcv-cache` entry now honestly return `null` instead of a fabricated value.
+  `entryCount`, `freshCount`, `expiredCount`, `status`, and `durability: 'instance-local'` are
+  unchanged. The **other** cache health entry (`current-price-quote-cache`) was already correctly
+  timestamp-derived (`quoteCache.ts`'s `cachedAtMs`) and is untouched by this fix — verified by an
+  added regression assertion.
+- This is a display/aggregation-layer correction only: no change to any existing cache's data model,
+  keys, values, TTLs, eviction, LRU, or single-flight behavior. The four existing-system files the
+  original Phase 3GM PR touched to add read-only inspection hooks (`normalizedOhlcvCache.mjs`,
+  `universalOhlcvProvider.ts`, `quoteCache.ts`, `kisClient.ts`) were **not** modified again in this
+  hotfix; a new checker assertion diffs each against the pre-3GM baseline commit `dc4f3b0` and asserts
+  zero deleted lines (purely additive), confirming they remain unchanged read-only inspection hooks.
+- Extended `scripts/admin_operations_testsrc.ts` (smoke) with assertions that the OHLCV age fields
+  stay `null` even when the fake snapshot supplies `msUntilExpiry` values, and that the current-price
+  cache's age fields remain real/non-null pass-throughs. Extended
+  `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs` (checker) with: a U+FFFD scan across
+  every Phase 3GM UI/lib/doc file; an exact-match assertion on the corrected label; source-level
+  assertions that age is never computed from `msUntilExpiry`/`configuredTtlMs` arithmetic; and the
+  additive-diff guard on the four reused files described above.
+- Test totals after this hotfix: `smoke:phase-3gm-operations-admin-mvp` 44/44 (was 38/38, +6 new),
+  `check:phase-3gm-operations-admin-mvp` 101/101 (was 70/70, +31 new). All four focused regression
+  suites still pass unchanged: `smoke:phase-3gg-t-hf2` (44/44), `smoke:phase-3gg-t-hf2-hf1` (11/11),
+  `smoke:phase-3gg-u-chart-ai-usage` (13/13), `smoke:phase-3gg-op-fast` (32/32). `npm ls --depth=0`
+  clean; `git diff --check` clean (benign LF/CRLF-only warnings); `npm run build` again completed
+  every reported stage (types, server entrypoints, three Vite builds, asset rearrangement, `dist/` and
+  `.vercel/output/{server,static}` produced) before the process exited non-zero with the same
+  previously-documented Windows-local build-exit anomaly (this run: raw exit code `-1073740791`, i.e.
+  `0xC0000409`/`STATUS_STACK_BUFFER_OVERRUN` as an unsigned 32-bit value), consistent with prior phases
+  — not a compile/type error.
+- No migration, no environment-variable mutation, no Supabase change, no provider/KIS request, and no
+  token issuance occurred as part of this hotfix. Same branch (`feature/phase-3gm-operations-admin-mvp`),
+  same PR (#10) — no new branch, no merge.
+
 ## Phase 3GM - 2026-08-02
 
 ### Operations and Admin MVP (implemented, PR opened, Owner Preview verification pending)
