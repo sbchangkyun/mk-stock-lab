@@ -839,6 +839,23 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
   check('getHomeNewsFeed: provider 401 -> ok false with NEWS_UNAUTHORIZED', resultUnauthorized.ok === false && resultUnauthorized.code === 'NEWS_UNAUTHORIZED');
   check('getHomeNewsFeed: never includes the api key anywhere in the returned value', JSON.stringify(resultUnauthorized).includes('fake-test-key-never-real') === false);
 
+  // Phase 3GL-HF4 §7: sanitized upstream status mapping -- 400/403/500 each map to their own closed
+  // code, none of them carrying a diagnostics field (nothing meaningful to count on a failed request).
+  const badRequestFetch = async () => ({ ok: false, status: 400, json: async () => ({}) }) as unknown as Response;
+  const resultBadRequest = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: badRequestFetch, now: () => FIXED_NOW_MS });
+  check('getHomeNewsFeed: provider 400 -> NEWS_BAD_REQUEST (Phase 3GL-HF4)', resultBadRequest.ok === false && resultBadRequest.code === 'NEWS_BAD_REQUEST');
+  check('getHomeNewsFeed: provider failure (400) never carries a diagnostics field', !('diagnostics' in resultBadRequest));
+
+  const quotaExhaustedFetch = async () => ({ ok: false, status: 403, json: async () => ({}) }) as unknown as Response;
+  const resultQuotaExhausted = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: quotaExhaustedFetch, now: () => FIXED_NOW_MS });
+  check('getHomeNewsFeed: provider 403 -> NEWS_QUOTA_EXHAUSTED (Phase 3GL-HF4, was NEWS_UNAUTHORIZED pre-HF4)', resultQuotaExhausted.ok === false && resultQuotaExhausted.code === 'NEWS_QUOTA_EXHAUSTED');
+  check('getHomeNewsFeed: provider failure (403) never carries a diagnostics field', !('diagnostics' in resultQuotaExhausted));
+
+  const serverErrorFetch = async () => ({ ok: false, status: 500, json: async () => ({}) }) as unknown as Response;
+  const resultServerError = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: serverErrorFetch, now: () => FIXED_NOW_MS });
+  check('getHomeNewsFeed: provider 500 -> NEWS_PROVIDER_ERROR (other non-2xx)', resultServerError.ok === false && resultServerError.code === 'NEWS_PROVIDER_ERROR');
+  check('getHomeNewsFeed: provider failure (500) never carries a diagnostics field', !('diagnostics' in resultServerError));
+
   const rateLimitedFetch = async () => ({ ok: false, status: 429, json: async () => ({}) }) as unknown as Response;
   const resultRateLimited = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: rateLimitedFetch, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: provider 429 -> NEWS_RATE_LIMITED', resultRateLimited.code === 'NEWS_RATE_LIMITED');
@@ -939,6 +956,27 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
     'getHomeNewsFeed: a genuinely successful fetch after a cached NEWS_NO_RESULTS still returns real articles (zero-result caching does not wedge the feed)',
     resultNoResultsThenSuccess.ok === true && resultNoResultsThenSuccess.articles.length > 0,
   );
+
+  // Phase 3GL-HF4 §7: provider URL contract -- requests max=10 (GNews Free plan cap, was 20 pre-HF4),
+  // omits lang entirely (the Search endpoint's supported-language list does not include Korean; the
+  // Korean-keyword COMBINED_QUERY is the targeting mechanism instead), carries exactly one q and one
+  // apikey parameter, and issues exactly one fetch call per request (no fan-out). Uses a `now()` well
+  // beyond every earlier offset in this block (60min) plus its TTL, so it can only ever be a fresh
+  // fetch and can never be mistaken for a cache hit by any earlier assertion in this block.
+  let urlFetchCalls = 0;
+  let capturedUrl = '';
+  const urlCapturingFetch = async (url: string) => {
+    urlFetchCalls += 1;
+    capturedUrl = url;
+    return { ok: true, status: 200, json: async () => ({ articles: [] }) } as unknown as Response;
+  };
+  await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: urlCapturingFetch, now: () => FIXED_NOW_MS + 100 * 60 * 1000 });
+  const capturedParams = new URL(capturedUrl).searchParams;
+  check('getHomeNewsFeed: provider URL requests max=10 (Phase 3GL-HF4, GNews Free plan cap)', capturedParams.get('max') === '10');
+  check('getHomeNewsFeed: provider URL omits lang entirely (Phase 3GL-HF4, unsupported on the Search endpoint)', capturedParams.has('lang') === false);
+  check('getHomeNewsFeed: provider URL carries exactly one q parameter', capturedParams.getAll('q').length === 1);
+  check('getHomeNewsFeed: provider URL carries exactly one apikey parameter', capturedParams.getAll('apikey').length === 1);
+  check('getHomeNewsFeed: exactly one fetch call issued for a single request (one-combined-query architecture preserved)', urlFetchCalls === 1);
 }
 
 export const runAll = async (): Promise<number> => {

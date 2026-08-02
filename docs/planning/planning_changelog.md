@@ -123,6 +123,36 @@
   Git-integrated Production deployment and a focused Production verification follow as the next step. Phase
   3GM (Operations and Admin MVP) remains `PLANNED`, not started.
 
+### HF4 hotfix - 2026-08-02: restored Production GNews feed
+
+- PR #8 merged to `main` (merge commit `d211f0b3c86129b95f1ff2a225d35e4b9ec1b492`) and the Git-integrated
+  Production deployment (`dpl_3j6FdPFcE9biJBet12518Gvtf4qB`) reached `READY`. Production Home and `GET
+  /api/home/live-market.json` verified healthy (HTTP 200), but `GET /api/news/home.json` returned `{ "ok":
+  false, "code": "NEWS_PROVIDER_ERROR" }` instead of a live feed or an honest `NEWS_NO_RESULTS`.
+- Root cause: the GNews provider request used `max=20` and `lang: 'ko'`. GNews's Free plan caps `max` at 10
+  per request, and the Search endpoint's supported-language list does not include Korean — either
+  incompatibility alone produces an HTTP 400 that the pre-HF4 status mapping collapsed into a generic
+  `NEWS_PROVIDER_ERROR`, masking the real cause.
+- Fix (`gnewsHomeNewsProvider.mjs`): `PROVIDER_MAX` reduced from 20 to 10; `lang: 'ko'` removed entirely (the
+  Korean-keyword `COMBINED_QUERY` remains the sole targeting mechanism); the one-combined-query architecture
+  is unchanged. Extended sanitized status classification: `400` → `NEWS_BAD_REQUEST`, `403` →
+  `NEWS_QUOTA_EXHAUSTED` (previously `NEWS_UNAUTHORIZED`), `401` → `NEWS_UNAUTHORIZED`, `429` →
+  `NEWS_RATE_LIMITED`, other non-2xx/timeout/network/invalid-JSON → `NEWS_PROVIDER_ERROR`. No raw response
+  body, query text, API key, or provider header is ever exposed.
+- No environment variable changed, no manual `vercel` command run, no Supabase mutation, no fixture/second
+  provider/LLM fallback introduced.
+- `scripts/home_live_data_testsrc.ts` grew to 149/149 passing; `scripts/check_phase_3gl_home_live_data_contract.mjs`
+  grew to 220/220 passing. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §1d for full detail.
+- `npm run build` completed every Astro/Vite stage cleanly and produced complete `dist/client`/`dist/server`
+  output (reproduced across two clean runs), but this time the process crashed before the Vercel adapter
+  wrote `.vercel/output` at all (empty `server`/`static`, no `config.json`) with a different native exit,
+  `0xC0000409` (`STATUS_STACK_BUFFER_OVERRUN`), distinct from HF3's `0xC0000005`. HF4 touched no dependency
+  or build config, so this is treated as the same class of local-Windows-toolchain issue, but — unlike
+  HF1–HF3 — it is not labeled non-release-blocking on the local run alone; that requires the identical
+  commit's remote Vercel Preview build reaching `Ready`, confirmed separately in this hotfix's Preview
+  verification step. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §5 for full detail.
+- Production verification remains pending until the hotfix branch is merged and deployed.
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization

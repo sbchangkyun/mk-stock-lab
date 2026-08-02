@@ -524,6 +524,34 @@ check('Snapshot grid has a 3/2/1 responsive breakpoint ladder for the expanded 9
     /max-width:\s*560px[\s\S]{0,80}grid-template-columns:\s*1fr/.test(STYLE_CSS));
 
 // ---------------------------------------------------------------------------
+// Group 13: Phase 3GL-HF4 — GNews provider compatibility fix (max=10, no lang=ko, extended status map)
+// ---------------------------------------------------------------------------
+log('--- Group 13: HF4 GNews provider compatibility (max=10, no lang, sanitized status mapping) ---');
+check(
+  'PROVIDER_MAX is 10 (GNews Free plan cap, was 20 pre-HF4)',
+  /PROVIDER_MAX\s*=\s*10/.test(gnewsProvider) && !/PROVIDER_MAX\s*=\s*20/.test(gnewsProvider),
+);
+check(
+  'the request params object never sets a lang parameter (Search endpoint does not support Korean; the Korean-keyword COMBINED_QUERY is the targeting mechanism instead)',
+  !/lang\s*:\s*['"]ko['"]/.test(gnewsProvider),
+);
+{
+  const paramsMatch = gnewsProvider.match(/const\s+params\s*=\s*new\s+URLSearchParams\(\{[\s\S]*?\}\);/);
+  const paramsBlock = paramsMatch ? paramsMatch[0] : '';
+  check('the URLSearchParams construction block exists and never contains a lang key at all', paramsBlock.length > 0 && !/\blang\s*:/.test(paramsBlock));
+  check('the URLSearchParams construction block still carries exactly one q and one apikey key (query architecture preserved)',
+    (paramsBlock.match(/\bq\s*:/g) || []).length === 1 && (paramsBlock.match(/\bapikey\s*:/g) || []).length === 1);
+}
+check('HTTP 400 maps to the new sanitized NEWS_BAD_REQUEST code', /if\s*\(res\.status\s*===\s*400\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_BAD_REQUEST'\s*\}/.test(gnewsProvider));
+check('HTTP 401 maps to NEWS_UNAUTHORIZED (isolated from 403, no longer sharing one branch)', /if\s*\(res\.status\s*===\s*401\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_UNAUTHORIZED'\s*\}/.test(gnewsProvider));
+check('HTTP 403 maps to the new sanitized NEWS_QUOTA_EXHAUSTED code (was folded into NEWS_UNAUTHORIZED pre-HF4)', /if\s*\(res\.status\s*===\s*403\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_QUOTA_EXHAUSTED'\s*\}/.test(gnewsProvider));
+check('HTTP 429 still maps to NEWS_RATE_LIMITED (unchanged)', /if\s*\(res\.status\s*===\s*429\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_RATE_LIMITED'\s*\}/.test(gnewsProvider));
+check('every other non-2xx status still falls through to the generic NEWS_PROVIDER_ERROR (no raw status/body ever surfaced)', /if\s*\(!res\.ok\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_PROVIDER_ERROR'\s*\}/.test(gnewsProvider));
+check('preserves the one-combined-query architecture: still exactly one COMBINED_QUERY definition and one fetch call site in fetchGnewsSearch',
+  (gnewsProvider.match(/const COMBINED_QUERY/g) || []).length === 1 && (gnewsProvider.match(/fetchFn\(/g) || []).length === 1,
+);
+
+// ---------------------------------------------------------------------------
 // Group 10: package.json wiring
 // ---------------------------------------------------------------------------
 log('--- Group 10: package.json wiring ---');

@@ -10,7 +10,12 @@ approval) merging the PR or a Production deploy.
 
 ## 1. Executive classification
 
-`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`. All implementation and test work for this phase,
+`PHASE_3GL_HF4_GNEWS_PROVIDER_COMPATIBILITY_IMPLEMENTED_PRODUCTION_VERIFICATION_PENDING`. PR #8 was merged to
+`main` and the Git-integrated Production deployment succeeded, but live Production traffic then revealed that
+`GET /api/news/home.json` returns `{ "ok": false, "code": "NEWS_PROVIDER_ERROR" }` — see §1d for the
+narrowly-scoped **Phase 3GL-HF4** provider-compatibility hotfix that addresses this. `GET
+/api/home/live-market.json` remains unaffected (HTTP 200, healthy) throughout. All implementation and test
+work described below for the original phase,
 including the **Phase 3GL-HF1 hotfix** (§1a), the **Phase 3GL-HF2 hotfix** (§1b), and the **Phase 3GL-HF3
 hotfix** (§1c), is complete and pushed on branch `feature/phase-3gl-home-live-data-and-gnews` (created from
 `origin/main` at `0e53cde`, the Phase 3GK merge commit; PR #8). The final HF3 implementation commit is
@@ -41,6 +46,41 @@ Based on this completed Owner verification, release approval was granted
 (`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`). No Production deploy, no Vercel environment
 mutation, and no Supabase migration have been performed as part of implementation or verification; the PR
 merge and Git-integrated Production deployment are the next, separately-authorized step (see §6).
+
+### 1d. HF4 hotfix — restored GNews provider compatibility
+
+Phase 3GL-HF4 is a narrowly-scoped provider-compatibility hotfix, opened after PR #8 merged to `main` (merge
+commit `d211f0b3c86129b95f1ff2a225d35e4b9ec1b492`) and the resulting Git-integrated Production deployment
+(`dpl_3j6FdPFcE9biJBet12518Gvtf4qB`, `READY`) reached live traffic. Production Home loaded correctly (HTTP
+200) and `GET /api/home/live-market.json` returned a healthy HTTP 200 with ticker/Snapshot data, but `GET
+/api/news/home.json` returned HTTP 200 with `{ "ok": false, "code": "NEWS_PROVIDER_ERROR" }` instead of a
+live feed or an honest `NEWS_NO_RESULTS`.
+
+- **Root cause**: the provider request in `fetchGnewsSearch` (`gnewsHomeNewsProvider.mjs`) used `max=20` and
+  `lang: 'ko'`. GNews's Free plan caps the `max` parameter at 10 articles per request, and the Search
+  endpoint's supported-language list does not include Korean — either incompatibility alone is sufficient to
+  make GNews respond with HTTP 400; the pre-HF4 status mapping collapsed any non-2xx response other than
+  401/429 into the same generic `NEWS_PROVIDER_ERROR`, masking the real (client-configuration) cause.
+- **Fix**: `PROVIDER_MAX` reduced from 20 to 10; `lang: 'ko'` removed entirely from the `URLSearchParams` (the
+  Korean-keyword `COMBINED_QUERY` remains the sole Korean-news targeting mechanism). The one-combined-query
+  architecture (exactly one GNews request per 5-minute cache window, no per-category fan-out, no second
+  provider, no LLM, no fixture fallback) is unchanged. Sanitized upstream status classification was also
+  extended so a future incompatibility is diagnosable without exposing the raw provider response: `400` →
+  `NEWS_BAD_REQUEST`, `401` → `NEWS_UNAUTHORIZED`, `403` → `NEWS_QUOTA_EXHAUSTED` (previously mapped to
+  `NEWS_UNAUTHORIZED`), `429` → `NEWS_RATE_LIMITED`, any other non-2xx/timeout/network/invalid-JSON failure →
+  `NEWS_PROVIDER_ERROR`. The raw response body, query text, API key, and provider headers are never exposed
+  in any code path.
+- **No environment or Supabase mutation**: no Vercel environment variable was changed, no manual `vercel`
+  command was run, and no Supabase migration or table was touched. No fixture, second provider, or LLM
+  fallback was introduced.
+- **Test suite extension**: `scripts/home_live_data_testsrc.ts` grew to **149/149** passing (new coverage:
+  the generated provider URL carries `max=10`, omits `lang` entirely, carries exactly one `q` and one
+  `apikey` parameter, and issues exactly one fetch call; sanitized status mapping for `400`/`403`/`429`/`500`;
+  all pre-existing success/cache/normalization/dedupe/classification/`NEWS_NO_RESULTS`/secret-safety
+  assertions unchanged and still passing). `scripts/check_phase_3gl_home_live_data_contract.mjs` grew to
+  **220/220** passing (new "Group 13" static-source assertions covering the same contract).
+- **Production verification remains pending** until this hotfix is merged and deployed — see §5 for the
+  focused regression gate and §6 for current status.
 
 ### 1c. HF3 hotfix — continuous ticker motion and Snapshot sparklines
 
@@ -326,8 +366,8 @@ own fetching.
 
 ## 5. Regression gate
 
-- `npm run smoke:phase-3gl-home-live-data` — 138/138 passed (HF3; 117/117 at HF2).
-- `npm run check:phase-3gl-home-live-data` — 210/210 passed (HF3; 183/183 at HF2).
+- `npm run smoke:phase-3gl-home-live-data` — 149/149 passed (HF4; 138/138 at HF3; 117/117 at HF2).
+- `npm run check:phase-3gl-home-live-data` — 220/220 passed (HF4; 210/210 at HF3; 183/183 at HF2).
 - `npm run smoke:phase-3gj-live-market-dashboard` — 162/162 passed (no ripple from HF3).
 - `npm run check:phase-3gj-live-market-dashboard` — 159/159 passed (no ripple from HF3). Two ripples fixed
   across this phase and HF1, both to the checker only, never to the tested implementation: (1) the original
@@ -343,7 +383,24 @@ own fetching.
   both Node 22 and Node 24, but the local Windows process exited with a native `0xC0000005` access violation;
   see §1c for the full assessment (`LOCAL_WINDOWS_ASTRO_TEARDOWN_ACCESS_VIOLATION_RECORDED_NON_RELEASE_BLOCKING`,
   corroborated by `REMOTE_EXACT_COMMIT_BUILD_AND_POSTBUILD_VERIFIED` — the exact same commit's Vercel build
-  and postbuild completed successfully and deployed).
+  and postbuild completed successfully and deployed). **At HF4, the local Windows build result differs from
+  the HF3 pattern and is recorded honestly rather than reused:** all logged Astro/Vite stages (type
+  generation, server-entrypoint build, three Vite builds, "Rearranging server assets") completed with zero
+  errors and produced a fully-populated `dist/client` (40 files) and `dist/server` (70 files), but the
+  process then exited with a different native code, decimal `-1073740791` (confirmed via
+  `((-1073740791) >>> 0).toString(16)` → `c0000409`, i.e. Windows `STATUS_STACK_BUFFER_OVERRUN`, distinct
+  from HF3's `0xC0000005`), reproduced identically across two consecutive clean (`dist`/`.vercel/output`
+  removed first) runs. Unlike HF3, `.vercel/output/server` and `.vercel/output/static` remained **empty** and
+  `.vercel/output/config.json` was **not created** — the Vercel adapter's own output-emission step did not
+  complete this time. Running `scripts/repair-vercel-output.mjs` (the `postbuild` step) directly exits `0`
+  but correctly performs no repair, since its own guard (`existsSync(configPath) && !hasFiles(staticOutput)`)
+  requires `config.json` to already exist and none was written. HF4 changed only JS/TS/doc content
+  (`gnewsHomeNewsProvider.mjs`, a comment in `home.json.ts`, tests, docs) — no dependency, build config, or
+  native module was touched — so this is treated as the same class of local-Windows-toolchain anomaly as
+  HF1–HF3, not a defect introduced by this hotfix, but it is **not** given the `NON_RELEASE_BLOCKING` label
+  on the strength of this local run alone: per this phase's governing instruction, that label is earned only
+  when the identical commit's remote Vercel Preview build reaches `Ready`. That confirmation is the explicit
+  subject of this hotfix's own §11 Preview verification step and is recorded there, not assumed here.
 - `git diff --check` — exit 0 (only benign CRLF/LF line-ending advisories, no conflict markers, no
   trailing-whitespace errors).
 
@@ -352,10 +409,12 @@ own fetching.
 - Owner Preview verification is **complete** (see §1): the Owner authenticated against the Vercel-SSO-gated
   Preview and confirmed the Home API contract, all 9 Snapshot sparklines and their exact labels/order, the
   rolling-ticker motion, the Snapshot mini charts, and the honest `NEWS_NO_RESULTS` empty state.
-- Release approval has been **granted**
-  (`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`). The next action is merging PR #8 and verifying
-  the resulting Git-integrated Production deployment — tracked as part of this same release-approval work,
-  not a new phase.
+- Release approval was **granted** (`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`), PR #8 was
+  merged to `main`, and the Git-integrated Production deployment reached `READY`. Production Home and `GET
+  /api/home/live-market.json` verified healthy, but `GET /api/news/home.json` returned
+  `NEWS_PROVIDER_ERROR` — see §1d for the **Phase 3GL-HF4** provider-compatibility hotfix now addressing this.
+  HF4 Production verification is **pending** until the hotfix branch
+  (`hotfix/phase-3gl-gnews-provider-compatibility`) is merged and deployed.
 - Comprehensive/broad Phase 3 responsive, accessibility, and symbol-matrix QA remains deferred until Phase 3
   Closeout (`COMPREHENSIVE_QA_AND_OPTIMIZATION_DEFERRED_UNTIL_PHASE_3_CLOSEOUT`); only the focused Production
   checks in this release's scope are performed now.
