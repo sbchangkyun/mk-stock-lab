@@ -1,78 +1,171 @@
 ---
-interface Article {
-  id: string;
-  title: string;
-  description: string | null;
-  url: string;
-  imageUrl: string | null;
-  sourceName: string;
-  publishedAt: string;
-  category: string;
-  relevanceScore: number;
-}
-
-interface Props {
-  articles?: Article[];
-}
-
-const { articles = [] } = Astro.props;
-const displayArticles = articles.slice(0, 6);
-
-const CATEGORY_LABELS: Record<string, string> = {
-  MARKET_STOCKS: '국내 주식',
-  FX: '환율',
-  MACRO_POLICY: '거시/정책',
-  OIL_COMMODITIES: '원자재',
-  CRYPTO_DIGITAL_ASSETS: '가상자산',
-  PERSONAL_FINANCE: '재테크',
-  GLOBAL_INDICES: '글로벌 지수',
-};
-
-function formatPublishedDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-  } catch {
-    return '';
-  }
-}
+/**
+ * Phase 3GL replacement for the old SSR-fixture-fed news card. Renders only the static shell at
+ * request time; articles are populated client-side from GET /api/news/home.json (a new, dedicated
+ * GNews route — see src/lib/server/homeNews/gnewsHomeNewsProvider.mjs). No props: the old SSR fetch in
+ * src/pages/index.astro was removed since this component now owns its own data fetching, refresh, and
+ * failure handling.
+ */
 ---
 
-<section class="home-news-section" aria-label="시장 뉴스">
+<section class="home-news-section" aria-label="시장 뉴스" data-home-market-news>
   <div class="home-news-header">
     <p class="eyebrow">MARKET NEWS</p>
     <h2 class="home-news-title-h2">시장 뉴스</h2>
     <p class="home-news-lead">오늘 시장을 움직이는 주요 이슈를 한눈에 확인하세요.</p>
   </div>
 
-  {displayArticles.length === 0 ? (
-    <div class="home-news-empty">
-      <p>표시할 시장 뉴스가 없습니다.</p>
-    </div>
-  ) : (
-    <div class="home-news-grid">
-      {displayArticles.map((article) => (
-        <a
-          class="home-news-card"
-          href={article.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={article.title}
-        >
-          <div class="home-news-card-meta">
-            <span class="home-news-badge">
-              {CATEGORY_LABELS[article.category] ?? article.category}
-            </span>
-            <span class="home-news-source-name">{article.sourceName}</span>
-            <time class="home-news-date" datetime={article.publishedAt}>
-              {formatPublishedDate(article.publishedAt)}
-            </time>
-          </div>
-          <p class="home-news-headline">{article.title}</p>
-          {article.description && (
-            <p class="home-news-desc">{article.description}</p>
-          )}
-        </a>
-      ))}
-    </div>
-  )}
+  <p class="home-news-loading" data-home-news-loading role="status" aria-live="polite">불러오는 중...</p>
+  <p class="home-news-delayed hidden" data-home-news-delayed role="status" aria-live="polite">
+    뉴스 업데이트가 지연되고 있습니다.
+  </p>
+  <div class="home-news-grid hidden" data-home-news-grid></div>
+  <div class="home-news-empty hidden" data-home-news-empty>
+    <p>현재 표시할 시장 뉴스가 없습니다. 잠시 후 다시 확인해 주세요.</p>
+  </div>
 </section>
+
+<script>
+  type HomeNewsArticle = {
+    id: string;
+    title: string;
+    description: string | null;
+    url: string;
+    image: string | null;
+    publishedAt: string | null;
+    sourceName: string;
+    sourceUrl: string | null;
+    category: string;
+  };
+
+  const REFRESH_MS = 5 * 60 * 1000;
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    DOMESTIC_STOCKS: '국내주식',
+    OVERSEAS_STOCKS: '해외주식',
+    FX: '환율',
+    MACRO: '거시경제',
+    COMMODITIES: '원자재',
+    GENERAL_MARKET: '시장일반',
+  };
+
+  const escapeHtml = (value: string): string =>
+    value.replace(/[&<>"']/g, (ch) => {
+      switch (ch) {
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '"':
+          return '&quot;';
+        default:
+          return '&#39;';
+      }
+    });
+
+  const isSafeHttpUrl = (value: string | null): value is string =>
+    typeof value === 'string' && (value.startsWith('https://') || value.startsWith('http://'));
+
+  const formatPublishedDate = (iso: string | null): string => {
+    if (!iso) return '';
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+  };
+
+  const renderArticles = (articles: HomeNewsArticle[], grid: HTMLElement) => {
+    grid.innerHTML = articles
+      .map((article) => {
+        const badge = escapeHtml(CATEGORY_LABELS[article.category] ?? '시장일반');
+        const source = escapeHtml(article.sourceName || '알 수 없음');
+        const title = escapeHtml(article.title);
+        const description = article.description ? escapeHtml(article.description) : '';
+        const dateLabel = formatPublishedDate(article.publishedAt);
+        const href = isSafeHttpUrl(article.url) ? article.url : '';
+
+        return `<a class="home-news-card" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="${title}">
+  <div class="home-news-card-meta">
+    <span class="home-news-badge">${badge}</span>
+    <span class="home-news-source-name">${source}</span>
+    <time class="home-news-date" datetime="${escapeHtml(article.publishedAt ?? '')}">${dateLabel}</time>
+  </div>
+  <p class="home-news-headline">${title}</p>
+  ${description ? `<p class="home-news-desc">${description}</p>` : ''}
+</a>`;
+      })
+      .join('');
+  };
+
+  let inFlight = false;
+  let timerId: number | null = null;
+  let hasRenderedOnce = false;
+
+  const load = (root: HTMLElement) => {
+    if (inFlight || document.hidden) return;
+    inFlight = true;
+
+    const loading = root.querySelector<HTMLElement>('[data-home-news-loading]');
+    const delayed = root.querySelector<HTMLElement>('[data-home-news-delayed]');
+    const grid = root.querySelector<HTMLElement>('[data-home-news-grid]');
+    const empty = root.querySelector<HTMLElement>('[data-home-news-empty]');
+
+    fetch('/api/news/home.json')
+      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
+      .then(({ ok, body }) => {
+        if (!ok || body?.ok !== true || !Array.isArray(body?.articles)) {
+          throw new Error('home_news_unavailable');
+        }
+        loading?.classList.add('hidden');
+        delayed?.classList.add('hidden');
+        if (body.articles.length === 0) {
+          grid?.classList.add('hidden');
+          empty?.classList.remove('hidden');
+        } else {
+          if (grid) renderArticles(body.articles as HomeNewsArticle[], grid);
+          empty?.classList.add('hidden');
+          grid?.classList.remove('hidden');
+        }
+        hasRenderedOnce = true;
+      })
+      .catch(() => {
+        if (hasRenderedOnce) {
+          // Preserve the last successfully rendered articles; surface a delayed notice instead of
+          // clearing them. No retry before the normal 5-minute schedule — no fixture fallback.
+          delayed?.classList.remove('hidden');
+          return;
+        }
+        // First-load failure: one clean unavailable state, no retry before the normal schedule.
+        loading?.classList.add('hidden');
+        grid?.classList.add('hidden');
+        empty?.classList.remove('hidden');
+      })
+      .finally(() => {
+        inFlight = false;
+      });
+  };
+
+  const scheduleNext = (root: HTMLElement) => {
+    if (timerId !== null) window.clearTimeout(timerId);
+    timerId = window.setTimeout(() => {
+      load(root);
+      scheduleNext(root);
+    }, REFRESH_MS);
+  };
+
+  const setup = () => {
+    const root = document.querySelector<HTMLElement>('[data-home-market-news]');
+    if (!root || root.dataset.ready === 'true') return;
+    root.dataset.ready = 'true';
+
+    load(root);
+    scheduleNext(root);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) load(root);
+    });
+  };
+
+  document.addEventListener('astro:page-load', setup);
+  setup();
+</script>

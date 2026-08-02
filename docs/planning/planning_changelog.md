@@ -1,5 +1,128 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GL - 2026-07-30
+
+### Home live market data and GNews feed; roadmap reprioritization
+
+- Roadmap reprioritized in place (`mk_stock_lab_master_roadmap_v2.1.md`, no new version file): recorded Phase
+  3GK's Production merge/release (PR #7, merge commit `0e53cde`, deployment `dpl_CRd7KFZ2eyscG1tbAfxdqMgPhh1A`
+  READY); inserted Phase 3GL (Home Live Data and GNews) as the in-progress phase; renamed the prior
+  "Operations and Admin MVP" phase from 3GL to 3GM; Phase 3 Closeout now runs after 3GM.
+- Added one shared server-side Home market orchestrator + `GET /api/home/live-market.json`, serving both the
+  9-item ticker belt and the 4-card Market Snapshot from the same closed-registry instrument fetch (bounded
+  concurrency 3, no duplicate provider calls) — reusing the existing shared KIS OHLCV orchestration/durable
+  token manager for the 7 ETF-proxy items and the existing Frankfurter FX source for USD/KRW; no new KIS
+  endpoint/TR ID and no new FX provider were added.
+- Rewrote `Ticker.astro` and `HomeLiveMarketSnapshot.astro` to consume the new shared route (60s client
+  refresh, pause on hidden document, in-flight coalescing, no localStorage cache, no cache-bypass params);
+  Home no longer calls `/api/market/overview.json` (the `/market` page's own use of that route is untouched).
+- Added a new server-only GNews client + `GET /api/news/home.json` reading `GNEWS_API_KEY` only (never the
+  pre-existing client-exposed `PUBLIC_GNEWS_API_KEY`), issuing one combined query per cache refresh, returning
+  at most 6 client-safe normalized articles, deterministically classified into 국내주식/해외주식/환율/거시경제/
+  원자재/시장일반. No fixture fallback: an absent key returns a sanitized `NEWS_NOT_CONFIGURED` state with an
+  honest UI message. Rewrote `HomeMarketNews.astro` into a client-fetching component (5-minute refresh,
+  visibility pause, one delayed retry, preserves last-good articles on a refresh failure).
+- Left the pre-existing `market-feed.ts` route and `lib/news/gnews*.mjs` fixture-based pipeline in place but
+  unreferenced by Home (out of scope to remove this phase).
+- New `smoke:phase-3gl-home-live-data` and `check:phase-3gl-home-live-data` suites. See
+  `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail and exact test counts.
+
+### HF1 hotfix - 2026-07-31: corrected live-data contract
+
+- `resolveKisTickerItem` now tries the existing KIS current-quote snapshot functions first (sequential, never
+  parallel) and only falls back to the pre-existing OHLCV-based resolution on failure; added closed
+  `HomeDataBasis`/`HomeFreshness` enums so every ticker/snapshot item carries an honest basis and freshness.
+  No new KIS endpoint/TR ID.
+- `getHomeLiveMarket` now computes the 4-item Market Snapshot exactly once via `buildSnapshot(ticker)` before
+  the total-failure/success branch split, so both return paths share one fixed-length snapshot instead of
+  risking a re-literalized empty array.
+- Replaced the original per-component fetch design with one site-wide `homeLiveMarketController.ts`, mounted
+  in `Layout.astro`, that owns the sole fetch/timer/in-flight/visibilitychange lifecycle and broadcasts a
+  `mk-home-live-market` event; `Ticker.astro` and `HomeLiveMarketSnapshot.astro` became pure consumers.
+- Hardened `gnewsHomeNewsProvider.mjs` article normalization with closed length bounds, a safe-http-url gate
+  (url/image/sourceUrl), and an ISO-date gate (publishedAt) — required fields reject on failure, optional
+  fields truncate or null out rather than reject.
+- `HomeMarketNews.astro` now tracks `hasRenderedOnce` to distinguish a first-load failure from a post-success
+  refresh failure, preserving already-rendered articles instead of a fixed retry delay.
+- Extended `smoke:phase-3gl-home-live-data` (86/86) and `check:phase-3gl-home-live-data` (157/157); widened
+  one pre-existing assertion in `check:phase-3gj-live-market-dashboard` (159/159) to also tolerate
+  `HomeLiveMarketSnapshot.astro`'s new zero-fetch, broadcast-consumer architecture. PR title unchanged
+  ("Phase 3GL: add live Home data and GNews feed").
+
+### HF2 hotfix - 2026-07-31: corrected quote direction and honest GNews empty-feed handling
+
+- Added a shared pure module `kisQuoteSignNormalization.ts` (`normalizeKisQuoteSign`) used by both
+  `getKisDomesticQuoteSnapshot` and `getKisOverseasQuoteSnapshot`; priority is the official KIS
+  direction/sign code first (`prdy_vrss_sign` domestic, `sign` overseas), then agreeing raw signs, then a
+  guarded fallback that applies a signed non-zero pct's direction to an unsigned amount. Fixes the
+  observed Preview bug where the overseas `diff` field (an unsigned magnitude per the official KIS contract)
+  was being mapped directly to `change` as if already signed, producing sign-contradictory Dollar Index/WTI
+  Oil quotes.
+- Domestic quote now cross-checks the resolved change against `stck_prpr - stck_sdpr`, nulling only `change`
+  (never `changePct` or `price`) on a material mismatch.
+- Added a final independent contradiction check in `homeLiveMarket.ts`'s `toCurrentQuoteItem` (Home-layer
+  safety net) that nulls only `changeAmount` when directions conflict.
+- Replaced the inaccurate `실시간(지연) 시세 기준` basis label with `KIS 현재가 조회 기준`; the
+  `dataBasis: 'current_quote'` enum is unchanged.
+- `getHomeNewsFeed` now attaches sanitized `{providerArticleCount, normalizedArticleCount,
+  returnedArticleCount}` diagnostics to every successful/zero-result response, and returns an honest `{ok:
+  false, code: 'NEWS_NO_RESULTS'}` (cached, HTTP 200) instead of an indistinguishable `ok: true` with zero
+  articles.
+- Simplified `COMBINED_QUERY` from a 16-term to a conservative 8-term OR expression after the 16-term version
+  returned zero live articles in Preview.
+- Committed (`354c454`) and pushed to PR #8. Vercel and Netlify Previews both reached `Ready`/`success`; the
+  Vercel Preview is Vercel-SSO-protected (as with every prior Preview in this project), so the §15 functional
+  checklist (Home content, ticker/snapshot shape, quote-direction consistency, GNews result count) is
+  Owner-pending — this assistant verified deployment state/branch/commit only, never page content, and never
+  entered owner credentials.
+- Extended `smoke:phase-3gl-home-live-data` to 117/117 and `check:phase-3gl-home-live-data` to 183/183; no
+  ripple into `check:phase-3gj-live-market-dashboard` (still 159/159). PR title and scope unchanged.
+
+### HF3 hotfix - 2026-08-01: continuous ticker motion and Snapshot sparklines
+
+- `Ticker.astro` now rolls continuously left: a duplicated `aria-hidden` visual track plus a
+  `transform: translate3d(...)` CSS animation (~48px/s, clamped 15-90s cycle), re-anchored on every data
+  refresh via a negative `animation-delay` computed from the rail's current progress so a 60s content
+  refresh never jumps or restarts; disabled entirely under `prefers-reduced-motion: reduce`. The component's
+  own `visibilitychange` listener only toggles the animation-pause class — it never fetches, staying
+  distinct from the shared controller's own visibility-driven fetch pause.
+- Market Snapshot expanded from a fixed 4-item subset to the full closed 9-item `HOME_TICKER_REGISTRY`
+  (adds `dowjones`, `usdkrw`, `dollarindex`, `gold`, `wti`), now in a responsive 3/2/1-column grid; no new
+  instrument, KIS endpoint/TR ID, or FX provider.
+- Every Snapshot card now renders a dependency-free inline `<svg><polyline>` sparkline. `homeLiveMarket.ts`
+  adds a closed `sparklineStatus`/`sparklineBasis` contract (`HOME_SPARKLINE_POINTS = 20`, ascending,
+  finite-positive, never fabricated); KIS items source it from the same `fetchLongHistoryOhlcv` call already
+  used for fallback resolution (now called unconditionally, regardless of quote success, without ever
+  touching the headline price); `usdkrw` sources it from a new `fetchUsdKrwSparklineSeries` in the existing
+  Frankfurter/ECB provider (6h cache, capped 20 points).
+- Reviewed the HF2 `NEWS_NO_RESULTS` empty-feed contract against the owner's report of a genuinely empty
+  GNews result: confirmed as expected, honest behavior (`GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED`) —
+  no fixture, second provider, LLM, or validation change made.
+- Extended `smoke:phase-3gl-home-live-data` to 138/138 and `check:phase-3gl-home-live-data` to 210/210 (4
+  checker-staleness fixes for the intentional unconditional-OHLCV-fetch and Ticker-owned-listener design
+  changes — not source defects); no ripple into `check:phase-3gj-live-market-dashboard` (still 159/159).
+  `npm run build` completed all stages cleanly with complete output artifacts, but the Node process crashed
+  on exit with a native `STATUS_STACK_BUFFER_OVERRUN` — assessed as a pre-existing Node/esbuild-on-Windows
+  process-teardown issue unrelated to this diff, recorded as a documented anomaly rather than silently
+  treated as a full pass. Commit message: "Phase 3GL-HF3: add rolling ticker and Snapshot sparklines".
+
+### Release approval - 2026-08-02: Owner Preview verification complete
+
+- Owner completed full authenticated verification of the HF3 Preview (commit `bb80c99`): rolling ticker
+  belt confirmed rolling continuously left with no visible jump/restart; all 9 Market Snapshot cards and
+  their mini line charts confirmed rendering correctly; `GET /api/home/live-market.json` confirmed
+  `ticker.length = 9`, `snapshot.length = 9`, exact label order, all 9 sparklines valid, no quote sign
+  contradiction; `GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED` re-verified live (all diagnostic counters
+  zero, honest Korean empty-state copy rendered).
+- Re-examined the local `npm run build` exit anomaly on both Node 22.23.1 and Node 24.14.1: both reproduce a
+  Windows `0xC0000005` access violation on process exit after the Astro build step (direct `postbuild`
+  execution exits `0`); classified `LOCAL_WINDOWS_ASTRO_TEARDOWN_ACCESS_VIOLATION_RECORDED_NON_RELEASE_BLOCKING`
+  and corroborated by the exact-commit remote Vercel build/postbuild completing successfully
+  (`REMOTE_EXACT_COMMIT_BUILD_AND_POSTBUILD_VERIFIED`).
+- Classification: `PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`. PR #8 approved for merge; the
+  Git-integrated Production deployment and a focused Production verification follow as the next step. Phase
+  3GM (Operations and Admin MVP) remains `PLANNED`, not started.
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization

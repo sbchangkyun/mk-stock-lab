@@ -16,7 +16,8 @@ Status label: `PRODUCTION_VERIFIED`. Only functionality actually deployed from `
   Similarity engine with score guide, evidence level, and deterministic non-advisory insight; deterministic
   MK AI summary; Market Intelligence (benchmark, relative strength, USD/KRW via Frankfurter, commodities,
   volatility, regime — partial, interest rates and breadth not sourced); server-side daily usage guard
-  (3 combined Similarity + MK Analysis runs/day/user, KST calendar boundary). `PRODUCTION_VERIFIED`.
+  (3 combined Similarity + MK Analysis runs/day/user, KST calendar boundary). As of Phase 3GK, Chart AI is a
+  stable always-on Production product (no beta flag/query gate); see §1c. `PRODUCTION_VERIFIED`.
 - **Portfolio**: authenticated CRUD for multiple portfolios and KR/US positions is `PRODUCTION_VERIFIED`.
 - **Lab**: static S&P 500 sector / asset-class return matrices, cross-year hover, image export.
   `PRODUCTION_VERIFIED`.
@@ -97,6 +98,26 @@ to Production Supabase (via the Supabase Dashboard SQL Editor), not independentl
   either table, no new Security Advisor finding). Not independently re-verified in this session (no Supabase
   tool connected).
 
+## 1c. Phase 3GK — merged to main and released to Production
+
+Status label: `PRODUCTION_RELEASED`. PR `#7` ("Phase 3GK: productize stable Chart AI") merged via
+`gh pr merge --match-head-commit` at approved Head `b22ddf8f7f2d36717050ad54fb2bbb798b40fd47` (merge commit
+`0e53cdee24658d819f0f7140bd66843bf42c6b3d`). The Git-integrated Production deployment
+(`dpl_CRd7KFZ2eyscG1tbAfxdqMgPhh1A`) reached `READY`. Post-release signed-out auth-boundary, route-isolation,
+and page-safety checks all passed with no anomaly; no environment variable, Vercel setting, or Supabase
+schema/data was mutated by the release. Classification: `PRODUCTION_RELEASED_PHASE_3GK_AUTHENTICATED_RUNTIME_QA_OWNER_PENDING`.
+Authenticated Production runtime QA (explicit chart-load, live usage-guard interactive verification) remains
+Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see §4 and
+`phase_3gk_chart_ai_beta_productization_result_v0.1.md`).
+
+- Graduated Chart AI from "beta preview gated behind `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA` +
+  `?chartAiProdBeta=1`" to a stable, always-on, authenticated Production product
+  (`evaluateStableProductionChartAiAccess`; `allowProductionChartAiBetaLiveQuotes` renamed
+  `allowProductionChartAiLiveData` end-to-end). The protected-Preview beta guard stays fully independent and
+  untouched.
+- `smoke:phase-3gk-chart-ai-beta-productization` (17/17) and `check:phase-3gk-chart-ai-beta-productization`
+  (116/116); full regression gate clean at merge time.
+
 ## 3. Explicitly deferred scope (not Phase 3GJ, not Phase 3GI, not Phase 3GH)
 
 - US/USD position live valuation; USD portfolio base-currency valuation and any live or mocked FX conversion.
@@ -120,36 +141,31 @@ to Production Supabase (via the Supabase Dashboard SQL Editor), not independentl
   dashboard for `kospi200`/`kosdaq150`/`sp500`/`nasdaq100`, sourced entirely from the existing shared KIS OHLCV
   orchestration and durable token manager. See `phase_3gj_live_market_dashboard_result_v0.1.md` for the full
   classification.
+- **Phase 3GK — Chart AI Beta Productization.** `PRODUCTION_RELEASED` (PR #7 merged, merge commit `0e53cde`,
+  Production deployment `dpl_CRd7KFZ2eyscG1tbAfxdqMgPhh1A` READY). See §1c.
 
 ### In progress
 
-- **Phase 3GK — Chart AI Beta Productization.** Graduates Chart AI from "beta preview gated behind
-  `CHART_AI_ENABLE_PRODUCTION_CHART_AI_BETA` + `?chartAiProdBeta=1`" to a stable, always-on, authenticated
-  Production product: the new `evaluateStableProductionChartAiAccess` guard allows on `VERCEL_ENV=production`
-  alone (no flag/query), the protected-Preview beta guard stays fully untouched and independent, and
-  `allowProductionChartAiBetaLiveQuotes` is renamed `allowProductionChartAiLiveData` end-to-end. New
-  `smoke:phase-3gk-chart-ai-beta-productization` (17/17) and `check:phase-3gk-chart-ai-beta-productization`
-  (116/116) suites; full regression gate (3GJ/3GI/3GH smoke+check, `npm ls`, `npm run build`,
-  `git diff --check`) clean. Detailed responsive/cross-browser/accessibility/all-symbol/all-market/
-  long-session QA is explicitly deferred to Phase 3 Closeout (after Phase 3GL). See
-  `phase_3gk_chart_ai_beta_productization_result_v0.1.md` for full detail. Branch
-  `feature/phase-3gk-chart-ai-beta-productization`, created from `origin/main` at `668e528` (the Phase 3GJ
-  merge commit); implementation commit `a0ae043`. PR #7 ("Phase 3GK: productize stable Chart AI") is open
-  against `main`, state `OPEN`, `mergeable: MERGEABLE`, not merged. Its Vercel Preview deployment
-  (`dpl_69TReFxXBWKMMweUMP248Q24uSV3`, commit `a0ae043`) reached `READY`; both the Vercel and Netlify PR
-  checks are green. The Preview is gated by Vercel's own account-level Deployment Protection (SSO), so
-  authenticated route/UI verification is Owner-pending — see the result doc §1/§8.
+- **Phase 3GL — Home Live Data and GNews.** Replaces the Home page's separate live-market call
+  (`/api/market/overview.json`) and the fixture-default news feed with one shared server-side Home market
+  orchestrator + one public route (`GET /api/home/live-market.json`) serving both the 9-item ticker belt
+  (S&P 500/Nasdaq 100/Dow Jones/KOSPI/KOSDAQ/USD-KRW/Dollar Index/Gold/WTI Oil, each an existing resolvable
+  KIS-backed ETF proxy or the existing Frankfurter FX source, honestly basis-labeled) and the 4-card Market
+  Snapshot from the same underlying fetch, plus a new server-only GNews client and `GET /api/news/home.json`
+  route (single combined query per refresh, at most 6 client-safe articles, sanitized
+  `NEWS_NOT_CONFIGURED` state when `GNEWS_API_KEY` is absent — no fixture fallback). No new KIS endpoint/TR ID,
+  no second market-data or FX provider. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail.
 
 ### Next sequential product phases
 
-1. **Phase 3GL — Operations and Admin MVP.** `PLANNED`. Minimal internal visibility into usage-guard counters,
+1. **Phase 3GM — Operations and Admin MVP.** `PLANNED`. Minimal internal visibility into usage-guard counters,
    KIS token health, and quote-cache staleness — currently only inspectable via ad hoc Owner smoke scripts and
    Supabase Dashboard queries, not a real operational surface.
-2. **Phase 3 Closeout.** `PLANNED`. Runs after Phase 3GL — performs the detailed responsive/cross-browser/
-   accessibility/all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc), plus
-   any other cross-cutting Phase 3 closeout verification.
+2. **Phase 3 Closeout.** `PLANNED`. Runs after Phase 3GM — performs the detailed responsive/cross-browser/
+   accessibility/all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc) and
+   Phase 3GL, plus any other cross-cutting Phase 3 closeout verification.
 
-Phase 3GL is explicitly **not** started by this document or this phase — this section only records that it is
+Phase 3GM is explicitly **not** started by this document or this phase — this section only records that it is
 next in sequence, per the governing spec's instruction not to begin it here.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
@@ -191,10 +207,10 @@ next in sequence, per the governing spec's instruction not to begin it here.
 6. **Phase 3GJ Production activation completed** (`KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD=true` set, PR #6
    merged, Production deployment reached READY, controlled live-data acceptance passed) — no longer an open
    risk; carried here only as a closed-item reference.
-7. **Phase 3GK PR #7 open, Preview READY, authenticated verification Owner-pending.** The stable Production
-   access model (§4 "In progress") is implemented, gate-clean, committed, pushed, and its PR's Vercel Preview
-   reached `READY`; the Preview's Vercel-level SSO Deployment Protection means authenticated route/UI
-   verification is Owner-pending — see `phase_3gk_chart_ai_beta_productization_result_v0.1.md` §1/§8.
+7. **Phase 3GK released to Production, authenticated runtime QA Owner-pending.** PR #7 merged (`0e53cde`) and
+   the Production deployment reached `READY`; unauthenticated auth-boundary/isolation/page-safety checks all
+   passed. Authenticated interactive verification (explicit chart-load, live usage-guard check) is
+   Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT`. See §1c.
 
 ## 6. Owner-only QA / decision items
 
@@ -209,7 +225,8 @@ next in sequence, per the governing spec's instruction not to begin it here.
 - Full signed-out/public detailed QA of Phase 3GJ's Market dashboard (all four universes/periods) and Home live
   snapshot, including mobile viewport and treemap/scatter export, plus the analogous detailed sweep for Phase
   3GK — both explicitly deferred to Phase 3 Closeout (see Phase 3GK result doc §7).
-- Perform authenticated Preview click-through verification of Phase 3GK PR #7's deployment (SSO-protected;
-  Owner-only) — its Vercel Preview reached READY and Netlify's PR check is green, both confirmed by
-  unauthenticated reachability checks only.
-- Decide whether to merge the Phase 3GK PR #7 (not performed by this phase per explicit instruction).
+- Perform authenticated Production runtime QA of Phase 3GK (explicit chart-load, live usage-guard interactive
+  verification) — deferred to Phase 3 Closeout.
+- Decide whether to merge the Phase 3GL PR once opened (not performed by this phase per explicit instruction).
+- If Phase 3GL's Preview shows `GNEWS_API_KEY` unset, decide whether/when to set it in Vercel so the GNews
+  feed activates (no Vercel env mutation performed this phase).

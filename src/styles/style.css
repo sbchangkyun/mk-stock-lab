@@ -252,6 +252,22 @@ html.auth-hint-signed-in #logout-btn.hidden {
   font-size: 13px;
 }
 
+.ticker-chip-price {
+  color: var(--text);
+}
+
+.ticker-chip--up .ticker-chip-change {
+  color: var(--positive);
+}
+
+.ticker-chip--down .ticker-chip-change {
+  color: var(--negative);
+}
+
+.ticker-chip--flat .ticker-chip-change {
+  color: var(--neutral);
+}
+
 .primary-nav {
   position: sticky;
   top: 0;
@@ -3065,6 +3081,15 @@ body.modal-open {
   overflow-wrap: break-word;
 }
 
+.home-news-delayed {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
 .home-news-empty {
   padding: 28px 24px;
   border: 1px dashed var(--border);
@@ -3904,13 +3929,14 @@ body.modal-open {
   white-space: nowrap;
 }
 
-/* ---- Phase 3CB-HF2: Home index sparkline enhancement ---- */
+/* ---- Phase 3CB-HF2: Home index sparkline enhancement (extended Phase 3GL-HF3 §5,§8,§9) ---- */
 
 .index-card {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+  min-height: 132px;
 }
 
 .index-card-main {
@@ -3921,8 +3947,10 @@ body.modal-open {
 .index-card-sparkline {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
   align-self: center;
+  gap: 2px;
   opacity: 0.85;
 }
 
@@ -3940,6 +3968,26 @@ body.modal-open {
 
 .index-card-sparkline--flat .index-card-sparkline-line {
   stroke: var(--neutral, #888);
+}
+
+.index-card-sparkline-empty {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: right;
+  max-width: 72px;
+}
+
+.index-card-sparkline-period {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.index-card-freshness {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 /* ---- Phase 3CA-HF3: MyPage page-level admin rail layout ---- */
@@ -5902,15 +5950,16 @@ p.lab-static-preview-card-desc {
   }
 }
 
-/* 8. Home MARKET SNAPSHOT card grid — 2-col on mobile */
-@media (max-width: 720px) {
+/* 8. Home MARKET SNAPSHOT card grid — Phase 3GL-HF3 §9: 3 cols desktop/tablet (base rule above),
+   2 cols tablet-portrait, 1 col mobile */
+@media (max-width: 860px) {
   .index-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
 }
 
-@media (max-width: 340px) {
+@media (max-width: 560px) {
   .index-card-grid {
     grid-template-columns: 1fr;
   }
@@ -6194,4 +6243,73 @@ p.lab-static-preview-card-desc {
 /* Portfolio: control bar — remove gap now that category label is gone */
 .portfolio-list-controls-bar {
   justify-content: flex-end;
+}
+
+/* ============================================================
+   Phase 3GL-HF3 — Home ticker belt continuous rolling motion
+   ============================================================
+
+   .ticker-rail wraps two .ticker-track children (the semantic list + an aria-hidden visual clone,
+   both built in Ticker.astro's client script). Animating translate3d on the rail — never `left` or a
+   layout property, and never the individual chips — keeps content updates (which only replace a
+   track's innerHTML) from disturbing the running animation, so a 60s data refresh never restarts the
+   scroll from the beginning. Rolling is opt-in via the `.ticker-rail--rolling` class the client script
+   adds only when JS runs and prefers-reduced-motion is not set; without it (no JS, or reduced motion)
+   the rail is a static, non-duplicated single row. */
+
+.ticker-rail {
+  display: flex;
+  align-items: center;
+  width: max-content;
+}
+
+.ticker-rail--rolling {
+  gap: 12px;
+  padding-left: var(--page-gutter-x);
+  animation-name: mk-ticker-roll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: var(--ticker-duration, 40s);
+  will-change: transform;
+}
+
+.ticker-rail--rolling .ticker-track {
+  padding: 0;
+  gap: 12px;
+}
+
+@keyframes mk-ticker-roll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(-1 * var(--ticker-distance, 0px)), 0, 0);
+  }
+}
+
+.ticker-rail--rolling:hover,
+.ticker-rail--rolling.ticker-rail--paused,
+.ticker-belt:focus-within .ticker-rail--rolling {
+  animation-play-state: paused;
+}
+
+.ticker-chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+/* Phase 3GL-HF1's horizontal-scroll mobile fallback is superseded once the belt rolls on its own —
+   scrolling and the transform animation would otherwise fight each other. */
+@media (max-width: 900px) {
+  .ticker-belt--rolling {
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-rail--rolling {
+    animation: none;
+    transform: none;
+    padding-left: 0;
+  }
 }

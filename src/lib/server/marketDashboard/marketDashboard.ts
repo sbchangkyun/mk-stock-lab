@@ -58,7 +58,7 @@ const defaultDeps: MarketDashboardDeps = {
   now: () => Date.now(),
 };
 
-const mapWithConcurrency = async <T, R>(
+export const mapWithConcurrency = async <T, R>(
   items: T[],
   limit: number,
   fn: (item: T, index: number) => Promise<R>,
@@ -116,7 +116,7 @@ const roundTripUtcMs = (
  * (Phase 3GJ-HF2 spec section 4; fixes the ISO/YYYYMMDD parser mismatch that made every real,
  * successful long-history result read as unavailable).
  */
-const parseMarketDataTimestampToUtcMs = (value: string | null | undefined): number | null => {
+export const parseMarketDataTimestampToUtcMs = (value: string | null | undefined): number | null => {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   if (trimmed.length === 0) return null;
@@ -160,7 +160,7 @@ export const MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS = {
 export type MarketDashboardInternalDiagnosticReason =
   (typeof MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS)[keyof typeof MARKET_DASHBOARD_INTERNAL_DIAGNOSTIC_REASONS];
 
-const resolveFreshnessDiagnosis = (
+export const resolveFreshnessDiagnosis = (
   result: LongHistoryResult,
   nowMs: number,
 ): { freshness: FreshnessState; internalReason: MarketDashboardInternalDiagnosticReason } => {
