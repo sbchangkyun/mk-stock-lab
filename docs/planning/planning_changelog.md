@@ -1,5 +1,461 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GM and Phase 3GL-HF5 — Production-verified closeout - 2026-08-03
+
+- Recorded in the master roadmap (`mk_stock_lab_master_roadmap_v2.1.md`) as `PRODUCTION_VERIFIED`, moved
+  from "In progress"/pending-merge to "Completed": **Phase 3GM — Operations and Admin MVP** (PR #10 merged
+  to `main`, merge commit `be4fbaa`, including the HF1/HF2/HF3 pre-merge hotfixes already documented below)
+  and **Phase 3GL-HF5 — reliable latest-available Home news** (PR #11 merged to `main`, hotfix commit
+  `76cdec1`, merge commit `0fc7012`). Both merges verified directly against `origin/main` history
+  (`git log --oneline origin/main`) as part of Phase 4A's pre-implementation baseline check.
+- No code, schema, or environment change in this entry — documentation-only closeout, performed as part of
+  Phase 4A's roadmap-update requirement (item 11 of its plan).
+- New forward-looking roadmap entries added for **Phase 4B (Chart AI)**, **Phase 4C (Market)**, **Phase 4D
+  (Lab)**, **Phase 4E (Portfolio)**, and **Phase 4F (cross-page Owner QA closeout)** — the same
+  navigation-based production-readiness pattern as Phase 4A, one target page at a time, each gated by its
+  own automated smoke/checker suite, Vercel-only deployment policy, Owner QA deferred to 4F.
+- See `phase_4a_home_common_shell_production_plan_v0.1.md` / `..._result_v0.1.md` for the Phase 4A work this
+  closeout was recorded alongside.
+
+## Phase 3GL-HF5 - 2026-08-03
+
+### Guarantee latest-available Home news (bounded two-stage cascade + last-good fallback)
+
+- Production's Home news feed (`GET /api/news/home.json`) depended on exactly one provider strategy — a
+  single GNews Search request against a fixed Korean-only OR query — and returned an honest but avoidable
+  `NEWS_NO_RESULTS` whenever that one query happened to match zero articles, even when other recent,
+  usable articles existed under a different query shape.
+- `src/lib/server/homeNews/gnewsHomeNewsProvider.mjs` now runs a bounded two-stage cascade, at most 2
+  external requests per uncached load: (1) primary **GNews Top Headlines**
+  (`category=business&lang=ko&country=kr&max=10`, strategy id `top_headlines_business_ko_kr`, feedMode
+  `latest`); (2) if the primary succeeds but yields zero usable articles, a bounded **GNews Search for the
+  most recently available articles regardless of date** (`sortby=publishedAt`, no `from`/`to`, no `lang`,
+  preceded by a 1100ms rate-spacing delay), strategy id `search_latest_available_market`, feedMode
+  `latest_available`. A primary HTTP/network/malformed-body error still returns its own honest sanitized
+  code immediately (400/401/403/429/other unchanged) — the fallback never runs after a primary-level error,
+  only after a primary success with zero results.
+- Added a module-local, TTL-independent **last-good** runtime fallback: the most recently served non-empty
+  article set is remembered and served (feedMode `last_good`, `selectedStrategy:
+  'last_good_runtime_cache'`) whenever a later load's cascade would otherwise produce a primary error or a
+  both-strategies-zero `NEWS_NO_RESULTS` — masking only the transient failure, never skipping the two
+  provider requests on subsequent loads, so the feed always keeps trying to recover a genuine `latest`
+  result and is never permanently wedged. An empty state is now reached only when both strategies return
+  zero **and** no last-good set exists yet.
+- Honest failures (a primary error or a both-zero `NEWS_NO_RESULTS`, in each case with no last-good
+  available) deliberately bypass the 5-minute TTL cache and return directly, so the very next load retries
+  the provider cascade immediately instead of repeating the same transient failure for the rest of the
+  cache window. Only a genuine success or a `last_good` result is ever cached.
+- Extended `CATEGORY_KEYWORDS` with English keyword coverage for FX/COMMODITIES/MACRO/DOMESTIC_STOCKS at
+  at-least-equal priority ahead of the generic OVERSEAS_STOCKS English keywords, so English-language
+  fallback articles (expected now that the fallback strategy has no `lang` restriction) classify into the
+  correct specific category rather than a blanket "overseas stocks" default.
+- `HomeMarketNews.astro` gained a compact, theme-aware, `role="status"` secondary notice
+  (`data-home-news-fallback-notice`) shown only for `feedMode` `latest_available`/`last_good`, alongside
+  the article cards (never replacing them, never shown together with the empty-state panel), driven
+  entirely by the existing single `GET /api/news/home.json` response — no second browser-side provider
+  call was added.
+- No fabricated/fixture articles, no copied articles committed, and no exposure of the GNews API key,
+  request URL, or raw provider response in any diagnostics field or log line, across either cascade stage.
+- No environment variable, Vercel project setting, or Supabase migration was added or changed.
+- `scripts/home_live_data_testsrc.ts` grew to **187/187** passing;
+  `scripts/check_phase_3gl_home_live_data_contract.mjs` grew to **262/262** passing (new "Group 14"
+  static-source assertions for the cascade, the 2-request bound, the last-good runtime cache, the
+  `feedMode`/`selectedStrategy` contract, the English classifier coverage, and the fallback-notice UI; a
+  stale "Group 11" check description was also corrected to accurately describe the honest-failures-never-
+  cached contract it was already (coincidentally) validating). `npm ls --depth=0` clean; `git diff --check`
+  clean; sibling `phase-3gj-live-market-dashboard` smoke (162/162) and checker (159/159) suites confirmed
+  unaffected.
+- Local Windows `npm run build` exits non-zero (`-1073740791` / `0xC0000409` / `STATUS_STACK_BUFFER_OVERRUN`)
+  after all Astro/Vite build stages complete cleanly, during/after the Vercel adapter's function-bundling
+  step. This was conclusively root-caused (not merely assumed) via controlled multi-worktree isolation —
+  varying commit content, working-directory path ASCII-ness, and dependency-install freshness
+  independently — to **non-ASCII (Korean) characters in the local filesystem path** interacting with a
+  native binary during that bundling step on Windows, not to any code in this hotfix. See
+  `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §5 for the full evidence chain. Classified
+  non-release-blocking on this local finding alone, since Vercel's own remote build runs on Linux at an
+  ASCII path.
+- See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §1e for full detail. Commit message: "Phase
+  3GL-HF5: guarantee latest available Home news".
+
+## Phase 3GM-HF3 - 2026-08-03
+
+### Add honest operations-unavailable state (hotfix on the same PR #10 branch)
+
+- HF2 completed the operations dashboard UI (visual/UX only). This follow-up hotfix fixes a
+  **state-model defect** left in `src/pages/admin/operations.astro`'s client-side script:
+  authentication denial (signed-out / non-admin) and operational-data unavailability were conflated.
+  An authenticated admin whose overview fetch failed (HTTP 500, any other non-401/403 HTTP failure,
+  invalid JSON, malformed payload shape, or a network/runtime exception) with no prior successful load
+  yet could be left stuck on "로그인 상태를 확인하는 중입니다." (the checking state) or, in the
+  `catch` branch specifically, incorrectly told "로그인이 필요합니다" (signed-out) even though they
+  were genuinely signed in and admin-authorized.
+- Added a new dedicated fourth top-level state, `#admin-ops-unavailable-state` — title "운영 정보를
+  불러오지 못했습니다", copy "로그인과 관리자 권한은 확인되었지만 현재 운영 데이터를 조회할 수
+  없습니다.", and a `#admin-ops-retry` "다시 시도" button. The state reuses HF2's existing
+  `.ops-status-card`/`.ops-status-icon`/`.ops-status-copy`/`.ops-primary-btn`/`.ops-eyebrow` classes
+  verbatim — no new CSS was added. The retry button calls the same, single `loadOverview()` function
+  used everywhere else on the page; there is no second/duplicate fetch implementation.
+- `showOnly()` now treats checking / auth-lock / unavailable / dashboard-body as exactly four
+  mutually-exclusive states, always hiding all four before revealing one.
+- Added a single `handleOperationalDataUnavailable()` function that is now the one place deciding the
+  outcome of any operational-read failure: if `lastGoodOverview` already exists, it keeps the dashboard
+  visible with the existing HF2 stale-notice text ("최신 정보를 불러오지 못해 이전 결과를
+  표시합니다.", unchanged) — the pre-existing correct behavior for a refresh failure after a prior
+  success; otherwise it shows the new unavailable state. HTTP 401/403 continue to route to the
+  unchanged `showLockState('signed-out' | 'non-admin')` calls.
+- Added `isValidOverviewShape()`, a defensive check that a parsed 200-response payload actually has a
+  string `generatedAtIso`, object `usageGuard`/`kisToken`, and array `quoteCaches` before it is trusted
+  as real data — a syntactically-valid but unexpectedly-shaped payload is now treated as an operational
+  failure rather than rendered. This does not add or change any field the client expects.
+- Retry button shares the refresh button's busy-state toggle (`setControlsBusy()`): disabled and
+  `aria-busy="true"` while a request is in flight (still guarded by the existing single
+  `refreshInFlight` flag, so refresh and retry can never overlap), label toggles "다시 시도" ↔ "다시
+  시도 중", restores after completion either way. No polling, no `setInterval`/`setTimeout` loop, no
+  cache-bypass query parameter, no `alert()`, no `localStorage` persistence were added.
+- `scripts/admin_operations_testsrc.ts` (server-logic-only smoke suite) was left unmodified — no
+  server logic changed in this hotfix. All new state-machine/text/behavior assertions were added to
+  `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs` instead (new Group 14, 41 checks); every
+  pre-existing Phase 3GM assertion (HF1/HF2) was preserved unchanged.
+- Test totals after this hotfix: `smoke:phase-3gm-operations-admin-mvp` unchanged at 44/44 (no server
+  logic changed), `check:phase-3gm-operations-admin-mvp` 185/185 (was 144/144, +41 new). All four
+  focused regression suites re-run unchanged: `smoke:phase-3gg-t-hf2` (44/44),
+  `smoke:phase-3gg-t-hf2-hf1` (11/11), `smoke:phase-3gg-u-chart-ai-usage` (13/13),
+  `smoke:phase-3gg-op-fast` (32/32). `npm ls --depth=0` clean; `git diff --check` clean (benign
+  LF/CRLF-only warnings). `npm run build` completed every reported stage (types, server entrypoints,
+  three Vite builds, asset rearrangement, `dist/` and `.vercel/output` confirmed present) before the
+  process exited non-zero with the same previously-documented Windows-local build-exit anomaly
+  (`-1073740791` / `0xC0000409` `STATUS_STACK_BUFFER_OVERRUN`); this was independently confirmed
+  pre-existing and unrelated to this hotfix by stashing back to the pre-HF3 baseline commit
+  (`82cfbc36a3f747602c9a215be5e4dfc9428a024b`) and observing the identical crash at the identical stage
+  on the unmodified code.
+- No API/route/aggregator/health-read-module/provider/token/cache/schema/env/migration change of any
+  kind occurred as part of this hotfix — verified both by scope (only
+  `src/pages/admin/operations.astro`, the checker, and docs were touched) and by a new checker
+  git-diff guard against the pre-HF3 baseline commit asserting zero diff on every "do not touch" file.
+  Last-good dashboard preservation on a refresh failure (HF2 behavior) is unchanged. Same branch
+  (`feature/phase-3gm-operations-admin-mvp`), same PR (#10) — no new branch, no merge, no manual
+  deploy. Owner final visual verification of the new unavailable state, and authenticated non-admin
+  (403) verification carried over from HF2, both remain pending.
+
+## Phase 3GM-HF2 - 2026-08-03
+
+### Complete operations dashboard UI (hotfix on the same PR #10 branch)
+
+- Owner completed an authenticated click-through of the HF1 commit and confirmed it was
+  **functionally correct** (signed-out lock state, admin sees full real data, no secret/PII leakage)
+  but **not visually release-ready**. This hotfix is a presentation-layer-only rewrite of
+  `src/pages/admin/operations.astro`: zero API/schema/authorization/query/aggregation/cache/token
+  behavior change.
+- Rewrote the header to Korean-first: eyebrow "관리자 전용", single `<h1>운영 현황</h1>` with a
+  scoped `font-size: 28px` override (previously inherited the site's bare global
+  `h1 { font-size: 44px; }` with no override), "Operations Overview" demoted to a small subtitle.
+- Added a 4-card summary row (전체 상태/오늘 Chart AI 사용/KIS 토큰/캐시 상태) whose "전체 상태" is
+  computed **entirely client-side** via a `worstStatus()` precedence helper (`unavailable` >
+  `warning` > `healthy`) over the three closed statuses the API already returns — no new API field;
+  `overview.json.ts`/`operationsAggregator.ts`/`types.ts` are untouched.
+- Added one shared `buildBadge()` component used across every status display: an `aria-hidden` icon
+  always paired with visible 정상/주의/정보 없음 text (never color-only).
+- Section A (Chart AI 사용량) now highlights 오늘 사용 횟수/이용자 수/한도 도달 이용자 수/일일 한도;
+  Section B (KIS 토큰 상태) replaces plain 예/아니오 with semantic wording (사용 가능/비활성, 토큰
+  있음/토큰 없음, 만료되지 않음/만료 또는 사용 불가) and shows "현재 운영 영향 없음" only when
+  `durableStoreReady` is false **and** the real returned status is genuinely `healthy`; Section C
+  (시세 캐시 상태) gets per-cache sub-cards with an honest empty state, conditional (non-null-only)
+  age rows, and the HF1-established null-age note where applicable.
+- Added the instance-local disclosure notice above the cache cards, and a refresh toolbar whose
+  button label toggles 새로고침/갱신 중 and whose `aria-live="polite"` region announces success
+  ("운영 현황을 갱신했습니다.") or failure ("최신 정보를 불러오지 못해 이전 결과를 표시합니다.")
+  while preserving the existing `refreshInFlight` overlap guard and last-good-data-on-failure
+  behavior.
+- Fixed two genuine pre-existing bugs in the signed-out lock state: (1) `#admin-ops-login-action` had
+  a hard-coded `hidden` attribute that was never removed for the signed-out (401) case, so the login
+  CTA was invisible exactly when needed — now shown via `classList.remove('hidden')` and wired to the
+  same `window.dispatchEvent(new CustomEvent('mk:open-auth'))` event already used by `Header.astro`/
+  `portfolio.astro`/`chart-ai.astro`; (2) the lock-state container lacked
+  `display: grid; justify-items: center;` (unlike `portfolio.astro`'s equivalent), so the shared
+  76×76px lock icon rendered pinned to the left edge instead of centered — fixed by adding that rule.
+- Added a distinct non-admin (403) state: title "접근 권한이 없습니다", copy "이 화면은 등록된
+  관리자만 볼 수 있습니다.", login button explicitly hidden (no CTA offered for a state login cannot
+  fix).
+- Removed admin-page-only distractions: `<Layout pageClass="admin-operations-page">` (reusing
+  `Layout.astro`'s existing, unmodified `pageClass` prop, the same convention `index.astro` already
+  uses for `home-page`) plus a `:global()` rule scoped to `body.admin-operations-page #slidePopup` /
+  `#bottomAdBanner`, hiding only the floating slide ad and bottom ad banner on this page while leaving
+  the wrapping `#bottomDocumentArea` (which also holds the real site footer) untouched. Verified
+  `index.astro` does not carry the admin-only `pageClass` and `Layout.astro` itself was not modified.
+- Added responsive collapse (4→2→1 column summary/highlight grids at 900px/640px, cache grid 2→1 at
+  640px) and accessibility affordances (`:focus-visible` outlines, `prefers-reduced-motion` guard on
+  the refresh-icon spin, `aria-hidden` on every decorative icon, no external icon-font dependency —
+  all icons are small inline `<svg>`).
+- `scripts/admin_operations_testsrc.ts` (server-logic-only smoke suite) was left unmodified — no
+  server logic changed in this hotfix. All new UI-text/behavior/accessibility/responsive assertions
+  were added to `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs` instead (new Group 13, 42
+  checks), and two pre-existing Group 7 assertions were updated in place to match intentional new copy
+  (the failure-notice wording, and the section headings moving from mixed English/Korean to fully
+  Korean).
+- While updating this changelog and the result doc for HF2, corrected an unrelated pre-existing
+  false-positive in the checker's repo-wide U+FFFD scan (Group 10): both doc files' own HF1 section
+  quoted the historical text-corruption bug verbatim, embedding the literal replacement character in
+  the Markdown itself. Confirmed via `git diff` (empty) that neither doc had been touched since the
+  HF1 commit, so this was pre-existing and unrelated to HF2 — reworded the illustrative text to
+  describe the corruption without embedding the literal character, preserving the same meaning.
+- Test totals after this hotfix: `smoke:phase-3gm-operations-admin-mvp` unchanged at 44/44 (no server
+  logic changed), `check:phase-3gm-operations-admin-mvp` 144/144 (was 101/101, +43 net new/changed).
+  All four focused regression suites re-run unchanged: `smoke:phase-3gg-t-hf2` (44/44),
+  `smoke:phase-3gg-t-hf2-hf1` (11/11), `smoke:phase-3gg-u-chart-ai-usage` (13/13),
+  `smoke:phase-3gg-op-fast` (32/32). `npm ls --depth=0` clean; `git diff --check` clean (benign
+  LF/CRLF-only warnings); `npm run build` again completed every reported stage (types, server
+  entrypoints, three Vite builds, asset rearrangement, `dist/` and `.vercel/output/{server,static}`
+  confirmed present) before the process exited non-zero with the same previously-documented
+  Windows-local build-exit anomaly (`-1073740791` / `0xC0000409` `STATUS_STACK_BUFFER_OVERRUN`),
+  consistent with the HF1 run — not a compile/type error.
+- No API/schema/authorization/query/aggregation/cache/token/env/migration change of any kind occurred
+  as part of this hotfix. Same branch (`feature/phase-3gm-operations-admin-mvp`), same PR (#10) — no
+  new branch, no merge, no manual deploy.
+
+## Phase 3GM-HF1 - 2026-08-02
+
+### Correct operations cache health display (hotfix on the same PR #10 branch)
+
+- Fixed a visible Korean text-corruption bug on `/admin/operations`: the initial "last refreshed"
+  label rendered a corrupted variant of `마지막 갱신: -` (its second syllable replaced by a Unicode
+  replacement character, U+FFFD, in the source literal) instead of the correct text. Root cause: a
+  mangled string literal in `src/pages/admin/operations.astro`
+  (the dynamically-rendered post-load label at the bottom of `renderOverview()` was already correct —
+  only the static pre-load placeholder was corrupted). Searched the complete Phase 3GM diff (all files
+  touched in commit `8fc3372`) for any other U+FFFD occurrence — none found.
+- Fixed an incorrect cache-age contract for the normalized OHLCV (chart) cache entry in
+  `src/lib/server/adminOperations/quoteCacheHealth.ts`: `newestEntryAgeMs` was being derived from
+  remaining TTL (`msUntilExpiry`) via `Math.max(0, -Math.max(...entries.map(e => e.msUntilExpiry)))` —
+  i.e. treating "time until expiry" as if it were "time since insertion". Remaining TTL is not entry
+  age: the underlying cache (`src/lib/server/chart-ai/normalizedOhlcvCache.mjs`) only ever stores
+  `expiresAtMs`, never an insertion timestamp, and TTL can in principle be refreshed independent of
+  when an entry was first written, so any number derived from it would misrepresent staleness.
+  `newestEntryAgeMs`, `oldestEntryAgeMs`, and `lastSuccessfulUpdateAtIso` for the
+  `normalized-ohlcv-cache` entry now honestly return `null` instead of a fabricated value.
+  `entryCount`, `freshCount`, `expiredCount`, `status`, and `durability: 'instance-local'` are
+  unchanged. The **other** cache health entry (`current-price-quote-cache`) was already correctly
+  timestamp-derived (`quoteCache.ts`'s `cachedAtMs`) and is untouched by this fix — verified by an
+  added regression assertion.
+- This is a display/aggregation-layer correction only: no change to any existing cache's data model,
+  keys, values, TTLs, eviction, LRU, or single-flight behavior. The four existing-system files the
+  original Phase 3GM PR touched to add read-only inspection hooks (`normalizedOhlcvCache.mjs`,
+  `universalOhlcvProvider.ts`, `quoteCache.ts`, `kisClient.ts`) were **not** modified again in this
+  hotfix; a new checker assertion diffs each against the pre-3GM baseline commit `dc4f3b0` and asserts
+  zero deleted lines (purely additive), confirming they remain unchanged read-only inspection hooks.
+- Extended `scripts/admin_operations_testsrc.ts` (smoke) with assertions that the OHLCV age fields
+  stay `null` even when the fake snapshot supplies `msUntilExpiry` values, and that the current-price
+  cache's age fields remain real/non-null pass-throughs. Extended
+  `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs` (checker) with: a U+FFFD scan across
+  every Phase 3GM UI/lib/doc file; an exact-match assertion on the corrected label; source-level
+  assertions that age is never computed from `msUntilExpiry`/`configuredTtlMs` arithmetic; and the
+  additive-diff guard on the four reused files described above.
+- Test totals after this hotfix: `smoke:phase-3gm-operations-admin-mvp` 44/44 (was 38/38, +6 new),
+  `check:phase-3gm-operations-admin-mvp` 101/101 (was 70/70, +31 new). All four focused regression
+  suites still pass unchanged: `smoke:phase-3gg-t-hf2` (44/44), `smoke:phase-3gg-t-hf2-hf1` (11/11),
+  `smoke:phase-3gg-u-chart-ai-usage` (13/13), `smoke:phase-3gg-op-fast` (32/32). `npm ls --depth=0`
+  clean; `git diff --check` clean (benign LF/CRLF-only warnings); `npm run build` again completed
+  every reported stage (types, server entrypoints, three Vite builds, asset rearrangement, `dist/` and
+  `.vercel/output/{server,static}` produced) before the process exited non-zero with the same
+  previously-documented Windows-local build-exit anomaly (this run: raw exit code `-1073740791`, i.e.
+  `0xC0000409`/`STATUS_STACK_BUFFER_OVERRUN` as an unsigned 32-bit value), consistent with prior phases
+  — not a compile/type error.
+- No migration, no environment-variable mutation, no Supabase change, no provider/KIS request, and no
+  token issuance occurred as part of this hotfix. Same branch (`feature/phase-3gm-operations-admin-mvp`),
+  same PR (#10) — no new branch, no merge.
+
+## Phase 3GM - 2026-08-02
+
+### Operations and Admin MVP (implemented, PR opened, Owner Preview verification pending)
+
+- Closed out Phase 3GL / PR #9 with a final top-level comment recording the HF4 hotfix
+  (`43518b6a5e1ac6cc71bbea96f6cb52405353eb3f`), merge commit `dc4f3b0c018aa16acee3d6c4bcaced5bc7ca1df4`,
+  Production deployment `dpl_9qQHPbH9amFKvuGkhwdYxXDSYcv6`, and classification
+  `PHASE_3GL_HF4_MERGED_PRODUCTION_VERIFIED`. Roadmap updated in place: Phase 3GL moved to
+  `PRODUCTION_VERIFIED`; Phase 3GM moved from `PLANNED` to `IN_PROGRESS`.
+- Added one minimal, read-only, administrator-only operational surface: `GET
+  /api/admin/operations/overview.json` + `/admin/operations` page, covering (A) Chart AI usage-guard
+  counters, (B) KIS token health, (C) quote/OHLCV cache staleness. New `src/lib/server/adminOperations/`
+  module set (`types.ts`, `adminAuthorization.ts`, `usageGuardHealth.ts`, `kisTokenHealth.ts`,
+  `quoteCacheHealth.ts`, `operationsAggregator.ts`).
+- Authorization reuses the existing bearer-token resolver (`validateUserFromBearerToken`) and the
+  existing `public.site_admins` registry (migration `20260625_site_admins_and_settings.sql`, not
+  modified) via a new server-side service-role lookup — explicitly not a second admin-role system; no
+  migration, no new table/column/RPC. Non-admin and admin-check-failure both return the identical
+  sanitized 403 so the response never leaks `site_admins` membership.
+- Added four small, additive, non-behavioral read-only inspection exports to existing modules —
+  `getKisTokenHealthSnapshot()` (`kisClient.ts`, uses the existing `peekL1()` accessor, never issues a
+  token), `getQuoteCacheHealthSnapshot()` (`quoteCache.ts`), `entriesHealthSnapshot()`
+  (`normalizedOhlcvCache.mjs`), `getOhlcvCacheHealthSnapshot()` (`universalOhlcvProvider.ts`) — and one
+  additive dependency-injection parameter on `authorizeAdminOperationsRequest` for testability. None of
+  these edits change any existing caller's behavior (confirmed via focused regression suites below).
+- New `smoke:phase-3gm-operations-admin-mvp` (38/38 passed, zero real network/DB/KIS calls, injected
+  fakes only) and `check:phase-3gm-operations-admin-mvp` (70/70 passed, static contract + secret/PII/
+  mutation-control absence assertions). Focused regressions for reused modules all passed:
+  `smoke:phase-3gg-t-hf2` (44/44), `smoke:phase-3gg-t-hf2-hf1` (11/11),
+  `smoke:phase-3gg-u-chart-ai-usage` (13/13), `smoke:phase-3gg-op-fast` (32/32).
+- `npm run build` completed every reported stage (types, server entrypoints, three Vite builds, asset
+  rearrangement, `dist/` and `.vercel/output/{server,static}` produced) but the process still exited
+  non-zero (exit 9) — the previously-documented Windows-local build-exit anomaly, not a compile/type
+  error. Remote Preview confirmation of a clean `Ready` build was **not** obtained this phase and is
+  recorded as pending Owner verification.
+- No admin nav link was added: `Glob src/pages/admin/**` confirmed no pre-existing `/admin` route or
+  nav convention before this phase, so per the task's own instruction none was invented.
+- See `phase_3gm_operations_and_admin_mvp_plan_v0.1.md` and
+  `phase_3gm_operations_and_admin_mvp_result_v0.1.md` for full detail and exact field contracts.
+
+## Phase 3GL - 2026-07-30
+
+### Home live market data and GNews feed; roadmap reprioritization
+
+- Roadmap reprioritized in place (`mk_stock_lab_master_roadmap_v2.1.md`, no new version file): recorded Phase
+  3GK's Production merge/release (PR #7, merge commit `0e53cde`, deployment `dpl_CRd7KFZ2eyscG1tbAfxdqMgPhh1A`
+  READY); inserted Phase 3GL (Home Live Data and GNews) as the in-progress phase; renamed the prior
+  "Operations and Admin MVP" phase from 3GL to 3GM; Phase 3 Closeout now runs after 3GM.
+- Added one shared server-side Home market orchestrator + `GET /api/home/live-market.json`, serving both the
+  9-item ticker belt and the 4-card Market Snapshot from the same closed-registry instrument fetch (bounded
+  concurrency 3, no duplicate provider calls) — reusing the existing shared KIS OHLCV orchestration/durable
+  token manager for the 7 ETF-proxy items and the existing Frankfurter FX source for USD/KRW; no new KIS
+  endpoint/TR ID and no new FX provider were added.
+- Rewrote `Ticker.astro` and `HomeLiveMarketSnapshot.astro` to consume the new shared route (60s client
+  refresh, pause on hidden document, in-flight coalescing, no localStorage cache, no cache-bypass params);
+  Home no longer calls `/api/market/overview.json` (the `/market` page's own use of that route is untouched).
+- Added a new server-only GNews client + `GET /api/news/home.json` reading `GNEWS_API_KEY` only (never the
+  pre-existing client-exposed `PUBLIC_GNEWS_API_KEY`), issuing one combined query per cache refresh, returning
+  at most 6 client-safe normalized articles, deterministically classified into 국내주식/해외주식/환율/거시경제/
+  원자재/시장일반. No fixture fallback: an absent key returns a sanitized `NEWS_NOT_CONFIGURED` state with an
+  honest UI message. Rewrote `HomeMarketNews.astro` into a client-fetching component (5-minute refresh,
+  visibility pause, one delayed retry, preserves last-good articles on a refresh failure).
+- Left the pre-existing `market-feed.ts` route and `lib/news/gnews*.mjs` fixture-based pipeline in place but
+  unreferenced by Home (out of scope to remove this phase).
+- New `smoke:phase-3gl-home-live-data` and `check:phase-3gl-home-live-data` suites. See
+  `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail and exact test counts.
+
+### HF1 hotfix - 2026-07-31: corrected live-data contract
+
+- `resolveKisTickerItem` now tries the existing KIS current-quote snapshot functions first (sequential, never
+  parallel) and only falls back to the pre-existing OHLCV-based resolution on failure; added closed
+  `HomeDataBasis`/`HomeFreshness` enums so every ticker/snapshot item carries an honest basis and freshness.
+  No new KIS endpoint/TR ID.
+- `getHomeLiveMarket` now computes the 4-item Market Snapshot exactly once via `buildSnapshot(ticker)` before
+  the total-failure/success branch split, so both return paths share one fixed-length snapshot instead of
+  risking a re-literalized empty array.
+- Replaced the original per-component fetch design with one site-wide `homeLiveMarketController.ts`, mounted
+  in `Layout.astro`, that owns the sole fetch/timer/in-flight/visibilitychange lifecycle and broadcasts a
+  `mk-home-live-market` event; `Ticker.astro` and `HomeLiveMarketSnapshot.astro` became pure consumers.
+- Hardened `gnewsHomeNewsProvider.mjs` article normalization with closed length bounds, a safe-http-url gate
+  (url/image/sourceUrl), and an ISO-date gate (publishedAt) — required fields reject on failure, optional
+  fields truncate or null out rather than reject.
+- `HomeMarketNews.astro` now tracks `hasRenderedOnce` to distinguish a first-load failure from a post-success
+  refresh failure, preserving already-rendered articles instead of a fixed retry delay.
+- Extended `smoke:phase-3gl-home-live-data` (86/86) and `check:phase-3gl-home-live-data` (157/157); widened
+  one pre-existing assertion in `check:phase-3gj-live-market-dashboard` (159/159) to also tolerate
+  `HomeLiveMarketSnapshot.astro`'s new zero-fetch, broadcast-consumer architecture. PR title unchanged
+  ("Phase 3GL: add live Home data and GNews feed").
+
+### HF2 hotfix - 2026-07-31: corrected quote direction and honest GNews empty-feed handling
+
+- Added a shared pure module `kisQuoteSignNormalization.ts` (`normalizeKisQuoteSign`) used by both
+  `getKisDomesticQuoteSnapshot` and `getKisOverseasQuoteSnapshot`; priority is the official KIS
+  direction/sign code first (`prdy_vrss_sign` domestic, `sign` overseas), then agreeing raw signs, then a
+  guarded fallback that applies a signed non-zero pct's direction to an unsigned amount. Fixes the
+  observed Preview bug where the overseas `diff` field (an unsigned magnitude per the official KIS contract)
+  was being mapped directly to `change` as if already signed, producing sign-contradictory Dollar Index/WTI
+  Oil quotes.
+- Domestic quote now cross-checks the resolved change against `stck_prpr - stck_sdpr`, nulling only `change`
+  (never `changePct` or `price`) on a material mismatch.
+- Added a final independent contradiction check in `homeLiveMarket.ts`'s `toCurrentQuoteItem` (Home-layer
+  safety net) that nulls only `changeAmount` when directions conflict.
+- Replaced the inaccurate `실시간(지연) 시세 기준` basis label with `KIS 현재가 조회 기준`; the
+  `dataBasis: 'current_quote'` enum is unchanged.
+- `getHomeNewsFeed` now attaches sanitized `{providerArticleCount, normalizedArticleCount,
+  returnedArticleCount}` diagnostics to every successful/zero-result response, and returns an honest `{ok:
+  false, code: 'NEWS_NO_RESULTS'}` (cached, HTTP 200) instead of an indistinguishable `ok: true` with zero
+  articles.
+- Simplified `COMBINED_QUERY` from a 16-term to a conservative 8-term OR expression after the 16-term version
+  returned zero live articles in Preview.
+- Committed (`354c454`) and pushed to PR #8. Vercel and Netlify Previews both reached `Ready`/`success`; the
+  Vercel Preview is Vercel-SSO-protected (as with every prior Preview in this project), so the §15 functional
+  checklist (Home content, ticker/snapshot shape, quote-direction consistency, GNews result count) is
+  Owner-pending — this assistant verified deployment state/branch/commit only, never page content, and never
+  entered owner credentials.
+- Extended `smoke:phase-3gl-home-live-data` to 117/117 and `check:phase-3gl-home-live-data` to 183/183; no
+  ripple into `check:phase-3gj-live-market-dashboard` (still 159/159). PR title and scope unchanged.
+
+### HF3 hotfix - 2026-08-01: continuous ticker motion and Snapshot sparklines
+
+- `Ticker.astro` now rolls continuously left: a duplicated `aria-hidden` visual track plus a
+  `transform: translate3d(...)` CSS animation (~48px/s, clamped 15-90s cycle), re-anchored on every data
+  refresh via a negative `animation-delay` computed from the rail's current progress so a 60s content
+  refresh never jumps or restarts; disabled entirely under `prefers-reduced-motion: reduce`. The component's
+  own `visibilitychange` listener only toggles the animation-pause class — it never fetches, staying
+  distinct from the shared controller's own visibility-driven fetch pause.
+- Market Snapshot expanded from a fixed 4-item subset to the full closed 9-item `HOME_TICKER_REGISTRY`
+  (adds `dowjones`, `usdkrw`, `dollarindex`, `gold`, `wti`), now in a responsive 3/2/1-column grid; no new
+  instrument, KIS endpoint/TR ID, or FX provider.
+- Every Snapshot card now renders a dependency-free inline `<svg><polyline>` sparkline. `homeLiveMarket.ts`
+  adds a closed `sparklineStatus`/`sparklineBasis` contract (`HOME_SPARKLINE_POINTS = 20`, ascending,
+  finite-positive, never fabricated); KIS items source it from the same `fetchLongHistoryOhlcv` call already
+  used for fallback resolution (now called unconditionally, regardless of quote success, without ever
+  touching the headline price); `usdkrw` sources it from a new `fetchUsdKrwSparklineSeries` in the existing
+  Frankfurter/ECB provider (6h cache, capped 20 points).
+- Reviewed the HF2 `NEWS_NO_RESULTS` empty-feed contract against the owner's report of a genuinely empty
+  GNews result: confirmed as expected, honest behavior (`GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED`) —
+  no fixture, second provider, LLM, or validation change made.
+- Extended `smoke:phase-3gl-home-live-data` to 138/138 and `check:phase-3gl-home-live-data` to 210/210 (4
+  checker-staleness fixes for the intentional unconditional-OHLCV-fetch and Ticker-owned-listener design
+  changes — not source defects); no ripple into `check:phase-3gj-live-market-dashboard` (still 159/159).
+  `npm run build` completed all stages cleanly with complete output artifacts, but the Node process crashed
+  on exit with a native `STATUS_STACK_BUFFER_OVERRUN` — assessed as a pre-existing Node/esbuild-on-Windows
+  process-teardown issue unrelated to this diff, recorded as a documented anomaly rather than silently
+  treated as a full pass. Commit message: "Phase 3GL-HF3: add rolling ticker and Snapshot sparklines".
+
+### Release approval - 2026-08-02: Owner Preview verification complete
+
+- Owner completed full authenticated verification of the HF3 Preview (commit `bb80c99`): rolling ticker
+  belt confirmed rolling continuously left with no visible jump/restart; all 9 Market Snapshot cards and
+  their mini line charts confirmed rendering correctly; `GET /api/home/live-market.json` confirmed
+  `ticker.length = 9`, `snapshot.length = 9`, exact label order, all 9 sparklines valid, no quote sign
+  contradiction; `GNEWS_NO_RESULTS_EXPECTED_EMPTY_STATE_CONFIRMED` re-verified live (all diagnostic counters
+  zero, honest Korean empty-state copy rendered).
+- Re-examined the local `npm run build` exit anomaly on both Node 22.23.1 and Node 24.14.1: both reproduce a
+  Windows `0xC0000005` access violation on process exit after the Astro build step (direct `postbuild`
+  execution exits `0`); classified `LOCAL_WINDOWS_ASTRO_TEARDOWN_ACCESS_VIOLATION_RECORDED_NON_RELEASE_BLOCKING`
+  and corroborated by the exact-commit remote Vercel build/postbuild completing successfully
+  (`REMOTE_EXACT_COMMIT_BUILD_AND_POSTBUILD_VERIFIED`).
+- Classification: `PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`. PR #8 approved for merge; the
+  Git-integrated Production deployment and a focused Production verification follow as the next step. Phase
+  3GM (Operations and Admin MVP) remains `PLANNED`, not started.
+
+### HF4 hotfix - 2026-08-02: restored Production GNews feed
+
+- PR #8 merged to `main` (merge commit `d211f0b3c86129b95f1ff2a225d35e4b9ec1b492`) and the Git-integrated
+  Production deployment (`dpl_3j6FdPFcE9biJBet12518Gvtf4qB`) reached `READY`. Production Home and `GET
+  /api/home/live-market.json` verified healthy (HTTP 200), but `GET /api/news/home.json` returned `{ "ok":
+  false, "code": "NEWS_PROVIDER_ERROR" }` instead of a live feed or an honest `NEWS_NO_RESULTS`.
+- Root cause: the GNews provider request used `max=20` and `lang: 'ko'`. GNews's Free plan caps `max` at 10
+  per request, and the Search endpoint's supported-language list does not include Korean — either
+  incompatibility alone produces an HTTP 400 that the pre-HF4 status mapping collapsed into a generic
+  `NEWS_PROVIDER_ERROR`, masking the real cause.
+- Fix (`gnewsHomeNewsProvider.mjs`): `PROVIDER_MAX` reduced from 20 to 10; `lang: 'ko'` removed entirely (the
+  Korean-keyword `COMBINED_QUERY` remains the sole targeting mechanism); the one-combined-query architecture
+  is unchanged. Extended sanitized status classification: `400` → `NEWS_BAD_REQUEST`, `403` →
+  `NEWS_QUOTA_EXHAUSTED` (previously `NEWS_UNAUTHORIZED`), `401` → `NEWS_UNAUTHORIZED`, `429` →
+  `NEWS_RATE_LIMITED`, other non-2xx/timeout/network/invalid-JSON → `NEWS_PROVIDER_ERROR`. No raw response
+  body, query text, API key, or provider header is ever exposed.
+- No environment variable changed, no manual `vercel` command run, no Supabase mutation, no fixture/second
+  provider/LLM fallback introduced.
+- `scripts/home_live_data_testsrc.ts` grew to 149/149 passing; `scripts/check_phase_3gl_home_live_data_contract.mjs`
+  grew to 220/220 passing. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §1d for full detail.
+- `npm run build` completed every Astro/Vite stage cleanly and produced complete `dist/client`/`dist/server`
+  output (reproduced across two clean runs), but this time the process crashed before the Vercel adapter
+  wrote `.vercel/output` at all (empty `server`/`static`, no `config.json`) with a different native exit,
+  `0xC0000409` (`STATUS_STACK_BUFFER_OVERRUN`), distinct from HF3's `0xC0000005`. HF4 touched no dependency
+  or build config, so this is treated as the same class of local-Windows-toolchain issue, but — unlike
+  HF1–HF3 — it is not labeled non-release-blocking on the local run alone; that requires the identical
+  commit's remote Vercel Preview build reaching `Ready`, confirmed separately in this hotfix's Preview
+  verification step. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §5 for full detail.
+- Production verification remains pending until the hotfix branch is merged and deployed.
+
 ## Phase 3GK - 2026-07-26
 
 ### Chart AI beta productization

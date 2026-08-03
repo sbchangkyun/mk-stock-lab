@@ -1,9 +1,16 @@
 ---
 /**
- * Phase 3GJ replacement for the retired HomeIndexCards.astro fixture. Renders only the static shell —
- * heading, loading state, empty grid — at request time. The four benchmark-proxy cards themselves are
- * populated from a single client-side GET /api/market/overview.json call after page load, and never
- * refreshed automatically. An unavailable response renders an honest message, never a fabricated number.
+ * Phase 3GL replacement for the Phase 3GJ overview-only snapshot. Renders only the static shell —
+ * heading, loading state, empty grid — at request time. Phase 3GL-HF1: this component owns no
+ * fetch/timer/visibility-listener/in-flight state of its own — it is a pure consumer of the single
+ * `mk-home-live-market` CustomEvent broadcast by the shared controller in Layout.astro
+ * (src/lib/home-live-market/homeLiveMarketController.ts), reading the event's `snapshot` array (the
+ * same underlying request that also feeds Ticker.astro, so this never triggers its own duplicate
+ * provider call). An unavailable response renders an honest message, never a fabricated number.
+ *
+ * Phase 3GL-HF3 §4-§9: the snapshot is now the full 9-item registry (equity index proxies, USD/KRW,
+ * dollar index, gold, WTI), and every card carries a small inline-SVG line chart built from the same
+ * response's `sparkline` field — no second browser request for chart data.
  */
 ---
 
@@ -11,8 +18,9 @@
   <p class="eyebrow">MARKET SNAPSHOT</p>
   <h2 id="index-snapshot-heading">주요 시장 대표 ETF 한눈에 보기</h2>
   <p class="index-snapshot-desc">
-    KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100 대표 ETF의 실제 시세 기준 수익률입니다. 지수 자체가 아닌 대표
-    ETF(proxy) 기준이며, 데이터를 불러올 수 없으면 있는 그대로 알려드립니다.
+    KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100·DOW30 대표 ETF와 USD/KRW·달러 인덱스·금·WTI 원유 시세를 한 화면에
+    보여드립니다. 지수 자체가 아닌 대표 ETF(proxy) 및 참고 환율 기준이며, 데이터를 불러올 수 없으면 있는 그대로
+    알려드립니다.
   </p>
   <p class="index-snapshot-loading" data-home-snapshot-loading role="status" aria-live="polite">불러오는 중...</p>
   <div class="index-card-grid hidden" data-home-snapshot-grid></div>
@@ -22,70 +30,141 @@
 </section>
 
 <script>
-  import { formatSignedPct, changeToneClass, freshnessLabel, formatAsOfDate } from '../lib/market-dashboard/formatters';
-
-  type OverviewProxy = {
-    universeLabel: string;
-    proxy: { label: string };
-    status: 'ok' | 'unresolved' | 'unavailable';
-    periodReturnPct: number | null;
-    asOf: string | null;
-    freshness: string;
-  };
+  import { formatSignedPct, changeToneClass, formatAsOfDate } from '../lib/market-dashboard/formatters';
+  import {
+    HOME_LIVE_MARKET_EVENT,
+    getLatestHomeLiveMarketPayload,
+    type HomeLiveMarketItem as SnapshotItem,
+    type HomeLiveMarketPayload,
+  } from '../lib/home-live-market/homeLiveMarketController';
 
   const toneToDirection = (tone: 'positive' | 'negative' | 'neutral'): 'up' | 'down' | 'flat' =>
     tone === 'positive' ? 'up' : tone === 'negative' ? 'down' : 'flat';
+
+  const formatPrice = (item: SnapshotItem): string => {
+    if (item.price === null) return '—';
+    return item.currency === 'KRW'
+      ? item.price.toLocaleString('ko-KR', { maximumFractionDigits: 0 })
+      : item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const formatSignedAmount = (value: number | null, currency: 'KRW' | 'USD'): string => {
+    if (value === null || !Number.isFinite(value)) return '';
+    const magnitude = currency === 'KRW' ? Math.round(Math.abs(value)).toLocaleString('ko-KR') : Math.abs(value).toFixed(2);
+    if (value > 0) return `+${magnitude}`;
+    if (value < 0) return `-${magnitude}`;
+    return magnitude;
+  };
+
+  // Phase 3GL-HF3 §8: dependency-free inline SVG sparkline, fixed viewBox with small padding.
+  const SPARK_WIDTH = 88;
+  const SPARK_HEIGHT = 32;
+  const SPARK_PAD_X = 4;
+  const SPARK_PAD_Y = 4;
+
+  /** Direction is deliberately based on the sparkline's own first/last point, not the card's changePct. */
+  const sparklineDirection = (points: SnapshotItem['sparkline']): 'up' | 'down' | 'flat' => {
+    if (points.length < 2) return 'flat';
+    const first = points[0].value;
+    const last = points[points.length - 1].value;
+    if (last > first) return 'up';
+    if (last < first) return 'down';
+    return 'flat';
+  };
+
+  const buildSparklinePoints = (points: SnapshotItem['sparkline']): string => {
+    const values = points.map((point) => point.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const span = max - min;
+    const innerWidth = SPARK_WIDTH - SPARK_PAD_X * 2;
+    const innerHeight = SPARK_HEIGHT - SPARK_PAD_Y * 2;
+    return points
+      .map((point, index) => {
+        const x = SPARK_PAD_X + (points.length > 1 ? (index / (points.length - 1)) * innerWidth : innerWidth / 2);
+        const y =
+          span > 0
+            ? SPARK_PAD_Y + innerHeight - ((point.value - min) / span) * innerHeight
+            : SPARK_PAD_Y + innerHeight / 2;
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(' ');
+  };
+
+  const renderSparkline = (item: SnapshotItem): string => {
+    if (item.sparklineStatus !== 'ok' || item.sparkline.length < 2) {
+      return `<div class="index-card-sparkline-empty">차트 데이터 없음</div>`;
+    }
+    const direction = sparklineDirection(item.sparkline);
+    const points = buildSparklinePoints(item.sparkline);
+    const label = item.sparklinePeriodLabel ? `${item.label} ${item.sparklinePeriodLabel}` : item.label;
+    const periodCaption = item.sparklinePeriodLabel
+      ? `<span class="index-card-sparkline-period">${item.sparklinePeriodLabel}</span>`
+      : '';
+    return `<svg class="index-card-sparkline-svg index-card-sparkline--${direction}" viewBox="0 0 ${SPARK_WIDTH} ${SPARK_HEIGHT}" width="${SPARK_WIDTH}" height="${SPARK_HEIGHT}" role="img" aria-label="${label}"><polyline class="index-card-sparkline-line" points="${points}" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" /></svg>${periodCaption}`;
+  };
+
+  const renderFreshnessBadge = (item: SnapshotItem): string =>
+    item.freshness === 'stale' ? `<div class="index-card-freshness">갱신 지연</div>` : '';
+
+  const renderSnapshot = (items: SnapshotItem[], grid: HTMLElement) => {
+    grid.innerHTML = items
+      .map((item) => {
+        if (item.status !== 'ok') {
+          return `<div class="index-card index-card--flat">
+  <div class="index-card-main">
+    <div class="index-card-label">${item.label}</div>
+    <div class="index-card-caption">${item.basisLabel}</div>
+    <div class="index-card-value">이용 불가</div>
+  </div>
+  <div class="index-card-sparkline">${renderSparkline(item)}</div>
+</div>`;
+        }
+        const direction = toneToDirection(changeToneClass(item.changePct));
+        return `<div class="index-card index-card--${direction}">
+  <div class="index-card-main">
+    <div class="index-card-label">${item.label}</div>
+    <div class="index-card-caption">${item.basisLabel}</div>
+    <div class="index-card-value">${formatPrice(item)}</div>
+    <div class="index-card-footer">
+      <span class="index-card-change">${formatSignedAmount(item.changeAmount, item.currency)} (${formatSignedPct(item.changePct)})</span>
+      <span class="index-card-as-of">${formatAsOfDate(item.asOf)}</span>
+    </div>
+    ${renderFreshnessBadge(item)}
+  </div>
+  <div class="index-card-sparkline">${renderSparkline(item)}</div>
+</div>`;
+      })
+      .join('');
+  };
+
+  const applyPayload = (root: HTMLElement, payload: HomeLiveMarketPayload | null) => {
+    const loading = root.querySelector<HTMLElement>('[data-home-snapshot-loading]');
+    const grid = root.querySelector<HTMLElement>('[data-home-snapshot-grid]');
+    const unavailable = root.querySelector<HTMLElement>('[data-home-snapshot-unavailable]');
+
+    if (!payload || payload.ok !== true || payload.snapshot.length === 0) {
+      loading?.classList.add('hidden');
+      grid?.classList.add('hidden');
+      unavailable?.classList.remove('hidden');
+      return;
+    }
+
+    if (grid) renderSnapshot(payload.snapshot, grid);
+    loading?.classList.add('hidden');
+    unavailable?.classList.add('hidden');
+    grid?.classList.remove('hidden');
+  };
 
   const setup = () => {
     const root = document.querySelector<HTMLElement>('[data-home-market-snapshot]');
     if (!root || root.dataset.ready === 'true') return;
     root.dataset.ready = 'true';
 
-    const loading = root.querySelector<HTMLElement>('[data-home-snapshot-loading]');
-    const grid = root.querySelector<HTMLElement>('[data-home-snapshot-grid]');
-    const unavailable = root.querySelector<HTMLElement>('[data-home-snapshot-unavailable]');
-
-    fetch('/api/market/overview.json?period=1d')
-      .then(async (res) => ({ ok: res.ok, body: await res.json() }))
-      .then(({ ok, body }) => {
-        if (!ok || body?.ok !== true || !Array.isArray(body?.overview?.proxies)) {
-          throw new Error('overview_unavailable');
-        }
-        const proxies: OverviewProxy[] = body.overview.proxies;
-        if (grid) {
-          grid.innerHTML = proxies
-            .map((proxy) => {
-              if (proxy.status !== 'ok') {
-                return `<div class="index-card index-card--flat">
-  <div class="index-card-main">
-    <div class="index-card-label">${proxy.universeLabel}</div>
-    <div class="index-card-caption">${proxy.proxy.label}</div>
-    <div class="index-card-value">이용 불가</div>
-  </div>
-</div>`;
-              }
-              const direction = toneToDirection(changeToneClass(proxy.periodReturnPct));
-              return `<div class="index-card index-card--${direction}">
-  <div class="index-card-main">
-    <div class="index-card-label">${proxy.universeLabel}</div>
-    <div class="index-card-caption">${proxy.proxy.label}</div>
-    <div class="index-card-value">${formatSignedPct(proxy.periodReturnPct)}</div>
-    <div class="index-card-footer">
-      <span class="index-card-change">${freshnessLabel(proxy.freshness)}</span>
-      <span class="index-card-as-of">${formatAsOfDate(proxy.asOf)}</span>
-    </div>
-  </div>
-</div>`;
-            })
-            .join('');
-        }
-        loading?.classList.add('hidden');
-        grid?.classList.remove('hidden');
-      })
-      .catch(() => {
-        loading?.classList.add('hidden');
-        unavailable?.classList.remove('hidden');
-      });
+    applyPayload(root, getLatestHomeLiveMarketPayload());
+    window.addEventListener(HOME_LIVE_MARKET_EVENT, ((event: CustomEvent<HomeLiveMarketPayload>) => {
+      applyPayload(root, event.detail);
+    }) as EventListener);
   };
 
   document.addEventListener('astro:page-load', setup);

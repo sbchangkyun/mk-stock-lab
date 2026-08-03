@@ -1,30 +1,22 @@
 ---
-const { currentPath = '/' } = Astro.props;
-const navItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Chart AI', href: '/chart-ai' },
-  { label: '시장', href: '/market', aliases: ['/heatmap'] },
-  { label: 'Lab', href: '/lab' },
-  { label: '포트폴리오', href: '/portfolio' },
-];
+import { NAV_ITEMS, isNavItemActive } from '../lib/shell/navActiveLink';
 
-const isActive = (item: (typeof navItems)[number]) => {
-  const { href } = item;
-  if (href === '/') return currentPath === '/';
-  return (
-    currentPath === href ||
-    currentPath.startsWith(`${href}/`) ||
-    Boolean(item.aliases?.some((alias) => currentPath === alias || currentPath.startsWith(`${alias}/`)))
-  );
-};
+const { currentPath = '/' } = Astro.props;
 ---
 
 <nav class="primary-nav" aria-label="주요 메뉴">
   <div class="nav-inner">
-    {navItems.map((item) => (
-      <a class:list={['nav-link', { active: isActive(item) }]} href={item.href}>
-        {item.label}
-      </a>
-    ))}
+    {NAV_ITEMS.map((item) => {
+      const active = isNavItemActive(item, currentPath);
+      return (
+        <a
+          class:list={['nav-link', { active }]}
+          href={item.href}
+          aria-current={active ? 'page' : undefined}
+        >
+          {item.label}
+        </a>
+      );
+    })}
   </div>
 </nav>

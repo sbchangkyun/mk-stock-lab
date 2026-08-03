@@ -47,6 +47,10 @@ const {
     <Footer />
     <script>
       import '../scripts/main.js';
+      import { startHomeLiveMarketController } from '../lib/home-live-market/homeLiveMarketController';
+
+      document.addEventListener('astro:page-load', startHomeLiveMarketController);
+      startHomeLiveMarketController();
     </script>
   </body>
 </html>

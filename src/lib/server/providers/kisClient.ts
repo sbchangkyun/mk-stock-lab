@@ -16,6 +16,10 @@ import { createKisTokenTelemetry } from './kis/kisTokenTelemetry';
 import { createKisTokenManager } from './kis/kisTokenManager';
 import { executeKisRequestWithToken, type KisExecutorDeps } from './kis/kisRequestExecutor';
 import type { TokenIssuerResult } from './kis/kisTokenTypes';
+// Phase 3GL-HF2: shared direction/sign normalization for the domestic and overseas current-price
+// quote endpoints (both report an official direction/sign code plus a raw amount+percentage pair
+// whose sign convention is not reliably self-evident from either field alone).
+import { normalizeKisQuoteSign } from './kis/kisQuoteSignNormalization';
 
 const provider = 'kis';
 const moduleName = 'kisClient';
@@ -66,6 +70,10 @@ type KisQuoteOutput = {
   prdy_vrss?: unknown;
   prdy_ctrt?: unknown;
   acml_vol?: unknown;
+  /** Official direction/sign code (Phase 3GL-HF2): '1' upper-limit-up, '2' up, '3' unchanged, '4' lower-limit-down, '5' down. */
+  prdy_vrss_sign?: unknown;
+  /** Previous-close reference price (Phase 3GL-HF2), used only for the price/change consistency check. */
+  stck_sdpr?: unknown;
 };
 
 type KisQuoteResponse = {
@@ -340,6 +348,42 @@ const getKisTokenRuntime = () => {
 
 const getKisExecutorDeps = (): KisExecutorDeps => getKisTokenRuntime().executorDeps;
 
+/**
+ * Phase 3GM: read-only L1 (process-memory) token presence snapshot for the admin operations
+ * health surface. Lazily constructs the same warm-instance token-manager singleton used by the
+ * real request paths (inert at construction: no network/DB IO happens until a request path calls
+ * getTokenHandle) and calls the existing `peekL1()` test/inspection accessor -- it never calls
+ * getTokenHandle/acquire, so this can never trigger a token issuance or refresh. The plaintext
+ * access token itself is stripped here and NEVER returned -- only non-secret presence/expiry
+ * metadata.
+ */
+export const getKisTokenHealthSnapshot = (): {
+  configReadiness: KisQuoteConfigReadiness;
+  durableConfig: ReturnType<typeof resolveKisDurableTokenConfig>;
+  l1Present: boolean;
+  l1ExpiresAtMs: number | null;
+  l1UsableUntilMs: number | null;
+} => {
+  assertServerRuntime(moduleName);
+  const configReadiness = getKisQuoteConfigReadiness();
+  const durableConfig = resolveKisDurableTokenConfig();
+  let l1Present = false;
+  let l1ExpiresAtMs: number | null = null;
+  let l1UsableUntilMs: number | null = null;
+  try {
+    const handle = getKisTokenRuntime().executorDeps.manager.peekL1();
+    if (handle) {
+      l1Present = true;
+      l1ExpiresAtMs = handle.expiresAtMs;
+      l1UsableUntilMs = handle.usableUntilMs;
+    }
+  } catch {
+    // Fail-closed: treat as "no L1 token observed" rather than throwing into the health route.
+    l1Present = false;
+  }
+  return { configReadiness, durableConfig, l1Present, l1ExpiresAtMs, l1UsableUntilMs };
+};
+
 // Phase 3GG-T-HF3B-HF2: KR codes may be alphanumeric six-character KRX short codes (e.g. 0000D0),
 // normalized to ASCII uppercase. The KIS domestic OHLC/quote FID_INPUT_ISCD accepts the 6-char code.
 const normalizeKrSymbol = (symbol: string) => symbol.trim().toUpperCase();
@@ -366,18 +410,20 @@ export const validateKisDomesticQuoteInput = (input: SecurityIdentity): Provider
 
 export const getKisDomesticQuoteSnapshot = async (
   input: SecurityIdentity,
-  options: { allowProductionChartAiLiveData?: boolean } = {},
+  options: { allowProductionChartAiLiveData?: boolean; allowProductionMarketDashboardLiveData?: boolean } = {},
 ): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
   const inputError = validateKisDomesticQuoteInput(input);
   if (inputError) return inputError;
 
-  // Only the scoped current_price quote snapshot forwards the production Chart AI beta exception.
-  // The generic getKisQuoteSnapshot wrapper and the OHLC series path call getKisQuoteConfigReadiness()
-  // with no options, so they remain fully fail-closed on production.
+  // The scoped current_price quote snapshot forwards either the production Chart AI beta exception
+  // or the independent production Market Dashboard/Home exception (Phase 3GL-HF1) -- both remain
+  // narrow, per-call, route-gated signals. The generic getKisQuoteSnapshot wrapper and the OHLC series
+  // path call getKisQuoteConfigReadiness() with no options, so they remain fully fail-closed on production.
   const readiness = getKisQuoteConfigReadiness({
     allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
+    allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 
@@ -437,13 +483,34 @@ export const getKisDomesticQuoteSnapshot = async (
       });
     }
 
+    const signCode =
+      typeof payload.output.prdy_vrss_sign === 'string' ? payload.output.prdy_vrss_sign.trim() : null;
+    const normalizedSign = normalizeKisQuoteSign({
+      rawAmount: parseNumericText(payload.output.prdy_vrss),
+      rawPct: parseNumericText(payload.output.prdy_ctrt),
+      signCode,
+    });
+
+    // Phase 3GL-HF2: cross-check the resolved change amount against price - previousClose. A material
+    // conflict means the amount field cannot be trusted -- null it rather than expose contradictory
+    // data; the price itself and changePct remain usable either way.
+    const previousClose = parseNumericText(payload.output.stck_sdpr);
+    let change = normalizedSign.change;
+    if (previousClose !== null && change !== null) {
+      const expectedChange = price - previousClose;
+      const tolerance = Math.max(1, Math.abs(price) * 0.0005);
+      if (Math.abs(change - expectedChange) > tolerance) {
+        change = null;
+      }
+    }
+
     const quote: QuoteSnapshot = {
       market: 'KR',
       symbol,
       price,
       currency: 'KRW',
-      change: parseNumericText(payload.output.prdy_vrss),
-      changePct: parseNumericText(payload.output.prdy_ctrt),
+      change,
+      changePct: normalizedSign.changePct,
       volume: parseNumericText(payload.output.acml_vol) ?? undefined,
       marketState: 'unknown',
       asOf: new Date().toISOString(),
@@ -580,7 +647,14 @@ type KisOverseasDailyResponse = {
 
 type KisOverseasQuoteResponse = {
   rt_cd?: unknown;
-  output?: { last?: unknown; tvol?: unknown };
+  output?: {
+    last?: unknown;
+    tvol?: unknown;
+    diff?: unknown;
+    rate?: unknown;
+    /** Official direction/sign code (Phase 3GL-HF2), same convention as domestic prdy_vrss_sign. */
+    sign?: unknown;
+  };
 };
 
 const US_SYMBOL_PATTERN = /^[A-Z][A-Z0-9.\-]{0,9}$/;
@@ -700,7 +774,7 @@ export const getKisOverseasDailyOhlcSeries = async (
  */
 export const getKisOverseasQuoteSnapshot = async (
   input: { symbol: string; exchangeCode: string },
-  options: { allowProductionChartAiLiveData?: boolean } = {},
+  options: { allowProductionChartAiLiveData?: boolean; allowProductionMarketDashboardLiveData?: boolean } = {},
 ): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
@@ -715,6 +789,7 @@ export const getKisOverseasQuoteSnapshot = async (
 
   const readiness = getKisQuoteConfigReadiness({
     allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
+    allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 
@@ -770,13 +845,20 @@ export const getKisOverseasQuoteSnapshot = async (
       });
     }
 
+    const overseasSignCode = typeof payload.output.sign === 'string' ? payload.output.sign.trim() : null;
+    const normalizedOverseasSign = normalizeKisQuoteSign({
+      rawAmount: parseNumericText(payload.output.diff),
+      rawPct: parseNumericText(payload.output.rate),
+      signCode: overseasSignCode,
+    });
+
     const quote: QuoteSnapshot = {
       market: 'US',
       symbol,
       price,
       currency: 'USD',
-      change: null,
-      changePct: null,
+      change: normalizedOverseasSign.change,
+      changePct: normalizedOverseasSign.changePct,
       volume: parseNumericText(payload.output.tvol) ?? undefined,
       marketState: 'unknown',
       asOf: new Date().toISOString(),
