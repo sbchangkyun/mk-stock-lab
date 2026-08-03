@@ -170,7 +170,16 @@ six pre-existing untracked items unrelated to this phase (`.agents/`, `.claude/`
   102 deletions; 6 modified + 3 new test scripts + 2 new docs + roadmap/changelog edits — see §6).
 - Pushed to `origin/feature/phase-4b-market-production-completion`.
 - PR [#13](https://github.com/sbchangkyun/mk-stock-lab/pull/13) opened against `main`.
-- Preview / merge / Production steps below are filled in as they land.
+- Vercel Preview deployment (`https://mkstocklab-git-feature-phase-364e3e-sbchangkyun-2946s-projects.vercel.app`)
+  reached `SUCCESS`. Confirmed platform-level Vercel Authentication (SSO) gates **every** route on this
+  Preview, HTML pages and JSON API routes alike (`/market` and `/api/market/overview.json?period=1d` both
+  returned HTTP 200 with `Content-Type: text/html` — the Vercel SSO interstitial, not app content) — the
+  same "protected Preview" limitation already on record for every prior phase's Preview
+  (`vercel_deploy_session_conventions` memory; no authenticated Vercel session available to this
+  assistant). The governing spec §28-29 bounded acceptance sweep therefore cannot run against this Preview;
+  Preview verification is limited to the deployment reaching `SUCCESS` (confirmed), and the acceptance
+  sweep runs instead against Production immediately after merge (§9).
+- Merge / Production steps below are filled in as they land.
 
 ## 9. Production verification — live HTTP results
 
