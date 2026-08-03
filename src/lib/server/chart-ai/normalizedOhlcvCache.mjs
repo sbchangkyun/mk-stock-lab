@@ -150,5 +150,23 @@ export const createNormalizedOhlcvCache = ({ maxEntries = 256, now = () => Date.
       store.clear();
       inflight.clear();
     },
+    /**
+     * Phase 3GM: read-only health snapshot for the admin operations surface. Returns per-entry
+     * age/freshness only -- never the cached market-data value itself. Does not mutate the store
+     * (no LRU touch, no eviction) so a health read never changes cache behavior for real requests.
+     */
+    entriesHealthSnapshot: (nowMsArg = now()) => {
+      const entries = [];
+      for (const [key, entry] of store.entries()) {
+        entries.push({
+          key,
+          negative: Boolean(entry.negative),
+          fresh: entry.expiresAtMs > nowMsArg,
+          expiresAtMs: entry.expiresAtMs,
+          msUntilExpiry: entry.expiresAtMs - nowMsArg,
+        });
+      }
+      return { entryCount: store.size, inflightCount: inflight.size, entries };
+    },
   };
 };

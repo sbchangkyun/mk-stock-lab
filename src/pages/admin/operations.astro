@@ -1,0 +1,1125 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="운영 현황 | MK Stock Lab" activePath="/admin/operations" pageClass="admin-operations-page">
+  <div class="ops-page">
+    <header class="ops-header">
+      <p class="ops-eyebrow">관리자 전용</p>
+      <h1 class="ops-h1">운영 현황</h1>
+      <p class="ops-subtitle">Operations Overview</p>
+      <p class="ops-lead">
+        Chart AI 사용량, KIS 토큰, 시세 캐시 상태를 확인합니다. 이 화면은 읽기 전용이며 시스템 값을 변경하지 않습니다.
+      </p>
+    </header>
+
+    <div class="ops-loading-state" id="admin-ops-checking" data-state="checking">
+      <p>로그인 상태를 확인하는 중입니다.</p>
+    </div>
+
+    <section class="ops-status-card hidden" id="admin-ops-lock-state" aria-live="polite">
+      <div class="ops-status-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="11" width="14" height="9" rx="2"></rect>
+          <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+        </svg>
+      </div>
+      <div class="ops-status-copy">
+        <p class="ops-eyebrow" id="admin-ops-lock-eyebrow">접속 필요</p>
+        <h2 id="admin-ops-lock-title">로그인이 필요합니다</h2>
+        <p id="admin-ops-lock-copy">관리자 운영 현황은 로그인 후 확인할 수 있습니다.</p>
+      </div>
+      <button class="ops-primary-btn" id="admin-ops-login-action" type="button">로그인</button>
+    </section>
+
+    <!-- Phase 3GM-HF3: authentication denial (signed-out / non-admin, above) is a DISTINCT UI state
+         from operational-data unavailability (below). An authenticated admin whose overview request
+         fails (HTTP failure, invalid JSON, malformed payload shape, or a network/runtime exception)
+         must land here, never in the lock-state above and never stuck on the "checking" state. -->
+    <section class="ops-status-card hidden" id="admin-ops-unavailable-state" aria-live="polite">
+      <div class="ops-status-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <line x1="12" y1="7.5" x2="12" y2="13"></line>
+          <circle cx="12" cy="16.3" r="0.9" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </div>
+      <div class="ops-status-copy">
+        <p class="ops-eyebrow" id="admin-ops-unavailable-eyebrow">일시적 오류</p>
+        <h2 id="admin-ops-unavailable-title">운영 정보를 불러오지 못했습니다</h2>
+        <p id="admin-ops-unavailable-copy">로그인과 관리자 권한은 확인되었지만 현재 운영 데이터를 조회할 수 없습니다.</p>
+      </div>
+      <button class="ops-primary-btn" id="admin-ops-retry" type="button">다시 시도</button>
+    </section>
+
+    <section class="ops-body hidden" id="admin-ops-body">
+      <p class="ops-sr-only" id="admin-ops-live-region" role="status" aria-live="polite"></p>
+
+      <div class="ops-toolbar">
+        <p class="ops-refreshed" id="admin-ops-refreshed">마지막 갱신: -</p>
+        <button class="ops-refresh-btn" id="admin-ops-refresh" type="button">
+          <svg class="ops-refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-2.34 5.66"></path>
+            <path d="M20 5v6h-6"></path>
+          </svg>
+          <span id="admin-ops-refresh-label">새로고침</span>
+        </button>
+      </div>
+      <p class="ops-notice hidden" id="admin-ops-stale-notice" role="status" aria-live="polite"></p>
+
+      <div class="ops-summary-grid" id="admin-ops-summary"></div>
+
+      <section class="ops-card" id="admin-ops-usage-card">
+        <h2>Chart AI 사용량</h2>
+        <div class="ops-highlight-grid" id="admin-ops-usage-highlights"></div>
+        <div class="ops-detail-row" id="admin-ops-usage-detail"></div>
+      </section>
+
+      <section class="ops-card" id="admin-ops-kis-card">
+        <h2>KIS 토큰 상태</h2>
+        <div class="ops-highlight-grid" id="admin-ops-kis-highlights"></div>
+        <div class="ops-detail-row" id="admin-ops-kis-detail"></div>
+        <p class="ops-impact-note hidden" id="admin-ops-kis-impact"></p>
+      </section>
+
+      <p class="ops-instance-note">캐시 정보는 현재 요청을 처리한 서버 인스턴스 기준입니다. 전체 Production 인스턴스의 합산 상태가 아닙니다.</p>
+
+      <section class="ops-card" id="admin-ops-caches-card">
+        <h2>시세 캐시 상태</h2>
+        <div class="ops-cache-grid" id="admin-ops-caches-list"></div>
+      </section>
+    </section>
+  </div>
+
+  <style>
+    /* Phase 3GM-HF2: suppress the site-wide floating slide ad and the bottom ad banner ONLY on this
+       admin page, scoped strictly via the `admin-operations-page` body class (set through Layout's
+       existing `pageClass` prop -- no change to Layout.astro, no global CSS hack). The real
+       site-footer inside #bottomDocumentArea is left untouched -- only the ad row is hidden. */
+    :global(body.admin-operations-page #slidePopup),
+    :global(body.admin-operations-page #bottomAdBanner) {
+      display: none !important;
+    }
+
+    .ops-page {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    .ops-header {
+      margin-bottom: 28px;
+    }
+
+    .ops-eyebrow {
+      margin: 0 0 8px;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .ops-h1 {
+      margin: 0 0 4px;
+      font-size: 28px;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .ops-subtitle {
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .ops-lead {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 640px;
+    }
+
+    .ops-loading-state {
+      padding: 24px 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .ops-status-card {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      margin-top: 12px;
+      padding: 40px 24px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .ops-status-icon {
+      width: 64px;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+    }
+
+    .ops-status-icon svg {
+      width: 30px;
+      height: 30px;
+    }
+
+    .ops-status-copy h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .ops-status-copy p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .ops-primary-btn {
+      min-height: 44px;
+      padding: 0 24px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .ops-primary-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .ops-primary-btn:focus-visible {
+      outline: 2px solid var(--primary-dark);
+      outline-offset: 2px;
+    }
+
+    .ops-body {
+      margin-top: 8px;
+    }
+
+    .ops-sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .ops-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .ops-refreshed {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .ops-refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .ops-refresh-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .ops-refresh-btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .ops-refresh-btn:disabled {
+      opacity: 0.6;
+      cursor: progress;
+    }
+
+    .ops-refresh-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .ops-refresh-btn[aria-busy='true'] .ops-refresh-icon {
+        animation: ops-spin 0.9s linear infinite;
+      }
+    }
+
+    @keyframes ops-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .ops-notice {
+      margin: 0 0 16px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(184, 134, 11, 0.12);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .ops-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .ops-summary-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .ops-summary-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .ops-summary-label {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .ops-summary-value {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .ops-summary-support {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .ops-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ops-badge-icon {
+      display: inline-flex;
+      width: 13px;
+      height: 13px;
+    }
+
+    .ops-badge-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .ops-badge--healthy {
+      background: rgba(17, 138, 79, 0.14);
+      color: var(--positive);
+    }
+
+    .ops-badge--warning {
+      background: rgba(184, 134, 11, 0.16);
+      color: #9a6b06;
+    }
+
+    .ops-badge--unavailable {
+      background: rgba(137, 147, 164, 0.16);
+      color: var(--neutral);
+    }
+
+    :global(body.dark-mode) .ops-badge--warning {
+      background: rgba(232, 184, 75, 0.18);
+      color: #f0c766;
+    }
+
+    .ops-card {
+      margin-bottom: 16px;
+      padding: 18px 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .ops-card h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+
+    .ops-highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .ops-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--surface-muted);
+    }
+
+    .ops-stat-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .ops-stat-value {
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .ops-detail-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 20px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .ops-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .ops-row-label {
+      color: var(--text-muted);
+    }
+
+    .ops-row-value {
+      color: var(--text);
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .ops-impact-note {
+      margin: 10px 0 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(17, 138, 79, 0.1);
+      color: var(--positive);
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    .ops-instance-note {
+      margin: 0 0 14px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--surface-muted);
+      color: var(--text-muted);
+      font-size: 12.5px;
+    }
+
+    .ops-cache-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .ops-cache-card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-muted);
+    }
+
+    .ops-cache-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .ops-cache-head h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .ops-cache-durability {
+      margin: 0 0 10px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .ops-cache-empty {
+      padding: 10px 0 2px;
+    }
+
+    .ops-cache-empty p {
+      margin: 0 0 4px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .ops-cache-empty p:first-child {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .ops-cache-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .ops-cache-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ops-cache-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .ops-cache-stat-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .ops-cache-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .ops-cache-age-note {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 900px) {
+      .ops-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ops-highlight-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .ops-summary-grid {
+        grid-template-columns: 1fr;
+      }
+      .ops-highlight-grid {
+        grid-template-columns: 1fr;
+      }
+      .ops-detail-row {
+        grid-template-columns: 1fr;
+      }
+      .ops-cache-grid {
+        grid-template-columns: 1fr;
+      }
+      .ops-cache-stats {
+        grid-template-columns: 1fr;
+      }
+      .ops-toolbar {
+        align-items: stretch;
+      }
+      .ops-refresh-btn {
+        justify-content: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ops-refresh-icon {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <script>
+    import { getBrowserSupabaseClient, isSupabaseConfigured } from '../../lib/supabase';
+
+    type OperationsHealthStatus = 'healthy' | 'warning' | 'unavailable';
+
+    type UsageGuardOverview = {
+      status: OperationsHealthStatus;
+      storeReady: boolean;
+      usageDateKst: string | null;
+      configuredDailyLimit: number;
+      totalGuardedExecutionsToday: number;
+      distinctUserCountToday: number;
+      usersAtLimitCountToday: number;
+      mostRecentGuardedExecutionAtIso: string | null;
+      sanitizedErrorCode: string | null;
+    };
+
+    type KisTokenOverview = {
+      status: OperationsHealthStatus;
+      kisConfigReady: boolean;
+      durableStoreReady: boolean;
+      durableMisconfigured: boolean;
+      l1TokenPresent: boolean;
+      l2TokenPresent: boolean;
+      tokenExpiresAtIso: string | null;
+      remainingLifetimeSeconds: number | null;
+      staleOrExpired: boolean;
+      lastIssueOrReuseAtIso: string | null;
+      sanitizedErrorCode: string | null;
+    };
+
+    type QuoteCacheSummary = {
+      cacheId: string;
+      scope: string;
+      durability: 'instance-local';
+      entryCount: number;
+      configuredTtlMs: number | null;
+      newestEntryAgeMs: number | null;
+      oldestEntryAgeMs: number | null;
+      freshCount: number | null;
+      staleCount: number | null;
+      expiredCount: number | null;
+      lastSuccessfulUpdateAtIso: string | null;
+      status: OperationsHealthStatus;
+    };
+
+    type AdminOperationsOverview = {
+      generatedAtIso: string;
+      usageGuard: UsageGuardOverview;
+      kisToken: KisTokenOverview;
+      quoteCaches: QuoteCacheSummary[];
+    };
+
+    const checkingEl = document.getElementById('admin-ops-checking');
+    const lockEl = document.getElementById('admin-ops-lock-state');
+    const lockTitleEl = document.getElementById('admin-ops-lock-title');
+    const lockCopyEl = document.getElementById('admin-ops-lock-copy');
+    const loginActionEl = document.getElementById('admin-ops-login-action');
+    const unavailableEl = document.getElementById('admin-ops-unavailable-state');
+    const retryBtn = document.getElementById('admin-ops-retry') as HTMLButtonElement | null;
+    const bodyEl = document.getElementById('admin-ops-body');
+    const refreshedEl = document.getElementById('admin-ops-refreshed');
+    const refreshBtn = document.getElementById('admin-ops-refresh') as HTMLButtonElement | null;
+    const refreshLabelEl = document.getElementById('admin-ops-refresh-label');
+    const liveRegionEl = document.getElementById('admin-ops-live-region');
+    const staleNoticeEl = document.getElementById('admin-ops-stale-notice');
+    const summaryEl = document.getElementById('admin-ops-summary');
+    const usageHighlightsEl = document.getElementById('admin-ops-usage-highlights');
+    const usageDetailEl = document.getElementById('admin-ops-usage-detail');
+    const kisHighlightsEl = document.getElementById('admin-ops-kis-highlights');
+    const kisDetailEl = document.getElementById('admin-ops-kis-detail');
+    const kisImpactEl = document.getElementById('admin-ops-kis-impact');
+    const cachesListEl = document.getElementById('admin-ops-caches-list');
+
+    let lastGoodOverview: AdminOperationsOverview | null = null;
+    let refreshInFlight = false;
+
+    // Phase 3GM-HF3: exactly four mutually-exclusive top-level UI states -- checking / auth-lock
+    // (signed-out or non-admin, shared element with swapped copy) / unavailable (operational-data
+    // read failed for an authenticated admin) / dashboard-body. Every state transition in this file
+    // goes through this single function so no two states can ever be visible at once.
+    const showOnly = (el: Element | null) => {
+      [checkingEl, lockEl, unavailableEl, bodyEl].forEach((node) => node?.classList.add('hidden'));
+      el?.classList.remove('hidden');
+    };
+
+    const showUnavailableState = () => {
+      showOnly(unavailableEl);
+    };
+
+    // ---------------------------------------------------------------------------------------------
+    // Closed-status badge helper: healthy/warning/unavailable -> 정상/주의/정보 없음, always paired
+    // with a text node (never color-only) plus a small inline-SVG icon (no external icon library).
+    // ---------------------------------------------------------------------------------------------
+    const statusLabel = (status: OperationsHealthStatus) =>
+      status === 'healthy' ? '정상' : status === 'warning' ? '주의' : '정보 없음';
+
+    const STATUS_RANK: Record<OperationsHealthStatus, number> = { unavailable: 2, warning: 1, healthy: 0 };
+    const worstStatus = (...statuses: OperationsHealthStatus[]): OperationsHealthStatus =>
+      statuses.reduce<OperationsHealthStatus>((acc, s) => (STATUS_RANK[s] > STATUS_RANK[acc] ? s : acc), 'healthy');
+
+    const badgeIconMarkup = (status: OperationsHealthStatus) => {
+      if (status === 'healthy') {
+        return '<svg viewBox="0 0 16 16" focusable="false"><circle cx="8" cy="8" r="5.5"></circle></svg>';
+      }
+      if (status === 'warning') {
+        return '<svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 14.5 13.5h-13Z"></path><line x1="8" y1="6.4" x2="8" y2="9.6"></line><circle cx="8" cy="11.6" r="0.65"></circle></svg>';
+      }
+      return '<svg viewBox="0 0 16 16" focusable="false"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"></circle><text x="8" y="10.8" text-anchor="middle" font-size="7.5" fill="currentColor">?</text></svg>';
+    };
+
+    const buildBadge = (status: OperationsHealthStatus): HTMLElement => {
+      const badge = document.createElement('span');
+      badge.className = `ops-badge ops-badge--${status}`;
+      const icon = document.createElement('span');
+      icon.className = 'ops-badge-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = badgeIconMarkup(status);
+      const text = document.createElement('span');
+      text.className = 'ops-badge-text';
+      text.textContent = statusLabel(status);
+      badge.appendChild(icon);
+      badge.appendChild(text);
+      return badge;
+    };
+
+    // Semantic wording for booleans -- never a raw 예/아니오.
+    const fmtConfigReady = (value: boolean) => (value ? '사용 가능' : '비활성');
+    const fmtTokenPresent = (value: boolean) => (value ? '토큰 있음' : '토큰 없음');
+    const fmtStaleOrExpired = (value: boolean) => (value ? '만료 또는 사용 불가' : '만료되지 않음');
+    const fmtStoreReady = (value: boolean) => (value ? '사용 가능' : '사용 불가');
+
+    const fmtIso = (value: string | null) => (value === null ? '없음' : new Date(value).toLocaleString('ko-KR'));
+    const fmtNum = (value: number | null) => (value === null ? '-' : String(value));
+
+    const fmtDurationSeconds = (seconds: number | null): string => {
+      if (seconds === null) return '알 수 없음';
+      const safe = Math.max(0, Math.round(seconds));
+      const m = Math.floor(safe / 60);
+      const s = safe % 60;
+      if (m <= 0) return `${s}초`;
+      return `${m}분 ${s}초`;
+    };
+
+    const fmtDurationMs = (ms: number | null): string | null => (ms === null ? null : fmtDurationSeconds(Math.round(ms / 1000)));
+
+    const buildStat = (label: string, value: string | Node) => {
+      const stat = document.createElement('div');
+      stat.className = 'ops-stat';
+      const l = document.createElement('span');
+      l.className = 'ops-stat-label';
+      l.textContent = label;
+      const v = document.createElement('span');
+      v.className = 'ops-stat-value';
+      if (typeof value === 'string') v.textContent = value;
+      else v.appendChild(value);
+      stat.appendChild(l);
+      stat.appendChild(v);
+      return stat;
+    };
+
+    const buildRow = (label: string, value: string) => {
+      const row = document.createElement('div');
+      row.className = 'ops-row';
+      const l = document.createElement('span');
+      l.className = 'ops-row-label';
+      l.textContent = label;
+      const v = document.createElement('span');
+      v.className = 'ops-row-value';
+      v.textContent = value;
+      row.appendChild(l);
+      row.appendChild(v);
+      return row;
+    };
+
+    const buildSummaryCard = (label: string, primaryText: string, supportText: string, status: OperationsHealthStatus) => {
+      const card = document.createElement('div');
+      card.className = 'ops-summary-card';
+      const top = document.createElement('div');
+      top.className = 'ops-summary-top';
+      const labelEl = document.createElement('p');
+      labelEl.className = 'ops-summary-label';
+      labelEl.textContent = label;
+      top.appendChild(labelEl);
+      top.appendChild(buildBadge(status));
+      card.appendChild(top);
+      const valueEl = document.createElement('p');
+      valueEl.className = 'ops-summary-value';
+      valueEl.textContent = primaryText;
+      card.appendChild(valueEl);
+      const supportEl = document.createElement('p');
+      supportEl.className = 'ops-summary-support';
+      supportEl.textContent = supportText;
+      card.appendChild(supportEl);
+      return card;
+    };
+
+    const renderSummary = (overview: AdminOperationsOverview, cacheOverallStatus: OperationsHealthStatus, overallStatus: OperationsHealthStatus) => {
+      if (!summaryEl) return;
+      summaryEl.innerHTML = '';
+
+      summaryEl.appendChild(
+        buildSummaryCard('전체 상태', statusLabel(overallStatus), 'Chart AI 사용량, KIS 토큰, 캐시 상태를 종합한 결과입니다.', overallStatus),
+      );
+
+      const usage = overview.usageGuard;
+      summaryEl.appendChild(
+        buildSummaryCard(
+          '오늘 Chart AI 사용',
+          `${usage.totalGuardedExecutionsToday}회`,
+          `이용자 ${usage.distinctUserCountToday}명 · 한도 도달 ${usage.usersAtLimitCountToday}명`,
+          usage.status,
+        ),
+      );
+
+      const kis = overview.kisToken;
+      summaryEl.appendChild(
+        buildSummaryCard(
+          'KIS 토큰',
+          statusLabel(kis.status),
+          kis.durableStoreReady ? '메모리(L1) + 내구성 저장소(L2)' : '인스턴스 메모리(L1)',
+          kis.status,
+        ),
+      );
+
+      const totalEntries = overview.quoteCaches.reduce((sum, c) => sum + c.entryCount, 0);
+      const healthyCacheCount = overview.quoteCaches.filter((c) => c.status === 'healthy').length;
+      summaryEl.appendChild(
+        buildSummaryCard(
+          '캐시 상태',
+          `${totalEntries}건`,
+          `정상 ${healthyCacheCount}/${overview.quoteCaches.length}`,
+          cacheOverallStatus,
+        ),
+      );
+    };
+
+    const renderUsageCard = (usage: UsageGuardOverview) => {
+      if (!usageHighlightsEl || !usageDetailEl) return;
+      usageHighlightsEl.innerHTML = '';
+      usageHighlightsEl.appendChild(buildStat('오늘 사용 횟수', `${usage.totalGuardedExecutionsToday}회`));
+      usageHighlightsEl.appendChild(buildStat('이용자 수', `${usage.distinctUserCountToday}명`));
+      usageHighlightsEl.appendChild(buildStat('한도 도달 이용자 수', `${usage.usersAtLimitCountToday}명`));
+      usageHighlightsEl.appendChild(buildStat('일일 한도', `${usage.configuredDailyLimit}회`));
+
+      usageDetailEl.innerHTML = '';
+      usageDetailEl.appendChild(buildRow('기준 날짜 (KST)', usage.usageDateKst ?? '없음'));
+      usageDetailEl.appendChild(buildRow('가장 최근 사용 시각', fmtIso(usage.mostRecentGuardedExecutionAtIso)));
+      usageDetailEl.appendChild(buildRow('저장소 상태', fmtStoreReady(usage.storeReady)));
+    };
+
+    const renderKisCard = (kis: KisTokenOverview) => {
+      if (!kisHighlightsEl || !kisDetailEl || !kisImpactEl) return;
+      kisHighlightsEl.innerHTML = '';
+      kisHighlightsEl.appendChild(buildStat('현재 상태', buildBadge(kis.status)));
+      kisHighlightsEl.appendChild(buildStat('저장 방식', kis.durableStoreReady ? '메모리(L1) + 내구성 저장소(L2)' : '인스턴스 메모리(L1)'));
+      kisHighlightsEl.appendChild(buildStat('남은 유효 시간', fmtDurationSeconds(kis.remainingLifetimeSeconds)));
+      kisHighlightsEl.appendChild(buildStat('만료 시각', fmtIso(kis.tokenExpiresAtIso)));
+
+      kisDetailEl.innerHTML = '';
+      kisDetailEl.appendChild(buildRow('설정 상태', fmtConfigReady(kis.kisConfigReady)));
+      kisDetailEl.appendChild(buildRow('메모리(L1) 토큰', fmtTokenPresent(kis.l1TokenPresent)));
+      kisDetailEl.appendChild(buildRow('내구성 저장소(L2) 토큰', fmtTokenPresent(kis.l2TokenPresent)));
+      kisDetailEl.appendChild(buildRow('내구성 저장소(L2)', kis.durableStoreReady ? '활성' : '비활성'));
+      kisDetailEl.appendChild(buildRow('만료 여부', fmtStaleOrExpired(kis.staleOrExpired)));
+      kisDetailEl.appendChild(buildRow('최근 발급/재사용 시각', fmtIso(kis.lastIssueOrReuseAtIso)));
+      if (kis.durableMisconfigured) {
+        kisDetailEl.appendChild(buildRow('내구성 저장소 설정', '설정 오류'));
+      }
+
+      // Only ever claim "no operating impact" when the returned overall status is genuinely healthy --
+      // never mislabel a real warning/unavailable state as harmless.
+      if (!kis.durableStoreReady && kis.status === 'healthy') {
+        kisImpactEl.textContent = '현재 운영 영향 없음';
+        kisImpactEl.classList.remove('hidden');
+      } else {
+        kisImpactEl.textContent = '';
+        kisImpactEl.classList.add('hidden');
+      }
+    };
+
+    const renderCaches = (caches: QuoteCacheSummary[]) => {
+      if (!cachesListEl) return;
+      cachesListEl.innerHTML = '';
+
+      caches.forEach((cache) => {
+        const card = document.createElement('div');
+        card.className = 'ops-cache-card';
+
+        const head = document.createElement('div');
+        head.className = 'ops-cache-head';
+        const title = document.createElement('h3');
+        title.textContent = cache.scope;
+        head.appendChild(title);
+        head.appendChild(buildBadge(cache.status));
+        card.appendChild(head);
+
+        const durabilityNote = document.createElement('p');
+        durabilityNote.className = 'ops-cache-durability';
+        durabilityNote.textContent = '인스턴스 로컬 캐시 (현재 서버 인스턴스 기준)';
+        card.appendChild(durabilityNote);
+
+        if (cache.entryCount === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'ops-cache-empty';
+          const line1 = document.createElement('p');
+          line1.textContent = '현재 인스턴스에 저장된 캐시가 없습니다.';
+          const line2 = document.createElement('p');
+          line2.textContent = '실제 시세 조회 후 상태가 표시됩니다.';
+          empty.appendChild(line1);
+          empty.appendChild(line2);
+          card.appendChild(empty);
+        } else {
+          const stats = document.createElement('div');
+          stats.className = 'ops-cache-stats';
+          const addStat = (label: string, value: string) => {
+            const stat = document.createElement('div');
+            stat.className = 'ops-cache-stat';
+            const l = document.createElement('span');
+            l.className = 'ops-cache-stat-label';
+            l.textContent = label;
+            const v = document.createElement('span');
+            v.className = 'ops-cache-stat-value';
+            v.textContent = value;
+            stat.appendChild(l);
+            stat.appendChild(v);
+            stats.appendChild(stat);
+          };
+          addStat('전체 항목', fmtNum(cache.entryCount));
+          addStat('신선(fresh)', fmtNum(cache.freshCount));
+          addStat('오래됨(stale)', fmtNum(cache.staleCount));
+          addStat('만료(expired)', fmtNum(cache.expiredCount));
+          card.appendChild(stats);
+
+          const rows = document.createElement('div');
+          rows.className = 'ops-cache-rows';
+          const newestAge = fmtDurationMs(cache.newestEntryAgeMs);
+          const oldestAge = fmtDurationMs(cache.oldestEntryAgeMs);
+          const allAgeNull = cache.newestEntryAgeMs === null && cache.oldestEntryAgeMs === null && cache.lastSuccessfulUpdateAtIso === null;
+          if (newestAge !== null) rows.appendChild(buildRow('가장 최근 항목 나이', newestAge));
+          if (oldestAge !== null) rows.appendChild(buildRow('가장 오래된 항목 나이', oldestAge));
+          if (cache.lastSuccessfulUpdateAtIso !== null) rows.appendChild(buildRow('마지막 갱신 시각', fmtIso(cache.lastSuccessfulUpdateAtIso)));
+          if (allAgeNull) {
+            const note = document.createElement('p');
+            note.className = 'ops-cache-age-note';
+            note.textContent = '이 캐시는 생성 시각을 저장하지 않아 항목 나이를 제공하지 않습니다.';
+            rows.appendChild(note);
+          }
+          card.appendChild(rows);
+        }
+
+        cachesListEl.appendChild(card);
+      });
+    };
+
+    const renderOverview = (overview: AdminOperationsOverview) => {
+      if (!refreshedEl) return;
+
+      const cacheOverallStatus = worstStatus(...overview.quoteCaches.map((c) => c.status));
+      const overallStatus = worstStatus(overview.usageGuard.status, overview.kisToken.status, cacheOverallStatus);
+
+      renderSummary(overview, cacheOverallStatus, overallStatus);
+      renderUsageCard(overview.usageGuard);
+      renderKisCard(overview.kisToken);
+      renderCaches(overview.quoteCaches);
+
+      refreshedEl.textContent = `마지막 갱신: ${new Date(overview.generatedAtIso).toLocaleString('ko-KR')}`;
+    };
+
+    const setStaleNotice = (message: string | null) => {
+      if (!staleNoticeEl) return;
+      if (!message) {
+        staleNoticeEl.classList.add('hidden');
+        staleNoticeEl.textContent = '';
+        return;
+      }
+      staleNoticeEl.textContent = message;
+      staleNoticeEl.classList.remove('hidden');
+    };
+
+    const announceLive = (message: string) => {
+      if (!liveRegionEl) return;
+      liveRegionEl.textContent = '';
+      window.requestAnimationFrame(() => {
+        liveRegionEl.textContent = message;
+      });
+    };
+
+    const showLockState = (kind: 'signed-out' | 'non-admin') => {
+      if (kind === 'signed-out') {
+        if (lockTitleEl) lockTitleEl.textContent = '로그인이 필요합니다';
+        if (lockCopyEl) lockCopyEl.textContent = '관리자 운영 현황은 로그인 후 확인할 수 있습니다.';
+        loginActionEl?.classList.remove('hidden');
+      } else {
+        if (lockTitleEl) lockTitleEl.textContent = '접근 권한이 없습니다';
+        if (lockCopyEl) lockCopyEl.textContent = '이 화면은 등록된 관리자만 볼 수 있습니다.';
+        loginActionEl?.classList.add('hidden');
+      }
+      showOnly(lockEl);
+    };
+
+    // Phase 3GM-HF3: defensive shape validation for the parsed success payload -- a 200 response with
+    // valid JSON is not automatically trustworthy; the overview object itself must carry the fields
+    // the renderer depends on before it is accepted as "good". This does not change or add to what
+    // fields the client expects, it only refuses to treat an unexpected shape as real data.
+    const isValidOverviewShape = (value: unknown): value is AdminOperationsOverview => {
+      if (!value || typeof value !== 'object') return false;
+      const v = value as Record<string, unknown>;
+      return (
+        typeof v.generatedAtIso === 'string' &&
+        Boolean(v.usageGuard) && typeof v.usageGuard === 'object' &&
+        Boolean(v.kisToken) && typeof v.kisToken === 'object' &&
+        Array.isArray(v.quoteCaches)
+      );
+    };
+
+    // Phase 3GM-HF3: single shared busy-state toggle for BOTH the refresh button and the retry
+    // button -- they can never be in-flight at the same time (refreshInFlight guards both callers),
+    // so one toggle keeping their disabled/aria-busy/label state in sync is enough; no duplicate logic.
+    const setControlsBusy = (busy: boolean) => {
+      if (refreshBtn) {
+        refreshBtn.disabled = busy;
+        if (busy) refreshBtn.setAttribute('aria-busy', 'true');
+        else refreshBtn.removeAttribute('aria-busy');
+      }
+      if (refreshLabelEl) refreshLabelEl.textContent = busy ? '갱신 중' : '새로고침';
+      if (retryBtn) {
+        retryBtn.disabled = busy;
+        if (busy) retryBtn.setAttribute('aria-busy', 'true');
+        else retryBtn.removeAttribute('aria-busy');
+        retryBtn.textContent = busy ? '다시 시도 중' : '다시 시도';
+      }
+    };
+
+    // Phase 3GM-HF3: the ONE place that decides what to do when an authenticated admin's operational
+    // read fails (HTTP failure, invalid JSON, malformed payload shape, or a network/runtime
+    // exception -- all funnel here). If a previous successful load exists, keep showing it with the
+    // existing HF2 stale-notice (state E); otherwise there is nothing honest to show but the new
+    // dedicated unavailable state (state D) -- never the checking state, never the signed-out state.
+    const handleOperationalDataUnavailable = () => {
+      if (lastGoodOverview) {
+        setStaleNotice('최신 정보를 불러오지 못해 이전 결과를 표시합니다.');
+        showOnly(bodyEl);
+      } else {
+        showUnavailableState();
+      }
+    };
+
+    const loadOverview = async () => {
+      if (refreshInFlight) return; // never overlap requests
+      refreshInFlight = true;
+      setControlsBusy(true);
+
+      try {
+        const client = getBrowserSupabaseClient();
+        const { data: sessionData } = client ? await client.auth.getSession() : { data: { session: null } };
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) {
+          showLockState('signed-out');
+          return;
+        }
+
+        const response = await fetch('/api/admin/operations/overview.json', {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (response.status === 401) {
+          showLockState('signed-out');
+          return;
+        }
+        if (response.status === 403) {
+          showLockState('non-admin');
+          return;
+        }
+
+        const payload = await response.json().catch(() => null);
+        const overviewCandidate = payload && typeof payload === 'object' ? (payload as Record<string, unknown>).overview : null;
+        const responseIsUsable =
+          Boolean(payload) && (payload as { ok?: unknown }).ok === true && response.ok && isValidOverviewShape(overviewCandidate);
+
+        if (!responseIsUsable) {
+          // Covers: HTTP 500 / any other non-401/403 failure, invalid JSON, and a malformed/unexpected
+          // success-payload shape -- authentication and admin authorization already passed above, so
+          // this is purely an operational-data-unavailable outcome, never a lock state.
+          handleOperationalDataUnavailable();
+          return;
+        }
+
+        lastGoodOverview = overviewCandidate as AdminOperationsOverview;
+        setStaleNotice(null);
+        showOnly(bodyEl);
+        renderOverview(lastGoodOverview);
+        announceLive('운영 현황을 갱신했습니다.');
+      } catch {
+        // Network exception (fetch threw) or any other runtime exception during processing.
+        handleOperationalDataUnavailable();
+      } finally {
+        refreshInFlight = false;
+        setControlsBusy(false);
+      }
+    };
+
+    refreshBtn?.addEventListener('click', () => {
+      void loadOverview();
+    });
+
+    retryBtn?.addEventListener('click', () => {
+      void loadOverview();
+    });
+
+    loginActionEl?.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('mk:open-auth'));
+    });
+
+    if (!isSupabaseConfigured()) {
+      showLockState('signed-out');
+    } else {
+      void loadOverview();
+    }
+  </script>
+</Layout>

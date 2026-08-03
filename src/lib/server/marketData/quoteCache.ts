@@ -94,6 +94,51 @@ export const clearQuoteCacheForTests = () => {
   quoteCache.clear();
 };
 
+export type QuoteCacheHealthSnapshot = {
+  entryCount: number;
+  freshCount: number;
+  staleCount: number;
+  expiredCount: number;
+  newestEntryAgeMs: number | null;
+  oldestEntryAgeMs: number | null;
+  lastCachedAtIso: string | null;
+};
+
+/**
+ * Phase 3GM: read-only, sanitized health snapshot of this in-memory, process-local quote cache.
+ * Never returns a cached quote payload or symbol list -- only aggregate counts and ages. Does not
+ * mutate or evict the cache (unlike getQuoteCacheEntry, which deletes expired entries as a side
+ * effect) so an admin health read can never change what a concurrent real request sees.
+ */
+export const getQuoteCacheHealthSnapshot = (nowMs = Date.now()): QuoteCacheHealthSnapshot => {
+  assertServerRuntime(moduleName);
+  let freshCount = 0;
+  let staleCount = 0;
+  let expiredCount = 0;
+  let newestCachedAtMs: number | null = null;
+  let oldestCachedAtMs: number | null = null;
+
+  for (const entry of quoteCache.values()) {
+    const state = getQuoteCacheState(entry, nowMs);
+    if (state === 'fresh') freshCount += 1;
+    else if (state === 'stale-but-usable') staleCount += 1;
+    else expiredCount += 1;
+
+    if (newestCachedAtMs === null || entry.cachedAtMs > newestCachedAtMs) newestCachedAtMs = entry.cachedAtMs;
+    if (oldestCachedAtMs === null || entry.cachedAtMs < oldestCachedAtMs) oldestCachedAtMs = entry.cachedAtMs;
+  }
+
+  return {
+    entryCount: quoteCache.size,
+    freshCount,
+    staleCount,
+    expiredCount,
+    newestEntryAgeMs: newestCachedAtMs === null ? null : Math.max(0, nowMs - newestCachedAtMs),
+    oldestEntryAgeMs: oldestCachedAtMs === null ? null : Math.max(0, nowMs - oldestCachedAtMs),
+    lastCachedAtIso: newestCachedAtMs === null ? null : new Date(newestCachedAtMs).toISOString(),
+  };
+};
+
 export const getConfiguredQuoteCacheBackendName = (): QuoteCacheBackendName => {
   assertServerRuntime(moduleName);
   return process.env[QUOTE_CACHE_BACKEND_ENV_NAME] === 'supabase' ? 'supabase' : 'memory';

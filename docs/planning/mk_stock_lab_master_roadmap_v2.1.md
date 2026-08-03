@@ -143,10 +143,10 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   classification.
 - **Phase 3GK — Chart AI Beta Productization.** `PRODUCTION_RELEASED` (PR #7 merged, merge commit `0e53cde`,
   Production deployment `dpl_CRd7KFZ2eyscG1tbAfxdqMgPhh1A` READY). See §1c.
-
-### In progress
-
-- **Phase 3GL — Home Live Data and GNews.** Replaces the Home page's separate live-market call
+- **Phase 3GL — Home Live Data and GNews, including HF4 GNews provider-compatibility hotfix.**
+  `PRODUCTION_VERIFIED` (PR #9 merged, hotfix commit `43518b6a5e1ac6cc71bbea96f6cb52405353eb3f`, merge
+  commit `dc4f3b0c018aa16acee3d6c4bcaced5bc7ca1df4`, Production deployment
+  `dpl_9qQHPbH9amFKvuGkhwdYxXDSYcv6`). Replaces the Home page's separate live-market call
   (`/api/market/overview.json`) and the fixture-default news feed with one shared server-side Home market
   orchestrator + one public route (`GET /api/home/live-market.json`) serving both the 9-item ticker belt
   (S&P 500/Nasdaq 100/Dow Jones/KOSPI/KOSDAQ/USD-KRW/Dollar Index/Gold/WTI Oil, each an existing resolvable
@@ -154,19 +154,29 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   Snapshot from the same underlying fetch, plus a new server-only GNews client and `GET /api/news/home.json`
   route (single combined query per refresh, at most 6 client-safe articles, sanitized
   `NEWS_NOT_CONFIGURED` state when `GNEWS_API_KEY` is absent — no fixture fallback). No new KIS endpoint/TR ID,
-  no second market-data or FX provider. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail.
+  no second market-data or FX provider. Closeout classification `PHASE_3GL_HF4_MERGED_PRODUCTION_VERIFIED`
+  recorded on PR #9. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail.
+
+### In progress
+
+- **Phase 3GM — Operations and Admin MVP.** `IN_PROGRESS` (implemented on
+  `feature/phase-3gm-operations-admin-mvp`, PR opened to `main`, Owner Preview verification pending —
+  not merged, not deployed). Minimal internal visibility into usage-guard counters, KIS token health, and
+  quote-cache staleness — previously only inspectable via ad hoc Owner smoke scripts and Supabase
+  Dashboard queries. Implemented as one read-only, admin-only surface (`GET
+  /api/admin/operations/overview.json` + `/admin/operations` page) reusing the existing bearer-auth
+  resolver and `site_admins` registry — no second admin-role system, no migration, no mutation control.
+  See `phase_3gm_operations_and_admin_mvp_plan_v0.1.md` and
+  `phase_3gm_operations_and_admin_mvp_result_v0.1.md` for full detail.
 
 ### Next sequential product phases
 
-1. **Phase 3GM — Operations and Admin MVP.** `PLANNED`. Minimal internal visibility into usage-guard counters,
-   KIS token health, and quote-cache staleness — currently only inspectable via ad hoc Owner smoke scripts and
-   Supabase Dashboard queries, not a real operational surface.
-2. **Phase 3 Closeout.** `PLANNED`. Runs after Phase 3GM — performs the detailed responsive/cross-browser/
+1. **Phase 3 Closeout.** `PLANNED`. Runs after Phase 3GM — performs the detailed responsive/cross-browser/
    accessibility/all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc) and
    Phase 3GL, plus any other cross-cutting Phase 3 closeout verification.
 
-Phase 3GM is explicitly **not** started by this document or this phase — this section only records that it is
-next in sequence, per the governing spec's instruction not to begin it here.
+Phase 3 Closeout is explicitly **not** started by this document or this phase — this section only records
+that it is next in sequence, per the governing spec's instruction not to begin it here.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 

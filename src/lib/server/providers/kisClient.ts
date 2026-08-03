@@ -348,6 +348,42 @@ const getKisTokenRuntime = () => {
 
 const getKisExecutorDeps = (): KisExecutorDeps => getKisTokenRuntime().executorDeps;
 
+/**
+ * Phase 3GM: read-only L1 (process-memory) token presence snapshot for the admin operations
+ * health surface. Lazily constructs the same warm-instance token-manager singleton used by the
+ * real request paths (inert at construction: no network/DB IO happens until a request path calls
+ * getTokenHandle) and calls the existing `peekL1()` test/inspection accessor -- it never calls
+ * getTokenHandle/acquire, so this can never trigger a token issuance or refresh. The plaintext
+ * access token itself is stripped here and NEVER returned -- only non-secret presence/expiry
+ * metadata.
+ */
+export const getKisTokenHealthSnapshot = (): {
+  configReadiness: KisQuoteConfigReadiness;
+  durableConfig: ReturnType<typeof resolveKisDurableTokenConfig>;
+  l1Present: boolean;
+  l1ExpiresAtMs: number | null;
+  l1UsableUntilMs: number | null;
+} => {
+  assertServerRuntime(moduleName);
+  const configReadiness = getKisQuoteConfigReadiness();
+  const durableConfig = resolveKisDurableTokenConfig();
+  let l1Present = false;
+  let l1ExpiresAtMs: number | null = null;
+  let l1UsableUntilMs: number | null = null;
+  try {
+    const handle = getKisTokenRuntime().executorDeps.manager.peekL1();
+    if (handle) {
+      l1Present = true;
+      l1ExpiresAtMs = handle.expiresAtMs;
+      l1UsableUntilMs = handle.usableUntilMs;
+    }
+  } catch {
+    // Fail-closed: treat as "no L1 token observed" rather than throwing into the health route.
+    l1Present = false;
+  }
+  return { configReadiness, durableConfig, l1Present, l1ExpiresAtMs, l1UsableUntilMs };
+};
+
 // Phase 3GG-T-HF3B-HF2: KR codes may be alphanumeric six-character KRX short codes (e.g. 0000D0),
 // normalized to ASCII uppercase. The KIS domestic OHLC/quote FID_INPUT_ISCD accepts the 6-char code.
 const normalizeKrSymbol = (symbol: string) => symbol.trim().toUpperCase();
