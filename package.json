@@ -8,6 +8,8 @@
   "scripts": {
     "smoke:phase-4a-home-common-shell": "node scripts/smoke_phase_4a_home_common_shell.mjs",
     "check:phase-4a-home-common-shell": "node scripts/check_phase_4a_home_common_shell_contract.mjs",
+    "smoke:phase-4b-market-production-completion": "node scripts/smoke_phase_4b_market_production_completion.mjs",
+    "check:phase-4b-market-production-completion": "node scripts/check_phase_4b_market_production_completion_contract.mjs",
     "smoke:phase-3gm-operations-admin-mvp": "node scripts/smoke_phase_3gm_operations_admin_mvp.mjs",
     "check:phase-3gm-operations-admin-mvp": "node scripts/check_phase_3gm_operations_admin_mvp_contract.mjs",
     "smoke:phase-3gl-home-live-data": "node scripts/smoke_phase_3gl_home_live_data.mjs",

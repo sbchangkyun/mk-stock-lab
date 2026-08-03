@@ -304,12 +304,13 @@ log('--- Group 8: Client UI behavior ---');
 check('LiveMarketDashboard has no data-polling setInterval (only the refresh-cooldown UI ticker is allowed — spec section 12)',
   !/setInterval\(\s*(?:loadOverview|loadDashboard|fetchJsonCached)\b/.test(liveDashboard));
 check('LiveMarketDashboard has no auto-retry / recursive refresh timer', !/setTimeout\(\s*load(Dashboard|Overview)/.test(liveDashboard));
-check('LiveMarketDashboard fetches overview exactly once via a dedicated cached loader', liveDashboard.includes("'/api/market/overview.json?period=1d'"));
+check('LiveMarketDashboard fetches overview via a dedicated cached loader keyed by period (Phase 4B: period-aware, no longer hardcoded to 1d)',
+  /\/api\/market\/overview\.json\?period=\$\{encodeURIComponent\(period\)\}/.test(liveDashboard));
 check('LiveMarketDashboard fetches the dashboard via a dedicated loader keyed by universe+period',
   liveDashboard.includes('/api/market/dashboard.json?universe='));
-check('LiveMarketDashboard refresh is gated by explicit tab click listeners',
-  /universeTabs\.forEach\(\(tab\)\s*=>\s*\{\s*tab\.addEventListener\('click'/.test(liveDashboard) &&
-  /periodTabs\.forEach\(\(tab\)\s*=>\s*\{\s*tab\.addEventListener\('click'/.test(liveDashboard));
+check('LiveMarketDashboard refresh is gated by explicit tab click listeners (Phase 4B: ARIA tab activation, click still the underlying trigger)',
+  /universeTabs\.forEach\(\(tab\)\s*=>\s*tab\.addEventListener\('click'/.test(liveDashboard) &&
+  /periodTabs\.forEach\(\(tab\)\s*=>\s*tab\.addEventListener\('click'/.test(liveDashboard));
 check('LiveMarketDashboard guards against stale out-of-order responses (requestToken)', liveDashboard.includes('requestToken'));
 check('LiveMarketDashboard renders an honest partial-below-threshold message, never a fabricated chart',
   liveDashboard.includes('MARKET_DATA_PARTIAL_BELOW_THRESHOLD'));
@@ -326,18 +327,18 @@ check('LiveMarketDashboard dedups in-flight requests via an inFlightRequests map
   liveDashboard.includes('inFlightRequests'));
 check('LiveMarketDashboard never persists the response cache to localStorage (spec section 10)',
   !/localStorage\.(?:setItem|getItem|removeItem)|window\.localStorage/.test(liveDashboard));
-check('LiveMarketDashboard overview cache is keyed independently of the dashboard cache',
-  liveDashboard.includes("fetchJsonCached('overview:1d'") && /fetchJsonCached\(cacheKey/.test(liveDashboard));
+check('LiveMarketDashboard overview cache is keyed independently of the dashboard cache (Phase 4B: period-scoped template key)',
+  /fetchJsonCached\(`overview:\$\{period\}`/.test(liveDashboard) && /fetchJsonCached\(cacheKey/.test(liveDashboard));
 check('LiveMarketDashboard dashboard cache key is scoped by universeId and period (spec section 10)',
   /cacheKey\s*=\s*`dashboard:\$\{universeId\}:\$\{period\}`/.test(liveDashboard));
-check('LiveMarketDashboard sequences the initial overview and dashboard requests instead of firing them concurrently (spec section 11)',
-  /await loadOverview\(\);[\s\S]{0,200}await loadDashboard\(/.test(liveDashboard));
+check('LiveMarketDashboard sequences the initial overview and dashboard requests instead of firing them concurrently (spec section 11; Phase 4B: loadOverview takes a period argument)',
+  /await loadOverview\([^)]*\);[\s\S]{0,200}await loadDashboard\(/.test(liveDashboard));
 check('LiveMarketDashboard exposes exactly one explicit refresh control (spec section 12)',
   (liveDashboard.match(/data-market-refresh-button/g) || []).length >= 2);
 check('LiveMarketDashboard enforces a >=30s refresh cooldown (spec section 12)',
   liveDashboard.includes('REFRESH_COOLDOWN_MS = 30_000'));
-check('LiveMarketDashboard refresh handler bypasses only the client-side cache, never a server cache-bypass query param',
-  !/[?&](forceRefresh|bypassCache|refresh)=/i.test(liveDashboard) && /loadOverview\(true\)/.test(liveDashboard) && /loadDashboard\([^)]*,\s*true\)/.test(liveDashboard));
+check('LiveMarketDashboard refresh handler bypasses only the client-side cache, never a server cache-bypass query param (Phase 4B: loadOverview/loadDashboard take a leading period/universe argument before the trailing force-refresh flag)',
+  !/[?&](forceRefresh|bypassCache|refresh)=/i.test(liveDashboard) && /loadOverview\([^)]*,\s*true\)/.test(liveDashboard) && /loadDashboard\([^)]*,\s*true\)/.test(liveDashboard));
 
 log('--- Group 8b: Home live market snapshot ---');
 check('HomeLiveMarketSnapshot has no setInterval / polling loop', !homeSnapshot.includes('setInterval'));

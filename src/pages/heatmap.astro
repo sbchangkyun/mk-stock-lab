@@ -1,8 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import LiveMarketDashboard from '../components/LiveMarketDashboard.astro';
+// Phase 4B section 17: /heatmap is a legacy alias for /market. Redirect permanently instead of
+// duplicating the live dashboard render, so there is exactly one execution path for this content.
+return Astro.redirect('/market', 301);
 ---
-
-<Layout title="시장 | MK Stock Lab" activePath="/market">
-  <LiveMarketDashboard />
-</Layout>
