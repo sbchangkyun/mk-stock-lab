@@ -5,13 +5,12 @@ Branch: `feature/phase-4b-market-production-completion`.
 
 ## 1. Status
 
-`PASS_MARKET_PRODUCTION_COMPLETION_READY_FOR_OWNER_MERGE_APPROVAL`. Implementation, the full regression
-gate, commit, push, and PR are complete; the Vercel Preview deployment reached `SUCCESS`. The merge itself
-(`gh pr merge`) was blocked by the session's safety classifier — merging into `main` triggers a Production
-deployment, and this project's established practice (see prior phases' `PREMERGE_FINALIZATION`-style
-stops) treats that as an Owner-reserved action regardless of a phase's stated continuous-fast-track
-framing. This is not attempted around; see §8 for what remains and §9 for what will run once the Owner
-merges. This section is updated in place once merge/Production land.
+`PHASE_4B_MARKET_MERGED_PRODUCTION_VERIFIED`. The Owner merged PR #13 (merge commit `60b64dd`); Production
+deployment `dpl_GH4fVxWmigqNgq4ajioqV6Cc2VrQ` reached `READY`; the full bounded acceptance sweep (§9) ran
+against `https://mkstocklab.vercel.app` and passed in its entirety — all 4 remaining overview periods, all
+16 universe×period dashboard combinations, invalid-input/method validation, the raw `/heatmap` 301, and the
+full regression set. No Production runtime-error cluster was found. This phase is closed out by this
+docs-only branch/PR.
 
 ## 2. What changed (see the plan doc §3 for rationale; this section records what was actually done)
 
@@ -183,17 +182,119 @@ six pre-existing untracked items unrelated to this phase (`.agents/`, `.claude/`
   assistant). The governing spec §28-29 bounded acceptance sweep therefore cannot run against this Preview;
   Preview verification is limited to the deployment reaching `SUCCESS` (confirmed), and the acceptance
   sweep runs instead against Production immediately after merge (§9).
-- **Merge is Owner-pending.** `gh pr merge 13 --merge --match-head-commit` was blocked by this session's
-  safety classifier ("Permission for this action was denied by the Claude Code auto mode classifier").
-  Not retried and no alternate tool/git path was attempted — merging into `main` triggers a Production
-  deployment, which this project's own established practice already treats as an Owner-reserved decision
-  point (see e.g. the prior `3GG-T-HF3B-HF2-PREMERGE-FINALIZATION` phase's identical
-  `READY_FOR_OWNER_MERGE_APPROVAL` stop). **Owner action needed: merge PR
-  [#13](https://github.com/sbchangkyun/mk-stock-lab/pull/13) into `main`** (or grant a Bash permission
-  rule for `gh pr merge` if autonomous merging is actually wanted for this lane). Production deployment
-  and the live acceptance sweep (§9) run immediately once that happens.
+- **Merge was Owner-performed.** `gh pr merge` was blocked by this session's safety classifier in the prior
+  session (merging into `main` triggers a Production deployment, treated as an Owner-reserved action per
+  established project practice — see e.g. `3GG-T-HF3B-HF2-PREMERGE-FINALIZATION`). The Owner merged PR
+  [#13](https://github.com/sbchangkyun/mk-stock-lab/pull/13) directly on GitHub. Implementation head
+  `1cfc6f417212a0970a37547b5b1702f1e9b29e4b`; merge commit `60b64dde731be60ed5a9a278114234a7e3042126`
+  (confirmed via `gh pr view 13 --json state,mergeCommit`: `state=MERGED`, `mergeCommit.oid` matches).
+- **Production deployment**: `dpl_GH4fVxWmigqNgq4ajioqV6Cc2VrQ`, immutable URL
+  `https://mkstocklab-gi8b6x6jm-sbchangkyun-2946s-projects.vercel.app`, canonical
+  `https://mkstocklab.vercel.app`. Verified deployment properties: `source=git`, `target=production`,
+  `state=READY`, `readyState=READY`, `aliasError=null`, Git SHA `60b64dde731be60ed5a9a278114234a7e3042126`.
+  Remote build completed all stages (`npm run build` → Astro/Vite → Vercel function bundling →
+  static-file copy → postbuild → Build Completed → Deployment completed) on Vercel's Linux/ASCII-path
+  builder — unaffected by the Windows-local native-build anomaly recorded in §5.
 
 ## 9. Production verification — live HTTP results
 
-_Filled in after Production deployment, following the Phase 4A §9 pattern (direct live checks against
-`/market`, `/heatmap` redirect, `/api/market/overview.json`, `/api/market/dashboard.json`)._
+All requests run sequentially (no parallel requests, no cache-bypass parameters) against
+`https://mkstocklab.vercel.app`, spaced ~1-2s apart, after deployment `dpl_GH4fVxWmigqNgq4ajioqV6Cc2VrQ`
+reached `READY`.
+
+### 9.1 Already-verified facts (from the independent pre-sweep check, not re-run)
+
+- `GET /market` → HTTP 200; truthful representative-ETF disclosure, 12-tracked-constituent disclosure, and
+  configured-weight/non-market-cap disclosure all present; ARIA tab structure present; Treemap title reads
+  `추적 종목 Treemap`.
+- `GET /heatmap` implements `Astro.redirect('/market', 301)`.
+- `GET /api/market/overview.json?period=1d` → HTTP 200, `ok=true`, `period=1d`, 4 proxy entries, overall
+  `freshness=fresh`.
+- No Vercel runtime-error clusters found pre-sweep for `/market`, `/api/market/overview.json`,
+  `/api/market/dashboard.json`, `/api/home/live-market.json`.
+
+### 9.2 Overview — remaining periods (§3A)
+
+| period | status | ok | period matches | proxies | freshness | metrics finite-or-honest-null |
+|---|---|---|---|---|---|---|
+| 1w | 200 | true | true | 4 | fresh | yes |
+| 1m | 200 | true | true | 4 | cached | yes |
+| 3m | 200 | true | true | 4 | cached | yes |
+
+No secret/token/key/raw-provider-payload observed in any response body.
+
+### 9.3 Dashboard — 16 universe×period combinations (§3B)
+
+| universe | period | status | ok | universeId match | period match | constituents | breadth.requestedCount | breadth.successfulCount | freshness |
+|---|---|---|---|---|---|---|---|---|---|
+| kospi200 | 1d | 200 | true | true | true | 12 | 12 | 12 | fresh |
+| kospi200 | 1w | 200 | true | true | true | 12 | 12 | 12 | cached |
+| kospi200 | 1m | 200 | true | true | true | 12 | 12 | 12 | cached |
+| kospi200 | 3m | 200 | true | true | true | 12 | 12 | 12 | cached |
+| kosdaq150 | 1d | 200 | true | true | true | 12 | 12 | 12 | fresh |
+| kosdaq150 | 1w | 200 | true | true | true | 12 | 12 | 12 | cached |
+| kosdaq150 | 1m | 200 | true | true | true | 12 | 12 | 12 | cached |
+| kosdaq150 | 3m | 200 | true | true | true | 12 | 12 | 12 | cached |
+| sp500 | 1d | 200 | true | true | true | 12 | 12 | 12 | fresh |
+| sp500 | 1w | 200 | true | true | true | 12 | 12 | 12 | cached |
+| sp500 | 1m | 200 | true | true | true | 12 | 12 | 12 | cached |
+| sp500 | 3m | 200 | true | true | true | 12 | 12 | 12 | cached |
+| nasdaq100 | 1d | 200 | true | true | true | 12 | 12 | 12 | cached |
+| nasdaq100 | 1w | 200 | true | true | true | 12 | 12 | 12 | cached |
+| nasdaq100 | 1m | 200 | true | true | true | 12 | 12 | 12 | cached |
+| nasdaq100 | 3m | 200 | true | true | true | 12 | 12 | 12 | cached |
+
+All 16/16 passed. `breadth.successfulCount` met the existing render threshold in every row; all `asOf`
+values valid; no raw provider response, token, API key, or account/order/trading data observed in any
+response body. Vercel's own runtime log for the sweep window (`vercel logs --environment production
+--level error`, plus the full unfiltered log for the same window) additionally confirms every one of these
+16 requests server-side as `responseStatusCode: 200` with `byStatus:{"ok":12}` and zero `byErrorCode`
+entries (per-request `[market-dashboard-diag]` log lines).
+
+### 9.4 Validation and method boundaries (§4)
+
+| check | expected | observed |
+|---|---|---|
+| `GET /api/market/dashboard.json?universe=invalid&period=1d` | 400 `VALIDATION_FAILED`, `Cache-Control: no-store` | 400, `{"ok":false,"code":"VALIDATION_FAILED"}`, `Cache-Control: no-store` — **match** |
+| `GET /api/market/dashboard.json?universe=kospi200&period=invalid` | 400 `VALIDATION_FAILED`, `Cache-Control: no-store` | 400, `{"ok":false,"code":"VALIDATION_FAILED"}`, `Cache-Control: no-store` — **match** |
+| `POST /api/market/dashboard.json?universe=kospi200&period=1d` (no `Origin` header) | — | 403 `Cross-site POST form submissions are forbidden` — Astro's built-in cross-site-POST guard (platform safeguard, not this route), confirmed via server log `responseStatusCode:403` |
+| `POST /api/market/dashboard.json?universe=kospi200&period=1d` (same-origin `Origin` header, simulating a real same-site request) | 405 `VALIDATION_FAILED`, `Cache-Control: no-store` | 405, `{"ok":false,"code":"VALIDATION_FAILED"}`, `Cache-Control: no-store` — **match** |
+
+The route's own method-validation behaves exactly as specified once a same-origin request reaches it;
+Astro's default anti-CSRF guard intercepting an `Origin`-less cross-site POST earlier in the chain is
+expected platform behavior, not a Phase 4B defect.
+
+### 9.5 Route acceptance (§5)
+
+- `GET /heatmap` (auto-redirect disabled) → raw HTTP 301, `Location: /market`.
+- `GET /market` → HTTP 200.
+
+### 9.6 Regression acceptance (§6)
+
+| route | expected | observed |
+|---|---|---|
+| `GET /api/home/live-market.json` | 200, `ok=true`, `ticker.length=9`, `snapshot.length=9` | 200, `ok=true`, ticker 9, snapshot 9 — **match** |
+| `GET /api/news/home.json` | 200, `ok=true`, `articles.length>=1`, valid `feedMode` | 200, `ok=true`, 6 articles, `feedMode=latest` — **match** |
+| `GET /api/admin/operations/overview.json` (no auth) | 401 `AUTH_REQUIRED`, `Cache-Control: no-store` | 401, `{"ok":false,"code":"AUTH_REQUIRED","message":"로그인이 필요합니다."}`, `Cache-Control: no-store` — **match** |
+| `GET /chart-ai` | 200 | 200 |
+| `GET /portfolio` | 200 | 200 |
+| `GET /lab` | 200 | 200 |
+| `GET /admin/operations` | 200 | 200 |
+
+No public-navigation regression observed.
+
+### 9.7 Runtime error review (§7)
+
+`vercel logs --project mkstocklab --environment production --since 20m --json` (single query, not
+repeatedly polled) covering the entire acceptance-sweep window plus deployment activation returned 51 log
+lines for deployment `dpl_GH4fVxWmigqNgq4ajioqV6Cc2VrQ`. Every entry is `level:"info"`; zero entries at
+`level:"error"`/`"warning"`/`"fatal"`; the only non-2xx entries are the deliberately-triggered `400` (×3),
+`403` (×1, the Astro CSRF guard above), `405` (×1), and `401` (×1) validation/auth checks — no unexpected
+5xx or error-level entry anywhere in the window.
+
+**`NO_PHASE_4B_PRODUCTION_RUNTIME_ERROR_CLUSTER`**
+
+### 9.8 Defect handling (§8)
+
+Not applicable — all 16 dashboard combinations, all 4 overview periods, all validation/method checks, the
+redirect, and the full regression set passed. No hotfix branch required.

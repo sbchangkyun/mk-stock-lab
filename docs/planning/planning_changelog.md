@@ -1,5 +1,14 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4B closeout — merged and Production-verified - 2026-08-04
+
+- PR #13 merged by the Owner (merge commit `60b64dde731be60ed5a9a278114234a7e3042126`). Production
+  deployment `dpl_GH4fVxWmigqNgq4ajioqV6Cc2VrQ` reached `READY`. The full bounded acceptance sweep (4
+  overview periods, 16 universe×period dashboard combinations, invalid-input/method validation, the raw
+  `/heatmap` 301, and the full regression set) passed in its entirety with no Production runtime-error
+  cluster found. Final classification `PHASE_4B_MARKET_MERGED_PRODUCTION_VERIFIED`. Full detail in
+  `phase_4b_market_production_completion_result_v0.1.md` §1, §8-9.
+
 ## Phase 4B — Market Production Completion, and roadmap-lane correction - 2026-08-04
 
 - Implemented Phase 4B — a completion pass over the existing live Market dashboard
