@@ -174,18 +174,23 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   resolver and `site_admins` registry — no second admin-role system, no migration, no mutation control. See
   `phase_3gm_operations_and_admin_mvp_plan_v0.1.md` and `phase_3gm_operations_and_admin_mvp_result_v0.1.md`
   for full detail.
+- **Phase 4A — Home and Common Shell Production Readiness.** `PHASE_4A_MERGED_PRODUCTION_VERIFIED` (PR #12
+  merged, merge commit `53def508a07636ed37023eb1703bd67e4f97ea1e`, Preview deployment `5723714642`
+  success, Production deployment `5723798085` success). A presentation/copy/accessibility/responsive-shell
+  readiness pass over the Home page and the shared Header/Nav/Footer/Layout/404 shell: removes staged
+  "Preview" hero wording and a fabricated visitor-count placeholder, corrects the four Home feature-card
+  descriptions to match each target page's actual verified scope, adds `aria-current`/focus-visible
+  accessibility to the shared nav and shell controls, adds a real `404.astro`, and clarifies the Vercel-only
+  deployment policy. No provider, auth, schema, or business-logic change. All 10 required live-Production
+  HTTP checks (Home/Chart AI/Market/Lab/Portfolio/Admin pages, unknown-route 404, news/live-market/admin-
+  overview APIs) passed exactly as specified. Authenticated click-through QA and a Vercel-dashboard
+  runtime-error-cluster review remain deferred to Phase 4F (Owner-only, no authenticated session available
+  to this assistant). See `phase_4a_home_common_shell_production_plan_v0.1.md` and
+  `phase_4a_home_common_shell_production_result_v0.1.md` for full detail.
 
 ### In progress
 
-- **Phase 4A — Home and Common Shell Production Readiness.** `IN_PROGRESS` (implemented on
-  `feature/phase-4a-home-common-shell-production`, PR opened to `main`, Owner QA deferred to Phase 4F — not
-  merged, not deployed). A presentation/copy/accessibility/responsive-shell readiness pass over the Home
-  page and the shared Header/Nav/Footer/Layout/404 shell: removes staged "Preview" hero wording and a
-  fabricated visitor-count placeholder, corrects the four Home feature-card descriptions to match each
-  target page's actual verified scope, adds `aria-current`/focus-visible accessibility to the shared nav
-  and shell controls, adds a real `404.astro`, and clarifies the Vercel-only deployment policy. No provider,
-  auth, schema, or business-logic change. See `phase_4a_home_common_shell_production_plan_v0.1.md` and
-  `phase_4a_home_common_shell_production_result_v0.1.md` for full detail.
+None currently — Phase 4B has not started; see "Next sequential product phases" below.
 
 ### Next sequential product phases
 
@@ -200,7 +205,9 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
 1. **Phase 3 Closeout.** `PLANNED`. Performs the detailed responsive/cross-browser/accessibility/
    all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc) and Phase 3GL,
    plus any other cross-cutting Phase 3 closeout verification.
-2. **Phase 4A — Home and Common Shell.** `IN_PROGRESS`. See "In progress" above.
+2. **Phase 4A — Home and Common Shell.** `PHASE_4A_MERGED_PRODUCTION_VERIFIED`. See "Completed" above.
+   Phase 4B branch `feature/phase-4b-market-production-completion` was cut from the exact Phase 4A merge
+   commit and is ready, pending a dedicated Phase 4B specification (no implementation started).
 3. **Phase 4B — Chart AI production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
    `/chart-ai` against its already-verified functional scope (login gate, KR/US charts, similarity + MK AI
    analysis, daily usage guard) — not a re-implementation of Phase 3GK.
@@ -283,8 +290,14 @@ section only records that they are next in sequence.
 - Decide whether to merge the Phase 3GL PR once opened (not performed by this phase per explicit instruction).
 - If Phase 3GL's Preview shows `GNEWS_API_KEY` unset, decide whether/when to set it in Vercel so the GNews
   feed activates (no Vercel env mutation performed this phase).
-- Decide whether to merge the Phase 4A PR once opened (not performed by this phase per explicit
-  instruction; no Production deploy/env/DB/auth-policy change is part of Phase 4A).
+- ~~Decide whether to merge the Phase 4A PR~~ — done; Phase 4A is merged (PR #12, merge commit
+  `53def50`) and Production-deployment-verified (deployment `5723798085`).
 - Perform the Phase 4F cross-page Owner QA closeout (authenticated click-through of the Phase 4A Home/shell
   changes plus Phases 4B–4E once they land) — deferred by every phase in the 4A–4E lane, same reason as the
   Phase 3GK/3GJ detailed-QA deferrals above (no authenticated browser session available to this assistant).
+- Confirm no new Vercel Production runtime-error clusters via the Vercel dashboard for Phase 4A's
+  deployment `5723798085` — could not be checked this phase (Vercel MCP/dashboard session unauthenticated);
+  10/10 direct live HTTP checks showed no error signatures as a proxy.
+- Provide a dedicated Phase 4B specification before any Phase 4B implementation begins — the branch
+  `feature/phase-4b-market-production-completion` has been cut from the Phase 4A merge commit and is ready,
+  but no Phase 4B work has started per explicit instruction.

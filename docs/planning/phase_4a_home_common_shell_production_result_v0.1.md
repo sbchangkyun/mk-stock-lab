@@ -6,8 +6,8 @@ Branch: `feature/phase-4a-home-common-shell-production`.
 
 ## 1. Status
 
-`IMPLEMENTED_PUSHED_PR_OPENED_OWNER_MERGE_DECISION_AND_PHASE_4F_QA_PENDING`. See §7 for what is explicitly
-deferred and why.
+`PHASE_4A_MERGED_PRODUCTION_VERIFIED`. See §7 for what is explicitly deferred and why (Phase 4F
+authenticated click-through QA; `@astrojs/netlify` dependency cleanup).
 
 ## 2. What changed (see the plan doc §4 for rationale; this section records what was actually done)
 
@@ -152,17 +152,57 @@ found). No `dist/` or `.vercel/output` path staged. The six forbidden paths (`.a
 `.vscode/settings.json`, `docs/handoff/codex_state_inspection/`, `set-gnews-vercel-env.ps1`,
 `skills-lock.json`) were confirmed present-but-untouched and are excluded from this commit.
 
-## 7. What this phase explicitly defers (unchanged from the plan)
+## 7. What this phase explicitly defers
 
-- **Preview verification, PR review-thread state, and the merge decision** — Owner-only, per explicit
-  instruction not to merge.
 - **Authenticated click-through QA** — deferred to Phase 4F, same reason every recent phase has deferred it
-  (no authenticated browser session available to this assistant).
+  (no authenticated browser session available to this assistant). Live unauthenticated HTTP verification of
+  every required page/API/404 contract was completed instead — see §9.
 - **`@astrojs/netlify` package.json dependency removal** — tracked separately as `DEFERRED` in the
   roadmap's parallel hardening lane (see §3's judgment-call note above).
+- **Vercel Production runtime-error-cluster dashboard review** — the Vercel MCP/dashboard session was
+  unauthenticated this phase ("This session is non-interactive"), so the dashboard's own error-rate/log
+  view could not be inspected directly. The closest available proxy — 10 direct live HTTP checks against
+  every required Production route/API (§9) — showed no error responses, no stack traces, and no unexpected
+  status codes. This is recorded as a known limitation, not a false pass: an Owner with dashboard access
+  should do a short confirmatory pass when convenient, but it is not a blocker to this phase's completion.
 
-## 8. Commit / push / PR record
+Preview verification, PR review-thread state, and the merge decision — originally scoped as Owner-only in
+the plan — were instead exercised autonomously under this phase's explicit merge authorization (all tests/
+checks/Preview passed, no secret/DB/auth-policy/destructive/config-mutation was required); see §8.
 
-See the final assistant report for the exact commit SHA, PR number/URL, and `git diff --stat` against the
-merge-base — recorded there rather than duplicated here, since this doc is written and committed as part of
-the same commit those numbers describe.
+## 8. Commit / push / PR / deployment record
+
+- **Implementation commit**: `0eab998dcbfb6bf9b5d1253704875980d95cd0e7` on
+  `feature/phase-4a-home-common-shell-production`.
+- **Pull request**: [#12](https://github.com/sbchangkyun/mk-stock-lab/pull/12) — merged via normal merge
+  commit (no squash, no rebase, branch not deleted), per the phase's autonomous-merge authorization (all
+  tests/regressions/Preview/automated checks passed; no secret, DB migration, auth-policy change,
+  destructive action, or Production config mutation was involved).
+- **Merge commit**: `53def508a07636ed37023eb1703bd67e4f97ea1e` on `main`.
+- **Preview deployment**: `5723714642` — state `success`, SSO/Deployment-Protection-gated (consistent with
+  the project's standard Preview protection).
+- **Production deployment**: `5723798085` — state `success`, live at `https://mkstocklab.vercel.app`.
+- **`git diff --stat` scope**: 7 modified + 8 new tracked files (see §6).
+
+## 9. Production verification — live HTTP results (§27 requirements)
+
+All checks below were run directly against live Production (`https://mkstocklab.vercel.app`) via PowerShell
+`Invoke-WebRequest`, with response bodies captured for both 2xx and non-2xx responses, not assumed from any
+prior claim.
+
+| Check | Result |
+|---|---|
+| `GET /` | **200**. Eyebrow "MK Stock Lab" (no "Preview"), required H1 `시장 데이터, AI 차트 분석, 포트폴리오 관리를 한 곳에서`, matching lead paragraph, no "Today: 000" placeholder (real 9-item ticker belt instead), exactly 5 nav items with `aria-current="page"` on Home, 4 truthful feature cards, footer with exactly 4 links, Coupang ad block unchanged (`id: 977521`, `trackingCode: AF7826180`). |
+| `GET /chart-ai` | **200**. `aria-current="page"` correctly on Chart AI nav item. Usage-notice text `유사 패턴과 MK AI 분석은 합산 하루 3회 제공됩니다` confirmed — matches the Home feature-card's "합산 하루 3회" claim exactly. |
+| `GET /market` | **200**. Title "시장 \| MK Stock Lab", nav intact. |
+| `GET /lab` | **200**. |
+| `GET /portfolio` | **200**. |
+| `GET /admin/operations` | **200** (public shell loads; data itself is server-side gated — confirmed via the API check below). |
+| `GET /a-route-that-does-not-exist-phase4a` (unknown route) | **404**. H1 `페이지를 찾을 수 없습니다`, lead `요청하신 페이지가 없거나 주소가 변경되었습니다.`, links to `/` and `/market`, full 5-item nav (none active) and footer present, no stack trace/internal detail, no fake search box. |
+| `GET /api/news/home.json` | **200**. `ok:true`, `articles.length:6` (≥1), `feedMode:"latest"` (valid enum), no API key or raw provider payload leaked. |
+| `GET /api/home/live-market.json` | **200**. `ok:true`, `ticker.length:9`, `snapshot.length:9`, every ticker item has `status:"ok"`/`price`/`changeAmount`/`changePct`/`asOf`/`currency`/`basisLabel`/`dataBasis`/`freshness:"fresh"`/20-point `sparkline`. |
+| `GET /api/admin/operations/overview.json` (unauthenticated) | **401**. `{"ok":false,"code":"AUTH_REQUIRED","message":"로그인이 필요합니다."}`; response header `Cache-Control: no-store` confirmed. |
+
+All 10/10 required checks passed exactly as specified. No secrets, raw provider payloads, or internal error
+detail were observed in any response body. See §7 for the one honestly-recorded limitation (Vercel dashboard
+runtime-error-cluster review not directly inspectable this phase).
