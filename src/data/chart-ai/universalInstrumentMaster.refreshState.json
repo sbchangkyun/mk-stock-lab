@@ -1,9 +1,155 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 refresh state. Tracks per-symbol consecutive source-absence counts for the two-consecutive-valid-snapshot missing policy and the last-known-good master version. Updated by scripts/automation/refresh_kis_instrument_master.mjs only after all Safety Gates pass.",
   "schemaVersion": 1,
-  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16072",
-  "lastRefreshAt": "2026-08-01",
-  "pendingInactive": {},
+  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16079",
+  "lastRefreshAt": "2026-08-03",
+  "pendingInactive": {
+    "KR|060240": {
+      "symbol": "060240",
+      "country": "KR",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|AAUM": {
+      "symbol": "AAUM",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|BTYB": {
+      "symbol": "BTYB",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|GAID": {
+      "symbol": "GAID",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|GAUD": {
+      "symbol": "GAUD",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|GLDY": {
+      "symbol": "GLDY",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|SATG": {
+      "symbol": "SATG",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|SOLR": {
+      "symbol": "SOLR",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|ATLN": {
+      "symbol": "ATLN",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|BLD": {
+      "symbol": "BLD",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|CEPT": {
+      "symbol": "CEPT",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|EVGOW": {
+      "symbol": "EVGOW",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|FDP": {
+      "symbol": "FDP",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|HNNAZ": {
+      "symbol": "HNNAZ",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|JHG": {
+      "symbol": "JHG",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|LIXT": {
+      "symbol": "LIXT",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|NNAVW": {
+      "symbol": "NNAVW",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|ORGN": {
+      "symbol": "ORGN",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|RAAQ": {
+      "symbol": "RAAQ",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|RAAQU": {
+      "symbol": "RAAQU",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|SEM": {
+      "symbol": "SEM",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|SILA": {
+      "symbol": "SILA",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|SSSS": {
+      "symbol": "SSSS",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|SSSSL": {
+      "symbol": "SSSSL",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|STEL": {
+      "symbol": "STEL",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|TBH": {
+      "symbol": "TBH",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|TPTA": {
+      "symbol": "TPTA",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|VIASP": {
+      "symbol": "VIASP",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    },
+    "US|WTO": {
+      "symbol": "WTO",
+      "country": "US",
+      "sinceAsOf": "2026-08-03"
+    }
+  },
   "missingCounts": {
     "KR|0021C0": 2,
     "KR|0021D0": 2,
@@ -54,6 +200,35 @@
     "US|SATS": 2,
     "US|SDM": 2,
     "US|SNBR": 2,
-    "KR|057050": 2
+    "KR|057050": 2,
+    "KR|060240": 1,
+    "US|AAUM": 1,
+    "US|BTYB": 1,
+    "US|GAID": 1,
+    "US|GAUD": 1,
+    "US|GLDY": 1,
+    "US|SATG": 1,
+    "US|SOLR": 1,
+    "US|ATLN": 1,
+    "US|BLD": 1,
+    "US|CEPT": 1,
+    "US|EVGOW": 1,
+    "US|FDP": 1,
+    "US|HNNAZ": 1,
+    "US|JHG": 1,
+    "US|LIXT": 1,
+    "US|NNAVW": 1,
+    "US|ORGN": 1,
+    "US|RAAQ": 1,
+    "US|RAAQU": 1,
+    "US|SEM": 1,
+    "US|SILA": 1,
+    "US|SSSS": 1,
+    "US|SSSSL": 1,
+    "US|STEL": 1,
+    "US|TBH": 1,
+    "US|TPTA": 1,
+    "US|VIASP": 1,
+    "US|WTO": 1
   }
 }

@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16072",
+  "masterVersion": "hf3b-hf2-kis-16079",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-01",
+  "sourceAsOf": "2026-08-03",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -64850,6 +64850,19 @@
       "active": true
     },
     {
+      "symbol": "DDFG",
+      "displayName": "INNOVATOR EQUITY DUAL DIRECTIONAL 15 BUFFER ETF - AUGUST",
+      "englishName": "INNOVATOR EQUITY DUAL DIRECTIONAL 15 BUFFER ETF - AUGUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ddfg"
+      ],
+      "active": true
+    },
+    {
       "symbol": "DDFJ",
       "displayName": "INNOVATOR EQUITY DUAL DIRECTIONAL 15 BUFFER ETF - JANUARY",
       "englishName": "INNOVATOR EQUITY DUAL DIRECTIONAL 15 BUFFER ETF - JANUARY",
@@ -65054,6 +65067,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "ddtf"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "DDTG",
+      "displayName": "INNOVATOR EQUITY DUAL DIRECTIONAL 10 BUFFER ETF - AUGUST",
+      "englishName": "INNOVATOR EQUITY DUAL DIRECTIONAL 10 BUFFER ETF - AUGUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ddtg"
       ],
       "active": true
     },
@@ -89863,14 +89889,15 @@
     },
     {
       "symbol": "KEMQ",
-      "displayName": "KRANESHARES TRUST EMERGING MKTS CONSUMER TECHNLGY INDX ETF",
-      "englishName": "KRANESHARES TRUST EMERGING MKTS CONSUMER TECHNLGY INDX ETF",
+      "displayName": "KRANESHARES PUBLIC-PRIVATE EMERGING MARKETS INTERNET AND TEC",
+      "englishName": "KRANESHARES PUBLIC-PRIVATE EMERGING MARKETS INTERNET AND TEC",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "kemq"
+        "kemq",
+        "kraneshares trust emerging mkts consumer technlgy indx etf"
       ],
       "active": true
     },
@@ -99898,6 +99925,19 @@
       "active": true
     },
     {
+      "symbol": "OPPG",
+      "displayName": "WISDOMTREE GEOALPHA OPPORTUNITIES FUND",
+      "englishName": "WISDOMTREE GEOALPHA OPPORTUNITIES FUND",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "oppg"
+      ],
+      "active": true
+    },
+    {
       "symbol": "OPPJ",
       "displayName": "WISDOMTREE JAPAN OPPORTUNITIES FUND",
       "englishName": "WISDOMTREE JAPAN OPPORTUNITIES FUND",
@@ -102265,13 +102305,14 @@
     },
     {
       "symbol": "PJIO",
-      "displayName": "PGIM ETF TRUST JENNISON INTERNATIONAL OPPORTUNITIES ETF",
-      "englishName": "PGIM ETF TRUST JENNISON INTERNATIONAL OPPORTUNITIES ETF",
+      "displayName": "PGIM JENNISON FOCUSED INTERNATIONAL EQUITY ETF",
+      "englishName": "PGIM JENNISON FOCUSED INTERNATIONAL EQUITY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "pgim etf trust jennison international opportunities etf",
         "pjio"
       ],
       "active": true
@@ -107749,6 +107790,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "rize"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "RJCA",
+      "displayName": "RJ CLARIVEST CAPITAL APPRECIATION ETF",
+      "englishName": "RJ CLARIVEST CAPITAL APPRECIATION ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "rjca"
       ],
       "active": true
     },
@@ -136823,6 +136877,19 @@
       "active": true
     },
     {
+      "symbol": "BCCQ",
+      "displayName": "BLEICHROEDER ACQUISITION CORP III",
+      "englishName": "BLEICHROEDER ACQUISITION CORP III",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "bccq"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BCCQU",
       "displayName": "BLEICHROEDER ACQUISITION CORP III UNITS CON 1 CL A ORD &",
       "englishName": "BLEICHROEDER ACQUISITION CORP III UNITS CON 1 CL A ORD &",
@@ -145282,6 +145349,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "cnsp"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CNSY",
+      "displayName": "CERENOME INC",
+      "englishName": "CERENOME INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "cnsy"
       ],
       "active": true
     },
@@ -180743,6 +180823,19 @@
       "active": true
     },
     {
+      "symbol": "OCAC",
+      "displayName": "OCEAN CAPITAL ACQUISITION CORPORATI",
+      "englishName": "OCEAN CAPITAL ACQUISITION CORPORATI",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "ocac"
+      ],
+      "active": true
+    },
+    {
       "symbol": "OCC",
       "displayName": "OPTICAL CABLE CORP",
       "englishName": "OPTICAL CABLE CORP",
@@ -192600,14 +192693,15 @@
     },
     {
       "symbol": "SEGG",
-      "displayName": "SPORTS ENTMT GAMING GBL CORP",
-      "englishName": "SPORTS ENTMT GAMING GBL CORP",
+      "displayName": "SPORTS ENTERTAINMENT GAMING GLOBAL CORPORATION",
+      "englishName": "SPORTS ENTERTAINMENT GAMING GLOBAL CORPORATION",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "segg"
+        "segg",
+        "sports entmt gaming gbl corp"
       ],
       "active": true
     },
