@@ -4,10 +4,11 @@ Baseline: `origin/main` = `dc4f3b0c018aa16acee3d6c4bcaced5bc7ca1df4` (Phase 3GL-
 closeout comment: https://github.com/sbchangkyun/mk-stock-lab/pull/9#issuecomment-5156323909).
 Branch: `feature/phase-3gm-operations-admin-mvp`.
 
-Status: **IMPLEMENTED (original + HF1 + HF2), TESTED LOCALLY, PUSHED, PR OPENED — Owner functional
-verification of HF1 is complete (see §0b); Owner visual/UX verification of the HF2 redesign is
-pending.** No merge, no manual deploy, no environment-variable change, no Supabase migration was
-performed.
+Status: **IMPLEMENTED (original + HF1 + HF2 + HF3), TESTED LOCALLY, PUSHED, PR OPENED — Owner
+functional verification of HF1 is complete (see §0b); Owner visual/UX verification of the HF2 redesign
+and Owner final visual verification of HF3 are pending; authenticated non-admin (403) verification
+remains pending.** No merge, no manual deploy, no environment-variable change, no Supabase migration
+was performed.
 
 ## 0. Phase 3GM-HF1 hotfix (same branch, same PR #10, 2026-08-02)
 
@@ -140,6 +141,72 @@ Owner authenticated visual/interaction re-verification of the HF2 redesign (mobi
 touch/keyboard, non-admin 403 state specifically) is still **pending** — this hotfix has not yet had a
 fresh Owner Preview QA pass performed against it.
 
+## 0c. Phase 3GM-HF3 hotfix — honest operations-unavailable state (same branch, same PR #10, 2026-08-03)
+
+HF2 completed the dashboard UI (§0b) but left one state-model defect in
+`src/pages/admin/operations.astro`'s client-side script: **authentication denial and
+operational-data unavailability were conflated.** Concretely, before this hotfix:
+
+- On the very first load, if the authenticated-admin overview fetch failed for any reason other than
+  HTTP 401/403 (a `500`, another non-401/403 HTTP status, invalid JSON, or a network exception) **and**
+  no `lastGoodOverview` existed yet, the code either did nothing visible (leaving the page stuck on
+  "로그인 상태를 확인하는 중입니다.", the checking state) or — in the `catch` branch specifically —
+  incorrectly called `showLockState('signed-out')`, telling a genuinely signed-in, genuinely
+  admin-authorized user that they needed to log in, which was false.
+- There was no dedicated UI state at all for "you are authenticated and authorized, but the
+  operational data itself could not be read right now" — every failure mode was forced into either the
+  lock state, the checking state, or (only when a previous good load already existed) the existing
+  HF2 stale-data notice.
+
+This hotfix is a **narrow, additive fix to the client-side state machine only** — it does not redesign
+the HF2 dashboard, does not touch the API route, the aggregator, any `adminOperations/*` health-read
+module, `kisClient.ts`, `quoteCache.ts`, `normalizedOhlcvCache.mjs`, or `universalOhlcvProvider.ts` (all
+verified byte-for-byte unchanged vs. the pre-HF3 baseline commit `82cfbc36a3f747602c9a215be5e4dfc9428a024b`
+by a new checker git-diff guard, §6).
+
+- **New dedicated state**: `#admin-ops-unavailable-state`, a fourth top-level state reusing HF2's
+  existing `.ops-status-card` / `.ops-status-icon` / `.ops-status-copy` / `.ops-primary-btn` /
+  `.ops-eyebrow` classes verbatim (no new CSS was written). Title "운영 정보를 불러오지 못했습니다",
+  copy "로그인과 관리자 권한은 확인되었지만 현재 운영 데이터를 조회할 수 없습니다.", and a
+  `#admin-ops-retry` "다시 시도" button that calls the same, single `loadOverview()` function used by
+  the refresh button and the initial load — there is no second/duplicate fetch implementation.
+- **Exactly four mutually-exclusive top-level states**: checking / auth-lock (signed-out or non-admin,
+  same element as before, swapped copy) / unavailable (new) / dashboard-body. `showOnly()` now hides
+  all four before revealing one, so no two can ever be visible simultaneously.
+- **State-model fix**: a single new `handleOperationalDataUnavailable()` function is now the one place
+  that decides what happens on any operational-read failure (HTTP failure other than 401/403, invalid
+  JSON, malformed payload shape, or a network/runtime exception): if `lastGoodOverview` already exists,
+  it keeps showing the dashboard with the existing HF2 stale-notice text ("최신 정보를 불러오지 못해
+  이전 결과를 표시합니다.", unchanged, byte-for-byte) — this is the pre-existing, still-correct
+  behavior for a refresh failure after a prior success. If no `lastGoodOverview` exists yet, it shows
+  the new unavailable state — never the checking state, never the signed-out/non-admin lock copy. HTTP
+  401 and 403 continue to route to the unchanged `showLockState('signed-out' | 'non-admin')` calls,
+  verified still reachable.
+- **New payload-shape validation**: `isValidOverviewShape()` checks that a parsed success payload
+  actually has a string `generatedAtIso`, object `usageGuard`/`kisToken`, and an array `quoteCaches`
+  before it is ever accepted as "good" data — a 200 response with syntactically-valid but
+  unexpectedly-shaped JSON is now treated the same as any other operational-read failure, not rendered
+  as a dashboard. This does not change what fields the client expects, only what it is willing to
+  trust.
+- **Retry button behavior**: shares the same busy-state toggle (`setControlsBusy()`) as the existing
+  refresh button — disabled and `aria-busy="true"` while a request is in flight (guarded by the
+  existing `refreshInFlight` flag, so refresh and retry can never overlap), label toggles "다시 시도" ↔
+  "다시 시도 중", and restores after completion regardless of success or failure. No polling, no
+  `setInterval`/`setTimeout` loop, no cache-bypass query parameter, no `alert()`, and no `localStorage`
+  persistence were added.
+
+**Test-file scope decision (same convention as HF2)**: `scripts/admin_operations_testsrc.ts` exercises
+only server-side pure functions, none of which changed in this hotfix, so it was left unmodified
+(44/44 unchanged). All new state-machine/text/behavior assertions for this hotfix were added to the
+static checker (`scripts/check_phase_3gm_operations_admin_mvp_contract.mjs`, new **Group 14**, 41 new
+checks) — every pre-existing Phase 3GM-HF1/HF2 assertion was preserved, none deleted or weakened. See
+§6 for totals.
+
+Owner final visual verification of this hotfix (confirming the new unavailable state renders correctly
+on Preview, and that the retry button recovers the dashboard) is **pending**. Authenticated non-admin
+(403) verification carried over from HF2 also remains **pending** — both are Owner-only Preview QA
+steps outside this hotfix's local-implementation scope.
+
 ## 1. Objective (unchanged from plan)
 
 One minimal, authenticated, administrator-only, **read-only** operational surface for: (1) Chart AI
@@ -192,13 +259,18 @@ parameter influences the read. No raw exception/stack trace is ever returned —
 
 ## 5. UI page — `/admin/operations`
 
-`src/pages/admin/operations.astro`. Mirrors the `portfolio.astro` auth-gate pattern: a
-`checking → lock/denied → body` state machine using `getBrowserSupabaseClient()` /
-`isSupabaseConfigured()` (reused, unchanged). Signed-out or non-admin users only ever see the lock
-card; the data body markup is never populated before both the session check and the route's own
-403 response are handled. Exactly one fetch on initial load (`loadOverview()` called once, guarded
-by `refreshInFlight` against overlap); one manual "새로고침" (refresh) button; last-good data is
-preserved on a failed refresh (only a small "이전 데이터를 표시합니다" notice is shown); no
+`src/pages/admin/operations.astro`. Mirrors the `portfolio.astro` auth-gate pattern, extended in HF3
+(§0c) to a `checking → lock/denied → unavailable → body` four-state machine using
+`getBrowserSupabaseClient()` / `isSupabaseConfigured()` (reused, unchanged). Signed-out or non-admin
+users only ever see the lock card; the data body markup is never populated before both the session
+check and the route's own 401/403 response are handled; an authenticated admin whose overview read
+fails for any other reason (HTTP failure, invalid JSON, malformed payload shape, or a network/runtime
+exception) sees the dedicated unavailable state instead of being misclassified as signed-out or left on
+the checking state (HF3 fix, §0c). Exactly one fetch on initial load (`loadOverview()` called once,
+guarded by `refreshInFlight` against overlap); one manual "새로고침" (refresh) button plus (as of HF3) a
+"다시 시도" (retry) button on the unavailable state, both calling the same single `loadOverview()`
+implementation; last-good data is preserved on a failed refresh (the existing HF2 "최신 정보를
+불러오지 못해 이전 결과를 표시합니다." notice is shown, dashboard stays visible — unchanged by HF3); no
 `localStorage`; no cache-bypass query parameter; no `setInterval`/polling. There is no repo-wide
 `/admin` nav convention (confirmed via `Glob src/pages/admin/**` before this phase — this page is the
 first file under that path), so per the task's own instruction, **no new public nav item was added**.
@@ -218,9 +290,8 @@ first file under that path), so per the task's own instruction, **no new public 
   provider/network function, and (HF1) that the normalized-OHLCV summary's `newestEntryAgeMs`/
   `oldestEntryAgeMs`/`lastSuccessfulUpdateAtIso` stay `null` even when the fake snapshot supplies
   `msUntilExpiry` values, while the current-price cache's age fields stay real/non-null pass-throughs).
-- `npm run check:phase-3gm-operations-admin-mvp` → static contract checker. **144/144 passed** (101/101
-  after HF1 + 43 net new/changed HF2 assertions: 2 pre-existing Group 7 assertions updated in place for
-  intentional new copy, plus a new Group 13 with 42 checks). Covers file existence,
+- `npm run check:phase-3gm-operations-admin-mvp` → static contract checker. **185/185 passed** (144/144
+  after HF2 + 41 new HF3 Group 14 assertions). Covers file existence,
   reused-resolver/reused-registry assertions, no-second-admin-system assertion, no-mutation-control
   assertions (cache purge/token refresh/role edit/trading/order/balance/env-edit — all absent),
   no-secret/PII assertions (no `accessToken` field, no email selection, no hardcoded
@@ -243,7 +314,18 @@ first file under that path), so per the task's own instruction, **no new public 
   `mk:open-auth` event, non-admin CTA absence), the admin-page-only ad-suppression scoping assertions
   (present on this page, absent from `index.astro`, `Layout.astro` itself untouched, real footer
   container never hidden), accessibility assertions (`:focus-visible`, reduced-motion,
-  `aria-hidden` icons), and responsive-breakpoint assertions.
+  `aria-hidden` icons), and responsive-breakpoint assertions; and (HF3, Group 14, §0c) the new
+  unavailable-state element and exact title/copy text, the four-state `showOnly()` mutual-exclusion
+  assertion, the unified `handleOperationalDataUnavailable()` routing assertions (HTTP failure other
+  than 401/403, invalid JSON via the `.json().catch(() => null)` collapse, and the new
+  `isValidOverviewShape()` malformed-payload guard all route to the unavailable state when no
+  `lastGoodOverview` exists, and to the unchanged HF2 stale-notice/dashboard path when it does), the
+  catch-block assertion that a network/runtime exception no longer falls back to `showLockState`, the
+  retry-button assertions (calls the existing `loadOverview()` with no duplicate `fetch()`, shares the
+  busy-state toggle with refresh, label restores after completion, no login CTA inside the unavailable
+  section), the still-reachable HTTP 401/403 lock-state assertions, the no-new-polling/no-`alert()`
+  assertions, and a git-diff zero-change guard against the pre-HF3 baseline commit for every
+  API/server/provider/cache "do not touch" file.
 
 ### Focused regression suites for reused modules (all passed, zero real network)
 
@@ -255,6 +337,9 @@ first file under that path), so per the task's own instruction, **no new public 
   display/aggregation-layer-only change) did not touch any of these reused code paths' behavior.
 - Re-run identically again after the HF2 hotfix (§0b) — all four totals unchanged (44/44, 11/11,
   13/13, 32/32), confirming the presentation-only UI redesign did not touch any of these reused code
+  paths' behavior either.
+- Re-run identically again after the HF3 hotfix (§0c) — all four totals unchanged (44/44, 11/11,
+  13/13, 32/32), confirming the client-only state-machine fix did not touch any of these reused code
   paths' behavior either.
 
 ### Environment/repo-hygiene checks
@@ -276,6 +361,16 @@ HF2 files modified (`docs/planning/phase_3gm_operations_and_admin_mvp_result_v0.
 `src/pages/admin/operations.astro`) and every pre-existing untracked path
 (`.agents/`, `.claude/`, `.vscode/settings.json`, `docs/handoff/codex_state_inspection/`,
 `set-gnews-vercel-env.ps1`, `skills-lock.json`) left untouched.
+
+**HF3 re-run**: `npm ls --depth=0` re-run — still clean (same 8 top-level dependencies, no
+missing/invalid peer issues). `git diff --check` re-run — clean (only the same benign LF/CRLF
+line-ending warnings, this time on `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs` and
+`src/pages/admin/operations.astro`, no actual whitespace-error conflict markers). `git diff --stat`
+confirmed only those same two files changed before the documentation-file edits were added, and a new
+checker assertion (Group 14, item 23) independently re-verifies via `git diff
+82cfbc36a3f747602c9a215be5e4dfc9428a024b..HEAD --numstat` that every "do not touch"
+API/server/provider/cache file listed in the hotfix scope has a byte-for-byte-zero diff against the
+exact commit this hotfix branched from.
 
 ### Build
 
@@ -307,6 +402,21 @@ Node process exited non-zero with the exact same raw exit code as the HF1 run, `
 (`0xC0000409` / `STATUS_STACK_BUFFER_OVERRUN` as an unsigned 32-bit value) — again not a compilation or
 type error, and again only confirmable as non-blocking once the corresponding remote Vercel Preview
 build reaches `Ready`.
+
+**HF3 re-run**: `npm run build` was re-run again after the HF3 hotfix (§0c), and additionally
+cross-checked directly against `npx astro build` with `dist/` and `.vercel/output` removed
+beforehand — every reported stage completed identically (`[types] Generated`,
+`[build] output: "server"`, `Collecting build info...` completed, three separate Vite builds each
+`✓ built`, `Rearranging server assets... ✓ Completed`), `dist/` and `.vercel/output` were confirmed
+present via `Test-Path` immediately afterward, then the process exited non-zero with the exact same raw
+code, `-1073740791` (`0xC0000409` / `STATUS_STACK_BUFFER_OVERRUN`). To rule out this HF3 hotfix as the
+cause, the working tree was `git stash`ed back to the pre-HF3 commit
+(`82cfbc36a3f747602c9a215be5e4dfc9428a024b`) and `npx astro build` was re-run against that unmodified
+baseline: it crashed identically, at the identical stage (immediately after
+"Rearranging server assets... ✓ Completed"), with the identical exit code. This confirms the anomaly is
+fully pre-existing and environment-level, not introduced or affected by this hotfix's client-only
+change. The stash was then restored (`git stash pop`) and the checker was re-run (185/185 unchanged)
+to confirm no state was lost in the process. Node `v24.14.1`, npm `11.11.0`.
 
 ## 7. Field contract (as actually shipped — supersedes the plan doc's placeholder field names)
 
@@ -351,6 +461,16 @@ timestamp-derived values whenever the cache has entries.
   results. Owner/Preview-level confirmation (chart/route reachability behind Vercel SSO, and
   confirmation that the documented Windows-local build-exit anomaly does not block the remote
   Preview build) has not been performed as part of this phase and remains outstanding.
+- **HF3 (§0c) is client-only**: no server route, aggregator, health-read module, provider, token
+  manager, cache, Supabase schema/data, environment variable, or Vercel configuration was touched by
+  the HF3 hotfix — verified both by the "do not touch" file list this hotfix was scoped against and by
+  an independent checker git-diff guard against the pre-HF3 baseline commit. Authentication denial
+  (signed-out / non-admin) and operational-data unavailability are now distinct client-side states, but
+  the underlying HTTP semantics (401/403/200/500), the bearer-token attachment, and the `site_admins`
+  authorization check are all byte-for-byte unchanged. Last-good dashboard preservation on a refresh
+  failure (the HF2 stale-notice behavior) is unchanged. Owner final visual verification of the new
+  unavailable state, and authenticated non-admin (403) verification carried over from HF2, both remain
+  pending.
 
 ## 9. Deferred / explicit non-goals
 

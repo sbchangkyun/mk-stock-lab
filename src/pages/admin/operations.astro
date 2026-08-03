@@ -32,6 +32,26 @@ import Layout from '../../layouts/Layout.astro';
       <button class="ops-primary-btn" id="admin-ops-login-action" type="button">로그인</button>
     </section>
 
+    <!-- Phase 3GM-HF3: authentication denial (signed-out / non-admin, above) is a DISTINCT UI state
+         from operational-data unavailability (below). An authenticated admin whose overview request
+         fails (HTTP failure, invalid JSON, malformed payload shape, or a network/runtime exception)
+         must land here, never in the lock-state above and never stuck on the "checking" state. -->
+    <section class="ops-status-card hidden" id="admin-ops-unavailable-state" aria-live="polite">
+      <div class="ops-status-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <line x1="12" y1="7.5" x2="12" y2="13"></line>
+          <circle cx="12" cy="16.3" r="0.9" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </div>
+      <div class="ops-status-copy">
+        <p class="ops-eyebrow" id="admin-ops-unavailable-eyebrow">일시적 오류</p>
+        <h2 id="admin-ops-unavailable-title">운영 정보를 불러오지 못했습니다</h2>
+        <p id="admin-ops-unavailable-copy">로그인과 관리자 권한은 확인되었지만 현재 운영 데이터를 조회할 수 없습니다.</p>
+      </div>
+      <button class="ops-primary-btn" id="admin-ops-retry" type="button">다시 시도</button>
+    </section>
+
     <section class="ops-body hidden" id="admin-ops-body">
       <p class="ops-sr-only" id="admin-ops-live-region" role="status" aria-live="polite"></p>
 
@@ -639,6 +659,8 @@ import Layout from '../../layouts/Layout.astro';
     const lockTitleEl = document.getElementById('admin-ops-lock-title');
     const lockCopyEl = document.getElementById('admin-ops-lock-copy');
     const loginActionEl = document.getElementById('admin-ops-login-action');
+    const unavailableEl = document.getElementById('admin-ops-unavailable-state');
+    const retryBtn = document.getElementById('admin-ops-retry') as HTMLButtonElement | null;
     const bodyEl = document.getElementById('admin-ops-body');
     const refreshedEl = document.getElementById('admin-ops-refreshed');
     const refreshBtn = document.getElementById('admin-ops-refresh') as HTMLButtonElement | null;
@@ -656,9 +678,17 @@ import Layout from '../../layouts/Layout.astro';
     let lastGoodOverview: AdminOperationsOverview | null = null;
     let refreshInFlight = false;
 
+    // Phase 3GM-HF3: exactly four mutually-exclusive top-level UI states -- checking / auth-lock
+    // (signed-out or non-admin, shared element with swapped copy) / unavailable (operational-data
+    // read failed for an authenticated admin) / dashboard-body. Every state transition in this file
+    // goes through this single function so no two states can ever be visible at once.
     const showOnly = (el: Element | null) => {
-      [checkingEl, lockEl, bodyEl].forEach((node) => node?.classList.add('hidden'));
+      [checkingEl, lockEl, unavailableEl, bodyEl].forEach((node) => node?.classList.add('hidden'));
       el?.classList.remove('hidden');
+    };
+
+    const showUnavailableState = () => {
+      showOnly(unavailableEl);
     };
 
     // ---------------------------------------------------------------------------------------------
@@ -972,14 +1002,57 @@ import Layout from '../../layouts/Layout.astro';
       showOnly(lockEl);
     };
 
+    // Phase 3GM-HF3: defensive shape validation for the parsed success payload -- a 200 response with
+    // valid JSON is not automatically trustworthy; the overview object itself must carry the fields
+    // the renderer depends on before it is accepted as "good". This does not change or add to what
+    // fields the client expects, it only refuses to treat an unexpected shape as real data.
+    const isValidOverviewShape = (value: unknown): value is AdminOperationsOverview => {
+      if (!value || typeof value !== 'object') return false;
+      const v = value as Record<string, unknown>;
+      return (
+        typeof v.generatedAtIso === 'string' &&
+        Boolean(v.usageGuard) && typeof v.usageGuard === 'object' &&
+        Boolean(v.kisToken) && typeof v.kisToken === 'object' &&
+        Array.isArray(v.quoteCaches)
+      );
+    };
+
+    // Phase 3GM-HF3: single shared busy-state toggle for BOTH the refresh button and the retry
+    // button -- they can never be in-flight at the same time (refreshInFlight guards both callers),
+    // so one toggle keeping their disabled/aria-busy/label state in sync is enough; no duplicate logic.
+    const setControlsBusy = (busy: boolean) => {
+      if (refreshBtn) {
+        refreshBtn.disabled = busy;
+        if (busy) refreshBtn.setAttribute('aria-busy', 'true');
+        else refreshBtn.removeAttribute('aria-busy');
+      }
+      if (refreshLabelEl) refreshLabelEl.textContent = busy ? '갱신 중' : '새로고침';
+      if (retryBtn) {
+        retryBtn.disabled = busy;
+        if (busy) retryBtn.setAttribute('aria-busy', 'true');
+        else retryBtn.removeAttribute('aria-busy');
+        retryBtn.textContent = busy ? '다시 시도 중' : '다시 시도';
+      }
+    };
+
+    // Phase 3GM-HF3: the ONE place that decides what to do when an authenticated admin's operational
+    // read fails (HTTP failure, invalid JSON, malformed payload shape, or a network/runtime
+    // exception -- all funnel here). If a previous successful load exists, keep showing it with the
+    // existing HF2 stale-notice (state E); otherwise there is nothing honest to show but the new
+    // dedicated unavailable state (state D) -- never the checking state, never the signed-out state.
+    const handleOperationalDataUnavailable = () => {
+      if (lastGoodOverview) {
+        setStaleNotice('최신 정보를 불러오지 못해 이전 결과를 표시합니다.');
+        showOnly(bodyEl);
+      } else {
+        showUnavailableState();
+      }
+    };
+
     const loadOverview = async () => {
       if (refreshInFlight) return; // never overlap requests
       refreshInFlight = true;
-      if (refreshBtn) {
-        refreshBtn.disabled = true;
-        refreshBtn.setAttribute('aria-busy', 'true');
-      }
-      if (refreshLabelEl) refreshLabelEl.textContent = '갱신 중';
+      setControlsBusy(true);
 
       try {
         const client = getBrowserSupabaseClient();
@@ -994,7 +1067,6 @@ import Layout from '../../layouts/Layout.astro';
           method: 'GET',
           headers: { Authorization: `Bearer ${accessToken}` },
         });
-        const payload = await response.json().catch(() => null);
 
         if (response.status === 401) {
           showLockState('signed-out');
@@ -1004,33 +1076,39 @@ import Layout from '../../layouts/Layout.astro';
           showLockState('non-admin');
           return;
         }
-        if (!payload || !payload.ok || !response.ok) {
-          // Preserve last-good data on a failed refresh; show a delayed/unavailable notice only.
-          setStaleNotice('최신 정보를 불러오지 못해 이전 결과를 표시합니다.');
-          if (lastGoodOverview) showOnly(bodyEl);
+
+        const payload = await response.json().catch(() => null);
+        const overviewCandidate = payload && typeof payload === 'object' ? (payload as Record<string, unknown>).overview : null;
+        const responseIsUsable =
+          Boolean(payload) && (payload as { ok?: unknown }).ok === true && response.ok && isValidOverviewShape(overviewCandidate);
+
+        if (!responseIsUsable) {
+          // Covers: HTTP 500 / any other non-401/403 failure, invalid JSON, and a malformed/unexpected
+          // success-payload shape -- authentication and admin authorization already passed above, so
+          // this is purely an operational-data-unavailable outcome, never a lock state.
+          handleOperationalDataUnavailable();
           return;
         }
 
-        lastGoodOverview = payload.overview as AdminOperationsOverview;
+        lastGoodOverview = overviewCandidate as AdminOperationsOverview;
         setStaleNotice(null);
         showOnly(bodyEl);
         renderOverview(lastGoodOverview);
         announceLive('운영 현황을 갱신했습니다.');
       } catch {
-        setStaleNotice('최신 정보를 불러오지 못해 이전 결과를 표시합니다.');
-        if (lastGoodOverview) showOnly(bodyEl);
-        else showLockState('signed-out');
+        // Network exception (fetch threw) or any other runtime exception during processing.
+        handleOperationalDataUnavailable();
       } finally {
         refreshInFlight = false;
-        if (refreshBtn) {
-          refreshBtn.disabled = false;
-          refreshBtn.removeAttribute('aria-busy');
-        }
-        if (refreshLabelEl) refreshLabelEl.textContent = '새로고침';
+        setControlsBusy(false);
       }
     };
 
     refreshBtn?.addEventListener('click', () => {
+      void loadOverview();
+    });
+
+    retryBtn?.addEventListener('click', () => {
       void loadOverview();
     });
 

@@ -1,5 +1,65 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GM-HF3 - 2026-08-03
+
+### Add honest operations-unavailable state (hotfix on the same PR #10 branch)
+
+- HF2 completed the operations dashboard UI (visual/UX only). This follow-up hotfix fixes a
+  **state-model defect** left in `src/pages/admin/operations.astro`'s client-side script:
+  authentication denial (signed-out / non-admin) and operational-data unavailability were conflated.
+  An authenticated admin whose overview fetch failed (HTTP 500, any other non-401/403 HTTP failure,
+  invalid JSON, malformed payload shape, or a network/runtime exception) with no prior successful load
+  yet could be left stuck on "로그인 상태를 확인하는 중입니다." (the checking state) or, in the
+  `catch` branch specifically, incorrectly told "로그인이 필요합니다" (signed-out) even though they
+  were genuinely signed in and admin-authorized.
+- Added a new dedicated fourth top-level state, `#admin-ops-unavailable-state` — title "운영 정보를
+  불러오지 못했습니다", copy "로그인과 관리자 권한은 확인되었지만 현재 운영 데이터를 조회할 수
+  없습니다.", and a `#admin-ops-retry` "다시 시도" button. The state reuses HF2's existing
+  `.ops-status-card`/`.ops-status-icon`/`.ops-status-copy`/`.ops-primary-btn`/`.ops-eyebrow` classes
+  verbatim — no new CSS was added. The retry button calls the same, single `loadOverview()` function
+  used everywhere else on the page; there is no second/duplicate fetch implementation.
+- `showOnly()` now treats checking / auth-lock / unavailable / dashboard-body as exactly four
+  mutually-exclusive states, always hiding all four before revealing one.
+- Added a single `handleOperationalDataUnavailable()` function that is now the one place deciding the
+  outcome of any operational-read failure: if `lastGoodOverview` already exists, it keeps the dashboard
+  visible with the existing HF2 stale-notice text ("최신 정보를 불러오지 못해 이전 결과를
+  표시합니다.", unchanged) — the pre-existing correct behavior for a refresh failure after a prior
+  success; otherwise it shows the new unavailable state. HTTP 401/403 continue to route to the
+  unchanged `showLockState('signed-out' | 'non-admin')` calls.
+- Added `isValidOverviewShape()`, a defensive check that a parsed 200-response payload actually has a
+  string `generatedAtIso`, object `usageGuard`/`kisToken`, and array `quoteCaches` before it is trusted
+  as real data — a syntactically-valid but unexpectedly-shaped payload is now treated as an operational
+  failure rather than rendered. This does not add or change any field the client expects.
+- Retry button shares the refresh button's busy-state toggle (`setControlsBusy()`): disabled and
+  `aria-busy="true"` while a request is in flight (still guarded by the existing single
+  `refreshInFlight` flag, so refresh and retry can never overlap), label toggles "다시 시도" ↔ "다시
+  시도 중", restores after completion either way. No polling, no `setInterval`/`setTimeout` loop, no
+  cache-bypass query parameter, no `alert()`, no `localStorage` persistence were added.
+- `scripts/admin_operations_testsrc.ts` (server-logic-only smoke suite) was left unmodified — no
+  server logic changed in this hotfix. All new state-machine/text/behavior assertions were added to
+  `scripts/check_phase_3gm_operations_admin_mvp_contract.mjs` instead (new Group 14, 41 checks); every
+  pre-existing Phase 3GM assertion (HF1/HF2) was preserved unchanged.
+- Test totals after this hotfix: `smoke:phase-3gm-operations-admin-mvp` unchanged at 44/44 (no server
+  logic changed), `check:phase-3gm-operations-admin-mvp` 185/185 (was 144/144, +41 new). All four
+  focused regression suites re-run unchanged: `smoke:phase-3gg-t-hf2` (44/44),
+  `smoke:phase-3gg-t-hf2-hf1` (11/11), `smoke:phase-3gg-u-chart-ai-usage` (13/13),
+  `smoke:phase-3gg-op-fast` (32/32). `npm ls --depth=0` clean; `git diff --check` clean (benign
+  LF/CRLF-only warnings). `npm run build` completed every reported stage (types, server entrypoints,
+  three Vite builds, asset rearrangement, `dist/` and `.vercel/output` confirmed present) before the
+  process exited non-zero with the same previously-documented Windows-local build-exit anomaly
+  (`-1073740791` / `0xC0000409` `STATUS_STACK_BUFFER_OVERRUN`); this was independently confirmed
+  pre-existing and unrelated to this hotfix by stashing back to the pre-HF3 baseline commit
+  (`82cfbc36a3f747602c9a215be5e4dfc9428a024b`) and observing the identical crash at the identical stage
+  on the unmodified code.
+- No API/route/aggregator/health-read-module/provider/token/cache/schema/env/migration change of any
+  kind occurred as part of this hotfix — verified both by scope (only
+  `src/pages/admin/operations.astro`, the checker, and docs were touched) and by a new checker
+  git-diff guard against the pre-HF3 baseline commit asserting zero diff on every "do not touch" file.
+  Last-good dashboard preservation on a refresh failure (HF2 behavior) is unchanged. Same branch
+  (`feature/phase-3gm-operations-admin-mvp`), same PR (#10) — no new branch, no merge, no manual
+  deploy. Owner final visual verification of the new unavailable state, and authenticated non-admin
+  (403) verification carried over from HF2, both remain pending.
+
 ## Phase 3GM-HF2 - 2026-08-03
 
 ### Complete operations dashboard UI (hotfix on the same PR #10 branch)

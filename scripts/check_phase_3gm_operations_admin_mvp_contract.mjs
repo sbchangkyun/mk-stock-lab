@@ -401,6 +401,203 @@ check('cache grid collapses to a single column on mobile', /\.ops-cache-grid\s*\
 // No new secret/PII surface introduced by this HF2 (route/aggregator/types unedited; UI has no raw ids).
 check('UI page never renders a raw user id/email/service-role key literal', !/service_role/i.test(ui) && !/user_id/i.test(ui) && !/@gmail\.com|@naver\.com/i.test(ui));
 
+// ---------------------------------------------------------------------------
+// Group 14 (Phase 3GM-HF3): authentication denial vs. operational-data unavailability are distinct
+// UI states. An authenticated admin whose overview read fails (HTTP failure, invalid JSON, malformed
+// payload shape, or a network/runtime exception) must land on the new dedicated unavailable state --
+// never stuck on "checking", never shown the signed-out/non-admin lock copy, never a fabricated
+// dashboard. Static source-inspection only, matching the rest of this checker's method (no jsdom/
+// headless browser; the UI has no server-side render branching to unit-test against real fetches).
+// ---------------------------------------------------------------------------
+log('--- Group 14: Phase 3GM-HF3 unavailable state vs. auth-lock state ---');
+
+// 1. Dedicated unavailable-state element exists (by ID).
+check('dedicated unavailable-state element exists (id="admin-ops-unavailable-state")', /id="admin-ops-unavailable-state"/.test(ui));
+check('dedicated retry control exists (id="admin-ops-retry")', /id="admin-ops-retry"/.test(ui));
+
+// 2. Mutually exclusive with checking/lock/dashboard -- showOnly hides all four before revealing one.
+const showOnlyStart = ui.indexOf('const showOnly = (el');
+const showOnlyBody = showOnlyStart === -1 ? '' : ui.slice(showOnlyStart, ui.indexOf('};', showOnlyStart));
+check(
+  'showOnly() hides all four top-level states (checkingEl, lockEl, unavailableEl, bodyEl) before revealing one',
+  /\[checkingEl,\s*lockEl,\s*unavailableEl,\s*bodyEl\]/.test(showOnlyBody) && /el\?\.classList\.remove\('hidden'\)/.test(showOnlyBody),
+);
+check('a dedicated showUnavailableState() helper routes through the single showOnly() gate (no ad-hoc classList toggling)', /const showUnavailableState = \(\) => \{\s*showOnly\(unavailableEl\);\s*\}/.test(ui));
+
+// Extract the unified failure handler and the loadOverview body/catch block once, reused below.
+const handleUnavailStart = ui.indexOf('const handleOperationalDataUnavailable = () => {');
+const handleUnavailBody = handleUnavailStart === -1 ? '' : ui.slice(handleUnavailStart, ui.indexOf('\n    };', handleUnavailStart));
+const loadOverviewStart = ui.indexOf('const loadOverview = async () => {');
+const loadOverviewBody = loadOverviewStart === -1 ? '' : ui.slice(loadOverviewStart, ui.indexOf('\n    };', loadOverviewStart));
+const catchStart = loadOverviewBody.indexOf('} catch {');
+const finallyStart = loadOverviewBody.indexOf('} finally {');
+const catchBody = catchStart === -1 || finallyStart === -1 ? '' : loadOverviewBody.slice(catchStart, finallyStart);
+
+// 3/4. Initial HTTP 500 and any other non-401/403 HTTP failure -> unavailable (both funnel through the
+// single `responseIsUsable` gate below, which is false for any non-ok HTTP status).
+check(
+  'success path requires response.ok before accepting the payload (any non-2xx status -- including 500 -- is rejected)',
+  /responseIsUsable\s*=\s*[\s\S]*?response\.ok[\s\S]*?isValidOverviewShape\(overviewCandidate\)/.test(loadOverviewBody),
+);
+check(
+  'a rejected response (!responseIsUsable) routes to the unified operational-data-unavailable handler, not a lock state',
+  /if \(!responseIsUsable\) \{[\s\S]*?handleOperationalDataUnavailable\(\);/.test(loadOverviewBody),
+);
+check(
+  'the unified handler shows the new unavailable state when there is no last-good overview yet (state D)',
+  /else \{\s*showUnavailableState\(\);\s*\}/.test(handleUnavailBody),
+);
+check(
+  'the unified handler never calls showLockState (auth denial and data-unavailability stay fully distinct)',
+  handleUnavailBody.length > 0 && !/showLockState/.test(handleUnavailBody),
+);
+
+// 5. Network exception (fetch throws) / any runtime exception during processing -> unavailable, via
+// the SAME unified handler as the HTTP-failure path (no second, divergent error-handling branch).
+check(
+  'loadOverview() catch block (network/runtime exception) routes to the unified operational-data-unavailable handler',
+  /handleOperationalDataUnavailable\(\);/.test(catchBody),
+);
+check('catch block does NOT fall back to showLockState (HF2 regression this HF3 fixes)', catchBody.length > 0 && !/showLockState/.test(catchBody));
+
+// 6. Invalid JSON response -> unavailable: response.json() failure collapses to a falsy payload, which
+// isValidOverviewShape below also treats as unusable.
+check(
+  'invalid JSON collapses to a null payload via .json().catch(() => null), then requires Boolean(payload) before proceeding',
+  /\.json\(\)\.catch\(\(\) => null\)/.test(loadOverviewBody) && /Boolean\(payload\)/.test(loadOverviewBody),
+);
+
+// 7. Malformed/unexpected-shape success payload -> unavailable via an explicit shape validator (does
+// not just trust `payload.ok === true`).
+const shapeValidatorStart = ui.indexOf('const isValidOverviewShape = (value: unknown)');
+const shapeValidatorBody = shapeValidatorStart === -1 ? '' : ui.slice(shapeValidatorStart, ui.indexOf('\n    };', shapeValidatorStart));
+check('isValidOverviewShape() validator exists and checks generatedAtIso/usageGuard/kisToken/quoteCaches', (() => {
+  if (!shapeValidatorBody) return false;
+  return (
+    /typeof v\.generatedAtIso === 'string'/.test(shapeValidatorBody) &&
+    /v\.usageGuard/.test(shapeValidatorBody) &&
+    /v\.kisToken/.test(shapeValidatorBody) &&
+    /Array\.isArray\(v\.quoteCaches\)/.test(shapeValidatorBody)
+  );
+})());
+check('the success gate actually calls isValidOverviewShape(overviewCandidate) (validator is wired in, not dead code)', /isValidOverviewShape\(overviewCandidate\)/.test(loadOverviewBody));
+
+// 8/9. No-last-good failure does not leave "checking" visible and does not trigger the signed-out
+// state -- both guaranteed structurally: the else-branch calls showUnavailableState() (which always
+// routes through showOnly(), which unconditionally hides checkingEl/lockEl first), and the unified
+// handler never references showLockState (already asserted above).
+check(
+  'no-last-good failure path is reached only through handleOperationalDataUnavailable -> showUnavailableState -> showOnly (never leaves checkingEl visible)',
+  /const showUnavailableState = \(\) => \{\s*showOnly\(unavailableEl\);\s*\}/.test(ui) && /\[checkingEl,\s*lockEl,\s*unavailableEl,\s*bodyEl\]/.test(showOnlyBody),
+);
+
+// 10. Unavailable state shows no login CTA -- the section markup between its own id and its closing
+// </section> must not reference the login action id.
+const unavailSectionStart = ui.indexOf('id="admin-ops-unavailable-state"');
+const unavailSectionEnd = ui.indexOf('</section>', unavailSectionStart);
+const unavailSectionMarkup = unavailSectionStart === -1 || unavailSectionEnd === -1 ? '' : ui.slice(unavailSectionStart, unavailSectionEnd);
+check('unavailable-state section markup exists and is non-empty', unavailSectionMarkup.length > 0);
+check('unavailable-state section contains no login CTA (no admin-ops-login-action reference)', !/admin-ops-login-action/.test(unavailSectionMarkup));
+
+// 11/12. Exact required title and copy text.
+check('unavailable title text is exactly "운영 정보를 불러오지 못했습니다"', /id="admin-ops-unavailable-title">운영 정보를 불러오지 못했습니다<\/h2>/.test(ui));
+check(
+  'unavailable copy text is exactly "로그인과 관리자 권한은 확인되었지만 현재 운영 데이터를 조회할 수 없습니다."',
+  /id="admin-ops-unavailable-copy">로그인과 관리자 권한은 확인되었지만 현재 운영 데이터를 조회할 수 없습니다\.<\/p>/.test(ui),
+);
+
+// 13. Retry button invokes the EXISTING loadOverview() -- not a duplicate fetch implementation.
+const retryClickStart = ui.indexOf("retryBtn?.addEventListener('click'");
+const retryClickEnd = retryClickStart === -1 ? -1 : ui.indexOf('});', retryClickStart) + 3;
+const retryClickBody = retryClickStart === -1 || retryClickEnd === -1 ? '' : ui.slice(retryClickStart, retryClickEnd);
+check('retry button click handler exists', retryClickBody.length > 0);
+check('retry button calls the existing loadOverview() function', /void loadOverview\(\);/.test(retryClickBody));
+check('retry button handler contains no duplicate fetch(...) call of its own', !/fetch\(/.test(retryClickBody));
+
+// 14/15. Retry disabled/aria-busy while running, and its label toggles 다시 시도 <-> 다시 시도 중, via
+// the same shared busy-state toggle the refresh button uses (no separate/divergent retry-only logic).
+const setBusyStart = ui.indexOf('const setControlsBusy = (busy: boolean)');
+const setBusyBody = setBusyStart === -1 ? '' : ui.slice(setBusyStart, ui.indexOf('\n    };', setBusyStart));
+check('setControlsBusy() disables the retry button while busy', /retryBtn\.disabled = busy/.test(setBusyBody));
+check('setControlsBusy() sets/removes aria-busy on the retry button', /retryBtn\.setAttribute\('aria-busy', 'true'\)/.test(setBusyBody) && /retryBtn\.removeAttribute\('aria-busy'\)/.test(setBusyBody));
+check('retry label toggles between "다시 시도" and "다시 시도 중"', /retryBtn\.textContent = busy \? '다시 시도 중' : '다시 시도'/.test(setBusyBody));
+check('loadOverview() calls setControlsBusy(true) at start and setControlsBusy(false) in its finally block (shared with refresh, single busy toggle)', /setControlsBusy\(true\)/.test(loadOverviewBody) && /setControlsBusy\(false\)/.test(loadOverviewBody));
+
+// 16. Last-good dashboard preserved after a refresh failure -- state E does not regress to unavailable.
+check(
+  'when lastGoodOverview exists, a failed refresh keeps showing the dashboard body (not the new unavailable state)',
+  /if \(lastGoodOverview\) \{\s*setStaleNotice\('최신 정보를 불러오지 못해 이전 결과를 표시합니다\.'\);\s*showOnly\(bodyEl\);\s*\}/.test(handleUnavailBody),
+);
+
+// 17. Existing HF2 stale-result notice text remains exactly as before (no accidental rewording).
+check('stale-result notice text remains exactly "최신 정보를 불러오지 못해 이전 결과를 표시합니다."', /최신 정보를 불러오지 못해 이전 결과를 표시합니다\./.test(ui));
+
+// 18/19. HTTP 401 still -> signed-out; HTTP 403 still -> non-admin (unchanged HF2 behavior, verified
+// still reachable through the fixed state logic).
+check("HTTP 401 still routes to showLockState('signed-out')", /response\.status === 401\) \{\s*showLockState\('signed-out'\);/.test(loadOverviewBody));
+check("HTTP 403 still routes to showLockState('non-admin')", /response\.status === 403\) \{\s*showLockState\('non-admin'\);/.test(loadOverviewBody));
+
+// 20/21. Signed-out login CTA still dispatches mk:open-auth; non-admin state still hides the CTA.
+check('signed-out login CTA still dispatches mk:open-auth', /window\.dispatchEvent\(new CustomEvent\('mk:open-auth'\)\)/.test(ui));
+check('non-admin state still hides the login action', /loginActionEl\?\.classList\.add\('hidden'\)/.test(ui));
+
+// 22. No polling / setInterval / automatic-retry loop introduced by this hotfix.
+check('UI page introduces no setInterval() anywhere', !/setInterval\(/.test(ui));
+check('UI page introduces no setTimeout()-driven automatic retry loop', !/setTimeout\(/.test(ui));
+check('UI page has no cache-bypass query param added for retry (no _=Date.now()/cachebust/no-cache)', !/[?&](_|cachebust|nocache)=/.test(ui));
+check('UI page uses no alert() anywhere', !/\balert\(/.test(ui));
+check('UI page still has no localStorage usage (unchanged from HF2)', !/localStorage/.test(ui));
+
+// 23. None of the "do not touch" server/API contract files were modified by this hotfix -- verified by
+// a zero-diff git check against the pre-HF3 baseline commit (the exact HEAD this hotfix branched from).
+const PRE_HF3_BASELINE_SHA = '82cfbc36a3f747602c9a215be5e4dfc9428a024b';
+const HF3_UNTOUCHED_FILES = [
+  'src/lib/server/adminOperations/adminAuthorization.ts',
+  'src/lib/server/adminOperations/usageGuardHealth.ts',
+  'src/lib/server/adminOperations/kisTokenHealth.ts',
+  'src/lib/server/adminOperations/quoteCacheHealth.ts',
+  'src/lib/server/adminOperations/operationsAggregator.ts',
+  'src/lib/server/adminOperations/types.ts',
+  'src/pages/api/admin/operations/overview.json.ts',
+  'src/lib/server/providers/kisClient.ts',
+  'src/lib/server/marketData/quoteCache.ts',
+  'src/lib/server/chart-ai/normalizedOhlcvCache.mjs',
+  'src/lib/server/chart-ai/universalOhlcvProvider.ts',
+];
+let hf3DiffAvailable = true;
+let hf3NumstatOutput = '';
+try {
+  hf3NumstatOutput = execFileSync(
+    'git',
+    ['diff', `${PRE_HF3_BASELINE_SHA}..HEAD`, '--numstat', '--', ...HF3_UNTOUCHED_FILES],
+    { cwd: root, encoding: 'utf8' },
+  );
+} catch (error) {
+  hf3DiffAvailable = false;
+  log(`  [warn] could not run git diff against ${PRE_HF3_BASELINE_SHA}: ${error && error.message ? error.message : error}`);
+}
+if (hf3DiffAvailable) {
+  check(
+    'zero diff vs. pre-HF3 baseline for every "do not touch" server/API contract file (this hotfix is client-only)',
+    hf3NumstatOutput.trim().length === 0,
+  );
+} else {
+  check('"do not touch" file guard: git history reachable to verify zero-diff', false);
+}
+
+// 24. No U+FFFD replacement character anywhere in Phase 3GM application/doc files (re-asserted here for
+// this hotfix; the underlying per-file loop already runs in Group 10 above against the same file map).
+check(
+  're-assert: no Phase 3GM file (including this HF3 hotfix\'s edits) contains a U+FFFD replacement character',
+  !Object.values(PHASE_3GM_TEXT_FILES).some((path) => readOr(path).includes(REPLACEMENT_CHAR)),
+);
+
+// 25. No token/API-key/email/user-ID/Authorization-header value/raw provider payload is ever rendered
+// by the client -- the new code never surfaces the server's payload.message/payload.code text.
+check('client never renders the raw server error message/code from the payload (payload.message / payload.code)', !/payload\.message|payload\.code/.test(ui));
+check('client never renders a literal Authorization bearer value (only the header-name usage to attach the session token)', !/Authorization:\s*['"]Bearer [A-Za-z0-9]/.test(ui));
+check('client-side UI still never renders a raw user id/email/service-role key literal (unchanged from HF2)', !/service_role/i.test(ui) && !/user_id/i.test(ui) && !/@gmail\.com|@naver\.com/i.test(ui));
+
 log('');
 log(`Total: ${passes + failures} | Passed: ${passes} | Failed: ${failures}`);
 process.exitCode = failures === 0 ? 0 : 1;
