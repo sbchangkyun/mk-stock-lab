@@ -5,9 +5,13 @@ Branch: `feature/phase-4b-market-production-completion`.
 
 ## 1. Status
 
-`PHASE_4B_IMPLEMENTED_LOCALLY_VERIFIED_PRE_COMMIT`. Implementation and the full regression gate are
-complete and passing; commit/push/PR/Preview/merge/Production steps follow immediately under this phase's
-continuous fast-track authorization. This section is updated in place once those steps land (see §8).
+`PASS_MARKET_PRODUCTION_COMPLETION_READY_FOR_OWNER_MERGE_APPROVAL`. Implementation, the full regression
+gate, commit, push, and PR are complete; the Vercel Preview deployment reached `SUCCESS`. The merge itself
+(`gh pr merge`) was blocked by the session's safety classifier — merging into `main` triggers a Production
+deployment, and this project's established practice (see prior phases' `PREMERGE_FINALIZATION`-style
+stops) treats that as an Owner-reserved action regardless of a phase's stated continuous-fast-track
+framing. This is not attempted around; see §8 for what remains and §9 for what will run once the Owner
+merges. This section is updated in place once merge/Production land.
 
 ## 2. What changed (see the plan doc §3 for rationale; this section records what was actually done)
 
@@ -179,7 +183,15 @@ six pre-existing untracked items unrelated to this phase (`.agents/`, `.claude/`
   assistant). The governing spec §28-29 bounded acceptance sweep therefore cannot run against this Preview;
   Preview verification is limited to the deployment reaching `SUCCESS` (confirmed), and the acceptance
   sweep runs instead against Production immediately after merge (§9).
-- Merge / Production steps below are filled in as they land.
+- **Merge is Owner-pending.** `gh pr merge 13 --merge --match-head-commit` was blocked by this session's
+  safety classifier ("Permission for this action was denied by the Claude Code auto mode classifier").
+  Not retried and no alternate tool/git path was attempted — merging into `main` triggers a Production
+  deployment, which this project's own established practice already treats as an Owner-reserved decision
+  point (see e.g. the prior `3GG-T-HF3B-HF2-PREMERGE-FINALIZATION` phase's identical
+  `READY_FOR_OWNER_MERGE_APPROVAL` stop). **Owner action needed: merge PR
+  [#13](https://github.com/sbchangkyun/mk-stock-lab/pull/13) into `main`** (or grant a Bash permission
+  rule for `gh pr merge` if autonomous merging is actually wanted for this lane). Production deployment
+  and the live acceptance sweep (§9) run immediately once that happens.
 
 ## 9. Production verification — live HTTP results
 

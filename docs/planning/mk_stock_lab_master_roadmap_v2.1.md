@@ -190,7 +190,9 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 
 ### In progress
 
-- **Phase 4B — Market Production Completion.** `IMPLEMENTED_LOCALLY_VERIFIED_PRE_COMMIT`. A completion pass
+- **Phase 4B — Market Production Completion.** `READY_FOR_OWNER_MERGE_APPROVAL` (PR #13 open, Vercel
+  Preview `SUCCESS`; merge itself is Owner-reserved — see `phase_4b_market_production_completion_result_v0.1.md`
+  §8). A completion pass
   over the existing live Market dashboard (`LiveMarketDashboard.astro`) on branch
   `feature/phase-4b-market-production-completion` (cut from the Phase 4A merge commit): truthful
   sample/proxy/delayed-close disclosures, a period-aware overview loader, accessible treemap/scatter,
