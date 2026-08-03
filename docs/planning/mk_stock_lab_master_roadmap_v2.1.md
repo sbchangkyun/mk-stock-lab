@@ -10,7 +10,8 @@ which the prior version recorded as still open. This version also records Phase 
 
 Status label: `PRODUCTION_VERIFIED`. Only functionality actually deployed from `main` belongs in this section.
 
-- **Home**: index cards, sparkline, market news, ad rail, portfolio panel summary link. `PRODUCTION_VERIFIED`.
+- **Home**: index cards, sparkline, market news (bounded two-stage GNews cascade + last-good runtime
+  fallback, Phase 3GL-HF5), ad rail, portfolio panel summary link. `PRODUCTION_VERIFIED`.
 - **Chart AI**: authenticated-only (`/chart-ai` requires a Supabase session — signed-out shows a lock card,
   zero provider/KIS/token requests until a chart is explicitly loaded); real KR/US OHLCV charts via KIS;
   Similarity engine with score guide, evidence level, and deterministic non-advisory insight; deterministic
@@ -26,6 +27,9 @@ Status label: `PRODUCTION_VERIFIED`. Only functionality actually deployed from `
   auto-merges). `PRODUCTION_VERIFIED`.
 - **Durable KIS token**: single-issuance, cross-request/cross-deploy reuse via Supabase-backed L2 store,
   PostgREST public bridge functions (service-role-only). `PRODUCTION_VERIFIED`.
+- **Operations and Admin**: read-only admin-only usage-guard/KIS-token-health/quote-cache-staleness
+  overview (`/admin/operations`, `GET /api/admin/operations/overview.json`), reusing the existing
+  bearer-auth resolver and `site_admins` registry. `PRODUCTION_VERIFIED`.
 
 ## 1a. Phase 3GH — merged to main; Production deployment/DB-migration state is Owner-confirm
 
@@ -157,36 +161,61 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   no second market-data or FX provider. Closeout classification `PHASE_3GL_HF4_MERGED_PRODUCTION_VERIFIED`
   recorded on PR #9. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail.
   **Phase 3GL-HF5 — reliable latest-available Home news** is a further hotfix on top of the HF4-verified
-  baseline (branch `hotfix/phase-3gl-hf5-home-news-latest-available`), addressing a Production reliability
-  gap where the single-strategy Home news feed could return an avoidable zero-article `NEWS_NO_RESULTS`.
-  Replaces the single-strategy feed with a bounded two-stage cascade (GNews Top Headlines primary, bounded
-  GNews Search "latest available" fallback, ≤2 requests/load) plus a runtime-local last-good fallback; see
-  §1e of the result doc for full detail and current merge/deploy status.
+  baseline, addressing a Production reliability gap where the single-strategy Home news feed could return
+  an avoidable zero-article `NEWS_NO_RESULTS`. Replaces the single-strategy feed with a bounded two-stage
+  cascade (GNews Top Headlines primary, bounded GNews Search "latest available" fallback, ≤2 requests/load)
+  plus a runtime-local last-good fallback. `PRODUCTION_VERIFIED` (PR #11 merged, hotfix commit `76cdec1`,
+  merge commit `0fc7012`). See §1e of the result doc for full detail.
+- **Phase 3GM — Operations and Admin MVP, including HF1/HF2/HF3 pre-merge hotfixes.**
+  `PRODUCTION_VERIFIED` (PR #10 merged, merge commit `be4fbaa`). Minimal internal visibility into
+  usage-guard counters, KIS token health, and quote-cache staleness — previously only inspectable via ad
+  hoc Owner smoke scripts and Supabase Dashboard queries. Implemented as one read-only, admin-only surface
+  (`GET /api/admin/operations/overview.json` + `/admin/operations` page) reusing the existing bearer-auth
+  resolver and `site_admins` registry — no second admin-role system, no migration, no mutation control. See
+  `phase_3gm_operations_and_admin_mvp_plan_v0.1.md` and `phase_3gm_operations_and_admin_mvp_result_v0.1.md`
+  for full detail.
 
 ### In progress
 
-- **Phase 3GM — Operations and Admin MVP.** `IN_PROGRESS` (implemented on
-  `feature/phase-3gm-operations-admin-mvp`, PR opened to `main`, Owner Preview verification pending —
-  not merged, not deployed). Minimal internal visibility into usage-guard counters, KIS token health, and
-  quote-cache staleness — previously only inspectable via ad hoc Owner smoke scripts and Supabase
-  Dashboard queries. Implemented as one read-only, admin-only surface (`GET
-  /api/admin/operations/overview.json` + `/admin/operations` page) reusing the existing bearer-auth
-  resolver and `site_admins` registry — no second admin-role system, no migration, no mutation control.
-  See `phase_3gm_operations_and_admin_mvp_plan_v0.1.md` and
-  `phase_3gm_operations_and_admin_mvp_result_v0.1.md` for full detail.
+- **Phase 4A — Home and Common Shell Production Readiness.** `IN_PROGRESS` (implemented on
+  `feature/phase-4a-home-common-shell-production`, PR opened to `main`, Owner QA deferred to Phase 4F — not
+  merged, not deployed). A presentation/copy/accessibility/responsive-shell readiness pass over the Home
+  page and the shared Header/Nav/Footer/Layout/404 shell: removes staged "Preview" hero wording and a
+  fabricated visitor-count placeholder, corrects the four Home feature-card descriptions to match each
+  target page's actual verified scope, adds `aria-current`/focus-visible accessibility to the shared nav
+  and shell controls, adds a real `404.astro`, and clarifies the Vercel-only deployment policy. No provider,
+  auth, schema, or business-logic change. See `phase_4a_home_common_shell_production_plan_v0.1.md` and
+  `phase_4a_home_common_shell_production_result_v0.1.md` for full detail.
 
 ### Next sequential product phases
 
-1. **Phase 3 Closeout.** `PLANNED`. Runs after Phase 3GM — performs the detailed responsive/cross-browser/
-   accessibility/all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc) and
-   Phase 3GL, plus any other cross-cutting Phase 3 closeout verification.
-2. **Phase 4A — Home Common Shell (Production).** `BRANCH_CREATED_NO_IMPLEMENTATION`. After the Phase
-   3GL-HF5 hotfix merges and its Production deployment is verified, branch
-   `feature/phase-4a-home-common-shell-production` is created from the HF5 merge commit as a placeholder
-   for future work — no implementation is performed on it as part of Phase 3GL-HF5 or this roadmap update.
+Phases 4B–4E repeat the same navigation-based production-readiness pattern established by Phase 4A —
+truthful copy, accessibility, and responsive-shell correctness only, no provider/business-logic change —
+one target page (or page group) at a time, each gated by its own automated smoke/checker suite before a PR
+is opened. Phase 4F is the cross-page Owner QA closeout that every phase in this lane defers to, since none
+of 4A–4E can be authenticated-click-through-verified by this assistant. All phases in this lane deploy only
+through the existing Vercel Git integration (`main` branch) — no Netlify configuration is added or restored
+(see the Netlify note in the parallel hardening lane below).
 
-Phase 3 Closeout and Phase 4A are explicitly **not** started by this document or this phase — this section
-only records that they are next in sequence, per the governing spec's instruction not to begin them here.
+1. **Phase 3 Closeout.** `PLANNED`. Performs the detailed responsive/cross-browser/accessibility/
+   all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc) and Phase 3GL,
+   plus any other cross-cutting Phase 3 closeout verification.
+2. **Phase 4A — Home and Common Shell.** `IN_PROGRESS`. See "In progress" above.
+3. **Phase 4B — Chart AI production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
+   `/chart-ai` against its already-verified functional scope (login gate, KR/US charts, similarity + MK AI
+   analysis, daily usage guard) — not a re-implementation of Phase 3GK.
+4. **Phase 4C — Market production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
+   `/market` (and the `/heatmap` alias) against its already-verified live-dashboard scope.
+5. **Phase 4D — Lab production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of `/lab`,
+   including its own already-honest "연동 예정" labeling of the NPS/Congress modules.
+6. **Phase 4E — Portfolio production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
+   `/portfolio` against its already-verified authenticated CRUD and KR-only live-valuation scope.
+7. **Phase 4F — Cross-page Owner QA closeout.** `PLANNED`. Owner-only authenticated click-through across
+   4A–4E on Production/Preview (visual, mobile, touch, keyboard, screen-reader spot checks) — the single
+   point where the Owner QA deferred by every phase in this lane is actually performed.
+
+Phase 3 Closeout and Phases 4B–4F are explicitly **not** started by this document or this phase — this
+section only records that they are next in sequence.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 
@@ -195,7 +224,11 @@ only records that they are next in sequence, per the governing spec's instructio
 - Scheduled KIS instrument-master observation. `DEFERRED`.
 - `/api/market/quote` intent and rate-limit audit. `DEFERRED`.
 - Authoritative active-gate manifest. `DEFERRED`.
-- Stale Netlify dependency/configuration review. `DEFERRED`.
+- Stale Netlify dependency/configuration review. `DEFERRED`. Deployment policy is Vercel-only
+  (`astro.config.mjs` wires only `@astrojs/vercel`; no Netlify adapter, no `netlify.toml`, no Netlify
+  project) — reconfirmed as part of Phase 4A. The only remaining Netlify trace is the unused
+  `@astrojs/netlify` entry in `package.json` `dependencies`, which this deferred item tracks for removal;
+  it is not wired into the build and does not affect deployment.
 - Dead similarity code retirement. `DEFERRED`.
 - `is_site_admin` SECURITY DEFINER permission review. `DEFERRED`.
 - Leaked-password protection review. `DEFERRED`.
@@ -250,3 +283,8 @@ only records that they are next in sequence, per the governing spec's instructio
 - Decide whether to merge the Phase 3GL PR once opened (not performed by this phase per explicit instruction).
 - If Phase 3GL's Preview shows `GNEWS_API_KEY` unset, decide whether/when to set it in Vercel so the GNews
   feed activates (no Vercel env mutation performed this phase).
+- Decide whether to merge the Phase 4A PR once opened (not performed by this phase per explicit
+  instruction; no Production deploy/env/DB/auth-policy change is part of Phase 4A).
+- Perform the Phase 4F cross-page Owner QA closeout (authenticated click-through of the Phase 4A Home/shell
+  changes plus Phases 4B–4E once they land) — deferred by every phase in the 4A–4E lane, same reason as the
+  Phase 3GK/3GJ detailed-QA deferrals above (no authenticated browser session available to this assistant).

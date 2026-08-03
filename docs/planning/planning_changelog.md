@@ -1,5 +1,22 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GM and Phase 3GL-HF5 — Production-verified closeout - 2026-08-03
+
+- Recorded in the master roadmap (`mk_stock_lab_master_roadmap_v2.1.md`) as `PRODUCTION_VERIFIED`, moved
+  from "In progress"/pending-merge to "Completed": **Phase 3GM — Operations and Admin MVP** (PR #10 merged
+  to `main`, merge commit `be4fbaa`, including the HF1/HF2/HF3 pre-merge hotfixes already documented below)
+  and **Phase 3GL-HF5 — reliable latest-available Home news** (PR #11 merged to `main`, hotfix commit
+  `76cdec1`, merge commit `0fc7012`). Both merges verified directly against `origin/main` history
+  (`git log --oneline origin/main`) as part of Phase 4A's pre-implementation baseline check.
+- No code, schema, or environment change in this entry — documentation-only closeout, performed as part of
+  Phase 4A's roadmap-update requirement (item 11 of its plan).
+- New forward-looking roadmap entries added for **Phase 4B (Chart AI)**, **Phase 4C (Market)**, **Phase 4D
+  (Lab)**, **Phase 4E (Portfolio)**, and **Phase 4F (cross-page Owner QA closeout)** — the same
+  navigation-based production-readiness pattern as Phase 4A, one target page at a time, each gated by its
+  own automated smoke/checker suite, Vercel-only deployment policy, Owner QA deferred to 4F.
+- See `phase_4a_home_common_shell_production_plan_v0.1.md` / `..._result_v0.1.md` for the Phase 4A work this
+  closeout was recorded alongside.
+
 ## Phase 3GL-HF5 - 2026-08-03
 
 ### Guarantee latest-available Home news (bounded two-stage cascade + last-good fallback)
