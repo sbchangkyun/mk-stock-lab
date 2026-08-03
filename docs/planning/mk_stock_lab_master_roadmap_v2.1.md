@@ -156,6 +156,12 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   `NEWS_NOT_CONFIGURED` state when `GNEWS_API_KEY` is absent — no fixture fallback). No new KIS endpoint/TR ID,
   no second market-data or FX provider. Closeout classification `PHASE_3GL_HF4_MERGED_PRODUCTION_VERIFIED`
   recorded on PR #9. See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` for full detail.
+  **Phase 3GL-HF5 — reliable latest-available Home news** is a further hotfix on top of the HF4-verified
+  baseline (branch `hotfix/phase-3gl-hf5-home-news-latest-available`), addressing a Production reliability
+  gap where the single-strategy Home news feed could return an avoidable zero-article `NEWS_NO_RESULTS`.
+  Replaces the single-strategy feed with a bounded two-stage cascade (GNews Top Headlines primary, bounded
+  GNews Search "latest available" fallback, ≤2 requests/load) plus a runtime-local last-good fallback; see
+  §1e of the result doc for full detail and current merge/deploy status.
 
 ### In progress
 
@@ -174,9 +180,13 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 1. **Phase 3 Closeout.** `PLANNED`. Runs after Phase 3GM — performs the detailed responsive/cross-browser/
    accessibility/all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc) and
    Phase 3GL, plus any other cross-cutting Phase 3 closeout verification.
+2. **Phase 4A — Home Common Shell (Production).** `BRANCH_CREATED_NO_IMPLEMENTATION`. After the Phase
+   3GL-HF5 hotfix merges and its Production deployment is verified, branch
+   `feature/phase-4a-home-common-shell-production` is created from the HF5 merge commit as a placeholder
+   for future work — no implementation is performed on it as part of Phase 3GL-HF5 or this roadmap update.
 
-Phase 3 Closeout is explicitly **not** started by this document or this phase — this section only records
-that it is next in sequence, per the governing spec's instruction not to begin it here.
+Phase 3 Closeout and Phase 4A are explicitly **not** started by this document or this phase — this section
+only records that they are next in sequence, per the governing spec's instruction not to begin them here.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 

@@ -1,37 +1,98 @@
 /**
  * Phase 3GL — Home GNews feed (server-only, read-only, fail-safe).
  *
- * Sources up to 6 market-news headlines from GNews's public search endpoint using ONE combined query
- * per cache refresh (never a per-category multi-query fan-out — this is deliberately different from the
- * existing multi-theme src/lib/news/gnewsLiveFetchAdapter.mjs, which powers a separate, still
- * fixture-first /api/news/market-feed route and is not reused here). The API key is passed in by the
- * caller (never read from env inside this module) and is never included in any returned value, cache
- * entry, or thrown error. No stored article history, no fixture fallback: an absent key or provider
- * failure returns an honest unavailable result, never a fabricated headline. Full article `content` is
- * never requested or stored; only client-safe fields are returned, capped at 6 articles.
+ * Phase 3GL-HF5: Production's original single-strategy Search-only Korean-OR-query approach could
+ * return a successful-but-zero-article response (verified in Production: ok=false,
+ * code=NEWS_NO_RESULTS, every diagnostics count 0). This module now runs a bounded TWO-STAGE cascade
+ * per uncached feed load, capped at exactly 2 external requests:
+ *
+ *   A. PRIMARY   -- GNews Top Headlines, Korean business (category=business, lang=ko, country=kr, no
+ *                   client-controlled query). Stops here whenever >=1 usable article survives
+ *                   normalization. feedMode='latest'.
+ *   B. FALLBACK  -- GNews Search, a broad bilingual "latest-available market news" query, sortby=
+ *                   publishedAt, no from/to filter (so it can surface the newest CURRENTLY AVAILABLE
+ *                   article for that query even when it isn't from today). Runs ONLY when the primary
+ *                   request itself succeeded but returned zero usable articles after normalization.
+ *                   feedMode='latest_available'.
+ *
+ * A separate module-local "last-good" result (independent of the 5-minute TTL response cache) is
+ * updated after every successful non-empty feed. When a later refresh hits a provider HTTP failure,
+ * timeout, invalid JSON, or a zero-usable-article outcome from BOTH strategies, and a last-good result
+ * exists in the current runtime, that last-good set of articles is served as a successful response
+ * (feedMode='last_good') instead of an empty state. Old `publishedAt` values are never rewritten to
+ * now -- only `generatedAt` reflects the current call.
+ *
+ * The API key is passed in by the caller (never read from env inside this module) and is never
+ * included in any returned value, cache entry, or thrown error. No stored article history beyond the
+ * in-memory last-good set, no fixture fallback: an absent key, or a genuine failure of both strategies
+ * with no last-good available, returns an honest unavailable result, never a fabricated headline. Full
+ * article `content` is never requested or stored; only client-safe fields are returned, capped at 6
+ * articles.
  */
 
-const GNEWS_BASE = 'https://gnews.io/api/v4/search';
+const GNEWS_SEARCH_BASE = 'https://gnews.io/api/v4/search';
+const GNEWS_TOP_HEADLINES_BASE = 'https://gnews.io/api/v4/top-headlines';
 const GNEWS_TIMEOUT_MS = 6000;
 const HOME_NEWS_TTL_MS = 5 * 60 * 1000;
 const MAX_ARTICLES = 6;
 // Phase 3GL-HF4: GNews Free plan caps `max` at 10 per request (20 returned HTTP 400).
 const PROVIDER_MAX = 10;
 
-// Phase 3GL-HF2 §10: simplified to a conservative 8-term OR expression after the 16-term version
-// returned zero articles in Preview -- kept well within the provider's practical query-length
-// tolerance while still covering the same core market-news surface (domestic stocks, overseas
-// stocks, FX, rates, oil).
-const COMBINED_QUERY = '코스피 OR 코스닥 OR 국내증시 OR 뉴욕증시 OR 나스닥 OR 환율 OR 금리 OR 유가';
+// Phase 3GL-HF5 §5B: rate-spacing delay observed before issuing the second (fallback) request, so the
+// bounded 2-request cascade never bursts both GNews calls back-to-back. Always routed through the
+// injectable `sleepFn` dependency -- tests inject a no-op so they never really wait.
+const FALLBACK_REQUEST_DELAY_MS = 1100;
+
+// Phase 3GL-HF5 §5B: broad bilingual "latest-available market news" query -- verified against GNews's
+// documented Search syntax (quoted-phrase support, OR operator, no from/to required) and kept well
+// under its query-length limit while covering: Korean stock market, US stock market, economy, interest
+// rates, FX, commodities.
+const FALLBACK_QUERY =
+  '코스피 OR 코스닥 OR 증시 OR 주식 OR economy OR stocks OR "stock market" OR inflation OR "interest rates" OR currency OR oil';
 
 const TRACKING_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'ref'];
 
+// Phase 3GL-HF5 §8: added English keyword coverage (case-insensitive; haystack is already lowercased)
+// so fallback English-language articles classify honestly instead of defaulting to GENERAL_MARKET or
+// being over-classified as OVERSEAS_STOCKS. Order is preserved (FX -> COMMODITIES -> MACRO ->
+// DOMESTIC_STOCKS -> OVERSEAS_STOCKS -> default) so the more specific categories are always checked
+// with at least equal priority before the generic OVERSEAS_STOCKS bucket.
 const CATEGORY_KEYWORDS = [
-  { category: 'FX', keywords: ['환율', '원달러', '원/달러', '원화', '달러화', '엔화', '위안화', '유로화', '강달러'] },
-  { category: 'COMMODITIES', keywords: ['유가', 'wti', '브렌트유', '원유', '금값', '원자재', 'opec', '은값'] },
-  { category: 'MACRO', keywords: ['금리', '물가', '인플레이션', '연준', 'fomc', '한국은행', 'gdp', '실업률', '경기', '통화정책', '기준금리'] },
-  { category: 'DOMESTIC_STOCKS', keywords: ['코스피', '코스닥', '국내증시', '상장사', '유가증권시장'] },
-  { category: 'OVERSEAS_STOCKS', keywords: ['나스닥', '다우존스', 's&p', '뉴욕증시', '월가', '뉴욕증권거래소', '빅테크'] },
+  {
+    category: 'FX',
+    keywords: [
+      '환율', '원달러', '원/달러', '원화', '달러화', '엔화', '위안화', '유로화', '강달러',
+      'exchange rate', 'currency', 'dollar', 'yen', 'euro', 'forex',
+    ],
+  },
+  {
+    category: 'COMMODITIES',
+    keywords: [
+      '유가', 'wti', '브렌트유', '원유', '금값', '원자재', 'opec', '은값',
+      'oil', 'crude', 'brent', 'gold', 'commodities',
+    ],
+  },
+  {
+    category: 'MACRO',
+    keywords: [
+      '금리', '물가', '인플레이션', '연준', 'fomc', '한국은행', 'gdp', '실업률', '경기', '통화정책', '기준금리',
+      'interest rate', 'inflation', 'federal reserve', 'fed', 'central bank', 'unemployment', 'monetary policy',
+    ],
+  },
+  {
+    category: 'DOMESTIC_STOCKS',
+    keywords: [
+      '코스피', '코스닥', '국내증시', '상장사', '유가증권시장',
+      'kospi', 'kosdaq', 'korean stocks', 'south korean stocks',
+    ],
+  },
+  {
+    category: 'OVERSEAS_STOCKS',
+    keywords: [
+      '나스닥', '다우존스', 's&p', '뉴욕증시', '월가', '뉴욕증권거래소', '빅테크',
+      'nasdaq', 'dow', 'wall street', 'stocks', 'equities', 'stock market',
+    ],
+  },
 ];
 
 /** Client-facing category codes; HomeMarketNews.astro maps these to Korean labels. */
@@ -44,7 +105,14 @@ export const HOME_NEWS_CATEGORIES = [
   'GENERAL_MARKET',
 ];
 
-let cache = null;
+// The 5-minute TTL response cache -- reused across calls within the window regardless of which
+// strategy/feedMode produced the cached value (a cache hit issues zero provider requests).
+let ttlCache = null;
+
+// Phase 3GL-HF5 §6: a SEPARATE, TTL-independent last-good result. Updated after every successful
+// non-empty feed (from either strategy); consulted only when the current refresh cannot produce a
+// fresh non-empty result of its own.
+let lastGoodArticles = null;
 
 const canonicalizeUrl = (rawUrl) => {
   if (!rawUrl) return '';
@@ -168,26 +236,22 @@ export const dedupeAndRankHomeArticles = (articles, limit = MAX_ARTICLES) => {
   return deduped;
 };
 
-const fetchGnewsSearch = async (apiKey, fetchFn) => {
-  // Phase 3GL-HF4: the Search endpoint's supported-language list does not include Korean, so `lang`
-  // is omitted entirely -- the Korean-keyword COMBINED_QUERY itself is the Korean-news targeting
-  // mechanism, not a `lang` filter.
-  const params = new URLSearchParams({
-    q: COMBINED_QUERY,
-    max: String(PROVIDER_MAX),
-    sortby: 'publishedAt',
-    apikey: apiKey,
-  });
+/** Sanitized upstream status mapping shared by both GNews endpoints — never surfaces a raw status/body. */
+const mapGnewsHttpErrorCode = (status) => {
+  if (status === 400) return 'NEWS_BAD_REQUEST';
+  if (status === 401) return 'NEWS_UNAUTHORIZED';
+  if (status === 403) return 'NEWS_QUOTA_EXHAUSTED';
+  if (status === 429) return 'NEWS_RATE_LIMITED';
+  return 'NEWS_PROVIDER_ERROR';
+};
 
+/** Shared bounded-timeout GET + sanitized-error-mapping for both GNews endpoints. */
+const fetchGnewsEndpoint = async (url, fetchFn) => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), GNEWS_TIMEOUT_MS);
   try {
-    const res = await fetchFn(`${GNEWS_BASE}?${params.toString()}`, { method: 'GET', signal: controller.signal });
-    if (res.status === 400) return { ok: false, code: 'NEWS_BAD_REQUEST' };
-    if (res.status === 401) return { ok: false, code: 'NEWS_UNAUTHORIZED' };
-    if (res.status === 403) return { ok: false, code: 'NEWS_QUOTA_EXHAUSTED' };
-    if (res.status === 429) return { ok: false, code: 'NEWS_RATE_LIMITED' };
-    if (!res.ok) return { ok: false, code: 'NEWS_PROVIDER_ERROR' };
+    const res = await fetchFn(url, { method: 'GET', signal: controller.signal });
+    if (!res.ok) return { ok: false, code: mapGnewsHttpErrorCode(res.status) };
     const body = await res.json();
     if (!Array.isArray(body?.articles)) return { ok: false, code: 'NEWS_PROVIDER_ERROR' };
     return { ok: true, articles: body.articles };
@@ -199,51 +263,177 @@ const fetchGnewsSearch = async (apiKey, fetchFn) => {
 };
 
 /**
- * @param {{ apiKey?: string, fetchFn?: typeof fetch, now?: () => number }} deps
- * @returns {Promise<{ ok: boolean, code: string, generatedAt: string, articles: object[] }>}
+ * PRIMARY (Phase 3GL-HF5 §5A) — GNews Top Headlines, Korean business. No client-controlled query
+ * parameter at all; category/lang/country are the only targeting mechanism.
+ */
+const fetchGnewsTopHeadlinesBusinessKoKr = async (apiKey, fetchFn) => {
+  const params = new URLSearchParams({
+    category: 'business',
+    lang: 'ko',
+    country: 'kr',
+    max: String(PROVIDER_MAX),
+    apikey: apiKey,
+  });
+  return fetchGnewsEndpoint(`${GNEWS_TOP_HEADLINES_BASE}?${params.toString()}`, fetchFn);
+};
+
+/**
+ * FALLBACK (Phase 3GL-HF5 §5B) — GNews Search, broad bilingual "latest-available market news" query.
+ * No `lang` (Search's supported-language list does not include Korean — see HF4), no `from`/`to` (so
+ * the newest CURRENTLY AVAILABLE article for the query surfaces even when it predates today).
+ */
+const fetchGnewsSearchLatestAvailable = async (apiKey, fetchFn) => {
+  const params = new URLSearchParams({
+    q: FALLBACK_QUERY,
+    max: String(PROVIDER_MAX),
+    sortby: 'publishedAt',
+    apikey: apiKey,
+  });
+  return fetchGnewsEndpoint(`${GNEWS_SEARCH_BASE}?${params.toString()}`, fetchFn);
+};
+
+const normalizeAndRank = (rawArticles) => {
+  const normalized = rawArticles.map(normalizeGnewsHomeArticle).filter(Boolean);
+  return { normalized, ranked: dedupeAndRankHomeArticles(normalized, MAX_ARTICLES) };
+};
+
+/** Records a fresh non-empty successful result as the runtime-local last-good set (Phase 3GL-HF5 §6). */
+const rememberLastGood = (articles) => {
+  lastGoodArticles = articles.map((article) => ({ ...article }));
+};
+
+/**
+ * Builds a successful last-good response. `publishedAt` values are copied through unchanged from the
+ * remembered articles — only `generatedAt` reflects the current call (Phase 3GL-HF5 §6).
+ */
+const buildLastGoodValue = (now, diagnostics) => {
+  const baseDiagnostics =
+    diagnostics ?? {
+      primaryProviderArticleCount: 0,
+      primaryNormalizedArticleCount: 0,
+      fallbackAttempted: false,
+      fallbackProviderArticleCount: 0,
+      fallbackNormalizedArticleCount: 0,
+    };
+  return {
+    ok: true,
+    code: 'NONE',
+    generatedAt: new Date(now()).toISOString(),
+    articles: lastGoodArticles.map((article) => ({ ...article })),
+    feedMode: 'last_good',
+    selectedStrategy: 'last_good_runtime_cache',
+    // returnedArticleCount always reflects what is ACTUALLY served (the last-good set), never the
+    // (possibly zero) count from the cascade that triggered this fallback.
+    diagnostics: { ...baseDiagnostics, returnedArticleCount: lastGoodArticles.length },
+  };
+};
+
+/**
+ * @param {{ apiKey?: string, fetchFn?: typeof fetch, now?: () => number, sleepFn?: (ms: number) => Promise<void> }} deps
+ * @returns {Promise<{ ok: boolean, code: string, generatedAt: string, articles: object[], feedMode?: string, selectedStrategy?: string, diagnostics?: object }>}
  */
 export const getHomeNewsFeed = async (deps = {}) => {
   const now = deps.now ?? (() => Date.now());
   const fetchFn = deps.fetchFn ?? fetch;
+  const sleepFn = deps.sleepFn ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   const apiKey = typeof deps.apiKey === 'string' ? deps.apiKey.trim() : '';
 
   if (!apiKey) {
     return { ok: false, code: 'NEWS_NOT_CONFIGURED', generatedAt: new Date(now()).toISOString(), articles: [] };
   }
 
-  if (cache && now() - cache.storedAtMs < HOME_NEWS_TTL_MS) {
-    return { ...cache.value };
+  if (ttlCache && now() - ttlCache.storedAtMs < HOME_NEWS_TTL_MS) {
+    return { ...ttlCache.value };
   }
 
-  const result = await fetchGnewsSearch(apiKey, fetchFn);
-  if (!result.ok) {
-    return { ok: false, code: result.code, generatedAt: new Date(now()).toISOString(), articles: [] };
-  }
-
-  // Phase 3GL-HF2 §9: sanitized, non-secret counts only -- never the raw provider payload, query, or
-  // rejected article contents -- so a zero-result feed is distinguishable from a genuinely broken one.
-  const providerArticleCount = result.articles.length;
-  const normalized = result.articles.map(normalizeGnewsHomeArticle).filter(Boolean);
-  const normalizedArticleCount = normalized.length;
-  const articles = dedupeAndRankHomeArticles(normalized, MAX_ARTICLES);
-  const returnedArticleCount = articles.length;
-  const diagnostics = { providerArticleCount, normalizedArticleCount, returnedArticleCount };
-
-  // Phase 3GL-HF2 §11: a successful provider call that yields no usable article is not an
-  // indistinguishable "ok" live feed -- report it honestly so the client shows its unavailable state.
-  if (returnedArticleCount === 0) {
-    const value = {
-      ok: false,
-      code: 'NEWS_NO_RESULTS',
-      generatedAt: new Date(now()).toISOString(),
-      articles: [],
-      diagnostics,
-    };
-    cache = { value, storedAtMs: now() };
+  const store = (value) => {
+    ttlCache = { value, storedAtMs: now() };
     return { ...value };
+  };
+
+  // STAGE A -- primary: Korean business Top Headlines.
+  const primaryResult = await fetchGnewsTopHeadlinesBusinessKoKr(apiKey, fetchFn);
+
+  if (!primaryResult.ok) {
+    // Phase 3GL-HF5 §11: a primary-request error may use an existing last-good result instead of an
+    // honest failure code -- but the Search fallback is NOT run after a primary request-level error
+    // (it is only for a *successful*, zero-result primary response — §5B).
+    if (lastGoodArticles) return store(buildLastGoodValue(now));
+    // Never cache an honest failure -- the next load should retry the provider immediately rather
+    // than being wedged into repeating the same error for the rest of the 5-minute TTL window.
+    return { ok: false, code: primaryResult.code, generatedAt: new Date(now()).toISOString(), articles: [] };
   }
 
-  const value = { ok: true, code: 'NONE', generatedAt: new Date(now()).toISOString(), articles, diagnostics };
-  cache = { value, storedAtMs: now() };
-  return { ...value };
+  const primaryProviderArticleCount = primaryResult.articles.length;
+  const { normalized: primaryNormalized, ranked: primaryArticles } = normalizeAndRank(primaryResult.articles);
+  const primaryNormalizedArticleCount = primaryNormalized.length;
+
+  if (primaryArticles.length > 0) {
+    rememberLastGood(primaryArticles);
+    const diagnostics = {
+      primaryProviderArticleCount,
+      primaryNormalizedArticleCount,
+      fallbackAttempted: false,
+      fallbackProviderArticleCount: 0,
+      fallbackNormalizedArticleCount: 0,
+      returnedArticleCount: primaryArticles.length,
+    };
+    return store({
+      ok: true,
+      code: 'NONE',
+      generatedAt: new Date(now()).toISOString(),
+      articles: primaryArticles,
+      feedMode: 'latest',
+      selectedStrategy: 'top_headlines_business_ko_kr',
+      diagnostics,
+    });
+  }
+
+  // STAGE B -- fallback: primary succeeded but yielded zero usable articles after normalization.
+  await sleepFn(FALLBACK_REQUEST_DELAY_MS);
+  const fallbackResult = await fetchGnewsSearchLatestAvailable(apiKey, fetchFn);
+
+  const fallbackProviderArticleCount = fallbackResult.ok ? fallbackResult.articles.length : 0;
+  const { normalized: fallbackNormalized, ranked: fallbackArticles } = fallbackResult.ok
+    ? normalizeAndRank(fallbackResult.articles)
+    : { normalized: [], ranked: [] };
+  const fallbackNormalizedArticleCount = fallbackNormalized.length;
+
+  if (fallbackArticles.length > 0) {
+    rememberLastGood(fallbackArticles);
+    const diagnostics = {
+      primaryProviderArticleCount,
+      primaryNormalizedArticleCount,
+      fallbackAttempted: true,
+      fallbackProviderArticleCount,
+      fallbackNormalizedArticleCount,
+      returnedArticleCount: fallbackArticles.length,
+    };
+    return store({
+      ok: true,
+      code: 'NONE',
+      generatedAt: new Date(now()).toISOString(),
+      articles: fallbackArticles,
+      feedMode: 'latest_available',
+      selectedStrategy: 'search_latest_available_market',
+      diagnostics,
+    });
+  }
+
+  // Both approved strategies returned zero usable articles.
+  const diagnostics = {
+    primaryProviderArticleCount,
+    primaryNormalizedArticleCount,
+    fallbackAttempted: true,
+    fallbackProviderArticleCount,
+    fallbackNormalizedArticleCount,
+    returnedArticleCount: 0,
+  };
+
+  if (lastGoodArticles) return store(buildLastGoodValue(now, diagnostics));
+
+  // Phase 3GL-HF2 §11 (still honored): a successful-but-empty outcome is not an indistinguishable
+  // "ok" live feed -- report it honestly so the client shows its unavailable state. Never cached, for
+  // the same reason as the primary-error path above: retry on the very next load, don't wedge.
+  return { ok: false, code: 'NEWS_NO_RESULTS', generatedAt: new Date(now()).toISOString(), articles: [], diagnostics };
 };

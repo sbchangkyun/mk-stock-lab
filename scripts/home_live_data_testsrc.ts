@@ -798,6 +798,27 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
     HOME_NEWS_CATEGORIES.slice().sort().join(',') ===
       ['DOMESTIC_STOCKS', 'OVERSEAS_STOCKS', 'FX', 'MACRO', 'COMMODITIES', 'GENERAL_MARKET'].sort().join(','),
   );
+
+  // Phase 3GL-HF5 §8 (test item 25): English-language fallback articles must classify honestly --
+  // never a blanket GENERAL_MARKET or an over-eager OVERSEAS_STOCKS just because a generic word like
+  // "stocks" appears. FX/COMMODITIES/MACRO/DOMESTIC_STOCKS keywords are checked at least as early as
+  // the generic OVERSEAS_STOCKS bucket, so a more specific topic always wins.
+  check('classifyArticle: "Dollar rises against the yen" -> FX', classify('Dollar rises against the yen') === 'FX');
+  check('classifyArticle: "Oil prices climb as OPEC weighs supply cut" -> COMMODITIES', classify('Oil prices climb as OPEC weighs supply cut') === 'COMMODITIES');
+  check('classifyArticle: "Federal Reserve signals rate path" -> MACRO', classify('Federal Reserve signals rate path') === 'MACRO');
+  check('classifyArticle: "Inflation data keeps interest rate bets alive" -> MACRO', classify('Inflation data keeps interest rate bets alive') === 'MACRO');
+  check('classifyArticle: "KOSPI hits fresh record high" -> DOMESTIC_STOCKS', classify('KOSPI hits fresh record high') === 'DOMESTIC_STOCKS');
+  check('classifyArticle: "Nasdaq stocks rally as Wall Street cheers" -> OVERSEAS_STOCKS', classify('Nasdaq stocks rally as Wall Street cheers') === 'OVERSEAS_STOCKS');
+  check('classifyArticle: "Global stock market extends gains" -> OVERSEAS_STOCKS', classify('Global stock market extends gains') === 'OVERSEAS_STOCKS');
+  check(
+    'classifyArticle: an oil-and-stocks headline resolves to the more specific COMMODITIES, never a blanket OVERSEAS_STOCKS',
+    classify('Oil prices surge while stocks retreat') === 'COMMODITIES',
+  );
+  check(
+    'classifyArticle: a currency-and-stocks headline resolves to the more specific FX, never a blanket OVERSEAS_STOCKS',
+    classify('Dollar currency strength weighs on stocks') === 'FX',
+  );
+  check('classifyArticle: an unrelated English headline -> GENERAL_MARKET default (never fabricated OVERSEAS_STOCKS)', classify('Local bakery wins a national pastry award') === 'GENERAL_MARKET');
 }
 
 // dedupeAndRankHomeArticles: sorts newest first, dedupes by canonical url AND normalized title, caps
@@ -820,50 +841,137 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
   check('dedupeAndRankHomeArticles: honors a custom limit', dedupeAndRankHomeArticles(many, 2).length === 2);
 }
 
-// getHomeNewsFeed: not-configured, provider failure, success + cache-hit, cache never leaks the key.
+// getHomeNewsFeed: Phase 3GL-HF5 bounded two-stage cascade (primary Top Headlines -> fallback Search
+// "latest available") + a TTL-independent runtime last-good fallback. All calls in this block share
+// ONE gnewsHomeNewsProvider.mjs module instance, so the narrative is ordered deliberately: every
+// scenario that must observe "no last-good result exists yet" runs BEFORE the first scenario that
+// establishes one (a successful non-empty feed). A no-op injected `sleepFn` is used everywhere a
+// fallback request can fire, so this suite never actually waits out the real inter-request delay.
 {
+  const noopSleep = async (_ms: number) => {};
+
+  // ---- absent / blank key: early return, no state effect, never even reaches the cache. ----
   const resultNoKey = await getHomeNewsFeed({ apiKey: undefined, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: absent key -> ok false', resultNoKey.ok === false);
   check('getHomeNewsFeed: absent key -> NEWS_NOT_CONFIGURED (never a fixture fallback)', resultNoKey.code === 'NEWS_NOT_CONFIGURED');
   check('getHomeNewsFeed: absent key -> empty articles array', Array.isArray(resultNoKey.articles) && resultNoKey.articles.length === 0);
+  check('getHomeNewsFeed: absent key never carries a diagnostics field', !('diagnostics' in resultNoKey));
 
   const resultBlankKey = await getHomeNewsFeed({ apiKey: '   ', now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: whitespace-only key is treated as absent', resultBlankKey.code === 'NEWS_NOT_CONFIGURED');
 
+  // ---- primary-request errors with NO last-good result yet: each returns its own honest sanitized
+  // code, never the Search fallback (a fallback only ever follows a *successful* zero-result primary
+  // response), and is never cached (so every one of these calls at the SAME instant gets a genuinely
+  // fresh fetch instead of colliding on the 5-minute TTL cache). ----
   let unauthorizedCalls = 0;
   const unauthorizedFetch = async () => {
     unauthorizedCalls += 1;
     return { ok: false, status: 401, json: async () => ({}) } as unknown as Response;
   };
-  const resultUnauthorized = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: unauthorizedFetch, now: () => FIXED_NOW_MS });
+  const resultUnauthorized = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: unauthorizedFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: provider 401 -> ok false with NEWS_UNAUTHORIZED', resultUnauthorized.ok === false && resultUnauthorized.code === 'NEWS_UNAUTHORIZED');
   check('getHomeNewsFeed: never includes the api key anywhere in the returned value', JSON.stringify(resultUnauthorized).includes('fake-test-key-never-real') === false);
+  check('getHomeNewsFeed: primary 401 with no last-good -> exactly 1 request (the Search fallback never runs after a primary-level error)', unauthorizedCalls === 1);
+  check('getHomeNewsFeed: provider failure (401) never carries a diagnostics field (nothing meaningful to count)', !('diagnostics' in resultUnauthorized));
 
   // Phase 3GL-HF4 §7: sanitized upstream status mapping -- 400/403/500 each map to their own closed
   // code, none of them carrying a diagnostics field (nothing meaningful to count on a failed request).
   const badRequestFetch = async () => ({ ok: false, status: 400, json: async () => ({}) }) as unknown as Response;
-  const resultBadRequest = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: badRequestFetch, now: () => FIXED_NOW_MS });
+  const resultBadRequest = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: badRequestFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: provider 400 -> NEWS_BAD_REQUEST (Phase 3GL-HF4)', resultBadRequest.ok === false && resultBadRequest.code === 'NEWS_BAD_REQUEST');
   check('getHomeNewsFeed: provider failure (400) never carries a diagnostics field', !('diagnostics' in resultBadRequest));
 
   const quotaExhaustedFetch = async () => ({ ok: false, status: 403, json: async () => ({}) }) as unknown as Response;
-  const resultQuotaExhausted = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: quotaExhaustedFetch, now: () => FIXED_NOW_MS });
+  const resultQuotaExhausted = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: quotaExhaustedFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: provider 403 -> NEWS_QUOTA_EXHAUSTED (Phase 3GL-HF4, was NEWS_UNAUTHORIZED pre-HF4)', resultQuotaExhausted.ok === false && resultQuotaExhausted.code === 'NEWS_QUOTA_EXHAUSTED');
   check('getHomeNewsFeed: provider failure (403) never carries a diagnostics field', !('diagnostics' in resultQuotaExhausted));
 
   const serverErrorFetch = async () => ({ ok: false, status: 500, json: async () => ({}) }) as unknown as Response;
-  const resultServerError = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: serverErrorFetch, now: () => FIXED_NOW_MS });
+  const resultServerError = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: serverErrorFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: provider 500 -> NEWS_PROVIDER_ERROR (other non-2xx)', resultServerError.ok === false && resultServerError.code === 'NEWS_PROVIDER_ERROR');
   check('getHomeNewsFeed: provider failure (500) never carries a diagnostics field', !('diagnostics' in resultServerError));
 
   const rateLimitedFetch = async () => ({ ok: false, status: 429, json: async () => ({}) }) as unknown as Response;
-  const resultRateLimited = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: rateLimitedFetch, now: () => FIXED_NOW_MS });
+  const resultRateLimited = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: rateLimitedFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: provider 429 -> NEWS_RATE_LIMITED', resultRateLimited.code === 'NEWS_RATE_LIMITED');
+  check('getHomeNewsFeed: provider failure (429) never carries a diagnostics field', !('diagnostics' in resultRateLimited));
 
   const malformedFetch = async () => ({ ok: true, status: 200, json: async () => ({ notArticles: [] }) }) as unknown as Response;
-  const resultMalformed = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: malformedFetch, now: () => FIXED_NOW_MS });
+  const resultMalformed = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: malformedFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS });
   check('getHomeNewsFeed: malformed provider body (no articles array) -> NEWS_PROVIDER_ERROR', resultMalformed.code === 'NEWS_PROVIDER_ERROR');
 
+  // ---- both strategies succeed but yield zero usable articles, still with NO last-good result yet
+  // -> honest NEWS_NO_RESULTS, exactly 2 requests (primary + fallback), and the rate-spacing sleepFn
+  // is actually invoked with the documented delay (never a real wait in this suite). ----
+  let zeroCalls = 0;
+  const zeroFetch = async () => {
+    zeroCalls += 1;
+    return { ok: true, status: 200, json: async () => ({ articles: [] }) } as unknown as Response;
+  };
+  let sleepCalls: number[] = [];
+  const recordingSleep = async (ms: number) => {
+    sleepCalls.push(ms);
+  };
+  const resultBothZero = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: zeroFetch,
+    sleepFn: recordingSleep,
+    now: () => FIXED_NOW_MS + 20 * 60 * 1000,
+  });
+  check('getHomeNewsFeed: both strategies return zero articles, no last-good -> ok false with NEWS_NO_RESULTS', resultBothZero.ok === false && resultBothZero.code === 'NEWS_NO_RESULTS');
+  check('getHomeNewsFeed: both-zero cascade issues exactly 2 requests (primary + fallback), never more', zeroCalls === 2);
+  check('getHomeNewsFeed: both-zero cascade waits via the injected sleepFn before the fallback request (never a real, un-injected wait)', sleepCalls.length === 1 && sleepCalls[0] === 1100);
+  check(
+    'getHomeNewsFeed: both-zero diagnostics are all zero, but honestly report that the fallback was attempted',
+    resultBothZero.diagnostics?.primaryProviderArticleCount === 0 &&
+      resultBothZero.diagnostics?.primaryNormalizedArticleCount === 0 &&
+      resultBothZero.diagnostics?.fallbackAttempted === true &&
+      resultBothZero.diagnostics?.fallbackProviderArticleCount === 0 &&
+      resultBothZero.diagnostics?.fallbackNormalizedArticleCount === 0 &&
+      resultBothZero.diagnostics?.returnedArticleCount === 0,
+  );
+  check('getHomeNewsFeed: NEWS_NO_RESULTS response uses HTTP-200-style ok:false shape, not a thrown error', typeof resultBothZero.code === 'string');
+  check(
+    'getHomeNewsFeed: diagnostics on a real cascade are sanitized integers/booleans only (no raw payload leakage)',
+    Object.values(resultBothZero.diagnostics ?? {}).every((v) => typeof v === 'number' || typeof v === 'boolean'),
+  );
+
+  // ---- primary returns articles but none survive normalization; the fallback (still injected, still
+  // no last-good) also yields nothing usable -> NEWS_NO_RESULTS, and the rejected raw text never
+  // leaks anywhere in the response. ----
+  const allRejectedFetch = async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      articles: [
+        { title: '   ', url: 'https://example.com/only-whitespace-title-never-survives-normalization' },
+        { title: 'missing url entirely -- this exact text must never leak into diagnostics or a response' },
+      ],
+    }),
+  }) as unknown as Response;
+  const resultAllRejected = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: allRejectedFetch,
+    sleepFn: noopSleep,
+    now: () => FIXED_NOW_MS + 40 * 60 * 1000,
+  });
+  check('getHomeNewsFeed: provider returns articles but none survive normalization -> NEWS_NO_RESULTS', resultAllRejected.ok === false && resultAllRejected.code === 'NEWS_NO_RESULTS');
+  check(
+    'getHomeNewsFeed: all-rejected diagnostics report the primary provider count but zero primary-normalized/returned',
+    resultAllRejected.diagnostics?.primaryProviderArticleCount === 2 &&
+      resultAllRejected.diagnostics?.primaryNormalizedArticleCount === 0 &&
+      resultAllRejected.diagnostics?.returnedArticleCount === 0,
+  );
+  check(
+    "getHomeNewsFeed: NEWS_NO_RESULTS never leaks a rejected article's raw title/content into the response",
+    !JSON.stringify(resultAllRejected).includes('this exact text must never leak'),
+  );
+  check('getHomeNewsFeed: NEWS_NO_RESULTS still returns an empty articles array (never a fabricated one)', Array.isArray(resultAllRejected.articles) && resultAllRejected.articles.length === 0);
+
+  // ---- primary succeeds with >=1 usable article: feedMode='latest', selectedStrategy=
+  // 'top_headlines_business_ko_kr', the Search fallback never runs, and this is the FIRST call in this
+  // block to establish a last-good runtime result. ----
   let successCalls = 0;
   const successFetch = async () => {
     successCalls += 1;
@@ -878,105 +986,147 @@ const okQuoteResult = (price: number, change: number | null, changePct: number |
       }),
     } as unknown as Response;
   };
-  const resultSuccess = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: successFetch, now: () => FIXED_NOW_MS });
-  check('getHomeNewsFeed: success -> ok true', resultSuccess.ok === true);
-  check('getHomeNewsFeed: success -> at most 6 articles, capped', resultSuccess.articles.length <= 6);
-  check('getHomeNewsFeed: success -> normalizes and classifies each article', resultSuccess.articles.every((a: { category: string }) => HOME_NEWS_CATEGORIES.includes(a.category)));
-  check('getHomeNewsFeed: success response never leaks the api key', JSON.stringify(resultSuccess).includes('fake-test-key-never-real') === false);
-
-  const resultCached = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: successFetch, now: () => FIXED_NOW_MS + 1000 });
-  check('getHomeNewsFeed: a second call within the TTL reuses the cache (no additional provider fetch)', successCalls === 1 && resultCached.ok === true);
-
-  const resultAfterTtl = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: successFetch, now: () => FIXED_NOW_MS + 6 * 60 * 1000 });
-  check('getHomeNewsFeed: a call after the TTL expires triggers a fresh provider fetch', successCalls === 2 && resultAfterTtl.ok === true);
-
-  // Phase 3GL-HF2 §9/§11/§12: sanitized diagnostics counts and the NEWS_NO_RESULTS zero-result
-  // contract. Every `now()` below is spaced well beyond the 5-minute TTL from any prior call in this
-  // block so each exercises a genuine fresh provider fetch rather than a cache hit.
-  check('getHomeNewsFeed: provider failure (401) never carries a diagnostics field (nothing meaningful to count)', !('diagnostics' in resultUnauthorized));
-  check('getHomeNewsFeed: provider failure (429) never carries a diagnostics field', !('diagnostics' in resultRateLimited));
-  check('getHomeNewsFeed: malformed provider body never carries a diagnostics field', !('diagnostics' in resultMalformed));
-  check('getHomeNewsFeed: absent key never carries a diagnostics field', !('diagnostics' in resultNoKey));
+  const resultSuccess = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: successFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS + 60 * 60 * 1000 });
+  check('getHomeNewsFeed: primary success -> ok true', resultSuccess.ok === true);
+  check('getHomeNewsFeed: primary success -> feedMode "latest"', resultSuccess.feedMode === 'latest');
+  check('getHomeNewsFeed: primary success -> selectedStrategy "top_headlines_business_ko_kr"', resultSuccess.selectedStrategy === 'top_headlines_business_ko_kr');
+  check('getHomeNewsFeed: primary success -> at most 6 articles, capped', resultSuccess.articles.length <= 6);
+  check('getHomeNewsFeed: primary success -> normalizes and classifies each article', resultSuccess.articles.every((a: { category: string }) => HOME_NEWS_CATEGORIES.includes(a.category)));
+  check('getHomeNewsFeed: primary success response never leaks the api key', JSON.stringify(resultSuccess).includes('fake-test-key-never-real') === false);
+  check('getHomeNewsFeed: primary success -> exactly 1 request (the Search fallback never runs once the primary already has usable articles)', successCalls === 1);
   check(
-    'getHomeNewsFeed: success result carries accurate sanitized diagnostics counts (2 provider, 2 normalized, 2 returned)',
-    resultSuccess.diagnostics?.providerArticleCount === 2 &&
-      resultSuccess.diagnostics?.normalizedArticleCount === 2 &&
+    'getHomeNewsFeed: primary-success diagnostics carry accurate sanitized counts and fallbackAttempted=false',
+    resultSuccess.diagnostics?.primaryProviderArticleCount === 2 &&
+      resultSuccess.diagnostics?.primaryNormalizedArticleCount === 2 &&
+      resultSuccess.diagnostics?.fallbackAttempted === false &&
       resultSuccess.diagnostics?.returnedArticleCount === 2,
   );
 
-  const providerZeroFetch = async () => ({ ok: true, status: 200, json: async () => ({ articles: [] }) }) as unknown as Response;
-  const resultProviderZero = await getHomeNewsFeed({
-    apiKey: 'fake-test-key-never-real',
-    fetchFn: providerZeroFetch,
-    now: () => FIXED_NOW_MS + 20 * 60 * 1000,
-  });
-  check('getHomeNewsFeed: provider itself returns zero articles -> ok false with NEWS_NO_RESULTS', resultProviderZero.ok === false && resultProviderZero.code === 'NEWS_NO_RESULTS');
-  check(
-    'getHomeNewsFeed: provider-zero diagnostics are all zero',
-    resultProviderZero.diagnostics?.providerArticleCount === 0 &&
-      resultProviderZero.diagnostics?.normalizedArticleCount === 0 &&
-      resultProviderZero.diagnostics?.returnedArticleCount === 0,
-  );
-  check('getHomeNewsFeed: NEWS_NO_RESULTS response uses HTTP-200-style ok:false shape, not a thrown error', typeof resultProviderZero.code === 'string');
+  const resultCached = await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: successFetch, sleepFn: noopSleep, now: () => FIXED_NOW_MS + 60 * 60 * 1000 + 1000 });
+  check('getHomeNewsFeed: a second call within the TTL reuses the cache (no additional provider fetch)', successCalls === 1 && resultCached.ok === true);
 
-  const allRejectedFetch = async () => ({
-    ok: true,
-    status: 200,
-    json: async () => ({
-      articles: [
-        { title: '   ', url: 'https://example.com/only-whitespace-title-never-survives-normalization' },
-        { title: 'missing url entirely -- this exact text must never leak into diagnostics or a response' },
-      ],
-    }),
-  }) as unknown as Response;
-  const resultAllRejected = await getHomeNewsFeed({
+  // ---- after TTL expiry, primary succeeds with zero usable articles -> the fallback Search request
+  // fires and succeeds -> feedMode='latest_available'. This OVERWRITES the last-good result with the
+  // fallback's articles (used by the next scenario). ----
+  let fallbackStageCalls = 0;
+  const capturedFallbackUrls: string[] = [];
+  const capturedPrimaryUrls: string[] = [];
+  const primaryEmptyThenFallbackFetch = async (url: string) => {
+    fallbackStageCalls += 1;
+    if (url.includes('/top-headlines')) {
+      capturedPrimaryUrls.push(url);
+      return { ok: true, status: 200, json: async () => ({ articles: [] }) } as unknown as Response;
+    }
+    capturedFallbackUrls.push(url);
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        articles: [
+          { title: 'Global stock market steadies as investors await Fed decision', url: 'https://example.com/fallback-1', publishedAt: '2026-07-25T03:00:00Z', source: { name: 'Test Wire' } },
+        ],
+      }),
+    } as unknown as Response;
+  };
+  const resultTtlExpiredFallback = await getHomeNewsFeed({
     apiKey: 'fake-test-key-never-real',
-    fetchFn: allRejectedFetch,
-    now: () => FIXED_NOW_MS + 40 * 60 * 1000,
+    fetchFn: primaryEmptyThenFallbackFetch,
+    sleepFn: recordingSleep,
+    now: () => FIXED_NOW_MS + 66 * 60 * 1000,
   });
-  check('getHomeNewsFeed: provider returns articles but none survive normalization -> NEWS_NO_RESULTS', resultAllRejected.ok === false && resultAllRejected.code === 'NEWS_NO_RESULTS');
+  check('getHomeNewsFeed: a call after the TTL expires triggers a fresh provider fetch', fallbackStageCalls === 2 && resultTtlExpiredFallback.ok === true);
+  check('getHomeNewsFeed: primary empty + fallback non-empty -> feedMode "latest_available"', resultTtlExpiredFallback.feedMode === 'latest_available');
+  check('getHomeNewsFeed: primary empty + fallback non-empty -> selectedStrategy "search_latest_available_market"', resultTtlExpiredFallback.selectedStrategy === 'search_latest_available_market');
+  check('getHomeNewsFeed: exactly one primary request and one fallback request issued (bounded at 2, never a fan-out)', capturedPrimaryUrls.length === 1 && capturedFallbackUrls.length === 1);
   check(
-    'getHomeNewsFeed: all-rejected diagnostics report the provider count but zero normalized/returned',
-    resultAllRejected.diagnostics?.providerArticleCount === 2 &&
-      resultAllRejected.diagnostics?.normalizedArticleCount === 0 &&
-      resultAllRejected.diagnostics?.returnedArticleCount === 0,
-  );
-  check(
-    'getHomeNewsFeed: NEWS_NO_RESULTS never leaks a rejected article\'s raw title/content into the response',
-    !JSON.stringify(resultAllRejected).includes('this exact text must never leak'),
-  );
-  check('getHomeNewsFeed: NEWS_NO_RESULTS still returns an empty articles array (never a fabricated one)', Array.isArray(resultAllRejected.articles) && resultAllRejected.articles.length === 0);
-
-  const resultNoResultsThenSuccess = await getHomeNewsFeed({
-    apiKey: 'fake-test-key-never-real',
-    fetchFn: successFetch,
-    now: () => FIXED_NOW_MS + 60 * 60 * 1000,
-  });
-  check(
-    'getHomeNewsFeed: a genuinely successful fetch after a cached NEWS_NO_RESULTS still returns real articles (zero-result caching does not wedge the feed)',
-    resultNoResultsThenSuccess.ok === true && resultNoResultsThenSuccess.articles.length > 0,
+    'getHomeNewsFeed: fallback diagnostics honestly report fallbackAttempted=true with the correct counts',
+    resultTtlExpiredFallback.diagnostics?.fallbackAttempted === true &&
+      resultTtlExpiredFallback.diagnostics?.fallbackProviderArticleCount === 1 &&
+      resultTtlExpiredFallback.diagnostics?.fallbackNormalizedArticleCount === 1 &&
+      resultTtlExpiredFallback.diagnostics?.returnedArticleCount === 1,
   );
 
-  // Phase 3GL-HF4 §7: provider URL contract -- requests max=10 (GNews Free plan cap, was 20 pre-HF4),
-  // omits lang entirely (the Search endpoint's supported-language list does not include Korean; the
-  // Korean-keyword COMBINED_QUERY is the targeting mechanism instead), carries exactly one q and one
-  // apikey parameter, and issues exactly one fetch call per request (no fan-out). Uses a `now()` well
-  // beyond every earlier offset in this block (60min) plus its TTL, so it can only ever be a fresh
-  // fetch and can never be mistaken for a cache hit by any earlier assertion in this block.
-  let urlFetchCalls = 0;
-  let capturedUrl = '';
-  const urlCapturingFetch = async (url: string) => {
-    urlFetchCalls += 1;
-    capturedUrl = url;
+  // ---- Phase 3GL-HF5 §5A/§5B url contract, captured from the two real requests just issued above. ----
+  const primaryParams = new URL(capturedPrimaryUrls[0]).searchParams;
+  check('getHomeNewsFeed: primary (Top Headlines) URL requests category=business', primaryParams.get('category') === 'business');
+  check('getHomeNewsFeed: primary (Top Headlines) URL requests lang=ko', primaryParams.get('lang') === 'ko');
+  check('getHomeNewsFeed: primary (Top Headlines) URL requests country=kr', primaryParams.get('country') === 'kr');
+  check('getHomeNewsFeed: primary (Top Headlines) URL requests max=10', primaryParams.get('max') === '10');
+  check('getHomeNewsFeed: primary (Top Headlines) URL never carries a client-controlled q parameter', primaryParams.has('q') === false);
+  check('getHomeNewsFeed: primary (Top Headlines) URL carries exactly one apikey parameter', primaryParams.getAll('apikey').length === 1);
+
+  const fallbackParams = new URL(capturedFallbackUrls[0]).searchParams;
+  check('getHomeNewsFeed: fallback (Search) URL requests sortby=publishedAt', fallbackParams.get('sortby') === 'publishedAt');
+  check('getHomeNewsFeed: fallback (Search) URL omits lang entirely (unsupported on the Search endpoint)', fallbackParams.has('lang') === false);
+  check('getHomeNewsFeed: fallback (Search) URL never constrains the window with from/to (surfaces the latest AVAILABLE article regardless of date)', !fallbackParams.has('from') && !fallbackParams.has('to'));
+  check('getHomeNewsFeed: fallback (Search) URL carries exactly one broad bilingual q parameter', fallbackParams.getAll('q').length === 1 && (fallbackParams.get('q') ?? '').length > 0);
+  check('getHomeNewsFeed: fallback (Search) URL requests max=10 (GNews Free plan cap)', fallbackParams.get('max') === '10');
+  check('getHomeNewsFeed: fallback (Search) URL carries exactly one apikey parameter', fallbackParams.getAll('apikey').length === 1);
+
+  // ---- a later refresh where BOTH strategies again return zero usable articles: because a last-good
+  // result now exists (the fallback's article from the previous scenario), the feed is served as
+  // feedMode='last_good' instead of an empty NEWS_NO_RESULTS, still bounded at exactly 2 requests, and
+  // the served article's publishedAt is copied through completely unchanged. ----
+  let laterBothZeroCalls = 0;
+  const laterBothZeroFetch = async () => {
+    laterBothZeroCalls += 1;
     return { ok: true, status: 200, json: async () => ({ articles: [] }) } as unknown as Response;
   };
-  await getHomeNewsFeed({ apiKey: 'fake-test-key-never-real', fetchFn: urlCapturingFetch, now: () => FIXED_NOW_MS + 100 * 60 * 1000 });
-  const capturedParams = new URL(capturedUrl).searchParams;
-  check('getHomeNewsFeed: provider URL requests max=10 (Phase 3GL-HF4, GNews Free plan cap)', capturedParams.get('max') === '10');
-  check('getHomeNewsFeed: provider URL omits lang entirely (Phase 3GL-HF4, unsupported on the Search endpoint)', capturedParams.has('lang') === false);
-  check('getHomeNewsFeed: provider URL carries exactly one q parameter', capturedParams.getAll('q').length === 1);
-  check('getHomeNewsFeed: provider URL carries exactly one apikey parameter', capturedParams.getAll('apikey').length === 1);
-  check('getHomeNewsFeed: exactly one fetch call issued for a single request (one-combined-query architecture preserved)', urlFetchCalls === 1);
+  const laterNowMs = FIXED_NOW_MS + 90 * 60 * 1000;
+  const resultLastGoodFromBothZero = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: laterBothZeroFetch,
+    sleepFn: noopSleep,
+    now: () => laterNowMs,
+  });
+  check('getHomeNewsFeed: both strategies zero again, but a last-good result exists -> ok true with feedMode "last_good"', resultLastGoodFromBothZero.ok === true && resultLastGoodFromBothZero.feedMode === 'last_good');
+  check('getHomeNewsFeed: last-good (from both-zero) selectedStrategy is "last_good_runtime_cache"', resultLastGoodFromBothZero.selectedStrategy === 'last_good_runtime_cache');
+  check('getHomeNewsFeed: last-good (from both-zero) still issues exactly 2 real requests before falling back to the runtime cache', laterBothZeroCalls === 2);
+  check('getHomeNewsFeed: last-good (from both-zero) serves the previously remembered fallback article', resultLastGoodFromBothZero.articles?.[0]?.url === 'https://example.com/fallback-1');
+  check(
+    "getHomeNewsFeed: last-good (from both-zero) never rewrites the served article's original publishedAt",
+    resultLastGoodFromBothZero.articles?.[0]?.publishedAt === '2026-07-25T03:00:00Z',
+  );
+  check(
+    'getHomeNewsFeed: last-good generatedAt reflects the CURRENT call, not the original article time',
+    resultLastGoodFromBothZero.generatedAt === new Date(laterNowMs).toISOString(),
+  );
+  check('getHomeNewsFeed: last-good (from both-zero) diagnostics.returnedArticleCount matches the served article count', resultLastGoodFromBothZero.diagnostics?.returnedArticleCount === resultLastGoodFromBothZero.articles?.length);
+  check(
+    'getHomeNewsFeed: the runtime last-good store is a defensive copy, not the same object reference as what was served',
+    resultLastGoodFromBothZero.articles?.[0] !== undefined && resultLastGoodFromBothZero.articles[0] !== resultTtlExpiredFallback.articles[0],
+  );
+
+  // ---- a later refresh where the PRIMARY REQUEST ITSELF fails: with a last-good result present, the
+  // failure is masked by feedMode='last_good' rather than the honest NEWS_UNAUTHORIZED code, and the
+  // Search fallback still never runs after a primary-level error (exactly 1 request). ----
+  let laterUnauthorizedCalls = 0;
+  const laterUnauthorizedFetch = async () => {
+    laterUnauthorizedCalls += 1;
+    return { ok: false, status: 401, json: async () => ({}) } as unknown as Response;
+  };
+  const resultLastGoodFromError = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: laterUnauthorizedFetch,
+    sleepFn: noopSleep,
+    now: () => FIXED_NOW_MS + 110 * 60 * 1000,
+  });
+  check('getHomeNewsFeed: a later primary-request failure with a last-good result -> ok true with feedMode "last_good" (never the raw failure code)', resultLastGoodFromError.ok === true && resultLastGoodFromError.feedMode === 'last_good');
+  check('getHomeNewsFeed: last-good (from a later provider failure) still issues only the 1 primary request -- the fallback never runs after a primary-level error', laterUnauthorizedCalls === 1);
+  check('getHomeNewsFeed: last-good (from a later provider failure) still serves the previously remembered article, publishedAt unchanged', resultLastGoodFromError.articles?.[0]?.publishedAt === '2026-07-25T03:00:00Z');
+
+  // ---- a genuinely successful fetch after all of the above still returns fresh, real articles: the
+  // feed is never permanently wedged into last_good or NEWS_NO_RESULTS once the provider recovers. ----
+  const resultRecovered = await getHomeNewsFeed({
+    apiKey: 'fake-test-key-never-real',
+    fetchFn: successFetch,
+    sleepFn: noopSleep,
+    now: () => FIXED_NOW_MS + 130 * 60 * 1000,
+  });
+  check(
+    'getHomeNewsFeed: the feed recovers to a genuine feedMode "latest" once the primary provider succeeds again (never permanently wedged in last_good/NEWS_NO_RESULTS)',
+    resultRecovered.ok === true && resultRecovered.feedMode === 'latest',
+  );
 }
 
 export const runAll = async (): Promise<number> => {

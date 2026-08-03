@@ -10,6 +10,23 @@ approval) merging the PR or a Production deploy.
 
 ## 1. Executive classification
 
+`PHASE_3GL_HF5_RELIABLE_LATEST_AVAILABLE_HOME_NEWS_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_PRODUCTION_VERIFICATION_PENDING`.
+Live Production traffic on the HF4 architecture (§1d) revealed a further defect: `GET /api/news/home.json`
+had moved past the raw `NEWS_PROVIDER_ERROR` (fixed by HF4) but was now returning an honest, cached
+`NEWS_NO_RESULTS` for extended periods, because the entire Home feed depended on exactly one strategy — a
+single GNews Search request using a fixed, Korean-only OR query — with no fallback when that one query
+happened to yield zero matching articles at request time. See §1e for the **Phase 3GL-HF5** hotfix that
+replaces this single-strategy design with a bounded two-stage provider cascade plus a runtime-local
+last-good fallback, so Home always shows the most recently available market news it can find rather than an
+avoidable empty state. All implementation and test work described below for the original phase,
+including the **Phase 3GL-HF1 hotfix** (§1a), the **Phase 3GL-HF2 hotfix** (§1b), the **Phase 3GL-HF3
+hotfix** (§1c), and the **Phase 3GL-HF4 hotfix** (§1d), is prior, separately-merged and Production-deployed
+work; HF5 (§1e) is implemented and locally validated on branch
+`hotfix/phase-3gl-hf5-home-news-latest-available` and is pending push/PR/Preview-verification/merge/Production
+-verification as its own separately-authorized release step (see §6).
+
+---
+
 `PHASE_3GL_HF4_GNEWS_PROVIDER_COMPATIBILITY_IMPLEMENTED_PRODUCTION_VERIFICATION_PENDING`. PR #8 was merged to
 `main` and the Git-integrated Production deployment succeeded, but live Production traffic then revealed that
 `GET /api/news/home.json` returns `{ "ok": false, "code": "NEWS_PROVIDER_ERROR" }` — see §1d for the
@@ -46,6 +63,91 @@ Based on this completed Owner verification, release approval was granted
 (`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`). No Production deploy, no Vercel environment
 mutation, and no Supabase migration have been performed as part of implementation or verification; the PR
 merge and Git-integrated Production deployment are the next, separately-authorized step (see §6).
+
+### 1e. HF5 hotfix — reliable latest-available Home news
+
+Phase 3GL-HF5 is a narrowly-scoped reliability hotfix, opened after HF4 (§1d) reached Production and fixed
+the raw provider-compatibility error, but Production traffic then showed that `GET /api/news/home.json`
+was still returning an honest, cached `NEWS_NO_RESULTS` for extended windows. Root cause: the entire feed
+depended on exactly one provider strategy — a single GNews Search request against a fixed Korean-only OR
+query (`COMBINED_QUERY`) — with no fallback of any kind when that one query happened to match zero articles
+at request time; a genuinely empty result from the single strategy was indistinguishable from "no news
+exists right now" even when GNews had other, perfectly usable recent articles available under a different
+query shape.
+
+- **Two-stage provider cascade, bounded at 2 requests per uncached load.** `getHomeNewsFeed` in
+  `src/lib/server/homeNews/gnewsHomeNewsProvider.mjs` now tries, in order:
+  1. **Primary — GNews Top Headlines**, `category=business&lang=ko&country=kr&max=10`
+     (`fetchGnewsTopHeadlinesBusinessKoKr`), strategy id `top_headlines_business_ko_kr`. A primary HTTP/
+     network/malformed-body error is returned immediately as its own honest sanitized code (400/401/403/429/
+     other → `NEWS_BAD_REQUEST`/`NEWS_UNAUTHORIZED`/`NEWS_QUOTA_EXHAUSTED`/`NEWS_RATE_LIMITED`/
+     `NEWS_PROVIDER_ERROR`, unchanged from HF4) — the fallback strategy never runs after a primary-level
+     transport/HTTP error, only after a primary success that yields zero usable articles.
+  2. **Fallback — bounded GNews Search for the most recently available articles regardless of date**
+     (`fetchGnewsSearchLatestAvailable`), strategy id `search_latest_available_market`: `sortby=publishedAt`,
+     no `from`/`to` bound, no `lang` parameter (the Search endpoint doesn't support Korean), `max=10`,
+     preceded by a `FALLBACK_REQUEST_DELAY_MS = 1100` injected delay to respect GNews rate spacing. This
+     stage only runs when the primary request succeeded but normalized to zero usable articles.
+  At most one primary + one fallback request is issued per uncached load — never more.
+- **`feedMode` contract.** Every successful response now carries a closed `feedMode` enum surfaced through
+  both the provider result and the `GET /api/news/home.json` route: `'latest'` (primary strategy served
+  articles), `'latest_available'` (fallback strategy served articles after the primary yielded zero), or
+  `'last_good'` (see below). `selectedStrategy` names exactly which of the three sources served the
+  response (`top_headlines_business_ko_kr` / `search_latest_available_market` /
+  `last_good_runtime_cache`).
+- **Runtime-local last-good fallback, independent of the 5-minute TTL cache.** A module-level
+  `lastGoodArticles` singleton remembers the most recently served non-empty article set (defensive copy, not
+  cache-bound). When a later load's full two-stage cascade would otherwise produce a primary error or a
+  both-strategies-zero `NEWS_NO_RESULTS`, and a last-good set exists, the route serves that last-good set
+  instead (`feedMode: 'last_good'`) rather than surfacing the transient failure — the two provider requests
+  are still issued every time (never skipped), so the feed keeps trying to recover a genuine `'latest'`
+  result on every subsequent load; `last_good` is never a permanent wedge. `diagnostics.returnedArticleCount`
+  on a `last_good` response always reflects the actual served (last-good) count, never the zero count from
+  the cascade that triggered the fallback. An empty state is now reached only when both strategies return
+  zero **and** no last-good set exists yet.
+- **Honest failures are never cached.** A primary-request error with no last-good, and a both-strategies-zero
+  `NEWS_NO_RESULTS` with no last-good, both deliberately bypass the shared `store()` TTL-cache helper and
+  return directly — the next load retries the provider cascade immediately instead of being wedged into
+  repeating the same transient failure for the rest of the 5-minute TTL window. Only a genuine success
+  (`'latest'`/`'latest_available'`) or a `last_good` result is ever written into the TTL cache.
+- **Category classifier gains English keyword coverage.** `CATEGORY_KEYWORDS` (used by `classifyArticle`) now
+  checks FX/COMMODITIES/MACRO/DOMESTIC_STOCKS English keywords (e.g. "dollar", "yen", "oil", "OPEC",
+  "Federal Reserve", "interest rate", "KOSPI") at least equal priority before the generic OVERSEAS_STOCKS
+  English keywords ("stocks", "Wall Street", "Nasdaq", "global market"), so an English-language fallback
+  article (expected now that the fallback strategy has no `lang` restriction) is classified into the correct
+  specific category rather than defaulting to a blanket OVERSEAS_STOCKS.
+- **`HomeMarketNews.astro` secondary notice.** A compact, theme-aware, `role="status"` notice
+  (`data-home-news-fallback-notice`) renders below the article grid whenever the server reports
+  `feedMode: 'latest_available'` or `'last_good'`, with distinct Korean copy for each
+  ("최신 업데이트가 없어 가장 최근에 확인된 시장 뉴스를 표시합니다." / "뉴스 업데이트가 지연되어 마지막으로
+  확인된 기사를 표시합니다."). The notice is never shown for `feedMode: 'latest'`, and is never shown
+  together with the zero-article empty-state panel — the two are mutually exclusive. No second
+  browser-side provider call was added; the notice is driven entirely by the single existing
+  `GET /api/news/home.json` response.
+- **No new secret/env exposure.** No new environment variable, Vercel project setting, or Supabase migration
+  was introduced. The GNews API key, the full request URL/query, and the raw provider response remain
+  unexposed in every diagnostics field, error code, and log line across both stages of the cascade.
+- **Test suite extension**: `scripts/home_live_data_testsrc.ts` grew to **187/187** passing (new coverage:
+  English-keyword classifier priority — including mixed oil-and-stocks / currency-and-stocks headlines
+  resolving to the more specific category, never a blanket OVERSEAS_STOCKS; the full two-stage cascade
+  ordered so every "no last-good yet" scenario runs before the first scenario that establishes one, with
+  `now()` clock offsets spaced well beyond the 5-minute TTL between logically distinct scenarios; primary
+  HTTP-error codes each with exactly 1 fetch call and no fallback invocation; a both-zero scenario asserting
+  exactly 2 requests, exactly one injected 1100ms rate-spacing sleep, and all-numeric/boolean diagnostics;
+  primary-success `feedMode: 'latest'`; TTL cache-hit; TTL-expiry into `feedMode: 'latest_available'` with
+  captured primary/fallback URL contract assertions — primary has `category=business&lang=ko&country=kr&
+  max=10` and no `q`, fallback has `sortby=publishedAt`, no `lang`, no `from`/`to`, exactly one non-empty `q`,
+  `max=10`, exactly one `apikey` each; a later both-zero and a later primary-error scenario each recovered by
+  `feedMode: 'last_good'` with unchanged `publishedAt`, correct `diagnostics.returnedArticleCount`, and a
+  defensive-copy check; and a final recovery scenario proving the feed returns to genuine `feedMode: 'latest'`
+  once the primary provider succeeds again — never permanently wedged). `scripts/check_phase_3gl_home_live_data_contract.mjs`
+  grew to **262/262** passing (new "Group 14" static-source assertions covering the primary/fallback request
+  shapes, the 2-request bound, the last-good runtime cache, the `feedMode`/`selectedStrategy` response
+  contract, the English classifier-keyword coverage, and the `HomeMarketNews.astro` fallback-notice UI; Group
+  11's honest-failures-never-cached assertion was corrected during authoring — see §5 — to accurately reflect
+  this design instead of a stale, misleading description that happened to still pass for an unrelated reason).
+- **Regression gate**: see §5.
+- **Production verification remains pending** until this hotfix is merged and deployed — see §6.
 
 ### 1d. HF4 hotfix — restored GNews provider compatibility
 
@@ -366,9 +468,13 @@ own fetching.
 
 ## 5. Regression gate
 
-- `npm run smoke:phase-3gl-home-live-data` — 149/149 passed (HF4; 138/138 at HF3; 117/117 at HF2).
-- `npm run check:phase-3gl-home-live-data` — 220/220 passed (HF4; 210/210 at HF3; 183/183 at HF2).
-- `npm run smoke:phase-3gj-live-market-dashboard` — 162/162 passed (no ripple from HF3).
+- `npm run smoke:phase-3gl-home-live-data` — **187/187 passed (HF5)**; 149/149 at HF4; 138/138 at HF3;
+  117/117 at HF2.
+- `npm run check:phase-3gl-home-live-data` — **262/262 passed (HF5)**; 220/220 at HF4; 210/210 at HF3;
+  183/183 at HF2.
+- `npm run smoke:phase-3gj-live-market-dashboard` — 162/162 passed (no ripple from HF3 or HF5; HF5 touched
+  only `src/lib/server/homeNews/*`, `src/components/HomeMarketNews.astro`,
+  `src/pages/api/news/home.json.ts`, and `src/styles/style.css`, none of which this sibling checker covers).
 - `npm run check:phase-3gj-live-market-dashboard` — 159/159 passed (no ripple from HF3). Two ripples fixed
   across this phase and HF1, both to the checker only, never to the tested implementation: (1) the original
   §2 migration caused the checker's `HomeLiveMarketSnapshot.astro` fetch assertion to be updated to accept
@@ -401,6 +507,29 @@ own fetching.
   on the strength of this local run alone: per this phase's governing instruction, that label is earned only
   when the identical commit's remote Vercel Preview build reaches `Ready`. That confirmation is the explicit
   subject of this hotfix's own §11 Preview verification step and is recorded there, not assumed here.
+- **At HF5, `npm run build` again exits non-zero on this local Windows checkout — decimal `-1073740791`
+  (`0xC0000409`, `STATUS_STACK_BUFFER_OVERRUN`) — at the same log position as HF4: every logged Astro/Vite
+  stage (type generation, server-entrypoint build, three Vite builds, "Rearranging server assets... ✓
+  Completed") finishes with zero errors and produces a fully-populated `dist/client` (42 files) and
+  `dist/server` (74 files), but the process then crashes during/after the `@astrojs/vercel` function-bundling
+  step; `.vercel/output/server` and `.vercel/output/static` remain empty and `.vercel/output/config.json` is
+  not created, identically to the HF4 pattern.** This time the root cause was not merely re-assumed by
+  analogy to HF3/HF4 — it was conclusively isolated with a controlled, multi-variable experiment before being
+  recorded: (1) a fresh `git worktree` of the HF5 baseline commit at a plain-ASCII temp path, with a clean
+  `npm install`, built successfully (**exit 0**, full `.vercel/output` populated) — ruling out "the crash is
+  simply inherent to this commit"; (2) the identical baseline commit, freshly `npm install`ed at a *different*
+  local path containing Korean characters, crashed identically (`-1073740791`, same log position); (3)
+  rebuilding in-place on the real HF5 working tree (Korean-character path) with this hotfix's own changes
+  temporarily `git stash`ed out (byte-identical to baseline) still crashed identically. This isolates the
+  cause to **non-ASCII (Korean) characters in the local filesystem path** interacting with a native binary
+  during the Vercel adapter's function-bundling step on Windows — not to any code in the HF5 diff, not to any
+  specific commit, and not to stale build caches. Classified
+  `LOCAL_WINDOWS_NON_ASCII_PATH_NATIVE_BUNDLING_CRASH_CONFIRMED_ENVIRONMENT_ONLY_NON_RELEASE_BLOCKING`: this is
+  a stronger, experimentally-proven conclusion than HF3/HF4's "same class of anomaly, not labeled
+  non-blocking without a remote confirmation" — it is recorded as non-blocking on the strength of this local
+  isolation alone, since Vercel's own remote build runs on Linux at an ASCII path and is unaffected by this
+  local-only condition. Remote Preview build/deploy verification for the exact HF5 commit is still tracked as
+  its own separate confirmation in §6, not skipped because of this finding.
 - `git diff --check` — exit 0 (only benign CRLF/LF line-ending advisories, no conflict markers, no
   trailing-whitespace errors).
 
@@ -412,13 +541,21 @@ own fetching.
 - Release approval was **granted** (`PHASE_3GL_OWNER_PREVIEW_VERIFIED_RELEASE_APPROVAL_READY`), PR #8 was
   merged to `main`, and the Git-integrated Production deployment reached `READY`. Production Home and `GET
   /api/home/live-market.json` verified healthy, but `GET /api/news/home.json` returned
-  `NEWS_PROVIDER_ERROR` — see §1d for the **Phase 3GL-HF4** provider-compatibility hotfix now addressing this.
-  HF4 Production verification is **pending** until the hotfix branch
-  (`hotfix/phase-3gl-gnews-provider-compatibility`) is merged and deployed.
+  `NEWS_PROVIDER_ERROR` — see §1d for the **Phase 3GL-HF4** provider-compatibility hotfix that addressed
+  this; HF4 subsequently merged (PR #9) and was Production-verified.
+- Production traffic on the HF4 architecture then surfaced the further reliability gap described in §1e:
+  the single-strategy Home news feed could legitimately return zero articles even though other, usable
+  recent articles existed under a different query shape. **Phase 3GL-HF5** (§1e) is implemented on branch
+  `hotfix/phase-3gl-hf5-home-news-latest-available`, with local smoke (187/187) and checker (262/262) suites
+  green, `npm ls --depth=0` clean, and `git diff --check` clean. HF5 push/PR/Preview-verification/merge/
+  Production-verification is the next, separately-authorized step for this hotfix.
 - Comprehensive/broad Phase 3 responsive, accessibility, and symbol-matrix QA remains deferred until Phase 3
   Closeout (`COMPREHENSIVE_QA_AND_OPTIMIZATION_DEFERRED_UNTIL_PHASE_3_CLOSEOUT`); only the focused Production
   checks in this release's scope are performed now.
 
 ## 7. Next phase
 
-**Phase 3GM — Operations and Admin MVP.** `PLANNED`, not started by this phase.
+**Phase 3GM — Operations and Admin MVP.** `IN_PROGRESS` (separate branch/PR, not started or advanced by
+HF5). After HF5 merges and is Production-verified, the next distinct piece of work is standing up
+`feature/phase-4a-home-common-shell-production` (created from the HF5 merge commit, no implementation
+performed on it by this phase) — see the master roadmap doc for how Phase 4A fits into the overall sequence.
