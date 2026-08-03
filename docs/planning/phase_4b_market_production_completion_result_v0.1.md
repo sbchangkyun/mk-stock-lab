@@ -166,7 +166,11 @@ six pre-existing untracked items unrelated to this phase (`.agents/`, `.claude/`
 
 ## 8. Commit / push / PR / deployment record
 
-_Filled in as each step completes under this phase's continuous fast-track authorization._
+- Commit `552bf91` on `feature/phase-4b-market-production-completion` (13 files changed, 1073 insertions,
+  102 deletions; 6 modified + 3 new test scripts + 2 new docs + roadmap/changelog edits — see §6).
+- Pushed to `origin/feature/phase-4b-market-production-completion`.
+- PR [#13](https://github.com/sbchangkyun/mk-stock-lab/pull/13) opened against `main`.
+- Preview / merge / Production steps below are filled in as they land.
 
 ## 9. Production verification — live HTTP results
 
