@@ -192,8 +192,8 @@ check('route response never includes a raw provider payload/header/token field',
 log('--- Group 5: gnewsHomeNewsProvider.mjs ---');
 check('provider never reads process.env or import.meta.env directly (key is always injected by the caller)',
   !/process\.env|import\.meta\.env/.test(gnewsProvider));
-check('provider defines exactly one combined query string (no per-category multi-query fan-out)',
-  (gnewsProvider.match(/const COMBINED_QUERY/g) || []).length === 1 && !/GNEWS_QUERY_DEFINITIONS/.test(gnewsProvider));
+check('provider defines exactly one fallback query string (no per-category multi-query fan-out)',
+  (gnewsProvider.match(/const FALLBACK_QUERY/g) || []).length === 1 && !/GNEWS_QUERY_DEFINITIONS/.test(gnewsProvider));
 check('caps output to at most 6 articles', /MAX_ARTICLES\s*=\s*6/.test(gnewsProvider));
 check('cache TTL is 5 minutes', /HOME_NEWS_TTL_MS\s*=\s*5\s*\*\s*60\s*\*\s*1000/.test(gnewsProvider));
 check('absent/empty key returns NEWS_NOT_CONFIGURED, never a fixture fallback (no fixture import)',
@@ -426,26 +426,24 @@ check(
     !/changePct:\s*directionsConflict\s*\?\s*null/.test(homeLiveMarket),
 );
 
-log('--- Group 11: GNews empty-feed diagnostics + zero-result contract (§9-§11) ---');
+log('--- Group 11: GNews empty-feed diagnostics + zero-result contract (§9-§11, superseded field names updated by HF5) ---');
 check(
-  'gnewsHomeNewsProvider.mjs computes all three sanitized diagnostic counters',
-  /providerArticleCount/.test(gnewsProvider) && /normalizedArticleCount/.test(gnewsProvider) && /returnedArticleCount/.test(gnewsProvider),
+  'gnewsHomeNewsProvider.mjs computes the sanitized diagnostic counters for both cascade stages',
+  /primaryProviderArticleCount/.test(gnewsProvider) && /primaryNormalizedArticleCount/.test(gnewsProvider) &&
+    /fallbackProviderArticleCount/.test(gnewsProvider) && /fallbackNormalizedArticleCount/.test(gnewsProvider) &&
+    /returnedArticleCount/.test(gnewsProvider),
 );
+check('a zero-return feed (both strategies) reports the honest NEWS_NO_RESULTS code (never an indistinguishable ok:true with an empty array)', /NEWS_NO_RESULTS/.test(gnewsProvider));
 check(
-  'diagnostics counters are plain integers derived from array lengths, never raw article content',
-  /providerArticleCount\s*=\s*result\.articles\.length/.test(gnewsProvider) &&
-    /normalizedArticleCount\s*=\s*normalized\.length/.test(gnewsProvider) &&
-    /returnedArticleCount\s*=\s*articles\.length/.test(gnewsProvider),
-);
-check('a zero-return feed reports the honest NEWS_NO_RESULTS code (never an indistinguishable ok:true with an empty array)', /NEWS_NO_RESULTS/.test(gnewsProvider));
-check(
-  'the zero-result branch is keyed on returnedArticleCount === 0 (post-normalization, not just a raw-provider-empty check)',
-  /returnedArticleCount\s*===\s*0/.test(gnewsProvider),
-);
-check('a NEWS_NO_RESULTS outcome is cached like a success (preserves the one-request-per-window invariant)', /cache\s*=\s*\{\s*value,\s*storedAtMs:\s*now\(\)\s*\}/.test(gnewsProvider));
-check(
-  'the combined query is the simplified conservative 8-term set (§10), not the old 16-term expression',
-  gnewsProvider.includes("'코스피 OR 코스닥 OR 국내증시 OR 뉴욕증시 OR 나스닥 OR 환율 OR 금리 OR 유가'"),
+  // Phase 3GL-HF5 §6/§11: honest failures (a primary-request error with no last-good, or a
+  // both-strategies-zero NEWS_NO_RESULTS with no last-good) are deliberately NEVER written into the
+  // TTL cache -- they bypass `store()` entirely so the very next load retries the provider immediately
+  // instead of being wedged into repeating the same failure for the rest of the 5-minute window. Only
+  // a genuine success (latest/latest_available) or a last_good result is cached.
+  'the shared store() helper exists and only success/last_good outcomes are written into the TTL cache (honest failures bypass it and retry on the next load)',
+  /ttlCache\s*=\s*\{\s*value,\s*storedAtMs:\s*now\(\)\s*\}/.test(gnewsProvider) &&
+    !/return\s+store\(\{\s*ok:\s*false,\s*code:\s*primaryResult\.code/.test(gnewsProvider) &&
+    !/return\s+store\(\{\s*ok:\s*false,\s*code:\s*'NEWS_NO_RESULTS'/.test(gnewsProvider),
 );
 check('home.json.ts route surfaces diagnostics on success responses', /diagnostics:\s*result\.diagnostics/.test(homeNewsRoute));
 check(
@@ -454,7 +452,7 @@ check(
 );
 check(
   'no diagnostics-related code path ever references a raw article title/content/query/api-key field',
-  !/diagnostics[\s\S]{0,10}(apiKey|COMBINED_QUERY|rawArticle|\.title\b|\.content\b)/.test(gnewsProvider) &&
+  !/diagnostics[\s\S]{0,10}(apiKey|FALLBACK_QUERY|rawArticle|\.title\b|\.content\b)/.test(gnewsProvider) &&
     !/diagnostics[\s\S]{0,10}(apiKey|rawArticle|\.title\b|\.content\b)/.test(homeNewsRoute),
 );
 
@@ -526,30 +524,133 @@ check('Snapshot grid has a 3/2/1 responsive breakpoint ladder for the expanded 9
 // ---------------------------------------------------------------------------
 // Group 13: Phase 3GL-HF4 — GNews provider compatibility fix (max=10, no lang=ko, extended status map)
 // ---------------------------------------------------------------------------
-log('--- Group 13: HF4 GNews provider compatibility (max=10, no lang, sanitized status mapping) ---');
+log('--- Group 13: HF4 GNews provider compatibility (max=10, sanitized status mapping — superseded by the HF5 dual-endpoint cascade below) ---');
 check(
   'PROVIDER_MAX is 10 (GNews Free plan cap, was 20 pre-HF4)',
   /PROVIDER_MAX\s*=\s*10/.test(gnewsProvider) && !/PROVIDER_MAX\s*=\s*20/.test(gnewsProvider),
 );
-check(
-  'the request params object never sets a lang parameter (Search endpoint does not support Korean; the Korean-keyword COMBINED_QUERY is the targeting mechanism instead)',
-  !/lang\s*:\s*['"]ko['"]/.test(gnewsProvider),
-);
+check('HTTP 400 maps to the sanitized NEWS_BAD_REQUEST code', /mapGnewsHttpErrorCode[\s\S]{0,300}status\s*===\s*400\)\s*return\s*'NEWS_BAD_REQUEST'/.test(gnewsProvider));
+check('HTTP 401 maps to NEWS_UNAUTHORIZED (isolated from 403, no longer sharing one branch)', /status\s*===\s*401\)\s*return\s*'NEWS_UNAUTHORIZED'/.test(gnewsProvider));
+check('HTTP 403 maps to the sanitized NEWS_QUOTA_EXHAUSTED code (was folded into NEWS_UNAUTHORIZED pre-HF4)', /status\s*===\s*403\)\s*return\s*'NEWS_QUOTA_EXHAUSTED'/.test(gnewsProvider));
+check('HTTP 429 still maps to NEWS_RATE_LIMITED (unchanged)', /status\s*===\s*429\)\s*return\s*'NEWS_RATE_LIMITED'/.test(gnewsProvider));
+check('every other non-2xx status still falls through to the generic NEWS_PROVIDER_ERROR (no raw status/body ever surfaced)', /return\s*'NEWS_PROVIDER_ERROR'/.test(gnewsProvider));
+check('the sanitized status-mapping helper is shared by both GNews endpoint fetchers (no duplicated ad hoc status logic)',
+  (gnewsProvider.match(/mapGnewsHttpErrorCode\(res\.status\)/g) || []).length === 1 && (gnewsProvider.match(/fetchGnewsEndpoint\(/g) || []).length >= 2);
+
+// ---------------------------------------------------------------------------
+// Group 14: Phase 3GL-HF5 — bounded two-stage cascade, last-good runtime fallback, feedMode contract,
+// English category-keyword coverage, and the HomeMarketNews.astro fallback-notice UI.
+// ---------------------------------------------------------------------------
+log('--- Group 14: HF5 §5A primary — Korean business Top Headlines ---');
+check('defines the Top Headlines endpoint base (distinct from the Search base)',
+  gnewsProvider.includes("GNEWS_TOP_HEADLINES_BASE = 'https://gnews.io/api/v4/top-headlines'") &&
+    gnewsProvider.includes("GNEWS_SEARCH_BASE = 'https://gnews.io/api/v4/search'"));
 {
-  const paramsMatch = gnewsProvider.match(/const\s+params\s*=\s*new\s+URLSearchParams\(\{[\s\S]*?\}\);/);
-  const paramsBlock = paramsMatch ? paramsMatch[0] : '';
-  check('the URLSearchParams construction block exists and never contains a lang key at all', paramsBlock.length > 0 && !/\blang\s*:/.test(paramsBlock));
-  check('the URLSearchParams construction block still carries exactly one q and one apikey key (query architecture preserved)',
-    (paramsBlock.match(/\bq\s*:/g) || []).length === 1 && (paramsBlock.match(/\bapikey\s*:/g) || []).length === 1);
+  const primaryFn = gnewsProvider.match(/fetchGnewsTopHeadlinesBusinessKoKr\s*=\s*async[\s\S]*?\n\};/);
+  const primaryBody = primaryFn ? primaryFn[0] : '';
+  check('primary fetcher function exists', primaryBody.length > 0);
+  check('primary request uses category=business', /category:\s*'business'/.test(primaryBody));
+  check('primary request uses lang=ko', /lang:\s*'ko'/.test(primaryBody));
+  check('primary request uses country=kr', /country:\s*'kr'/.test(primaryBody));
+  check('primary request max is bounded to the PROVIDER_MAX (<=10) plan cap', /max:\s*String\(PROVIDER_MAX\)/.test(primaryBody));
+  check('primary request never sets a client-controlled q parameter', !/\bq:\s*/.test(primaryBody));
+  check('primary request targets the Top Headlines base', primaryBody.includes('GNEWS_TOP_HEADLINES_BASE'));
 }
-check('HTTP 400 maps to the new sanitized NEWS_BAD_REQUEST code', /if\s*\(res\.status\s*===\s*400\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_BAD_REQUEST'\s*\}/.test(gnewsProvider));
-check('HTTP 401 maps to NEWS_UNAUTHORIZED (isolated from 403, no longer sharing one branch)', /if\s*\(res\.status\s*===\s*401\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_UNAUTHORIZED'\s*\}/.test(gnewsProvider));
-check('HTTP 403 maps to the new sanitized NEWS_QUOTA_EXHAUSTED code (was folded into NEWS_UNAUTHORIZED pre-HF4)', /if\s*\(res\.status\s*===\s*403\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_QUOTA_EXHAUSTED'\s*\}/.test(gnewsProvider));
-check('HTTP 429 still maps to NEWS_RATE_LIMITED (unchanged)', /if\s*\(res\.status\s*===\s*429\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_RATE_LIMITED'\s*\}/.test(gnewsProvider));
-check('every other non-2xx status still falls through to the generic NEWS_PROVIDER_ERROR (no raw status/body ever surfaced)', /if\s*\(!res\.ok\)\s*return\s*\{\s*ok:\s*false,\s*code:\s*'NEWS_PROVIDER_ERROR'\s*\}/.test(gnewsProvider));
-check('preserves the one-combined-query architecture: still exactly one COMBINED_QUERY definition and one fetch call site in fetchGnewsSearch',
-  (gnewsProvider.match(/const COMBINED_QUERY/g) || []).length === 1 && (gnewsProvider.match(/fetchFn\(/g) || []).length === 1,
-);
+check('primary strategy identifier is top_headlines_business_ko_kr', gnewsProvider.includes("'top_headlines_business_ko_kr'"));
+check('primary success sets feedMode=latest', /feedMode:\s*'latest'/.test(gnewsProvider));
+
+log('--- Group 14: HF5 §5B fallback — latest-available market Search ---');
+{
+  const fallbackFn = gnewsProvider.match(/fetchGnewsSearchLatestAvailable\s*=\s*async[\s\S]*?\n\};/);
+  const fallbackBody = fallbackFn ? fallbackFn[0] : '';
+  check('fallback fetcher function exists', fallbackBody.length > 0);
+  check('fallback request uses the Search base', fallbackBody.includes('GNEWS_SEARCH_BASE'));
+  check('fallback request uses sortby=publishedAt', /sortby:\s*'publishedAt'/.test(fallbackBody));
+  check('fallback request never sets a from parameter', !/\bfrom:\s*/.test(fallbackBody));
+  check('fallback request never sets a to parameter', !/\bto:\s*/.test(fallbackBody));
+  check('fallback request never sets an unnecessary lang parameter', !/\blang:\s*/.test(fallbackBody));
+  check('fallback request max is bounded to the PROVIDER_MAX (<=10) plan cap', /max:\s*String\(PROVIDER_MAX\)/.test(fallbackBody));
+}
+check('fallback query is a single broad bilingual FALLBACK_QUERY definition (Korean + English topical coverage)',
+  (gnewsProvider.match(/const FALLBACK_QUERY/g) || []).length === 1 &&
+    gnewsProvider.includes('economy') && gnewsProvider.includes('stocks') && gnewsProvider.includes('inflation') &&
+    gnewsProvider.includes('interest rates') && gnewsProvider.includes('currency') && gnewsProvider.includes('oil') &&
+    gnewsProvider.includes('코스피') && gnewsProvider.includes('코스닥'));
+check('fallback strategy identifier is search_latest_available_market', gnewsProvider.includes("'search_latest_available_market'"));
+check('fallback success sets feedMode=latest_available', /feedMode:\s*'latest_available'/.test(gnewsProvider));
+check('fallback rate-spacing delay is routed through an injectable sleepFn dependency (never a bare setTimeout awaited inline)',
+  gnewsProvider.includes('sleepFn') && /deps\.sleepFn\s*\?\?/.test(gnewsProvider) && /await\s+sleepFn\(FALLBACK_REQUEST_DELAY_MS\)/.test(gnewsProvider));
+check('the fallback request only runs after a primary request that itself SUCCEEDED but returned zero usable articles (never after a primary HTTP-level error)',
+  (() => {
+    const fnBody = gnewsProvider.match(/export const getHomeNewsFeed[\s\S]*$/)?.[0] ?? '';
+    const primaryErrorBranchIdx = fnBody.search(/if\s*\(!primaryResult\.ok\)/);
+    const sleepCallIdx = fnBody.search(/await\s+sleepFn\(/);
+    return primaryErrorBranchIdx >= 0 && sleepCallIdx > primaryErrorBranchIdx;
+  })());
+
+log('--- Group 14: HF5 — bounded 2-request cascade ---');
+check('getHomeNewsFeed issues at most 2 provider requests: exactly one primary call site and one fallback call site, never a third',
+  (gnewsProvider.match(/fetchGnewsTopHeadlinesBusinessKoKr\(/g) || []).length === 1 &&
+    (gnewsProvider.match(/fetchGnewsSearchLatestAvailable\(/g) || []).length === 1);
+check('the fallback call is reached only from inside getHomeNewsFeed (no second unconditional call site elsewhere)',
+  (gnewsProvider.match(/fetchGnewsSearchLatestAvailable\(apiKey, fetchFn\)/g) || []).length === 1);
+
+log('--- Group 14: HF5 §6 — runtime-local last-good fallback, independent of the 5-minute TTL cache ---');
+check('declares a separate module-local last-good state variable, distinct from the TTL response cache',
+  gnewsProvider.includes('let ttlCache') && gnewsProvider.includes('let lastGoodArticles'));
+check('records a fresh non-empty result into the last-good state (rememberLastGood) on both a primary and a fallback success',
+  (gnewsProvider.match(/rememberLastGood\(/g) || []).length === 2);
+check('a primary-request error consults last-good before falling back to an honest failure code',
+  /if\s*\(!primaryResult\.ok\)\s*\{[\s\S]{0,500}if\s*\(lastGoodArticles\)\s*return\s*store\(buildLastGoodValue\(now\)\)/.test(gnewsProvider));
+check('a both-strategies-zero outcome consults last-good before falling back to NEWS_NO_RESULTS',
+  /if\s*\(lastGoodArticles\)\s*return\s*store\(buildLastGoodValue\(now,\s*diagnostics\)\)/.test(gnewsProvider) &&
+    gnewsProvider.includes("code: 'NEWS_NO_RESULTS'"));
+check('a last-good response sets feedMode=last_good and strategy last_good_runtime_cache', /feedMode:\s*'last_good'/.test(gnewsProvider) && gnewsProvider.includes("'last_good_runtime_cache'"));
+check('last-good responses copy through the remembered articles without mutating their publishedAt field (only generatedAt reflects the current call)',
+  /generatedAt:\s*new Date\(now\(\)\)\.toISOString\(\)/.test(gnewsProvider) && !/publishedAt:\s*new Date\(now\(\)\)/.test(gnewsProvider));
+check('last-good articles are defensively copied (spread), never the same live array reference returned repeatedly',
+  gnewsProvider.includes('lastGoodArticles.map((article) => ({ ...article }))'));
+
+log('--- Group 14: HF5 §7 response contract — feedMode/selectedStrategy on the provider result and the route ---');
+check('provider success results always carry both feedMode and selectedStrategy fields', /feedMode:\s*'(latest|latest_available|last_good)'/.test(gnewsProvider) && /selectedStrategy:\s*'/.test(gnewsProvider));
+check('home.json.ts route forwards feedMode on success responses', /feedMode:\s*result\.feedMode/.test(homeNewsRoute));
+check('home.json.ts route forwards selectedStrategy on success responses', /selectedStrategy:\s*result\.selectedStrategy/.test(homeNewsRoute));
+check('provider/route code never contains a literal GNews request URL with an embedded api key value (query-string built via URLSearchParams only)',
+  !/https:\/\/gnews\.io[^'"\s]*apikey=[A-Za-z0-9_-]{10,}/.test(gnewsProvider + homeNewsRoute));
+
+log('--- Group 14: HF5 §8 — expanded English category-keyword coverage ---');
+check('FX keywords add English coverage (exchange rate/currency/dollar/yen/euro/forex)',
+  ['exchange rate', 'currency', 'dollar', 'yen', 'euro', 'forex'].every((k) => gnewsProvider.includes(`'${k}'`)));
+check('COMMODITIES keywords add English coverage (oil/crude/brent/gold/commodities; wti/opec already present)',
+  ['oil', 'crude', 'brent', 'gold', 'commodities'].every((k) => gnewsProvider.includes(`'${k}'`)));
+check('MACRO keywords add English coverage (interest rate/inflation/federal reserve/fed/central bank/unemployment/monetary policy; gdp already present)',
+  ['interest rate', 'inflation', 'federal reserve', 'fed', 'central bank', 'unemployment', 'monetary policy'].every((k) => gnewsProvider.includes(`'${k}'`)));
+check('DOMESTIC_STOCKS keywords add English coverage (kospi/kosdaq/korean stocks/south korean stocks)',
+  ['kospi', 'kosdaq', 'korean stocks', 'south korean stocks'].every((k) => gnewsProvider.includes(`'${k}'`)));
+check('OVERSEAS_STOCKS keywords add English coverage (nasdaq/dow/wall street/stocks/equities/stock market)',
+  ['nasdaq', 'dow', 'wall street', 'stocks', 'equities', 'stock market'].every((k) => gnewsProvider.includes(`'${k}'`)));
+check('CATEGORY_KEYWORDS preserves priority order FX -> COMMODITIES -> MACRO -> DOMESTIC_STOCKS -> OVERSEAS_STOCKS (specific categories checked at least as early as the generic overseas bucket)',
+  gnewsProvider.indexOf("category: 'FX'") < gnewsProvider.indexOf("category: 'OVERSEAS_STOCKS'") &&
+    gnewsProvider.indexOf("category: 'COMMODITIES'") < gnewsProvider.indexOf("category: 'OVERSEAS_STOCKS'") &&
+    gnewsProvider.indexOf("category: 'MACRO'") < gnewsProvider.indexOf("category: 'OVERSEAS_STOCKS'") &&
+    gnewsProvider.indexOf("category: 'DOMESTIC_STOCKS'") < gnewsProvider.indexOf("category: 'OVERSEAS_STOCKS'"));
+
+log('--- Group 14: HF5 §9 HomeMarketNews.astro — fallback notice UI ---');
+check('renders a dedicated fallback-notice element with a status/live-region role, separate from the delayed and empty elements',
+  homeNews.includes('data-home-news-fallback-notice') && /data-home-news-fallback-notice[^>]*role="status"/.test(homeNews));
+check('defines the exact latest_available notice copy', homeNews.includes('최신 업데이트가 없어 가장 최근에 확인된 시장 뉴스를 표시합니다.'));
+check('defines the exact last_good notice copy', homeNews.includes('뉴스 업데이트가 지연되어 마지막으로 확인된 기사를 표시합니다.'));
+check('the notice map is keyed exactly by the two fallback feedMode values (never shown for feedMode=latest)',
+  /FALLBACK_NOTICE_TEXT[\s\S]{0,100}latest_available:/.test(homeNews) && /FALLBACK_NOTICE_TEXT[\s\S]{0,300}last_good:/.test(homeNews) &&
+    !/FALLBACK_NOTICE_TEXT[\s\S]{0,400}latest:/.test(homeNews));
+check('the notice is only ever shown alongside rendered article cards, never in the zero-article/empty branch',
+  /if\s*\(body\.articles\.length === 0\)\s*\{[\s\S]{0,160}fallbackNotice\?\.classList\.add\(['"]hidden['"]\)/.test(homeNews) &&
+    /updateFallbackNotice\(fallbackNotice,\s*body\.feedMode\)/.test(homeNews));
+check('the notice helper hides the element (and clears its text) whenever the feedMode has no mapped copy',
+  /updateFallbackNotice\s*=\s*\([\s\S]{0,500}el\.classList\.add\('hidden'\)/.test(homeNews));
+check('style.css defines a visually secondary .home-news-fallback-notice class reusing the theme-aware muted surface/text variables',
+  STYLE_CSS.includes('.home-news-fallback-notice') &&
+    /\.home-news-fallback-notice\s*\{[^}]*var\(--surface-muted\)[^}]*var\(--text-muted\)/.test(STYLE_CSS.replace(/\n/g, ' ')));
 
 // ---------------------------------------------------------------------------
 // Group 10: package.json wiring

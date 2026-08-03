@@ -19,6 +19,7 @@
   <p class="home-news-delayed hidden" data-home-news-delayed role="status" aria-live="polite">
     뉴스 업데이트가 지연되고 있습니다.
   </p>
+  <p class="home-news-fallback-notice hidden" data-home-news-fallback-notice role="status" aria-live="polite"></p>
   <div class="home-news-grid hidden" data-home-news-grid></div>
   <div class="home-news-empty hidden" data-home-news-empty>
     <p>현재 표시할 시장 뉴스가 없습니다. 잠시 후 다시 확인해 주세요.</p>
@@ -39,6 +40,26 @@
   };
 
   const REFRESH_MS = 5 * 60 * 1000;
+
+  // Phase 3GL-HF5 §9: compact secondary notice text, keyed by the server's reported feedMode. Shown
+  // only for the two fallback modes -- never for feedMode='latest', and never in place of the article
+  // cards (the grid is always rendered alongside it when articles.length > 0).
+  const FALLBACK_NOTICE_TEXT: Record<string, string> = {
+    latest_available: '최신 업데이트가 없어 가장 최근에 확인된 시장 뉴스를 표시합니다.',
+    last_good: '뉴스 업데이트가 지연되어 마지막으로 확인된 기사를 표시합니다.',
+  };
+
+  const updateFallbackNotice = (el: HTMLElement | null, feedMode: unknown) => {
+    if (!el) return;
+    const text = typeof feedMode === 'string' ? FALLBACK_NOTICE_TEXT[feedMode] : undefined;
+    if (text) {
+      el.textContent = text;
+      el.classList.remove('hidden');
+    } else {
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+  };
 
   const CATEGORY_LABELS: Record<string, string> = {
     DOMESTIC_STOCKS: '국내주식',
@@ -108,6 +129,7 @@
 
     const loading = root.querySelector<HTMLElement>('[data-home-news-loading]');
     const delayed = root.querySelector<HTMLElement>('[data-home-news-delayed]');
+    const fallbackNotice = root.querySelector<HTMLElement>('[data-home-news-fallback-notice]');
     const grid = root.querySelector<HTMLElement>('[data-home-news-grid]');
     const empty = root.querySelector<HTMLElement>('[data-home-news-empty]');
 
@@ -122,10 +144,14 @@
         if (body.articles.length === 0) {
           grid?.classList.add('hidden');
           empty?.classList.remove('hidden');
+          fallbackNotice?.classList.add('hidden');
         } else {
           if (grid) renderArticles(body.articles as HomeNewsArticle[], grid);
           empty?.classList.add('hidden');
           grid?.classList.remove('hidden');
+          // Phase 3GL-HF5 §9: feedMode='latest' -> no notice; 'latest_available'/'last_good' -> a
+          // compact secondary status notice, never removing the article cards.
+          updateFallbackNotice(fallbackNotice, body.feedMode);
         }
         hasRenderedOnce = true;
       })
@@ -140,6 +166,7 @@
         loading?.classList.add('hidden');
         grid?.classList.add('hidden');
         empty?.classList.remove('hidden');
+        fallbackNotice?.classList.add('hidden');
       })
       .finally(() => {
         inFlight = false;

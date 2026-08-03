@@ -3090,6 +3090,16 @@ body.modal-open {
   margin: 0 0 12px;
 }
 
+.home-news-fallback-notice {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
 .home-news-empty {
   padding: 28px 24px;
   border: 1px dashed var(--border);

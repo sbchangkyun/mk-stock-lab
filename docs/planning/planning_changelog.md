@@ -1,5 +1,65 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 3GL-HF5 - 2026-08-03
+
+### Guarantee latest-available Home news (bounded two-stage cascade + last-good fallback)
+
+- Production's Home news feed (`GET /api/news/home.json`) depended on exactly one provider strategy — a
+  single GNews Search request against a fixed Korean-only OR query — and returned an honest but avoidable
+  `NEWS_NO_RESULTS` whenever that one query happened to match zero articles, even when other recent,
+  usable articles existed under a different query shape.
+- `src/lib/server/homeNews/gnewsHomeNewsProvider.mjs` now runs a bounded two-stage cascade, at most 2
+  external requests per uncached load: (1) primary **GNews Top Headlines**
+  (`category=business&lang=ko&country=kr&max=10`, strategy id `top_headlines_business_ko_kr`, feedMode
+  `latest`); (2) if the primary succeeds but yields zero usable articles, a bounded **GNews Search for the
+  most recently available articles regardless of date** (`sortby=publishedAt`, no `from`/`to`, no `lang`,
+  preceded by a 1100ms rate-spacing delay), strategy id `search_latest_available_market`, feedMode
+  `latest_available`. A primary HTTP/network/malformed-body error still returns its own honest sanitized
+  code immediately (400/401/403/429/other unchanged) — the fallback never runs after a primary-level error,
+  only after a primary success with zero results.
+- Added a module-local, TTL-independent **last-good** runtime fallback: the most recently served non-empty
+  article set is remembered and served (feedMode `last_good`, `selectedStrategy:
+  'last_good_runtime_cache'`) whenever a later load's cascade would otherwise produce a primary error or a
+  both-strategies-zero `NEWS_NO_RESULTS` — masking only the transient failure, never skipping the two
+  provider requests on subsequent loads, so the feed always keeps trying to recover a genuine `latest`
+  result and is never permanently wedged. An empty state is now reached only when both strategies return
+  zero **and** no last-good set exists yet.
+- Honest failures (a primary error or a both-zero `NEWS_NO_RESULTS`, in each case with no last-good
+  available) deliberately bypass the 5-minute TTL cache and return directly, so the very next load retries
+  the provider cascade immediately instead of repeating the same transient failure for the rest of the
+  cache window. Only a genuine success or a `last_good` result is ever cached.
+- Extended `CATEGORY_KEYWORDS` with English keyword coverage for FX/COMMODITIES/MACRO/DOMESTIC_STOCKS at
+  at-least-equal priority ahead of the generic OVERSEAS_STOCKS English keywords, so English-language
+  fallback articles (expected now that the fallback strategy has no `lang` restriction) classify into the
+  correct specific category rather than a blanket "overseas stocks" default.
+- `HomeMarketNews.astro` gained a compact, theme-aware, `role="status"` secondary notice
+  (`data-home-news-fallback-notice`) shown only for `feedMode` `latest_available`/`last_good`, alongside
+  the article cards (never replacing them, never shown together with the empty-state panel), driven
+  entirely by the existing single `GET /api/news/home.json` response — no second browser-side provider
+  call was added.
+- No fabricated/fixture articles, no copied articles committed, and no exposure of the GNews API key,
+  request URL, or raw provider response in any diagnostics field or log line, across either cascade stage.
+- No environment variable, Vercel project setting, or Supabase migration was added or changed.
+- `scripts/home_live_data_testsrc.ts` grew to **187/187** passing;
+  `scripts/check_phase_3gl_home_live_data_contract.mjs` grew to **262/262** passing (new "Group 14"
+  static-source assertions for the cascade, the 2-request bound, the last-good runtime cache, the
+  `feedMode`/`selectedStrategy` contract, the English classifier coverage, and the fallback-notice UI; a
+  stale "Group 11" check description was also corrected to accurately describe the honest-failures-never-
+  cached contract it was already (coincidentally) validating). `npm ls --depth=0` clean; `git diff --check`
+  clean; sibling `phase-3gj-live-market-dashboard` smoke (162/162) and checker (159/159) suites confirmed
+  unaffected.
+- Local Windows `npm run build` exits non-zero (`-1073740791` / `0xC0000409` / `STATUS_STACK_BUFFER_OVERRUN`)
+  after all Astro/Vite build stages complete cleanly, during/after the Vercel adapter's function-bundling
+  step. This was conclusively root-caused (not merely assumed) via controlled multi-worktree isolation —
+  varying commit content, working-directory path ASCII-ness, and dependency-install freshness
+  independently — to **non-ASCII (Korean) characters in the local filesystem path** interacting with a
+  native binary during that bundling step on Windows, not to any code in this hotfix. See
+  `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §5 for the full evidence chain. Classified
+  non-release-blocking on this local finding alone, since Vercel's own remote build runs on Linux at an
+  ASCII path.
+- See `phase_3gl_home_live_data_and_gnews_result_v0.1.md` §1e for full detail. Commit message: "Phase
+  3GL-HF5: guarantee latest available Home news".
+
 ## Phase 3GM-HF3 - 2026-08-03
 
 ### Add honest operations-unavailable state (hotfix on the same PR #10 branch)

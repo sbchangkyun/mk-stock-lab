@@ -6,7 +6,8 @@
  * Public route (no Supabase auth, no client-controlled input). Reads GNEWS_API_KEY only — never a
  * PUBLIC_ fallback, since this key must never reach the client bundle. Absent key returns a sanitized
  * NEWS_NOT_CONFIGURED response, never a fixture fallback. See
- * src/lib/server/homeNews/gnewsHomeNewsProvider.mjs for the fetch/normalize/dedupe/classify logic.
+ * src/lib/server/homeNews/gnewsHomeNewsProvider.mjs for the two-stage primary/fallback cascade,
+ * normalize/dedupe/classify logic, and the runtime-local last-good fallback (Phase 3GL-HF5).
  */
 
 import type { APIRoute } from 'astro';
@@ -49,7 +50,14 @@ export const GET: APIRoute = async () => {
   }
 
   return jsonResponse(
-    { ok: true, generatedAt: result.generatedAt, articles: result.articles, diagnostics: result.diagnostics },
+    {
+      ok: true,
+      generatedAt: result.generatedAt,
+      articles: result.articles,
+      feedMode: result.feedMode,
+      selectedStrategy: result.selectedStrategy,
+      diagnostics: result.diagnostics,
+    },
     200,
     SUCCESS_CACHE,
   );
