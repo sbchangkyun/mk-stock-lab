@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16055",
+  "masterVersion": "hf3b-hf2-kis-16075",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-04",
   "instruments": [
@@ -54138,6 +54138,19 @@
       "active": true
     },
     {
+      "symbol": "AUGC",
+      "displayName": "CORGI U.S. EQUITIES 10% STRUCTURED BUFFER ETF - AUGUST",
+      "englishName": "CORGI U.S. EQUITIES 10% STRUCTURED BUFFER ETF - AUGUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "augc"
+      ],
+      "active": true
+    },
+    {
       "symbol": "AUGM",
       "displayName": "FT VEST U.S. EQUITY MAX BUFFER ETF - AUGUST",
       "englishName": "FT VEST U.S. EQUITY MAX BUFFER ETF - AUGUST",
@@ -60482,6 +60495,19 @@
       "active": true
     },
     {
+      "symbol": "CAUG",
+      "displayName": "CORGI U.S. EQUITIES 15% STRUCTURED BUFFER ETF - AUGUST",
+      "englishName": "CORGI U.S. EQUITIES 15% STRUCTURED BUFFER ETF - AUGUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "caug"
+      ],
+      "active": true
+    },
+    {
       "symbol": "CBIL",
       "displayName": "CORGI 3-12 MONTH T-BILL ETF",
       "englishName": "CORGI 3-12 MONTH T-BILL ETF",
@@ -61661,6 +61687,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "chau"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CHDG",
+      "displayName": "CALAMOS ACTIVE HEDGED EQUITY ETF",
+      "englishName": "CALAMOS ACTIVE HEDGED EQUITY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "chdg"
       ],
       "active": true
     },
@@ -63988,6 +64027,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "ctap"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CTAU",
+      "displayName": "CORGI U.S. EQUITIES 30% STRUCTURED BUFFER ETF - AUGUST",
+      "englishName": "CORGI U.S. EQUITIES 30% STRUCTURED BUFFER ETF - AUGUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ctau"
       ],
       "active": true
     },
@@ -69764,6 +69816,19 @@
       "active": true
     },
     {
+      "symbol": "EMAU",
+      "displayName": "CORGI EMERGING MARKETS EQUITIES 15% STRUCTURED BUFFER ETF -",
+      "englishName": "CORGI EMERGING MARKETS EQUITIES 15% STRUCTURED BUFFER ETF -",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "emau"
+      ],
+      "active": true
+    },
+    {
       "symbol": "EMB",
       "displayName": "ISHARES TRUST J.P. MORGAN USD EMERGING MARKETS BD ETF",
       "englishName": "ISHARES TRUST J.P. MORGAN USD EMERGING MARKETS BD ETF",
@@ -74440,6 +74505,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "fiyy"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "FIZY",
+      "displayName": "FITZ-GERALD MUST HAVE PORTFOLIO AND OPTIONS OVERLAY ETF",
+      "englishName": "FITZ-GERALD MUST HAVE PORTFOLIO AND OPTIONS OVERLAY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "fizy"
       ],
       "active": true
     },
@@ -80736,6 +80814,19 @@
       "active": true
     },
     {
+      "symbol": "HAUG",
+      "displayName": "CORGI U.S. EQUITIES 100% STRUCTURED BUFFER ETF - AUGUST",
+      "englishName": "CORGI U.S. EQUITIES 100% STRUCTURED BUFFER ETF - AUGUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "haug"
+      ],
+      "active": true
+    },
+    {
       "symbol": "HAUS",
       "displayName": "TIDAL ETF TRUST RESIDENTIAL REIT ETF",
       "englishName": "TIDAL ETF TRUST RESIDENTIAL REIT ETF",
@@ -83878,6 +83969,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "icvt"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "IDAU",
+      "displayName": "CORGI INTERNATIONAL DEVELOPED EQUITIES 15% STRUCTURED BUFFER",
+      "englishName": "CORGI INTERNATIONAL DEVELOPED EQUITIES 15% STRUCTURED BUFFER",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "idau"
       ],
       "active": true
     },
@@ -89876,14 +89980,15 @@
     },
     {
       "symbol": "KEMQ",
-      "displayName": "KRANESHARES PUBLIC-PRIVATE EMERGING MARKETS INTERNET AND TEC",
-      "englishName": "KRANESHARES PUBLIC-PRIVATE EMERGING MARKETS INTERNET AND TEC",
+      "displayName": "KRANESHARES TRUST PUBLIC PRIVT EMER MRS INTE AND TECH ETF",
+      "englishName": "KRANESHARES TRUST PUBLIC PRIVT EMER MRS INTE AND TECH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "kemq"
+        "kemq",
+        "kraneshares public-private emerging markets internet and tec"
       ],
       "active": true
     },
@@ -104656,6 +104761,19 @@
       "active": true
     },
     {
+      "symbol": "QAU",
+      "displayName": "CORGI GROWTH & TECHNOLOGY 10% STRUCTURED BUFFER ETF - AU",
+      "englishName": "CORGI GROWTH & TECHNOLOGY 10% STRUCTURED BUFFER ETF - AU",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "qau"
+      ],
+      "active": true
+    },
+    {
       "symbol": "QB",
       "displayName": "PROSHARES NASDAQ-100 DYNAMIC BUFFER ETF",
       "englishName": "PROSHARES NASDAQ-100 DYNAMIC BUFFER ETF",
@@ -105679,6 +105797,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "qqa"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "QQAU",
+      "displayName": "CORGI GROWTH & TECHNOLOGY 15% STRUCTURED BUFFER ETF - AU",
+      "englishName": "CORGI GROWTH & TECHNOLOGY 15% STRUCTURED BUFFER ETF - AU",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "qqau"
       ],
       "active": true
     },
@@ -109015,13 +109146,14 @@
     },
     {
       "symbol": "RVNU",
-      "displayName": "DBX ETF TRUST XTRACKERS MUNI INFRASTR REVENUE BOND ETF",
-      "englishName": "DBX ETF TRUST XTRACKERS MUNI INFRASTR REVENUE BOND ETF",
+      "displayName": "XTRACKERS MUNICIPAL INFRASTRUCTURE REVENUE BOND ACTIVE ETF",
+      "englishName": "XTRACKERS MUNICIPAL INFRASTRUCTURE REVENUE BOND ACTIVE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "dbx etf trust xtrackers muni infrastr revenue bond etf",
         "rvnu"
       ],
       "active": true
@@ -109582,6 +109714,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "scap"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SCAU",
+      "displayName": "CORGI U.S. SMALL-CAP 15% STRUCTURED BUFFER ETF - AUGUST",
+      "englishName": "CORGI U.S. SMALL-CAP 15% STRUCTURED BUFFER ETF - AUGUST",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "scau"
       ],
       "active": true
     },
@@ -112195,6 +112340,32 @@
       "exchangeCode": "NAS",
       "aliases": [
         "smhc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SMHD",
+      "displayName": "MICROSECTORS -3X SHORT SEMICONDUCTOR ETNS",
+      "englishName": "MICROSECTORS -3X SHORT SEMICONDUCTOR ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "smhd"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SMHU",
+      "displayName": "MICROSECTORS 3X LONG SEMICONDUCTOR ETNS",
+      "englishName": "MICROSECTORS 3X LONG SEMICONDUCTOR ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "smhu"
       ],
       "active": true
     },
@@ -129397,6 +129568,19 @@
       "active": true
     },
     {
+      "symbol": "ADIG",
+      "displayName": "ADI GLOBAL DISTRIBUTION INC",
+      "englishName": "ADI GLOBAL DISTRIBUTION INC",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "adig"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ADIL",
       "displayName": "ADIAL PHARMACEUTICALS INC",
       "englishName": "ADIAL PHARMACEUTICALS INC",
@@ -142128,14 +142312,15 @@
     },
     {
       "symbol": "CCCT",
-      "displayName": "COLUMBUS CIRCLE CAPITAL CORP III",
-      "englishName": "COLUMBUS CIRCLE CAPITAL CORP III",
+      "displayName": "COLUMBUS CIRCLE CAP CORP III",
+      "englishName": "COLUMBUS CIRCLE CAP CORP III",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "ccct"
+        "ccct",
+        "columbus circle capital corp iii"
       ],
       "active": true
     },
@@ -154607,6 +154792,19 @@
       "active": true
     },
     {
+      "symbol": "FDMM",
+      "displayName": "FREEDOM METALS ACQUISITION CORP",
+      "englishName": "FREEDOM METALS ACQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "fdmm"
+      ],
+      "active": true
+    },
+    {
       "symbol": "FDMMU",
       "displayName": "FREEDOM METALS ACQUISITION CORP UNIT CONSIST EACH 1 CL A ORD",
       "englishName": "FREEDOM METALS ACQUISITION CORP UNIT CONSIST EACH 1 CL A ORD",
@@ -155461,6 +155659,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "fizz"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "FJDIU",
+      "displayName": "ARC GROUP SECURITIES ACQUISITION I UNIT EACH CONSIST 1 CL A",
+      "englishName": "ARC GROUP SECURITIES ACQUISITION I UNIT EACH CONSIST 1 CL A",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "fjdiu"
       ],
       "active": true
     },
@@ -180652,6 +180863,19 @@
       "active": true
     },
     {
+      "symbol": "OBX",
+      "displayName": "OBSIDIAN THERAPEUTICS INC",
+      "englishName": "OBSIDIAN THERAPEUTICS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "obx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "OC",
       "displayName": "OWENS CORNING",
       "englishName": "OWENS CORNING",
@@ -185632,13 +185856,14 @@
     },
     {
       "symbol": "PNNT",
-      "displayName": "PENNANTPARK INVESTMENT CORPORATION",
-      "englishName": "PENNANTPARK INVESTMENT CORPORATION",
+      "displayName": "PENNANTPARK INVEST CORP",
+      "englishName": "PENNANTPARK INVEST CORP",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
+        "pennantpark investment corporation",
         "pnnt"
       ],
       "active": true
@@ -187616,6 +187841,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "qncx"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "QNME",
+      "displayName": "QUANOME TECHNOLOGIES INC",
+      "englishName": "QUANOME TECHNOLOGIES INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "qnme"
       ],
       "active": true
     },
@@ -196551,6 +196789,19 @@
       "active": true
     },
     {
+      "symbol": "STLN",
+      "displayName": "STARLING ONCOLOGY INSTITUTE INC",
+      "englishName": "STARLING ONCOLOGY INSTITUTE INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "stln"
+      ],
+      "active": true
+    },
+    {
       "symbol": "STM",
       "displayName": "STMICROELECTRONICS NY SHS-EACH REPR 1 ORD EUR1.04",
       "englishName": "STMICROELECTRONICS NY SHS-EACH REPR 1 ORD EUR1.04",
@@ -198926,6 +199177,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "thch"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "THEOU",
+      "displayName": "BOA ACQUISITION CORPORATION II UNIT CONSIST OF 1 CL A ORD &",
+      "englishName": "BOA ACQUISITION CORPORATION II UNIT CONSIST OF 1 CL A ORD &",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "theou"
       ],
       "active": true
     },
@@ -207189,13 +207453,14 @@
     },
     {
       "symbol": "XIIIU",
-      "displayName": "CHURCHILL CAPITAL CORPORATION XIII UNIT CONSIST OF 1 CL A OR",
-      "englishName": "CHURCHILL CAPITAL CORPORATION XIII UNIT CONSIST OF 1 CL A OR",
+      "displayName": "CHURCHILL CAPITAL CORPORATION XIII UNIT CONS 1 A ORD & 1",
+      "englishName": "CHURCHILL CAPITAL CORPORATION XIII UNIT CONS 1 A ORD & 1",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "churchill capital corporation xiii unit consist of 1 cl a or",
         "xiiiu"
       ],
       "active": true
