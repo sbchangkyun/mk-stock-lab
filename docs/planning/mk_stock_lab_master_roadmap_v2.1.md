@@ -210,8 +210,10 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 
 ### In progress
 
-None currently — Phase 4B is complete; Phase 4C has not started. See "Next sequential product phases"
-below.
+Phase 4C — Chart AI production readiness pass. Implementation complete and locally validated
+(`PHASE_4C_CHART_AI_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_COMMIT_PENDING`); commit/push/PR, Vercel Preview
+verification, and Production verification remain. See "Next sequential product phases" below and
+`phase_4c_chart_ai_production_completion_plan_v0.1.md` / `..._result_v0.1.md` for full detail.
 
 ### Next sequential product phases
 
@@ -229,9 +231,11 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
 2. **Phase 4A — Home and Common Shell.** `PHASE_4A_MERGED_PRODUCTION_VERIFIED`. See "Completed" above.
 3. **Phase 4B — Market production readiness pass.** `PHASE_4B_MARKET_MERGED_PRODUCTION_VERIFIED`. See
    "Completed" above.
-4. **Phase 4C — Chart AI production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
-   `/chart-ai` against its already-verified functional scope (login gate, KR/US charts, similarity + MK AI
-   analysis, daily usage guard) — not a re-implementation of Phase 3GK.
+4. **Phase 4C — Chart AI production readiness pass.** `PHASE_4C_CHART_AI_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_COMMIT_PENDING`.
+   Copy/a11y/responsive-shell audit of `/chart-ai` against its already-verified functional scope (login gate,
+   KR/US charts, similarity + MK AI analysis, daily usage guard) — not a re-implementation of Phase 3GK.
+   Also restores the Market Intelligence client section that a prior Phase 3GG hotfix had silently dropped.
+   See "In progress" above.
 5. **Phase 4D — Lab production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of `/lab`,
    including its own already-honest "연동 예정" labeling of the NPS/Congress modules.
 6. **Phase 4E — Portfolio production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of

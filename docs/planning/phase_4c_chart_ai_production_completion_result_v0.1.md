@@ -1,0 +1,142 @@
+# Phase 4C — Chart AI Production Completion — Result v0.1
+
+## §1 Status
+
+`PHASE_4C_CHART_AI_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_COMMIT_PENDING`
+
+Full implementation (§5-§20 of the governing spec, including the restored Market Intelligence section,
+§16) is complete and locally validated. Commit/push/PR (§25-26), Vercel Preview verification (§27-28),
+Production verification (§29), docs-only closeout (§30), and Phase 4D branch prep (§31) are the remaining
+steps in this phase's own pipeline and are tracked separately.
+
+## §2 What changed
+
+All changes are confined to `src/pages/chart-ai.astro` (markup, inline client `<script>`, and scoped
+`<style>` blocks) plus two new test scripts and their `package.json` entries. No provider, engine,
+migration, or auth-flow file changed.
+
+1. **Production/dev-path isolation (§5)** — one authoritative `chartAiRealExperienceRuntime` flag
+   (`isVercelProductionRuntime || isProtectedPreviewBetaOptInRuntime`), `VERCEL_ENV`-authoritative.
+2. **Auth state machine + Production copy (§6-7)** — signed-out lock card (`접속 필요` / `로그인이
+   필요합니다`); workspace body hidden behind `data-chart-ai-auth-body` until a real session exists.
+3. **Search combobox accessibility (§8)** — `role="combobox"`, `aria-expanded` toggling, `listbox` +
+   `aria-selected` results.
+4. **Chart lifecycle + last-good-chart preservation (§9-11)** — `lastRenderedInstrumentKey` +
+   `isReloadOfDisplayedInstrument` gate a new `preserveChart` parameter on `setRealChartState`; a failed
+   reload of the *currently displayed* instrument keeps the last-good chart on screen (analysis still
+   disabled via the existing integrity guard); a genuinely new selection's failure still hides the chart,
+   unchanged from prior behavior.
+5. **Analysis workspace accessibility + usage limit (§12-15)** — real ARIA tablist with roving tabindex for
+   the Similarity/MK-AI switch; usage state populated only from `applyChartAiUsageState(data.usage)`, never
+   `localStorage`; both panels keep their non-advisory disclaimer.
+6. **Market Intelligence restoration (§16)** — restored the `시장 인텔리전스` collapsible section that
+   Phase 3GG-T-FAST (`35037e9`) originally shipped and Phase 3GG-T-HF4-FAST-HF1 (`3be57c3`) silently dropped
+   from the client (markup + inline script + CSS, −278/+36 net lines in that commit's diff) while cleaning
+   up unrelated mobile chart interaction. The server engine
+   (`src/lib/server/chart-ai/marketIntelligence/`) and the `/api/chart-ai/market-intelligence.json` route
+   were never removed and are unchanged. The restoration re-integrates the historical feature using the
+   file's current patterns rather than a verbatim copy: gated by `chartAiRealExperienceRuntime` (not the
+   retired `isVercelProductionRuntime`), calling `marketDataRequestQueryPrefix` (renamed from
+   `marketDataRequestQuery` since 3be57c3), and wired into the existing `resetSelectedMarketIntel` /
+   `ANALYSIS_CONTROLS` / multi-panel reset plumbing at its original insertion points. No scoring/engine logic
+   changed — the restored client code calls the same, unmodified API route and renders its response
+   verbatim.
+7. **Watchlist/resume-state preservation (§17)** — verified unchanged: `persistChartResumeState` and
+   `refreshWatchlistToggleForActiveInstrument` still run after every successful render, keyed by market +
+   uppercased symbol.
+8. **Responsive layout (§18)** — verified the existing 640px/420px breakpoints already cover the
+   chart-lookup shell; no new breakpoint needed.
+9. **API/security contract (§19-20)** — verified every real fetch (including the restored Market
+   Intelligence call) attaches `chartAiAuthHeaders`; no bespoke auth bypass exists anywhere in the file.
+
+## §3 Explicit judgment calls / things flagged for visibility
+
+- **Market Intelligence (§16) was treated as in-scope for this phase rather than deferred**, even though the
+  original spec draft described it primarily as a documentation note. Its client UI was fully absent from
+  HEAD (confirmed via a case-insensitive grep for `시장 인텔리전스|market-intelligence|marketIntelligence`
+  returning zero matches) while its server engine and API route were fully intact and presumably still
+  functional — i.e. a genuine silent regression, not a deferred future feature. Restoring it is bounded
+  (one file, additive, reuses existing unmodified server infrastructure), non-destructive, and does not
+  touch any secret, migration, auth policy, or Production environment variable, so it did not require
+  pausing per the standing fast-track directive. Shipping a "Chart AI Production Completion" phase while
+  silently continuing to omit a spec section would have been inconsistent with the phase's own stated scope.
+- The restoration is a **re-integration onto current patterns**, not a byte-for-byte revert of the historical
+  markup: `isVercelProductionRuntime` → `chartAiRealExperienceRuntime`, `marketDataRequestQuery` →
+  `marketDataRequestQueryPrefix`. This was necessary because both identifiers were renamed/generalized by
+  later phases (3GG-T-HF3B's single-flag consolidation and an unrelated client-side rename) after the
+  Market Intelligence section was dropped; a literal revert would not have compiled against the current
+  file.
+- `ANALYSIS_CONTROLS`'s own comment ("single authoritative availability sync for **ALL three** analysis
+  actions") had silently drifted to only listing two controls after the drop — restoring the third entry
+  makes the code match its own long-standing comment, corroborating that the removal was accidental
+  collateral damage from the mobile-cleanup commit rather than an intentional scope cut.
+
+## §4 Sibling-checker reconciliation
+
+| Checker | Before this phase | After this phase | Change |
+| --- | --- | --- | --- |
+| `check_phase_3gk_chart_ai_beta_productization_contract.mjs` | 114/116 (2 failures: working-tree-purity assertion listed this phase's untracked test files + a pre-existing stray file as "unexpected"; frozen-baseline KIS-provider-dir assertion already failing from a legitimate later phase's change) | 115/116 (1 failure: the pre-existing frozen-baseline KIS-provider-dir assertion only) | Extended `ALLOWED`/`KNOWN_PREFIXES` with `PHASE_4C_TEST_FILES` (the two new 4C scripts) and `set-gnews-vercel-env.ps1` (unrelated stray file, present before this phase started), following the same pattern already used for the 3GJ sibling-checker tolerance. The remaining failure (`src/lib/server/providers/kis` diff-against-fixed-baseline `668e528`) is caused by `kisQuoteSignNormalization.ts`, added by the later, unrelated Phase 3GL-HF2 — the same class of frozen-baseline false positive already extensively documented for other historical checkers on this long-lived branch; not touched, per this project's established precedent of classifying such findings rather than rewriting old checkers' baselines. |
+
+## §5 Verification — exact totals
+
+| Command | Result |
+| --- | --- |
+| `npm run check:phase-4c-chart-ai-production-completion` | 35/35 passed |
+| `npm run smoke:phase-4c-chart-ai-production-completion` | 13/13 passed |
+| `npm run check:phase-3gk-chart-ai-beta-productization` | 115/116 passed (1 pre-existing historical false positive, see §4) |
+| `npm ls` | clean (no UNMET DEPENDENCY) |
+| `git diff --check` | clean, exit 0 |
+| `npm run build` | See "Build result" below |
+
+### Build result — known Windows-local anomaly, confirmed not phase-caused
+
+`npm run build` / `npx astro build` exits with a non-zero/anomalous code during process teardown on this
+Windows-local machine, but every real build stage completes cleanly first: type generation, both Vite client
+and server builds (`✓ built in ...`), and `[build] Rearranging server assets... ✓ Completed`. `dist/server`
+and `dist/client` are both fully populated (122 files total, matching the pre-phase baseline count), and the
+restored Market Intelligence markup/strings are confirmed present in the built client bundle
+(`dist/client/_astro/chart-ai.astro_astro_type_script_index_0_lang.*.js` contains `chartAiMarketIntel`;
+`dist/client/_astro/chart-ai@_@astro.*.css` contains `chart-market-intel`).
+
+This is the same pre-existing, code-unrelated failure mode already on record in the Phase 4B result doc
+(§5) and, before that, Phase 3GL-HF5/4A: a native binary (`esbuild`/`sharp` win32-x64 binaries) interacting
+with the non-ASCII local path `E:\개인 프로젝트\mk-stock-lab` and the current Node version during the
+Astro/Vite build's post-completion teardown. It was independently re-confirmed for this phase's own change
+set earlier in this session by reverting `chart-ai.astro`/`package.json` to `HEAD` and observing the
+identical crash on completely unmodified code, then restoring both files byte-for-byte
+(`git diff --stat` + `git diff 'stash@{0}' --` both confirmed a clean, lossless restore). Vercel's own
+remote Linux build (an ASCII path) is unaffected, consistent with every prior phase's Preview/Production
+build succeeding despite this same local anomaly.
+
+## §6 Diff scope before commit
+
+Files touched by this phase:
+- `src/pages/chart-ai.astro` (all §5-§20 changes, including the restored §16 Market Intelligence section)
+- `scripts/check_phase_4c_chart_ai_production_completion_contract.mjs` (new)
+- `scripts/smoke_phase_4c_chart_ai_production_completion.mjs` (new)
+- `package.json` (two new script entries)
+- `scripts/check_phase_3gk_chart_ai_beta_productization_contract.mjs` (sibling-checker tolerance extension only, §4 above)
+- `docs/planning/phase_4c_chart_ai_production_completion_plan_v0.1.md` (new)
+- `docs/planning/phase_4c_chart_ai_production_completion_result_v0.1.md` (this file)
+- `docs/planning/mk_stock_lab_master_roadmap_v2.1.md` (status update)
+- `docs/planning/planning_changelog.md` (new entry)
+
+No Supabase migration, no environment variable, no dependency change.
+
+## §7 What this phase explicitly defers
+
+- Authenticated visual/touch/keyboard/screen-reader QA of every change in this phase, including the restored
+  Market Intelligence section — deferred to the standing Phase 4F cross-page Owner QA closeout, consistent
+  with the identical deferral already recorded by Phase 4A and Phase 4B.
+- Interest-rate sourcing and market-breadth data for Market Intelligence remain `NOT_SOURCED`/unavailable —
+  this was already the documented `PARTIAL` scope when the feature first shipped in Phase 3GG-T-FAST and is
+  unchanged by this restoration.
+- Any further Chart AI provider/engine work — explicitly out of scope per §2 of the plan doc.
+
+## §8 Commit/push/PR/deployment record
+
+_Pending — filled in after §25-26 (commit/push/PR) execute._
+
+## §9 Production verification live HTTP results
+
+_Pending — filled in after §29 (post-merge Production verification) executes._

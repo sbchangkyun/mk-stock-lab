@@ -1,5 +1,40 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4C — Chart AI Production Completion, implemented and locally validated - 2026-08-04
+
+- Implemented Phase 4C — a truthfulness/accessibility/responsiveness/reliability completion pass over
+  `/chart-ai` (`src/pages/chart-ai.astro`): a single `VERCEL_ENV`-authoritative `chartAiRealExperienceRuntime`
+  flag, hardened signed-out auth copy/state machine, real combobox/listbox search a11y, last-good-chart
+  preservation on a failed same-instrument reload, ARIA-tablist + roving-tabindex analysis workspace,
+  server-only usage-limit display, and verified watchlist/resume-state persistence and responsive
+  breakpoints. No provider/engine/auth-flow/migration change.
+- **Restored the Market Intelligence (시장 인텔리전스) client section** that Phase 3GG-T-HF4-FAST-HF1
+  (`3be57c3`) had silently dropped from `chart-ai.astro` while refactoring unrelated mobile chart
+  interaction; its server engine and `/api/chart-ai/market-intelligence.json` route were never removed and
+  are unchanged. Re-integrated onto current patterns (`chartAiRealExperienceRuntime` gating,
+  `marketDataRequestQueryPrefix` fetch naming) rather than a verbatim revert, since both identifiers were
+  renamed by later phases after the original removal. Judged in-scope for this phase (not deferred) because
+  it is a genuine silent regression with an unaffected, reusable server side — bounded, additive, and
+  touches no secret/migration/auth-policy/Production-env surface. Full rationale in
+  `phase_4c_chart_ai_production_completion_result_v0.1.md` §3.
+- Extended (not rewritten) `check_phase_3gk_chart_ai_beta_productization_contract.mjs`'s working-tree-purity
+  allowlist to tolerate this phase's two new test scripts plus one pre-existing unrelated stray file,
+  following the same pattern already used for the 3GJ sibling-checker tolerance; failures dropped from
+  2/116 to 1/116, with the one remaining failure independently confirmed to be the same class of
+  pre-existing frozen-baseline false positive already documented for other historical checkers on this
+  branch (caused by an unrelated, already-completed later phase's KIS-provider addition) and left untouched.
+- New static contract checker (`check_phase_4c_chart_ai_production_completion_contract.mjs`, 35/35) and
+  smoke test (`smoke_phase_4c_chart_ai_production_completion.mjs`, 13/13) added and passing.
+- `npm run build` reproduces the same pre-existing, code-unrelated Windows-local native-teardown exit-code
+  anomaly already on record for Phase 4B and earlier phases (non-ASCII path + native binary + Node
+  interaction during post-completion teardown); every real build stage completes and `dist/` remains fully
+  populated (122 files) with the restored Market Intelligence code confirmed present in the built bundle.
+  Vercel's remote Linux build is unaffected by this local-only anomaly.
+- Final classification `PHASE_4C_CHART_AI_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_COMMIT_PENDING`. Commit/
+  push/PR/Preview/Production status will be recorded in `phase_4c_chart_ai_production_completion_result_v0.1.md`
+  §8-9 as each step lands. Full detail in `phase_4c_chart_ai_production_completion_plan_v0.1.md` /
+  `..._result_v0.1.md`.
+
 ## Phase 4B closeout — merged and Production-verified - 2026-08-04
 
 - PR #13 merged by the Owner (merge commit `60b64dde731be60ed5a9a278114234a7e3042126`). Production

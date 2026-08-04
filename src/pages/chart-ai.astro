@@ -41,14 +41,36 @@ const clientSafeDomesticSymbolPayload = JSON.stringify(clientSafeDomesticSymbols
 
 // Mocked/sample similarity result: deterministic engine run over synthetic fixture data only.
 // No KIS, no API, no fetch. See docs/planning/phase_3ex_d_similarity_result_ui_mocked_integration_result_v0.1.md.
-const similarityFixtureBars = buildSyntheticOhlcvFixture();
-const similarityResult = scanSimilarity(similarityFixtureBars, {
-  baseWindow: 20,
-  forwardWindows: [5, 20],
-  topK: 5,
-  similarityMethod: 'return_correlation_rmse',
-  excludeRecentBars: 40,
-});
+// Phase 4C §5: this fixture computation must never execute during real Production/protected-Preview
+// rendering (the real experience never consumes it -- its only consumers are the sample/mocked markup
+// branches gated behind `!chartAiRealExperienceRuntime` below). Guarded here at the source so the
+// synthetic fixture builder and the similarity engine are not run against fixture data in Production.
+const similarityFixtureBars = chartAiRealExperienceRuntime ? [] : buildSyntheticOhlcvFixture();
+const similarityResult = chartAiRealExperienceRuntime
+  ? {
+      market: '',
+      symbol: '',
+      baseWindow: 20,
+      currentWindow: { startIndex: 0, endIndex: 0, startDate: '', endDate: '', bars: [] },
+      currentNormalizedPath: [] as Array<{ index: number; value: number }>,
+      matches: [] as SimilarityMatch[],
+      summaryStats: {
+        matchCount: 0,
+        averageForwardReturnByWindow: {} as Record<string, number | null>,
+        medianForwardReturnByWindow: {} as Record<string, number | null>,
+        positiveCountByWindow: {} as Record<string, number>,
+        negativeCountByWindow: {} as Record<string, number>,
+        averageMaxDrawdownPct: null as number | null,
+      },
+      warnings: [] as string[],
+    }
+  : scanSimilarity(similarityFixtureBars, {
+      baseWindow: 20,
+      forwardWindows: [5, 20],
+      topK: 5,
+      similarityMethod: 'return_correlation_rmse',
+      excludeRecentBars: 40,
+    });
 const similarityTopMatches = similarityResult.matches;
 const similarityStats = similarityResult.summaryStats;
 const similarityCurrentWindow = similarityResult.currentWindow;
@@ -105,8 +127,15 @@ const overlayDrawnSeries = overlaySeries.map((series) => ({
 // no LLM. Computed once server-side at render time; never fetched client-side. Visibility is
 // gated purely client-side (see setup() below) behind an explicit localhost + query-param
 // opt-in, mirroring the ownerLocalMocked / ownerLocalAuthUsageBridge panels above.
-const ownerLocalDeterministicSimilarPatternResult = runSimilarPatternAgent(createSimilarPatternFixtureInput());
-const ownerLocalDeterministicMkAgentResult = runMkAgent(createMkAgentFixtureInput());
+// Phase 4C §5: guarded the same way as the similarity fixture above -- these owner-local panels
+// never render during the real Production/protected-Preview experience, so the fixture-agent
+// calls themselves must not execute during that rendering path either.
+const ownerLocalDeterministicSimilarPatternResult = chartAiRealExperienceRuntime
+  ? { ok: false as const, summary: null, matches: [] as Array<{ scoreLabel: string; similarityScore: number }>, aggregateOutcomes: null }
+  : runSimilarPatternAgent(createSimilarPatternFixtureInput());
+const ownerLocalDeterministicMkAgentResult = chartAiRealExperienceRuntime
+  ? { ok: false as const, agentName: 'MK 에이전트', report: null }
+  : runMkAgent(createMkAgentFixtureInput());
 
 const formatDeterministicReturnPct = (value: number | null | undefined): string =>
   typeof value === 'number' && Number.isFinite(value) ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%` : '데이터 부족';
@@ -292,7 +321,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 ];
 ---
 
-<Layout title="종목 차트 | MK Stock Lab" activePath="/chart-ai">
+<Layout title="Chart AI | MK Stock Lab" activePath="/chart-ai">
   <div
     class="chart-ai-auth-shell"
     data-chart-ai-auth-state="authenticated"
@@ -302,12 +331,12 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
   >
   <header class="page-header chart-lookup-page-header">
     <div>
-      <p class="eyebrow">국내/미국 주식·ETF</p>
-      <h1>종목 차트</h1>
+      <p class="eyebrow">CHART AI</p>
+      <h1>Chart AI</h1>
       <p class="lead">
         {chartAiRealExperienceRuntime
-          ? '종목을 조회하고 차트 중심의 기본 정보를 확인하세요.'
-          : '종목을 조회하고 차트 중심의 기본 정보를 확인하세요. 현재 화면은 안전한 샘플 데이터로 구성되어 있습니다.'}
+          ? '국내·미국 주식과 ETF의 일봉 차트를 확인하고, 과거 유사 패턴과 시장 환경을 분석합니다.'
+          : '국내·미국 주식과 ETF의 일봉 차트를 확인하고, 과거 유사 패턴과 시장 환경을 분석합니다. 현재 화면은 안전한 샘플 데이터로 구성되어 있습니다.'}
       </p>
     </div>
   </header>
@@ -344,10 +373,10 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             id="chartAiInput"
             type="search"
             placeholder="종목명, 티커 또는 종목코드를 입력하세요"
-            aria-label="종목명, 티커 또는 종목코드를 입력하세요"
             aria-controls="chartAiSearchResults"
             aria-autocomplete="list"
             aria-expanded="false"
+            aria-haspopup="listbox"
             role="combobox"
             autocomplete="off"
             spellcheck="false"
@@ -495,7 +524,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             row below the chart (데이터 기준 · 통화 · 지연 여부) so nothing overlaps the candles/volume. */}
         {chartAiRealExperienceRuntime ? (
           <div class="chart-real-meta" id="chartAiRealChartMeta" hidden>
-            <span class="chart-real-meta-source" id="chartAiRealChartSourceNote">실시간 지연 시세 · KIS</span>
+            <span class="chart-real-meta-source" id="chartAiRealChartSourceNote">최근 일봉 데이터 · KIS</span>
             <span class="chart-real-meta-asof" id="chartAiRealChartAsOf">데이터 기준 시각 확인 중</span>
             <button type="button" id="chartAiWatchlistToggleBtn" class="chart-watchlist-toggle-btn" hidden aria-pressed="false">관심 종목 추가</button>
             <p class="chart-watchlist-toggle-status" id="chartAiWatchlistToggleStatus" role="status" aria-live="polite" hidden></p>
@@ -569,7 +598,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       <div class="chart-analysis-header">
         <p class="eyebrow">차트 분석</p>
         <h2 id="chart-analysis-workspace-heading">차트 기반 분석 결과</h2>
-        <p class="chart-analysis-header-guide">{chartAiRealExperienceRuntime ? '실시간 지연 시세 기반으로 과거 유사 패턴을 분석합니다. 참고용 정보이며 미래 성과를 예측하거나 보장하지 않습니다.' : '샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.'}</p>
+        <p class="chart-analysis-header-guide">{chartAiRealExperienceRuntime ? '일봉 데이터 기반으로 과거 유사 패턴을 분석합니다. 참고용 정보이며 미래 성과를 예측하거나 보장하지 않습니다.' : '샘플 데이터 기준으로 유사 패턴과 MK AI 해석을 확인합니다.'}</p>
       </div>
 
       {!chartAiRealExperienceRuntime && (
@@ -1322,9 +1351,33 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       </div>
     </section>
 
+    {chartAiRealExperienceRuntime && (
+      <details id="chartAiMarketIntel" class="chart-market-intel" data-state="idle">
+        <summary class="chart-market-intel-summary">
+          <span class="eyebrow">시장 인텔리전스</span>
+          <span class="chart-market-intel-summary-title">시장·환율·변동성 종합 환경 분석</span>
+        </summary>
+        <div class="chart-market-intel-body">
+          <div class="chart-market-intel-header">
+            <p class="chart-market-intel-head-line" id="chartAiMiHead">선택 종목과 벤치마크를 종합 분석합니다.</p>
+            <button type="button" id="chartAiMiStartBtn" class="chart-market-intel-btn" disabled aria-disabled="true">시장 인텔리전스 분석</button>
+          </div>
+          <p class="chart-market-intel-disclaimer">시장·환율·금리·변동성 데이터를 종합한 참고용 환경 분석입니다. 미래 성과를 예측하거나 보장하지 않습니다.</p>
+          <p class="chart-market-intel-status" id="chartAiMiStatus" role="status" aria-live="polite" hidden></p>
+          <div class="chart-market-intel-results" id="chartAiMiResults" hidden>
+            <div class="chart-market-intel-regime" id="chartAiMiRegime" aria-live="polite"></div>
+            <div class="chart-market-intel-rs" id="chartAiMiRs"></div>
+            <div class="chart-market-intel-cards" id="chartAiMiCards"></div>
+            <div class="chart-market-intel-availability" id="chartAiMiAvailability"></div>
+            <div class="chart-market-intel-conclusion" id="chartAiMiConclusion" aria-live="polite"></div>
+          </div>
+        </div>
+      </details>
+    )}
+
     <aside class="chart-lookup-disclaimer" aria-label="데이터 이용 안내">
       <strong>{chartAiRealExperienceRuntime ? '이용 안내' : '샘플 화면'}</strong>
-      <span>{chartAiRealExperienceRuntime ? '실시간 지연 시세 기반의 참고용 정보이며, 투자 판단이나 매수·매도 추천이 아닙니다.' : '현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.'}</span>
+      <span>{chartAiRealExperienceRuntime ? '일봉 데이터 기반의 참고용 정보이며, 투자 판단이나 매수·매도 추천이 아닙니다.' : '현재 화면은 기능 체험용 샘플 데이터로 구성되어 있습니다. 차트와 종목 정보는 화면 구조 확인용이며 투자 판단이나 매수·매도 추천이 아닙니다.'}</span>
     </aside>
   </main>
   </div>
@@ -1514,6 +1567,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       let resetSelectedSimilarity: () => void = () => {};
       // Phase 3GG-R-FAST: reassigned by the production MK AI analysis block.
       let resetSelectedMkAi: () => void = () => {};
+      // Phase 3GG-T-FAST: reassigned by the production Market Intelligence block.
+      let resetSelectedMarketIntel: () => void = () => {};
       let ownerLocalConnected = false;
       let selectedRecord: ClientSafeSymbolSearchRecord | null = null;
       const mkAiBulletsEl = document.getElementById('chartAiMkAiBullets');
@@ -1531,12 +1586,18 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       type ChartAiMockAuthState = 'anonymous' | 'authenticated';
       type ChartAiMockRole = 'user' | 'master';
       const chartAiQuery = new URLSearchParams(window.location.search);
-      const chartAiMockLoggedOut = chartAiQuery.get('chartAiMockLoggedOut') === '1';
-      const chartAiMockMaster = !chartAiMockLoggedOut && chartAiQuery.get('chartAiMockMaster') === '1';
       const isLocalOwnerHostname = (): boolean => {
         const hostname = window.location.hostname;
         return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
       };
+      // Phase 4C §7: these mock-auth query flags previously took effect on ANY host, including real
+      // Production, which meant a stray `?chartAiMockLoggedOut=1` on a shared/bookmarked URL could hide
+      // the workspace for an already-authenticated real session even though the real Supabase gate
+      // (runChartAiAuthGate, below) had already confirmed a valid session -- a signed-in user must never
+      // see the signed-out lock card. Restricted to the local owner hostname, matching every other
+      // owner-local test flag in this file (ownerLocalDeterministicAgents, ownerLocalKisIntegration, etc).
+      const chartAiMockLoggedOut = isLocalOwnerHostname() && chartAiQuery.get('chartAiMockLoggedOut') === '1';
+      const chartAiMockMaster = isLocalOwnerHostname() && !chartAiMockLoggedOut && chartAiQuery.get('chartAiMockMaster') === '1';
       // Mocked page capability model only. It contains no real identity, session, or authorization data.
       const mockedChartAiAccess: {
         authState: ChartAiMockAuthState;
@@ -2317,8 +2378,15 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       let realChartSeq = 0;
       let realChartAbort: AbortController | null = null;
       const REAL_CHART_TIMEOUT_MS = 12000;
+      // Phase 4C §9-11: the instrument key (country|symbol) of the last chart that actually rendered
+      // successfully. A failed loadRealChart() call for THIS SAME instrument (range switch, retry) is a
+      // reload, not a new selection -- the previously-good chart must stay on screen with the error
+      // surfaced alongside it, never wiped to a blank error screen. A failure for a different instrument
+      // still hides/blanks normally, since showing the old symbol's chart under a new symbol's identity
+      // would misrepresent the data.
+      let lastRenderedInstrumentKey: string | null = null;
 
-      const setRealChartState = (title: string, message: string, mode: string) => {
+      const setRealChartState = (title: string, message: string, mode: string, preserveChart = false) => {
         const stateEl = document.getElementById('chartAiRealChartState');
         const titleEl = document.getElementById('chartAiRealChartStateTitle');
         const messageEl = document.getElementById('chartAiRealChartStateMessage');
@@ -2330,16 +2398,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           stateEl.hidden = mode === 'ready';
           stateEl.dataset.state = mode;
         }
-        // Reveal the real chart host only when data is ready; otherwise keep it hidden behind the state.
-        if (chart) chart.hidden = mode !== 'ready';
-        // The below-chart metadata row (데이터 기준 · 통화 · 지연 여부) shows only once real data is ready.
-        if (metaEl) metaEl.hidden = mode !== 'ready';
+        // Reveal the real chart host once data is ready, OR keep it visible through a failed reload of
+        // the same already-displayed instrument (last-good-chart preservation); otherwise hide it behind
+        // the status panel.
+        if (chart) chart.hidden = mode !== 'ready' && !preserveChart;
+        // The below-chart metadata row (데이터 기준 · 통화 · 지연 여부) follows the same preserved visibility.
+        if (metaEl) metaEl.hidden = mode !== 'ready' && !preserveChart;
         // Phase 3GG-T-HF3A: the explicit "이 종목 차트 불러오기" button appears whenever an instrument is
         // pending or a load can be retried (never on ready/idle/loading), so promotion is always explicit.
         if (loadBtn) loadBtn.hidden = !(mode === 'suggested' || mode === 'error' || mode === 'no-data' || mode === 'unavailable');
         // Phase 3GG-T-HF4-FAST: any non-ready transition tears down the interaction layer (header price,
-        // OHLCV strip, tooltip, crosshair, price line) so stale values never linger behind a hidden chart.
-        if (mode !== 'ready') resetChartInteractionState();
+        // OHLCV strip, tooltip, crosshair, price line) so stale values never linger behind a hidden chart
+        // -- skipped when preserving the last-good chart, since that chart's interaction layer is still valid.
+        if (mode !== 'ready' && !preserveChart) resetChartInteractionState();
       };
 
       // Phase 3GG-T-HF3A: build the canonical instrument identity from a client-safe search record.
@@ -2358,6 +2429,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
       const ANALYSIS_CONTROLS: Array<[string, string]> = [
         ['chartAiSimilarityStartBtn', 'chartAiSimilarityStatus'],
         ['chartAiMkAiStartBtn', 'chartAiMkAiRealStatus'],
+        ['chartAiMiStartBtn', 'chartAiMiStatus'],
       ];
       const ANALYSIS_GUIDE_NO_INSTRUMENT = '먼저 종목을 검색해 차트를 불러와 주세요.';
       const ANALYSIS_GUIDE_PENDING = '선택한 종목의 차트를 먼저 불러와 주세요.';
@@ -2398,7 +2470,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const noteEl = document.getElementById('chartAiRealChartSourceNote');
         const asOfEl = document.getElementById('chartAiRealChartAsOf');
         // Compact factual metadata below the chart — 지연 여부 + 데이터 기준 시각 + 통화. No overlay.
-        if (noteEl) noteEl.textContent = ohlcv?.isDelayed === false ? '실시간 시세 · KIS' : '실시간 지연 시세 · KIS';
+        // Phase 4C §6/§11: the dataset is daily OHLCV, never real-time ticks, regardless of the
+        // provider's isDelayed flag -- so both branches previously said "실시간" ("real-time"), which
+        // the spec explicitly forbids for daily/delayed data. Honest wording distinguishes only
+        // "최신 일봉" (today's bar already available) vs "지연 일봉" (still lagging), never "실시간".
+        if (noteEl) noteEl.textContent = ohlcv?.isDelayed === false ? '최신 일봉 데이터 · KIS' : '지연 일봉 데이터 · KIS';
         if (asOfEl) {
           const currency = ohlcv?.instrument?.currency ?? '';
           const parsed = ohlcv?.asOf ? new Date(ohlcv.asOf) : null;
@@ -2426,8 +2502,8 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const rangeLabel = RANGE_LABELS[activeRange] ?? activeRange;
         renderChartFromPoints(
           points,
-          `${rangeLabel} · 실시간 지연 시세`,
-          `${selectedName} ${selectedSymbol}, ${rangeLabel} 실제 지연 OHLCV 캔들 차트와 거래량. 지연 시세, 투자 참고용.`,
+          `${rangeLabel} · 일봉 데이터`,
+          `${selectedName} ${selectedSymbol}, ${rangeLabel} 실제 일봉 OHLCV 캔들 차트와 거래량. 지연 시세, 투자 참고용.`,
         );
         return true;
       };
@@ -2589,6 +2665,11 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         const reqSymbol = token.instrument.symbol;
         const reqCountry = token.instrument.country;
         const reqName = token.instrument.name || selectedName;
+        const reqInstrumentKey = `${String(reqCountry ?? '').toLowerCase()}|${String(reqSymbol ?? '').toLowerCase()}`;
+        // Phase 4C §9-11: this call is a reload (period switch, retry) of the SAME instrument whose
+        // chart is already on screen -- if it fails, the last-good chart must be preserved rather than
+        // wiped, per lastRenderedInstrumentKey set on the prior success below.
+        const isReloadOfDisplayedInstrument = lastRenderedInstrumentKey === reqInstrumentKey;
         setRealChartState(
           '실제 지연 시세 차트를 불러오는 중입니다.',
           `${reqName} ${reqSymbol}의 실제 지연 OHLCV 데이터를 불러오고 있습니다.`,
@@ -2615,7 +2696,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const fail = (title: string, message: string, mode: string) => {
               // Only render the failure if this token is still current (not superseded by a newer selection).
               if (integrity.failChartLoad(token, 'error') === 'stale') return;
-              setRealChartState(title, message, mode);
+              setRealChartState(title, message, mode, isReloadOfDisplayedInstrument);
               updateAnalysisAvailability();
             };
             // Phase 3GG-T-HF3B-HF2-HF2B-HF1: map the sanitized stage code to an HONEST message instead of
@@ -2650,18 +2731,19 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             const outcome = integrity.resolveChartLoad(token, { ok: true, candleCount: candles.length, responseSymbolKey });
             if (outcome === 'stale') return; // a newer selection/load supersedes this response — ignore it
             if (outcome !== 'accepted') {
-              setRealChartState('차트를 표시할 수 없습니다.', '요청한 종목과 다른 응답이 확인되어 표시하지 않았습니다.', 'error');
+              setRealChartState('차트를 표시할 수 없습니다.', '요청한 종목과 다른 응답이 확인되어 표시하지 않았습니다.', 'error', isReloadOfDisplayedInstrument);
               updateAnalysisAvailability();
               return;
             }
             if (!renderRealChart(ohlcv)) {
               integrity.failChartLoad(token, 'error');
-              setRealChartState('차트를 표시할 수 없습니다.', '유효한 시세 데이터를 확인하지 못했습니다.', 'error');
+              setRealChartState('차트를 표시할 수 없습니다.', '유효한 시세 데이터를 확인하지 못했습니다.', 'error', isReloadOfDisplayedInstrument);
               updateAnalysisAvailability();
               return;
             }
             updateRealChartMeta(ohlcv);
             setRealChartState('', '', 'ready');
+            lastRenderedInstrumentKey = reqInstrumentKey;
             updateAnalysisAvailability();
             persistChartResumeState(token.instrument, activeRange);
             void refreshWatchlistToggleForActiveInstrument();
@@ -2670,7 +2752,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             if (seq !== realChartSeq) return;
             if (error && (error as any).name === 'AbortError') return;
             if (integrity.failChartLoad(token, 'error') === 'stale') return;
-            setRealChartState('지연 시세를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', 'unavailable');
+            setRealChartState('지연 시세를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', 'unavailable', isReloadOfDisplayedInstrument);
             updateAnalysisAvailability();
           })
           .finally(() => window.clearTimeout(timeoutId));
@@ -2731,6 +2813,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
         try { resetSelectedSummary(); } catch {}
         try { resetSelectedSimilarity(); } catch {}
         try { resetSelectedMkAi(); } catch {}
+        try { resetSelectedMarketIntel(); } catch {}
         if (productionRealChartEnabled) {
           // Phase 3GG-T-HF3A: selecting a result creates a PENDING instrument only — NO OHLCV/analysis
           // request until the user explicitly clicks "이 종목 차트 불러오기". Analyses stay disabled.
@@ -2987,6 +3070,37 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           }
         }
         if (event.key === 'Escape') closeDropdown();
+      });
+      // Phase 4C §8: roving keyboard navigation inside the listbox. ArrowDown/ArrowUp move focus
+      // between option buttons (wrapping at the ends stays on the boundary option rather than
+      // looping, matching native <select> behavior); Escape and ArrowUp-from-the-first-option return
+      // focus to the input and close the dropdown, so keyboard users are never stranded inside the
+      // results with no way back out.
+      resultsEl.addEventListener('keydown', (event: KeyboardEvent) => {
+        const options = Array.from(resultsEl.querySelectorAll<HTMLButtonElement>('.chart-ai-search-result'));
+        const currentIndex = options.indexOf(document.activeElement as HTMLButtonElement);
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          const next = options[Math.min(options.length - 1, currentIndex + 1)];
+          next?.focus();
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          if (currentIndex <= 0) {
+            input.focus();
+          } else {
+            options[currentIndex - 1]?.focus();
+          }
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          closeDropdown();
+          input.focus();
+        } else if (event.key === 'Home') {
+          event.preventDefault();
+          options[0]?.focus();
+        } else if (event.key === 'End') {
+          event.preventDefault();
+          options[options.length - 1]?.focus();
+        }
       });
       runBtn.addEventListener('click', async () => {
         if (!input.value.trim()) {
@@ -3942,7 +4056,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
           const ctry = token.instrument.country;
           setMkaiState('loading');
           if (mkaiResults) mkaiResults.hidden = true;
-          showMkaiStatus(`${token.instrument.name || selectedName} 실시간 지연 시세와 유사 패턴을 결정적 규칙으로 분석하는 중입니다…`);
+          showMkaiStatus(`${token.instrument.name || selectedName} 일봉 데이터와 유사 패턴을 결정적 규칙으로 분석하는 중입니다…`);
           if (mkaiStartBtn) mkaiStartBtn.disabled = true;
           const timeoutId = window.setTimeout(() => mkaiAbort?.abort(), MKAI_TIMEOUT_MS);
           try {
@@ -3993,6 +4107,188 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
 
         if (mkaiStartBtn && productionRealChartEnabled) {
           mkaiStartBtn.addEventListener('click', runMkai);
+        }
+      }
+
+      // ===== Phase 3GG-T-FAST: Market & Cross-Asset Intelligence (Production, click-triggered) =====
+      {
+        const miRoot = document.getElementById('chartAiMarketIntel');
+        const miStartBtn = document.getElementById('chartAiMiStartBtn') as HTMLButtonElement | null;
+        const miHead = document.getElementById('chartAiMiHead');
+        const miStatus = document.getElementById('chartAiMiStatus');
+        const miResults = document.getElementById('chartAiMiResults');
+        const miRegime = document.getElementById('chartAiMiRegime');
+        const miRs = document.getElementById('chartAiMiRs');
+        const miCards = document.getElementById('chartAiMiCards');
+        const miAvailability = document.getElementById('chartAiMiAvailability');
+        const miConclusion = document.getElementById('chartAiMiConclusion');
+
+        let miSeq = 0;
+        let miAbort: AbortController | null = null;
+        let miInFlight = false;
+        const MI_TIMEOUT_MS = 25000;
+        const elx = (tag: string, cls?: string, text?: string) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+        const setMiState = (s: string) => { if (miRoot) miRoot.dataset.state = s; };
+        const showMiStatus = (t: string) => { if (miStatus) { miStatus.textContent = t; miStatus.hidden = !t; } };
+
+        const resetMi = () => {
+          miSeq += 1;
+          if (miAbort) { miAbort.abort(); miAbort = null; }
+          miInFlight = false;
+          if (miResults) miResults.hidden = true;
+          showMiStatus('');
+          setMiState('idle');
+          if (miStartBtn) { miStartBtn.disabled = !integrity.canRunAnalysis(); miStartBtn.textContent = '시장 인텔리전스 분석'; }
+          [miRegime, miRs, miCards, miAvailability, miConclusion].forEach((el) => el && el.replaceChildren());
+          if (miHead) miHead.textContent = `${selectedName || '선택 종목'} 기준 시장 환경을 분석합니다.`;
+        };
+        resetSelectedMarketIntel = resetMi;
+
+        const tiltLabel = (t: string) => (t === 'risk-on' ? '위험선호' : t === 'risk-off' ? '위험회피' : '중립');
+
+        const renderMi = (mi: any) => {
+          if (miHead) miHead.textContent = `${mi.instrument?.displayName ?? ''} · 벤치마크 ${mi.benchmark?.displayName ?? '—'} · 데이터 기준 ${mi.asOf ?? '—'}`;
+          // Regime card
+          if (miRegime) {
+            miRegime.replaceChildren();
+            const reg = mi.marketRegime || {};
+            const card = elx('div', 'chart-market-intel-regime-card');
+            card.append(elx('span', 'chart-market-intel-regime-badge', '시장 국면'));
+            card.append(elx('strong', 'chart-market-intel-regime-label', reg.regimeLabel ?? '—'));
+            card.append(elx('span', 'chart-market-intel-regime-conf', `데이터 완성도 ${typeof reg.confidence === 'number' ? reg.confidence : '—'}점`));
+            const chips = elx('div', 'chart-market-intel-chips');
+            (reg.factors || []).forEach((fac: any) => {
+              const chip = elx('span', `chart-market-intel-chip tilt-${fac.tilt}`);
+              chip.textContent = `${fac.label}: ${tiltLabel(fac.tilt)}`;
+              chips.append(chip);
+            });
+            card.append(chips);
+            card.append(elx('p', 'chart-market-intel-note', '국면 분류는 결정적 규칙 기반의 환경 설명이며, 예측이나 매매 권유가 아닙니다.'));
+            miRegime.append(card);
+          }
+          // Relative strength
+          if (miRs) {
+            miRs.replaceChildren();
+            const rs = mi.relativeStrength?.vsBenchmark;
+            const box = elx('div', 'chart-market-intel-rs-box');
+            box.append(elx('p', 'chart-market-intel-rs-title', '상대 강도 (벤치마크 대비)'));
+            if (rs && rs.available) {
+              box.append(elx('p', 'chart-market-intel-rs-class', rs.classificationLabel));
+              const dl = elx('dl', 'chart-market-intel-rs-metrics');
+              [['1개월', 21], ['3개월', 63], ['6개월', 126]].forEach(([lbl, w]: any) => {
+                const win = rs.windows?.[w];
+                dl.append(elx('dt', '', lbl));
+                dl.append(elx('dd', '', win && win.available && typeof win.diffPct === 'number' ? `${win.diffPct >= 0 ? '+' : ''}${win.diffPct}%p` : '데이터 없음'));
+              });
+              box.append(dl);
+              const vsS = mi.relativeStrength?.vsSector;
+              box.append(elx('p', 'chart-market-intel-rs-sector', vsS && vsS.available ? `업종 프록시 대비: ${vsS.classificationLabel}` : '업종 비교: 제공되지 않음'));
+            } else {
+              box.append(elx('p', 'chart-market-intel-empty', `상대 강도를 계산할 수 없습니다. (${rs?.reasonText || '데이터 부족'})`));
+            }
+            miRs.append(box);
+          }
+          // Context cards
+          if (miCards) {
+            miCards.replaceChildren();
+            const addCard = (title: string, avail: boolean, lines: string[]) => {
+              const c = elx('div', 'chart-market-intel-card');
+              c.append(elx('p', 'chart-market-intel-card-title', title));
+              if (avail) lines.forEach((l) => c.append(elx('p', 'chart-market-intel-card-line', l)));
+              else c.append(elx('p', 'chart-market-intel-card-unavailable', lines[0] || '데이터 미제공'));
+              miCards.append(c);
+            };
+            const eq = mi.equityContext || {};
+            addCard('광의 시장', eq.available, [`추세 점수 ${eq.trendScore ?? '—'}`, `1개월 ${eq.momentum1mPct ?? '—'}% · 3개월 ${eq.momentum3mPct ?? '—'}%`, `연율 변동성 ${eq.annualizedVolatilityPct ?? '—'}%`]);
+            const fx = mi.currencyContext || {};
+            addCard('환율 USD/KRW', fx.available, [`${fx.rate ?? '—'}원`, `1개월 ${typeof fx.change1mPct === 'number' ? (fx.change1mPct >= 0 ? '+' : '') + fx.change1mPct + '%' : '—'}`, '지연 시세(ECB 참고)']);
+            const rt = mi.rateContext || {};
+            addCard('금리', rt.available, [rt.note || '이번 단계에서 제공되지 않습니다.']);
+            const vo = mi.volatilityContext || {};
+            addCard('변동성', vo.available, [`광의 ${vo.broadLabel ?? '—'} (연율 ${vo.broadAnnualizedVolatilityPct ?? '—'}%)`, vo.instrumentLabel ? `종목 ${vo.instrumentLabel} (연율 ${vo.instrumentAnnualizedVolatilityPct}%)` : '']);
+            const co = mi.commodityContext || {};
+            addCard('원자재·리스크 자산', co.available, [`금 1개월 ${co.gold?.available ? (co.gold.change1mPct >= 0 ? '+' : '') + co.gold.change1mPct + '%' : '없음'}`, `원유 1개월 ${co.oil?.available ? (co.oil.change1mPct >= 0 ? '+' : '') + co.oil.change1mPct + '%' : '없음'}`]);
+          }
+          // Availability
+          if (miAvailability) {
+            miAvailability.replaceChildren();
+            miAvailability.append(elx('p', 'chart-market-intel-avail-title', '데이터 제공 현황'));
+            const list = elx('div', 'chart-market-intel-avail-list');
+            (mi.formatted?.availability || []).forEach((a: any) => {
+              const item = elx('span', `chart-market-intel-avail-item ${a.available ? 'is-on' : 'is-off'}`);
+              item.textContent = `${a.dataset}: ${a.available ? '제공' : '미제공'}`;
+              list.append(item);
+            });
+            miAvailability.append(list);
+          }
+          if (miConclusion) {
+            miConclusion.replaceChildren();
+            miConclusion.append(elx('p', 'chart-market-intel-conclusion-title', '종합'));
+            miConclusion.append(elx('p', 'chart-market-intel-conclusion-body', mi.formatted?.conclusion || ''));
+            miConclusion.append(elx('p', 'chart-market-intel-conclusion-disc', mi.formatted?.disclaimer || ''));
+          }
+          if (miResults) miResults.hidden = false;
+          setMiState('ready');
+        };
+
+        const miHonestMsg = (code: string) => {
+          switch (code) {
+            case 'PROVIDER_UNAVAILABLE': return '시장 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+            case 'INSUFFICIENT_DATA': return '분석에 필요한 시장 데이터가 충분하지 않습니다.';
+            case 'UNSUPPORTED_INSTRUMENT': return '이 종목은 아직 시장 인텔리전스를 지원하지 않습니다.';
+            default: return '시장 인텔리전스 분석을 완료하지 못했습니다. 다시 시도해 주세요.';
+          }
+        };
+
+        const runMi = async () => {
+          if (!productionRealChartEnabled || miInFlight) return;
+          // Phase 3GG-T-HF3A: shared guard — only runs against the actively-loaded chart instrument.
+          const token = integrity.beginAnalysis('market-intel');
+          if (!token) { setMiState('idle'); showMiStatus('먼저 종목을 검색해 차트를 불러와 주세요.'); updateAnalysisAvailability(); return; }
+          miInFlight = true;
+          const seq = ++miSeq;
+          if (miAbort) miAbort.abort();
+          miAbort = new AbortController();
+          const signal = miAbort.signal;
+          const sym = token.instrument.symbol;
+          const ctry = token.instrument.country;
+          setMiState('loading');
+          if (miResults) miResults.hidden = true;
+          showMiStatus(`${token.instrument.name || selectedName} 기준 시장·환율·변동성 환경을 분석하는 중입니다…`);
+          if (miStartBtn) miStartBtn.disabled = true;
+          const timeoutId = window.setTimeout(() => miAbort?.abort(), MI_TIMEOUT_MS);
+          try {
+            const url = `/api/chart-ai/market-intelligence.json?${marketDataRequestQueryPrefix}country=${ctry}&symbol=${encodeURIComponent(sym)}`;
+            const res = await fetch(url, { method: 'GET', signal, credentials: 'omit', headers: { ...(await chartAiAuthHeaders()) } });
+            const data = await res.json();
+            if (seq !== miSeq) return;
+            if (integrity.resolveAnalysis(token) !== 'accepted') return;
+            const mi = data && data.marketIntel;
+            const hardFail = !mi || !mi.formatted || mi.sourceStatus === 'blocked' || mi.sourceStatus === 'no-data' || mi.sourceStatus === 'error';
+            if (hardFail) {
+              showMiStatus(miHonestMsg(mi ? mi.sanitizedErrorCode : 'INTERNAL'));
+              setMiState('error');
+              if (miStartBtn) miStartBtn.textContent = '다시 시도';
+              return;
+            }
+            showMiStatus('');
+            renderMi(mi);
+            if (miStartBtn) miStartBtn.textContent = '다시 분석';
+          } catch (err) {
+            if (seq !== miSeq) return;
+            if (err && (err as any).name === 'AbortError') return;
+            showMiStatus('네트워크 상태를 확인한 뒤 다시 시도해 주세요.');
+            setMiState('error');
+            if (miStartBtn) miStartBtn.textContent = '다시 시도';
+          } finally {
+            window.clearTimeout(timeoutId);
+            miInFlight = false;
+            if (miStartBtn) miStartBtn.disabled = !integrity.canRunAnalysis();
+          }
+        };
+
+        if (miStartBtn && productionRealChartEnabled) {
+          miStartBtn.addEventListener('click', runMi);
         }
       }
 
@@ -6754,6 +7050,67 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     @media (max-width: 420px) {
       .chart-mkai-controls { flex-direction: column; align-items: stretch; }
       .chart-mkai-start-btn { width: 100%; }
+    }
+
+    /* Phase 3GG-T-FAST: Market & Cross-Asset Intelligence */
+    .chart-market-intel {
+      margin-top: 1.25rem; border: 1px solid var(--border); border-radius: 14px;
+      background: var(--surface); min-width: 0; overflow: hidden;
+    }
+    .chart-market-intel-summary {
+      list-style: none; cursor: pointer; padding: 0.9rem 1rem; display: grid; gap: 0.2rem;
+      background: var(--surface-muted);
+    }
+    .chart-market-intel-summary::-webkit-details-marker { display: none; }
+    .chart-market-intel-summary .eyebrow { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--chart-shell-muted); }
+    .chart-market-intel-summary-title { font-size: 0.95rem; font-weight: 650; }
+    .chart-market-intel-body { display: grid; gap: 0.8rem; padding: 1rem; }
+    .chart-market-intel-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; }
+    .chart-market-intel-head-line { margin: 0; font-size: 0.85rem; color: var(--chart-shell-fg, inherit); }
+    .chart-market-intel-btn {
+      font-size: 0.82rem; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid transparent;
+      background: var(--accent, #2563eb); color: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .chart-market-intel-btn:disabled { opacity: 0.6; cursor: default; }
+    .chart-market-intel-disclaimer { margin: 0; font-size: 0.72rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-status { margin: 0; font-size: 0.82rem; color: var(--chart-shell-muted); padding: 0.5rem 0.7rem; border: 1px dashed var(--border); border-radius: 8px; }
+    .chart-market-intel-results { display: grid; gap: 0.85rem; }
+    .chart-market-intel-regime-card { display: grid; gap: 0.4rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-muted); }
+    .chart-market-intel-regime-badge { font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--chart-shell-muted); }
+    .chart-market-intel-regime-label { font-size: 1.15rem; }
+    .chart-market-intel-regime-conf { font-size: 0.75rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .chart-market-intel-chip { font-size: 0.72rem; padding: 0.22rem 0.55rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); }
+    .chart-market-intel-chip.tilt-risk-on { border-color: #16a34a; color: #16a34a; }
+    .chart-market-intel-chip.tilt-risk-off { border-color: #dc2626; color: #dc2626; }
+    .chart-market-intel-chip.tilt-neutral { color: var(--chart-shell-muted); }
+    .chart-market-intel-note, .chart-market-intel-empty { margin: 0; font-size: 0.72rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-rs-box { display: grid; gap: 0.4rem; padding: 0.8rem; border: 1px solid var(--border); border-radius: 12px; }
+    .chart-market-intel-rs-title { margin: 0; font-size: 0.78rem; font-weight: 650; }
+    .chart-market-intel-rs-class { margin: 0; font-size: 0.95rem; }
+    .chart-market-intel-rs-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin: 0.2rem 0 0; }
+    .chart-market-intel-rs-metrics dt { font-size: 0.7rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-rs-metrics dd { margin: 0; font-size: 0.85rem; font-weight: 600; }
+    .chart-market-intel-rs-sector { margin: 0; font-size: 0.75rem; color: var(--chart-shell-muted); }
+    .chart-market-intel-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; }
+    .chart-market-intel-card { display: grid; gap: 0.3rem; padding: 0.7rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); }
+    .chart-market-intel-card-title { margin: 0; font-size: 0.74rem; font-weight: 650; color: var(--chart-shell-muted); }
+    .chart-market-intel-card-line { margin: 0; font-size: 0.82rem; }
+    .chart-market-intel-card-unavailable { margin: 0; font-size: 0.76rem; color: var(--chart-shell-muted); font-style: italic; }
+    .chart-market-intel-availability { display: grid; gap: 0.4rem; }
+    .chart-market-intel-avail-title { margin: 0; font-size: 0.74rem; font-weight: 650; color: var(--chart-shell-muted); }
+    .chart-market-intel-avail-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .chart-market-intel-avail-item { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 999px; border: 1px solid var(--border); }
+    .chart-market-intel-avail-item.is-on { color: #16a34a; border-color: #16a34a; }
+    .chart-market-intel-avail-item.is-off { color: var(--chart-shell-muted); }
+    .chart-market-intel-conclusion { display: grid; gap: 0.3rem; padding: 0.8rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-muted); }
+    .chart-market-intel-conclusion-title { margin: 0; font-size: 0.74rem; font-weight: 650; color: var(--chart-shell-muted); }
+    .chart-market-intel-conclusion-body { margin: 0; font-size: 0.85rem; line-height: 1.5; }
+    .chart-market-intel-conclusion-disc { margin: 0; font-size: 0.7rem; color: var(--chart-shell-muted); }
+    @media (max-width: 480px) {
+      .chart-market-intel-cards { grid-template-columns: 1fr 1fr; }
+      .chart-market-intel-header { flex-direction: column; align-items: stretch; }
+      .chart-market-intel-btn { width: 100%; }
     }
 
     .chart-analysis-preparing-state strong,
