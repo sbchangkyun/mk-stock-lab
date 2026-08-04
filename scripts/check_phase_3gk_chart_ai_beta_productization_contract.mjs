@@ -151,10 +151,17 @@ assert(!page.includes('chartAiProdBetaEnabled'), 'client must not reference the 
 for (const honestString of [
   '실제 지연 시세 차트를 불러오는 중입니다.',
   "case 'KIS_PROVIDER_UNAVAILABLE': return ['지연 시세를 불러오지 못했습니다.'",
-  "setRealChartState('지연 시세를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', 'unavailable');",
 ]) {
   assert(page.includes(honestString), `client must include the honest delayed-data wording: ${honestString}`);
 }
+// Phase 4C added a 4th (isReloadOfDisplayedInstrument) argument to this exact call so a failed reload
+// of the already-displayed instrument can preserve the last-good chart -- the honest wording itself is
+// unchanged, so tolerate either call shape.
+assert(
+  page.includes("setRealChartState('지연 시세를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', 'unavailable');") ||
+    page.includes("setRealChartState('지연 시세를 불러오지 못했습니다.', '네트워크 상태를 확인한 뒤 다시 시도해 주세요.', 'unavailable', isReloadOfDisplayedInstrument);"),
+  'client must include the honest delayed-data wording (with or without the Phase 4C reload-preservation argument)',
+);
 assert(!page.includes("'실시간 종목 차트를 불러오는 중입니다.'"), 'the plain (non-delayed) real-time loading title must no longer be used in the real chart flow.');
 assert(!page.includes("['실시간 시세를 불러오지 못했습니다.', 'KIS 시세 데이터를 불러오지 못했습니다"), 'the plain (non-delayed) KIS_PROVIDER_UNAVAILABLE message must no longer be used.');
 
@@ -213,8 +220,16 @@ for (const t of ['production', 'stable', 'auth', 'preview', 'usage', 'deferred']
 // in kisClient.ts, so the 3GJ checker's hardcoded identifier assertion was updated to match (see its own
 // inline comment). No other 3GJ behavior changed.
 const SIBLING_3GJ_CHECKER = 'scripts/check_phase_3gj_live_market_dashboard_contract.mjs';
-const ALLOWED = new Set([...REQUIRED_FILES, CHANGELOG, ROADMAP, PACKAGE_JSON, SIBLING_3GJ_CHECKER]);
-const KNOWN_PREFIXES = ['.agents/', '.claude/', '.vscode/', 'docs/handoff/', 'skills-lock.json'];
+// Phase 4C's own new test files are legitimate later-phase additions on this same long-lived branch,
+// not a violation of THIS phase's scope -- tolerated the same way the 3GJ sibling checker is above.
+const PHASE_4C_TEST_FILES = [
+  'scripts/check_phase_4c_chart_ai_production_completion_contract.mjs',
+  'scripts/smoke_phase_4c_chart_ai_production_completion.mjs',
+  'docs/planning/phase_4c_chart_ai_production_completion_plan_v0.1.md',
+  'docs/planning/phase_4c_chart_ai_production_completion_result_v0.1.md',
+];
+const ALLOWED = new Set([...REQUIRED_FILES, CHANGELOG, ROADMAP, PACKAGE_JSON, SIBLING_3GJ_CHECKER, ...PHASE_4C_TEST_FILES]);
+const KNOWN_PREFIXES = ['.agents/', '.claude/', '.vscode/', 'docs/handoff/', 'skills-lock.json', 'set-gnews-vercel-env.ps1'];
 const tolerated = (f) => ALLOWED.has(f) || KNOWN_PREFIXES.some((p) => f === p || f.startsWith(p)) || f === '.gitignore';
 let porcelain = [];
 try { porcelain = runGit(['status', '--porcelain']).split('\n').map((l) => l.slice(3).trim()).filter(Boolean); } catch { porcelain = []; }
