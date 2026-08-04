@@ -892,6 +892,527 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16048"
+    },
+    {
+      "canonicalIdentity": "KR|060240|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "060240",
+      "priorNames": [
+        "스타코링크"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7060240009",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|AAUM|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "AAUM",
+      "priorNames": [
+        "TEMA ALTERNATIVE ASSET MANAGERS ETF",
+        "TEMA ALTERNATIVE ASSET MANAGERS ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|BTYB|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "BTYB",
+      "priorNames": [
+        "VISTASHARES BITBONDS 5 YR ENHANCED WEEKLY DISTRIBUTION ETF",
+        "VISTASHARES BITBONDS 5 YR ENHANCED WEEKLY DISTRIBUTION ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|GAID|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "GAID",
+      "priorNames": [
+        "GUINNESS ATKINSON INTERNATIONAL DIVIDEND BUILDER ETF",
+        "GUINNESS ATKINSON INTERNATIONAL DIVIDEND BUILDER ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|GAUD|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "GAUD",
+      "priorNames": [
+        "GUINNESS ATKINSON US DIVIDEND BUILDER ETF",
+        "GUINNESS ATKINSON US DIVIDEND BUILDER ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|GLDY|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "GLDY",
+      "priorNames": [
+        "DEFIANCE GOLD ENHANCED OPTIONS INCOME ETF",
+        "DEFIANCE GOLD ENHANCED OPTIONS INCOME ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|SATG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "SATG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG SATS DAILY ETF",
+        "LEVERAGE SHARES 2X LONG SATS DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|SOLR|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "SOLR",
+      "priorNames": [
+        "GUINNESS ATKINSON SUSTAINABLE ENERGY ETF",
+        "GUINNESS ATKINSON SUSTAINABLE ENERGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|ATLN|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "ATLN",
+      "priorNames": [
+        "ATLANTIC INTERNATIONAL CORP",
+        "ATLANTIC INTERNATIONAL CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|BLD|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "BLD",
+      "priorNames": [
+        "TOPBUILD CORP",
+        "TOPBUILD CORP"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|CEPT|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "CEPT",
+      "priorNames": [
+        "CANTOR EQUITY PARTNERS II INC",
+        "CANTOR EQUITY PARTNERS II INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|EVGOW|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "EVGOW",
+      "priorNames": [
+        "EVGO INC C/WTS 01/07/2026 (TO PUR COM)",
+        "EVGO INC C/WTS 01/07/2026 (TO PUR COM)"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|FDP|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "FDP",
+      "priorNames": [
+        "DEL MONTE CORPORATION",
+        "DEL MONTE CORPORATION"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|HNNAZ|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "HNNAZ",
+      "priorNames": [
+        "HENNESSY ADVISORS INC 4.875% SENIOR NOTES DUE 31/12/2026",
+        "HENNESSY ADVISORS INC 4.875% SENIOR NOTES DUE 31/12/2026"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|JHG|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "JHG",
+      "priorNames": [
+        "JANUS HENDERSON GROUP PLC",
+        "JANUS HENDERSON GROUP PLC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|LIXT|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "LIXT",
+      "priorNames": [
+        "LIXTE BIOTECHNOLOGY HOLDINGS INC",
+        "LIXTE BIOTECHNOLOGY HOLDINGS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|NNAVW|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "NNAVW",
+      "priorNames": [
+        "NEXTNAV INC C/WTS (TO PUR COM)",
+        "NEXTNAV INC C/WTS (TO PUR COM)"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|ORGN|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "ORGN",
+      "priorNames": [
+        "ORIGIN MATLS INC",
+        "ORIGIN MATLS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|RAAQ|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "RAAQ",
+      "priorNames": [
+        "REAL ASSET ACQUISITION CORP",
+        "REAL ASSET ACQUISITION CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|RAAQU|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "RAAQU",
+      "priorNames": [
+        "REAL ASSET ACQUISITION CORP UNIT 1 SHS CL A & 1/2 WT",
+        "REAL ASSET ACQUISITION CORP UNIT 1 SHS CL A & 1/2 WT"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|SEM|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "SEM",
+      "priorNames": [
+        "SELECT MEDICAL HOLDINGS CORPORATION",
+        "SELECT MEDICAL HOLDINGS CORPORATION"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|SILA|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "SILA",
+      "priorNames": [
+        "SILA REALTY TRUST INC",
+        "SILA REALTY TRUST INC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|SSSS|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SSSS",
+      "priorNames": [
+        "SURO CAPITAL CORP",
+        "SURO CAPITAL CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|SSSSL|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SSSSL",
+      "priorNames": [
+        "SURO CAPITAL CORP 6.00% NOTES DUE 30/12/2026",
+        "SURO CAPITAL CORP 6.00% NOTES DUE 30/12/2026"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|STEL|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "STEL",
+      "priorNames": [
+        "STELLAR BANCORP INC",
+        "STELLAR BANCORP INC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|TBH|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "TBH",
+      "priorNames": [
+        "BRAG HSE HOLINDGS INC",
+        "BRAG HSE HOLINDGS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|TPTA|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "TPTA",
+      "priorNames": [
+        "TERRA PROPERTY TRUST INC 6.00% NOTES DUE 30/06/2026",
+        "TERRA PROPERTY TRUST INC 6.00% NOTES DUE 30/06/2026"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|VIASP|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "VIASP",
+      "priorNames": [
+        "VIA RENEWABLES INC 8.75% FIXED FLTG CUM RED PFD SER A",
+        "VIA RENEWABLES INC 8.75% FIXED FLTG CUM RED PFD SER A"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "US|WTO|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "WTO",
+      "priorNames": [
+        "UTIME LTD",
+        "UTIME LTD"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-04",
+      "inactiveAt": "2026-08-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16055"
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16079",
+  "masterVersion": "hf3b-hf2-kis-16055",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-03",
+  "sourceAsOf": "2026-08-04",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -3645,6 +3645,19 @@
       "active": true
     },
     {
+      "symbol": "0219Z0",
+      "displayName": "HANARO 미국S&P500액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70219Z0000",
+      "aliases": [
+        "0219z0"
+      ],
+      "active": true
+    },
+    {
       "symbol": "0220A0",
       "displayName": "KIWOOM 현대차그룹TOP3채권혼합50",
       "country": "KR",
@@ -3710,6 +3723,19 @@
       "active": true
     },
     {
+      "symbol": "0222F0",
+      "displayName": "마이티 AI데이터센터밸류체인",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70222F0009",
+      "aliases": [
+        "0222f0"
+      ],
+      "active": true
+    },
+    {
       "symbol": "0223A0",
       "displayName": "RISE 코스닥커버드콜액티브",
       "country": "KR",
@@ -3758,6 +3784,45 @@
       "standardCode": "KR70224X0005",
       "aliases": [
         "0224x0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0225V0",
+      "displayName": "KODEX 미국CPU반도체TOP10",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70225V0006",
+      "aliases": [
+        "0225v0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0226A0",
+      "displayName": "PLUS SK하이닉스샌디스크채권혼합50",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70226A0000",
+      "aliases": [
+        "0226a0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0226G0",
+      "displayName": "WON 피지컬AI TOP2플러스액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70226G0004",
+      "aliases": [
+        "0226g0"
       ],
       "active": true
     },
@@ -30066,19 +30131,6 @@
       "active": true
     },
     {
-      "symbol": "060240",
-      "displayName": "스타코링크",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7060240009",
-      "aliases": [
-        "060240"
-      ],
-      "active": true
-    },
-    {
       "symbol": "060250",
       "displayName": "NHN KCP",
       "country": "KR",
@@ -50680,19 +50732,6 @@
       "active": true
     },
     {
-      "symbol": "AAUM",
-      "displayName": "TEMA ALTERNATIVE ASSET MANAGERS ETF",
-      "englishName": "TEMA ALTERNATIVE ASSET MANAGERS ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "aaum"
-      ],
-      "active": true
-    },
-    {
       "symbol": "AAUS",
       "displayName": "ALPHA ARCHITECT US EQUITY ETF",
       "englishName": "ALPHA ARCHITECT US EQUITY ETF",
@@ -59477,19 +59516,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "btt"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "BTYB",
-      "displayName": "VISTASHARES BITBONDS 5 YR ENHANCED WEEKLY DISTRIBUTION ETF",
-      "englishName": "VISTASHARES BITBONDS 5 YR ENHANCED WEEKLY DISTRIBUTION ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "btyb"
       ],
       "active": true
     },
@@ -77460,19 +77486,6 @@
       "active": true
     },
     {
-      "symbol": "GAID",
-      "displayName": "GUINNESS ATKINSON INTERNATIONAL DIVIDEND BUILDER ETF",
-      "englishName": "GUINNESS ATKINSON INTERNATIONAL DIVIDEND BUILDER ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "gaid"
-      ],
-      "active": true
-    },
-    {
       "symbol": "GAL",
       "displayName": "STATE STREET GLOBAL ALLOCATION ETF",
       "englishName": "STATE STREET GLOBAL ALLOCATION ETF",
@@ -77586,19 +77599,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "gasz"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "GAUD",
-      "displayName": "GUINNESS ATKINSON US DIVIDEND BUILDER ETF",
-      "englishName": "GUINNESS ATKINSON US DIVIDEND BUILDER ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "gaud"
       ],
       "active": true
     },
@@ -78795,19 +78795,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "gldw"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "GLDY",
-      "displayName": "DEFIANCE GOLD ENHANCED OPTIONS INCOME ETF",
-      "englishName": "DEFIANCE GOLD ENHANCED OPTIONS INCOME ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "gldy"
       ],
       "active": true
     },
@@ -89896,8 +89883,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "kemq",
-        "kraneshares trust emerging mkts consumer technlgy indx etf"
+        "kemq"
       ],
       "active": true
     },
@@ -102312,7 +102298,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "pgim etf trust jennison international opportunities etf",
         "pjio"
       ],
       "active": true
@@ -109406,19 +109391,6 @@
       "active": true
     },
     {
-      "symbol": "SATG",
-      "displayName": "LEVERAGE SHARES 2X LONG SATS DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG SATS DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "satg"
-      ],
-      "active": true
-    },
-    {
       "symbol": "SATO",
       "displayName": "INVESCO EXCHANGE TRADED FD TR II ALERIAN GALAXY CRYPTO ECON",
       "englishName": "INVESCO EXCHANGE TRADED FD TR II ALERIAN GALAXY CRYPTO ECON",
@@ -112873,19 +112845,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "solm"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SOLR",
-      "displayName": "GUINNESS ATKINSON SUSTAINABLE ENERGY ETF",
-      "englishName": "GUINNESS ATKINSON SUSTAINABLE ENERGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "solr"
       ],
       "active": true
     },
@@ -134927,19 +134886,6 @@
       "active": true
     },
     {
-      "symbol": "ATLN",
-      "displayName": "ATLANTIC INTERNATIONAL CORP",
-      "englishName": "ATLANTIC INTERNATIONAL CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "atln"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ATLO",
       "displayName": "AMES NATIONAL CORP",
       "englishName": "AMES NATIONAL CORP",
@@ -138576,19 +138522,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "blco"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "BLD",
-      "displayName": "TOPBUILD CORP",
-      "englishName": "TOPBUILD CORP",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "bld"
       ],
       "active": true
     },
@@ -143022,19 +142955,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ceps"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CEPT",
-      "displayName": "CANTOR EQUITY PARTNERS II INC",
-      "englishName": "CANTOR EQUITY PARTNERS II INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "cept"
       ],
       "active": true
     },
@@ -153621,19 +153541,6 @@
       "active": true
     },
     {
-      "symbol": "EVGOW",
-      "displayName": "EVGO INC C/WTS 01/07/2026 (TO PUR COM)",
-      "englishName": "EVGO INC C/WTS 01/07/2026 (TO PUR COM)",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "evgow"
-      ],
-      "active": true
-    },
-    {
       "symbol": "EVH",
       "displayName": "EVOLENT HEALTH INC",
       "englishName": "EVOLENT HEALTH INC",
@@ -154722,19 +154629,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "fdmt"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "FDP",
-      "displayName": "DEL MONTE CORPORATION",
-      "englishName": "DEL MONTE CORPORATION",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "fdp"
       ],
       "active": true
     },
@@ -162322,19 +162216,6 @@
       "active": true
     },
     {
-      "symbol": "HNNAZ",
-      "displayName": "HENNESSY ADVISORS INC 4.875% SENIOR NOTES DUE 31/12/2026",
-      "englishName": "HENNESSY ADVISORS INC 4.875% SENIOR NOTES DUE 31/12/2026",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "hnnaz"
-      ],
-      "active": true
-    },
-    {
       "symbol": "HNRG",
       "displayName": "HALLADOR ENERGY CO",
       "englishName": "HALLADOR ENERGY CO",
@@ -167171,19 +167052,6 @@
       "active": true
     },
     {
-      "symbol": "JHG",
-      "displayName": "JANUS HENDERSON GROUP PLC",
-      "englishName": "JANUS HENDERSON GROUP PLC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "jhg"
-      ],
-      "active": true
-    },
-    {
       "symbol": "JHX",
       "displayName": "JAMES HARDIE INDUSTRIES PLC",
       "englishName": "JAMES HARDIE INDUSTRIES PLC",
@@ -170904,19 +170772,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "livn"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "LIXT",
-      "displayName": "LIXTE BIOTECHNOLOGY HOLDINGS INC",
-      "englishName": "LIXTE BIOTECHNOLOGY HOLDINGS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lixt"
       ],
       "active": true
     },
@@ -178766,19 +178621,6 @@
       "active": true
     },
     {
-      "symbol": "NNAVW",
-      "displayName": "NEXTNAV INC C/WTS (TO PUR COM)",
-      "englishName": "NEXTNAV INC C/WTS (TO PUR COM)",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "nnavw"
-      ],
-      "active": true
-    },
-    {
       "symbol": "NNBR",
       "displayName": "NN INC",
       "englishName": "NN INC",
@@ -182288,19 +182130,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "orcl"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "ORGN",
-      "displayName": "ORIGIN MATLS INC",
-      "englishName": "ORIGIN MATLS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "orgn"
       ],
       "active": true
     },
@@ -188142,32 +187971,6 @@
       "active": true
     },
     {
-      "symbol": "RAAQ",
-      "displayName": "REAL ASSET ACQUISITION CORP",
-      "englishName": "REAL ASSET ACQUISITION CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "raaq"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "RAAQU",
-      "displayName": "REAL ASSET ACQUISITION CORP UNIT 1 SHS CL A & 1/2 WT",
-      "englishName": "REAL ASSET ACQUISITION CORP UNIT 1 SHS CL A & 1/2 WT",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "raaqu"
-      ],
-      "active": true
-    },
-    {
       "symbol": "RAC",
       "displayName": "RITHM ACQUISITION CORP",
       "englishName": "RITHM ACQUISITION CORP",
@@ -192700,8 +192503,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "segg",
-        "sports entmt gaming gbl corp"
+        "segg"
       ],
       "active": true
     },
@@ -192741,19 +192543,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "self"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SEM",
-      "displayName": "SELECT MEDICAL HOLDINGS CORPORATION",
-      "englishName": "SELECT MEDICAL HOLDINGS CORPORATION",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "sem"
       ],
       "active": true
     },
@@ -193651,19 +193440,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "sii"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SILA",
-      "displayName": "SILA REALTY TRUST INC",
-      "englishName": "SILA REALTY TRUST INC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "sila"
       ],
       "active": true
     },
@@ -196437,32 +196213,6 @@
       "active": true
     },
     {
-      "symbol": "SSSS",
-      "displayName": "SURO CAPITAL CORP",
-      "englishName": "SURO CAPITAL CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ssss"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SSSSL",
-      "displayName": "SURO CAPITAL CORP 6.00% NOTES DUE 30/12/2026",
-      "englishName": "SURO CAPITAL CORP 6.00% NOTES DUE 30/12/2026",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ssssl"
-      ],
-      "active": true
-    },
-    {
       "symbol": "SST",
       "displayName": "SYSTEM1 INC",
       "englishName": "SYSTEM1 INC",
@@ -196615,19 +196365,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "ste"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "STEL",
-      "displayName": "STELLAR BANCORP INC",
-      "englishName": "STELLAR BANCORP INC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "stel"
       ],
       "active": true
     },
@@ -198279,19 +198016,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "tbch"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "TBH",
-      "displayName": "BRAG HSE HOLINDGS INC",
-      "englishName": "BRAG HSE HOLINDGS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "tbh"
       ],
       "active": true
     },
@@ -200398,19 +200122,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "tpst"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "TPTA",
-      "displayName": "TERRA PROPERTY TRUST INC 6.00% NOTES DUE 30/06/2026",
-      "englishName": "TERRA PROPERTY TRUST INC 6.00% NOTES DUE 30/06/2026",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "tpta"
       ],
       "active": true
     },
@@ -203837,19 +203548,6 @@
       "active": true
     },
     {
-      "symbol": "VIASP",
-      "displayName": "VIA RENEWABLES INC 8.75% FIXED FLTG CUM RED PFD SER A",
-      "englishName": "VIA RENEWABLES INC 8.75% FIXED FLTG CUM RED PFD SER A",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "viasp"
-      ],
-      "active": true
-    },
-    {
       "symbol": "VIAV",
       "displayName": "VIAVI SOLUTIONS INC",
       "englishName": "VIAVI SOLUTIONS INC",
@@ -206966,19 +206664,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "wtm"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "WTO",
-      "displayName": "UTIME LTD",
-      "englishName": "UTIME LTD",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "wto"
       ],
       "active": true
     },
