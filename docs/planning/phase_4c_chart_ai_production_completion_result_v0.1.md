@@ -135,7 +135,20 @@ No Supabase migration, no environment variable, no dependency change.
 
 ## §8 Commit/push/PR/deployment record
 
-_Pending — filled in after §25-26 (commit/push/PR) execute._
+- Commit `cd804df` on branch `feature/phase-4c-chart-ai-production-completion` (9 files changed, 965
+  insertions, 45 deletions — exactly the Phase 4C scope in §6 above; no unrelated pre-existing clutter
+  staged).
+- Pushed to `origin/feature/phase-4c-chart-ai-production-completion`.
+- Opened [PR #15](https://github.com/sbchangkyun/mk-stock-lab/pull/15) against `main`, `mergeable=MERGEABLE`.
+- Vercel Preview deployment reached `Ready`
+  (https://vercel.com/sbchangkyun-2946s-projects/mkstocklab/CYtbgrv9f81NPXF7zDp4x2i4PKsB), Preview URL
+  `https://mkstocklab-git-feature-phase-9c692b-sbchangkyun-2946s-projects.vercel.app`. All PR status checks
+  pass (`Vercel`, `Vercel Preview Comments`, plus the repo's separate pre-existing Netlify deploy-preview
+  checks, unrelated to this phase). The Preview is Vercel-SSO-protected (confirmed: an unauthenticated
+  `GET /` returns Vercel's own authentication interstitial, not the app), so automated route-level
+  acceptance (HTTP status checks against `/chart-ai`, `/api/chart-ai/*`) cannot be performed by this
+  assistant — consistent with every prior phase in this lane (4A, 4B, 3GG-T-HF3B, etc.). Authenticated
+  Preview/Production QA remains deferred to the standing Phase 4F cross-page closeout.
 
 ## §9 Production verification live HTTP results
 
