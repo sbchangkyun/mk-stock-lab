@@ -187,28 +187,31 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   runtime-error-cluster review remain deferred to Phase 4F (Owner-only, no authenticated session available
   to this assistant). See `phase_4a_home_common_shell_production_plan_v0.1.md` and
   `phase_4a_home_common_shell_production_result_v0.1.md` for full detail.
-
-### In progress
-
-- **Phase 4B — Market Production Completion.** `READY_FOR_OWNER_MERGE_APPROVAL` (PR #13 open, Vercel
-  Preview `SUCCESS`; merge itself is Owner-reserved — see `phase_4b_market_production_completion_result_v0.1.md`
-  §8). A completion pass
-  over the existing live Market dashboard (`LiveMarketDashboard.astro`) on branch
-  `feature/phase-4b-market-production-completion` (cut from the Phase 4A merge commit): truthful
-  sample/proxy/delayed-close disclosures, a period-aware overview loader, accessible treemap/scatter,
-  honest breadth/freshness reporting, request-race guards, a 30s-cooldown refresh control, full ARIA
-  tablist + keyboard navigation for the universe/period tabs, a focus-trapped accessible modal, 44px touch
-  targets, and a permanent `/heatmap` → `/market` redirect. No provider/business-logic change. Full local
-  regression gate green (see `phase_4b_market_production_completion_result_v0.1.md`); commit/push/PR/
-  Preview/merge/Production steps are next under this phase's continuous fast-track authorization — this
-  entry moves to "Completed" once merged and Production-verified.
+- **Phase 4B — Market Production Completion.** `PHASE_4B_MARKET_MERGED_PRODUCTION_VERIFIED` (PR #13
+  merged, merge commit `60b64dde731be60ed5a9a278114234a7e3042126`, Production deployment
+  `dpl_GH4fVxWmigqNgq4ajioqV6Cc2VrQ` `READY`). A completion pass over the existing live Market dashboard
+  (`LiveMarketDashboard.astro`): truthful sample/proxy/delayed-close disclosures, a period-aware overview
+  loader, accessible treemap/scatter, honest breadth/freshness reporting, request-race guards, a
+  30s-cooldown refresh control, full ARIA tablist + keyboard navigation for the universe/period tabs, a
+  focus-trapped accessible modal, 44px touch targets, and a permanent `/heatmap` → `/market` redirect. No
+  provider/business-logic change. The full bounded Production acceptance sweep (4 overview periods, 16
+  universe×period dashboard combinations, invalid-input/method validation, raw redirect check, and the
+  full regression set) passed in its entirety with no runtime-error cluster found. Authenticated
+  visual/touch/screen-reader QA remains deferred to Phase 4F. See
+  `phase_4b_market_production_completion_plan_v0.1.md` and
+  `phase_4b_market_production_completion_result_v0.1.md` for full detail.
 
   **Roadmap-numbering correction**: Phase 4A's forward-looking entries below originally labeled Phase 4B as
   "Chart AI" and Phase 4C as "Market" (and `planning_changelog.md`'s Phase 4A entry said the same). This
-  phase instead executes **Phase 4B = Market**, **Phase 4C = Chart AI** — the Market dashboard's
+  phase instead executed **Phase 4B = Market**, **Phase 4C = Chart AI** — the Market dashboard's
   truthfulness/accessibility gaps were judged the more urgent production-readiness item; Chart AI already
   received substantial hardening in Phase 3GK/3GG-T. The "Next sequential product phases" list below is
   corrected accordingly. See `phase_4b_market_production_completion_plan_v0.1.md` §1 for the full rationale.
+
+### In progress
+
+None currently — Phase 4B is complete; Phase 4C has not started. See "Next sequential product phases"
+below.
 
 ### Next sequential product phases
 
@@ -224,7 +227,8 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
    all-symbol/all-market/long-session QA sweep deferred by Phase 3GK (§7 of its result doc) and Phase 3GL,
    plus any other cross-cutting Phase 3 closeout verification.
 2. **Phase 4A — Home and Common Shell.** `PHASE_4A_MERGED_PRODUCTION_VERIFIED`. See "Completed" above.
-3. **Phase 4B — Market production readiness pass.** See "In progress" above.
+3. **Phase 4B — Market production readiness pass.** `PHASE_4B_MARKET_MERGED_PRODUCTION_VERIFIED`. See
+   "Completed" above.
 4. **Phase 4C — Chart AI production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
    `/chart-ai` against its already-verified functional scope (login gate, KR/US charts, similarity + MK AI
    analysis, daily usage guard) — not a re-implementation of Phase 3GK.
@@ -315,7 +319,6 @@ section only records that they are next in sequence.
   10/10 direct live HTTP checks showed no error signatures as a proxy.
 - ~~Provide a dedicated Phase 4B specification before any Phase 4B implementation begins~~ — done; a full
   Phase 4B specification ("Market Production Completion") was provided and executed on branch
-  `feature/phase-4b-market-production-completion`. Decide whether to merge the Phase 4B PR once opened, per
-  this phase's continuous fast-track authorization (no separate visual-approval stop required unless a
-  secret, DB migration, authorization-policy change, or destructive/Production-mutating action is genuinely
-  needed).
+  `feature/phase-4b-market-production-completion`. ~~Decide whether to merge the Phase 4B PR once opened~~ —
+  done; the Owner merged PR #13 (merge commit `60b64dd`) directly, and the full Production acceptance sweep
+  passed. See `phase_4b_market_production_completion_result_v0.1.md` §9.
