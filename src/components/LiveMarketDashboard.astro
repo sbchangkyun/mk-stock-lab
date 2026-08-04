@@ -30,16 +30,23 @@ const returnScale = [
 
 <header class="page-header market-page-header">
   <div>
-    <p class="eyebrow">Market</p>
+    <p class="eyebrow">MARKET DASHBOARD</p>
     <h1>시장</h1>
     <p class="lead">
-      KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100 대표 ETF와 실제 편입 종목의 최근 종가 기준 OHLCV로 계산한 시장 대시보드입니다.
-      실시간 시세가 아닌 지연된 종가 기준이며, 지수 자체가 아닌 <strong>대표 ETF(proxy)</strong> 기준입니다.
-      데이터를 불러올 수 없을 때는 있는 그대로 알려드립니다.
+      KOSPI200·KOSDAQ150·S&amp;P500·NASDAQ100, 각 시장에서 선정한 <strong>12개 추적 종목 샘플</strong>과 대표 ETF의
+      최근 종가 기준 OHLCV로 계산한 시장 대시보드입니다. 실시간 시세가 아닌 지연된 종가 기준이며,
+      지수 자체가 아닌 <strong>대표 ETF(proxy)</strong> 기준입니다. 데이터를 불러올 수 없을 때는 있는 그대로 알려드립니다.
     </p>
+    <ul class="market-disclosure-list">
+      <li>시장 수익률은 공식 지수가 아닌 <strong>대표 ETF(proxy)</strong> 기준으로 계산됩니다.</li>
+      <li>각 시장에서 선정한 <strong>12개 종목 샘플</strong>만 추적하며, 전체 편입 종목이 아닙니다.</li>
+      <li>모든 수치는 <strong>종가 기준 OHLCV</strong>이며, 실시간 시세·실시간 시가총액이 아닙니다.</li>
+      <li>Treemap 타일 크기는 <strong>구성 시 설정한 비중(relativeWeight)</strong>이며, 시가총액이나 공식 지수 비중이 아닙니다.</li>
+    </ul>
   </div>
-  <button type="button" class="market-refresh-button" data-market-refresh-button aria-live="polite">새로고침</button>
+  <button type="button" class="market-refresh-button" data-market-refresh-button>새로고침</button>
 </header>
+<p class="visually-hidden" data-market-refresh-status role="status" aria-live="polite"></p>
 
 <MarketLiveQuoteCard enabled={isMarketQuoteCardEnabled} />
 
@@ -54,14 +61,17 @@ const returnScale = [
 <section class="market-dashboard" data-market-dashboard data-active-universe={defaultUniverseId} data-active-period={defaultPeriodId}>
   <div class="market-control-panel" aria-label="시장 대시보드 선택">
     <div class="market-control-group">
-      <span class="market-control-label">시장</span>
-      <div class="market-tab-list" role="tablist" aria-label="시장 선택">
+      <span class="market-control-label" id="marketUniverseTabListLabel">시장</span>
+      <div class="market-tab-list" role="tablist" aria-labelledby="marketUniverseTabListLabel">
         {MARKET_TRACKED_UNIVERSES.map((universe, index) => (
           <button
+            id={`marketUniverseTab-${universe.id}`}
             class:list={['market-tab-button', index === 0 && 'is-active']}
             type="button"
             role="tab"
             aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls="marketDashboardStage"
+            tabindex={index === 0 ? '0' : '-1'}
             data-market-universe-tab={universe.id}
           >
             {universe.label}
@@ -70,14 +80,17 @@ const returnScale = [
       </div>
     </div>
     <div class="market-control-group">
-      <span class="market-control-label">기간</span>
-      <div class="market-tab-list compact" role="tablist" aria-label="기간 선택">
+      <span class="market-control-label" id="marketPeriodTabListLabel">기간</span>
+      <div class="market-tab-list compact" role="tablist" aria-labelledby="marketPeriodTabListLabel">
         {MARKET_DASHBOARD_PERIOD_IDS.map((periodId, index) => (
           <button
+            id={`marketPeriodTab-${periodId}`}
             class:list={['market-tab-button', index === 0 && 'is-active']}
             type="button"
             role="tab"
             aria-selected={index === 0 ? 'true' : 'false'}
+            aria-controls="marketDashboardStage"
+            tabindex={index === 0 ? '0' : '-1'}
             data-market-period-tab={periodId}
           >
             {PERIOD_LABELS[periodId]}
@@ -87,13 +100,16 @@ const returnScale = [
     </div>
   </div>
 
-  <div class="market-dashboard-stage">
+  <div class="market-dashboard-stage" id="marketDashboardStage">
     <p class="market-dashboard-loading" data-market-dashboard-loading role="status" aria-live="polite">시장 데이터를 불러오는 중...</p>
     <div class="market-dashboard-unavailable hidden" data-market-dashboard-unavailable role="status" aria-live="polite">
       <p data-market-dashboard-unavailable-msg>시장 데이터를 지금 이용할 수 없습니다.</p>
     </div>
 
     <section class="market-dashboard-panel hidden" data-market-panel>
+      <p class="market-panel-stale-notice hidden" data-market-panel-stale-notice role="status" aria-live="polite">
+        새로고침에 실패했습니다. 이전에 불러온 데이터를 표시합니다 (지연됨).
+      </p>
       <div class="market-summary-row">
         <div>
           <p class="eyebrow" data-market-panel-eyebrow>Live Dashboard</p>
@@ -106,8 +122,8 @@ const returnScale = [
         <article class="market-chart-card market-treemap-card" id="marketLiveTreemapCard" data-exportable-card>
           <div class="market-card-header">
             <div>
-              <h3>실데이터 Treemap</h3>
-              <p>편입 종목의 비중(타일 크기)과 선택 기간 수익률(색상)을 보여줍니다.</p>
+              <h3>추적 종목 Treemap</h3>
+              <p>추적 중인 12개 종목 샘플의 설정 비중(타일 크기)과 선택 기간 수익률(색상)을 보여줍니다. 전체 편입 종목이 아닙니다.</p>
             </div>
             <div class="market-card-actions" data-card-actions>
               <button
@@ -136,7 +152,9 @@ const returnScale = [
             </div>
           </div>
 
-          <svg class="market-treemap-svg" data-market-treemap-svg viewBox="0 0 1120 500" role="img" aria-label="실데이터 Treemap"></svg>
+          <svg class="market-treemap-svg" data-market-treemap-svg viewBox="0 0 1120 500" role="img" aria-label="추적 종목 Treemap"></svg>
+
+          <p class="market-partial-notice hidden" data-market-treemap-partial-notice role="status" aria-live="polite"></p>
 
           <div class="market-return-scale" aria-label="수익률 색상 범례">
             <div class="market-return-ramp" aria-hidden="true">
@@ -181,6 +199,7 @@ const returnScale = [
             </div>
           </div>
           <svg class="market-scatter-chart" data-market-scatter-svg viewBox="0 0 720 460" role="img" aria-label="모멘텀 트렌드 산점도"></svg>
+          <p class="market-scatter-summary" data-market-scatter-summary></p>
         </article>
       </div>
 
@@ -191,7 +210,7 @@ const returnScale = [
 
 <div class="market-card-modal hidden" id="marketCardModal" aria-hidden="true">
   <div class="market-card-modal-backdrop" data-close-expanded-card></div>
-  <div class="market-card-modal-panel" role="dialog" aria-modal="true" aria-label="크게 보기">
+  <div class="market-card-modal-panel" role="dialog" aria-modal="true" aria-label="크게 보기" tabindex="-1">
     <div class="market-card-modal-actions" data-card-actions>
       <button class="chart-export-button" type="button" id="marketModalExportButton" aria-label="이미지로 저장" title="이미지로 저장">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d={cameraPath} /></svg>
@@ -206,7 +225,7 @@ const returnScale = [
 
 <script>
   import { exportCardAsPng, setupCardImageExport } from '../lib/exportCardImage';
-  import { formatSignedPct, changeToneClass, colorForReturn, freshnessLabel, formatAsOfDate } from '../lib/market-dashboard/formatters';
+  import { formatSignedPct, changeToneClass, colorForReturn, freshnessLabel, formatAsOfDate, sectorLabel } from '../lib/market-dashboard/formatters';
 
   type OverviewProxy = {
     universeId: string;
@@ -241,10 +260,12 @@ const returnScale = [
     breadth: {
       requestedCount: number;
       successfulCount: number;
+      failedCount: number;
       advancers: number;
       decliners: number;
       unchanged: number;
       weightedPeriodReturnPct: number | null;
+      medianPeriodReturnPct: number | null;
       strongestSector: string | null;
       weakestSector: string | null;
       commonAsOf: string | null;
@@ -300,28 +321,33 @@ const returnScale = [
     const overviewGrid = overviewRoot?.querySelector<HTMLElement>('[data-market-overview-grid]');
     const overviewUnavailable = overviewRoot?.querySelector<HTMLElement>('[data-market-overview-unavailable]');
 
-    const loadOverview = async (forceRefresh = false) => {
+    let overviewRequestToken = 0;
+    const loadOverview = async (period: string, forceRefresh = false) => {
+      const token = ++overviewRequestToken;
       try {
-        const { ok, body } = await fetchJsonCached('overview:1d', '/api/market/overview.json?period=1d', forceRefresh);
+        const { ok, body } = await fetchJsonCached(`overview:${period}`, `/api/market/overview.json?period=${encodeURIComponent(period)}`, forceRefresh);
+        if (token !== overviewRequestToken) return;
         if (!ok || body?.ok !== true || !Array.isArray(body?.overview?.proxies)) {
           overviewLoading?.classList.add('hidden');
+          overviewGrid?.classList.add('hidden');
           overviewUnavailable?.classList.remove('hidden');
           return;
         }
         const proxies: OverviewProxy[] = body.overview.proxies;
+        const periodLabel = periodLabelOf(period);
         if (overviewGrid) {
           overviewGrid.innerHTML = proxies
             .map((proxy) => {
               if (proxy.status !== 'ok') {
                 return `<div class="market-overview-card market-overview-card--unavailable">
-  <p class="market-overview-card-label">${proxy.universeLabel}</p>
+  <p class="market-overview-card-label">${proxy.universeLabel} · ${periodLabel}</p>
   <p class="market-overview-card-proxy">${proxy.proxy.label}</p>
   <p class="market-overview-card-value">이용 불가</p>
 </div>`;
               }
               const tone = changeToneClass(proxy.periodReturnPct);
               return `<div class="market-overview-card">
-  <p class="market-overview-card-label">${proxy.universeLabel}</p>
+  <p class="market-overview-card-label">${proxy.universeLabel} · ${periodLabel}</p>
   <p class="market-overview-card-proxy">${proxy.proxy.label}</p>
   <p class="market-overview-card-value ${tone}">${formatSignedPct(proxy.periodReturnPct)}</p>
   <div class="market-overview-card-meta">
@@ -333,9 +359,12 @@ const returnScale = [
             .join('');
         }
         overviewLoading?.classList.add('hidden');
+        overviewUnavailable?.classList.add('hidden');
         overviewGrid?.classList.remove('hidden');
       } catch {
+        if (token !== overviewRequestToken) return;
         overviewLoading?.classList.add('hidden');
+        overviewGrid?.classList.add('hidden');
         overviewUnavailable?.classList.remove('hidden');
       }
     };
@@ -359,12 +388,24 @@ const returnScale = [
     const scatterHeight = 460;
     const plot = { x: 58, y: 46, width: 618, height: 350 };
 
-    const renderTreemap = async (constituents: Constituent[], currency: string) => {
+    const treemapPartialNotice = dashboardRoot.querySelector<HTMLElement>('[data-market-treemap-partial-notice]');
+
+    const renderTreemap = async (constituents: Constituent[], currency: string, universeLabel: string, periodLabel: string) => {
       if (!treemapSvg) return;
+      treemapSvg.setAttribute('aria-label', `${universeLabel} ${periodLabel} 추적 종목 Treemap`);
       treemapSvg.innerHTML = '';
       treemapSvg.appendChild(el('rect', { x: '0', y: '0', width: String(treemapWidth), height: String(treemapHeight), rx: '14', fill: '#f8fafc' }));
 
       const ok = constituents.filter((item) => item.status === 'ok' && item.relativeWeight > 0);
+      const failedCount = constituents.length - ok.length;
+      if (treemapPartialNotice) {
+        if (failedCount > 0) {
+          treemapPartialNotice.textContent = `${constituents.length}개 추적 종목 중 ${failedCount}개는 데이터를 불러오지 못해 Treemap에 표시되지 않았습니다.`;
+          treemapPartialNotice.classList.remove('hidden');
+        } else {
+          treemapPartialNotice.classList.add('hidden');
+        }
+      }
       if (ok.length === 0) return;
 
       const { hierarchy, treemap, treemapSquarify } = await import('d3-hierarchy');
@@ -441,8 +482,11 @@ const returnScale = [
       void currency;
     };
 
-    const renderScatter = (constituents: Constituent[]) => {
+    const scatterSummaryEl = dashboardRoot.querySelector<HTMLElement>('[data-market-scatter-summary]');
+
+    const renderScatter = (constituents: Constituent[], universeLabel: string, periodLabel: string) => {
       if (!scatterSvg) return;
+      scatterSvg.setAttribute('aria-label', `${universeLabel} ${periodLabel} 모멘텀 트렌드 산점도`);
       scatterSvg.innerHTML = '';
       scatterSvg.appendChild(el('rect', { x: '0', y: '0', width: String(scatterWidth), height: String(scatterHeight), rx: '16', fill: '#ffffff' }));
       scatterSvg.appendChild(el('rect', { x: String(plot.x), y: String(plot.y), width: String(plot.width), height: String(plot.height), rx: '10', fill: '#f8fafc', stroke: '#d8e2ee' }));
@@ -455,8 +499,9 @@ const returnScale = [
       scatterSvg.appendChild(momentumLabel);
       scatterSvg.appendChild(trendLabel);
 
-      constituents
-        .filter((item) => item.status === 'ok' && item.momentum20dPct !== null && item.trendVsSma60Pct !== null)
+      const plotted = constituents.filter((item) => item.status === 'ok' && item.momentum20dPct !== null && item.trendVsSma60Pct !== null);
+
+      plotted
         .forEach((item, index) => {
           const trend = clamp(item.trendVsSma60Pct as number, -10, 10);
           const momentum = clamp(item.momentum20dPct as number, -10, 10);
@@ -480,6 +525,21 @@ const returnScale = [
           }
           scatterSvg.appendChild(g);
         });
+
+      if (scatterSummaryEl) {
+        if (plotted.length === 0) {
+          scatterSummaryEl.textContent = '모멘텀·트렌드 데이터가 충분한 종목이 없어 표시할 점이 없습니다.';
+        } else {
+          const strongest = plotted.reduce((best, item) => ((item.momentum20dPct as number) > (best.momentum20dPct as number) ? item : best));
+          const weakest = plotted.reduce((worst, item) => ((item.momentum20dPct as number) < (worst.momentum20dPct as number) ? item : worst));
+          const aboveTrend = plotted.filter((item) => (item.trendVsSma60Pct as number) > 0).length;
+          const belowTrend = plotted.filter((item) => (item.trendVsSma60Pct as number) <= 0).length;
+          scatterSummaryEl.textContent =
+            `${plotted.length}개 종목 표시 · 최고 모멘텀 ${strongest.displayName || strongest.name} (${formatSignedPct(strongest.momentum20dPct)}) · ` +
+            `최저 모멘텀 ${weakest.displayName || weakest.name} (${formatSignedPct(weakest.momentum20dPct)}) · ` +
+            `60일 평균 상회 ${aboveTrend} · 60일 평균 하회 ${belowTrend}`;
+        }
+      }
     };
 
     const renderBreadth = (dashboard: DashboardPayload) => {
@@ -492,11 +552,12 @@ const returnScale = [
       const coverage = `${b.successfulCount}/${b.requestedCount}`;
       breadthEl.innerHTML = `
         <span class="market-freshness-badge market-freshness-badge--${dashboard.freshness}">${freshnessLabel(dashboard.freshness)}</span>
-        <span>커버리지 ${coverage}</span>
+        <span>커버리지 ${coverage}${b.failedCount > 0 ? ` (실패 ${b.failedCount})` : ''}</span>
         <span>상승 ${b.advancers} · 하락 ${b.decliners} · 보합 ${b.unchanged}</span>
-        <span>가중평균 ${formatSignedPct(b.weightedPeriodReturnPct)}</span>
-        ${b.strongestSector ? `<span>강세 ${b.strongestSector}</span>` : ''}
-        ${b.weakestSector ? `<span>약세 ${b.weakestSector}</span>` : ''}
+        <span title="추적 샘플 구성 비중(relativeWeight) 기준 가중 수익률 -- 공식 지수 수익률이 아닙니다">추적 샘플 가중 수익률 ${formatSignedPct(b.weightedPeriodReturnPct)}</span>
+        <span>중간값 수익률 ${formatSignedPct(b.medianPeriodReturnPct)}</span>
+        ${b.strongestSector ? `<span>강세 ${sectorLabel(b.strongestSector)}</span>` : ''}
+        ${b.weakestSector ? `<span>약세 ${sectorLabel(b.weakestSector)}</span>` : ''}
         <span>${formatAsOfDate(b.commonAsOf)}</span>
       `;
     };
@@ -504,14 +565,23 @@ const returnScale = [
     const universeLabelOf = (id: string) => universeTabs.find((tab) => tab.dataset.marketUniverseTab === id)?.textContent?.trim() ?? id;
     const periodLabelOf = (id: string) => periodTabs.find((tab) => tab.dataset.marketPeriodTab === id)?.textContent?.trim() ?? id;
 
+    const panelStaleNotice = dashboardRoot.querySelector<HTMLElement>('[data-market-panel-stale-notice]');
+
     let requestToken = 0;
+    let currentPanelKey: string | null = null;
     const loadDashboard = async (universeId: string, period: string, forceRefresh = false) => {
       const token = ++requestToken;
+      const requestKey = `${universeId}:${period}`;
+      const isRefreshOfCurrent = forceRefresh && requestKey === currentPanelKey;
       dashboardRoot.dataset.activeUniverse = universeId;
       dashboardRoot.dataset.activePeriod = period;
-      dashboardLoading?.classList.remove('hidden');
-      dashboardUnavailable?.classList.add('hidden');
-      panel?.classList.add('hidden');
+
+      if (!isRefreshOfCurrent) {
+        dashboardLoading?.classList.remove('hidden');
+        dashboardUnavailable?.classList.add('hidden');
+        panelStaleNotice?.classList.add('hidden');
+        panel?.classList.add('hidden');
+      }
 
       try {
         const cacheKey = `dashboard:${universeId}:${period}`;
@@ -521,6 +591,10 @@ const returnScale = [
 
         if (!ok || body?.ok !== true || !body?.dashboard) {
           dashboardLoading?.classList.add('hidden');
+          if (isRefreshOfCurrent) {
+            panelStaleNotice?.classList.remove('hidden');
+            return;
+          }
           if (dashboardUnavailableMsg) {
             dashboardUnavailableMsg.textContent =
               body?.code === 'MARKET_DATA_PARTIAL_BELOW_THRESHOLD'
@@ -532,57 +606,93 @@ const returnScale = [
         }
 
         const dashboard: DashboardPayload = body.dashboard;
+        const universeLabel = universeLabelOf(universeId);
+        const periodLabel = periodLabelOf(period);
         if (panelEyebrow) panelEyebrow.textContent = 'Live Dashboard';
-        if (panelTitle) panelTitle.textContent = `${universeLabelOf(universeId)} · ${periodLabelOf(period)} (${dashboard.benchmarkProxy.label})`;
-        if (panelMetrics && dashboard.breadth) {
-          panelMetrics.innerHTML = `<span><strong>${dashboard.breadth.advancers}</strong> 상승</span><span><strong>${dashboard.breadth.decliners}</strong> 하락</span><span>${formatAsOfDate(dashboard.breadth.commonAsOf)}</span>`;
+        if (panelTitle) panelTitle.textContent = `${universeLabel} · ${periodLabel} (${dashboard.benchmarkProxy.label})`;
+        if (panelMetrics) {
+          const b = dashboard.breadth;
+          panelMetrics.innerHTML = `
+            <span>선택 시장 <strong>${universeLabel}</strong></span>
+            <span>선택 기간 <strong>${periodLabel}</strong></span>
+            <span>추적 종목 상태 <strong>${b ? `${b.successfulCount}/${b.requestedCount}` : '—'}</strong>${b && b.failedCount > 0 ? ` (실패 ${b.failedCount})` : ''}</span>
+            <span>기준 시각 <strong>${formatAsOfDate(b?.commonAsOf ?? null)}</strong></span>
+            <span class="market-freshness-badge market-freshness-badge--${dashboard.freshness}">데이터 상태 ${freshnessLabel(dashboard.freshness)}</span>
+          `;
         }
 
-        await renderTreemap(dashboard.constituents, dashboard.currency);
-        renderScatter(dashboard.constituents);
+        await renderTreemap(dashboard.constituents, dashboard.currency, universeLabel, periodLabel);
+        renderScatter(dashboard.constituents, universeLabel, periodLabel);
         renderBreadth(dashboard);
 
+        currentPanelKey = requestKey;
         dashboardLoading?.classList.add('hidden');
+        panelStaleNotice?.classList.add('hidden');
         panel?.classList.remove('hidden');
       } catch {
         if (token !== requestToken) return;
         dashboardLoading?.classList.add('hidden');
+        if (isRefreshOfCurrent) {
+          panelStaleNotice?.classList.remove('hidden');
+          return;
+        }
         if (dashboardUnavailableMsg) dashboardUnavailableMsg.textContent = '시장 데이터를 지금 이용할 수 없습니다.';
         dashboardUnavailable?.classList.remove('hidden');
       }
     };
 
-    universeTabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const universeId = tab.dataset.marketUniverseTab;
-        const period = dashboardRoot.dataset.activePeriod || periodTabs[0]?.dataset.marketPeriodTab;
-        if (!universeId || !period) return;
-        universeTabs.forEach((t) => {
-          const active = t === tab;
-          t.classList.toggle('is-active', active);
-          t.setAttribute('aria-selected', active ? 'true' : 'false');
+    // ARIA APG tabs pattern: arrow-key/Home/End moves focus AND activates (automatic activation);
+    // Enter/Space activation is already handled natively by the underlying <button> click event.
+    const setupTabKeyboardNav = (tabs: HTMLButtonElement[], onActivate: (tab: HTMLButtonElement) => void) => {
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('keydown', (event) => {
+          let targetIndex: number | null = null;
+          if (event.key === 'ArrowRight' || event.key === 'ArrowDown') targetIndex = (index + 1) % tabs.length;
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') targetIndex = (index - 1 + tabs.length) % tabs.length;
+          else if (event.key === 'Home') targetIndex = 0;
+          else if (event.key === 'End') targetIndex = tabs.length - 1;
+          if (targetIndex === null) return;
+          event.preventDefault();
+          const target = tabs[targetIndex];
+          target.focus();
+          onActivate(target);
         });
-        loadDashboard(universeId, period);
       });
-    });
+    };
 
-    periodTabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const period = tab.dataset.marketPeriodTab;
-        const universeId = dashboardRoot.dataset.activeUniverse || universeTabs[0]?.dataset.marketUniverseTab;
-        if (!period || !universeId) return;
-        periodTabs.forEach((t) => {
-          const active = t === tab;
-          t.classList.toggle('is-active', active);
-          t.setAttribute('aria-selected', active ? 'true' : 'false');
-        });
-        loadDashboard(universeId, period);
+    const activateUniverseTab = (tab: HTMLButtonElement) => {
+      const universeId = tab.dataset.marketUniverseTab;
+      const period = dashboardRoot.dataset.activePeriod || periodTabs[0]?.dataset.marketPeriodTab;
+      if (!universeId || !period) return;
+      universeTabs.forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', active ? 'true' : 'false');
+        t.tabIndex = active ? 0 : -1;
       });
-    });
+      loadDashboard(universeId, period);
+    };
+    universeTabs.forEach((tab) => tab.addEventListener('click', () => activateUniverseTab(tab)));
+    setupTabKeyboardNav(universeTabs, activateUniverseTab);
+
+    const activatePeriodTab = (tab: HTMLButtonElement) => {
+      const period = tab.dataset.marketPeriodTab;
+      const universeId = dashboardRoot.dataset.activeUniverse || universeTabs[0]?.dataset.marketUniverseTab;
+      if (!period || !universeId) return;
+      periodTabs.forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', active ? 'true' : 'false');
+        t.tabIndex = active ? 0 : -1;
+      });
+      loadDashboard(universeId, period);
+    };
+    periodTabs.forEach((tab) => tab.addEventListener('click', () => activatePeriodTab(tab)));
+    setupTabKeyboardNav(periodTabs, activatePeriodTab);
 
     // Phase 3GJ-HF1 spec section 11: sequence the initial loads instead of firing them concurrently.
     void (async () => {
-      await loadOverview();
+      await loadOverview(dashboardRoot.dataset.activePeriod || '1d');
       await loadDashboard(dashboardRoot.dataset.activeUniverse || 'kospi200', dashboardRoot.dataset.activePeriod || '1d');
     })();
 
@@ -590,11 +700,13 @@ const returnScale = [
     // cache-bypass query params are sent -- the client simply re-requests past its own memory cache.
     const REFRESH_COOLDOWN_MS = 30_000;
     const refreshButton = document.querySelector<HTMLButtonElement>('[data-market-refresh-button]');
+    const refreshStatus = document.querySelector<HTMLElement>('[data-market-refresh-status]');
     let lastRefreshAt = 0;
     let cooldownTimer: number | undefined;
+    let isRefreshing = false;
 
     const updateRefreshButtonState = () => {
-      if (!refreshButton) return;
+      if (!refreshButton || isRefreshing) return;
       const remainingMs = REFRESH_COOLDOWN_MS - (Date.now() - lastRefreshAt);
       if (remainingMs > 0) {
         refreshButton.disabled = true;
@@ -610,17 +722,28 @@ const returnScale = [
     };
 
     refreshButton?.addEventListener('click', () => {
-      if (Date.now() - lastRefreshAt < REFRESH_COOLDOWN_MS) return;
+      if (isRefreshing || Date.now() - lastRefreshAt < REFRESH_COOLDOWN_MS) return;
       lastRefreshAt = Date.now();
-      updateRefreshButtonState();
-      if (cooldownTimer === undefined) {
-        cooldownTimer = window.setInterval(updateRefreshButtonState, 1000);
+      isRefreshing = true;
+      if (refreshButton) {
+        refreshButton.disabled = true;
+        refreshButton.textContent = '갱신 중...';
       }
+      if (refreshStatus) refreshStatus.textContent = '시장 데이터를 갱신하는 중입니다.';
       const universeId = dashboardRoot.dataset.activeUniverse || universeTabs[0]?.dataset.marketUniverseTab || 'kospi200';
       const period = dashboardRoot.dataset.activePeriod || periodTabs[0]?.dataset.marketPeriodTab || '1d';
       void (async () => {
-        await loadOverview(true);
-        await loadDashboard(universeId, period, true);
+        try {
+          await loadOverview(period, true);
+          await loadDashboard(universeId, period, true);
+          if (refreshStatus) refreshStatus.textContent = '시장 데이터를 갱신했습니다.';
+        } finally {
+          isRefreshing = false;
+          if (cooldownTimer === undefined) {
+            cooldownTimer = window.setInterval(updateRefreshButtonState, 1000);
+          }
+          updateRefreshButtonState();
+        }
       })();
     });
   };
@@ -628,20 +751,30 @@ const returnScale = [
   const setupMarketCardModal = () => {
     const modal = document.getElementById('marketCardModal');
     const content = document.getElementById('marketCardModalContent');
+    const modalPanel = modal?.querySelector<HTMLElement>('.market-card-modal-panel') ?? null;
     const exportButton = document.getElementById('marketModalExportButton') as HTMLButtonElement | null;
-    if (!modal || !content || modal.dataset.ready === 'true') return;
+    if (!modal || !content || !modalPanel || modal.dataset.ready === 'true') return;
     modal.dataset.ready = 'true';
 
     let currentFilename = 'mk-stock-lab-market-card';
+    let lastFocusedElement: HTMLElement | null = null;
+
+    const getFocusableElements = (): HTMLElement[] =>
+      Array.from(modalPanel.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(
+        (node) => !node.hasAttribute('disabled'),
+      );
 
     const close = () => {
       modal.classList.add('hidden');
       modal.setAttribute('aria-hidden', 'true');
       content.replaceChildren();
       document.body.classList.remove('modal-open');
+      lastFocusedElement?.focus();
+      lastFocusedElement = null;
     };
 
-    const open = (card: HTMLElement, filename: string) => {
+    const open = (card: HTMLElement, filename: string, opener: HTMLElement) => {
+      lastFocusedElement = opener;
       const clone = card.cloneNode(true) as HTMLElement;
       clone.removeAttribute('id');
       clone.querySelectorAll('[data-card-actions]').forEach((node) => node.remove());
@@ -650,6 +783,7 @@ const returnScale = [
       modal.classList.remove('hidden');
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('modal-open');
+      modalPanel.focus();
     };
 
     document.querySelectorAll<HTMLButtonElement>('[data-expand-card]').forEach((button) => {
@@ -659,7 +793,7 @@ const returnScale = [
         const targetId = button.dataset.expandTarget;
         const target = targetId ? document.getElementById(targetId) : null;
         if (!target) return;
-        open(target, button.dataset.exportFilename || targetId || 'mk-stock-lab-market-card');
+        open(target, button.dataset.exportFilename || targetId || 'mk-stock-lab-market-card', button);
       });
     });
 
@@ -683,7 +817,23 @@ const returnScale = [
     });
 
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && !modal.classList.contains('hidden')) close();
+      if (modal.classList.contains('hidden')) return;
+      if (event.key === 'Escape') {
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusableElements();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     });
   };
 

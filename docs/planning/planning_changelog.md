@@ -1,5 +1,42 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4B closeout — merged and Production-verified - 2026-08-04
+
+- PR #13 merged by the Owner (merge commit `60b64dde731be60ed5a9a278114234a7e3042126`). Production
+  deployment `dpl_GH4fVxWmigqNgq4ajioqV6Cc2VrQ` reached `READY`. The full bounded acceptance sweep (4
+  overview periods, 16 universe×period dashboard combinations, invalid-input/method validation, the raw
+  `/heatmap` 301, and the full regression set) passed in its entirety with no Production runtime-error
+  cluster found. Final classification `PHASE_4B_MARKET_MERGED_PRODUCTION_VERIFIED`. Full detail in
+  `phase_4b_market_production_completion_result_v0.1.md` §1, §8-9.
+
+## Phase 4B — Market Production Completion, and roadmap-lane correction - 2026-08-04
+
+- Implemented Phase 4B — a completion pass over the existing live Market dashboard
+  (`LiveMarketDashboard.astro`) on branch `feature/phase-4b-market-production-completion`: truthful
+  sample/proxy/delayed-close disclosures, a period-aware overview loader
+  (`loadOverview(period, forceRefresh?)`, cache key `` `overview:${period}` ``), accessible treemap/scatter,
+  honest breadth/freshness reporting, `requestToken`/`overviewRequestToken` stale-response guards, a
+  30s-cooldown refresh control, full ARIA tablist + Arrow/Home/End keyboard navigation for the
+  universe/period tabs, a focus-trapped accessible modal, 44px minimum touch targets, and a permanent
+  `/heatmap` → `/market` (301) redirect replacing the prior duplicate-render page. No provider,
+  data-source, formula, or business-logic change. See
+  `phase_4b_market_production_completion_plan_v0.1.md` / `..._result_v0.1.md` for full detail, exact test
+  totals, and the sibling-checker reconciliation this phase required
+  (`check_phase_3gj_live_market_dashboard_contract.mjs`, 5 assertions).
+- **Roadmap-lane correction**: the Phase 4A closeout entry below (and the master roadmap's own
+  forward-looking §4 entries) labeled Phase 4B as "Chart AI" and Phase 4C as "Market". This phase instead
+  executes and records **Phase 4B = Market** (this entry) and **Phase 4C = Chart AI** (next), reversing
+  that pair — the Market dashboard's truthfulness/accessibility gaps were judged the more urgent
+  production-readiness item at this point in the roadmap; Chart AI already received substantial hardening
+  in Phase 3GK/3GG-T. `mk_stock_lab_master_roadmap_v2.1.md` §4 has been updated in place (Phase 4B moved to
+  "In progress", the "Next sequential product phases" list renumbered so former item 4 "Phase 4C — Market"
+  is now item 3 "Phase 4B — Market" and former item 3 "Phase 4B — Chart AI" is now item 4 "Phase 4C — Chart
+  AI"); the item 13 note below describing "Phase 4B (Chart AI), Phase 4C (Market)" is superseded by this
+  correction, not edited in place, so the historical record of what Phase 4A actually projected is
+  preserved.
+- Commit/push/PR/Preview/merge/Production status for Phase 4B is recorded in its own result doc (§8-9,
+  updated as each step lands) rather than duplicated here.
+
 ## Phase 3GM and Phase 3GL-HF5 — Production-verified closeout - 2026-08-03
 
 - Recorded in the master roadmap (`mk_stock_lab_master_roadmap_v2.1.md`) as `PRODUCTION_VERIFIED`, moved

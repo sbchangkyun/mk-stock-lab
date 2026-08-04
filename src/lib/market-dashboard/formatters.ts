@@ -32,15 +32,35 @@ export const colorForReturn = (value: number | null): string => {
 
 export const FRESHNESS_LABELS: Record<FreshnessState, string> = {
   fresh: '최신',
-  cached: '캐시됨',
-  'stale-but-usable': '지연됨',
-  partial: '일부 종목 제외',
+  cached: '캐시',
+  'stale-but-usable': '지연 데이터',
+  partial: '일부 제공',
   unavailable: '이용 불가',
 };
 
 export const freshnessLabel = (state: FreshnessState | string | null | undefined): string => {
   if (typeof state === 'string' && state in FRESHNESS_LABELS) return FRESHNESS_LABELS[state as FreshnessState];
   return '이용 불가';
+};
+
+/** Internal registry sector IDs stay in English (marketTrackedUniverses.ts); this map is display-only. */
+export const SECTOR_LABELS: Record<string, string> = {
+  Technology: '기술',
+  Materials: '소재',
+  Healthcare: '헬스케어',
+  Industrials: '산업재',
+  Financials: '금융',
+  Consumer: '소비재',
+  Communication: '커뮤니케이션',
+  Semiconductors: '반도체',
+  'Mega Cap Tech': '대형 기술주',
+  'Digital Consumer': '디지털 소비재',
+  Software: '소프트웨어',
+};
+
+export const sectorLabel = (sector: string | null | undefined): string => {
+  if (!sector) return '—';
+  return SECTOR_LABELS[sector] ?? sector;
 };
 
 export const formatAsOfDate = (asOf: string | null | undefined): string => {
