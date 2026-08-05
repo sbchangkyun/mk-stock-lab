@@ -2,7 +2,7 @@
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
   "masterVersion": "hf3b-hf2-kis-16075",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-04",
+  "sourceAsOf": "2026-08-05",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -89987,8 +89987,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "kemq",
-        "kraneshares public-private emerging markets internet and tec"
+        "kemq"
       ],
       "active": true
     },
@@ -109153,7 +109152,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "dbx etf trust xtrackers muni infrastr revenue bond etf",
         "rvnu"
       ],
       "active": true
@@ -142319,8 +142317,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "ccct",
-        "columbus circle capital corp iii"
+        "ccct"
       ],
       "active": true
     },
@@ -185863,7 +185860,6 @@
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "pennantpark investment corporation",
         "pnnt"
       ],
       "active": true
@@ -207460,7 +207456,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "churchill capital corporation xiii unit consist of 1 cl a or",
         "xiiiu"
       ],
       "active": true
