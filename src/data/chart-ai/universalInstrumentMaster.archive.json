@@ -1413,6 +1413,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16055"
+    },
+    {
+      "canonicalIdentity": "KR|467930|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "467930",
+      "priorNames": [
+        "IBKS제23호스팩"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7467930004",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-05",
+      "inactiveAt": "2026-08-05",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16081"
     }
   ]
 }

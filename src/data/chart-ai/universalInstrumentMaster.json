@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16075",
+  "masterVersion": "hf3b-hf2-kis-16081",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-05",
   "instruments": [
@@ -49263,19 +49263,6 @@
       "active": true
     },
     {
-      "symbol": "467930",
-      "displayName": "IBKS제23호스팩",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7467930004",
-      "aliases": [
-        "467930"
-      ],
-      "active": true
-    },
-    {
       "symbol": "468530",
       "displayName": "프로티나",
       "country": "KR",
@@ -66848,6 +66835,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "dlag"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "DLCU",
+      "displayName": "U.S. LARGE COMPANY PORTFOLIO ETF",
+      "englishName": "U.S. LARGE COMPANY PORTFOLIO ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "dlcu"
       ],
       "active": true
     },
@@ -90005,6 +90005,19 @@
       "active": true
     },
     {
+      "symbol": "KEO",
+      "displayName": "KURV EQUITY OPTION INCOME ETF",
+      "englishName": "KURV EQUITY OPTION INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "keo"
+      ],
+      "active": true
+    },
+    {
       "symbol": "KEYG",
       "displayName": "LEVERAGE SHARES 2X LONG KEYS DAILY ETF",
       "englishName": "LEVERAGE SHARES 2X LONG KEYS DAILY ETF",
@@ -92029,6 +92042,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "loev"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "LOFD",
+      "displayName": "DIREXION DAILY SPACEX BEAR 2X ETF",
+      "englishName": "DIREXION DAILY SPACEX BEAR 2X ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "lofd"
       ],
       "active": true
     },
@@ -135250,6 +135276,19 @@
       "active": true
     },
     {
+      "symbol": "ATTO",
+      "displayName": "ATTOVIA THERAPEUTICS INC",
+      "englishName": "ATTOVIA THERAPEUTICS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "atto"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ATXG",
       "displayName": "ADDENTAX GROUP CORP",
       "englishName": "ADDENTAX GROUP CORP",
@@ -155661,13 +155700,14 @@
     },
     {
       "symbol": "FJDIU",
-      "displayName": "ARC GROUP SECURITIES ACQUISITION I UNIT EACH CONSIST 1 CL A",
-      "englishName": "ARC GROUP SECURITIES ACQUISITION I UNIT EACH CONSIST 1 CL A",
+      "displayName": "ARC GROUP SECURITIES ACQUISITION I UNIT CON 1 CL A ORD &",
+      "englishName": "ARC GROUP SECURITIES ACQUISITION I UNIT CON 1 CL A ORD &",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "arc group securities acquisition i unit each consist 1 cl a",
         "fjdiu"
       ],
       "active": true
@@ -166788,6 +166828,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "j"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "JAB",
+      "displayName": "JAB ACQUISITION CORPORATION I",
+      "englishName": "JAB ACQUISITION CORPORATION I",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "jab"
       ],
       "active": true
     },
@@ -196786,14 +196839,28 @@
     },
     {
       "symbol": "STLN",
-      "displayName": "STARLING ONCOLOGY INSTITUTE INC",
-      "englishName": "STARLING ONCOLOGY INSTITUTE INC",
+      "displayName": "STARLING ONCOLOGY INC",
+      "englishName": "STARLING ONCOLOGY INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "starling oncology institute inc",
         "stln"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "STLNW",
+      "displayName": "STARLING ONCOLOGY INC C/WTS 15/11/2026 (TO PUR COM)",
+      "englishName": "STARLING ONCOLOGY INC C/WTS 15/11/2026 (TO PUR COM)",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "stlnw"
       ],
       "active": true
     },
@@ -198410,6 +198477,19 @@
       "active": true
     },
     {
+      "symbol": "TCGX",
+      "displayName": "TCGX ACQUISITION CORPORATION",
+      "englishName": "TCGX ACQUISITION CORPORATION",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "tcgx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "TCI",
       "displayName": "TRANSCONTINENTAL REALTY INVSTRS INC",
       "englishName": "TRANSCONTINENTAL REALTY INVSTRS INC",
@@ -199178,13 +199258,14 @@
     },
     {
       "symbol": "THEOU",
-      "displayName": "BOA ACQUISITION CORPORATION II UNIT CONSIST OF 1 CL A ORD &",
-      "englishName": "BOA ACQUISITION CORPORATION II UNIT CONSIST OF 1 CL A ORD &",
+      "displayName": "BOA ACQUISITION CORPORATION II UNIT CONS 1 CL A ORD & 1/",
+      "englishName": "BOA ACQUISITION CORPORATION II UNIT CONS 1 CL A ORD & 1/",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "boa acquisition corporation ii unit consist of 1 cl a ord &",
         "theou"
       ],
       "active": true
@@ -208320,14 +208401,15 @@
     },
     {
       "symbol": "YPF",
-      "displayName": "YPF SOCIEDAD ANONIMA SPONS ADR-EACH CNV INTO 1 CLASS D ARS10",
-      "englishName": "YPF SOCIEDAD ANONIMA SPONS ADR-EACH CNV INTO 1 CLASS D ARS10",
+      "displayName": "YPF SOCIEDAD ANONIMA SPON ADS ECH RP 10 ORD CL D",
+      "englishName": "YPF SOCIEDAD ANONIMA SPON ADS ECH RP 10 ORD CL D",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "ypf"
+        "ypf",
+        "ypf sociedad anonima spons adr-each cnv into 1 class d ars10"
       ],
       "active": true
     },
