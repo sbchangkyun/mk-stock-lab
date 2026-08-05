@@ -210,8 +210,9 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 
 - **Phase 4C — Chart AI Production Completion.** `PHASE_4C_CHART_AI_MERGED_PRODUCTION_VERIFIED` (PR #15
   "Phase 4C: Chart AI production completion" merged by the Owner directly, merge commit
-  `7232acf9ada953b401caf5a96e8a9e3fd626da97`; Owner-reported Production deployment
-  `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR` `READY`, cross-checked independently via the GitHub commit-status API,
+  `7232acf9ada953b401caf5a96e8a9e3fd626da97`; Production deployment `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR`
+  `READY` was supplied to this Claude Code session by the user and not independently confirmed, cross-checked
+  independently in this session via the GitHub commit-status API,
   which confirms the same deployment ID and a "Deployment has completed" success state tied to this exact
   merge commit). A production-readiness pass over `/chart-ai`: one authoritative
   `chartAiRealExperienceRuntime` flag, a real signed-out auth lock with the workspace body hidden until a
@@ -227,9 +228,11 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   return `200`; all 5 unauthenticated Chart AI API routes (`instruments/search.json`, `market/ohlcv.json`,
   `similarity.json`, `mk-analysis.json`, `market-intelligence.json`) return a sanitized `401 AUTH_REQUIRED`
   with `no-store` caching; the pre-existing `/heatmap` → `/market` redirect still returns `301`. The more
-  granular Vercel deployment facts (`readyState`, alias list, `aliasError`, framework, region) and any
-  Production runtime-error-cluster query could not be independently re-derived in this session (no Vercel
-  CLI/API/dashboard access) and are recorded as Owner-reported, not independently verified. Authenticated
+  granular Vercel deployment facts (`readyState`, alias list, `aliasError`, framework, region) and a claimed
+  Production runtime-error-cluster query result could not be independently re-derived in this session (no
+  Vercel CLI/API/dashboard/connector access). These Vercel deployment and runtime-observability details were
+  supplied to this Claude Code session by the user; this session did not have Vercel API, CLI, dashboard, or
+  connector access to independently confirm them. Authenticated
   visual/touch/keyboard/usage-counter QA remains deferred to Phase 4F. See
   `phase_4c_chart_ai_production_completion_plan_v0.1.md` and
   `phase_4c_chart_ai_production_completion_result_v0.1.md` for full detail.
@@ -350,10 +353,12 @@ section only records that they are next in sequence.
   done; the Owner merged PR #13 (merge commit `60b64dd`) directly, and the full Production acceptance sweep
   passed. See `phase_4b_market_production_completion_result_v0.1.md` §9.
 - ~~Decide whether to merge the Phase 4C PR~~ — done; the Owner merged PR #15 directly (merge commit
-  `7232acf`), and the bounded unauthenticated Production HTTP sweep passed. Confirm no new Vercel Production
-  runtime-error clusters for `/chart-ai` and its 5 API routes, and independently confirm the granular Vercel
-  deployment facts (`readyState`, aliases, `aliasError`, framework, region) via the Vercel dashboard/API —
-  neither could be checked this phase (no Vercel dashboard/API access in this session). `OWNER_QA_PENDING`.
+  `7232acf`), and the bounded unauthenticated Production HTTP sweep passed. The user supplied to this Claude
+  Code session a claim of no new Vercel Production runtime-error clusters for `/chart-ai` and its 5 API
+  routes, plus granular Vercel deployment facts (`readyState`, aliases, `aliasError`, framework, region); this
+  session had no Vercel dashboard/API/CLI/connector access to independently confirm either, so both remain
+  recorded as user-supplied and unverified rather than confirmed. Independently confirming them via the
+  Vercel dashboard/API `OWNER_QA_PENDING`.
 - Disconnect or reconfigure the separate external Netlify Git integration that still runs its own checks on
   PRs (unrelated to the `@astrojs/netlify` package dependency, which Phase 4C removed) — requires Netlify
   account access this assistant does not have. `DEFERRED`.

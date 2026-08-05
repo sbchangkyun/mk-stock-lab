@@ -5,17 +5,21 @@
 - PR #15 ("Phase 4C: Chart AI production completion") merged by the Owner directly (merge commit
   `7232acf9ada953b401caf5a96e8a9e3fd626da97`) — independently reconfirmed via `gh pr view` and a fast-forward
   `git pull` of `main`.
-- Vercel Production deployment `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR` reported `READY` by the Owner; the
-  deployment ID and a completed/success build state tied to the exact merge commit were independently
-  cross-checked via the GitHub commit-status API. The more granular Vercel facts (`readyState`, alias list,
-  `aliasError`, framework, region) rest on the Owner's report and were not independently re-derived — no
-  Vercel CLI/API/dashboard access is available in this session.
+- Vercel Production deployment `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR` `READY` — supplied to this Claude Code
+  session by the user; the deployment ID and a completed/success build state tied to the exact merge commit
+  were independently cross-checked in this session via the GitHub commit-status API. The more granular
+  Vercel facts (`readyState`, alias list, `aliasError`, framework, region) were supplied to this Claude Code
+  session by the user and not independently re-derived — this session did not have Vercel API, CLI,
+  dashboard, or connector access to independently confirm them.
 - Independently re-ran, unauthenticated, the full bounded Production HTTP sweep: `/`, `/chart-ai`,
   `/market`, `/portfolio`, `/lab`, `/admin/operations` all `200`; all 5 unauthenticated Chart AI API routes
   (`instruments/search.json`, `market/ohlcv.json`, `similarity.json`, `mk-analysis.json`,
   `market-intelligence.json`) return sanitized `401 AUTH_REQUIRED` with `no-store` caching; `/heatmap` still
-  `301`s to `/market`. No Vercel Production runtime-error-cluster query could be independently performed
-  (no dashboard/API access) — the Owner's "no error cluster" claim is recorded as reported, not confirmed.
+  `301`s to `/market`. The user supplied to this Claude Code session a claim that a scoped Vercel Runtime
+  Error query found no error cluster; this session did not have Vercel dashboard, API, CLI, or connector
+  access to independently confirm this, so it is recorded as user-supplied and unverified, not confirmed.
+  The absence of 5xx/error-shaped responses in the HTTP sweep above is a separate, independently-observed
+  data point and is not treated as equivalent to a genuine Vercel Runtime Error query.
 - Confirmed the unused `@astrojs/netlify` dependency was removed from `package.json` as part of this merge
   (`git diff` against the prior `main` HEAD) and that no Netlify reference remains in `astro.config.mjs`. A
   separate external Netlify Git integration still produces its own PR checks — Netlify is **not** fully

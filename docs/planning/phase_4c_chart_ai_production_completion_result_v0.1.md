@@ -167,20 +167,21 @@ Independently re-confirmed via `gh pr view 15 --json state,mergedAt,mergeCommit,
 
 ### Production deployment
 
-The Owner reported Vercel Production deployment `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR`
+Vercel Production deployment `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR`
 (`mkstocklab-ps3tu27mb-sbchangkyun-2946s-projects.vercel.app`), `source=git`, `target=production`,
 `state=READY`, `readyState=READY`, framework Astro, region `iad1`, aliases (`mkstocklab.vercel.app`,
 `mkstocklab-sbchangkyun-2946s-projects.vercel.app`, `mkstocklab-git-main-sbchangkyun-2946s-projects.vercel.app`),
-`aliasError=null`. This assistant has no Vercel CLI/API/dashboard access in this session (confirmed via
-`ToolSearch`; the Vercel MCP connector requires an interactive OAuth flow unavailable here), so the
-`readyState`/alias-list/`aliasError`/framework/region fields are recorded as Owner-reported and were **not**
-independently re-derived. What *was* independently cross-checked: `gh api
+`aliasError=null` — these deployment details were supplied to this Claude Code session by the user. This
+session did not have Vercel API, CLI, dashboard, or connector access to independently confirm them (confirmed
+via `ToolSearch`; the Vercel MCP connector requires an interactive OAuth flow unavailable here), so the
+`readyState`/alias-list/`aliasError`/framework/region fields are recorded as user-supplied and were **not**
+independently re-derived. What *was* independently cross-checked in this session: `gh api
 repos/sbchangkyun/mk-stock-lab/commits/7232acf.../status` returns a `Vercel` status context with
 `state=success`, `description="Deployment has completed"`, and `target_url` containing the same deployment
 ID `FQfhKrCEi83ErYUF7qRL8S5HXHxR`, tied to the exact merge commit — confirming the deployment exists, is
 linked to this commit, and completed successfully, without confirming the more granular fields above.
 
-### Bounded, unauthenticated Production HTTP checks (independently re-run this phase, not just copied from the Owner's report)
+### Bounded, unauthenticated Production HTTP checks (independently re-run this phase, not just copied from user-supplied values)
 
 | Check | Result |
 | --- | --- |
@@ -197,16 +198,20 @@ linked to this commit, and completed successfully, without confirming the more g
 | `GET /api/chart-ai/market-intelligence.json?symbol=005930` | `401`, `Cache-Control: no-store` |
 | `GET /heatmap` (no redirect follow) | `301` → `Location: /market` (pre-existing Phase 4B redirect, unaffected by this phase) |
 
-All results match the Owner-supplied claims exactly. No synthetic fixture content was observed; the
+All results match the values the user supplied exactly. No synthetic fixture content was observed; the
 `/chart-ai` signed-out response is the real auth-gated Production runtime path.
 
 ### Runtime error check — not independently verifiable this session
 
-The Owner reported no Vercel Runtime Error Cluster for `/chart-ai` or its 5 API routes in a selected
-one-hour window. This assistant has no Vercel dashboard/API/log access in this session, so this claim is
-recorded as **Owner-reported and not independently verified** — it is explicitly not restated here as a
-confirmed fact. The absence of any error-shaped response (5xx, stack trace, malformed body) across all 12
-checks above is offered only as a weak proxy, not equivalent to a real error-cluster query.
+The user reported to this Claude Code session that a scoped Vercel Runtime Error query found no error
+cluster for `/chart-ai` or its 5 API routes in a selected one-hour window. This session did not have Vercel
+dashboard, API, CLI, or connector access to independently confirm this. These Vercel deployment and
+runtime-observability details were supplied to this Claude Code session by the user; this session did not
+have Vercel API, CLI, dashboard, or connector access to independently confirm them, so this claim is
+recorded as **user-supplied and not independently verified** — it is explicitly not restated here as a
+confirmed fact. The absence of any error-shaped response (5xx, stack trace, malformed body) across the 12
+HTTP checks above is a separate, independently-observed data point; it is a much weaker signal than a real
+Vercel Runtime Error query and is not treated as equivalent to or confirmation of one.
 
 ### Netlify dependency
 
