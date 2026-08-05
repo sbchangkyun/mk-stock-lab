@@ -2,12 +2,14 @@
 
 ## §1 Status
 
-`PHASE_4C_CHART_AI_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_COMMIT_PENDING`
+`PHASE_4C_CHART_AI_MERGED_PRODUCTION_VERIFIED`
 
-Full implementation (§5-§20 of the governing spec, including the restored Market Intelligence section,
-§16) is complete and locally validated. Commit/push/PR (§25-26), Vercel Preview verification (§27-28),
-Production verification (§29), docs-only closeout (§30), and Phase 4D branch prep (§31) are the remaining
-steps in this phase's own pipeline and are tracked separately.
+Full implementation (§5-§20 of the governing spec, including the restored Market Intelligence section, §16)
+is complete and locally validated. PR #15 was merged by the Owner directly (§8) and the resulting Vercel
+Production deployment has been independently re-verified against a bounded, unauthenticated HTTP checklist
+(§9). Authenticated visual/touch/keyboard/usage-counter QA and a full Vercel-dashboard runtime-error-cluster
+review remain deferred to the standing Phase 4F cross-page closeout (§9). Docs-only closeout (this update)
+and Phase 4D branch prep are tracked separately.
 
 ## §2 What changed
 
@@ -152,4 +154,75 @@ No Supabase migration, no environment variable, no dependency change.
 
 ## §9 Production verification live HTTP results
 
-_Pending — filled in after §29 (post-merge Production verification) executes._
+### Merge
+
+PR #15 ("Phase 4C: Chart AI production completion") was merged by the Owner directly
+(`mergedBy.login: sbchangkyun`, not this assistant — the earlier attempt in this phase to merge it via `gh pr
+merge` was blocked by the Claude Code auto-mode safety classifier and deliberately not worked around).
+Independently re-confirmed via `gh pr view 15 --json state,mergedAt,mergeCommit,headRefOid,baseRefName`:
+`state=MERGED`, `mergedAt=2026-08-04T14:23:23Z`, `headRefOid=d27f6aa11d0e1d64411731e96e0eaa8310d40a92`,
+`mergeCommit.oid=7232acf9ada953b401caf5a96e8a9e3fd626da97`, `baseRefName=main`. Independently confirmed
+`main`'s HEAD after `git fetch origin && git switch main && git pull --ff-only` is exactly
+`7232acf9ada953b401caf5a96e8a9e3fd626da97`.
+
+### Production deployment
+
+The Owner reported Vercel Production deployment `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR`
+(`mkstocklab-ps3tu27mb-sbchangkyun-2946s-projects.vercel.app`), `source=git`, `target=production`,
+`state=READY`, `readyState=READY`, framework Astro, region `iad1`, aliases (`mkstocklab.vercel.app`,
+`mkstocklab-sbchangkyun-2946s-projects.vercel.app`, `mkstocklab-git-main-sbchangkyun-2946s-projects.vercel.app`),
+`aliasError=null`. This assistant has no Vercel CLI/API/dashboard access in this session (confirmed via
+`ToolSearch`; the Vercel MCP connector requires an interactive OAuth flow unavailable here), so the
+`readyState`/alias-list/`aliasError`/framework/region fields are recorded as Owner-reported and were **not**
+independently re-derived. What *was* independently cross-checked: `gh api
+repos/sbchangkyun/mk-stock-lab/commits/7232acf.../status` returns a `Vercel` status context with
+`state=success`, `description="Deployment has completed"`, and `target_url` containing the same deployment
+ID `FQfhKrCEi83ErYUF7qRL8S5HXHxR`, tied to the exact merge commit — confirming the deployment exists, is
+linked to this commit, and completed successfully, without confirming the more granular fields above.
+
+### Bounded, unauthenticated Production HTTP checks (independently re-run this phase, not just copied from the Owner's report)
+
+| Check | Result |
+| --- | --- |
+| `GET /` | `200` |
+| `GET /chart-ai` | `200` |
+| `GET /market` | `200` |
+| `GET /portfolio` | `200` |
+| `GET /lab` | `200` |
+| `GET /admin/operations` | `200` |
+| `GET /api/chart-ai/instruments/search.json?q=samsung` | `401`, body `{"ok":false,...,"sanitizedErrorCode":"AUTH_REQUIRED","code":"AUTH_REQUIRED","message":"로그인이 필요합니다."}`, `Cache-Control: private, no-store` |
+| `GET /api/chart-ai/market/ohlcv.json?symbol=005930` | `401`, `Cache-Control: no-store` |
+| `GET /api/chart-ai/similarity.json?symbol=005930` | `401`, `Cache-Control: no-store` |
+| `GET /api/chart-ai/mk-analysis.json?symbol=005930` | `401`, `Cache-Control: no-store` |
+| `GET /api/chart-ai/market-intelligence.json?symbol=005930` | `401`, `Cache-Control: no-store` |
+| `GET /heatmap` (no redirect follow) | `301` → `Location: /market` (pre-existing Phase 4B redirect, unaffected by this phase) |
+
+All results match the Owner-supplied claims exactly. No synthetic fixture content was observed; the
+`/chart-ai` signed-out response is the real auth-gated Production runtime path.
+
+### Runtime error check — not independently verifiable this session
+
+The Owner reported no Vercel Runtime Error Cluster for `/chart-ai` or its 5 API routes in a selected
+one-hour window. This assistant has no Vercel dashboard/API/log access in this session, so this claim is
+recorded as **Owner-reported and not independently verified** — it is explicitly not restated here as a
+confirmed fact. The absence of any error-shaped response (5xx, stack trace, malformed body) across all 12
+checks above is offered only as a weak proxy, not equivalent to a real error-cluster query.
+
+### Netlify dependency
+
+`git diff 56546fc 7232acf -- package.json` independently confirms the `"@astrojs/netlify": "^7.0.6"` line
+was removed from `dependencies` (`"@astrojs/vercel": "^10.0.4"` remains). A case-insensitive `Grep` for
+`netlify` in `astro.config.mjs` on the merged `main` returns zero matches. Per the governing safety rules,
+this is recorded as a partial cleanup only: a separate external Netlify Git integration still produced its
+own checks on PR #15 (`Header rules`, `Pages changed`, `Redirect rules`,
+`netlify/mkstocklab/deploy-preview`) — Netlify is **not** fully disconnected, and disconnecting that external
+integration is deferred infrastructure cleanup outside this assistant's access (no Netlify account
+credentials).
+
+### What remains deferred
+
+Authenticated visual, touch, keyboard, live-KIS, and usage-counter Production QA of `/chart-ai` — deferred to
+the standing Phase 4F cross-page Owner QA closeout, same as every prior phase in this lane. No Supabase
+schema, RLS, migration, environment variable, or Vercel project setting was read or changed by this
+verification pass; no manual Production deployment was triggered (Vercel Git Integration on `main` remains
+the only release mechanism).

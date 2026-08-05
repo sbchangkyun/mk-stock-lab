@@ -208,12 +208,36 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   received substantial hardening in Phase 3GK/3GG-T. The "Next sequential product phases" list below is
   corrected accordingly. See `phase_4b_market_production_completion_plan_v0.1.md` §1 for the full rationale.
 
+- **Phase 4C — Chart AI Production Completion.** `PHASE_4C_CHART_AI_MERGED_PRODUCTION_VERIFIED` (PR #15
+  "Phase 4C: Chart AI production completion" merged by the Owner directly, merge commit
+  `7232acf9ada953b401caf5a96e8a9e3fd626da97`; Owner-reported Production deployment
+  `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR` `READY`, cross-checked independently via the GitHub commit-status API,
+  which confirms the same deployment ID and a "Deployment has completed" success state tied to this exact
+  merge commit). A production-readiness pass over `/chart-ai`: one authoritative
+  `chartAiRealExperienceRuntime` flag, a real signed-out auth lock with the workspace body hidden until a
+  session exists, an accessible search combobox, last-good-chart preservation on a failed reload of the
+  currently displayed instrument, a real ARIA tablist for the Similarity/MK-AI switch, and usage-limit
+  presentation sourced only from the server response. Also restores the `시장 인텔리전스` client section that
+  a prior Phase 3GG hotfix had silently dropped, reusing its existing, unmodified server engine and API
+  route. Removed the unused `@astrojs/netlify` dependency (independently confirmed absent from
+  `package.json` post-merge, and no Netlify reference remains in `astro.config.mjs`); the separate external
+  Netlify Git-integration checks seen on PR #15 are unrelated leftover infrastructure, not yet disconnected —
+  tracked as deferred cleanup, not resolved by this phase. Independently re-verified post-merge on live
+  Production without credentials: `/`, `/chart-ai`, `/market`, `/portfolio`, `/lab`, `/admin/operations` all
+  return `200`; all 5 unauthenticated Chart AI API routes (`instruments/search.json`, `market/ohlcv.json`,
+  `similarity.json`, `mk-analysis.json`, `market-intelligence.json`) return a sanitized `401 AUTH_REQUIRED`
+  with `no-store` caching; the pre-existing `/heatmap` → `/market` redirect still returns `301`. The more
+  granular Vercel deployment facts (`readyState`, alias list, `aliasError`, framework, region) and any
+  Production runtime-error-cluster query could not be independently re-derived in this session (no Vercel
+  CLI/API/dashboard access) and are recorded as Owner-reported, not independently verified. Authenticated
+  visual/touch/keyboard/usage-counter QA remains deferred to Phase 4F. See
+  `phase_4c_chart_ai_production_completion_plan_v0.1.md` and
+  `phase_4c_chart_ai_production_completion_result_v0.1.md` for full detail.
+
 ### In progress
 
-Phase 4C — Chart AI production readiness pass. Implementation complete and locally validated
-(`PHASE_4C_CHART_AI_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_COMMIT_PENDING`); commit/push/PR, Vercel Preview
-verification, and Production verification remain. See "Next sequential product phases" below and
-`phase_4c_chart_ai_production_completion_plan_v0.1.md` / `..._result_v0.1.md` for full detail.
+None currently. Phase 4D — Lab production readiness pass — is next in sequence and not yet started. See
+"Next sequential product phases" below.
 
 ### Next sequential product phases
 
@@ -231,11 +255,8 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
 2. **Phase 4A — Home and Common Shell.** `PHASE_4A_MERGED_PRODUCTION_VERIFIED`. See "Completed" above.
 3. **Phase 4B — Market production readiness pass.** `PHASE_4B_MARKET_MERGED_PRODUCTION_VERIFIED`. See
    "Completed" above.
-4. **Phase 4C — Chart AI production readiness pass.** `PHASE_4C_CHART_AI_IMPLEMENTED_LOCAL_VALIDATION_COMPLETE_COMMIT_PENDING`.
-   Copy/a11y/responsive-shell audit of `/chart-ai` against its already-verified functional scope (login gate,
-   KR/US charts, similarity + MK AI analysis, daily usage guard) — not a re-implementation of Phase 3GK.
-   Also restores the Market Intelligence client section that a prior Phase 3GG hotfix had silently dropped.
-   See "In progress" above.
+4. **Phase 4C — Chart AI production readiness pass.** `PHASE_4C_CHART_AI_MERGED_PRODUCTION_VERIFIED`. See
+   "Completed" above.
 5. **Phase 4D — Lab production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of `/lab`,
    including its own already-honest "연동 예정" labeling of the NPS/Congress modules.
 6. **Phase 4E — Portfolio production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
@@ -254,11 +275,13 @@ section only records that they are next in sequence.
 - Scheduled KIS instrument-master observation. `DEFERRED`.
 - `/api/market/quote` intent and rate-limit audit. `DEFERRED`.
 - Authoritative active-gate manifest. `DEFERRED`.
-- Stale Netlify dependency/configuration review. `DEFERRED`. Deployment policy is Vercel-only
+- Stale Netlify dependency/configuration review. `PARTIALLY_DONE`. Deployment policy is Vercel-only
   (`astro.config.mjs` wires only `@astrojs/vercel`; no Netlify adapter, no `netlify.toml`, no Netlify
-  project) — reconfirmed as part of Phase 4A. The only remaining Netlify trace is the unused
-  `@astrojs/netlify` entry in `package.json` `dependencies`, which this deferred item tracks for removal;
-  it is not wired into the build and does not affect deployment.
+  project) — reconfirmed as part of Phase 4A. Phase 4C removed the unused `@astrojs/netlify` entry from
+  `package.json` `dependencies` (independently confirmed absent post-merge). What remains `DEFERRED`: a
+  separate external Netlify Git-integration still produces its own PR checks (seen on PR #15) unrelated to
+  any dependency in this repo — Netlify has not been fully disconnected, and disconnecting that external
+  integration is out of scope for this assistant (no Netlify account access).
 - Dead similarity code retirement. `DEFERRED`.
 - `is_site_admin` SECURITY DEFINER permission review. `DEFERRED`.
 - Leaked-password protection review. `DEFERRED`.
@@ -326,3 +349,11 @@ section only records that they are next in sequence.
   `feature/phase-4b-market-production-completion`. ~~Decide whether to merge the Phase 4B PR once opened~~ —
   done; the Owner merged PR #13 (merge commit `60b64dd`) directly, and the full Production acceptance sweep
   passed. See `phase_4b_market_production_completion_result_v0.1.md` §9.
+- ~~Decide whether to merge the Phase 4C PR~~ — done; the Owner merged PR #15 directly (merge commit
+  `7232acf`), and the bounded unauthenticated Production HTTP sweep passed. Confirm no new Vercel Production
+  runtime-error clusters for `/chart-ai` and its 5 API routes, and independently confirm the granular Vercel
+  deployment facts (`readyState`, aliases, `aliasError`, framework, region) via the Vercel dashboard/API —
+  neither could be checked this phase (no Vercel dashboard/API access in this session). `OWNER_QA_PENDING`.
+- Disconnect or reconfigure the separate external Netlify Git integration that still runs its own checks on
+  PRs (unrelated to the `@astrojs/netlify` package dependency, which Phase 4C removed) — requires Netlify
+  account access this assistant does not have. `DEFERRED`.
