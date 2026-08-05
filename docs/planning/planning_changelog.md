@@ -1,5 +1,39 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4C closeout — merged and Production-verified - 2026-08-04
+
+- PR #15 ("Phase 4C: Chart AI production completion") merged by the Owner directly (merge commit
+  `7232acf9ada953b401caf5a96e8a9e3fd626da97`) — independently reconfirmed via `gh pr view` and a fast-forward
+  `git pull` of `main`.
+- Vercel Production deployment `dpl_FQfhKrCEi83ErYUF7qRL8S5HXHxR` `READY` — supplied to this Claude Code
+  session by the user; the deployment ID and a completed/success build state tied to the exact merge commit
+  were independently cross-checked in this session via the GitHub commit-status API. The more granular
+  Vercel facts (`readyState`, alias list, `aliasError`, framework, region) were supplied to this Claude Code
+  session by the user and not independently re-derived — this session did not have Vercel API, CLI,
+  dashboard, or connector access to independently confirm them.
+- Independently re-ran, unauthenticated, the full bounded Production HTTP sweep: `/`, `/chart-ai`,
+  `/market`, `/portfolio`, `/lab`, `/admin/operations` all `200`; all 5 unauthenticated Chart AI API routes
+  (`instruments/search.json`, `market/ohlcv.json`, `similarity.json`, `mk-analysis.json`,
+  `market-intelligence.json`) return sanitized `401 AUTH_REQUIRED` with `no-store` caching; `/heatmap` still
+  `301`s to `/market`. The user supplied to this Claude Code session a claim that a scoped Vercel Runtime
+  Error query found no error cluster; this session did not have Vercel dashboard, API, CLI, or connector
+  access to independently confirm this, so it is recorded as user-supplied and unverified, not confirmed.
+  The absence of 5xx/error-shaped responses in the HTTP sweep above is a separate, independently-observed
+  data point and is not treated as equivalent to a genuine Vercel Runtime Error query.
+- Confirmed the unused `@astrojs/netlify` dependency was removed from `package.json` as part of this merge
+  (`git diff` against the prior `main` HEAD) and that no Netlify reference remains in `astro.config.mjs`. A
+  separate external Netlify Git integration still produces its own PR checks — Netlify is **not** fully
+  disconnected; that remains deferred infrastructure cleanup, outside this assistant's access.
+- No Supabase schema/migration/RLS/secret/environment-variable/Vercel-project-setting change was made or
+  read as part of this verification; no manual Production deployment was triggered — Vercel Git Integration
+  on `main` remains the only release mechanism.
+- Authenticated visual/touch/keyboard/live-KIS/usage-counter Production QA remains deferred to the standing
+  Phase 4F cross-page Owner QA closeout, unchanged from every prior phase in this lane.
+- Final classification `PHASE_4C_CHART_AI_MERGED_PRODUCTION_VERIFIED`. This docs-only closeout PR modifies
+  only this changelog, the phase result doc (`phase_4c_chart_ai_production_completion_result_v0.1.md` §1/§9),
+  and the master roadmap (`mk_stock_lab_master_roadmap_v2.1.md`) — no application, script, config, or
+  migration file changed.
+
 ## Phase 4C — Chart AI Production Completion, implemented and locally validated - 2026-08-04
 
 - Implemented Phase 4C — a truthfulness/accessibility/responsiveness/reliability completion pass over
