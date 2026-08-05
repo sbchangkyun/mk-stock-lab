@@ -28,6 +28,20 @@ const triggerDownload = (blob: Blob, filename: string) => {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
+export type ExportStatusPhase = 'start' | 'success' | 'error';
+
+// Pure so the accessible-status copy for each export phase can be unit-tested without a DOM.
+export const exportStatusMessage = (phase: ExportStatusPhase): string => {
+  switch (phase) {
+    case 'start':
+      return '이미지를 저장하는 중입니다.';
+    case 'success':
+      return '이미지 저장이 완료되었습니다.';
+    case 'error':
+      return '이미지 저장을 완료하지 못했습니다. 다시 시도해 주세요.';
+  }
+};
+
 export const exportCardAsPng = async (card: HTMLElement, baseFilename: string, requestedExportWidth?: number) => {
   if (document.fonts?.ready) {
     await document.fonts.ready.catch(() => undefined);
@@ -102,6 +116,12 @@ export const setupCardImageExport = () => {
     if (button.dataset.exportReady === 'true') return;
     button.dataset.exportReady = 'true';
 
+    const statusId = button.dataset.exportStatus;
+    const statusEl = statusId ? document.getElementById(statusId) : null;
+    const setStatus = (message: string) => {
+      if (statusEl) statusEl.textContent = message;
+    };
+
     button.addEventListener('click', async () => {
       const targetId = button.dataset.exportTarget;
       const target = targetId ? document.getElementById(targetId) : button.closest<HTMLElement>('[data-exportable-card]');
@@ -112,14 +132,18 @@ export const setupCardImageExport = () => {
 
       const previousLabel = button.getAttribute('aria-label') || '이미지로 저장';
       button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
       button.setAttribute('aria-label', '이미지 저장 중');
+      setStatus(exportStatusMessage('start'));
 
       try {
         await exportCardAsPng(target, button.dataset.exportFilename || targetId || 'mk-stock-lab-market-card', exportWidth);
+        setStatus(exportStatusMessage('success'));
       } catch {
-        window.alert('이미지 저장을 완료하지 못했습니다. Chrome에서 다시 시도해 주세요.');
+        setStatus(exportStatusMessage('error'));
       } finally {
         button.disabled = false;
+        button.removeAttribute('aria-busy');
         button.setAttribute('aria-label', previousLabel);
       }
     });

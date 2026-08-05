@@ -239,14 +239,28 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 
 ### In progress
 
-**Phase 4D — Lab Production Completion.** `PHASE_4D_LAB_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`
+**Phase 4D — Lab Production Completion.** `PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`
 (branch `feature/phase-4d-lab-production-completion`, baseline `7da540dbadaa0a5acafb9a74aec7d9fb9cfc93f8`).
-A source-grounded audit of the existing `/lab` page group and its 4-5 detail pages produced a governing plan
-covering table semantics, keyboard-accessible matrix category highlighting, horizontal-scroll regions, image
-export accessibility, responsive breakpoints, future-module list semantics, dark-mode/contrast, and the
-no-provider boundary. Implementation has not started; no application, script, config, or dependency file has
-changed. See `phase_4d_lab_production_completion_plan_v0.1.md` and
-`phase_4d_lab_production_completion_result_v0.1.md` for full detail.
+Implemented the governing plan's audit findings over `/lab` and its detail pages: `<table>` semantics
+(`scope="col"`/`scope="row"`/`<caption>`/labeled empty cells) on `LabReturnMatrix.astro`'s ranking and summary
+tables; the 12 category-legend chips converted to native, keyboard-focusable `<button aria-pressed>` elements
+(table cells stay semantic and non-tabbable) with `Enter`/`Space` via native semantics, `Escape` clearing the
+pin through the existing root-scoped handler, and byte-for-byte-preserved pointer/tap behavior; both
+`.lab-matrix-scroll` regions made keyboard-reachable (`tabindex="0"` + focus-visible style); a non-blocking
+`role="status" aria-live="polite"` export-status region (backed by a new pure `exportStatusMessage` helper in
+`exportCardImage.ts`) replacing the previous blocking `window.alert` failure path on both
+`asset-class-returns.astro` and `sp500-sectors.astro`; the Congress/NPS-holdings preview cards converted from
+plain `<div>` to `<ul>`/`<li>` list semantics with every honesty string unchanged; and the orphaned, unlinked
+`nps-portfolio.astro` (stale shell, stale "Phase 8" label, the Lab surface's only real-provider-name mention)
+replaced with a permanent 301 redirect to `/lab/nps-holdings` rather than deleted, so no bookmark breaks. New
+smoke suite (19/19) and static contract checker (62/62); all 8 pre-existing Lab-related checkers re-verified
+with zero edits required (one, `check:mobile-ux-density-export`, carries one pre-existing, out-of-scope
+failure from a Phase 4B file this phase never touched). Local `npm run build` could not reach a verdict due to
+a pre-existing local Windows/Node-toolchain crash confirmed unrelated to this phase's changes (identical crash
+reproduces on the unmodified baseline); Vercel's own Preview/Production build is the actual release gate. PR
+open, Preview verification pending, merge requires Owner approval. See
+`phase_4d_lab_production_completion_plan_v0.1.md` and `phase_4d_lab_production_completion_result_v0.1.md` for
+full detail.
 
 ### Next sequential product phases
 
@@ -266,7 +280,7 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
    "Completed" above.
 4. **Phase 4C — Chart AI production readiness pass.** `PHASE_4C_CHART_AI_MERGED_PRODUCTION_VERIFIED`. See
    "Completed" above.
-5. **Phase 4D — Lab production readiness pass.** `PHASE_4D_LAB_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`.
+5. **Phase 4D — Lab production readiness pass.** `PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`.
    Copy/a11y/responsive-shell audit of `/lab`, including its own already-honest "연동 예정" labeling of the
    NPS/Congress modules. See "In progress" above.
 6. **Phase 4E — Portfolio production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
@@ -275,8 +289,8 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
    4A–4E on Production/Preview (visual, mobile, touch, keyboard, screen-reader spot checks) — the single
    point where the Owner QA deferred by every phase in this lane is actually performed.
 
-Phase 3 Closeout and Phases 4E–4F are explicitly **not** started. Phase 4D has a plan (see "In progress"
-above) but its implementation has not started either — this section only records the sequencing.
+Phase 3 Closeout and Phases 4E–4F are explicitly **not** started. Phase 4D is implemented and PR-ready,
+pending Owner merge approval (see "In progress" above) — this section only records the sequencing.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 
@@ -370,5 +384,5 @@ above) but its implementation has not started either — this section only recor
   PRs (unrelated to the `@astrojs/netlify` package dependency, which Phase 4C removed) — requires Netlify
   account access this assistant does not have. `DEFERRED`.
 - Implement the Phase 4D plan (`phase_4d_lab_production_completion_plan_v0.1.md`) on branch
-  `feature/phase-4d-lab-production-completion` — plan established, implementation not started.
-  `OWNER_QA_PENDING` once implemented, per the Phase 4F deferral pattern.
+  `feature/phase-4d-lab-production-completion` — implementation complete, PR open, Preview verification
+  pending. `OWNER_QA_PENDING` once merged, per the Phase 4F deferral pattern. See "In progress" above.
