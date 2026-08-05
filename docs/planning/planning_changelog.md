@@ -1,5 +1,41 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4D — Lab Production Completion, plan established (implementation not started) - 2026-08-05
+
+- Baseline `7da540dbadaa0a5acafb9a74aec7d9fb9cfc93f8` (identical across local `HEAD`, `origin/main`, and
+  `origin/feature/phase-4d-lab-production-completion` at the start of this task — confirmed, no mismatch).
+  Branch `feature/phase-4d-lab-production-completion`.
+- This task is **plan-only**: no application code, script, config, dependency, or migration file changed.
+  Exactly four documentation files changed: the new plan (`phase_4d_lab_production_completion_plan_v0.1.md`),
+  a new minimal result-doc skeleton (`phase_4d_lab_production_completion_result_v0.1.md`), the Phase 4 lane
+  of `mk_stock_lab_master_roadmap_v2.1.md`, and this changelog entry.
+- Audited the full existing Lab page group directly from source: `lab.astro`,
+  `lab/asset-class-returns.astro`, `lab/sp500-sectors.astro`, `lab/congress-stocks.astro`,
+  `lab/nps-holdings.astro`, `LabReturnMatrix.astro`, `labReturnMatrices.json`, `labStaticModules.json`,
+  `exportCardImage.ts`, plus the 8 existing Lab-related checker scripts and `package.json`'s script wiring.
+  Discovered one orphaned legacy page not in the original audit list, `lab/nps-portfolio.astro` — unlinked,
+  pre-dates the Phase 3DF route split, and is the only place in the Lab surface naming a real external data
+  source ("OpenDART"); the plan recommends removing it in the implementation phase (not decided or executed
+  here).
+- Planned accessibility/responsive areas: `scope="col"`/`scope="row"`/`<caption>` on the ranking and summary
+  tables; converting matrix legend chips and cells to keyboard-focusable native `<button>` elements with
+  `aria-pressed`, preserving the existing pointer/tap behavior byte-for-byte and adding no new global keyboard
+  handler (confirmed none exists anywhere in the repo today); an in-page, non-blocking export
+  success/failure status message to augment the current `window.alert`-only failure path; converting the
+  Congress/NPS preview cards from plain `<div>`s to `<ul>`/`<li>` list semantics; and a static audit at
+  320/360/390/412/768/1024/desktop breakpoints.
+- Every existing example-data disclosure, "연동 예정" pending badge, and non-advisory data-policy statement
+  was confirmed already honest and already visible without interaction — no wording weakened, no fabricated
+  real names/holdings/quantities introduced. The plan explicitly excludes real Congress/NPS/asset-class data
+  integration, any new provider/API/Supabase coupling, any new environment variable, and any new dependency
+  (`html-to-image` remains the only export dependency).
+- No sibling checker was modified in this task; §11 of the plan documents, checker-by-checker, the minimal
+  additive extension each of the 8 existing Lab checkers will need once implementation actually changes the
+  files they assert against.
+- Owner authenticated visual/touch/keyboard/screen-reader QA of the Lab page group remains deferred to the
+  standing Phase 4F cross-page closeout, unchanged by this task.
+- Final classification `PHASE_4D_LAB_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`.
+
 ## Phase 4C closeout — merged and Production-verified - 2026-08-04
 
 - PR #15 ("Phase 4C: Chart AI production completion") merged by the Owner directly (merge commit
