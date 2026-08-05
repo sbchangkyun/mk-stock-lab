@@ -140,9 +140,25 @@ pre-existing Lab checker already tolerated the new markup or was unaffected by i
 
 ## §4 Preview verification
 
-`PENDING` — to be performed immediately after this PR is opened, per §13 of the plan (confirm the Vercel
-Preview build succeeds and the 6 Lab routes — `lab.astro` plus the 4 detail pages plus the
-`nps-portfolio.astro` 301 — return the expected `200`/redirect with no new `5xx`).
+`PARTIAL — BUILD CONFIRMED, ROUTE-LEVEL CONTENT BLOCKED BY SSO`. PR #17
+(https://github.com/sbchangkyun/mk-stock-lab/pull/17, `feature/phase-4d-lab-production-completion` → `main`,
+commit `8fc1666`) was opened. The GitHub `Vercel` status context reports `SUCCESS` for this commit, which
+independently confirms the Preview build (Linux, Vercel's own pinned Node runtime) completed successfully —
+the actual release-gate confirmation deferred from §3's local `npm run build` finding. The Preview alias
+`https://mkstocklab-git-feature-phase-2f0b1f-sbchangkyun-2946s-projects.vercel.app` was located via the
+Vercel bot's PR comment. An unauthenticated, bounded HTTP sweep of the 6 target Lab routes (`/lab`,
+`/lab/asset-class-returns`, `/lab/sp500-sectors`, `/lab/congress-stocks`, `/lab/nps-holdings`,
+`/lab/nps-portfolio`) was attempted; all 6 returned `302` to `vercel.com/sso-api` — this is this project's
+standing Vercel Deployment Protection behavior (every Preview on this project has been SSO-gated across every
+prior phase on record) and applies uniformly to every path before any application routing runs, so it cannot
+distinguish a `200` page from the expected `nps-portfolio` `301` from a `404` at this protection layer. No
+SSO bypass or share-link was attempted, per the governing task's mandatory Rule #7. Route-level content
+verification (the 5×`200` + 1×`301` expectation, and any visual/interaction check) therefore remains
+`OWNER_QA_PENDING`, consistent with the deferred-QA pattern in §7 — the one new, independently-confirmed fact
+this session adds beyond that deferral is the successful Preview build itself.
+Netlify's own PR checks (`Header rules`, `Pages changed`, `Redirect rules`, `netlify/mkstocklab/deploy-preview`)
+were `IN_PROGRESS`/`PENDING` at last observation; per the governing task's Rule #11, Netlify is not a release
+gate for this task and was not further pursued.
 
 ## §5 Merge
 
