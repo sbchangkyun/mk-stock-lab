@@ -32,12 +32,20 @@ const cameraPath =
             data-export-target="sp500-sectors-matrix-capture"
             data-export-filename="sp500-sectors"
             data-export-width="800"
+            data-export-status="sp500-sectors-export-status"
             aria-label="이미지로 저장"
             title="이미지로 저장"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d={cameraPath} /></svg>
           </button>
         </div>
+        <p
+          id="sp500-sectors-export-status"
+          class="lab-export-status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></p>
       </div>
       <LabReturnMatrix
         data={sectorMatrix}
