@@ -45,34 +45,45 @@ const { data, sectionId, captureId } = Astro.props;
 ---
 
 <section class="lab-section" aria-label={data.title} data-lab-return-matrix-root>
-  <!-- Category legend chips -->
-  <div class="lab-matrix-legend" aria-label="범례">
+  <!-- Category legend — the only native, tabbable controls in this component. -->
+  <div class="lab-matrix-legend" aria-label="범례" role="group">
     {data.categories.map((cat) => (
-      <span
+      <button
+        type="button"
         class={`lab-matrix-chip lab-return-cell--${cat.colorClass}`}
-        data-lab-category-chip
+        data-lab-legend-button
         data-lab-category-id={cat.id}
-      >{cat.label}</span>
+        aria-pressed="false"
+      >{cat.label}</button>
     ))}
   </div>
-  <p class="lab-matrix-interaction-hint">셀 또는 범례에 마우스를 올리거나 탭하면 같은 항목의 연도별 위치가 강조됩니다.</p>
+  <p class="lab-matrix-interaction-hint">
+    범례에 마우스를 올리거나 탭하면 표 전체에서 같은 자산군이 강조되고, 클릭하면 고정됩니다. 키보드는 Tab으로
+    범례 항목에 초점을 옮겨 Enter 또는 Space로 고정하고, Esc로 해제할 수 있습니다.
+  </p>
 
   <!-- Ranking matrix -->
   <div class="lab-matrix-card" id={captureId} data-exportable-card={captureId ? true : undefined}>
-    <div class="lab-matrix-scroll" role="region" aria-label={`${data.title} 순위 매트릭스`}>
+    <div
+      class="lab-matrix-scroll"
+      role="region"
+      aria-label={`${data.title} 순위 매트릭스, 좌우로 스크롤 가능`}
+      tabindex="0"
+    >
       <table class="lab-return-matrix">
+        <caption class="visually-hidden">{data.title} 연도별 순위표</caption>
         <thead>
           <tr>
-            <th class="lab-rank-cell">순위</th>
+            <th scope="col" class="lab-rank-cell">순위</th>
             {data.years.map((year) => (
-              <th>{year}</th>
+              <th scope="col">{year}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {data.rankings.map((row) => (
             <tr>
-              <td class="lab-rank-cell">{row.rank}위</td>
+              <th scope="row" class="lab-rank-cell">{row.rank}위</th>
               {data.years.map((year) => {
                 const cell = row.cells.find((c) => c.year === year);
                 return cell ? (
@@ -87,7 +98,7 @@ const { data, sectionId, captureId } = Astro.props;
                     </div>
                   </td>
                 ) : (
-                  <td class="lab-return-cell-empty">—</td>
+                  <td class="lab-return-cell-empty" aria-label="데이터 없음">—</td>
                 );
               })}
             </tr>
@@ -101,26 +112,32 @@ const { data, sectionId, captureId } = Astro.props;
   <!-- Summary table -->
   <div class="lab-matrix-summary-block">
     <h3 class="lab-matrix-summary-heading">구분별 예시 수익률 요약</h3>
-    <div class="lab-matrix-scroll">
+    <div
+      class="lab-matrix-scroll"
+      role="region"
+      aria-label={`${data.title} 구분별 요약, 좌우로 스크롤 가능`}
+      tabindex="0"
+    >
       <table class="lab-summary-table">
+        <caption class="visually-hidden">{data.title} 구분별 예시 수익률 요약표</caption>
         <thead>
           <tr>
-            <th>구분</th>
-            <th>예시 평균</th>
-            <th>예시 최고</th>
-            <th>예시 최저</th>
+            <th scope="col">구분</th>
+            <th scope="col">예시 평균</th>
+            <th scope="col">예시 최고</th>
+            <th scope="col">예시 최저</th>
           </tr>
         </thead>
         <tbody>
           {data.summary.map((row) => (
             <tr>
-              <td>
+              <th scope="row">
                 <span
                   class={`lab-matrix-chip lab-return-cell--${row.categoryId}`}
                   data-lab-category-chip
                   data-lab-category-id={row.categoryId}
                 >{row.label}</span>
-              </td>
+              </th>
               <td class="lab-summary-cell">{row.average}</td>
               <td class="lab-summary-cell lab-summary-cell--best">{row.best}</td>
               <td class="lab-summary-cell lab-summary-cell--worst">{row.worst}</td>
@@ -152,11 +169,30 @@ const { data, sectionId, captureId } = Astro.props;
       });
     };
 
+    // aria-pressed reflects only the pinned category — hover/focus highlighting is temporary
+    // and must never flip it, or a mouse user and a keyboard user would see divergent state.
+    const syncPressed = (root: Element, pinnedId: string | null) => {
+      root.querySelectorAll<HTMLButtonElement>('[data-lab-legend-button]').forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.labCategoryId === pinnedId));
+      });
+    };
+
     const setupMatrix = (root: Element) => {
       let pinned: string | null = null;
       let lastHovered: string | null = null;
       let pdX = 0;
       let pdY = 0;
+
+      const togglePin = (id: string) => {
+        if (pinned === id) {
+          pinned = null;
+          clearHighlight(root);
+        } else {
+          pinned = id;
+          applyHighlight(root, id);
+        }
+        syncPressed(root, pinned);
+      };
 
       root.addEventListener('pointerover', (e) => {
         const target = (e.target as Element).closest('[data-lab-category-id]');
@@ -182,31 +218,54 @@ const { data, sectionId, captureId } = Astro.props;
         pdY = pe.clientY;
       });
 
+      // Legend buttons activate exclusively through their own 'click' listener below (native
+      // click covers both mouse click and keyboard Enter/Space). Handling them here too would
+      // double-toggle a mouse click, since pointerup fires and then click fires on the same button.
       root.addEventListener('pointerup', (e) => {
         const pe = e as PointerEvent;
         if (Math.abs(pe.clientX - pdX) > 10 || Math.abs(pe.clientY - pdY) > 10) return;
         const target = (pe.target as Element | null)?.closest('[data-lab-category-id]');
+        if (target && target.closest('[data-lab-legend-button]')) return;
         if (!target) {
           pinned = null;
           clearHighlight(root);
+          syncPressed(root, null);
           return;
         }
         const id = (target as HTMLElement).dataset.labCategoryId;
         if (!id) return;
-        if (pinned === id) {
-          pinned = null;
-          clearHighlight(root);
-        } else {
-          pinned = id;
-          applyHighlight(root, id);
-        }
+        togglePin(id);
       });
 
       root.addEventListener('keydown', (e) => {
         if ((e as KeyboardEvent).key === 'Escape') {
           pinned = null;
           clearHighlight(root);
+          syncPressed(root, null);
         }
+      });
+
+      root.querySelectorAll<HTMLButtonElement>('[data-lab-legend-button]').forEach((btn) => {
+        const id = btn.dataset.labCategoryId;
+        if (!id) return;
+
+        btn.addEventListener('click', () => togglePin(id));
+
+        // Keyboard focus gets the same temporary highlight pointer hover gets; it never touches
+        // aria-pressed, and losing focus restores whatever the pinned state already was.
+        btn.addEventListener('focus', () => {
+          lastHovered = id;
+          applyHighlight(root, id);
+        });
+
+        btn.addEventListener('blur', () => {
+          lastHovered = null;
+          if (pinned) {
+            applyHighlight(root, pinned);
+          } else {
+            clearHighlight(root);
+          }
+        });
       });
     };
 

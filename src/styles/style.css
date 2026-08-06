@@ -4899,6 +4899,23 @@ p.lab-section-copy {
   color: var(--cell-fg, var(--text));
 }
 
+/* Phase 4D: legend chips are native <button> elements — strip default button chrome so
+   they keep the original chip look, then restore a visible focus ring for keyboard users. */
+.lab-matrix-legend button.lab-matrix-chip {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.lab-matrix-legend button.lab-matrix-chip:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+body.dark-mode .lab-matrix-legend button.lab-matrix-chip:focus-visible {
+  outline-color: #fff;
+}
+
 /* Matrix card wrapper */
 .lab-matrix-card {
   border: 1px solid var(--border);
@@ -5540,6 +5557,10 @@ p.lab-static-preview-note {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
+  /* Phase 4D: now a <ul> of <li> preview cards — strip default list styling. */
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .lab-static-preview-card {
@@ -5872,6 +5893,17 @@ p.lab-static-preview-card-desc {
   cursor: pointer;
 }
 
+/* Phase 4D: horizontal scroll regions are keyboard-focusable (tabindex="0") so arrow keys can
+   scroll them without a pointer; give that focus a visible outline like any other control. */
+.lab-matrix-scroll:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+body.dark-mode .lab-matrix-scroll:focus-visible {
+  outline-color: #fff;
+}
+
 .lab-matrix-interaction-hint {
   font-size: 11px;
   color: var(--text-muted);
@@ -5915,6 +5947,7 @@ p.lab-static-preview-card-desc {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 6px;
 }
@@ -5929,6 +5962,20 @@ p.lab-static-preview-card-desc {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
+}
+
+/* Phase 4D: accessible status feedback for the export action, wraps onto its own row so it
+   never squeezes the button; empty (idle) state collapses to no extra space. */
+.lab-export-status {
+  flex: 1 1 100%;
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.lab-export-status:empty {
+  margin: 0;
 }
 
 /* ============================================================
