@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16081",
+  "masterVersion": "hf3b-hf2-kis-16091",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-06",
   "instruments": [
@@ -52253,6 +52253,19 @@
       "active": true
     },
     {
+      "symbol": "AKAL",
+      "displayName": "T-REX 2X LONG AKAM DAILY TARGET ETF",
+      "englishName": "T-REX 2X LONG AKAM DAILY TARGET ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "akal"
+      ],
+      "active": true
+    },
+    {
       "symbol": "AKRE",
       "displayName": "AKRE FOCUS ETF",
       "englishName": "AKRE FOCUS ETF",
@@ -52873,6 +52886,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "angl"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ANGU",
+      "displayName": "SEI ANG RESEARCH ENHANCED U.S. LARGE CAP ETF",
+      "englishName": "SEI ANG RESEARCH ENHANCED U.S. LARGE CAP ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "angu"
       ],
       "active": true
     },
@@ -92709,6 +92735,19 @@
       "active": true
     },
     {
+      "symbol": "LYTE",
+      "displayName": "ROUNDHILL PHOTONICS & OPTICS ETF",
+      "englishName": "ROUNDHILL PHOTONICS & OPTICS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "lyte"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MAAY",
       "displayName": "GRANITESHARES YIELDBOOST MARA ETF",
       "englishName": "GRANITESHARES YIELDBOOST MARA ETF",
@@ -96960,6 +96999,19 @@
       "active": true
     },
     {
+      "symbol": "NCLD",
+      "displayName": "ROUNDHILL NEOCLOUD ETF",
+      "englishName": "ROUNDHILL NEOCLOUD ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ncld"
+      ],
+      "active": true
+    },
+    {
       "symbol": "NCLO",
       "displayName": "NUVEEN AA-BBB CLO ETF",
       "englishName": "NUVEEN AA-BBB CLO ETF",
@@ -99352,6 +99404,19 @@
       "active": true
     },
     {
+      "symbol": "OCNL",
+      "displayName": "T-REX 2X LONG DOCN DAILY TARGET ETF",
+      "englishName": "T-REX 2X LONG DOCN DAILY TARGET ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ocnl"
+      ],
+      "active": true
+    },
+    {
       "symbol": "OCTB",
       "displayName": "APTUS OCTOBER BUFFER ETF",
       "englishName": "APTUS OCTOBER BUFFER ETF",
@@ -101623,6 +101688,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "pemx"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PENU",
+      "displayName": "T-REX 2X LONG PENG DAILY TARGET ETF",
+      "englishName": "T-REX 2X LONG PENG DAILY TARGET ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "penu"
       ],
       "active": true
     },
@@ -116917,6 +116995,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "tier"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TIH",
+      "displayName": "THE INVESTMENT HOUSE ETF",
+      "englishName": "THE INVESTMENT HOUSE ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "tih"
       ],
       "active": true
     },
@@ -140238,6 +140329,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "brun"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BRVE",
+      "displayName": "BRAVEHEART BIO INC",
+      "englishName": "BRAVEHEART BIO INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "brve"
       ],
       "active": true
     },
@@ -188218,6 +188322,19 @@
       "active": true
     },
     {
+      "symbol": "QVC",
+      "displayName": "QVC GROUP INC",
+      "englishName": "QVC GROUP INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "qvc"
+      ],
+      "active": true
+    },
+    {
       "symbol": "QXL",
       "displayName": "QUANTUM X LABS INC",
       "englishName": "QUANTUM X LABS INC",
@@ -188630,6 +188747,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "rcat"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "RCBC",
+      "displayName": "RIVER CITY BANK",
+      "englishName": "RIVER CITY BANK",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "rcbc"
       ],
       "active": true
     },
