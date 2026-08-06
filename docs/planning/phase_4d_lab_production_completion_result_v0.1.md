@@ -71,7 +71,23 @@ narrowing of the plan's open keyboard-architecture question:
 
 ## §2 Changed files
 
-Nine tracked files (195 insertions / 69 deletions per `git diff --stat`) plus three new test/tooling files:
+This section distinguishes two different diff scopes, both re-derived directly via `git diff --stat` /
+`git diff --name-status` this session (not taken on faith from any prior draft):
+
+**Full PR scope** — base `7da540dbadaa0a5acafb9a74aec7d9fb9cfc93f8` → final Head
+`4f4ea1368d70a78b566a3a7dca7547cf441857f8` (3 commits ahead): **16 files changed, 11 modified + 5 added**
+(1221 insertions(+) / 75 deletions(-)).
+
+**Implementation-stage scope** — plan commit `df337b7ac85d0aab5fcef84cd58f3afac9f7e617` → final Head (2 commits
+ahead, i.e. everything after the plan itself was committed): **15 files changed, 12 modified + 3 added**
+(731 insertions(+) / 99 deletions(-)).
+
+The two scopes differ because the plan commit itself already added `phase_4d_lab_production_completion_plan_v0.1.md`
+and a stub of this result doc before implementation began. Relative to the full-PR base, both of those planning
+files are net-new (`Added`); relative to the plan commit, this result doc was already present as a stub and is
+therefore `Modified` (filled in), while the plan doc itself received no further change after the plan commit.
+
+**Product/test files** (unchanged in either scope — 9 files, all `Modified`):
 
 - `package.json` (+2 lines) — two new script entries (`smoke:phase-4d-lab-production-completion`,
   `check:phase-4d-lab-production-completion`).
@@ -84,12 +100,26 @@ Nine tracked files (195 insertions / 69 deletions per `git diff --stat`) plus th
   div-to-list preview-card conversion.
 - `src/pages/lab/nps-portfolio.astro` (-22 net) — full-body replacement with a 301 redirect.
 - `src/styles/style.css` (+47) — additive Lab-scoped CSS only.
-- New: `scripts/smoke_phase_4d_lab_production_completion.mjs`,
-  `scripts/phase_4d_lab_production_completion_testsrc.ts`,
-  `scripts/check_phase_4d_lab_production_completion_contract.mjs`.
 
-No file outside this list was modified. No sibling checker file required any edit (see §3) — every
-pre-existing Lab checker already tolerated the new markup or was unaffected by it.
+**New test/tooling files** (unchanged in either scope — 3 files, `Added` in both):
+
+- `scripts/smoke_phase_4d_lab_production_completion.mjs`
+- `scripts/phase_4d_lab_production_completion_testsrc.ts`
+- `scripts/check_phase_4d_lab_production_completion_contract.mjs`
+
+**Planning files** (the source of the scope difference — 4 files, all part of the full 16-file PR total):
+
+- `docs/planning/phase_4d_lab_production_completion_plan_v0.1.md` — `Added` in the full-PR diff (created by
+  the plan commit, before implementation); not present at all in the implementation-stage diff (no change
+  after the plan commit).
+- `docs/planning/phase_4d_lab_production_completion_result_v0.1.md` (this file) — `Added` in the full-PR diff
+  (existed only as a stub at the plan commit, so base→Head shows it as newly present); `Modified` in the
+  implementation-stage diff (plan-commit→Head shows the stub being filled in, including this correction).
+- `docs/planning/mk_stock_lab_master_roadmap_v2.1.md` — `Modified` in both scopes.
+- `docs/planning/planning_changelog.md` — `Modified` in both scopes.
+
+No file outside the 16 full-PR files above was modified. No sibling checker file required any edit (see §3) —
+every pre-existing Lab checker already tolerated the new markup or was unaffected by it.
 
 ## §3 Validation
 
@@ -140,25 +170,59 @@ pre-existing Lab checker already tolerated the new markup or was unaffected by i
 
 ## §4 Preview verification
 
-`PARTIAL — BUILD CONFIRMED, ROUTE-LEVEL CONTENT BLOCKED BY SSO`. PR #17
-(https://github.com/sbchangkyun/mk-stock-lab/pull/17, `feature/phase-4d-lab-production-completion` → `main`,
-commit `8fc1666`) was opened. The GitHub `Vercel` status context reports `SUCCESS` for this commit, which
-independently confirms the Preview build (Linux, Vercel's own pinned Node runtime) completed successfully —
-the actual release-gate confirmation deferred from §3's local `npm run build` finding. The Preview alias
-`https://mkstocklab-git-feature-phase-2f0b1f-sbchangkyun-2946s-projects.vercel.app` was located via the
-Vercel bot's PR comment. An unauthenticated, bounded HTTP sweep of the 6 target Lab routes (`/lab`,
-`/lab/asset-class-returns`, `/lab/sp500-sectors`, `/lab/congress-stocks`, `/lab/nps-holdings`,
-`/lab/nps-portfolio`) was attempted; all 6 returned `302` to `vercel.com/sso-api` — this is this project's
-standing Vercel Deployment Protection behavior (every Preview on this project has been SSO-gated across every
-prior phase on record) and applies uniformly to every path before any application routing runs, so it cannot
-distinguish a `200` page from the expected `nps-portfolio` `301` from a `404` at this protection layer. No
-SSO bypass or share-link was attempted, per the governing task's mandatory Rule #7. Route-level content
-verification (the 5×`200` + 1×`301` expectation, and any visual/interaction check) therefore remains
-`OWNER_QA_PENDING`, consistent with the deferred-QA pattern in §7 — the one new, independently-confirmed fact
-this session adds beyond that deferral is the successful Preview build itself.
-Netlify's own PR checks (`Header rules`, `Pages changed`, `Redirect rules`, `netlify/mkstocklab/deploy-preview`)
-were `IN_PROGRESS`/`PENDING` at last observation; per the governing task's Rule #11, Netlify is not a release
-gate for this task and was not further pursued.
+`PARTIAL — BUILD CONFIRMED READY FOR FINAL HEAD, ROUTE-LEVEL CONTENT BLOCKED BY SSO`.
+
+This section distinguishes two sequential commits on PR #17
+(https://github.com/sbchangkyun/mk-stock-lab/pull/17, `feature/phase-4d-lab-production-completion` → `main`):
+the **implementation commit** `8fc1666` (the 9 product/test files + 3 new scripts + the initial planning-doc
+fill-in, opened as the PR head at that time) and the **final PR Head** `4f4ea1368d70a78b566a3a7dca7547cf441857f8`
+(a later commit that added only this Preview-verification record to this doc, per §2's implementation-stage
+accounting). Everything below is re-verified against the final Head, not the implementation commit.
+
+**Independently confirmed this session** (via `gh api repos/sbchangkyun/mk-stock-lab/commits/<sha>/status` and
+`gh api repos/sbchangkyun/mk-stock-lab/deployments`, both run directly against final Head
+`4f4ea1368d70a78b566a3a7dca7547cf441857f8`):
+
+- The GitHub `Vercel` commit-status context reports `state: success` for the final Head, confirming the
+  Preview build (Linux, Vercel's own pinned Node runtime) completed successfully for this exact commit — the
+  release-gate confirmation deferred from §3's local `npm run build` finding. The status `target_url` contains
+  deployment id `9ptxfhuLHQ2wusKiSKyQAva9u4dR` (i.e. `dpl_9ptxfhuLHQ2wusKiSKyQAva9u4dR`).
+- GitHub's own Deployments API independently corroborates the same deployment: one deployment record with
+  `sha` exactly equal to the final Head, `environment: "Preview"`, and a deployment-status `state: "success"`
+  (`description: "Deployment has completed"`), exposing a per-deployment URL
+  (`https://mkstocklab-f68lpbmns-sbchangkyun-2946s-projects.vercel.app`) that is scoped to this exact
+  deployment/commit, distinct from the mutable branch-alias URL used for the implementation-commit sweep in
+  the prior draft of this section.
+- The GitHub `netlify/mkstocklab/deploy-preview` commit-status context also now reports `state: success` for
+  the final Head (superseding the "IN_PROGRESS/PENDING" observation recorded against the implementation
+  commit in the prior draft of this section). Per the governing task's Rule #11 (this correction's item 5),
+  Netlify is recorded here only as an external status that later reached `success` — it is **not** used as
+  release evidence or a merge gate; the `Vercel` context alone is this project's release gate.
+
+**User-supplied, not independently re-derived this session** (this session has no direct Vercel API/CLI/
+dashboard access — no `VERCEL_TOKEN`, and the Vercel MCP connector requires an interactive OAuth flow this
+non-interactive session cannot run — so the following granular Vercel-native fields are recorded as supplied
+by the Owner rather than confirmed via Vercel's own API, consistent with this project's standing verification-
+honesty convention): deployment `dpl_9ptxfhuLHQ2wusKiSKyQAva9u4dR`, deployment commit
+`4f4ea1368d70a78b566a3a7dca7547cf441857f8`, state `READY`, readyState `READY`, source `git`, framework
+`astro`, region `iad1`, aliasError `null`, and that the remote `npm run build`, Astro server build,
+`@astrojs/vercel` bundling, postbuild, and deployment steps all completed. These are consistent with (and not
+contradicted by) the independently-confirmed `success` status and deployment record above, but the exact
+dashboard-only field values themselves were not re-derived from Vercel directly this session.
+
+**Route-level limitation (unchanged from the prior draft, re-confirmed this session against the exact-Head
+deployment URL, not just the branch alias)**: an unauthenticated, bounded HTTP sweep of the 6 target Lab
+routes (`/lab`, `/lab/asset-class-returns`, `/lab/sp500-sectors`, `/lab/congress-stocks`, `/lab/nps-holdings`,
+`/lab/nps-portfolio`) against `https://mkstocklab-f68lpbmns-sbchangkyun-2946s-projects.vercel.app` (the exact
+per-deployment URL for the final Head) returned `302` to `vercel.com/sso-api` for all 6 routes — this is this
+project's standing Vercel Deployment Protection (SSO) behavior (every Preview on this project has been
+SSO-gated across every prior phase on record), applies uniformly to every path before any application routing
+runs, and so cannot distinguish a `200` page from the expected `nps-portfolio` `301` from a `404` at this
+protection layer. No SSO bypass or share-link was attempted, per the governing task's mandatory rule against
+creating one. Route-level content verification (the 5×`200` + 1×`301` expectation) and any authenticated
+visual/interaction check therefore remain `OWNER_QA_PENDING`, deferred to the standing Phase 4F cross-page
+Owner QA closeout (§7) — the fact this session adds beyond that deferral is the successful, READY Preview
+build for the exact final Head, not route-level content access.
 
 ## §5 Merge
 
