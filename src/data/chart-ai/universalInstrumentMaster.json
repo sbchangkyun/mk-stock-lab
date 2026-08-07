@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16091",
+  "masterVersion": "hf3b-hf2-kis-16102",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-07",
   "instruments": [
@@ -31675,8 +31675,7 @@
       "exchangeCode": null,
       "standardCode": "KR7070300009",
       "aliases": [
-        "070300",
-        "엑스큐어"
+        "070300"
       ],
       "active": true
     },
@@ -53463,6 +53462,19 @@
       "active": true
     },
     {
+      "symbol": "ARIA",
+      "displayName": "ARIA OPPORTUNITIES ETF",
+      "englishName": "ARIA OPPORTUNITIES ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aria"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ARKB",
       "displayName": "ARK 21SHARES BITCOIN ETF SHS BEN INT",
       "englishName": "ARK 21SHARES BITCOIN ETF SHS BEN INT",
@@ -74003,6 +74015,19 @@
       "active": true
     },
     {
+      "symbol": "FFLX",
+      "displayName": "FIRST TRUST FLEXIBLE INCOME ETF",
+      "englishName": "FIRST TRUST FLEXIBLE INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "fflx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "FFND",
       "displayName": "ONE GLOBAL ETF",
       "englishName": "ONE GLOBAL ETF",
@@ -77890,6 +77915,19 @@
       "active": true
     },
     {
+      "symbol": "GCPB",
+      "displayName": "GOLDMAN SACHS CORE PLUS BOND ETF",
+      "englishName": "GOLDMAN SACHS CORE PLUS BOND ETF",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "etf",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "gcpb"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GCSH",
       "displayName": "GUGGENHEIM ULTRA SHORT INCOME ETF",
       "englishName": "GUGGENHEIM ULTRA SHORT INCOME ETF",
@@ -78666,6 +78704,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "gii"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "GINC",
+      "displayName": "GOLDMAN SACHS INCOME ETF",
+      "englishName": "GOLDMAN SACHS INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ginc"
       ],
       "active": true
     },
@@ -102209,6 +102260,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "pho"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PHOX",
+      "displayName": "AURA AI PHOTONICS ETF",
+      "englishName": "AURA AI PHOTONICS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "phox"
       ],
       "active": true
     },
@@ -139047,6 +139111,19 @@
       "active": true
     },
     {
+      "symbol": "BLSM",
+      "displayName": "BLOSSOMHILL THERAPEUTICS INC",
+      "englishName": "BLOSSOMHILL THERAPEUTICS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "blsm"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BLTE",
       "displayName": "BELITE BIO INC SPON ADS EACH REP 1 ORD SHS",
       "englishName": "BELITE BIO INC SPON ADS EACH REP 1 ORD SHS",
@@ -140434,6 +140511,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "bsbr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BSEM",
+      "displayName": "BIOSTEM TECHNOLOGIES INC",
+      "englishName": "BIOSTEM TECHNOLOGIES INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "bsem"
       ],
       "active": true
     },
@@ -172116,6 +172206,19 @@
       "active": true
     },
     {
+      "symbol": "LTGO",
+      "displayName": "LATIGO BIOTHERAPEUTICS INC",
+      "englishName": "LATIGO BIOTHERAPEUTICS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ltgo"
+      ],
+      "active": true
+    },
+    {
       "symbol": "LTGR",
       "displayName": "LONG TABLE GROWTH CORPORATION",
       "englishName": "LONG TABLE GROWTH CORPORATION",
@@ -181134,6 +181237,19 @@
       "active": true
     },
     {
+      "symbol": "OCLTU",
+      "displayName": "OCEANLIGHT ACQUISITION CORPORATION UNITS (1 ORD SHS & 1",
+      "englishName": "OCEANLIGHT ACQUISITION CORPORATION UNITS (1 ORD SHS & 1",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ocltu"
+      ],
+      "active": true
+    },
+    {
       "symbol": "OCS",
       "displayName": "OCULIS HOLDING AG",
       "englishName": "OCULIS HOLDING AG",
@@ -183652,6 +183768,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "par"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PARA",
+      "displayName": "BANZAI INTERNATIONAL INC",
+      "englishName": "BANZAI INTERNATIONAL INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "para"
       ],
       "active": true
     },
@@ -196982,13 +197111,14 @@
     },
     {
       "symbol": "STLNW",
-      "displayName": "STARLING ONCOLOGY INC C/WTS 15/11/2026 (TO PUR COM)",
-      "englishName": "STARLING ONCOLOGY INC C/WTS 15/11/2026 (TO PUR COM)",
+      "displayName": "STARLING ONCOLOGY INC C/WTS (TO PUR COM)",
+      "englishName": "STARLING ONCOLOGY INC C/WTS (TO PUR COM)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "starling oncology inc c/wts 15/11/2026 (to pur com)",
         "stlnw"
       ],
       "active": true
@@ -200474,6 +200604,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "toyo"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TP",
+      "displayName": "TICKETPLUS LTD",
+      "englishName": "TICKETPLUS LTD",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tp"
       ],
       "active": true
     },
