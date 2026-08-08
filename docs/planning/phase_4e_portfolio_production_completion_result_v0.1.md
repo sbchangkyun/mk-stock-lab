@@ -22,7 +22,11 @@ approved implementation plan with no application code change. This document repo
   no longer implies a live FX conversion it doesn't perform.
 - **C — baseCurrency truthfulness**: added explicit copy — `#portfolio-base-currency-hint`
   ("합산 평가금액은 원화(KRW) 기준으로 계산됩니다. USD를 선택해도 원화 환산은 현재 미지원입니다.") and
-  a matching `.kpi-note` ("KRW 기준 합산 · USD 환산 현재 미지원").
+  a matching `.kpi-note` ("KRW 기준 합산 · USD 환산 현재 미지원"). **Corrected in Phase 4E-B.HF1**: the
+  original wording was internally contradictory (it disclosed "원화 환산은 현재 미지원" — KRW conversion
+  unsupported — right next to stating the aggregate is already KRW-based). Replaced with "현재 합산
+  평가금액은 원화(KRW) 기준으로 제공되며, USD 환산은 지원하지 않습니다." and wired the select to the hint
+  programmatically via `aria-describedby="portfolio-base-currency-hint"` on `#portfolio-base-currency`.
 - **D — Dividend surface honesty**: removed the dividend sort affordance entirely (no
   `data-sort-column`, no `sort-arrow-button`, no `dividend-yield-*`/`annual-dividend-*` sort keys —
   the dividend column was consolidated to a single, non-sortable 배당률/배당주기 header group cell);
@@ -54,6 +58,22 @@ approved implementation plan with no application code change. This document repo
 New pure module: `src/lib/portfolio/portfolioKeyboardNav.ts` — exports `computeDialogFocusWrap`
 (item F) and `computeTabRovingNavigation` (item G), both pure, DOM-free index math, consumed by
 `portfolio.astro` and exercised directly by the new smoke test.
+
+### Phase 4E-B.HF1 — pre-merge review hotfix
+
+A narrow pre-merge review pass identified and fixed two remaining gaps before PR #19 merge, without
+expanding Phase 4E's scope:
+
+- **baseCurrency wording correction** (item C): see the corrected copy and `aria-describedby` wiring
+  noted above under item C.
+- **Completed the approved focus-visible coverage** (plan §9): added Portfolio-scoped
+  `:focus-visible` styling for `.portfolio-mvp .segmented-control button` (the currency display
+  toggle), `.position-name-link` (the per-position chart-link), and the two dialog sheets' action
+  controls (`.portfolio-sheet .table-action-button:focus-visible`,
+  `.position-sheet .table-action-button:focus-visible`) — all additive, none globally scoped, none
+  duplicating the already-correct `.portfolio-bookmark-tab`, `.portfolio-tab-inline-action`,
+  `.portfolio-tab-reorder-btn`, `.sort-arrow-button`, or `.positions-list-wrap` focus rules.
+- No business/provider/API scope change; no server or migration touched.
 
 ## §2 Changed files
 
@@ -87,12 +107,14 @@ No API route, migration, environment, or `.gitignore` file was changed. No npm d
 - `npm run smoke:phase-4e-portfolio-production-completion` → **21/21 PASS** (pure
   `computeDialogFocusWrap` / `computeTabRovingNavigation` index-math assertions, esbuild-bundled, no
   network/DOM/Supabase).
-- `npm run check:phase-4e-portfolio-production-completion` → **61/61 PASS** (static markup/contract
-  checker covering Group 0 file existence, Groups A–J mapped to the 10 approved requirements, and
-  Group K's 12 Hard-Rule safety-boundary assertions — no trading/order/brokerage, no US quote/FX/
-  dividend provider, no KIS account API, no LLM, no Supabase migration, no raw `fetch()` in
-  `portfolio.astro`, no non-Portfolio `/api/` route, `portfolioKeyboardNav.ts` stays pure, no `<table>`
-  element).
+- `npm run check:phase-4e-portfolio-production-completion` → **65/65 PASS** (static markup/contract
+  checker covering Group 0 file existence, Groups A–J mapped to the 10 approved requirements, Group
+  K's 12 Hard-Rule safety-boundary assertions — no trading/order/brokerage, no US quote/FX/dividend
+  provider, no KIS account API, no LLM, no Supabase migration, no raw `fetch()` in `portfolio.astro`,
+  no non-Portfolio `/api/` route, `portfolioKeyboardNav.ts` stays pure, no `<table>` element — and, as
+  of Phase 4E-B.HF1, Group L's 3 focus-visible coverage assertions. Group C grew from 4 to 5
+  assertions in HF1: the two stale checks tied to the old contradictory copy were rewritten to assert
+  the corrected wording, its absence-of-contradiction, and the new `aria-describedby` wiring.)
 
 **Sibling checker reconciliation** (`check_portfolio_holdings_category_header_static_contract.mjs`,
 Phase 3BR): item D removed the dividend sort affordance and the separate "예상 연배당금" figure, which
@@ -113,8 +135,8 @@ own instruction to classify honestly rather than force unrelated checkers green)
 | Command | Result |
 |---|---|
 | `npm ci` | PASS (309 packages, clean install) |
-| `smoke:phase-4e-portfolio-production-completion` | 21/21 PASS |
-| `check:phase-4e-portfolio-production-completion` | 61/61 PASS |
+| `smoke:phase-4e-portfolio-production-completion` | 21/21 PASS (unchanged by HF1 — pure keyboard-nav math, not touched) |
+| `check:phase-4e-portfolio-production-completion` | 65/65 PASS (was 61/61 before HF1; +1 Group C assertion, +3 Group L assertions) |
 | `smoke:phase-3gh-portfolio-live-valuation-mvp` | 55/55 PASS |
 | `check:phase-3gh-portfolio-live-valuation-mvp` | 86/86 PASS |
 | `check:portfolio-bookmark-tabs` | 121/121 PASS |

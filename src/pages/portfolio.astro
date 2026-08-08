@@ -149,13 +149,13 @@ import Layout from '../layouts/Layout.astro';
         </label>
         <label>
           기준 통화
-          <select id="portfolio-base-currency" name="baseCurrency">
+          <select id="portfolio-base-currency" name="baseCurrency" aria-describedby="portfolio-base-currency-hint">
             <option value="KRW">KRW</option>
             <option value="USD">USD</option>
           </select>
         </label>
         <p class="field-hint" id="portfolio-base-currency-hint">
-          합산 평가금액은 원화(KRW) 기준으로 계산됩니다. USD를 선택해도 원화 환산은 현재 미지원입니다.
+          현재 합산 평가금액은 원화(KRW) 기준으로 제공되며, USD 환산은 지원하지 않습니다.
         </p>
         <div class="form-actions">
           <button class="primary-action" id="portfolio-submit" type="submit">포트폴리오 만들기</button>

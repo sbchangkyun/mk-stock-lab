@@ -11,7 +11,9 @@
  *   - (B) Currency toggle truthfulness: the display-mode segmented control is honestly labeled and
  *     does not claim live FX conversion.
  *   - (C) baseCurrency truthfulness: the portfolio base-currency field hint and KPI note honestly
- *     disclose that KRW/USD conversion is not currently supported.
+ *     disclose that the aggregate is KRW-based and USD conversion is not supported, without the
+ *     internally-contradictory HF1 wording ("원화 환산은 현재 미지원" beside an already-KRW aggregate);
+ *     the select is wired to its hint via aria-describedby.
  *   - (D) Dividend surface honesty: the dividend header cell carries no sort affordance (no
  *     data-sort-column, no sort-arrow-button) and dividend cells render an honest "데이터 대기" state.
  *   - (E) Dynamic status accessibility: role="status"/aria-live="polite"/aria-atomic="true" on both
@@ -28,6 +30,8 @@
  *     980px media query has been removed.
  *   - Safety boundaries: no trading/order/brokerage, US-quote, FX-provider, dividend-provider, KIS
  *     account, LLM/OpenAI/Gemini, Supabase migration, or new fetch()/API-route reference was added.
+ *   - (HF1) Keyboard focus-visible coverage: Portfolio-scoped focus-visible styling exists for the
+ *     segmented control, position-name links, and the two dialog sheets' action controls.
  */
 
 globalThis.fetch = async (url) => {
@@ -91,10 +95,11 @@ check('B4. no wording claims live/real-time FX conversion is applied', !/환율\
 // Group C: baseCurrency truthfulness
 // ---------------------------------------------------------------------------
 log('--- Group C: baseCurrency truthfulness ---');
-check('C1. portfolio base-currency field hint discloses KRW-only aggregation', /합산 평가금액은 원화\(KRW\) 기준으로 계산됩니다/.test(src));
-check('C2. base-currency field hint discloses USD conversion is not currently supported', /USD를 선택해도 원화 환산은 현재 미지원입니다/.test(src));
-check('C3. KPI summary note discloses USD conversion is not currently supported', /USD 환산 현재 미지원/.test(src));
-check('C4. base-currency hint is wired to the select via a stable id pair', /id="portfolio-base-currency-hint"/.test(src) && /id="portfolio-base-currency"/.test(src));
+check('C1. portfolio base-currency field hint discloses the aggregate is currently KRW-based', /현재 합산 평가금액은 원화\(KRW\) 기준으로 제공되며/.test(src));
+check('C2. base-currency field hint discloses USD conversion is not supported', /USD 환산은 지원하지 않습니다/.test(src));
+check('C3. the internally-contradictory HF1 wording ("원화 환산은 현재 미지원") is absent', !/원화 환산은 현재 미지원/.test(src));
+check('C4. KPI summary note discloses USD conversion is not currently supported', /USD 환산 현재 미지원/.test(src));
+check('C5. base-currency select is wired to its hint via aria-describedby (not just matching ids)', /id="portfolio-base-currency" name="baseCurrency" aria-describedby="portfolio-base-currency-hint"/.test(src));
 
 // ---------------------------------------------------------------------------
 // Group D: Dividend surface honesty
@@ -184,6 +189,14 @@ check('K9. no new /api/ route reference beyond the existing valuation/portfolio 
 check('K10. portfolioKeyboardNav.ts stays pure (no DOM/window/document reference)', !/\b(document|window)\./.test(navSrc));
 check('K11. portfolioKeyboardNav.ts introduces no fetch/network reference', !/\bfetch\(/.test(navSrc));
 check('K12. the holdings surface was not redesigned into a full HTML <table>', !/<table[\s>]/.test(src));
+
+// ---------------------------------------------------------------------------
+// Group L: HF1 keyboard focus-visible coverage
+// ---------------------------------------------------------------------------
+log('--- Group L: HF1 keyboard focus-visible coverage ---');
+check('L1. Portfolio-scoped segmented-control buttons have a visible focus style (not a bare global rule)', /\.portfolio-mvp \.segmented-control button:focus-visible \{/.test(cssSrc));
+check('L2. .position-name-link has a visible focus style', /\.position-name-link:focus-visible \{/.test(cssSrc));
+check('L3. sheet close/action controls have a visible focus style, scoped to the two sheets', /\.portfolio-sheet \.table-action-button:focus-visible,\s*\.position-sheet \.table-action-button:focus-visible \{/.test(cssSrc));
 
 log('');
 log(`Total: ${passes + failures} | Passed: ${passes} | Failed: ${failures}`);
