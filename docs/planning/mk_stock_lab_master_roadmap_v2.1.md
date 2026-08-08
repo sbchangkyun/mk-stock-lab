@@ -318,8 +318,13 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 
 ### In progress
 
-None. Phase 4E is merged and Production-verified (see "Completed" above). Phase 4F — Cross-page
-Owner QA closeout — is the next sequential phase and has **not** yet started.
+- **Phase 4F-A — Cross-page Owner QA closeout plan.**
+  `PHASE_4F_CROSS_PAGE_OWNER_QA_PLAN_READY_QA_NOT_STARTED`. Plan-only: audited every QA item
+  deferred by Phases 4A–4E and produced a 122-case Owner-manual QA matrix across Home/Common
+  Shell, Chart AI, Market, Lab, Portfolio, and cross-page/session behavior, plus an accessibility
+  spot check, a defect-severity scale, an evidence format, and an automated pre-QA regression
+  gate. See `phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`. Manual QA execution has **not**
+  started and no application code was touched by this planning step.
 
 ### Next sequential product phases
 
@@ -344,14 +349,15 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
    NPS/Congress modules. See "Completed" above.
 6. **Phase 4E — Portfolio production readiness pass.**
    `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`. See "Completed" above.
-7. **Phase 4F — Cross-page Owner QA closeout.** `PLANNED` — the next sequential phase, not yet started.
-   Owner-only authenticated click-through across 4A–4E on Production/Preview (visual, mobile, touch,
-   keyboard, screen-reader spot checks) — the single point where the Owner QA deferred by every phase in
-   this lane is actually performed.
+7. **Phase 4F — Cross-page Owner QA closeout.**
+   `PHASE_4F_CROSS_PAGE_OWNER_QA_PLAN_READY_QA_NOT_STARTED`. Owner-only authenticated click-through
+   across 4A–4E on Production (visual, mobile, touch, keyboard, screen-reader spot checks) — the
+   single point where the Owner QA deferred by every phase in this lane is actually performed. A
+   122-case QA matrix now exists (see "In progress" above); manual QA execution has not started.
 
-Phase 3 Closeout and Phase 4F are explicitly **not** started. Phase 4E is now merged and
-Production-verified (see "Completed" above), alongside Phases 4A–4D — this section only records the
-sequencing.
+Phase 3 Closeout is explicitly **not** started. Phase 4F has a ready QA plan but manual QA
+execution has not started. Phase 4E is now merged and Production-verified (see "Completed" above),
+alongside Phases 4A–4D — this section only records the sequencing.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 

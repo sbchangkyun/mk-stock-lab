@@ -1,5 +1,38 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F-A — cross-page Owner QA closeout plan - 2026-08-09
+
+- **Classification: `PHASE_4F_CROSS_PAGE_OWNER_QA_PLAN_READY_QA_NOT_STARTED`.** Plan-only; no
+  `src/`, `scripts/`, config, migration, or dependency file touched, no `git add .`/`-A`, no
+  Owner-local untracked file touched, no manual QA executed.
+- **Baseline.** `main` @ `198c24c9f70010bd5cc077555c69c9035066dc7c` (Phase 4A–4E all merged and
+  Production-verified). Branch `docs/phase-4f-cross-page-owner-qa-plan`.
+- **Audit.** Read all 10 Phase 4A–4E plan/result docs and extracted every QA item each phase
+  deferred to Phase 4F, without inventing new product requirements. Found and recorded 6
+  ambiguities in that deferral record: a Vercel log/dashboard-access inconsistency between Phase
+  4B and Phases 4A/4C; the `@astrojs/netlify` dependency's removal never being cross-referenced
+  back to the Phase 4A item that deferred it (the still-open item is the external Netlify Git
+  integration, not the dependency); Lab's empty-cell `aria-label="데이터 없음"` fallback admittedly
+  unconfirmed in Production HTML; inconsistent deferral granularity across phases (Market only
+  ever used an umbrella phrase, so its tab-keyboard-nav and modal-focus-trap behaviors are
+  included here by inference from the implementation record, not by a literal citation); Market's
+  "detailed all-symbol/all-period sweep" belonging to the separate Phase 3 Closeout lane; and
+  Phase 4D/4E's deployment-trigger/recurrence-test items being release/infra concerns, not QA
+  deferrals.
+- **New QA plan doc** (`phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`): a 122-case
+  Owner-manual QA matrix (Home/Common Shell 15, Chart AI 17, Market 15, Lab 15, Portfolio 38,
+  Cross-page/Session 8, Accessibility spot check 14), plus 4 items already `PRODUCTION_VERIFIED`
+  by earlier phases and 3 items explicitly `OUT_OF_SCOPE`; a viewport-testing convention (desktop
+  full pass, representative 768/390/320 full pass, targeted 1024/412/360 breakpoint checks); a
+  quota-conservation plan limiting Chart AI's Similarity/MK-Analysis calls to exactly one each; the
+  defect-severity scale (BLOCKER/HIGH/MEDIUM/LOW); the per-test evidence format; and the
+  pre-QA automated regression gate (Phase 4A–4E checkers/smokes, mobile baseline, project
+  lightweight roadmap, Phase 3GH portfolio valuation smoke/checker).
+- **New result-doc skeleton** (`phase_4f_cross_page_owner_qa_closeout_result_v0.1.md`) — QA not
+  yet executed.
+- **Not done this phase, by explicit instruction.** No manual QA was executed, no defect was
+  fixed, and no application code was modified.
+
 ## Phase 4E closeout — merged and Production-verified - 2026-08-09
 
 - **Classification: `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`.** Docs-only closeout record;
