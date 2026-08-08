@@ -1,58 +1,166 @@
 # Phase 4E — Portfolio Production Completion — Result v0.1
 
-**Current status**: `PHASE_4E_PORTFOLIO_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`
+**Current status**: `PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`
 
 **Baseline**: `b3254aa35db76fe264cbb8167f20c47291b87838`
 **Branch**: `feature/phase-4e-portfolio-production-completion`
 **Plan**: [`phase_4e_portfolio_production_completion_plan_v0.1.md`](phase_4e_portfolio_production_completion_plan_v0.1.md)
+**Plan-review correction**: commit `99c58e4aed993bc757fd1db25c95506f9c2cbdb0` (Phase 4E-A.1)
 
-This is a skeleton result document. Phase 4E-A was scoped as **plan-only**: audit the `/portfolio`
-production surface, classify every finding, and produce the plan above — with no application code,
-CSS, script, package.json, migration, or environment change. All sections below are placeholders to
-be filled in during the (separate, not-yet-authorized) Phase 4E implementation task.
+Phase 4E-A (plan-only audit) and Phase 4E-A.1 (owner-review correction) produced and corrected the
+approved implementation plan with no application code change. This document reports the results of
+**Phase 4E-B**, the implementation task that carried out all 10 approved requirements (A–J).
 
 ## §1 Implementation
 
-`NOT_STARTED`. No application code has been written. See the plan's §6 ("Exact implementation
-requirements") and §7 ("Exact intended file scope") for what this section will report against once
-implementation begins.
+`IMPLEMENTED`. All 10 approved requirements from the plan's §6 were implemented in
+`src/pages/portfolio.astro` (plus a small new pure module and Portfolio-scoped CSS):
+
+- **A — ETF UI exposure**: lead copy now reads "국내와 미국 주식, ETF 보유 종목을 관리합니다."; the
+  asset-type select gained an `<option value="etf">ETF</option>`.
+- **B — Currency toggle truthfulness**: the `현지`/`₩` segmented control (`#currency-display-toggle`)
+  no longer implies a live FX conversion it doesn't perform.
+- **C — baseCurrency truthfulness**: added explicit copy — `#portfolio-base-currency-hint`
+  ("합산 평가금액은 원화(KRW) 기준으로 계산됩니다. USD를 선택해도 원화 환산은 현재 미지원입니다.") and
+  a matching `.kpi-note` ("KRW 기준 합산 · USD 환산 현재 미지원").
+- **D — Dividend surface honesty**: removed the dividend sort affordance entirely (no
+  `data-sort-column`, no `sort-arrow-button`, no `dividend-yield-*`/`annual-dividend-*` sort keys —
+  the dividend column was consolidated to a single, non-sortable 배당률/배당주기 header group cell);
+  no dividend provider exists, so both dividend value cells honestly render
+  `<strong class="metric-placeholder">데이터 대기</strong>` /
+  `<small class="metric-placeholder">데이터 대기</small>` rather than a fabricated figure. The
+  previously-planned separate "예상 연배당금" (estimated annual dividend) figure was also confirmed
+  removed rather than left half-wired.
+- **E — Dynamic status accessibility**: `#portfolio-readiness` and `#valuation-status-copy` both carry
+  `role="status" aria-live="polite" aria-atomic="true"`.
+- **F — Dialog focus lifecycle**: opener-focus capture/restore (`restoreOpenerFocus`) and a real
+  focus trap (`getDialogFocusableElements` + `computeDialogFocusWrap`) wired into the shared dialog
+  keydown handler for both the portfolio-create and position sheets.
+- **G — Complete portfolio tab semantics**: full ARIA tablist pattern — `role="tab"`,
+  `aria-selected`, `aria-controls`, roving `tabIndex` (0/-1), `computeTabRovingNavigation` handling
+  ArrowLeft/ArrowRight/Home/End, and `aria-labelledby` kept in sync on the detail panel.
+- **H — Holdings semantics**: removed the invalid `role="row"` / `role="columnheader"` markup (the
+  holdings surface stays a non-table card grid, per the Hard Rule against a full HTML table
+  redesign).
+- **I — Horizontal scroll accessibility**: `#positions-list-wrap` now has
+  `role="region" aria-label="보유 종목 목록, 좌우로 스크롤 가능" tabindex="0"`, plus a matching
+  `.positions-list-wrap:focus-visible` CSS rule (light + `body.dark-mode`).
+- **J — Responsive completion**: static audit found and fixed one dead-CSS defect (a
+  `.portfolio-mvp` rule inside the `max-width: 980px` media query that could never match); live-
+  browser breakpoint QA at 320–1024px is explicitly deferred to Owner QA / Phase 4F, since
+  `/portfolio` requires an authenticated Supabase session that is not feasible to exercise under
+  assistant policy (this deferral was pre-approved in the plan's own §19 boundary).
+
+New pure module: `src/lib/portfolio/portfolioKeyboardNav.ts` — exports `computeDialogFocusWrap`
+(item F) and `computeTabRovingNavigation` (item G), both pure, DOM-free index math, consumed by
+`portfolio.astro` and exercised directly by the new smoke test.
 
 ## §2 Changed files
 
-This phase (4E-A, plan-only) touched exactly four files, all under `docs/planning/`:
-
-- `docs/planning/phase_4e_portfolio_production_completion_plan_v0.1.md` (new)
-- `docs/planning/phase_4e_portfolio_production_completion_result_v0.1.md` (new, this file)
-- `docs/planning/mk_stock_lab_master_roadmap_v2.1.md` (modified — Phase 4E entry)
+- `src/pages/portfolio.astro` (modified — items A–J)
+- `src/styles/style.css` (modified — Portfolio-scoped `.positions-list-wrap` focus-visible rules,
+  item J dead-rule removal)
+- `src/lib/portfolio/portfolioKeyboardNav.ts` (new — pure keyboard-navigation module)
+- `scripts/phase_4e_portfolio_production_completion_testsrc.ts` (new — smoke test source, 21 checks)
+- `scripts/smoke_phase_4e_portfolio_production_completion.mjs` (new — esbuild-bundled smoke runner)
+- `scripts/check_phase_4e_portfolio_production_completion_contract.mjs` (new — static contract
+  checker, 61 checks across Groups 0/A–J/K)
+- `scripts/check_portfolio_holdings_category_header_static_contract.mjs` (modified — narrow
+  reconciliation of the dividend-sort-specific assertions in Groups 4/5/6/7 to match item D's
+  honest, sort-free dividend column; see §3 for detail)
+- `package.json` (modified — added `smoke:phase-4e-portfolio-production-completion` and
+  `check:phase-4e-portfolio-production-completion` script entries)
+- `docs/planning/phase_4e_portfolio_production_completion_plan_v0.1.md` (modified — typo fix, "all 9
+  numbered items above" → "all 10 numbered items above")
+- `docs/planning/phase_4e_portfolio_production_completion_result_v0.1.md` (modified, this file)
+- `docs/planning/mk_stock_lab_master_roadmap_v2.1.md` (modified — Phase 4E entry updated)
 - `docs/planning/planning_changelog.md` (modified — new top entry)
 
-No `src/`, API route, style, script, `package.json`, migration, or environment file was changed.
+No API route, migration, environment, or `.gitignore` file was changed. No npm dependency was added
+(`npm ls --depth=0` unchanged: `@astrojs/vercel`, `@supabase/supabase-js`, `astro`, `chart.js`,
+`d3-hierarchy`, `html-to-image`, `pretendard`).
 
 ## §3 Test/checker results
 
-`NOT_APPLICABLE` for implementation checks — no application code changed in this task. Validation
-performed for this plan-only task is limited to `git diff --check` and confirming the changed-file
-set above; see the final chat report for this task's exact results.
+**New tests (both required by plan §7/§13, both 100% passing on first run):**
+
+- `npm run smoke:phase-4e-portfolio-production-completion` → **21/21 PASS** (pure
+  `computeDialogFocusWrap` / `computeTabRovingNavigation` index-math assertions, esbuild-bundled, no
+  network/DOM/Supabase).
+- `npm run check:phase-4e-portfolio-production-completion` → **61/61 PASS** (static markup/contract
+  checker covering Group 0 file existence, Groups A–J mapped to the 10 approved requirements, and
+  Group K's 12 Hard-Rule safety-boundary assertions — no trading/order/brokerage, no US quote/FX/
+  dividend provider, no KIS account API, no LLM, no Supabase migration, no raw `fetch()` in
+  `portfolio.astro`, no non-Portfolio `/api/` route, `portfolioKeyboardNav.ts` stays pure, no `<table>`
+  element).
+
+**Sibling checker reconciliation** (`check_portfolio_holdings_category_header_static_contract.mjs`,
+Phase 3BR): item D removed the dividend sort affordance and the separate "예상 연배당금" figure, which
+made several of this checker's older dividend-sort-specific assertions (Groups 4, 5, 6, 7) newly
+false. Reconciled narrowly — each stale "assert dividend sort/label exists" check was replaced with
+an explicit "assert dividend sort/label is intentionally absent" check, documenting the Phase 4E item
+D rationale inline; no other group, and none of the `데이터 대기` text assertions, were touched.
+Result: `npm run check:portfolio-holdings-header` → **81/84 PASS** (3 pre-existing failures —
+`카테고리` eyebrow label, `연동 예정` placeholder text, and the `.position-card` `repeat(10,)`
+CSS column-count assertion — confirmed via `git show 99c58e4:...` to already be absent/failing at
+this phase's own baseline commit, i.e. drift from an earlier phase (3BR) predating any Phase 4E-B
+edit. Out of this task's narrow reconciliation scope; not "fixed" merely to pass, per the plan's
+own instruction to classify honestly rather than force unrelated checkers green).
+
+**Full regression gate** (all commands run from `E:\개인 프로젝트\mk-stock-lab` on
+`feature/phase-4e-portfolio-production-completion`):
+
+| Command | Result |
+|---|---|
+| `npm ci` | PASS (309 packages, clean install) |
+| `smoke:phase-4e-portfolio-production-completion` | 21/21 PASS |
+| `check:phase-4e-portfolio-production-completion` | 61/61 PASS |
+| `smoke:phase-3gh-portfolio-live-valuation-mvp` | 55/55 PASS |
+| `check:phase-3gh-portfolio-live-valuation-mvp` | 86/86 PASS |
+| `check:portfolio-bookmark-tabs` | 121/121 PASS |
+| `check:portfolio-create-sheet` | 79/79 PASS |
+| `check:portfolio-holdings-header` | 81/84 (3 pre-existing baseline failures, documented above) |
+| `check:home-portfolio-panel` | 102/102 PASS |
+| `check:mobile-baseline` | 74/74 PASS |
+| `check:phase-4a-home-common-shell` | 75/75 PASS |
+| `check:phase-4b-market-production-completion` | 79/79 PASS |
+| `check:phase-4c-chart-ai-production-completion` | 35/35 PASS |
+| `check:phase-4d-lab-production-completion` | 62/62 PASS |
+| `check:project-lightweight-roadmap` | 27/27 PASS |
+| `git diff --check` | clean (0 whitespace errors) |
+| `npm run build` | all real build stages completed ("✓ Completed in 11.96s", `dist/` written with 122 files); process then hit the known Windows-only `STATUS_STACK_BUFFER_OVERRUN` (exit `-1073740791`) teardown crash established in Phase 4D as a benign Node/Windows quirk unrelated to code correctness — Vercel's Linux Preview build (§4) is the authoritative build gate |
+| `npm ls --depth=0` | clean, no missing/extraneous/new dependency |
+
+The three deliberately-retired checkers (`check:portfolio-owner-review-prep`,
+`check:portfolio-ticker-display-name`, `check:portfolio-layout`) were **not** run or "fixed" — they
+remain classified as retired per the plan, not part of this phase's regression surface.
 
 ## §4 Preview validation
 
-`NOT_STARTED` — no PR opened yet for this phase (per the task instruction, the plan commit is
-pushed to the feature branch without opening an implementation PR).
+`PENDING` — to be recorded once the PR is opened and the exact-Head Vercel Preview deployment is
+confirmed READY (or `SSO_BLOCKED` if the route is protected).
 
 ## §5 Merge
 
-`NOT_STARTED`.
+`NOT_STARTED` — per the governing instruction, this task stops before merge. PR opened for Owner
+review only.
 
 ## §6 Production verification
 
-`NOT_STARTED`.
+`NOT_STARTED` — blocked on §5.
 
 ## §7 Deferred Owner QA
 
-`NOT_APPLICABLE_YET` — tracked prospectively under the plan's §19 (Phase 4F boundary); will apply
-once implementation lands.
+Item J's live-browser breakpoint QA (320/360/390/412/768/1024px rendering checks for long names,
+large KRW/USD numbers, negative returns, and the sheets/dialogs) is explicitly deferred to Owner QA
+or Phase 4F, since `/portfolio` requires an authenticated Supabase session that assistant policy
+cannot exercise. This deferral was pre-approved in the plan's own §19 boundary and does not block
+this implementation from being considered complete for PR review purposes.
 
 ## §8 Final classification
 
-`PHASE_4E_PORTFOLIO_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`. Do not begin
-Phase 4E implementation until this plan has been reviewed by the Owner.
+`PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`. All 10 approved requirements
+(A–J) are implemented, both new required tests pass at 100%, the one affected sibling checker was
+narrowly and honestly reconciled, the full regression gate is green except for 3 pre-existing
+unrelated checker-drift failures documented above, and no Hard Rule boundary was crossed. Do not
+merge and do not begin Phase 4F until the Owner has reviewed and approved the PR.

@@ -1356,6 +1356,14 @@ a.header-button {
   resize: vertical;
 }
 
+.compact-form .field-hint,
+.position-form .field-hint {
+  margin: -4px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2319,6 +2327,15 @@ body.modal-open {
   overflow-x: auto;
 }
 
+.positions-list-wrap:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+body.dark-mode .positions-list-wrap:focus-visible {
+  outline-color: #fff;
+}
+
 .positions-category-header {
   padding: 0 14px 2px;
 }
@@ -2634,10 +2651,6 @@ body.modal-open {
   .market-treemap-card,
   .market-scatter-card {
     min-height: 500px;
-  }
-
-  .portfolio-mvp {
-    grid-template-columns: 1fr;
   }
 
   .form-grid {
@@ -6359,6 +6372,12 @@ body.dark-mode .lab-matrix-scroll:focus-visible {
 
 .kpi-profit.neutral {
   color: var(--text-muted);
+}
+
+.kpi-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
 }
 
 /* Portfolio: sortable column header — full cell is clickable */

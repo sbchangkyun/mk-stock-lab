@@ -186,7 +186,7 @@ eventual implementation branch, and a later commit on the same branch adds the i
 
 ## 7. Exact intended file scope (implementation phase)
 
-- `src/pages/portfolio.astro` (markup + embedded client script — all 9 numbered items above)
+- `src/pages/portfolio.astro` (markup + embedded client script — all 10 numbered items above)
 - `src/styles/style.css` (Portfolio-scoped selectors only: `.positions-list-wrap`,
   `.portfolio-bookmark-tab*`/`.position-name-link` focus-visible additions, new `:focus-visible`
   rules, no change to any non-Portfolio selector. **Locked decision**: any new rule must be scoped

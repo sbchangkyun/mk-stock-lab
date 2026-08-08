@@ -1,5 +1,53 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4E-B — Portfolio production completion implementation - 2026-08-08
+
+- **Classification: implementation, all 10 approved requirements.** Implements the plan approved
+  through Phase 4E-A.1 (`99c58e4aed993bc757fd1db25c95506f9c2cbdb0`) on
+  `feature/phase-4e-portfolio-production-completion`. No Hard Rule boundary crossed: no
+  trading/brokerage surface, no new US-quote/FX/dividend provider, no new KIS account API, no LLM,
+  no new Supabase migration/schema, no new secrets/dependencies, no full-table redesign of the
+  holdings cards, no `git add .`/`-A`, no Owner-local untracked file touched.
+- **(A–C) Truthful ETF/currency copy.** Exposed ETF in the asset-type select; fixed the mislabeled
+  currency-toggle button; added explicit KRW-only aggregate / USD-unsupported-conversion copy
+  (`#portfolio-base-currency-hint`, `.kpi-note`).
+- **(D) Dividend surface honesty.** Removed the dividend sort affordance entirely (no
+  `data-sort-column`, no arrow buttons, no `dividend-yield-*`/`annual-dividend-*` sort keys in the
+  `positionSort` type) and confirmed the honest `데이터 대기` placeholder renders for both dividend
+  cells, since no dividend provider exists. This is the one change that required narrowly
+  reconciling `check_portfolio_holdings_category_header_static_contract.mjs`'s dividend-sort-
+  specific assertions (Groups 4/5/6/7): each stale "assert dividend sort/label exists" check was
+  replaced with an explicit "assert it is intentionally absent" check, documented inline with the
+  Phase 4E item D rationale. No other group, and none of the `데이터 대기` text assertions, were
+  touched. Result: 81/84 (3 pre-existing, out-of-scope failures — `카테고리` eyebrow label,
+  `연동 예정` placeholder text, `.position-card` `repeat(10,)` column count — confirmed via
+  `git show 99c58e4:...` to already be absent/failing at this phase's own baseline, i.e. Phase-3BR
+  checker drift predating any Phase 4E-B edit, not a regression).
+- **(E–I) Accessibility completion.** `aria-live` on the two dynamic status paragraphs; a real
+  dialog focus-trap/restoration lifecycle (new pure module
+  `src/lib/portfolio/portfolioKeyboardNav.ts`, `computeDialogFocusWrap`) mirroring
+  `LiveMarketDashboard.astro`; a complete tablist pattern (`role="tabpanel"`, roving `tabIndex`,
+  `computeTabRovingNavigation` for Arrow/Home/End, synced `aria-labelledby`); removal of the
+  invalid `role="row"`/`role="columnheader"` markup from the holdings header (the surface stays a
+  non-table card grid, per the Hard Rule); and `role="region"`/`aria-label`/`tabindex="0"` plus
+  matching `:focus-visible` CSS on the horizontal-scroll holdings wrapper.
+- **(J) Responsive completion.** Static audit fixed one dead-CSS defect (an unreachable
+  `.portfolio-mvp` rule inside the `max-width: 980px` media query). Live-browser breakpoint QA at
+  320–1024px is deferred to Owner QA / Phase 4F, since `/portfolio` requires an authenticated
+  Supabase session infeasible under assistant policy — pre-approved in the plan's own §19 boundary.
+- **Testing.** `smoke:phase-4e-portfolio-production-completion` (21/21) and
+  `check:phase-4e-portfolio-production-completion` (61/61) both pass at 100% on first run, following
+  the established esbuild-bundled-smoke / static-contract-checker convention. Full regression gate
+  (`npm ci`, both new tests, all sibling Portfolio/4A–4D checkers, `git diff --check`, `npm run
+  build`, `npm ls --depth=0`) is green apart from the documented pre-existing `check:portfolio-
+  holdings-header` drift and the known benign Windows local-build teardown crash (`dist/` output
+  confirmed fully generated; Vercel's Linux Preview/Production build remains the authoritative
+  build gate, per the Phase 4D precedent).
+- Also fixes a typo in the plan doc's §7 (`docs/planning/phase_4e_portfolio_production_completion_
+  plan_v0.1.md`): "all 9 numbered items above" → "all 10 numbered items above".
+- See `phase_4e_portfolio_production_completion_result_v0.1.md` for the full itemized report. PR
+  opened for Owner review against `main`; **not merged**, Phase 4F not started.
+
 ## Phase 4E-A.1 — Plan review correction (no application code) - 2026-08-08
 
 - **Classification: plan-review correction only.** Owner review of the Phase 4E-A plan
