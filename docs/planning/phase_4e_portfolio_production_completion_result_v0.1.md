@@ -1,6 +1,6 @@
 # Phase 4E — Portfolio Production Completion — Result v0.1
 
-**Current status**: `PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`
+**Current status**: `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`
 
 **Baseline**: `b3254aa35db76fe264cbb8167f20c47291b87838`
 **Branch**: `feature/phase-4e-portfolio-production-completion`
@@ -179,12 +179,49 @@ independently verified. Authenticated Portfolio interaction remains deferred to 
 
 ## §5 Merge
 
-`NOT_STARTED` — per the governing instruction, this task stops before merge. PR opened for Owner
-review only.
+`MERGED`. PR #19 was reviewed and merged by the Owner into `main`.
+
+- PR: #19
+- Owner merged
+- merge commit: `6cca38aba04c875abf985cb979625a26cf2a340c`
 
 ## §6 Production verification
 
-`NOT_STARTED` — blocked on §5.
+`VERIFIED` (bounded, unauthenticated verification only — see below).
+
+- Automatic Vercel Production deployment: `dpl_AxKXATutrX9ALjkzHruUcRFjEr6L`
+- state: `READY`
+- target: `production`
+- source: `git`
+- githubCommitRef: `main`
+- githubCommitSha: `6cca38aba04c875abf985cb979625a26cf2a340c` — exactly matches the merge commit
+- commit verification: `verified`
+- the automatic Production deployment trigger fired normally after merge; no manual
+  Create Deployment / Redeploy was required
+
+**Production route verification**: `https://mkstocklab.vercel.app/portfolio` → HTTP `200`.
+
+**Bounded deployed-HTML verification** (unauthenticated, static-markup checks only), confirmed
+present in the Production response:
+
+- ETF asset-type selector exists
+- the local/native currency control is labeled "현지", not a fake "$ / 달러 기준"
+- the truthful baseCurrency disclosure is present: "현재 합산 평가금액은 원화(KRW) 기준으로 제공되며,
+  USD 환산은 지원하지 않습니다."
+- `portfolio-base-currency` uses `aria-describedby`
+- `portfolio-readiness` and `valuation-status-copy` carry status/live-region semantics
+- the portfolio detail panel uses `role="tabpanel"`
+- `positions-list-wrap` uses `role="region"`, `aria-label`, `tabindex="0"`
+- the dividend sort affordance is absent
+- no invalid holdings `role="row"`/`role="columnheader"` structure remains
+
+**Not claimed** (explicitly deferred to Phase 4F Owner QA, not interactively re-tested in
+Production this phase):
+
+- authenticated CRUD was **not** interactively re-tested in Production
+- the dialog focus trap was **not** interactively verified
+- mobile breakpoint rendering was **not** interactively verified
+- touch behavior was **not** interactively verified
 
 ## §7 Deferred Owner QA
 
@@ -196,8 +233,11 @@ this implementation from being considered complete for PR review purposes.
 
 ## §8 Final classification
 
-`PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`. All 10 approved requirements
-(A–J) are implemented, both new required tests pass at 100%, the one affected sibling checker was
-narrowly and honestly reconciled, the full regression gate is green except for 3 pre-existing
-unrelated checker-drift failures documented above, and no Hard Rule boundary was crossed. Do not
-merge and do not begin Phase 4F until the Owner has reviewed and approved the PR.
+`PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`. All 10 approved requirements (A–J) are implemented,
+both new required tests pass at 100%, the one affected sibling checker was narrowly and honestly
+reconciled, the full regression gate was green except for 3 pre-existing unrelated checker-drift
+failures documented above, no Hard Rule boundary was crossed, PR #19 was merged by the Owner
+(merge commit `6cca38aba04c875abf985cb979625a26cf2a340c`), and the automatic Vercel Production
+deployment (`dpl_AxKXATutrX9ALjkzHruUcRFjEr6L`) reached `READY` with `/portfolio` returning HTTP 200
+and the bounded unauthenticated Production HTML checks passing. Authenticated CRUD, dialog focus
+trap, mobile breakpoint rendering, and touch behavior remain deferred to Phase 4F Owner QA.
