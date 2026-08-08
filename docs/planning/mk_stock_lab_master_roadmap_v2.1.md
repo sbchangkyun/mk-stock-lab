@@ -237,30 +237,52 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   `phase_4c_chart_ai_production_completion_plan_v0.1.md` and
   `phase_4c_chart_ai_production_completion_result_v0.1.md` for full detail.
 
+- **Phase 4D — Lab Production Completion.** `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED` (PR #17 "Phase 4D: Lab
+  production completion" merged by the Owner, merge commit
+  `14c0ee993dbf03639d73f12bfca39f67047e508a`; Production deployment `dpl_E4r84x9S5NLoDFLrgHqi9heJ2GvQ`
+  `READY`, target `production`, at that exact SHA). Implemented the governing plan's audit findings over
+  `/lab` and its detail pages: `<table>` semantics
+  (`scope="col"`/`scope="row"`/`<caption>`/labeled empty cells) on `LabReturnMatrix.astro`'s ranking and
+  summary tables; the 12 category-legend chips converted to native, keyboard-focusable `<button aria-pressed>`
+  elements (table cells stay semantic and non-tabbable) with `Enter`/`Space` via native semantics, `Escape`
+  clearing the pin through the existing root-scoped handler, and byte-for-byte-preserved pointer/tap behavior;
+  both `.lab-matrix-scroll` regions made keyboard-reachable (`tabindex="0"` + focus-visible style); a
+  non-blocking `role="status" aria-live="polite"` export-status region (backed by a new pure
+  `exportStatusMessage` helper in `exportCardImage.ts`) replacing the previous blocking `window.alert` failure
+  path on both `asset-class-returns.astro` and `sp500-sectors.astro`; the Congress/NPS-holdings preview cards
+  converted from plain `<div>` to `<ul>`/`<li>` list semantics with every honesty string unchanged; and the
+  orphaned, unlinked `nps-portfolio.astro` (stale shell, stale "Phase 8" label, the Lab surface's only
+  real-provider-name mention) replaced with a permanent 301 redirect to `/lab/nps-holdings` rather than
+  deleted, so no bookmark breaks. New smoke suite (19/19) and static contract checker (62/62); all 8
+  pre-existing Lab-related checkers re-verified with zero edits required (one,
+  `check:mobile-ux-density-export`, carries one pre-existing, out-of-scope failure from a Phase 4B file this
+  phase never touched). Local `npm run build` could not reach a verdict due to a pre-existing local
+  Windows/Node-toolchain crash confirmed unrelated to this phase's changes (identical crash reproduces on the
+  unmodified baseline); Vercel's own Production build is the actual release gate and completed successfully.
+  Production verification is bounded and unauthenticated: `/lab`, `/lab/asset-class-returns`,
+  `/lab/sp500-sectors`, `/lab/congress-stocks`, `/lab/nps-holdings` all `200`, and `/lab/nps-portfolio` `301`
+  → `/lab/nps-holdings`; the deployed HTML independently confirms the table captions/scoping, the
+  `aria-pressed` legend buttons, the keyboard-reachable scroll regions, the export status live region, the
+  Congress/NPS `ul`/`li` semantics, and the truthful example-data / pending-integration copy. Authenticated
+  visual/touch/keyboard/screen-reader QA remains deferred to Phase 4F.
+
+  **Release-trigger anomaly (infrastructure, not application code).** The automatic Vercel Production
+  deployment did **not** fire after the PR #17 merge; the Owner recovered the release manually via Vercel
+  Dashboard → Create Deployment against `main`. No Vercel project setting was changed to achieve this, and a
+  full project-configuration audit found nothing blocking. Independent corroboration: the sole `Vercel` commit
+  status and the only Production deployment record for the merge SHA were both created ~34 hours after the
+  merge, and that deployment's `ref` is the raw commit SHA rather than `main` — the signature of a manual
+  Dashboard deployment, not a branch-push trigger. Recurrence is **UNDETERMINED** from one observation: the
+  next `main` merge is the recurrence test. If the automatic deployment is absent again it must be escalated
+  as a recurring Git/Vercel integration incident and reported before any further manual workaround, rather
+  than silently worked around. Nothing in the Phase 4D diff can influence whether Vercel's Git integration
+  fires. See `phase_4d_lab_production_completion_plan_v0.1.md` and
+  `phase_4d_lab_production_completion_result_v0.1.md` §6 for full detail.
+
 ### In progress
 
-**Phase 4D — Lab Production Completion.** `PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`
-(branch `feature/phase-4d-lab-production-completion`, baseline `7da540dbadaa0a5acafb9a74aec7d9fb9cfc93f8`).
-Implemented the governing plan's audit findings over `/lab` and its detail pages: `<table>` semantics
-(`scope="col"`/`scope="row"`/`<caption>`/labeled empty cells) on `LabReturnMatrix.astro`'s ranking and summary
-tables; the 12 category-legend chips converted to native, keyboard-focusable `<button aria-pressed>` elements
-(table cells stay semantic and non-tabbable) with `Enter`/`Space` via native semantics, `Escape` clearing the
-pin through the existing root-scoped handler, and byte-for-byte-preserved pointer/tap behavior; both
-`.lab-matrix-scroll` regions made keyboard-reachable (`tabindex="0"` + focus-visible style); a non-blocking
-`role="status" aria-live="polite"` export-status region (backed by a new pure `exportStatusMessage` helper in
-`exportCardImage.ts`) replacing the previous blocking `window.alert` failure path on both
-`asset-class-returns.astro` and `sp500-sectors.astro`; the Congress/NPS-holdings preview cards converted from
-plain `<div>` to `<ul>`/`<li>` list semantics with every honesty string unchanged; and the orphaned, unlinked
-`nps-portfolio.astro` (stale shell, stale "Phase 8" label, the Lab surface's only real-provider-name mention)
-replaced with a permanent 301 redirect to `/lab/nps-holdings` rather than deleted, so no bookmark breaks. New
-smoke suite (19/19) and static contract checker (62/62); all 8 pre-existing Lab-related checkers re-verified
-with zero edits required (one, `check:mobile-ux-density-export`, carries one pre-existing, out-of-scope
-failure from a Phase 4B file this phase never touched). Local `npm run build` could not reach a verdict due to
-a pre-existing local Windows/Node-toolchain crash confirmed unrelated to this phase's changes (identical crash
-reproduces on the unmodified baseline); Vercel's own Preview/Production build is the actual release gate. PR
-open, Preview verification pending, merge requires Owner approval. See
-`phase_4d_lab_production_completion_plan_v0.1.md` and `phase_4d_lab_production_completion_result_v0.1.md` for
-full detail.
+None. Phase 4D is closed (see "Completed" above). **Phase 4E — Portfolio Production Completion** is the next
+sequential product phase and has **not** started — no branch, no plan doc, no implementation.
 
 ### Next sequential product phases
 
@@ -280,17 +302,18 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
    "Completed" above.
 4. **Phase 4C — Chart AI production readiness pass.** `PHASE_4C_CHART_AI_MERGED_PRODUCTION_VERIFIED`. See
    "Completed" above.
-5. **Phase 4D — Lab production readiness pass.** `PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`.
+5. **Phase 4D — Lab production readiness pass.** `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`.
    Copy/a11y/responsive-shell audit of `/lab`, including its own already-honest "연동 예정" labeling of the
-   NPS/Congress modules. See "In progress" above.
-6. **Phase 4E — Portfolio production readiness pass.** `PLANNED`. Copy/a11y/responsive-shell audit of
-   `/portfolio` against its already-verified authenticated CRUD and KR-only live-valuation scope.
+   NPS/Congress modules. See "Completed" above.
+6. **Phase 4E — Portfolio production readiness pass.** `PLANNED` — **next**, not started. Copy/a11y/
+   responsive-shell audit of `/portfolio` against its already-verified authenticated CRUD and KR-only
+   live-valuation scope.
 7. **Phase 4F — Cross-page Owner QA closeout.** `PLANNED`. Owner-only authenticated click-through across
    4A–4E on Production/Preview (visual, mobile, touch, keyboard, screen-reader spot checks) — the single
    point where the Owner QA deferred by every phase in this lane is actually performed.
 
-Phase 3 Closeout and Phases 4E–4F are explicitly **not** started. Phase 4D is implemented and PR-ready,
-pending Owner merge approval (see "In progress" above) — this section only records the sequencing.
+Phase 3 Closeout and Phases 4E–4F are explicitly **not** started. Phase 4D is merged and Production-verified
+(see "Completed" above) — this section only records the sequencing.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 
@@ -383,6 +406,15 @@ pending Owner merge approval (see "In progress" above) — this section only rec
 - Disconnect or reconfigure the separate external Netlify Git integration that still runs its own checks on
   PRs (unrelated to the `@astrojs/netlify` package dependency, which Phase 4C removed) — requires Netlify
   account access this assistant does not have. `DEFERRED`.
-- Implement the Phase 4D plan (`phase_4d_lab_production_completion_plan_v0.1.md`) on branch
-  `feature/phase-4d-lab-production-completion` — implementation complete, PR open, Preview verification
-  pending. `OWNER_QA_PENDING` once merged, per the Phase 4F deferral pattern. See "In progress" above.
+- ~~Implement the Phase 4D plan (`phase_4d_lab_production_completion_plan_v0.1.md`) on branch
+  `feature/phase-4d-lab-production-completion`~~ — done; the Owner merged PR #17 (merge commit `14c0ee9`) and
+  the bounded unauthenticated Production route + deployed-HTML sweep passed. Authenticated
+  visual/touch/keyboard/screen-reader QA remains `OWNER_QA_PENDING`, deferred to Phase 4F per the standing
+  pattern. See "Completed" above.
+- **Vercel automatic Production deployment trigger — recurrence test outstanding.** The PR #17 merge produced
+  no automatic Production deployment; the Owner recovered it manually via Vercel Dashboard → Create
+  Deployment, with no Vercel project setting changed. Classified as a **single** trigger miss, not yet a
+  pattern. The next `main` merge is the test: observe whether it deploys automatically **before** applying any
+  manual workaround. If automatic deployment is absent again, escalate and report it as a recurring Git/Vercel
+  integration incident rather than silently working around it. `OWNER_QA_PENDING` (platform-side; not an
+  application-code item).
