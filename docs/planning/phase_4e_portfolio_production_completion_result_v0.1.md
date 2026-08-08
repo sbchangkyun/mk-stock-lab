@@ -159,8 +159,23 @@ remain classified as retired per the plan, not part of this phase's regression s
 
 ## §4 Preview validation
 
-`PENDING` — to be recorded once the PR is opened and the exact-Head Vercel Preview deployment is
-confirmed READY (or `SSO_BLOCKED` if the route is protected).
+Verified final exact-Head record:
+
+- PR: #19
+- exact PR Head: `8cec77555cbc50501dc890e56cc3d60fe8dfe03b`
+- Vercel Preview deployment: `dpl_3sUvf12uSCojM8RLefZqNSUZTQeE`
+- state: `READY`
+- target: `Preview` / `target=null`
+- source: `git`
+- githubCommitRef: `feature/phase-4e-portfolio-production-completion`
+- githubCommitSha: `8cec77555cbc50501dc890e56cc3d60fe8dfe03b`
+- githubPrId: `19`
+- exact-Head requirement: `PASS`
+
+Route-level result: `SSO_BLOCKED`. Recorded honestly — ordinary Preview navigation redirects to
+Vercel authentication; no Deployment Protection bypass URL was created; no share URL was created; no
+protection setting was changed. Therefore application-route Preview behavior was **not** claimed as
+independently verified. Authenticated Portfolio interaction remains deferred to Phase 4F Owner QA.
 
 ## §5 Merge
 
