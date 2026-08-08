@@ -77,7 +77,7 @@ eventual implementation branch, and a later commit on the same branch adds the i
 | C | `baseCurrency` (KRW/USD) has no observable effect | **CONFIRMED_GAP** | `portfolios.base_currency` is selectable at creation (`portfolio.astro:151`) and stored/validated (`server/portfolio.ts:238,267`), but the only live-wired valuation path (`buildKrPortfolioValuation`) never reads it, and the KPI total is unconditionally rendered via `formatLocalAmount('KRW', totalMarketValue)` (`portfolio.astro:1149,1164`) regardless of `baseCurrency`. Selecting `USD` as base currency currently changes nothing the user can see. The only FX-conversion code (`buildPortfolioValuationFromQuotesWithFx`) is dead/unreachable. |
 | D | Dividend columns/sorting | **CONFIRMED_GAP** | Zero dividend fields exist anywhere in the stack: no DB column, no server type, no client type (`grep dividend` across `src/lib` → no matches). `portfolio.astro` nonetheless renders sortable headers "배당률"/"배당주기" with `data-sort="dividend-yield-desc"` etc. (`:114-123`), includes the sort kinds in `state.positionSort`'s type (`:257`) and `PositionSortKind` (`:603`), but `getPositionSortValue()` (`:604-614`) always falls through to `return null` for both — the sort buttons are wired to nothing. The rendered cell is a static placeholder `데이터 대기` (`:1117-1120`). Phase 3GH's own result doc lists dividends as an explicit non-goal of the shipped valuation feature. |
 | E | Dynamic status accessibility (partial) | **PARTIAL_GAP** | `#portfolio-lock-state` (`:29`), `#portfolio-list` (`:42`), and `#portfolio-toast` (`:216`, additionally `role="status"`) already carry `aria-live="polite"`. But `#portfolio-readiness` (the initial "포트폴리오 데이터를 불러오는 중입니다." loading copy, `:25-27`) and `#valuation-status-copy` (`:51`) have **no** `role`/`aria-live` at all — a screen-reader user gets no announcement when these dynamic status paragraphs update. |
-| F | Dialog focus lifecycle | **CONFIRMED_GAP** | Both `#portfolio-sheet` and `#position-sheet` (`portfolio.astro:133,164`) correctly declare `role="dialog" aria-modal="true" aria-labelledby="..."`, and reduced-motion is already correctly handled for both (`style.css:2713-2719,2804-2810`). But there is no initial-focus-into-panel, no `Tab`/`Shift+Tab` containment, and no focus-restoration-to-opener — only a single global `Escape`-closes-whichever-sheet-is-open listener (`:1338-1346`). `LiveMarketDashboard.astro:755-838` (Phase 4B) has the complete 4-part pattern (`lastFocusedElement` capture, `modalPanel.focus()` on open, wrap-around `Tab`/`Shift+Tab` cycling among focusable descendants, `lastFocusedElement.focus()` on close) — the only such reference in the codebase, directly reusable. |
+| F | Dialog focus lifecycle | **PARTIAL_GAP** | Both `#portfolio-sheet` and `#position-sheet` (`portfolio.astro:133,164`) already correctly declare `role="dialog" aria-modal="true" aria-labelledby="..."`, already have working `Escape`-closes behavior (`:1338-1346`), and reduced-motion is already correctly handled for both (`style.css:2713-2719,2804-2810`) — this existing baseline is real and does not need to be rebuilt. What's missing is narrower: no initial-focus-into-panel, no `Tab`/`Shift+Tab` containment, and no focus-restoration-to-opener. `LiveMarketDashboard.astro:755-838` (Phase 4B) has the complete 4-part pattern (`lastFocusedElement` capture, `modalPanel.focus()` on open, wrap-around `Tab`/`Shift+Tab` cycling among focusable descendants, `lastFocusedElement.focus()` on close) — the only such reference in the codebase, directly reusable. |
 | G | Portfolio selector (tablist) | **PARTIAL_GAP** | `role="tablist"` on the container (`:42`), `role="tab"` + `aria-selected` correctly toggled per tab button (`:891-892,947-948`), and `.portfolio-bookmark-tab:focus-visible` CSS already exists (`style.css:1160-1164`). But there is no `aria-controls` linking a tab to a `role="tabpanel"`, no associated `role="tabpanel"` element exists at all, and there is no `ArrowLeft`/`ArrowRight`/`Home`/`End` keyboard handling or roving `tabindex` (grep for `ArrowLeft`/`ArrowRight`/`tabIndex` in the file → no matches). The floating edit/delete/reorder buttons (`.portfolio-tab-inline-action`, `.portfolio-tab-reorder-btn`) have no `:focus-visible` styling either. |
 | H | Holdings header/row ARIA mismatch | **CONFIRMED_GAP** | The column-header row uses `role="row"` on `.positions-category-grid` and `role="columnheader"` on each `.positions-category-cell` (`:73-123`), which per the ARIA spec requires an ancestor `role="grid"`/`role="table"` and sibling data rows with `role="row"`/`role="gridcell"`. No such ancestor or data-row role exists: `.position-card` items are rendered as plain, role-less `<div>`s (`portfolio.astro:1082`, confirmed no `role=` assignment anywhere in the render path). This is an incomplete/invalid ARIA table pattern, not a merely-incomplete one. |
 | I | `.positions-list-wrap` horizontal-scroll accessibility | **CONFIRMED_GAP** | `.positions-list-wrap { overflow-x: auto }` exists (`style.css:2316-2320`) and is protected by `check:mobile-baseline` Group 6/9, but the wrapper carries none of `role="region"`, `aria-label`, or `tabindex="0"` — a keyboard-only user cannot discover or scroll it. This is the exact shape the Phase 4D `.lab-matrix-scroll` pattern was built to solve. `.portfolio-bookmark-tabs` has the same `overflow-x: auto`-without-accessible-region gap. |
@@ -120,17 +120,22 @@ eventual implementation branch, and a later commit on the same branch adds the i
 1. **Asset-type selector (A)**: add a minimal `<select name="assetType">` (or equivalent) to the
    position-creation/edit form offering `주식`/`ETF`, replacing the hardcoded
    `assetType: 'stock'` in the submit handler and the hidden-input default. No new architecture —
-   the DB/server/client plumbing already exists; this is a UI-only addition.
+   the DB/server/client plumbing already exists; this is a UI-only addition. **Locked decisions**:
+   on edit, the selector must initialize from the existing `position.assetType` (never default to
+   `stock` on an edit form); editing an ETF position without changing its asset type must persist
+   `'etf'` unchanged (no silent normalization back to `'stock'` on save).
 2. **Currency-toggle relabeling (B)**: rename the `local` mode's label/`aria-label`/`title` away
    from "달러 기준"/`$` to accurately describe "각 종목의 원래 통화" (native/local currency per
    holding) — exact copy to be finalized during implementation, not fabricated here. Do not remove
    the toggle's function, only its misleading label.
 3. **`baseCurrency` truthfulness (C)**: the smallest truthful correction — do not fabricate FX
-   conversion. Preferred direction: add explicit helper copy near the base-currency selector and/or
-   the KPI total stating the total is always computed in KRW today regardless of the selected base
-   currency (mirroring the existing "원화 환산 예정" honesty pattern), OR disable/relabel the `USD`
-   option if it cannot be made truthful with copy alone. Final choice deferred to implementation
-   after a short design check, but no conversion logic may be added.
+   conversion. **Locked decisions**: preserve the existing `KRW`/`USD` stored metadata and existing
+   USD-`baseCurrency` records exactly as stored — do not silently normalize any existing `USD`
+   portfolio to `KRW`; do not add FX conversion logic of any kind. Add explicit, truthful UI copy
+   near the base-currency selector and/or the KPI total stating that aggregate valuation is
+   computed in KRW today and USD conversion is not yet supported (mirroring the existing "원화 환산
+   예정" honesty pattern). This is a copy-only correction — the `USD` option and any existing `USD`
+   record must remain selectable/intact, never hidden or force-converted.
 4. **Dividend columns (D)**: remove the non-functional sort affordance from the 배당률/배당주기
    headers (drop `role="columnheader"` sort-button wiring / `data-sort-column` for those two
    columns only) while keeping the columns present with an explicit "not yet available" static
@@ -141,14 +146,29 @@ eventual implementation branch, and a later commit on the same branch adds the i
    announcements result (e.g., toast + status region firing for the same event).
 6. **Dialog focus lifecycle (F)**: implement the `LiveMarketDashboard.astro:755-838` four-part
    pattern (opener capture, initial focus into panel, `Tab`/`Shift+Tab` containment, focus
-   restoration on close) for both `#portfolio-sheet` and `#position-sheet`, replacing the current
-   global-`Escape`-only listener with a scoped implementation per open dialog.
+   restoration on close) for both `#portfolio-sheet` and `#position-sheet`, layered on top of — not
+   replacing — the existing `role="dialog"`/`aria-modal`/`aria-labelledby`/`Escape`-close/
+   reduced-motion behavior, which is already correct and must not regress. The `Tab`/`Shift+Tab`
+   wrap-around decision (which focusable index to move to next) must be implemented as a small,
+   pure, unit-testable function — see §13's locked smoke-target decision — rather than inlined
+   ad hoc DOM-walking logic.
 7. **Tablist completion (G)**: add `role="tabpanel"` to the associated content region and
    `aria-controls`/`id` linking; implement `ArrowLeft`/`ArrowRight` (and `Home`/`End`) keyboard
    navigation with roving `tabindex` across the tab buttons; add `:focus-visible` styling to the
    floating edit/delete/reorder buttons. Chosen architecture: **finish correct tab semantics**
    (option 1) — basic roles already exist, so completing them is the minimal path, not replacing
-   them.
+   them. **Locked decisions**: the selected tab carries `tabindex="0"` and every unselected tab
+   carries `tabindex="-1"` (standard roving-tabindex, not all-tabbable); `ArrowLeft`/`ArrowRight`
+   move focus between tab buttons with wrap-around, `Home`/`End` jump to the first/last tab;
+   **automatic activation** (moving focus also activates/selects the tab) is acceptable and
+   preferred over manual activation, matching the simplest correct ARIA Authoring Practices
+   pattern; each tab button has a stable, unique `id` and an `aria-controls` pointing at the one
+   shared `tabpanel` element; the `tabpanel` carries `role="tabpanel"` and its `aria-labelledby` is
+   updated to reference whichever tab is currently selected; arrow-key navigation must target the
+   tab buttons only — it must never move focus onto the inline edit/delete/reorder action buttons
+   that float over/beside a tab. The `ArrowLeft`/`ArrowRight`/`Home`/`End` → next-index computation
+   must be implemented as the same kind of small, pure, unit-testable function used for item 6's
+   focus-trap wrap-around (see §13).
 8. **Holdings header semantics (H)**: remove the invalid `role="row"`/`role="columnheader"` pairing
    (no minimal way to make it valid without a full `role="grid"`/`role="table"` + matching
    `role="row"`/`role="gridcell"` redesign of the card layout, which is explicitly out of scope).
@@ -168,8 +188,18 @@ eventual implementation branch, and a later commit on the same branch adds the i
 
 - `src/pages/portfolio.astro` (markup + embedded client script — all 9 numbered items above)
 - `src/styles/style.css` (Portfolio-scoped selectors only: `.positions-list-wrap`,
-  `.portfolio-bookmark-tab*`/`.segmented-control`/`.position-name-link` focus-visible additions,
-  new `:focus-visible` rules, no change to any non-Portfolio selector)
+  `.portfolio-bookmark-tab*`/`.position-name-link` focus-visible additions, new `:focus-visible`
+  rules, no change to any non-Portfolio selector. **Locked decision**: any new rule must be scoped
+  to a Portfolio-specific selector or ancestor (e.g. `.portfolio-mvp .segmented-control button`),
+  never a bare `.segmented-control button` rule — `.segmented-control` is a generic class name and
+  must be verified during implementation for use outside `/portfolio` before any global rule is
+  added; if it is shared, the new focus style must be scoped under a Portfolio-specific ancestor).
+- New small pure module for the keyboard-navigation index math needed by items 6 and 7 (dialog
+  Tab-trap wrap-around, tablist Arrow/Home/End roving-tabindex) — e.g.
+  `src/lib/portfolio/portfolioKeyboardNav.ts` — following the existing codebase convention of
+  extracting pure, DOM-free calculation functions (`exportStatusMessage` in `exportCardImage.ts`,
+  `classifyPositionSupport` in `portfolioValuation.ts`) rather than leaving the logic as inline,
+  untestable DOM-event-handler code. See §13.
 - New phase-specific test scripts: `scripts/smoke_phase_4e_portfolio_production_completion.mjs`,
   `scripts/check_phase_4e_portfolio_production_completion_contract.mjs`
 - `package.json` (two new script entries only, following the exact existing naming convention)
@@ -210,8 +240,10 @@ edit targets, unless implementation discovers a concrete defect (see §8, §12).
   `aria-selected` (already present) plus `role="tabpanel"`/`aria-controls` and
   `ArrowLeft`/`ArrowRight`/`Home`/`End` roving-tabindex keyboard navigation (§6.7).
   `:focus-visible` added to all currently-unstyled interactive Portfolio elements identified in the
-  CSS audit (`.segmented-control button`, `.position-name-link`, `.portfolio-tab-inline-action`,
-  `.portfolio-tab-reorder-btn`, sheet close/danger buttons).
+  CSS audit (segmented-control buttons, `.position-name-link`, `.portfolio-tab-inline-action`,
+  `.portfolio-tab-reorder-btn`, sheet close/danger buttons) — each rule scoped per §7's locked CSS
+  decision (a Portfolio-specific selector/ancestor, never a bare global class rule if that class is
+  shared outside `/portfolio`).
 - Valid ARIA structure for the holdings list/header (§6.8) — no `role="columnheader"` without a
   matching table/grid ancestor and matching data-row roles.
 - Accessible horizontal-scroll region on `.positions-list-wrap` (§6.9): `role="region"` +
@@ -268,10 +300,30 @@ edit targets, unless implementation discovers a concrete defect (see §8, §12).
   holdings-header roles, and the `lab-matrix-scroll`-equivalent markup + CSS on
   `.positions-list-wrap`. Also assert absence of any new provider/schema/env/dependency reference
   (mirroring Phase 4D checker's safety-boundary group).
-- New `scripts/smoke_phase_4e_portfolio_production_completion.mjs` if any new pure logic function
-  is extracted (e.g., a roving-tabindex helper) — otherwise the static checker alone may suffice,
-  matching the Phase 4D precedent where most changes were markup/CSS/JS-DOM-wiring with no new
-  pure calculation module.
+- **Locked decision: both commands ship.** `npm run smoke:phase-4e-portfolio-production-completion`
+  and `npm run check:phase-4e-portfolio-production-completion` are both required deliverables of
+  this phase, resolving any earlier ambiguity between §7 and this section.
+  - New `src/lib/portfolio/portfolioKeyboardNav.ts` extracts the two pure, DOM-free index-computation
+    functions that the dialog focus-trap (item F) and tablist roving-tabindex (item G) requirements
+    already need as their logic core — following the established codebase precedent of extracting
+    small deterministic calculation functions out of DOM-event-handler code specifically so they are
+    unit-testable (e.g. `exportStatusMessage` in `exportCardImage.ts`, `classifyPositionSupport` in
+    `portfolioValuation.ts`). This is not architecture invented solely to satisfy a test: the
+    functions must exist regardless to implement F/G correctly; extracting them into a pure module
+    only makes them callable from a smoke script instead of requiring a DOM harness.
+  - `scripts/smoke_phase_4e_portfolio_production_completion.mjs` imports
+    `portfolioKeyboardNav.ts` directly and asserts real behavior with concrete inputs: dialog
+    Tab-trap wrap-around (first focusable → Shift+Tab → last focusable; last focusable → Tab → first
+    focusable; a single-focusable-element dialog stays on that element) and tablist Home/End/
+    ArrowLeft/ArrowRight roving-tabindex (wrap-around at both ends, correct next-index for a
+    3-to-5-tab list, no movement when the list has exactly one tab). This is meaningful,
+    non-duplicative coverage of new deterministic logic, not a placeholder.
+  - **Fallback governed by the Owner's instruction:** if, once implementation specifics are
+    finalized, no such pure function ends up existing (e.g. the accepted implementation approach
+    turns out to require no extractable pure logic at all), do not invent an artificial one to
+    satisfy this section — stop and report that no meaningful smoke target exists rather than
+    shipping a dummy/empty-PASS script. The current plan's approach above already identifies a real,
+    non-artificial target, so this fallback is not expected to trigger.
 - Full regression gate before commit: `npm run check:phase-3gh-portfolio-live-valuation-mvp`,
   `npm run smoke:phase-3gh-portfolio-live-valuation-mvp`, `npm run check:mobile-baseline`,
   `npm run check:phase-4a-home-common-shell`, `npm run check:phase-4b-market-production-completion`,
@@ -304,16 +356,42 @@ edit targets, unless implementation discovers a concrete defect (see §8, §12).
   selector or focus-trap helper functions — must be verified with a full build before commit.
 - No environment variable or Vercel project-setting change of any kind.
 - No Supabase migration in this phase — zero DB-apply risk.
+- **Known local Windows/Node build-crash signature.** Phase 4D previously observed `npm run build`
+  exit with Windows code `-1073740791` (`STATUS_STACK_BUFFER_OVERRUN`). At the time, the identical
+  failure was reproduced on the untouched baseline (before any Phase 4D change was applied),
+  proving it was a pre-existing local Windows/Node/toolchain condition, not a Phase 4D regression.
+  If the same signature recurs during Phase 4E:
+  1. Do not immediately classify it as a Phase 4E regression.
+  2. Perform the same narrow isolation used in Phase 4D: `git stash` (or an equivalent clean
+     checkout) of only the tracked files this phase changed, rebuild the baseline in isolation, and
+     confirm whether the crash reproduces with zero Phase 4E changes present.
+  3. Never touch, move, or delete Owner-local untracked files (`.agents/`, `.claude/`,
+     `.vscode/settings.json`, `docs/handoff/codex_state_inspection/`, `set-gnews-vercel-env.ps1`,
+     `skills-lock.json`) while isolating — the isolation is tracked-file-only.
+  4. If the baseline reproduces the crash, record this limitation honestly in the result doc (local
+     Windows build inconclusive; pre-existing, not phase-caused) and treat the exact-Head Vercel
+     Linux Preview build reaching `READY` (§16) as the authoritative release-build gate instead of
+     the local Windows build.
 
 ## 16. Preview validation plan
 
-- Push the implementation branch, open PR, wait for the Vercel Preview deployment to reach
-  `READY`.
-- Unauthenticated verification only (this assistant has no authenticated browser session):
-  confirm `/portfolio` still renders the signed-out lock state correctly, no console errors, no
-  unexpected network calls pre-login (mirrors the Phase 4C/4D Preview-verification pattern).
-  Authenticated CRUD/dialog/tab/scroll-region interaction verification is explicitly deferred to
-  Phase 4F (§19).
+- Push the implementation branch, open the PR, and confirm the **exact final PR Head commit**
+  receives its own Vercel Preview deployment and that deployment reaches `READY`. If the PR gains
+  additional commits after a Preview is checked, re-verify against the new Head's deployment — an
+  earlier commit's `READY` Preview does not satisfy this requirement for a later Head.
+- Do not create a Deployment Protection bypass link or a share URL to work around SSO. If the
+  Preview is behind Vercel Deployment Protection (SSO) and that blocks route-level access to
+  `/portfolio` from this environment, **record the outcome honestly as `SSO_BLOCKED`** — do not
+  attempt a bypass and do not claim signed-out UI/content was verified when SSO prevented the
+  request from ever reaching application routing (an SSO-wall response is not evidence about
+  `/portfolio`'s own behavior).
+- Where route-level access is not blocked, unauthenticated verification only (this assistant has no
+  authenticated browser session): confirm `/portfolio` still renders the signed-out lock state
+  correctly, no console errors, no unexpected network calls pre-login (mirrors the Phase 4C/4D
+  Preview-verification pattern).
+- Authenticated CRUD/dialog/tab/scroll-region interaction verification — and any route-level
+  authenticated interaction that SSO blocks from this environment regardless — is explicitly
+  deferred to Phase 4F (§19), not worked around here.
 
 ## 17. Production post-merge plan
 
@@ -325,12 +403,26 @@ edit targets, unless implementation discovers a concrete defect (see §8, §12).
 
 ## 18. Vercel automatic Production-trigger verification
 
-- Per the Phase 4D closeout's recorded release-trigger anomaly (automatic deploy did not fire
-  after PR #17's merge; recurrence status was left `UNDETERMINED` pending "the next `main` merge").
-  **This phase's eventual merge is that recurrence test.** If the automatic Vercel Production
-  deployment does not fire again after this phase's PR is merged, it must be escalated and reported
-  as a *recurring* Git/Vercel integration incident before any further manual workaround — not
-  silently worked around a second time.
+- **Recurrence test result: PASS / CLOSED.** The Phase 4D closeout recorded a release-trigger
+  anomaly (automatic deploy did not fire after PR #17's merge) and left recurrence `UNDETERMINED`
+  pending "the next `main` merge." **PR #18** (merge SHA
+  `b3254aa35db76fe264cbb8167f20c47291b87838`) was that next merge, and it is the recurrence test:
+  the automatic Vercel Production deployment `dpl_D8TEboHCAD5S1uky3Yf6mXoJjUK3` (`target:
+  production`, `state: READY`, `githubCommitRef: main`, `githubCommitSha:
+  b3254aa35db76fe264cbb8167f20c47291b87838`) fired on its own within seconds of the `main` push —
+  no Create Deployment/Redeploy or any other manual intervention. One miss out of two observed
+  merges, with the very next merge deploying automatically and cleanly, is evidence of a **one-off
+  incident**, not a recurring integration fault. The recurrence question opened by the Phase 4D
+  closeout is answered and closed.
+- **Phase 4E post-merge implication.** Phase 4E's own merge is an ordinary post-merge verification,
+  not a second recurrence test: after the Owner merges the Phase 4E implementation PR, still
+  independently verify (per §17) that the automatic Vercel Production deployment fires and reaches
+  `READY` at the exact merge SHA — this is standard release verification for every phase in this
+  lane, not special monitoring carried over from the closed PR #17 anomaly. If an automatic
+  deployment failure is observed at that point, it would be a *new, separate* incident to
+  investigate on its own merits (three misses across three-plus observed merges would itself
+  warrant re-opening the recurrence question) — it must not be assumed related to the already-closed
+  PR #17 anomaly.
 
 ## 19. Phase 4F deferred Owner QA boundary
 
@@ -352,6 +444,8 @@ edit targets, unless implementation discovers a concrete defect (see §8, §12).
 - If the Preview deployment shows any authenticated-path console error or unexpected network call
   introduced by this phase's changes (detectable even without login, e.g. via a signed-out smoke
   pass), do not open the PR for merge until root-caused and fixed.
-- If the post-merge automatic Vercel Production deployment fails to trigger a second time (§18),
-  halt further Portfolio-phase work and escalate the platform/integration issue before proceeding
-  to any subsequent phase.
+- The §18 recurrence test is closed (PASS); this is no longer "a second time." If Phase 4E's own
+  post-merge automatic Vercel Production deployment fails to trigger, treat it as a new, separate
+  incident: halt further Portfolio-phase work and escalate the platform/integration issue before
+  proceeding to any subsequent phase, and note in the result doc whether this is the second observed
+  miss overall (which would warrant re-opening the recurrence question per §18).

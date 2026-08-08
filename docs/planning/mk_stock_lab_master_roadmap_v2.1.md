@@ -266,18 +266,24 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   Congress/NPS `ul`/`li` semantics, and the truthful example-data / pending-integration copy. Authenticated
   visual/touch/keyboard/screen-reader QA remains deferred to Phase 4F.
 
-  **Release-trigger anomaly (infrastructure, not application code).** The automatic Vercel Production
-  deployment did **not** fire after the PR #17 merge; the Owner recovered the release manually via Vercel
-  Dashboard → Create Deployment against `main`. No Vercel project setting was changed to achieve this, and a
-  full project-configuration audit found nothing blocking. Independent corroboration: the sole `Vercel` commit
-  status and the only Production deployment record for the merge SHA were both created ~34 hours after the
-  merge, and that deployment's `ref` is the raw commit SHA rather than `main` — the signature of a manual
-  Dashboard deployment, not a branch-push trigger. Recurrence is **UNDETERMINED** from one observation: the
-  next `main` merge is the recurrence test. If the automatic deployment is absent again it must be escalated
-  as a recurring Git/Vercel integration incident and reported before any further manual workaround, rather
-  than silently worked around. Nothing in the Phase 4D diff can influence whether Vercel's Git integration
-  fires. See `phase_4d_lab_production_completion_plan_v0.1.md` and
-  `phase_4d_lab_production_completion_result_v0.1.md` §6 for full detail.
+  **Release-trigger anomaly (infrastructure, not application code) — RESOLVED, ONE-OFF, recurrence test
+  PASS/CLOSED.** The automatic Vercel Production deployment did **not** fire after the PR #17 merge; the
+  Owner recovered the release manually via Vercel Dashboard → Create Deployment against `main`. No Vercel
+  project setting was changed to achieve this, and a full project-configuration audit found nothing blocking.
+  Independent corroboration: the sole `Vercel` commit status and the only Production deployment record for
+  the merge SHA were both created ~34 hours after the merge, and that deployment's `ref` is the raw commit
+  SHA rather than `main` — the signature of a manual Dashboard deployment, not a branch-push trigger. The
+  recurrence test was: does the next `main` merge deploy automatically? **PR #18** (merge SHA
+  `b3254aa35db76fe264cbb8167f20c47291b87838`, the Phase 4D docs-only closeout) was that next merge, and it
+  produced automatic Vercel Production deployment `dpl_D8TEboHCAD5S1uky3Yf6mXoJjUK3` (`target: production`,
+  `state: READY`, `githubCommitRef: main`, matching `githubCommitSha`) within seconds of the push, with no
+  Create Deployment/Redeploy or other manual step. One miss out of two observed merges, followed by a clean
+  automatic deploy on the very next merge, is a **one-off incident**, not a recurring integration fault —
+  recurrence is answered and the test is **CLOSED (PASS)**. Every subsequent phase's merge still gets routine
+  post-merge deployment verification (per the standing pattern), but none of them are themselves "the
+  recurrence test" going forward. See `phase_4d_lab_production_completion_plan_v0.1.md`,
+  `phase_4d_lab_production_completion_result_v0.1.md` §6, and
+  `phase_4e_portfolio_production_completion_plan_v0.1.md` §18 for full detail.
 
 ### In progress
 
@@ -440,10 +446,11 @@ records the sequencing.
   the bounded unauthenticated Production route + deployed-HTML sweep passed. Authenticated
   visual/touch/keyboard/screen-reader QA remains `OWNER_QA_PENDING`, deferred to Phase 4F per the standing
   pattern. See "Completed" above.
-- **Vercel automatic Production deployment trigger — recurrence test outstanding.** The PR #17 merge produced
-  no automatic Production deployment; the Owner recovered it manually via Vercel Dashboard → Create
-  Deployment, with no Vercel project setting changed. Classified as a **single** trigger miss, not yet a
-  pattern. The next `main` merge is the test: observe whether it deploys automatically **before** applying any
-  manual workaround. If automatic deployment is absent again, escalate and report it as a recurring Git/Vercel
-  integration incident rather than silently working around it. `OWNER_QA_PENDING` (platform-side; not an
-  application-code item).
+- ~~**Vercel automatic Production deployment trigger — recurrence test outstanding.**~~ — `PASS / CLOSED`.
+  The PR #17 merge produced no automatic Production deployment; the Owner recovered it manually via Vercel
+  Dashboard → Create Deployment, with no Vercel project setting changed. The recurrence test was the next
+  `main` merge: **PR #18** (merge SHA `b3254aa35db76fe264cbb8167f20c47291b87838`) deployed automatically
+  (`dpl_D8TEboHCAD5S1uky3Yf6mXoJjUK3`, `READY`, `githubCommitRef: main`) within seconds of the push, with no
+  manual step. Classified as a **one-off** trigger miss, not a recurring pattern. Routine post-merge
+  deployment verification continues for every future phase, but it is no longer a "recurrence test" — see
+  `phase_4e_portfolio_production_completion_plan_v0.1.md` §18.

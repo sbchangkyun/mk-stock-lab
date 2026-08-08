@@ -1,5 +1,52 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4E-A.1 — Plan review correction (no application code) - 2026-08-08
+
+- **Classification: plan-review correction only.** Owner review of the Phase 4E-A plan
+  (`8a5945f192b0ba698cd0152e3749abcbdb3cd214`) required six corrections before implementation may
+  begin. No application code, CSS, script, package.json, migration, or environment file was
+  touched; only `phase_4e_portfolio_production_completion_plan_v0.1.md`,
+  `mk_stock_lab_master_roadmap_v2.1.md`, and this changelog changed.
+- **(A) Vercel recurrence test: PASS / CLOSED.** PR #18 (merge SHA
+  `b3254aa35db76fe264cbb8167f20c47291b87838`) was the "next `main` merge" the Phase 4D closeout
+  defined as the recurrence test for the PR #17 automatic-deploy miss. It produced automatic Vercel
+  Production deployment `dpl_D8TEboHCAD5S1uky3Yf6mXoJjUK3` (`target: production`, `state: READY`,
+  `githubCommitRef: main`, matching `githubCommitSha`) within seconds of the push, with no manual
+  Create Deployment/Redeploy. The PR #17 miss is reclassified as a **one-off incident**; the
+  recurrence question is answered and closed. Phase 4E's own post-merge deployment is still verified
+  normally (routine release verification), but it is not itself a recurrence test.
+- **(B) Build/environment risk documented.** Plan §15 now records the Phase 4D-observed Windows
+  local build crash (exit `-1073740791` / `STATUS_STACK_BUFFER_OVERRUN`), confirmed reproducible on
+  the untouched baseline (pre-existing, not phase-caused), and the fallback procedure if it recurs:
+  narrow tracked-file-only baseline isolation (never touching Owner-local untracked files), and
+  treating the exact-Head Vercel Linux Preview build as the authoritative release gate if the local
+  Windows build remains inconclusive.
+- **(C) Preview/SSO handling corrected.** Plan §16 now requires the Preview deployment at the exact
+  final PR Head to reach `READY`, forbids creating an SSO bypass/share URL, and requires recording
+  `SSO_BLOCKED` honestly (not a fabricated pass) if Deployment Protection blocks route-level access —
+  never claiming signed-out UI verification when SSO prevented the request from reaching application
+  routing. Authenticated route-level interaction remains Phase 4F Owner QA either way.
+- **(D) Audit classification consistency.** The Phase 4E-A plan's §4 findings table is corrected so
+  finding F (dialog focus lifecycle) reads `PARTIAL_GAP` — matching the evidence already described
+  there and in this changelog's original Phase 4E-A entry (existing `role="dialog"`/`aria-modal`/
+  labelled-dialog/Escape/reduced-motion behavior is already correct; only the focus-trap lifecycle
+  is missing) — resolving an inconsistency where the table had briefly carried `CONFIRMED_GAP`.
+- **(E) Testing contract locked.** Plan §7/§13 now firmly commit to shipping both
+  `smoke:phase-4e-portfolio-production-completion` and
+  `check:phase-4e-portfolio-production-completion`. The smoke target is a new pure module
+  `src/lib/portfolio/portfolioKeyboardNav.ts` (dialog Tab-trap wrap-around index logic + tablist
+  Home/End/Arrow roving-tabindex index logic) — logic the F/G implementation already needs
+  regardless of testing, following the existing `exportStatusMessage`/`classifyPositionSupport`
+  extraction precedent, not architecture invented solely for the test.
+- **(F) Implementation decisions locked in plan §6/§7:** `baseCurrency` preserves existing KRW/USD
+  metadata and USD records (no silent normalization, no FX, truthful KRW-only aggregate copy); the
+  ETF selector initializes from `position.assetType` on edit and preserves `'etf'` when unchanged;
+  the tablist uses `tabindex="0"`/`"-1"` roving-tabindex with `ArrowLeft`/`ArrowRight`/`Home`/`End`,
+  automatic activation, stable per-tab `id`+`aria-controls`, a shared `role="tabpanel"` with
+  `aria-labelledby` tracking the selected tab, and arrow navigation limited to tab buttons (excluding
+  inline edit/delete/reorder controls); all new focus CSS stays Portfolio-scoped (no bare global
+  `.segmented-control button` rule).
+
 ## Phase 4E-A — Portfolio production completion plan established - 2026-08-08
 
 - **Classification: `PHASE_4E_PORTFOLIO_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`.**
