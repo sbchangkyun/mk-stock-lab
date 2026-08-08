@@ -10,6 +10,8 @@
     "check:phase-4c-chart-ai-production-completion": "node scripts/check_phase_4c_chart_ai_production_completion_contract.mjs",
     "smoke:phase-4d-lab-production-completion": "node scripts/smoke_phase_4d_lab_production_completion.mjs",
     "check:phase-4d-lab-production-completion": "node scripts/check_phase_4d_lab_production_completion_contract.mjs",
+    "smoke:phase-4e-portfolio-production-completion": "node scripts/smoke_phase_4e_portfolio_production_completion.mjs",
+    "check:phase-4e-portfolio-production-completion": "node scripts/check_phase_4e_portfolio_production_completion_contract.mjs",
     "smoke:phase-4a-home-common-shell": "node scripts/smoke_phase_4a_home_common_shell.mjs",
     "check:phase-4a-home-common-shell": "node scripts/check_phase_4a_home_common_shell_contract.mjs",
     "smoke:phase-4b-market-production-completion": "node scripts/smoke_phase_4b_market_production_completion.mjs",
