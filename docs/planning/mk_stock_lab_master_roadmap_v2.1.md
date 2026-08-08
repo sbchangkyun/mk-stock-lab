@@ -281,8 +281,35 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 
 ### In progress
 
-None. Phase 4D is closed (see "Completed" above). **Phase 4E — Portfolio Production Completion** is the next
-sequential product phase and has **not** started — no branch, no plan doc, no implementation.
+**Phase 4E — Portfolio Production Completion.**
+`PHASE_4E_PORTFOLIO_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`. Phase 4E-A
+(plan-only, per the governing task's explicit constraint: "DO NOT implement application changes
+yet") audited the full `/portfolio` production surface — page, client, server CRUD, live-valuation
+engine, API routes, migrations/RLS, styling, and every existing checker/smoke script — and produced
+a 20-section implementation plan on branch `feature/phase-4e-portfolio-production-completion`
+(baseline `b3254aa35db76fe264cbb8167f20c47291b87838`). Twelve audit items were classified:
+**CONFIRMED_GAP** — ETF entry not exposed in the UI despite full backend support; the "local"
+currency-toggle button is mislabeled "달러 기준"; the `baseCurrency` (KRW/USD) selector has no
+observable effect because the only live-wired valuation path is KR/KRW-only and the one
+FX-conversion function in the codebase is unreachable dead code; dividend sort headers are wired to
+nothing (no dividend data exists anywhere in the stack); the holdings header uses
+`role="row"`/`role="columnheader"` with no matching table/grid ancestor or data-row roles; the
+`.positions-list-wrap` horizontal-scroll region lacks the `role="region"`/`aria-label`/`tabindex="0"`
+pattern already established by `.lab-matrix-scroll` in Phase 4D. **PARTIAL_GAP** — two dynamic
+status paragraphs lack `aria-live`; the portfolio tab selector already has correct
+`role="tab"`/`aria-selected` but no `role="tabpanel"`/keyboard navigation; both CRUD dialogs have
+correct ARIA roles and reduced-motion handling but no focus-trap/restoration lifecycle (the
+complete pattern already exists in `LiveMarketDashboard.astro` and is the designated template);
+breakpoint categories exist and are checker-protected but literal narrow-phone rendering has not
+been checked. **ALREADY_CORRECT** — the Bearer-auth/ownership boundary, the KR/KRW-only
+live-valuation scope with its protected `MAX_POSITIONS=50`/`MAX_UNIQUE_KR_SYMBOLS=30`/
+`QUOTE_CONCURRENCY=3` constants and fail-closed aggregate, the 11-state truthful state machine, and
+existing reduced-motion/focus-visible coverage. No security or provider defect was found; no
+migration is planned. Explicit non-goals carried into the plan: no trading/brokerage surface, no
+new KIS account API, no LLM, no new US-quote/FX/dividend provider, no new Supabase schema, no new
+secrets/dependencies, no full-table redesign of the holdings cards. See
+`phase_4e_portfolio_production_completion_plan_v0.1.md` for full detail. **Implementation has not
+started** and will not begin until this plan is reviewed.
 
 ### Next sequential product phases
 
@@ -305,15 +332,17 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
 5. **Phase 4D — Lab production readiness pass.** `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`.
    Copy/a11y/responsive-shell audit of `/lab`, including its own already-honest "연동 예정" labeling of the
    NPS/Congress modules. See "Completed" above.
-6. **Phase 4E — Portfolio production readiness pass.** `PLANNED` — **next**, not started. Copy/a11y/
-   responsive-shell audit of `/portfolio` against its already-verified authenticated CRUD and KR-only
-   live-valuation scope.
+6. **Phase 4E — Portfolio production readiness pass.**
+   `PHASE_4E_PORTFOLIO_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED` — see "In
+   progress" above. Copy/a11y/responsive-shell audit of `/portfolio` against its already-verified
+   authenticated CRUD and KR-only live-valuation scope; plan complete, implementation not started.
 7. **Phase 4F — Cross-page Owner QA closeout.** `PLANNED`. Owner-only authenticated click-through across
    4A–4E on Production/Preview (visual, mobile, touch, keyboard, screen-reader spot checks) — the single
    point where the Owner QA deferred by every phase in this lane is actually performed.
 
-Phase 3 Closeout and Phases 4E–4F are explicitly **not** started. Phase 4D is merged and Production-verified
-(see "Completed" above) — this section only records the sequencing.
+Phase 3 Closeout and Phase 4F are explicitly **not** started. Phase 4E has a reviewed-pending plan but no
+implementation. Phase 4D is merged and Production-verified (see "Completed" above) — this section only
+records the sequencing.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 

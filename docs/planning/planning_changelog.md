@@ -1,5 +1,68 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4E-A — Portfolio production completion plan established - 2026-08-08
+
+- **Classification: `PHASE_4E_PORTFOLIO_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`.**
+  Plan-only task, explicitly constrained to produce no application change: "DO NOT implement
+  application changes yet. DO NOT modify src/, API routes, server logic, CSS, package.json,
+  scripts, migrations, or environment variables in this task." Branch
+  `feature/phase-4e-portfolio-production-completion` from baseline
+  `b3254aa35db76fe264cbb8167f20c47291b87838` (the Phase 4D closeout merge commit). Exactly four
+  files changed, all under `docs/planning/`.
+- **Audit scope.** Full `/portfolio` production surface: `src/pages/portfolio.astro` (client state
+  machine + embedded script), `src/lib/portfolioClient.ts`, `src/lib/server/portfolio.ts`,
+  `src/lib/server/portfolioValuation.ts`, `src/pages/api/portfolio/{portfolios,positions,
+  valuation}.ts`, `supabase/migrations/20260615_rebuild_schema_v0_1.sql` RLS policies,
+  `src/styles/style.css` Portfolio-scoped selectors, `check:mobile-baseline` and every existing
+  Portfolio-related smoke/checker script, and the Phase 3GH/3GI/4A result docs and master roadmap.
+- **Twelve findings classified (A–L).** `CONFIRMED_GAP`: (A) ETF entry not exposed in the UI though
+  the DB/server/client/valuation-engine chain already fully supports `assetType: 'etf'`; (B) the
+  "local" currency-display toggle is mislabeled "달러 기준"/`$` even though it means "each holding's
+  own native currency," which for an all-KRW portfolio is actively false; (C) the per-portfolio
+  `baseCurrency` (KRW/USD) selector has zero observable effect — the only live-wired valuation path
+  is KR/KRW-only and the sole FX-conversion function in the codebase
+  (`buildPortfolioValuationFromQuotesWithFx`) is unreachable dead code, confirmed by two independent
+  code traces; (D) the 배당률/배당주기 sort headers are wired to a sort function that always returns
+  `null` — no dividend field exists anywhere in the schema/server/client; (H) the holdings header
+  uses `role="row"`/`role="columnheader"` with no matching `role="grid"`/`"table"` ancestor or
+  data-row roles, an invalid ARIA-table pattern; (I) `.positions-list-wrap`'s `overflow-x: auto`
+  region has no `role="region"`/`aria-label`/`tabindex="0"`, unlike the Phase 4D
+  `.lab-matrix-scroll` precedent it should reuse. `PARTIAL_GAP`: (E) two dynamic status paragraphs
+  (`#portfolio-readiness`, `#valuation-status-copy`) lack `aria-live`, while `#portfolio-lock-state`
+  and the toast already have it correctly; (F) both CRUD dialogs have correct `role="dialog"
+  aria-modal"` and reduced-motion handling but only a bare global `Escape` listener, no
+  focus-trap/keyboard-containment/focus-restoration lifecycle — `LiveMarketDashboard.astro:755-838`
+  (Phase 4B) is the designated reusable template, the only complete implementation in the codebase;
+  (G) the portfolio tab selector already has correct `role="tab"`/`aria-selected` per button, but no
+  `role="tabpanel"`/`aria-controls`/arrow-key roving-tabindex navigation; (J) checker-protected
+  breakpoint categories exist and are structurally sound, but literal narrow-phone (320–412px)
+  rendering has not been checked. `ALREADY_CORRECT`: the Bearer-auth + `ensurePortfolioOwned`
+  ownership boundary; the KR/KRW-only live-valuation scope with its protected
+  `MAX_POSITIONS=50`/`MAX_UNIQUE_KR_SYMBOLS=30`/`QUOTE_CONCURRENCY=3` constants and fail-closed
+  aggregate; the 11-state `PortfolioState` machine's honest per-state Korean copy; existing
+  reduced-motion and partial-`:focus-visible` CSS coverage. **No security or provider defect was
+  found**; no migration is planned or needed.
+- **Explicit non-goals carried into the plan.** No trading/order/brokerage surface, no new KIS
+  account API, no LLM integration, no new US-quote/FX/dividend provider (the FX dead code stays
+  dead), no new Supabase schema/table/column, no new secrets or environment variables, no new
+  dependency, no full desktop-table redesign of the holdings cards, no weakening of the Phase 3GH
+  checker or its protected constants.
+- **Deliverables.** `phase_4e_portfolio_production_completion_plan_v0.1.md` (20 numbered sections:
+  baseline, branch, architecture, confirmed/already-correct findings, implementation requirements,
+  file scope, non-goals, accessibility/responsive/truthfulness requirements, protected boundaries,
+  test strategy, checker/build/environment risk, Preview/Production validation plan, Vercel
+  auto-deploy recurrence-test note, Phase 4F deferral boundary, rollback criteria);
+  `phase_4e_portfolio_production_completion_result_v0.1.md` (minimal skeleton, all sections
+  `NOT_STARTED`); this roadmap's "In progress" section and sequencing list updated; this changelog
+  entry.
+- **Sequencing note.** This plan's eventual implementation-PR merge, once authorized, will also
+  serve as the recurrence test for the Phase 4D release-trigger anomaly (automatic Vercel
+  Production deployment did not fire after PR #17's merge) — see the roadmap's Phase 4D entry and
+  the plan's §18.
+- **Explicitly not done in this task**: no application code, CSS, script, package.json, migration,
+  or environment change of any kind; no implementation PR opened; **implementation will not begin
+  until this plan has been reviewed.**
+
 ## Phase 4D closeout — merged and Production-verified - 2026-08-08
 
 - **Final classification: `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`** (was
