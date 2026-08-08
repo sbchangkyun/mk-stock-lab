@@ -1,5 +1,27 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4E closeout — merged and Production-verified - 2026-08-09
+
+- **Classification: `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`.** Docs-only closeout record;
+  no `src/`, `scripts/`, config, migration, or dependency file touched, no `git add .`/`-A`, no
+  Owner-local untracked file touched.
+- **Merge.** PR #19 (`feature/phase-4e-portfolio-production-completion` → `main`) merged by the
+  Owner. Merge commit `6cca38aba04c875abf985cb979625a26cf2a340c`.
+- **Automatic Production deployment.** Vercel deployment `dpl_AxKXATutrX9ALjkzHruUcRFjEr6L` —
+  state `READY`, target `production`, source `git`, `githubCommitRef=main`, `githubCommitSha`
+  matching the merge commit, commit verification `verified`, automatic trigger succeeded normally,
+  no manual recovery.
+- **Bounded unauthenticated Production verification — PASS.** `https://mkstocklab.vercel.app/portfolio`
+  → HTTP 200. Confirmed present in the served HTML: the ETF selector; the truthful "현지" label (not
+  a fabricated "$/달러 기준"); the truthful baseCurrency disclosure sentence; `aria-describedby` on
+  `portfolio-base-currency`; `portfolio-readiness`/`valuation-status-copy` status/live-region
+  semantics; `role="tabpanel"` on the detail panel; `positions-list-wrap`
+  `role="region"`/`aria-label`/`tabindex="0"`; the absent dividend sort affordance; the absent
+  invalid holdings-row/columnheader roles.
+- **Deferred, not claimed.** Authenticated CRUD, dialog focus-trap lifecycle, mobile-breakpoint, and
+  touch-behavior interactive re-verification in Production were **not** performed this phase — all
+  remain deferred to Phase 4F (Owner authenticated, live-browser QA closeout).
+
 ## Phase 4E-B — Portfolio production completion implementation - 2026-08-08
 
 - **Classification: implementation, all 10 approved requirements.** Implements the plan approved

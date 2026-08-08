@@ -266,6 +266,37 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   Congress/NPS `ul`/`li` semantics, and the truthful example-data / pending-integration copy. Authenticated
   visual/touch/keyboard/screen-reader QA remains deferred to Phase 4F.
 
+- **Phase 4E — Portfolio Production Completion.** `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED` (PR #19
+  "Phase 4E: Portfolio production completion" merged by the Owner, merge commit
+  `6cca38aba04c875abf985cb979625a26cf2a340c`; automatic Vercel Production deployment
+  `dpl_AxKXATutrX9ALjkzHruUcRFjEr6L` `READY`, target `production`, `githubCommitRef: main`, at that
+  exact SHA, with no manual Create Deployment/Redeploy required). Phase 4E-A (plan-only) audited the
+  full `/portfolio` production surface and produced a 20-section implementation plan; Phase 4E-A.1
+  corrected that plan per Owner review; Phase 4E-B implemented all 10 approved requirements (ETF
+  entry in the asset-type select; fixed mislabeled currency-toggle button; explicit KRW-only/
+  USD-unsupported valuation copy; removed dividend sort affordance with honest `데이터 대기`
+  placeholders; `aria-live` on the two dynamic status paragraphs; a real dialog focus-trap/
+  restoration lifecycle on both CRUD sheets; a complete portfolio tablist with `role="tabpanel"` and
+  full Arrow/Home/End roving-tabindex navigation; removal of invalid `role="row"`/
+  `role="columnheader"` markup from the holdings header; `role="region"`/`aria-label`/`tabindex="0"`
+  plus matching `:focus-visible` CSS on the horizontal-scroll holdings wrapper; and a responsive
+  dead-CSS fix); Phase 4E-B.HF1 then corrected an internally-contradictory baseCurrency disclosure
+  and completed the approved Portfolio-scoped keyboard focus-visible coverage before merge. New pure
+  module `src/lib/portfolio/portfolioKeyboardNav.ts` backs the two keyboard-navigation patterns. New
+  required tests both pass at 100% (`smoke:phase-4e-portfolio-production-completion` 21/21,
+  `check:phase-4e-portfolio-production-completion` 65/65); the one affected sibling checker
+  (`check:portfolio-holdings-header`) was narrowly reconciled for the dividend-sort removal and now
+  passes 81/84, with the remaining 3 failures confirmed to be pre-existing Phase-3BR checker drift
+  predating this phase's baseline. No security, scope, or Hard-Rule boundary was crossed. Production
+  verification is bounded and unauthenticated: `/portfolio` returns HTTP `200`, and the deployed HTML
+  independently confirms the ETF selector, the truthful "현지" currency-toggle label, the corrected
+  baseCurrency disclosure and its `aria-describedby` wiring, the status/live-region semantics, the
+  `role="tabpanel"` detail panel, the `role="region"`/`aria-label`/`tabindex="0"` positions list, the
+  absent dividend-sort affordance, and the absent invalid holdings row/columnheader roles.
+  Authenticated CRUD, dialog focus-trap, mobile breakpoint, and touch-behavior QA remain deferred to
+  Phase 4F. See `phase_4e_portfolio_production_completion_plan_v0.1.md` and
+  `phase_4e_portfolio_production_completion_result_v0.1.md` for full detail.
+
   **Release-trigger anomaly (infrastructure, not application code) — RESOLVED, ONE-OFF, recurrence test
   PASS/CLOSED.** The automatic Vercel Production deployment did **not** fire after the PR #17 merge; the
   Owner recovered the release manually via Vercel Dashboard → Create Deployment against `main`. No Vercel
@@ -287,35 +318,8 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
 
 ### In progress
 
-**Phase 4E — Portfolio Production Completion.**
-`PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`. Phase 4E-A (plan-only)
-audited the full `/portfolio` production surface and produced a 20-section implementation plan;
-Phase 4E-A.1 corrected that plan per Owner review. **Phase 4E-B implemented all 10 approved
-requirements** on branch `feature/phase-4e-portfolio-production-completion`
-(baseline `b3254aa35db76fe264cbb8167f20c47291b87838`): exposed ETF entry in the asset-type select;
-fixed the mislabeled currency-toggle button; added explicit KRW-only/USD-unsupported valuation
-copy; removed the dividend sort affordance entirely and confirmed the honest `데이터 대기`
-placeholder for both dividend cells (no dividend provider exists); added `aria-live` to the two
-dynamic status paragraphs; added a real dialog focus-trap/restoration lifecycle (mirroring
-`LiveMarketDashboard.astro`) to both CRUD sheets; completed the portfolio tablist with
-`role="tabpanel"` and full Arrow/Home/End roving-tabindex keyboard navigation; removed the invalid
-`role="row"`/`role="columnheader"` markup from the holdings header; added `role="region"`/
-`aria-label`/`tabindex="0"` (plus matching `:focus-visible` CSS) to the horizontal-scroll holdings
-wrapper; and completed a static responsive audit (one dead-CSS defect fixed), with live-browser
-breakpoint QA deferred to Phase 4F as pre-approved. New pure module
-`src/lib/portfolio/portfolioKeyboardNav.ts` backs the two keyboard-navigation patterns. New
-required tests both pass at 100% (`smoke:phase-4e-portfolio-production-completion` 21/21,
-`check:phase-4e-portfolio-production-completion` 61/61); the one affected sibling checker
-(`check:portfolio-holdings-header`) was narrowly reconciled for the dividend-sort removal and now
-passes 81/84, with the remaining 3 failures confirmed to be pre-existing Phase-3BR checker drift
-predating this phase's baseline, not a regression. Full regression gate green apart from that
-documented pre-existing drift and the known benign Windows local-build teardown crash (Vercel
-Preview/Production build is the authoritative gate). No security, scope, or Hard-Rule boundary was
-crossed: no trading/brokerage surface, no new KIS account API, no LLM, no new US-quote/FX/dividend
-provider, no new Supabase schema, no new secrets/dependencies, no full-table redesign of the
-holdings cards. See `phase_4e_portfolio_production_completion_plan_v0.1.md` and
-`phase_4e_portfolio_production_completion_result_v0.1.md` for full detail. **PR opened for Owner
-review; not merged.**
+None. Phase 4E is merged and Production-verified (see "Completed" above). Phase 4F — Cross-page
+Owner QA closeout — is the next sequential phase and has **not** yet started.
 
 ### Next sequential product phases
 
@@ -339,17 +343,15 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
    Copy/a11y/responsive-shell audit of `/lab`, including its own already-honest "연동 예정" labeling of the
    NPS/Congress modules. See "Completed" above.
 6. **Phase 4E — Portfolio production readiness pass.**
-   `PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED` — see "In progress"
-   above. Copy/a11y/responsive-shell completion of `/portfolio` against its already-verified
-   authenticated CRUD and KR-only live-valuation scope; all 10 approved requirements implemented
-   and tested, PR opened for Owner review, not yet merged.
-7. **Phase 4F — Cross-page Owner QA closeout.** `PLANNED`. Owner-only authenticated click-through across
-   4A–4E on Production/Preview (visual, mobile, touch, keyboard, screen-reader spot checks) — the single
-   point where the Owner QA deferred by every phase in this lane is actually performed.
+   `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`. See "Completed" above.
+7. **Phase 4F — Cross-page Owner QA closeout.** `PLANNED` — the next sequential phase, not yet started.
+   Owner-only authenticated click-through across 4A–4E on Production/Preview (visual, mobile, touch,
+   keyboard, screen-reader spot checks) — the single point where the Owner QA deferred by every phase in
+   this lane is actually performed.
 
-Phase 3 Closeout and Phase 4F are explicitly **not** started. Phase 4E is implemented and PR-ready but not
-yet merged or Production-verified. Phase 4D is merged and Production-verified (see "Completed" above) —
-this section only records the sequencing.
+Phase 3 Closeout and Phase 4F are explicitly **not** started. Phase 4E is now merged and
+Production-verified (see "Completed" above), alongside Phases 4A–4D — this section only records the
+sequencing.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 
