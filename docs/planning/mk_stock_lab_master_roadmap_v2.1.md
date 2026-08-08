@@ -266,23 +266,56 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   Congress/NPS `ul`/`li` semantics, and the truthful example-data / pending-integration copy. Authenticated
   visual/touch/keyboard/screen-reader QA remains deferred to Phase 4F.
 
-  **Release-trigger anomaly (infrastructure, not application code).** The automatic Vercel Production
-  deployment did **not** fire after the PR #17 merge; the Owner recovered the release manually via Vercel
-  Dashboard → Create Deployment against `main`. No Vercel project setting was changed to achieve this, and a
-  full project-configuration audit found nothing blocking. Independent corroboration: the sole `Vercel` commit
-  status and the only Production deployment record for the merge SHA were both created ~34 hours after the
-  merge, and that deployment's `ref` is the raw commit SHA rather than `main` — the signature of a manual
-  Dashboard deployment, not a branch-push trigger. Recurrence is **UNDETERMINED** from one observation: the
-  next `main` merge is the recurrence test. If the automatic deployment is absent again it must be escalated
-  as a recurring Git/Vercel integration incident and reported before any further manual workaround, rather
-  than silently worked around. Nothing in the Phase 4D diff can influence whether Vercel's Git integration
-  fires. See `phase_4d_lab_production_completion_plan_v0.1.md` and
-  `phase_4d_lab_production_completion_result_v0.1.md` §6 for full detail.
+  **Release-trigger anomaly (infrastructure, not application code) — RESOLVED, ONE-OFF, recurrence test
+  PASS/CLOSED.** The automatic Vercel Production deployment did **not** fire after the PR #17 merge; the
+  Owner recovered the release manually via Vercel Dashboard → Create Deployment against `main`. No Vercel
+  project setting was changed to achieve this, and a full project-configuration audit found nothing blocking.
+  Independent corroboration: the sole `Vercel` commit status and the only Production deployment record for
+  the merge SHA were both created ~34 hours after the merge, and that deployment's `ref` is the raw commit
+  SHA rather than `main` — the signature of a manual Dashboard deployment, not a branch-push trigger. The
+  recurrence test was: does the next `main` merge deploy automatically? **PR #18** (merge SHA
+  `b3254aa35db76fe264cbb8167f20c47291b87838`, the Phase 4D docs-only closeout) was that next merge, and it
+  produced automatic Vercel Production deployment `dpl_D8TEboHCAD5S1uky3Yf6mXoJjUK3` (`target: production`,
+  `state: READY`, `githubCommitRef: main`, matching `githubCommitSha`) within seconds of the push, with no
+  Create Deployment/Redeploy or other manual step. One miss out of two observed merges, followed by a clean
+  automatic deploy on the very next merge, is a **one-off incident**, not a recurring integration fault —
+  recurrence is answered and the test is **CLOSED (PASS)**. Every subsequent phase's merge still gets routine
+  post-merge deployment verification (per the standing pattern), but none of them are themselves "the
+  recurrence test" going forward. See `phase_4d_lab_production_completion_plan_v0.1.md`,
+  `phase_4d_lab_production_completion_result_v0.1.md` §6, and
+  `phase_4e_portfolio_production_completion_plan_v0.1.md` §18 for full detail.
 
 ### In progress
 
-None. Phase 4D is closed (see "Completed" above). **Phase 4E — Portfolio Production Completion** is the next
-sequential product phase and has **not** started — no branch, no plan doc, no implementation.
+**Phase 4E — Portfolio Production Completion.**
+`PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`. Phase 4E-A (plan-only)
+audited the full `/portfolio` production surface and produced a 20-section implementation plan;
+Phase 4E-A.1 corrected that plan per Owner review. **Phase 4E-B implemented all 10 approved
+requirements** on branch `feature/phase-4e-portfolio-production-completion`
+(baseline `b3254aa35db76fe264cbb8167f20c47291b87838`): exposed ETF entry in the asset-type select;
+fixed the mislabeled currency-toggle button; added explicit KRW-only/USD-unsupported valuation
+copy; removed the dividend sort affordance entirely and confirmed the honest `데이터 대기`
+placeholder for both dividend cells (no dividend provider exists); added `aria-live` to the two
+dynamic status paragraphs; added a real dialog focus-trap/restoration lifecycle (mirroring
+`LiveMarketDashboard.astro`) to both CRUD sheets; completed the portfolio tablist with
+`role="tabpanel"` and full Arrow/Home/End roving-tabindex keyboard navigation; removed the invalid
+`role="row"`/`role="columnheader"` markup from the holdings header; added `role="region"`/
+`aria-label`/`tabindex="0"` (plus matching `:focus-visible` CSS) to the horizontal-scroll holdings
+wrapper; and completed a static responsive audit (one dead-CSS defect fixed), with live-browser
+breakpoint QA deferred to Phase 4F as pre-approved. New pure module
+`src/lib/portfolio/portfolioKeyboardNav.ts` backs the two keyboard-navigation patterns. New
+required tests both pass at 100% (`smoke:phase-4e-portfolio-production-completion` 21/21,
+`check:phase-4e-portfolio-production-completion` 61/61); the one affected sibling checker
+(`check:portfolio-holdings-header`) was narrowly reconciled for the dividend-sort removal and now
+passes 81/84, with the remaining 3 failures confirmed to be pre-existing Phase-3BR checker drift
+predating this phase's baseline, not a regression. Full regression gate green apart from that
+documented pre-existing drift and the known benign Windows local-build teardown crash (Vercel
+Preview/Production build is the authoritative gate). No security, scope, or Hard-Rule boundary was
+crossed: no trading/brokerage surface, no new KIS account API, no LLM, no new US-quote/FX/dividend
+provider, no new Supabase schema, no new secrets/dependencies, no full-table redesign of the
+holdings cards. See `phase_4e_portfolio_production_completion_plan_v0.1.md` and
+`phase_4e_portfolio_production_completion_result_v0.1.md` for full detail. **PR opened for Owner
+review; not merged.**
 
 ### Next sequential product phases
 
@@ -305,15 +338,18 @@ through the existing Vercel Git integration (`main` branch) — no Netlify confi
 5. **Phase 4D — Lab production readiness pass.** `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`.
    Copy/a11y/responsive-shell audit of `/lab`, including its own already-honest "연동 예정" labeling of the
    NPS/Congress modules. See "Completed" above.
-6. **Phase 4E — Portfolio production readiness pass.** `PLANNED` — **next**, not started. Copy/a11y/
-   responsive-shell audit of `/portfolio` against its already-verified authenticated CRUD and KR-only
-   live-valuation scope.
+6. **Phase 4E — Portfolio production readiness pass.**
+   `PHASE_4E_PORTFOLIO_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED` — see "In progress"
+   above. Copy/a11y/responsive-shell completion of `/portfolio` against its already-verified
+   authenticated CRUD and KR-only live-valuation scope; all 10 approved requirements implemented
+   and tested, PR opened for Owner review, not yet merged.
 7. **Phase 4F — Cross-page Owner QA closeout.** `PLANNED`. Owner-only authenticated click-through across
    4A–4E on Production/Preview (visual, mobile, touch, keyboard, screen-reader spot checks) — the single
    point where the Owner QA deferred by every phase in this lane is actually performed.
 
-Phase 3 Closeout and Phases 4E–4F are explicitly **not** started. Phase 4D is merged and Production-verified
-(see "Completed" above) — this section only records the sequencing.
+Phase 3 Closeout and Phase 4F are explicitly **not** started. Phase 4E is implemented and PR-ready but not
+yet merged or Production-verified. Phase 4D is merged and Production-verified (see "Completed" above) —
+this section only records the sequencing.
 
 ### Parallel post-release hardening lane (not a numbered product phase)
 
@@ -411,10 +447,11 @@ Phase 3 Closeout and Phases 4E–4F are explicitly **not** started. Phase 4D is 
   the bounded unauthenticated Production route + deployed-HTML sweep passed. Authenticated
   visual/touch/keyboard/screen-reader QA remains `OWNER_QA_PENDING`, deferred to Phase 4F per the standing
   pattern. See "Completed" above.
-- **Vercel automatic Production deployment trigger — recurrence test outstanding.** The PR #17 merge produced
-  no automatic Production deployment; the Owner recovered it manually via Vercel Dashboard → Create
-  Deployment, with no Vercel project setting changed. Classified as a **single** trigger miss, not yet a
-  pattern. The next `main` merge is the test: observe whether it deploys automatically **before** applying any
-  manual workaround. If automatic deployment is absent again, escalate and report it as a recurring Git/Vercel
-  integration incident rather than silently working around it. `OWNER_QA_PENDING` (platform-side; not an
-  application-code item).
+- ~~**Vercel automatic Production deployment trigger — recurrence test outstanding.**~~ — `PASS / CLOSED`.
+  The PR #17 merge produced no automatic Production deployment; the Owner recovered it manually via Vercel
+  Dashboard → Create Deployment, with no Vercel project setting changed. The recurrence test was the next
+  `main` merge: **PR #18** (merge SHA `b3254aa35db76fe264cbb8167f20c47291b87838`) deployed automatically
+  (`dpl_D8TEboHCAD5S1uky3Yf6mXoJjUK3`, `READY`, `githubCommitRef: main`) within seconds of the push, with no
+  manual step. Classified as a **one-off** trigger miss, not a recurring pattern. Routine post-merge
+  deployment verification continues for every future phase, but it is no longer a "recurrence test" — see
+  `phase_4e_portfolio_production_completion_plan_v0.1.md` §18.

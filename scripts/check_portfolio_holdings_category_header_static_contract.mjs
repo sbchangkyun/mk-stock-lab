@@ -90,8 +90,12 @@ check('평가금 category label present', portfolioContent.includes('>평가금<
 check('수익률 category label present', portfolioContent.includes('>수익률<'));
 check('수익금 category label present', portfolioContent.includes('>수익금<'));
 check('배당률 category label present', portfolioContent.includes('>배당률<'));
-check('예상 연배당금 category label present', portfolioContent.includes('예상 연배당금'));
 check('배당주기 category label present', portfolioContent.includes('>배당주기<'));
+// Phase 4E item D: the dividend column was consolidated to 배당률/배당주기 only. It no longer
+// carries a separate fabricated "예상 연배당금" (estimated annual dividend) figure, since no
+// dividend provider exists. Asserting its absence locks in the honesty fix.
+check('예상 연배당금 fabricated figure intentionally absent (Phase 4E item D: no dividend provider)',
+  !portfolioContent.includes('예상 연배당금'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -107,14 +111,15 @@ check('Arrow buttons are <button> elements with data-sort',
   portfolioContent.includes('<button class="sort-arrow-button"') &&
   portfolioContent.includes('data-sort='));
 
-// Verify each sortable column has both asc and desc arrows
+// Verify each sortable column has both asc and desc arrows.
+// Phase 4E item D: dividend-yield / annual-dividend are intentionally NOT in this list anymore.
+// No dividend provider exists, so a sort affordance over fabricated/placeholder dividend data
+// would be dishonest; the sort UI over that column was removed entirely.
 const sortKeys = [
   ['weight-desc', 'weight-asc'],
   ['valuation-desc', 'valuation-asc'],
   ['return-desc', 'return-asc'],
   ['profit-desc', 'profit-asc'],
-  ['dividend-yield-desc', 'dividend-yield-asc'],
-  ['annual-dividend-desc', 'annual-dividend-asc'],
 ];
 
 sortKeys.forEach(([desc, asc]) => {
@@ -125,6 +130,11 @@ sortKeys.forEach(([desc, asc]) => {
 
 check('Sortable cells marked with positions-category-cell--sortable class',
   portfolioContent.includes('positions-category-cell--sortable'));
+check('Dividend sort keys intentionally absent (Phase 4E item D: no dividend provider, sort affordance removed for honesty)',
+  !portfolioContent.includes('data-sort="dividend-yield-desc"') &&
+  !portfolioContent.includes('data-sort="dividend-yield-asc"') &&
+  !portfolioContent.includes('data-sort="annual-dividend-desc"') &&
+  !portfolioContent.includes('data-sort="annual-dividend-asc"'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -144,12 +154,14 @@ check('수익률 sort arrows have aria-labels',
 check('수익금 sort arrows have aria-labels',
   portfolioContent.includes('aria-label="수익금 높은 순 정렬"') &&
   portfolioContent.includes('aria-label="수익금 낮은 순 정렬"'));
-check('배당률 sort arrows have aria-labels',
-  portfolioContent.includes('aria-label="배당률 높은 순 정렬"') &&
-  portfolioContent.includes('aria-label="배당률 낮은 순 정렬"'));
-check('예상 연배당금 sort arrows have aria-labels',
-  portfolioContent.includes('aria-label="예상 연배당금 높은 순 정렬"') &&
-  portfolioContent.includes('aria-label="예상 연배당금 낮은 순 정렬"'));
+// Phase 4E item D: the dividend column (배당률/배당주기) is intentionally not sortable, so no
+// dividend sort aria-labels should exist. Asserting their absence locks in the honesty fix
+// instead of asserting they exist.
+check('배당률/예상 연배당금 sort aria-labels intentionally absent (Phase 4E item D: dividend column is not sortable, no provider backs it)',
+  !portfolioContent.includes('aria-label="배당률 높은 순 정렬"') &&
+  !portfolioContent.includes('aria-label="배당률 낮은 순 정렬"') &&
+  !portfolioContent.includes('aria-label="예상 연배당금 높은 순 정렬"') &&
+  !portfolioContent.includes('aria-label="예상 연배당금 낮은 순 정렬"'));
 log('');
 
 // ---------------------------------------------------------------------------
@@ -157,13 +169,13 @@ log('');
 // ---------------------------------------------------------------------------
 log('--- Group 7: Sort key contract ---');
 
+// Phase 4E item D: dividend-yield / annual-dividend are intentionally NOT in this list anymore
+// (see Group 5 rationale above) — the positionSort type no longer carries those variants.
 const sortKeyPairs = [
   'weight-desc', 'weight-asc',
   'valuation-desc', 'valuation-asc',
   'return-desc', 'return-asc',
   'profit-desc', 'profit-asc',
-  'dividend-yield-desc', 'dividend-yield-asc',
-  'annual-dividend-desc', 'annual-dividend-asc',
 ];
 sortKeyPairs.forEach((key) => {
   check(`Sort key '${key}' present in portfolio page`,
@@ -174,10 +186,10 @@ check('positionSort type includes weight-desc / weight-asc',
   portfolioContent.includes("'weight-desc'") || portfolioContent.includes('"weight-desc"'));
 check('positionSort type includes profit-desc / profit-asc',
   portfolioContent.includes("'profit-desc'") || portfolioContent.includes('"profit-desc"'));
-check('positionSort type includes dividend-yield-desc',
-  portfolioContent.includes("'dividend-yield-desc'") || portfolioContent.includes('"dividend-yield-desc"'));
-check('positionSort type includes annual-dividend-desc',
-  portfolioContent.includes("'annual-dividend-desc'") || portfolioContent.includes('"annual-dividend-desc"'));
+check('positionSort type excludes dividend-yield-desc (Phase 4E item D: dividend sort removed for honesty, no provider backs it)',
+  !portfolioContent.includes("'dividend-yield-desc'") && !portfolioContent.includes('"dividend-yield-desc"'));
+check('positionSort type excludes annual-dividend-desc (Phase 4E item D)',
+  !portfolioContent.includes("'annual-dividend-desc'") && !portfolioContent.includes('"annual-dividend-desc"'));
 check('getSortedPositions uses lastIndexOf for sort key parsing',
   portfolioContent.includes('lastIndexOf'));
 log('');
