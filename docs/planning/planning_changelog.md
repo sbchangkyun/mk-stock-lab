@@ -1,5 +1,56 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4D closeout — merged and Production-verified - 2026-08-08
+
+- **Final classification: `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`** (was
+  `PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`). Docs-only closeout on branch
+  `docs/phase-4d-lab-production-closeout`; no application source, script, checker, package, config,
+  dependency, migration, or environment change.
+- **Merge.** [PR #17](https://github.com/sbchangkyun/mk-stock-lab/pull/17) ("Phase 4D: Lab production
+  completion", `feature/phase-4d-lab-production-completion` → `main`) was merged by the **Owner**
+  (`mergedBy.login: sbchangkyun`), not by this assistant. Merge commit
+  `14c0ee993dbf03639d73f12bfca39f67047e508a`, `mergedAt 2026-08-06T15:10:54Z`, head
+  `98a6c88fc62414bd35536e948750ff7f16755572`. `main` fast-forwarded `7da540d..14c0ee9` with no history rewrite.
+- **Production deployment.** `dpl_E4r84x9S5NLoDFLrgHqi9heJ2GvQ`, `READY`, target `production`, at exactly the
+  merge SHA `14c0ee993dbf03639d73f12bfca39f67047e508a`. Independently corroborated via GitHub: the sole
+  `Vercel` commit status for that SHA is `success` with the same deployment ID in its `target_url`, and
+  Deployments record `5804154318` (`environment: Production`, exact `sha`, `creator: vercel[bot]`) has status
+  `success` / "Deployment has completed". Owner-supplied dashboard-only fields (`readyState`, the `main` git-ref
+  label, `verified` commit verification) are recorded as user-supplied and were not independently re-derived —
+  this session has no Vercel API/CLI/dashboard/connector access.
+- **Release-trigger anomaly, recorded accurately: the automatic Production deployment did NOT fire.** After the
+  PR #17 merge no automatic Vercel Production deployment appeared (GitHub combined status was `statuses: []` /
+  `total_count: 0`; GitHub Deployments had no record for the merge SHA; a full Vercel project-configuration
+  audit — repository, Production Branch `main`, Framework Astro, Root Directory `/`, Ignored Build Step
+  `Automatic`, "skip deployments when no root changes" Disabled, not paused, no Deployment Checks — found
+  nothing blocking). The **Owner** recovered the release via **Vercel Dashboard → Create Deployment** against
+  `main`. **No Vercel project setting was changed**, and this assistant performed no deployment. Two
+  independent corroborations of the manual path: both the `Vercel` status and the deployment record were
+  created `2026-08-08T00:57:47Z`, ~34 hours after the `2026-08-06T15:10:54Z` merge; and the deployment's `ref`
+  is the raw commit SHA rather than `main`, the signature of a Dashboard deployment rather than a branch-push
+  trigger.
+- **Recurrence status: UNDETERMINED.** One observation is not a pattern. The **next `main` merge is the
+  recurrence test** — if automatic deployment is absent again it must be escalated and reported as a recurring
+  Git/Vercel integration incident before any further manual workaround, not silently worked around. This is a
+  platform/integration matter; no part of the Phase 4D diff can affect whether Vercel's Git integration fires.
+- **Bounded, unauthenticated Production verification (run this closeout).** Route sweep against
+  `https://mkstocklab.vercel.app` with redirects observed rather than followed: `/lab`,
+  `/lab/asset-class-returns`, `/lab/sp500-sectors`, `/lab/congress-stocks`, `/lab/nps-holdings` all `200`;
+  `/lab/nps-portfolio` `301` → `/lab/nps-holdings` — exactly the plan's 5×`200` + 1×`301` expectation. Deployed
+  HTML on both matrix pages confirms `<caption>` ×2, `scope="col"` ×12, `scope="row"` ×24, `aria-pressed` ×13,
+  two `lab-matrix-scroll` regions each rendering `role="region"` + `tabindex="0"`, `data-export-status` ×1,
+  `role="status"` ×2, `aria-live="polite"` ×1; Congress/NPS pages each render one
+  `<ul class="lab-static-preview-grid">` with three `<li class="lab-static-preview-card">`; truthfulness copy
+  present (`연동 예정`, `예시 데이터`, `투자 판단`, `리서치 모듈 준비`). **Not** confirmed present, honestly
+  recorded: the empty-cell `aria-label="데이터 없음"` fallback matches 0 times, because the complete 12×7 example
+  fixture leaves no empty ranking cells and that branch never renders — its source-level assertion stays
+  covered by the Phase 4D checker.
+- **Still deferred.** Authenticated visual/touch/keyboard/screen-reader QA of the Lab page group remains
+  `OWNER_QA_PENDING` under the standing **Phase 4F** cross-page Owner QA closeout, consistent with Phases
+  4A-4C; the HTTP/HTML-level Production verification above does not discharge it.
+- **Next sequential product phase: Phase 4E — Portfolio Production Completion.** Not started (no branch, no
+  plan doc, no implementation) at the time of this closeout.
+
 ## Phase 4D — Lab Production Completion, implemented (PR open, Owner merge approval required) - 2026-08-06
 
 - Baseline `7da540dbadaa0a5acafb9a74aec7d9fb9cfc93f8`, branch `feature/phase-4d-lab-production-completion`.
