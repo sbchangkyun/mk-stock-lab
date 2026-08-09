@@ -256,9 +256,21 @@ check(
 // Group 6: no scope creep -- no urgent-news styling, no Portfolio/Chart AI/Lab UX work added here
 // ---------------------------------------------------------------------------
 log('--- Group 6: no scope creep ---');
+// Phase 4F-UX1-B (a separate, later, explicitly-scoped phase -- see
+// docs/planning/phase_4f_ux1b_home_news_emphasis_result_v0.1.md) is the authorized owner of
+// [급보]/[단독]/[긴급]/[속보] urgent-news emphasis in HomeMarketNews.astro, via the reviewed pure
+// module src/lib/home/homeNewsEmphasis.ts (see scripts/check_phase_4f_ux1b_home_news_emphasis_
+// contract.mjs for that phase's own contract). This UX1-A check narrows to guarding against
+// UN-authorized/ad-hoc urgent-news styling: any occurrence of these tokens in HomeMarketNews.astro
+// must be routed through that reviewed module, never hand-rolled inline.
+const homeMarketNewsHasUrgentTokens =
+  homeMarketNews.includes('급보') ||
+  homeMarketNews.includes('단독') ||
+  homeMarketNews.includes('긴급') ||
+  homeMarketNews.includes('속보');
 check(
-  'no [급보]/[단독]/[긴급]/[속보] urgent-news tag styling added in this phase',
-  !homeMarketNews.includes('급보') && !homeMarketNews.includes('단독') && !homeMarketNews.includes('긴급') && !homeMarketNews.includes('속보'),
+  'any [급보]/[단독]/[긴급]/[속보] urgent-news tokens in HomeMarketNews.astro are routed only through the authorized Phase 4F-UX1-B homeNewsEmphasis module (no ad-hoc scope creep)',
+  !homeMarketNewsHasUrgentTokens || homeMarketNews.includes("from '../lib/home/homeNewsEmphasis'"),
 );
 check(
   'HomePortfolioPanel.astro keeps its four state ids (no redesign in this phase)',

@@ -27,6 +27,13 @@
 </section>
 
 <script>
+  import {
+    parseHomeNewsEmphasis,
+    getHomeNewsEmphasisBadgeLabel,
+    getHomeNewsEmphasisCardClass,
+    deriveHomeNewsDisplayTitle,
+  } from '../lib/home/homeNewsEmphasis';
+
   type HomeNewsArticle = {
     id: string;
     title: string;
@@ -106,13 +113,27 @@
         const dateLabel = formatPublishedDate(article.publishedAt);
         const href = isSafeHttpUrl(article.url) ? article.url : '';
 
-        return `<a class="home-news-card" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="${title}">
+        // Phase 4F-UX1-B: presentation-only urgent/exclusive emphasis from an exact leading
+        // bracket-prefix whitelist (src/lib/home/homeNewsEmphasis.ts). The full original title is
+        // always kept in aria-label; only the visually displayed headline may drop a recognized
+        // leading prefix, since the emphasis badge communicates it separately.
+        const emphasis = parseHomeNewsEmphasis(article.title);
+        const emphasisCardClass = getHomeNewsEmphasisCardClass(emphasis);
+        const emphasisBadgeLabel = getHomeNewsEmphasisBadgeLabel(emphasis);
+        const displayTitle = escapeHtml(deriveHomeNewsDisplayTitle(article.title, emphasis));
+        const cardClass = emphasisCardClass ? `home-news-card ${emphasisCardClass}` : 'home-news-card';
+        const emphasisBadgeHtml = emphasisBadgeLabel
+          ? `<span class="home-news-emphasis-badge home-news-emphasis-badge--${emphasis}">${escapeHtml(emphasisBadgeLabel)}</span>`
+          : '';
+
+        return `<a class="${cardClass}" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="${title}">
   <div class="home-news-card-meta">
+    ${emphasisBadgeHtml}
     <span class="home-news-badge">${badge}</span>
     <span class="home-news-source-name">${source}</span>
     <time class="home-news-date" datetime="${escapeHtml(article.publishedAt ?? '')}">${dateLabel}</time>
   </div>
-  <p class="home-news-headline">${title}</p>
+  <p class="home-news-headline">${displayTitle}</p>
   ${description ? `<p class="home-news-desc">${description}</p>` : ''}
 </a>`;
       })

@@ -15,6 +15,14 @@
   --negative: #c43f3f;
   --neutral: #8993a4;
   --shadow: 0 12px 36px rgba(20, 36, 64, 0.08);
+  /* Phase 4F-UX1-B: Home MARKET NEWS urgent/exclusive emphasis accents. Distinct from
+     --positive/--negative (price direction) -- these mark source-headline urgency, not price. */
+  --news-breaking-accent: #e0311f;
+  --news-breaking-glow: rgba(224, 49, 31, 0.26);
+  --news-breaking-badge-bg: rgba(224, 49, 31, 0.12);
+  --news-exclusive-accent: #7a3fd1;
+  --news-exclusive-glow: rgba(122, 63, 209, 0.22);
+  --news-exclusive-badge-bg: rgba(122, 63, 209, 0.12);
 }
 
 body.dark-mode {
@@ -27,6 +35,12 @@ body.dark-mode {
   --primary: #6ea2ff;
   --primary-dark: #9bbdff;
   --shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
+  --news-breaking-accent: #ff6b57;
+  --news-breaking-glow: rgba(255, 107, 87, 0.34);
+  --news-breaking-badge-bg: rgba(255, 107, 87, 0.18);
+  --news-exclusive-accent: #b794f6;
+  --news-exclusive-glow: rgba(183, 148, 246, 0.3);
+  --news-exclusive-badge-bg: rgba(183, 148, 246, 0.18);
 }
 
 * {
@@ -3207,6 +3221,69 @@ body.dark-mode .positions-list-wrap:focus-visible {
 
 .home-news-empty p {
   margin: 0;
+}
+
+/* Phase 4F-UX1-B: urgent/exclusive emphasis. Static accent border + static glow only -- no
+   blink/pulse/keyframe animation (Owner requirement §4/§9). Badge text is the state carrier;
+   color is a secondary reinforcement only (§5). */
+.home-news-emphasis-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.home-news-emphasis-badge--breaking {
+  background: var(--news-breaking-badge-bg);
+  color: var(--news-breaking-accent);
+  border: 1px solid var(--news-breaking-accent);
+}
+
+.home-news-emphasis-badge--exclusive {
+  background: var(--news-exclusive-badge-bg);
+  color: var(--news-exclusive-accent);
+  border: 1px solid var(--news-exclusive-accent);
+}
+
+.home-news-card--breaking {
+  border-color: var(--news-breaking-accent);
+  box-shadow:
+    0 0 0 1px var(--news-breaking-accent) inset,
+    0 0 24px var(--news-breaking-glow),
+    var(--shadow);
+}
+
+.home-news-card--breaking:hover,
+.home-news-card--breaking:focus,
+.home-news-card--breaking:focus-visible {
+  border-color: var(--news-breaking-accent);
+  box-shadow:
+    0 0 0 1px var(--news-breaking-accent) inset,
+    0 0 30px var(--news-breaking-glow),
+    0 16px 40px rgba(20, 36, 64, 0.11);
+}
+
+.home-news-card--exclusive {
+  border-color: var(--news-exclusive-accent);
+  box-shadow:
+    0 0 0 1px var(--news-exclusive-accent) inset,
+    0 0 18px var(--news-exclusive-glow),
+    var(--shadow);
+}
+
+.home-news-card--exclusive:hover,
+.home-news-card--exclusive:focus,
+.home-news-card--exclusive:focus-visible {
+  border-color: var(--news-exclusive-accent);
+  box-shadow:
+    0 0 0 1px var(--news-exclusive-accent) inset,
+    0 0 22px var(--news-exclusive-glow),
+    0 16px 40px rgba(20, 36, 64, 0.11);
 }
 
 @media (max-width: 980px) {
