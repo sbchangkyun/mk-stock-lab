@@ -1,8 +1,10 @@
 /**
- * Static contract check for Phase 4F-UX1-A -- remove the unintended Home resume surface
- * (UX-08) while preserving the Phase 3GI retention backend, and add a regression guard
- * against unapproved state-dependent Home surfaces reappearing between MARKET SNAPSHOT and
- * MARKET NEWS. No network calls.
+ * Static contract check for Phase 4F-UX1-A / UX1-A1 -- remove the unintended Home resume
+ * surface (UX-08), and enforce (not merely document) an exact-match invariant between the
+ * ACTUAL top-level Home*.astro components rendered by index.astro and the APPROVED registry
+ * in src/lib/home/homeDynamicSurfaceGuard.ts. A brand-new unregistered Home*.astro render, a
+ * registered-but-unrendered component, or a render of an explicitly rejected component (e.g.
+ * HomeRetentionPanel) must all fail this checker. No network calls.
  */
 
 globalThis.fetch = async (url) => {
@@ -45,7 +47,7 @@ const check = (label, pass) => {
 
 const readOr = (path) => (existsSync(path) ? readFileSync(path, 'utf8') : '');
 
-log('=== Phase 4F-UX1-A Home Surface Guard Static Contract ===');
+log('=== Phase 4F-UX1-A / UX1-A1 Home Surface Guard Static Contract ===');
 log('');
 
 const indexAstro = readOr(INDEX_ASTRO);
@@ -75,23 +77,113 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// Group 2: approved Home section order -- Snapshot immediately precedes News, nothing between
+// Group 2: ACTUAL render-tree vs APPROVED registry -- exact-match enforcement (UX1-A1 core fix)
 // ---------------------------------------------------------------------------
-log('--- Group 2: approved Home section order ---');
+log('--- Group 2: actual render-tree vs registry (enforced, not documentation-only) ---');
+
+// Extract every distinct top-level `<HomeXxx` tag actually rendered by index.astro.
+const actualRenderedComponents = Array.from(
+  new Set(Array.from(indexAstro.matchAll(/<Home[A-Z][A-Za-z0-9]*/g)).map((m) => m[0].slice(1))),
+);
+check('index.astro has at least one <Home...> render to inventory', actualRenderedComponents.length > 0);
+
+// Extract approved/rejected component names from their own registry blocks, so
+// GLOBAL_SHELL_SURFACES (e.g. Header) is never conflated with the Home render tree.
+const extractBlock = (source, startMarker, endMarker) => {
+  const startIdx = source.indexOf(startMarker);
+  if (startIdx === -1) return '';
+  const endIdx = endMarker ? source.indexOf(endMarker, startIdx) : source.length;
+  return source.slice(startIdx, endIdx === -1 ? source.length : endIdx);
+};
+
+const approvedBlock = extractBlock(
+  surfaceGuard,
+  'export const APPROVED_HOME_SURFACES',
+  'export const REJECTED_HOME_SURFACES',
+);
+const rejectedBlock = extractBlock(
+  surfaceGuard,
+  'export const REJECTED_HOME_SURFACES',
+  'export const GLOBAL_SHELL_SURFACES',
+);
+const globalShellBlock = extractBlock(surfaceGuard, 'export const GLOBAL_SHELL_SURFACES', undefined);
+
+const extractComponentNames = (block) =>
+  Array.from(block.matchAll(/component:\s*'([^']+)'/g)).map((m) => m[1]);
+
+const approvedComponents = extractComponentNames(approvedBlock);
+const rejectedComponents = extractComponentNames(rejectedBlock);
+const globalShellComponents = extractComponentNames(globalShellBlock);
+
+check('registry APPROVED_HOME_SURFACES block is parseable and non-empty', approvedComponents.length > 0);
+check('registry REJECTED_HOME_SURFACES block is parseable and non-empty', rejectedComponents.length > 0);
+check(
+  'Header (global shell state) is NOT mixed into APPROVED_HOME_SURFACES',
+  globalShellComponents.includes('Header') && !approvedComponents.includes('Header'),
+);
+
+// Same comparison semantics as compareHomeSurfaceInventory in homeDynamicSurfaceGuard.ts,
+// reimplemented here in plain JS since this checker performs static text analysis only and
+// does not execute app TypeScript modules.
+const actualSet = new Set(actualRenderedComponents);
+const approvedSet = new Set(approvedComponents);
+const rejectedSet = new Set(rejectedComponents);
+
+const missing = approvedComponents.filter((c) => !actualSet.has(c));
+const rejectedRendered = actualRenderedComponents.filter((c) => rejectedSet.has(c));
+const unexpected = actualRenderedComponents.filter((c) => !approvedSet.has(c) && !rejectedSet.has(c));
+
+check(
+  `no approved component is missing from the actual render tree (missing: ${missing.join(', ') || 'none'})`,
+  missing.length === 0,
+);
+check(
+  `no unregistered component is rendered (unexpected: ${unexpected.join(', ') || 'none'})`,
+  unexpected.length === 0,
+);
+check(
+  `no explicitly rejected component is rendered (rejectedRendered: ${rejectedRendered.join(', ') || 'none'})`,
+  rejectedRendered.length === 0,
+);
+check(
+  'ACTUAL_RENDERED_HOME_COMPONENTS == APPROVED_RENDERED_HOME_COMPONENTS (exact-match invariant)',
+  missing.length === 0 && unexpected.length === 0 && rejectedRendered.length === 0,
+);
+
+// ---------------------------------------------------------------------------
+// Group 3: main-column order contract + Snapshot/News adjacency
+// ---------------------------------------------------------------------------
+log('--- Group 3: main-column order + Snapshot/News adjacency ---');
+check('index.astro still renders HomePortfolioPanel', indexAstro.includes('<HomePortfolioPanel'));
+check('index.astro still renders HomeMobileAd', indexAstro.includes('<HomeMobileAd'));
 check('index.astro still renders HomeLiveMarketSnapshot', indexAstro.includes('<HomeLiveMarketSnapshot'));
 check('index.astro still renders HomeMarketNews', indexAstro.includes('<HomeMarketNews'));
+check('index.astro still renders HomeRailAd', indexAstro.includes('<HomeRailAd'));
 
+const portfolioIdx = indexAstro.indexOf('<HomePortfolioPanel');
+const mobileAdIdx = indexAstro.indexOf('<HomeMobileAd');
 const snapshotIdx = indexAstro.indexOf('<HomeLiveMarketSnapshot');
 const newsIdx = indexAstro.indexOf('<HomeMarketNews');
+const railAdIdx = indexAstro.indexOf('<HomeRailAd');
+const sidebarMarkerIdx = indexAstro.indexOf('home-sidebar-column');
+
 check(
-  'HomeLiveMarketSnapshot appears before HomeMarketNews',
-  snapshotIdx !== -1 && newsIdx !== -1 && snapshotIdx < newsIdx,
+  'main-column order holds: HomePortfolioPanel < HomeMobileAd < HomeLiveMarketSnapshot < HomeMarketNews',
+  [portfolioIdx, mobileAdIdx, snapshotIdx, newsIdx].every((i) => i !== -1) &&
+    portfolioIdx < mobileAdIdx &&
+    mobileAdIdx < snapshotIdx &&
+    snapshotIdx < newsIdx,
+);
+check(
+  'HomeRailAd is rendered in the sidebar branch, excluded from the main-column linear order',
+  sidebarMarkerIdx !== -1 && railAdIdx !== -1 && sidebarMarkerIdx < railAdIdx,
 );
 
 const between = snapshotIdx !== -1 && newsIdx !== -1 ? indexAstro.slice(snapshotIdx, newsIdx) : '';
 check(
-  'no other component tag (e.g. HomeRetentionPanel) renders between Snapshot and News',
-  between !== '' && !/<[A-Z][A-Za-z]*(?!Snapshot)/.test(between.replace('<HomeLiveMarketSnapshot', '')),
+  'HomeLiveMarketSnapshot immediately precedes HomeMarketNews (nothing else renders between them)',
+  between !== '' &&
+    !/<[A-Z][A-Za-z0-9]*/.test(between.replace('<HomeLiveMarketSnapshot', '')),
 );
 check(
   'the gap between Snapshot and News contains no HomeRetentionPanel render specifically',
@@ -99,36 +191,44 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// Group 3: stateful UI regression guard (§6) -- approved dynamic-surface registry
+// Group 4: registry structure -- visibility model + rejected/global-shell separation
 // ---------------------------------------------------------------------------
-log('--- Group 3: stateful UI regression guard ---');
+log('--- Group 4: registry structure ---');
 check('src/lib/home/homeDynamicSurfaceGuard.ts exists', existsSync(SURFACE_GUARD));
 check(
-  'guard approves the Home portfolio summary panel',
-  /id:\s*'home-portfolio-panel'/.test(surfaceGuard),
+  'guard declares the HomeSurfaceVisibility union (always | stateful | rejected)',
+  /type HomeSurfaceVisibility\s*=\s*'always'\s*\|\s*'stateful'\s*\|\s*'rejected'/.test(surfaceGuard),
 );
-check(
-  'guard approves the normal authenticated header state',
-  /id:\s*'header-auth-state'/.test(surfaceGuard),
-);
+check('guard approves the Home portfolio summary panel', /id:\s*'home-portfolio-panel'/.test(surfaceGuard));
+check('guard approves the Home mobile ad slot', /id:\s*'home-mobile-ad'/.test(surfaceGuard));
+check('guard approves the Home live market snapshot', /id:\s*'home-live-market-snapshot'/.test(surfaceGuard));
+check('guard approves the Home market news section', /id:\s*'home-market-news'/.test(surfaceGuard));
+check('guard approves the Home rail ad slot', /id:\s*'home-rail-ad'/.test(surfaceGuard));
 check(
   'guard explicitly records home-retention-panel as rejected (not silently omitted)',
-  /REJECTED_HOME_DYNAMIC_SURFACES[\s\S]*?id:\s*'home-retention-panel'/.test(surfaceGuard),
+  /id:\s*'home-retention-panel'/.test(rejectedBlock) && /visibility:\s*'rejected'/.test(rejectedBlock),
 );
 check(
-  'guard exposes isApprovedHomeDynamicSurface and isExplicitlyRejectedHomeDynamicSurface',
-  surfaceGuard.includes('isApprovedHomeDynamicSurface') && surfaceGuard.includes('isExplicitlyRejectedHomeDynamicSurface'),
+  'header-auth-state lives in GLOBAL_SHELL_SURFACES, separated from the Home render-tree inventory',
+  /id:\s*'header-auth-state'/.test(globalShellBlock) && !/id:\s*'header-auth-state'/.test(approvedBlock),
 );
 check(
-  'HomePortfolioPanel.astro (the approved dynamic surface) still exists',
+  'guard exposes isApprovedHomeSurface, isExplicitlyRejectedHomeSurface, and compareHomeSurfaceInventory',
+  surfaceGuard.includes('isApprovedHomeSurface') &&
+    surfaceGuard.includes('isExplicitlyRejectedHomeSurface') &&
+    surfaceGuard.includes('compareHomeSurfaceInventory'),
+);
+check(
+  'HomePortfolioPanel.astro (an approved surface) still exists',
   existsSync(HOME_PORTFOLIO_PANEL) && homePortfolioPanel.length > 0,
 );
-check('Header.astro (the approved dynamic surface) still exists', existsSync(HEADER_ASTRO));
+check('Header.astro (the global-shell surface) still exists', existsSync(HEADER_ASTRO));
+check('HomeLiveMarketSnapshot.astro (an approved surface) still exists', existsSync(HOME_LIVE_MARKET_SNAPSHOT));
 
 // ---------------------------------------------------------------------------
-// Group 4: Phase 3GI retention backend preserved untouched
+// Group 5: Phase 3GI retention backend preserved untouched
 // ---------------------------------------------------------------------------
-log('--- Group 4: retention backend preserved ---');
+log('--- Group 5: retention backend preserved ---');
 check('src/lib/server/userRetention.ts still exists', existsSync(SERVER_LIB) && server.length > 0);
 check('GET /api/user/retention route still exists', existsSync(ROUTE_RETENTION) && routeRetention.length > 0);
 check('PATCH /api/user/preferences route still exists', existsSync(ROUTE_PREFERENCES) && routePreferences.length > 0);
@@ -153,9 +253,9 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// Group 5: no scope creep -- no urgent-news styling, no Portfolio/Chart AI/Lab UX work added here
+// Group 6: no scope creep -- no urgent-news styling, no Portfolio/Chart AI/Lab UX work added here
 // ---------------------------------------------------------------------------
-log('--- Group 5: no scope creep ---');
+log('--- Group 6: no scope creep ---');
 check(
   'no [급보]/[단독]/[긴급]/[속보] urgent-news tag styling added in this phase',
   !homeMarketNews.includes('급보') && !homeMarketNews.includes('단독') && !homeMarketNews.includes('긴급') && !homeMarketNews.includes('속보'),
@@ -168,9 +268,9 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// Group 6: package.json wiring
+// Group 7: package.json wiring
 // ---------------------------------------------------------------------------
-log('--- Group 6: package.json wiring ---');
+log('--- Group 7: package.json wiring ---');
 check('package.json has smoke:phase-4f-ux1a-home-surface script', packageJson.includes('"smoke:phase-4f-ux1a-home-surface"'));
 check('package.json has check:phase-4f-ux1a-home-surface script', packageJson.includes('"check:phase-4f-ux1a-home-surface"'));
 

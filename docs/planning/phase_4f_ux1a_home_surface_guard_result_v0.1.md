@@ -117,6 +117,36 @@ nor renders `HomeRetentionPanel` and that nothing else renders between
 > data, etc.) would flip one of them visible without a corresponding code change to that surface
 > itself.
 
+### 5.5 Automated coverage vs. VISIBILITY-STATE DIFF (§6, UX1-A1 clarification)
+
+The UX1-A1 hotfix (§13 below) turned the registry into an enforced render-tree invariant, but
+that automation has a precise, bounded scope. To avoid overclaiming complete coverage:
+
+**AUTOMATED (enforced by `check_phase_4f_ux1a_home_surface_contract.mjs` on every run):**
+
+- The exact set of top-level `Home*.astro` components rendered by `index.astro` matches the
+  `APPROVED_HOME_SURFACES` registry exactly — no missing approved component, no unregistered
+  new component, in any position (including after `HomeMarketNews`).
+- No `REJECTED_HOME_SURFACES` component (e.g. `HomeRetentionPanel`) is ever rendered.
+- Main-column order: `HomePortfolioPanel` → `HomeMobileAd` → `HomeLiveMarketSnapshot` →
+  `HomeMarketNews`; `HomeRailAd` confirmed present but excluded from that linear order (sidebar
+  branch).
+- `HomeLiveMarketSnapshot` immediately precedes `HomeMarketNews` with nothing rendered between
+  them.
+
+**STILL MANUAL / PROCESS REVIEW (the VISIBILITY-STATE DIFF in §4 above, unchanged):**
+
+- A new internal state *inside* an already-approved component (e.g. a fifth
+  `HomePortfolioPanel` state, or a new conditional branch inside `HomeMarketNews`) — the
+  checker only inventories top-level component identity, not a component's internal states.
+- An auth/API/DB/localStorage/feature-flag change that exposes a previously-hidden state or
+  surface *without* adding or removing a `Home*.astro` component tag — e.g. UX-08 itself (a
+  persisted-state transition inside `HomeRetentionPanel`, at a time when it was still imported)
+  would not have been caught by a render-tree checker alone, because the render-tree checker can
+  only fail when a rejected component's tag literally appears in `index.astro`. This category
+  remains why the VISIBILITY-STATE DIFF stays mandatory during PR review — it is not superseded
+  by the new automation.
+
 ## 6. Sibling-checker reconciliation
 
 Two pre-existing static checkers asserted that `index.astro` renders `HomeRetentionPanel`; both
@@ -216,6 +246,116 @@ Owner QA remains formally **0/120**. This phase does not alter F-HIGH-02 or F-HI
 
 See the final report for the exact-Head Vercel Preview deployment ID and verification result.
 
-## 12. Final classification
+## 12. UX1-A1 — bind the registry to the actual render tree (premerge-review hotfix)
 
-**`PHASE_4F_UX1A_HOME_SURFACE_GUARD_IMPLEMENTED_PREMERGE_REVIEW_REQUIRED`**
+### 12.1 Finding
+
+Premerge review of PR #24 (this phase) found that while UX-08 itself was correctly fixed, the
+new `homeDynamicSurfaceGuard.ts` registry from §5.3 above was **documentation-only**: the
+original checker verified `HomeRetentionPanel` absence, the Snapshot→News adjacency, and that a
+short list of literal `id: '...'` strings existed in the guard source — but it never compared
+the registry against what `index.astro` actually renders. A brand-new, unregistered
+`Home*.astro` component added anywhere in `index.astro` (including after `HomeMarketNews`)
+would have passed the old checker undetected. Separately, `HomeMobileAd` and `HomeRailAd` are
+real top-level state-dependent Home surfaces (ad slots) that were missing from the original
+2-entry registry (`home-portfolio-panel`, `header-auth-state`).
+
+### 12.2 Registry model change
+
+`src/lib/home/homeDynamicSurfaceGuard.ts` was rewritten around a three-way
+`HomeSurfaceVisibility = 'always' | 'stateful' | 'rejected'` model (`HomeSurface { id,
+component, visibility, description }`), covering every top-level `Home*.astro` component
+`index.astro` renders:
+
+| id | component | visibility |
+|---|---|---|
+| `home-portfolio-panel` | `HomePortfolioPanel` | `always` |
+| `home-mobile-ad` | `HomeMobileAd` | `stateful` |
+| `home-live-market-snapshot` | `HomeLiveMarketSnapshot` | `always` |
+| `home-market-news` | `HomeMarketNews` | `always` |
+| `home-rail-ad` | `HomeRailAd` | `stateful` |
+| `home-retention-panel` | `HomeRetentionPanel` | `rejected` (zero renders required) |
+
+`header-auth-state` (`Header`) was moved out to a new `GLOBAL_SHELL_SURFACES` array with an
+ownership comment — it is Common-Shell/Layout state, not a direct Home*.astro component, and is
+never mixed into the Home render-tree comparison. Internal loading/empty substates inside an
+already-approved component are deliberately not tracked as separate surfaces (see §5.5).
+
+A new pure function, `compareHomeSurfaceInventory({ actualComponents, approvedComponents,
+rejectedComponents })`, returns `{ ok, missing, unexpected, rejectedRendered }` via `Set`
+membership checks — this is the enforcement primitive both the smoke test and the checker now
+exercise.
+
+### 12.3 Checker enforcement
+
+`scripts/check_phase_4f_ux1a_home_surface_contract.mjs` now parses the actual `<Home[A-Z]...`
+tags rendered by `index.astro` (deduplicated), parses the approved/rejected component-name lists
+from their own registry blocks in `homeDynamicSurfaceGuard.ts` source text, and applies the same
+missing/unexpected/rejectedRendered comparison as `compareHomeSurfaceInventory`. Required
+invariant: `ACTUAL_RENDERED_HOME_COMPONENTS == APPROVED_RENDERED_HOME_COMPONENTS`, excluding
+rejected components (which must have zero renders). This enforcement is independent of, and in
+addition to, the pre-existing Snapshot→News adjacency assertion — it is not limited to that gap.
+A full main-column order assertion (`HomePortfolioPanel` → `HomeMobileAd` →
+`HomeLiveMarketSnapshot` → `HomeMarketNews`) was added, with `HomeRailAd` explicitly confirmed
+present in the sidebar branch and excluded from that ordering.
+
+This enforcement was manually verified against real failures before being trusted: a temporary
+`<HomeUnexpectedPanel />` appended after `<HomeMarketNews />` in `index.astro` correctly failed
+the checker (`unexpected: HomeUnexpectedPanel`), and a temporary `<HomeRetentionPanel />` reinserted
+between Snapshot and News correctly failed it on four independent assertions
+(`rejectedRendered`, the exact-match invariant, the adjacency check, and the explicit
+HomeRetentionPanel-in-the-gap check). Both edits were reverted immediately after confirming the
+failure, and the checker was re-run clean (46/46) before proceeding.
+
+### 12.4 New tests (§5 required cases A–F)
+
+`scripts/phase_4f_ux1a_home_surface_guard_testsrc.ts` was rewritten to exercise the real
+`compareHomeSurfaceInventory` function against the real registry's derived component-name
+arrays, covering all six required cases: (A) actual == approved → PASS; (B) actual contains an
+unregistered `HomeUnexpectedPanel` → FAIL/unexpected; (C) actual omits `HomeMarketNews` →
+FAIL/missing; (D) actual renders `HomeRetentionPanel` → FAIL/rejected-rendered; (E)
+`HomeMobileAd`/`HomeRailAd` are approved stateful surfaces, full match → PASS; (F) a new unknown
+component appended after `HomeMarketNews` → still FAIL/unexpected (proving the premerge finding
+in §12.1 is fixed). **25/25 assertions passed** (12 registry-shape assertions + 13 across
+cases A–F).
+
+### 12.5 Regression gate (all green)
+
+- `smoke:phase-4f-ux1a-home-surface` — **25/25** (was 8/8; grew with the new A–F enforcement
+  cases).
+- `check:phase-4f-ux1a-home-surface` — **46/46** (was 28/28; grew with the new render-tree
+  enforcement group, the full order-contract group, and the refined registry-structure group).
+- `check:phase-4a-home-common-shell` — **75/75** (no change needed).
+- `check:phase-3gi-user-retention-persistence` — **149/149** (no change needed).
+- `smoke:phase-4f-hf1-functional-high` — **59/59** (39 + 20 across the two testsrc suites it
+  bundles).
+- `check:phase-4f-hf1-functional-high` — **58/58**.
+- `smoke:phase-4f-hf2-portfolio-identity` — **98/98** (23 + 15 + 26 + 34 across its four testsrc
+  suites).
+- `check:phase-4f-hf2-portfolio-identity` — **63/63**.
+- `smoke:phase-4e-portfolio-production-completion` — **21/21**.
+- `check:phase-4e-portfolio-production-completion` — **65/65**.
+- `git diff --check` — clean (only benign LF→CRLF line-ending warnings on the three touched
+  files).
+- `npm ls --depth=0` — clean.
+- `npm run build` — all real build stages completed successfully (types generated, server
+  entrypoints built, 3 Vite builds, Vercel adapter server-asset rearrangement); same known
+  nonzero-exit Windows teardown artifact as prior phases, not a compile error.
+
+No check was weakened to recover green; every total that changed grew because new, stricter
+assertions were added.
+
+### 12.6 Scope
+
+Changed files for UX1-A1: `src/lib/home/homeDynamicSurfaceGuard.ts` (rewritten registry model),
+`scripts/check_phase_4f_ux1a_home_surface_contract.mjs` (rewritten enforcement), `scripts/phase_4f_ux1a_home_surface_guard_testsrc.ts`
+(rewritten test cases), this document (§5.5 and §12 added). No changes to
+`HomeRetentionPanel.astro` internals, retention APIs, retention DB/migrations, Portfolio, KIS,
+Chart AI, Market, or Lab. The resume panel was not restored.
+
+Committed to the **existing** `fix/phase-4f-ux1a-home-surface-guard` branch (PR #24) — no new PR
+was opened and PR #24 was not merged.
+
+## 13. Final classification
+
+**`PHASE_4F_UX1A_A1_COMPLETE_PREMERGE_REVIEW_REQUIRED`**

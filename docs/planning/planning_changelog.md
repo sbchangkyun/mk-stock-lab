@@ -1,5 +1,40 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F-UX1-A.1 — bind Home surface registry to the actual render tree - 2026-08-10
+
+- **Classification: `PHASE_4F_UX1A_A1_COMPLETE_PREMERGE_REVIEW_REQUIRED`.**
+- **Premerge-review finding on PR #24.** The UX1-A registry (`homeDynamicSurfaceGuard.ts`) was
+  documentation-only: the checker verified `HomeRetentionPanel` absence and Snapshot→News
+  adjacency, but never compared the registry against what `index.astro` actually renders. A
+  brand-new unregistered `Home*.astro` component (anywhere, including after `HomeMarketNews`)
+  would have passed undetected. `HomeMobileAd`/`HomeRailAd` (real top-level ad surfaces) were
+  also missing from the original 2-entry registry.
+- **Registry rewritten** around `HomeSurfaceVisibility = 'always' | 'stateful' | 'rejected'`,
+  covering all 5 top-level Home components (`HomePortfolioPanel`, `HomeMobileAd`,
+  `HomeLiveMarketSnapshot`, `HomeMarketNews`, `HomeRailAd`) plus 1 rejected
+  (`HomeRetentionPanel`); `header-auth-state`/`Header` moved to a separate
+  `GLOBAL_SHELL_SURFACES` array, out of the Home render-tree comparison. New pure
+  `compareHomeSurfaceInventory()` enforcement primitive.
+- **Checker now enforces render-tree equality**, not just documentation:
+  `check_phase_4f_ux1a_home_surface_contract.mjs` parses actual `<Home...` tags from
+  `index.astro` and the approved/rejected component lists from the registry source, asserting
+  `ACTUAL_RENDERED_HOME_COMPONENTS == APPROVED_RENDERED_HOME_COMPONENTS` (excluding rejected,
+  which must be zero), the full main-column order
+  (`HomePortfolioPanel < HomeMobileAd < HomeLiveMarketSnapshot < HomeMarketNews`, `HomeRailAd`
+  excluded as sidebar-only), and the Snapshot→News adjacency as a separate assertion. Manually
+  verified against two injected failures (an unregistered trailing component, a reinserted
+  `HomeRetentionPanel`) before trusting it — both correctly failed, then reverted.
+- **Tests.** `smoke:phase-4f-ux1a-home-surface` grew 8/8 → **25/25** (adds the 6 required A–F
+  enforcement cases). `check:phase-4f-ux1a-home-surface` grew 28/28 → **46/46**.
+- **VISIBILITY-STATE DIFF clarified (§5.5 of the result doc), not superseded.** The new
+  automation covers top-level component identity/order only; a new internal state inside an
+  already-approved component, or a state-exposing backend change with no new component tag,
+  still requires manual PR review per the original process rule.
+- **No scope creep.** `HomeRetentionPanel.astro` internals, retention backend, Portfolio, KIS,
+  Chart AI, Market, Lab untouched; resume panel not restored.
+- Committed to the **existing** `fix/phase-4f-ux1a-home-surface-guard` branch (PR #24) — no new
+  PR, **not merged**. See `phase_4f_ux1a_home_surface_guard_result_v0.1.md` §12.
+
 ## Phase 4F-UX1-A — remove unintended Home resume surface + stateful UI guard - 2026-08-10
 
 - **Classification: `PHASE_4F_UX1A_HOME_SURFACE_GUARD_IMPLEMENTED_PREMERGE_REVIEW_REQUIRED`.**
