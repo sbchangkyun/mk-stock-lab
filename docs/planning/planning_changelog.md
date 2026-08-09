@@ -1,5 +1,64 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F-HF1 — functional HIGH defect fixes - 2026-08-09
+
+- **Classification: `PHASE_4F_HF1_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
+- **Baseline.** `main` @ `af52c624a724c728f8d71295c9891dfe58496d85`. Branch
+  `fix/phase-4f-hf1-high-functional-defects`. The Owner QA evidence branch
+  `docs/phase-4f-owner-qa-execution` was not touched, merged, or cherry-picked from.
+- **Scope: exactly two HIGH functional defects** surfaced by the Phase 4F Owner QA closeout
+  execution — no other defect, redesign, or refactor was implemented.
+- **F-HIGH-01 (`CHART-05`) — Chart AI timeframe coverage/paging.** `fetchUniversalOhlcv()` fetched
+  exactly one provider page per chart request regardless of the requested range, so 6m/1y ranges
+  silently returned incomplete data. Added bounded backward-paging (KR: date-boundary walk; US:
+  existing BYMD backward cursor; both dedupe/sort/validate, bounded max 4 pages) to
+  `universalOhlcvProvider.ts`, without rewriting or merging the separate long-history engine. Added
+  an additive `coverage` contract (`requestedRange`/`requestedStartDate`/`actualStartDate`/
+  `actualEndDate`/`candleCount`/`complete`, calendar-tolerant of weekends/holidays and newly-listed
+  securities) to `UniversalOhlcvResponse`, and a concise truthful client note in `chart-ai.astro`
+  when a chart loads successfully but its coverage is incomplete.
+- **F-HIGH-02 (`PORT-10`) — Portfolio Production KR live valuation.** The generic KIS quote path
+  fails closed in Vercel Production by design, which blocked the authenticated
+  `/api/portfolio/valuation` route from ever getting real KR quotes there. Added a narrow
+  `allowProductionPortfolioValuationLiveData` capability to `kisClient.ts` that lifts only the
+  generic Production hard block, gated on ALL of: Production runtime, the caller passing the
+  option, the new `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION` env flag, `KIS_ENABLE_LIVE_QUOTES`
+  enabled, valid KIS credentials, and `KIS_ACCOUNT_NO` absent. `quotes.ts` forwards the option;
+  `src/pages/api/portfolio/valuation.ts` is the **only** call site in the repo that sets it. The
+  generic `getKisQuoteSnapshot(...)` wrapper stays Production fail-closed for every other caller.
+  KR-only in this phase — no US Portfolio valuation, FX, account linkage, or trading added.
+- **Env contract.** No `.env.example`/`.env.template` exists anywhere in the repo, so the
+  instruction to add the new flag there is not applicable this phase. **Owner action required
+  before Production merge:** set Vercel Production `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION=true`
+  before the post-merge deployment expected to verify `PORT-10`.
+- **New tests/checker.** `smoke:phase-4f-hf1-functional-high` (39 chart-timeframe + 20
+  portfolio-valuation-security assertions, 59/59) and `check:phase-4f-hf1-functional-high` (58
+  static-contract assertions), both green.
+- **Regression found and fixed during validation.** This phase's own explanatory comment in
+  `valuation.ts` contained the literal substring `KIS_ACCOUNT_NO` as prose, which tripped the
+  pre-existing Phase 3GH checker assertion `route never references KIS_ACCOUNT_NO`
+  (85/86). Per the explicit "do not weaken Phase 4C/4E/3GH checkers" instruction, the checker was
+  left untouched and the comment was reworded to remove the literal env-var name while keeping the
+  same meaning; `check:phase-3gh-portfolio-live-valuation-mvp` re-ran 86/86 and
+  `check:phase-4f-hf1-functional-high` stayed 58/58.
+- **Full regression gate green**, no Phase 4C/4E/3GH checker weakened: `check:phase-4c-chart-ai-production-completion`
+  (35/35), `smoke:phase-4e-portfolio-production-completion` (21/21),
+  `check:phase-4e-portfolio-production-completion` (65/65),
+  `smoke:phase-3gh-portfolio-live-valuation-mvp` (55/55),
+  `check:phase-3gh-portfolio-live-valuation-mvp` (86/86), `check:mobile-baseline` (74/74),
+  `check:phase-4a-home-common-shell` (75/75), `check:phase-4b-market-production-completion`
+  (79/79), `check:phase-4d-lab-production-completion` (62/62),
+  `check:project-lightweight-roadmap` (27/27), `git diff --check` clean, `npm ls --depth=0` clean,
+  `npm run build` real build succeeded (dist/ and .vercel/output confirmed freshly written on disk;
+  the known Windows-only post-build teardown exit code `-1073740791` was classified separately, not
+  a compile error, per this phase's own pre-flagged caveat).
+- **Changed files:** `package.json`, `universalOhlcvProvider.ts`, `chart-ai.astro`, `kisClient.ts`,
+  `quotes.ts`, `valuation.ts`, plus 4 new HF1 test/checker/smoke scripts. No UX1/Lab file changed.
+  No Owner-local untracked file touched; `git add .`/`-A` never used.
+- **New result doc** (`phase_4f_hf1_functional_high_defects_result_v0.1.md`).
+- **PR** "Phase 4F HF1: fix Chart AI timeframe and Portfolio valuation", base `main`, head
+  `fix/phase-4f-hf1-high-functional-defects`. **Not merged** — pre-merge review required.
+
 ## Phase 4F-A — cross-page Owner QA closeout plan - 2026-08-09
 
 - **Classification: `PHASE_4F_CROSS_PAGE_OWNER_QA_PLAN_READY_QA_NOT_STARTED`.** Plan-only; no
