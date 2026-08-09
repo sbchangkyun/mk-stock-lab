@@ -340,6 +340,25 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   the post-merge deployment that verifies `PORT-10`. See
   `phase_4f_hf1_functional_high_defects_result_v0.1.md`.
 
+- **Phase 4F-HF2 — Portfolio canonical instrument identity.**
+  `PHASE_4F_HF2_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`. Fixes `F-HIGH-03`: replaced
+  Portfolio's free-text/heuristic identity system (typed Korean names stored verbatim as `symbol`,
+  a `securityLogos.json` lookup, ticker-like regex, market/currency heuristics) with a canonical
+  identity contract sourced entirely from the existing Universal Instrument Master — no new symbol
+  database. Adds an exact identity resolver (`resolveUniversalInstrumentExact`, distinct from
+  ranked search — never auto-selects fuzzy/ambiguous matches), an accessible instrument combobox in
+  Portfolio reusing the existing `/api/chart-ai/instruments/search.json` route, server-authoritative
+  canonicalization on create/update (`resolveCanonicalOrFail` — client-supplied identity tuples are
+  never trusted), and an in-memory-only legacy-compatibility resolver
+  (`resolveLegacyKrIdentity`) that lets existing free-text KR rows (e.g. legacy "삼성전자") value
+  correctly without bulk DB migration or DB mutation on read. `PORT-10`'s HF1 security boundary is
+  unchanged. 112 new deterministic assertions (60 smoke + 52 checker); two pre-existing
+  `check:phase-4e-portfolio-production-completion` assertions (A1, K9) were narrowly reconciled for
+  this phase's spec-mandated changes, not weakened. PR open, not merged; neither `PORT-10` nor
+  `F-HIGH-03` may be declared CLOSED before an Owner completes the Production proving path (legacy
+  row → resolved to canonical symbol → real KIS quote → numeric valuation). See
+  `phase_4f_hf2_portfolio_instrument_identity_result_v0.1.md`.
+
 ### Next sequential product phases
 
 Phases 4B–4E repeat the same navigation-based production-readiness pattern established by Phase 4A —

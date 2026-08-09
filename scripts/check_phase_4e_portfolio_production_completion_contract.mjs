@@ -79,7 +79,10 @@ const oneLine = src.replace(/\r?\n/g, ' ');
 // Group A: ETF UI exposure
 // ---------------------------------------------------------------------------
 log('--- Group A: ETF UI exposure ---');
-check('A1. position-asset-type select offers an ETF option', /<select id="position-asset-type">[\s\S]{0,120}<option value="etf">ETF<\/option>/.test(src));
+// Phase 4F-HF2 (§14) made this select canonical-derived (disabled + aria-readonly once an
+// instrument is selected), adding attributes between the id and the closing ">" -- the ETF
+// option itself is unchanged, so the tag-open match is widened to tolerate any attributes.
+check('A1. position-asset-type select offers an ETF option', /<select id="position-asset-type"[^>]*>[\s\S]{0,120}<option value="etf">ETF<\/option>/.test(src));
 check('A2. page lead copy names ETFs alongside stocks', /ETF 보유 종목을 관리합니다/.test(src));
 
 // ---------------------------------------------------------------------------
@@ -185,7 +188,14 @@ check('K5. no KIS account API reference was added', !/KIS_ACCOUNT|kisAccount/i.t
 check('K6. no LLM/OpenAI/Gemini reference was added', !/openai|gemini|anthropic\.com\/v1|chatCompletion/i.test(src));
 check('K7. no Supabase migration or schema reference was added in this page', !/CREATE TABLE|ALTER TABLE|supabase\/migrations/i.test(src));
 check('K8. no raw fetch() call was added directly in portfolio.astro (data access stays behind portfolioApi)', !/\bfetch\(/.test(src));
-check('K9. no new /api/ route reference beyond the existing valuation/portfolio client calls', !/['"`]\/api\/(?!portfolio)/.test(src));
+// Phase 4F-HF2 (§3/§4) mandates reusing the existing, pre-existing Chart AI instrument-search
+// route (via the shared authenticated fetchChartAiJson helper, not a raw fetch()/new endpoint)
+// for the Portfolio instrument combobox -- this one call site is allow-listed by exact path so a
+// genuinely new/invented route (any other non-portfolio /api/ path) still fails this check.
+check(
+  'K9. no new /api/ route reference beyond the existing valuation/portfolio client calls and the HF2-reused chart-ai instrument search',
+  !/['"`]\/api\/(?!portfolio)(?!chart-ai\/instruments\/search\.json)/.test(src),
+);
 check('K10. portfolioKeyboardNav.ts stays pure (no DOM/window/document reference)', !/\b(document|window)\./.test(navSrc));
 check('K11. portfolioKeyboardNav.ts introduces no fetch/network reference', !/\bfetch\(/.test(navSrc));
 check('K12. the holdings surface was not redesigned into a full HTML <table>', !/<table[\s>]/.test(src));

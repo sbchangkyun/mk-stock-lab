@@ -4,6 +4,16 @@ import {
   isSupabaseServerConfigured,
   validateUserFromBearerToken,
 } from './supabaseAdmin';
+import { resolveCanonicalPortfolioInstrument } from './chart-ai/universal-instrument-search.mjs';
+
+type CanonicalInstrument = {
+  symbol: string;
+  displayName: string;
+  country: 'KR' | 'US';
+  exchange: string;
+  assetType: 'stock' | 'etf';
+  currency: 'KRW' | 'USD';
+};
 
 type PortfolioRow = {
   id: string;
@@ -148,10 +158,45 @@ const enumValue = <T extends string>(value: unknown, allowed: readonly T[], fiel
   return apiSuccess(normalized);
 };
 
-const assetTypeValue = (value: unknown) => {
-  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  if (raw === 'stock' || raw === 'etf') return apiSuccess(raw);
-  return apiFailure(400, 'INVALID_PAYLOAD', '자산 유형을 확인해 주세요.');
+// Exported (Phase 4F-HF2) so the deterministic create/edit contract tests can exercise the real
+// server-authoritative canonicalization decision directly, without needing a Supabase client.
+export const resolveCanonicalOrFail = (symbolValue: unknown, marketValue: unknown): ApiResult<CanonicalInstrument> => {
+  const symbolInput = asString(symbolValue);
+  if (!symbolInput) return apiFailure(400, 'INVALID_PAYLOAD', '티커 또는 종목명을 입력해 주세요.');
+
+  const marketHint = typeof marketValue === 'string' ? marketValue.trim().toUpperCase() : '';
+  const resolution = resolveCanonicalPortfolioInstrument({
+    symbol: symbolInput,
+    market: marketHint === 'KR' || marketHint === 'US' ? marketHint : undefined,
+  });
+
+  if (!resolution.ok) {
+    if (resolution.code === 'INSTRUMENT_MARKET_MISMATCH') {
+      return apiFailure(400, 'INSTRUMENT_MARKET_MISMATCH', '선택한 시장과 종목 정보가 일치하지 않습니다.');
+    }
+    if (resolution.code === 'INSTRUMENT_SYMBOL_REQUIRED') {
+      return apiFailure(400, 'INVALID_PAYLOAD', '티커 또는 종목명을 입력해 주세요.');
+    }
+    return apiFailure(400, 'INSTRUMENT_NOT_RESOLVED', '검색 결과에서 종목을 선택해 주세요.');
+  }
+
+  const instrument = resolution.instrument as {
+    symbol: string;
+    displayName: string;
+    country: 'KR' | 'US';
+    exchange: string;
+    assetType: 'stock' | 'etf';
+    currency: 'KRW' | 'USD';
+  };
+
+  return apiSuccess({
+    symbol: instrument.symbol,
+    displayName: instrument.displayName,
+    country: instrument.country,
+    exchange: instrument.exchange,
+    assetType: instrument.assetType,
+    currency: instrument.currency,
+  });
 };
 
 const nonNegativeNumber = (value: unknown, field: string) => {
@@ -337,14 +382,9 @@ export const createPosition = async (userId: string, body: Record<string, unknow
   const owned = await ensurePortfolioOwned(userId, body.portfolioId);
   if (!owned.ok) return owned;
 
-  const symbol = requiredString(body.symbol, 'symbol', 32);
-  if (!symbol.ok) return symbol;
-
-  const market = enumValue(body.market, ['KR', 'US'] as const, 'market');
-  if (!market.ok) return market;
-
-  const assetType = assetTypeValue(body.assetType);
-  if (!assetType.ok) return assetType;
+  const canonical = resolveCanonicalOrFail(body.symbol, body.market);
+  if (!canonical.ok) return canonical;
+  const instrument = canonical.data;
 
   const buyPrice = nonNegativeNumber(body.buyPrice, 'buyPrice');
   if (!buyPrice.ok) return buyPrice;
@@ -355,22 +395,19 @@ export const createPosition = async (userId: string, body: Record<string, unknow
   const buyDate = optionalDate(body.buyDate);
   if (!buyDate.ok) return buyDate;
 
-  const currency = enumValue(body.currency, ['KRW', 'USD'] as const, 'currency', market.data === 'KR' ? 'KRW' : 'USD');
-  if (!currency.ok) return currency;
-
   const { data, error } = await getSupabaseAdminClient()
     .from('portfolio_positions')
     .insert({
       portfolio_id: owned.data,
-      symbol: symbol.data.toUpperCase(),
-      market: market.data,
-      asset_type: assetType.data,
-      name: optionalString(body.name, 160),
+      symbol: instrument.symbol,
+      market: instrument.country,
+      asset_type: instrument.assetType,
+      name: instrument.displayName,
       buy_price: buyPrice.data,
       quantity: quantity.data,
       buy_date: buyDate.data,
       memo: optionalString(body.memo, 500),
-      currency: currency.data,
+      currency: instrument.currency,
     })
     .select(positionSelect)
     .single();
@@ -396,22 +433,28 @@ export const updatePosition = async (userId: string, body: Record<string, unknow
   if (!owned.ok) return apiFailure(404, 'POSITION_NOT_FOUND', '보유 종목을 찾을 수 없습니다.');
 
   const updates: Record<string, unknown> = {};
-  if (body.symbol !== undefined) {
-    const symbol = requiredString(body.symbol, 'symbol', 32);
-    if (!symbol.ok) return symbol;
-    updates.symbol = symbol.data.toUpperCase();
+
+  const identityTouched =
+    body.symbol !== undefined ||
+    body.market !== undefined ||
+    body.assetType !== undefined ||
+    body.currency !== undefined ||
+    body.name !== undefined;
+
+  if (identityTouched) {
+    if (body.symbol === undefined) {
+      return apiFailure(400, 'INVALID_PAYLOAD', '티커 또는 종목명을 입력해 주세요.');
+    }
+    const canonical = resolveCanonicalOrFail(body.symbol, body.market);
+    if (!canonical.ok) return canonical;
+    const instrument = canonical.data;
+    updates.symbol = instrument.symbol;
+    updates.market = instrument.country;
+    updates.asset_type = instrument.assetType;
+    updates.name = instrument.displayName;
+    updates.currency = instrument.currency;
   }
-  if (body.market !== undefined) {
-    const market = enumValue(body.market, ['KR', 'US'] as const, 'market');
-    if (!market.ok) return market;
-    updates.market = market.data;
-  }
-  if (body.assetType !== undefined) {
-    const assetType = assetTypeValue(body.assetType);
-    if (!assetType.ok) return assetType;
-    updates.asset_type = assetType.data;
-  }
-  if (body.name !== undefined) updates.name = optionalString(body.name, 160);
+
   if (body.buyPrice !== undefined) {
     const buyPrice = nonNegativeNumber(body.buyPrice, 'buyPrice');
     if (!buyPrice.ok) return buyPrice;
@@ -428,11 +471,6 @@ export const updatePosition = async (userId: string, body: Record<string, unknow
     updates.buy_date = buyDate.data;
   }
   if (body.memo !== undefined) updates.memo = optionalString(body.memo, 500);
-  if (body.currency !== undefined) {
-    const currency = enumValue(body.currency, ['KRW', 'USD'] as const, 'currency');
-    if (!currency.ok) return currency;
-    updates.currency = currency.data;
-  }
 
   if (Object.keys(updates).length === 0) {
     return apiFailure(400, 'INVALID_PAYLOAD', '수정할 보유 종목 항목이 없습니다.');

@@ -1,5 +1,59 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F-HF2 — Portfolio canonical instrument identity - 2026-08-09
+
+- **Classification: `PHASE_4F_HF2_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
+- **Baseline.** `main` @ `af2d74b2e3cdae87515bf02b3e286b242ce0f6a8` (Phase 4F-HF1 / PR #22 merged).
+  Branch `fix/phase-4f-hf2-portfolio-instrument-identity`.
+- **Scope: F-HIGH-03 completely**, replacing Portfolio's free-text/heuristic identity system with a
+  canonical identity contract, then using it to prove whether `F-HIGH-02`/`PORT-10` (HF1) works
+  with a real KR symbol. Explicit instruction: do not preserve free-text identity semantics —
+  replace the contract.
+- **Canonical source reused, not duplicated.** `src/data/chart-ai/universalInstrumentMaster.json`
+  remains the sole identity source, via the existing `universal-instrument-search.mjs` module and
+  `GET /api/chart-ai/instruments/search.json` route. `securityLogos.json` is not used for identity.
+- **New exact resolver.** `resolveUniversalInstrumentExact({ query, country? })` — exact canonical
+  symbol / normalized displayName / normalized englishName / unique-alias-only matches; rejects
+  prefix/substring/multi-alias ambiguity; distinct from ranked search so persistence never relies on
+  a ranked first result.
+- **Accessible Portfolio combobox.** Replaces the free-text `종목명 또는 티커` field with a
+  `role="combobox"` + `role="listbox"/"option"` UI (full keyboard + click/touch support), backed by
+  dedicated canonical selection state (`symbol`/`displayName`/`country`/`exchange`/`market`/
+  `assetType`/`currency`). Editing visible text after a selection immediately clears the canonical
+  state; an exact symbol/name typed and submitted without clicking still resolves via the same
+  server-side resolver, but ambiguous input is rejected with `'검색 결과에서 종목을 선택해
+  주세요.'` rather than silently guessing.
+- **Server-authoritative create/update.** `resolveCanonicalOrFail` in `portfolio.ts` is called by
+  both `createPosition` and `updatePosition` before any DB write; the client-supplied
+  symbol/market/assetType/currency tuple is never trusted, and a contradictory pair (e.g.
+  `symbol=005930, market=US`) is rejected with `'선택한 시장과 종목 정보가 일치하지 않습니다.'`.
+  Arbitrary Korean text can no longer be persisted into the `symbol` column.
+- **Legacy compatibility, no bulk migration.** `resolveLegacyKrIdentity` in `valuation.ts` resolves
+  existing free-text KR rows (e.g. legacy "삼성전자"/"네이버") to their canonical symbol
+  **in memory only**, exactly once per valuation read, never mutating the DB and never fuzzy-
+  repairing an ambiguous row. Already-canonical rows and non-KR rows pass through unchanged.
+- **Tests.** 60 smoke assertions (resolver: 23, legacy-compatibility: 15, create/edit contract: 22)
+  against the real Universal Master, plus a new 52-assertion static contract checker
+  (`check:phase-4f-hf2-portfolio-identity`) covering reuse, resolver distinctness, accessibility,
+  input invalidation, server-authoritative canonicalization, legacy compatibility, and the
+  unchanged KIS Production security boundary.
+- **Sibling checker reconciliation.** Two pre-HF2 assertions in
+  `check_phase_4e_portfolio_production_completion_contract.mjs` (A1: ETF-option select-tag regex;
+  K9: no-new-`/api/`-route allowlist) were narrowly updated — not weakened — to tolerate this
+  phase's spec-mandated `disabled aria-readonly` select attributes and the legitimate reuse of the
+  existing chart-ai instrument-search route. Re-run: 65/65.
+- **Full §21 regression gate green**, including the 10-command Phase 4F gate, `check:mobile-
+  baseline`, `check:project-lightweight-roadmap`, `git diff --check`, `npm ls --depth=0`, and
+  `npm run build` (dist output confirmed on disk; known benign Windows post-build exit-code
+  artifact).
+- **Status.** `F-HIGH-01`/`CHART-05` stays CLOSED (untouched). `F-HIGH-02`/`PORT-10` remains
+  IMPLEMENTED / BLOCKED-UNTIL-HF2-MERGE. `F-HIGH-03` is IMPLEMENTED / PRODUCTION-VERIFICATION-
+  REQUIRED — neither may be declared CLOSED before an Owner completes the Production proving path
+  (legacy row → resolved to canonical symbol → real KIS quote → numeric valuation). Owner QA formal
+  count remains 0/120.
+- PR opened (`fix/phase-4f-hf2-portfolio-instrument-identity` → `main`), **not merged**. See
+  `phase_4f_hf2_portfolio_instrument_identity_result_v0.1.md`.
+
 ## Phase 4F-HF1 — functional HIGH defect fixes - 2026-08-09
 
 - **Classification: `PHASE_4F_HF1_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
