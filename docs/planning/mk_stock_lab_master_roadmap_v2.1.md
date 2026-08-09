@@ -359,6 +359,32 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   row → resolved to canonical symbol → real KIS quote → numeric valuation). See
   `phase_4f_hf2_portfolio_instrument_identity_result_v0.1.md`.
 
+- **Phase 4F-UX1-A / UX1-A1 — remove unintended Home resume surface + bind the stateful UI guard
+  to the actual render tree.** `PHASE_4F_UX1A_A1_COMPLETE_PREMERGE_REVIEW_REQUIRED`. Owner-observed
+  defect `UX-08` (MEDIUM): Phase 3GI's `HomeRetentionPanel` — dormant since its introduction —
+  became visible on Home (between MARKET SNAPSHOT and MARKET NEWS, showing a duplicate "포트폴리오
+  · 포트폴리오" label) purely because a session's persisted retention state contained a resumable
+  target, with no Home-touching code change involved. Removed the panel's import/render from
+  `index.astro` only; the component file and the entire Phase 3GI retention backend (migrations,
+  API routes, client module, cross-page resume-state persistence) are preserved, dormant, not
+  deleted. UX1-A added a documented stateful-UI registry
+  (`src/lib/home/homeDynamicSurfaceGuard.ts`) and a new process rule — the **VISIBILITY-STATE
+  DIFF** — but a premerge review of PR #24 found the registry was documentation-only: it never
+  compared itself against what `index.astro` actually renders, so a brand-new unregistered
+  `Home*.astro` component (anywhere, including after MARKET NEWS) would have escaped detection.
+  UX1-A1 closes that gap on the same PR: the registry is now `HomeSurfaceVisibility`-typed
+  (`always` / `stateful` / `rejected`) covering all 5 real top-level Home components
+  (`HomePortfolioPanel`, `HomeMobileAd`, `HomeLiveMarketSnapshot`, `HomeMarketNews`,
+  `HomeRailAd`) plus the 1 rejected `HomeRetentionPanel`, with `header-auth-state` moved to a
+  separate `GLOBAL_SHELL_SURFACES` list; a new pure `compareHomeSurfaceInventory()` primitive is
+  enforced by the checker against the actual `<Home...` tags parsed from `index.astro`, requiring
+  an exact match (excluding rejected, which must render zero times) plus the full main-column
+  order contract. The VISIBILITY-STATE DIFF process rule is clarified, not superseded — it still
+  covers new internal states inside already-approved components, which render-tree parsing cannot
+  see. Home-only; does not alter `F-HIGH-02`/`PORT-10` or `F-HIGH-03`, both of which remain
+  IMPLEMENTED / PRODUCTION OWNER VERIFICATION STILL REQUIRED. PR #24 open, not merged. See
+  `phase_4f_ux1a_home_surface_guard_result_v0.1.md` §12.
+
 ### Next sequential product phases
 
 Phases 4B–4E repeat the same navigation-based production-readiness pattern established by Phase 4A —
