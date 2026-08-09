@@ -2,6 +2,10 @@
 
 **Classification: `PHASE_4F_HF2_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
 
+**Addendum (2026-08-09): HF2-A1 fixes a raw exact-entry market-hint leak found during independent
+premerge review of this PR — see §14. Still premerge; F-HIGH-02/F-HIGH-03 remain not-CLOSED; Owner
+QA remains 0/120.**
+
 ## 1. Scope
 
 Fixes **F-HIGH-03 (HIGH severity)** completely: Portfolio's free-text/heuristic identity system
@@ -254,6 +258,132 @@ No Owner-local untracked file was staged or committed. `git add .` / `git add -A
 ## 13. PR
 
 - Title: "Phase 4F HF2: fix Portfolio instrument identity".
-- Base: `main`. Head: `fix/phase-4f-hf2-portfolio-instrument-identity`.
+- Base: `main`. Head: `fix/phase-4f-hf2-portfolio-instrument-identity` (PR #23).
 - **Not merged** — pre-merge review required. Owner Production proving path (§11/§15) must be
   completed before F-HIGH-02/F-HIGH-03 can be declared CLOSED.
+
+## 14. HF2-A1 — fix raw exact-entry market-hint leak (2026-08-09)
+
+An independent premerge review of PR #23 found one contract defect, isolated entirely to the
+**client submit-decision path** (the canonical resolver, the legacy KR resolver, and the server-side
+`resolveCanonicalOrFail` were all already correct and were not touched by A1).
+
+**Defect.** The portfolio form carries a hidden `<input type="hidden" id="position-market"
+value="KR" />`. The submit handler derived `market = selectedPositionInstrument?.country ||
+hiddenMarket || 'KR'`. A user who typed an exact US symbol (e.g. `AAPL`) directly into the field
+without clicking a combobox suggestion therefore submitted `symbol=AAPL, market=KR`; the server
+correctly rejected this as `INSTRUMENT_MARKET_MISMATCH`, breaking the §7 exact-entry convenience
+contract for any non-KR raw entry.
+
+**Fix — three distinct identity-submit states.** A new pure, DOM-free function
+`resolvePositionSubmitIdentity` (`src/lib/portfolio/portfolioPositionIdentity.ts`) makes the submit
+decision explicit and is the single source of truth the submit handler now calls:
+
+1. **Canonical combobox selection exists** → submit its `symbol`/`country`, regardless of any stale
+   hidden field.
+2. **No selection, but an existing position was reopened and its identity text was not modified** →
+   submit the hidden `symbol`/`market` (the stable edit/re-save path). `hiddenMarket` is read only
+   inside the `hiddenSymbol`-non-empty branch — **hiddenMarket is only ever trusted when hiddenSymbol
+   is also non-empty** (§3's required invariant).
+3. **Visible text was manually entered or modified and no canonical selection exists** → submit the
+   raw visible text as `symbol` with `market` **omitted** (`undefined`), never defaulted to `'KR'`
+   and never regex-inferred. The existing, unmodified server-side `resolveCanonicalOrFail` already
+   handles `market === undefined` correctly, so no server change was required.
+
+`portfolio.astro`'s `clearSelectedInstrument()` now clears the hidden **market** field alongside the
+hidden symbol field (previously only the symbol was cleared), keeping the DOM state itself honest so
+a stale hidden market value cannot survive into state 2 above after an edit invalidates the prior
+selection.
+
+**New behavioral test suite (§4 — all 10 required cases, plus one additional safety case):**
+`scripts/phase_4f_hf2_a1_submit_identity_testsrc.ts` (new, 34 assertions), calling the real
+`resolvePositionSubmitIdentity` and, where the spec required proving the end-to-end path, chaining
+its output into the real `resolveCanonicalOrFail`:
+
+1. Raw `AAPL`, no selection, no hidden symbol → market omitted → server resolves US/AAPL/USD.
+2. Raw `005930` → market omitted → server resolves KR/삼성전자/KRW.
+3. Raw `삼성전자` (exact name, no click) → market omitted → server resolves to `005930`.
+4. Canonical selection `AAPL`/`US` (with a stale `hiddenMarket=KR`) → selection wins: `AAPL`/`US`.
+5. Canonical selection `005930`/`KR` → `005930`/`KR`.
+6. Unmodified existing KR row reopened for edit → hidden `005930`/`KR` resubmitted unchanged.
+7. Unmodified existing US row reopened for edit → hidden `AAPL`/`US` resubmitted unchanged.
+8. Legacy row (`hiddenSymbol=삼성전자`, `hiddenMarket=KR`) left unmodified → resubmits `삼성전자`/`KR`
+   → server exact-resolves to `005930` (the §12 legacy-edit path, still correct).
+9. Legacy row **modified** (invalidation already cleared both hidden fields) → falls through to the
+   raw path: `AAPL`, market omitted.
+   - 9b. Additional safety case: a stale `hiddenMarket=KR` surviving alongside an empty
+     `hiddenSymbol` must still never leak into the decision — market stays omitted.
+10. Ambiguous `삼성` → market omitted (raw path) → server rejects with the exact required message
+    `'검색 결과에서 종목을 선택해 주세요.'`, never auto-picking a candidate.
+
+All 34/34 pass.
+
+**§5 fix to the existing create/edit contract test:**
+`scripts/phase_4f_hf2_create_edit_contract_testsrc.ts` — corrected the comment on the pre-existing
+`resolveCanonicalOrFail('005930', undefined)` case to state that, as of A1, this genuinely matches a
+real raw-entry client submission (not just a server-side hypothetical), and added a new case 2b
+(`resolveCanonicalOrFail('AAPL', undefined)` → US/AAPL/USD) proving the same no-market-hint path
+resolves correctly for a US symbol, not only KR. Now **26/26** (up from 22/22).
+
+**Smoke/checker totals updated by A1:**
+
+- `smoke:phase-4f-hf2-portfolio-identity` — now **93/93** (23 resolver + 15 legacy-compatibility +
+  26 create-edit-contract + 34 new a1-submit-identity), up from 60/60. The new
+  `phase_4f_hf2_a1_submit_identity_testsrc.ts` entry was wired into
+  `scripts/smoke_phase_4f_hf2_portfolio_identity.mjs`'s `ENTRIES` array.
+- `check:phase-4f-hf2-portfolio-identity` — now **63/63** (up from 52/52), adding two new file-
+  existence checks (0j: A1 test source exists; 0k: `portfolioPositionIdentity.ts` module exists) and
+  a new **Group K** (9 assertions): the pure helper is exported and never defaults raw entry to
+  `'KR'`; the hiddenMarket-only-with-hiddenSymbol invariant is structurally present; `portfolio.astro`
+  imports and calls the helper (not a manual `||` fallback chain); the old leak pattern
+  (`selectedPositionInstrument?.country || hiddenMarket || 'KR'`) is gone; `clearSelectedInstrument`
+  clears both hidden fields; `PositionInput.market` is optional in `portfolioClient.ts`; the new A1
+  test source is wired into the smoke runner.
+
+**Sibling reconciliation within this phase's own checker** (same narrow-fix convention as §9):
+adding an explanatory comment block inside `clearSelectedInstrument` (between its opening `{` and its
+first statement) broke two regex assertions that assumed whitespace-only content there — the
+pre-existing **E1** (`clearSelectedInstrument` nulls the selection and hidden symbol) and the new
+**K7** (`clearSelectedInstrument` also clears the hidden market). Both were widened from `\s*` to
+`[\s\S]*?` immediately after the opening brace to tolerate the comment, without loosening what either
+assertion actually requires. Re-run after the fix: 63/63.
+
+**Regression gate — re-run in the exact required order, all green:**
+`smoke:phase-4f-hf2-portfolio-identity` (93/93), `check:phase-4f-hf2-portfolio-identity` (63/63),
+`smoke:phase-4f-hf1-functional-high` (39/39 + 20/20), `check:phase-4f-hf1-functional-high` (58/58),
+`check:phase-4c-chart-ai-production-completion` (35/35),
+`smoke:phase-4e-portfolio-production-completion` (21/21),
+`check:phase-4e-portfolio-production-completion` (65/65, unchanged from §9),
+`smoke:phase-3gh-portfolio-live-valuation-mvp` (55/55),
+`check:phase-3gh-portfolio-live-valuation-mvp` (86/86), `check:mobile-baseline` (74/74),
+`check:project-lightweight-roadmap` (27/27); the full 10-command Phase 4F gate (same 10 commands and
+counts as §8, all green); `git diff --check` (clean); `npm ls --depth=0` (clean); `npm run build`
+(all real build stages completed successfully — types, server entrypoints, 3 Vite builds, Vercel
+adapter rearrangement — `dist/{client,server}` confirmed freshly written on disk; the process then
+exited nonzero, the same known Windows-only post-build teardown artifact documented in §8/HF1 — not a
+compile error).
+
+**Changed/new files in A1** (in addition to the §12 list, which stays otherwise accurate):
+
+- New: `src/lib/portfolio/portfolioPositionIdentity.ts` — `resolvePositionSubmitIdentity`.
+- New: `scripts/phase_4f_hf2_a1_submit_identity_testsrc.ts` — the 34-assertion §4 behavioral suite.
+- Modified: `src/pages/portfolio.astro` — submit handler now derives identity via
+  `resolvePositionSubmitIdentity`; `clearSelectedInstrument` also clears the hidden market field.
+- Modified: `src/lib/portfolioClient.ts` — `PositionInput.market` changed from required
+  `'KR' | 'US'` to optional `market?: 'KR' | 'US'`.
+- Modified: `scripts/phase_4f_hf2_create_edit_contract_testsrc.ts` — corrected comment + new case 2b.
+- Modified: `scripts/smoke_phase_4f_hf2_portfolio_identity.mjs` — wired in the new A1 test entry.
+- Modified: `scripts/check_phase_4f_hf2_portfolio_identity_contract.mjs` — new Group K + 2 new
+  file-existence checks + the E1/K7 regex reconciliation above.
+
+**Explicitly not changed by A1** (per scope): the exact resolver matching rules, the legacy KR
+in-memory resolver, the Portfolio KIS Production feature gate, the `KIS_ACCOUNT_NO` block, valuation
+scope, the Universal Master, the combobox visual design, the Portfolio dashboard, SWR, Chart AI,
+Market, Home, or Lab.
+
+**Status.** F-HIGH-02 and F-HIGH-03 remain **not CLOSED** — Owner QA remains 0/120 and Production
+verification (§11) is still required. This addendum only fixes a client-side contract defect found
+during premerge review; it does not change the Owner-verification requirement in any way.
+
+**Overall classification after A1: `PHASE_4F_HF2_A1_COMPLETE_PREMERGE_REVIEW_REQUIRED`.** PR #23 is
+still **not merged**.

@@ -10,6 +10,7 @@ const ENTRIES = [
   { entry: 'scripts/phase_4f_hf2_resolver_testsrc.ts', outfile: 'resolver.mjs' },
   { entry: 'scripts/phase_4f_hf2_legacy_compatibility_testsrc.ts', outfile: 'legacy-compatibility.mjs' },
   { entry: 'scripts/phase_4f_hf2_create_edit_contract_testsrc.ts', outfile: 'create-edit-contract.mjs' },
+  { entry: 'scripts/phase_4f_hf2_a1_submit_identity_testsrc.ts', outfile: 'a1-submit-identity.mjs' },
 ];
 
 let exitCode = 0;

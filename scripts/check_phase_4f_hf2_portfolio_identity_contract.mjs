@@ -40,8 +40,11 @@ const KIS_CLIENT = join(root, 'src', 'lib', 'server', 'providers', 'kisClient.ts
 const RESOLVER_TEST_SRC = join(root, 'scripts', 'phase_4f_hf2_resolver_testsrc.ts');
 const LEGACY_TEST_SRC = join(root, 'scripts', 'phase_4f_hf2_legacy_compatibility_testsrc.ts');
 const CREATE_EDIT_TEST_SRC = join(root, 'scripts', 'phase_4f_hf2_create_edit_contract_testsrc.ts');
+const A1_SUBMIT_IDENTITY_TEST_SRC = join(root, 'scripts', 'phase_4f_hf2_a1_submit_identity_testsrc.ts');
 const SMOKE_RUNNER = join(root, 'scripts', 'smoke_phase_4f_hf2_portfolio_identity.mjs');
 const UNIVERSAL_MASTER = join(root, 'src', 'data', 'chart-ai', 'universalInstrumentMaster.json');
+const PORTFOLIO_CLIENT = join(root, 'src', 'lib', 'portfolioClient.ts');
+const POSITION_IDENTITY_MODULE = join(root, 'src', 'lib', 'portfolio', 'portfolioPositionIdentity.ts');
 
 const log = (msg) => process.stdout.write(msg + '\n');
 let passes = 0;
@@ -68,12 +71,16 @@ check('0f. legacy-compatibility test source exists', existsSync(LEGACY_TEST_SRC)
 check('0g. create/edit contract test source exists', existsSync(CREATE_EDIT_TEST_SRC));
 check('0h. HF2 smoke runner exists', existsSync(SMOKE_RUNNER));
 check('0i. Universal Instrument Master data file exists', existsSync(UNIVERSAL_MASTER));
+check('0j. A1 submit-identity test source exists', existsSync(A1_SUBMIT_IDENTITY_TEST_SRC));
+check('0k. portfolioPositionIdentity.ts module exists', existsSync(POSITION_IDENTITY_MODULE));
 
 const universalSearchSrc = readOr(UNIVERSAL_SEARCH);
 const portfolioServerSrc = readOr(PORTFOLIO_SERVER);
 const valuationSrc = readOr(VALUATION_ROUTE);
 const portfolioPageSrc = readOr(PORTFOLIO_PAGE);
 const kisSrc = readOr(KIS_CLIENT);
+const portfolioClientSrc = readOr(PORTFOLIO_CLIENT);
+const positionIdentitySrc = readOr(POSITION_IDENTITY_MODULE);
 
 // ---------------------------------------------------------------------------
 // Group A: Universal Master reused as the sole identity source (§3)
@@ -148,7 +155,9 @@ check('D6. aria-expanded is toggled on the combobox input', /setAttribute\('aria
 log('--- Group E: Input mutation clears the canonical selection ---');
 check(
   'E1. clearSelectedInstrument nulls out selectedPositionInstrument and the hidden symbol field',
-  /const clearSelectedInstrument = \(\) => \{\s*selectedPositionInstrument = null;/.test(portfolioPageSrc),
+  // Phase 4F-HF2-A1 added an explanatory comment block between the opening brace and the first
+  // statement; tolerate any comment/whitespace lines there rather than requiring them adjacent.
+  /const clearSelectedInstrument = \(\) => \{[\s\S]*?selectedPositionInstrument = null;/.test(portfolioPageSrc),
 );
 check(
   'E2. the search input\'s "input" event handler calls clearSelectedInstrument before re-searching',
@@ -285,6 +294,55 @@ check('J1. no Portfolio dashboard/donut redesign marker was introduced', !/donut
 check('J2. no Portfolio SWR/client-cache abstraction was introduced', !/\bswr\b/i.test(portfolioPageSrc));
 check('J3. no Lab-scope files were touched (LabReturnMatrix / nps-portfolio pages untouched by this contract check\'s file set)', !existsSync(join(root, 'src', 'pages', 'api', 'lab')) || true);
 check('J4. no shared AuthRequiredState abstraction was introduced in this phase\'s files', !/AuthRequiredState/i.test(portfolioPageSrc) && !/AuthRequiredState/i.test(valuationSrc));
+
+// ---------------------------------------------------------------------------
+// Group K: HF2-A1 raw exact-entry market-hint leak fix (§0-§3 of the A1 spec)
+// ---------------------------------------------------------------------------
+log('--- Group K: A1 raw exact-entry market-hint leak fix ---');
+check(
+  'K1. resolvePositionSubmitIdentity is exported from the new pure identity module',
+  /export const resolvePositionSubmitIdentity = /.test(positionIdentitySrc),
+);
+check(
+  'K2. resolvePositionSubmitIdentity never defaults the raw-entry path to KR (no bare \'KR\' fallback string)',
+  !/return \{ symbol: input\.securityInput\.trim\(\), market: 'KR' \}/.test(positionIdentitySrc),
+);
+check(
+  "K3. hiddenMarket is only read inside the hiddenSymbol-non-empty branch (the 'only trusted with hiddenSymbol' contract)",
+  (() => {
+    const hiddenSymbolIdx = positionIdentitySrc.indexOf('if (hiddenSymbol) {');
+    const hiddenMarketReadIdx = positionIdentitySrc.indexOf('input.hiddenMarket');
+    return hiddenSymbolIdx !== -1 && hiddenMarketReadIdx !== -1 && hiddenMarketReadIdx > hiddenSymbolIdx;
+  })(),
+);
+check(
+  'K4. portfolio.astro imports resolvePositionSubmitIdentity from the new module',
+  /import \{ resolvePositionSubmitIdentity \} from '\.\.\/lib\/portfolio\/portfolioPositionIdentity';/.test(
+    portfolioPageSrc,
+  ),
+);
+check(
+  'K5. the submit handler derives identity via resolvePositionSubmitIdentity (not a manual || fallback chain)',
+  /const identity = resolvePositionSubmitIdentity\(\{/.test(portfolioPageSrc),
+);
+check(
+  "K6. the old leak pattern (selectedPositionInstrument?.country || hiddenMarket || 'KR') is gone",
+  !/selectedPositionInstrument\?\.country \|\| .*hiddenMarket.* \|\| 'KR'/.test(portfolioPageSrc),
+);
+check(
+  'K7. clearSelectedInstrument also clears the hidden market field (not just the hidden symbol)',
+  /const clearSelectedInstrument = \(\) => \{[\s\S]*?selectedPositionInstrument = null;\s*getElement<HTMLInputElement>\('position-symbol'\)!\.value = '';\s*getElement<HTMLInputElement>\('position-market'\)!\.value = '';/.test(
+    portfolioPageSrc,
+  ),
+);
+check(
+  "K8. PositionInput.market is optional in portfolioClient.ts (client can omit the market hint)",
+  /market\?: 'KR' \| 'US';/.test(portfolioClientSrc),
+);
+check(
+  'K9. the A1 submit-identity behavioral test source is wired into the HF2 smoke runner',
+  readOr(SMOKE_RUNNER).includes('phase_4f_hf2_a1_submit_identity_testsrc.ts'),
+);
 
 log('');
 log(`Total: ${passes + failures} | Passed: ${passes} | Failed: ${failures}`);

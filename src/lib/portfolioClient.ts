@@ -34,7 +34,9 @@ export type PositionInput = {
   id?: string;
   portfolioId: string;
   symbol: string;
-  market: 'KR' | 'US';
+  // Phase 4F-HF2-A1: omitted for raw/modified exact entry — the server (resolveCanonicalOrFail)
+  // is authoritative and infers the canonical country rather than the client guessing one.
+  market?: 'KR' | 'US';
   assetType: 'stock' | 'etf';
   name?: string;
   buyPrice: number;

@@ -37,12 +37,27 @@ export const runAll = async (): Promise<number> => {
   }
 
   // 2. §12 explicit edit proving path: editing a legacy "삼성전자/티커 미확인" row to the exact
-  //    canonical symbol (no market hint supplied, matching a raw text-field submission) must still
-  //    resolve -- this is the exact server-side decision that PATCH relies on.
+  //    canonical symbol, with no market hint supplied, must still resolve -- this is the exact
+  //    server-side decision that PATCH relies on. As of Phase 4F-HF2-A1, this genuinely matches a
+  //    real raw text-field submission: resolvePositionSubmitIdentity (src/lib/portfolio/
+  //    portfolioPositionIdentity.ts) never fabricates a market hint for raw/modified visible text,
+  //    so the client itself now sends market=undefined for exactly this case.
   {
     const r = resolveCanonicalOrFail('005930', undefined);
     check('edit 005930 (no market hint) -> ok', r.ok === true);
     if (r.ok) check('edit 005930 (no market hint) -> symbol 005930', r.data.symbol === '005930');
+  }
+
+  // 2b. Phase 4F-HF2-A1 §5: the same raw-entry, no-market-hint path for a US symbol must resolve
+  //     to the canonical US identity -- proves the fix isn't KR-only.
+  {
+    const r = resolveCanonicalOrFail('AAPL', undefined);
+    check('raw AAPL (no market hint) -> ok', r.ok === true);
+    if (r.ok) {
+      check('raw AAPL (no market hint) -> symbol AAPL', r.data.symbol === 'AAPL');
+      check('raw AAPL (no market hint) -> country US', r.data.country === 'US');
+      check('raw AAPL (no market hint) -> currency USD', r.data.currency === 'USD');
+    }
   }
 
   // 3. §7 exact-entry convenience: an exact Korean company name submitted without a prior click

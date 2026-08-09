@@ -265,6 +265,7 @@ import Layout from '../layouts/Layout.astro';
     import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
     import { userRetentionApi, hasRetentionSession } from '../lib/userRetentionClient';
     import { computeDialogFocusWrap, computeTabRovingNavigation } from '../lib/portfolio/portfolioKeyboardNav';
+    import { resolvePositionSubmitIdentity } from '../lib/portfolio/portfolioPositionIdentity';
     import { fetchChartAiJson } from '../lib/chart-ai/chart-ai-authenticated-fetch';
 
     type PortfolioState =
@@ -1461,8 +1462,13 @@ import Layout from '../layouts/Layout.astro';
     };
 
     const clearSelectedInstrument = () => {
+      // Phase 4F-HF2-A1: clear the hidden market alongside the hidden symbol so no stale market
+      // value can survive into resolvePositionSubmitIdentity's "unmodified hidden row" branch —
+      // that branch only trusts hiddenMarket when hiddenSymbol is also non-empty, but clearing both
+      // keeps the DOM state itself honest rather than relying solely on the decision function.
       selectedPositionInstrument = null;
       getElement<HTMLInputElement>('position-symbol')!.value = '';
+      getElement<HTMLInputElement>('position-market')!.value = '';
     };
 
     const selectPositionInstrument = (instrument: PositionCanonicalInstrument) => {
@@ -1789,15 +1795,22 @@ import Layout from '../layouts/Layout.astro';
         showToast('종목명 또는 티커를 입력하세요.');
         return;
       }
-      // Phase 4F-HF2 (F-HIGH-03): the symbol to submit comes from a canonical selection first,
-      // then the hidden field carried over from a legacy row (unmodified edit re-save), then the
-      // raw text (exact-match convenience). The server (resolveCanonicalOrFail) is authoritative
-      // and rejects anything ambiguous or unresolved — the client never fabricates identity.
-      const hiddenSymbol = getElement<HTMLInputElement>('position-symbol')!.value.trim();
-      const symbolToSubmit = selectedPositionInstrument?.symbol || hiddenSymbol || securityInput;
-      const market = (selectedPositionInstrument?.country ||
-        getElement<HTMLInputElement>('position-market')!.value ||
-        'KR') as 'KR' | 'US';
+      // Phase 4F-HF2 (F-HIGH-03) / HF2-A1: the identity to submit comes from a canonical selection
+      // first, then the hidden fields carried over from an unmodified existing row (create/edit
+      // re-save), then the raw visible text (exact-match convenience). The hidden market is only
+      // trusted alongside a hidden symbol — a raw/modified entry NEVER defaults to KR; the server
+      // (resolveCanonicalOrFail) is authoritative and infers the country or rejects anything
+      // ambiguous or unresolved. See resolvePositionSubmitIdentity for the decision matrix.
+      const identity = resolvePositionSubmitIdentity({
+        selected: selectedPositionInstrument
+          ? { symbol: selectedPositionInstrument.symbol, country: selectedPositionInstrument.country }
+          : null,
+        hiddenSymbol: getElement<HTMLInputElement>('position-symbol')!.value,
+        hiddenMarket: getElement<HTMLInputElement>('position-market')!.value,
+        securityInput,
+      });
+      const symbolToSubmit = identity.symbol;
+      const market = identity.market;
       const assetType = getElement<HTMLSelectElement>('position-asset-type')!.value as 'stock' | 'etf';
       const currency = getElement<HTMLSelectElement>('position-currency')!.value as 'KRW' | 'USD';
       const input = {
