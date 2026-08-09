@@ -359,6 +359,22 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   row → resolved to canonical symbol → real KIS quote → numeric valuation). See
   `phase_4f_hf2_portfolio_instrument_identity_result_v0.1.md`.
 
+- **Phase 4F-UX1-A — remove unintended Home resume surface + stateful UI guard.**
+  `PHASE_4F_UX1A_HOME_SURFACE_GUARD_IMPLEMENTED_PREMERGE_REVIEW_REQUIRED`. Owner-observed defect
+  `UX-08` (MEDIUM): Phase 3GI's `HomeRetentionPanel` — dormant since its introduction — became
+  visible on Home (between MARKET SNAPSHOT and MARKET NEWS, showing a duplicate "포트폴리오 ·
+  포트폴리오" label) purely because a session's persisted retention state contained a resumable
+  target, with no Home-touching code change involved. Removed the panel's import/render from
+  `index.astro` only; the component file and the entire Phase 3GI retention backend (migrations,
+  API routes, client module, cross-page resume-state persistence) are preserved, dormant, not
+  deleted. Adds a small documented stateful-UI regression guard
+  (`src/lib/home/homeDynamicSurfaceGuard.ts`, an approved/rejected dynamic-surface allowlist) and a
+  new process rule — the **VISIBILITY-STATE DIFF** — requiring PR review to check not just the code
+  diff but which state-dependent surfaces could newly become visible. Home-only; does not alter
+  `F-HIGH-02`/`PORT-10` or `F-HIGH-03`, both of which remain IMPLEMENTED / PRODUCTION OWNER
+  VERIFICATION STILL REQUIRED. PR open, not merged. See
+  `phase_4f_ux1a_home_surface_guard_result_v0.1.md`.
+
 ### Next sequential product phases
 
 Phases 4B–4E repeat the same navigation-based production-readiness pattern established by Phase 4A —

@@ -257,7 +257,11 @@ check('client never persists or logs raw session/token values', !/console\.(log|
 // Group 7: Home UI integration — resume card + compact watchlist, zero-request signed-out
 // ---------------------------------------------------------------------------
 log('--- Group 7: Home UI integration ---');
-check('index.astro renders HomeRetentionPanel', indexAstro.includes('<HomeRetentionPanel'));
+// Phase 4F-UX1-A intentionally removed HomeRetentionPanel's render from index.astro (an
+// Owner-flagged unintended state-activated resume surface) while keeping the component file and
+// its backend intact -- see scripts/check_phase_4f_ux1a_home_surface_contract.mjs for the
+// dedicated regression guard on that removal.
+check('index.astro no longer renders HomeRetentionPanel (Phase 4F-UX1-A removal)', !indexAstro.includes('<HomeRetentionPanel'));
 check('HomeRetentionPanel checks hasRetentionSession before any API call', /await hasRetentionSession\(\)/.test(homeRetentionPanel));
 check('HomeRetentionPanel makes zero requests when signed out (early return before getSnapshot)',
   /if \(!hasSession\) \{[\s\S]{0,80}?return;\s*\}/.test(homeRetentionPanel) &&

@@ -1,5 +1,43 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F-UX1-A — remove unintended Home resume surface + stateful UI guard - 2026-08-10
+
+- **Classification: `PHASE_4F_UX1A_HOME_SURFACE_GUARD_IMPLEMENTED_PREMERGE_REVIEW_REQUIRED`.**
+- **Baseline.** `main` @ `d2fd5601eddfea26d8937cdccc92da6475d7ad7d` (Phase 4F-HF2/A1 merged).
+  Branch `fix/phase-4f-ux1a-home-surface-guard`.
+- **Finding (UX-08, MEDIUM).** Owner observed a duplicate-label "포트폴리오 · 포트폴리오" resume
+  card rendering between MARKET SNAPSHOT and MARKET NEWS on Home. Root cause: Phase 3GI's
+  `HomeRetentionPanel` — never removed from `index.astro`, normally hidden — becomes visible once
+  a session's persisted retention state (`lastSurface`/`lastPortfolioId`) contains a resumable
+  target; no code change caused this, only accumulated state.
+- **Fix scope: Home-only.** Removed `HomeRetentionPanel`'s import and render from
+  `src/pages/index.astro` (Home order is now `HomeLiveMarketSnapshot` → `HomeMarketNews`).
+  `HomeRetentionPanel.astro` and the entire Phase 3GI retention backend (migrations, API routes,
+  client module, Portfolio/Chart AI/Lab resume-state persistence) are left fully intact and
+  dormant, not deleted.
+- **New stateful UI regression guard (§6).** `src/lib/home/homeDynamicSurfaceGuard.ts` — a small
+  documented allowlist (`home-portfolio-panel`, `header-auth-state` approved;
+  `home-retention-panel` explicitly rejected) validated by a new static checker.
+- **New process rule (§7): VISIBILITY-STATE DIFF.** PR review must inspect both the CODE DIFF and
+  a VISIBILITY-STATE DIFF — an accounting of which state-dependent surfaces exist and whether any
+  newly-reachable state could flip one visible without a corresponding code change. Recorded in
+  `phase_4f_ux1a_home_surface_guard_result_v0.1.md`.
+- **Sibling checker reconciliation.** `check_phase_4a_home_common_shell_contract.mjs` (check #38)
+  and `check_phase_3gi_user_retention_persistence_contract.mjs` (Group 7) both previously asserted
+  `index.astro` renders `HomeRetentionPanel`; both narrowly inverted with an explanatory comment.
+  Re-run: 75/75 and 149/149.
+- **Tests.** New `smoke:phase-4f-ux1a-home-surface` (8/8) and
+  `check:phase-4f-ux1a-home-surface` (28/28, 6 groups: removal, section order, guard registry,
+  backend preservation, no-scope-creep, package.json wiring).
+- **Full regression gate green**, including the 10-command Phase 4F gate, HF1/HF2 smoke+check,
+  `check:mobile-baseline`, `check:project-lightweight-roadmap`, `git diff --check`,
+  `npm ls --depth=0`, and `npm run build` (known benign Windows post-build exit-code artifact).
+- **Status.** `F-HIGH-01`/`CHART-05` stays CLOSED. `F-HIGH-02`/`PORT-10` and `F-HIGH-03` remain
+  IMPLEMENTED / PRODUCTION OWNER VERIFICATION STILL REQUIRED — unchanged by this Home-only phase.
+  Owner QA formal count remains 0/120.
+- PR opened (`fix/phase-4f-ux1a-home-surface-guard` → `main`), **not merged**. See
+  `phase_4f_ux1a_home_surface_guard_result_v0.1.md`.
+
 ## Phase 4F-HF2 — Portfolio canonical instrument identity - 2026-08-09
 
 - **Classification: `PHASE_4F_HF2_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
