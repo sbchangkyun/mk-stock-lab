@@ -1,5 +1,83 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F-A — cross-page Owner QA closeout plan - 2026-08-09
+
+- **Classification: `PHASE_4F_CROSS_PAGE_OWNER_QA_PLAN_READY_QA_NOT_STARTED`.** Plan-only; no
+  `src/`, `scripts/`, config, migration, or dependency file touched, no `git add .`/`-A`, no
+  Owner-local untracked file touched, no manual QA executed.
+- **Baseline.** `main` @ `198c24c9f70010bd5cc077555c69c9035066dc7c` (Phase 4A–4E all merged and
+  Production-verified). Branch `docs/phase-4f-cross-page-owner-qa-plan`.
+- **Audit.** Read all 10 Phase 4A–4E plan/result docs and extracted every QA item each phase
+  deferred to Phase 4F, without inventing new product requirements. Found and recorded 6
+  ambiguities in that deferral record: a Vercel log/dashboard-access inconsistency between Phase
+  4B and Phases 4A/4C; the `@astrojs/netlify` dependency's removal never being cross-referenced
+  back to the Phase 4A item that deferred it (the still-open item is the external Netlify Git
+  integration, not the dependency); Lab's empty-cell `aria-label="데이터 없음"` fallback admittedly
+  unconfirmed in Production HTML; inconsistent deferral granularity across phases (Market only
+  ever used an umbrella phrase, so its tab-keyboard-nav and modal-focus-trap behaviors are
+  included here by inference from the implementation record, not by a literal citation); Market's
+  "detailed all-symbol/all-period sweep" belonging to the separate Phase 3 Closeout lane; and
+  Phase 4D/4E's deployment-trigger/recurrence-test items being release/infra concerns, not QA
+  deferrals.
+- **New QA plan doc** (`phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`): a 120-case
+  Owner-manual QA matrix (Home/Common Shell 14, Chart AI 17, Market 14, Lab 15, Portfolio 38,
+  Cross-page/Session 8, Accessibility spot check 14; corrected from an initial 122-case draft by
+  Phase 4F-A.1 — see below), plus 4 items already `PRODUCTION_VERIFIED`
+  by earlier phases and 3 items explicitly `OUT_OF_SCOPE`; a viewport-testing convention (desktop
+  full pass, representative 768/390/320 full pass, targeted 1024/412/360 breakpoint checks); a
+  quota-conservation plan limiting Chart AI's Similarity/MK-Analysis calls to exactly one each; the
+  defect-severity scale (BLOCKER/HIGH/MEDIUM/LOW); the per-test evidence format; and the
+  pre-QA automated regression gate (Phase 4A–4E checkers/smokes, mobile baseline, project
+  lightweight roadmap, Phase 3GH portfolio valuation smoke/checker).
+- **New result-doc skeleton** (`phase_4f_cross_page_owner_qa_closeout_result_v0.1.md`) — QA not
+  yet executed.
+- **Not done this phase, by explicit instruction.** No manual QA was executed, no defect was
+  fixed, and no application code was modified.
+
+## Phase 4F-A.1 — Owner QA plan correction - 2026-08-09
+
+- **Classification: docs-only correction of the Phase 4F-A plan.** No `src/`, `scripts/`, config,
+  migration, or dependency file touched, no `git add .`/`-A`, no Owner-local untracked file
+  touched, no manual QA executed.
+- **Baseline.** `docs/phase-4f-cross-page-owner-qa-plan` @ `2d80cc68dca2ab808c6560f1ab47caab3242372f`
+  (Phase 4F-A's own commit, still unmerged as PR #21).
+- **§15 automated-gate command list corrected.** The plan's original command list named several
+  scripts that do not exist byte-for-byte in `package.json` (e.g. a
+  `check:phase-4a-home-common-shell-production` variant and a `smoke:phase-3gh-portfolio-valuation`
+  /`check:phase-3gh-portfolio-valuation` pair missing the `-live-valuation-mvp` suffix). Replaced
+  with the 10 exact, independently verified `package.json` script names and removed the disclaimer
+  that names might not be byte-identical, so the plan is directly executable as written.
+- **§3 ambiguity record corrected from 5 to 6 numbered items.** The plan doc's own numbered list
+  only had 5 ambiguities even though this changelog's Phase 4F-A entry (above) already described 6.
+  Inserted the missing ambiguity (Market's detailed all-symbol/all-period sweep is deliberately
+  excluded from Phase 4F because the roadmap assigns it to the separate Phase 3 Closeout lane) as
+  the new #5, and renumbered the former #5 (Phase 4D/4E deployment-trigger/recurrence item) to #6.
+- **`SHELL-17`/`MARKET-17` retired from the Owner-manual matrix.** The current Phase 4F execution
+  environment has read-only Vercel connector access capable of querying Production runtime logs, so
+  Production runtime-error review for Home/shell and Market is no longer `OWNER_MANUAL_REQUIRED`.
+  Both rows are removed from their matrices and folded into a new connector-assisted, strictly
+  read-only automated gate described in plan §15 (no Redeploy, no mutation, no environment/config
+  change), which now also explicitly covers `/chart-ai` Production runtime-error review (previously
+  had no discrete Owner-manual row at all). Owner-manual total corrected **122 → 120** (Home/Common
+  Shell 15 → 14, Market 15 → 14; all other per-surface counts and the already-verified/out-of-scope
+  totals unchanged). Propagated to the plan doc, the result-doc skeleton, and
+  `mk_stock_lab_master_roadmap_v2.1.md`.
+- **Portfolio execution-order note added.** No `PORT-NN` IDs renumbered — they remain stable
+  evidence identifiers, not chronological order. Added a note before the Portfolio matrix stating
+  `PORT-03` (delete the temporary QA portfolio) is final cleanup after `PORT-38` and all dependent
+  tests, and `PORT-06` (delete the temporary ordinary QA position) executes only after its dependent
+  cases complete, so the plan no longer instructs deleting the QA Portfolio before dependent tests
+  run against it.
+- **`PORT-14` corrected.** Replaced a holding-level `baseCurrency` test with a portfolio-level
+  metadata test: temporarily set the QA Portfolio's own `baseCurrency` to USD and save, expecting
+  the USD metadata to persist while the aggregate valuation stays explicitly KRW-based, the UI does
+  not imply an actual USD conversion, and the truthful "USD 환산 미지원" disclosure remains present.
+- **Result-doc skeleton corrected.** Filled in the previously-placeholder plan commit
+  (`2d80cc68dca2ab808c6560f1ab47caab3242372f`) and updated its progress table from 0/122 to 0/120
+  with the corrected per-surface targets.
+- **Not done this phase, by explicit instruction.** No manual QA was executed, no defect was fixed,
+  and no application code was modified.
+
 ## Phase 4E closeout — merged and Production-verified - 2026-08-09
 
 - **Classification: `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`.** Docs-only closeout record;
