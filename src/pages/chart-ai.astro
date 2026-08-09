@@ -528,6 +528,7 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             <span class="chart-real-meta-asof" id="chartAiRealChartAsOf">데이터 기준 시각 확인 중</span>
             <button type="button" id="chartAiWatchlistToggleBtn" class="chart-watchlist-toggle-btn" hidden aria-pressed="false">관심 종목 추가</button>
             <p class="chart-watchlist-toggle-status" id="chartAiWatchlistToggleStatus" role="status" aria-live="polite" hidden></p>
+            <p class="chart-real-meta-coverage-warning" id="chartAiRealChartCoverageWarning" role="status" hidden></p>
           </div>
         ) : (
           <p class="chart-real-meta chart-real-meta--sample">샘플 OHLC·거래량 데이터 · 실제 시세 아님 · 투자 참고용</p>
@@ -2482,6 +2483,30 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
             ? `데이터 기준 ${parsed.toLocaleString('ko-KR')}`
             : '데이터 기준 시각 미확인';
           asOfEl.textContent = currency ? `${asOfText} · 통화 ${currency}` : asOfText;
+        }
+
+        // Phase 4F-HF1 (CHART-05, §2C): when the provider returned data (sourceStatus 'ok') but the
+        // requested range could not be fully covered within the bounded paging limit, say so plainly
+        // instead of silently showing a shorter-than-requested chart. Never shown for blocked/no-data/
+        // unavailable states, which already have their own honest messaging elsewhere.
+        const coverageWarningEl = document.getElementById('chartAiRealChartCoverageWarning');
+        if (coverageWarningEl) {
+          const coverage = ohlcv?.coverage;
+          const incomplete = ohlcv?.sourceStatus === 'ok' && coverage && coverage.complete === false;
+          if (incomplete) {
+            const rangeLabel = RANGE_LABELS[ohlcv.range] ?? ohlcv.range ?? '';
+            const startParsed = coverage.actualStartDate ? new Date(coverage.actualStartDate) : null;
+            const startText = startParsed && !Number.isNaN(startParsed.getTime())
+              ? startParsed.toISOString().slice(0, 10)
+              : null;
+            coverageWarningEl.textContent = startText
+              ? `요청한 ${rangeLabel} 전체 구간을 제공하지 못해 ${startText} 이후 데이터만 표시합니다.`
+              : `요청한 ${rangeLabel} 전체 구간을 제공하지 못했습니다.`;
+            coverageWarningEl.hidden = false;
+          } else {
+            coverageWarningEl.textContent = '';
+            coverageWarningEl.hidden = true;
+          }
         }
       };
 
@@ -6779,6 +6804,13 @@ const OWNER_LOCAL_KIS_INTEGRATION_SAFETY_NOTICES = [
     }
     .chart-real-meta[hidden] { display: none; }
     .chart-real-meta-source { font-weight: 700; color: var(--chart-shell-fg, inherit); }
+    .chart-real-meta-coverage-warning {
+      flex-basis: 100%;
+      margin: 0;
+      font-weight: 600;
+      color: var(--chart-shell-fg, inherit);
+    }
+    .chart-real-meta-coverage-warning[hidden] { display: none; }
     .chart-real-chart-load-btn {
       align-self: start;
       margin-top: 0.55rem;

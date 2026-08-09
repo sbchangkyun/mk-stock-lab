@@ -76,6 +76,22 @@ export type UniversalOhlcvCandle = {
   volume: number;
 };
 
+/**
+ * Phase 4F-HF1 (CHART-05): additive, client-safe truthfulness contract describing how much of the
+ * requested chart range the returned candles actually cover. No secrets, no raw provider payload.
+ * `complete` uses a calendar tolerance (weekend/holiday gaps) rather than one fragile exact date or
+ * candle-count match -- a newly-listed security with genuinely short history is a valid
+ * `complete: false` case, not a provider error.
+ */
+export type UniversalOhlcvCoverage = {
+  requestedRange: string;
+  requestedStartDate: string;
+  actualStartDate: string | null;
+  actualEndDate: string | null;
+  candleCount: number;
+  complete: boolean;
+};
+
 export type UniversalOhlcvResponse = {
   ok: boolean;
   instrument: {
@@ -98,6 +114,8 @@ export type UniversalOhlcvResponse = {
   asOf: string;
   isDelayed: boolean;
   timezone: string;
+  /** Phase 4F-HF1 (CHART-05): truthful requested-vs-actual coverage for the current range. */
+  coverage: UniversalOhlcvCoverage;
   /** Safe cache-observability metadata (MISS | HIT | COALESCED | NEGATIVE_HIT | BYPASS). */
   cacheState?: string;
 };
@@ -105,14 +123,14 @@ export type UniversalOhlcvResponse = {
 const formatYyyyMmDd = (date: Date): string =>
   `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
 
-const buildDomesticQuery = (symbol: string, range: string): Record<string, string> => {
-  const now = new Date();
-  const start = new Date(now.getTime() - RANGE_LOOKBACK_DAYS[range] * 24 * 60 * 60 * 1000);
+const buildDomesticQuery = (symbol: string, range: string, nowMs: number): Record<string, string> => {
+  const nowDate = new Date(nowMs);
+  const start = new Date(nowDate.getTime() - RANGE_LOOKBACK_DAYS[range] * 24 * 60 * 60 * 1000);
   return {
     FID_COND_MRKT_DIV_CODE: 'J',
     FID_INPUT_ISCD: symbol,
     FID_INPUT_DATE_1: formatYyyyMmDd(start),
-    FID_INPUT_DATE_2: formatYyyyMmDd(now),
+    FID_INPUT_DATE_2: formatYyyyMmDd(nowDate),
     FID_PERIOD_DIV_CODE: 'D',
     FID_ORG_ADJ_PRC: '0',
   };
@@ -136,6 +154,7 @@ const buildResponse = (
   sourceStatus: OhlcvSourceStatus,
   sanitizedErrorCode: string,
   asOf: string,
+  coverage: UniversalOhlcvCoverage,
 ): UniversalOhlcvResponse => ({
   ok: sourceStatus === 'ok',
   instrument: instrument ? toInstrumentSummary(instrument) : null,
@@ -150,7 +169,34 @@ const buildResponse = (
   // KIS chart/quote data is delayed, not real-time.
   isDelayed: true,
   timezone: instrument?.country === 'US' ? 'America/New_York' : 'Asia/Seoul',
+  coverage,
 });
+
+/**
+ * Phase 4F-HF1 (CHART-05): computes the truthful requested-vs-actual coverage for one chart
+ * response. `complete` tolerates calendar gaps (weekends/holidays) via CHART_COVERAGE_TOLERANCE_DAYS
+ * rather than requiring an exact date or candle-count match -- a newly-listed security with
+ * genuinely short history correctly yields `complete: false`, not a fabricated error.
+ */
+const buildOhlcvCoverage = (
+  range: string,
+  requestedStartDate: Date,
+  candles: UniversalOhlcvCandle[],
+): UniversalOhlcvCoverage => {
+  const actualStartDate = candles.length > 0 ? candles[0].timestamp : null;
+  const actualEndDate = candles.length > 0 ? candles[candles.length - 1].timestamp : null;
+  const toleranceMs = CHART_COVERAGE_TOLERANCE_DAYS * 24 * 60 * 60 * 1000;
+  const complete =
+    actualStartDate !== null && new Date(actualStartDate).getTime() <= requestedStartDate.getTime() + toleranceMs;
+  return {
+    requestedRange: range,
+    requestedStartDate: requestedStartDate.toISOString(),
+    actualStartDate,
+    actualEndDate,
+    candleCount: candles.length,
+    complete,
+  };
+};
 
 export type FetchUniversalOhlcvInput = {
   instrument: NormalizedInstrument;
@@ -160,19 +206,54 @@ export type FetchUniversalOhlcvInput = {
   allowProductionMarketDashboardLiveData?: boolean;
 };
 
+/**
+ * Phase 4F-HF1 (CHART-05): a single provider page returns at most ~100 rows regardless of the
+ * requested date window, so wide chart ranges (6m/1y) previously received only the most recent
+ * partial page. This bounds a small backward-paging loop (imitating, without modifying, the
+ * proven fetchLongHistoryOhlcv pattern below) so those ranges can reach materially complete
+ * coverage while 1m/3m -- which already fit in one page -- keep their existing single-call behavior.
+ */
+const CHART_RANGE_MAX_PAGES = 4;
+const CHART_PAGE_SPAN_DAYS = 150;
+const CHART_COVERAGE_TOLERANCE_DAYS = 10;
+
+/**
+ * Phase 4F-HF1 (CHART-05, §2D): `fetchDomesticPage`/`fetchOverseasPage` let deterministic,
+ * credential-free tests inject a fake multi-page KIS transport to exercise the bounded backward
+ * paging loop below without any network/credentials. When omitted (all real callers, e.g. the
+ * ohlcv.json route), they default to the real kisClient transports -- production behavior is
+ * unchanged.
+ */
+type FetchUniversalOhlcvDeps = {
+  now?: () => number;
+  fetchDomesticPage?: typeof getKisDomesticDailyOhlcSeries;
+  fetchOverseasPage?: typeof getKisOverseasDailyOhlcSeries;
+};
+
 /** Fetches, normalizes, caches and sanitizes a real OHLCV series for one instrument + range. */
 export const fetchUniversalOhlcv = async (
   input: FetchUniversalOhlcvInput,
-  deps: { now?: () => number } = {},
+  deps: FetchUniversalOhlcvDeps = {},
 ): Promise<UniversalOhlcvResponse> => {
   const now = deps.now ?? (() => Date.now());
+  const fetchDomesticPage = deps.fetchDomesticPage ?? getKisDomesticDailyOhlcSeries;
+  const fetchOverseasPage = deps.fetchOverseasPage ?? getKisOverseasDailyOhlcSeries;
   const range = normalizeOhlcvRange(input.range);
   const instrument = input.instrument;
   const nowIso = new Date(now()).toISOString();
+  const requestedStartDate = new Date(now() - RANGE_LOOKBACK_DAYS[range] * 24 * 60 * 60 * 1000);
 
   if (!instrument || (instrument.country !== 'KR' && instrument.country !== 'US')) {
     return {
-      ...buildResponse(null, range, [], 'unavailable', OHLCV_SANITIZED_ERROR_CODES.INVALID_INSTRUMENT, nowIso),
+      ...buildResponse(
+        null,
+        range,
+        [],
+        'unavailable',
+        OHLCV_SANITIZED_ERROR_CODES.INVALID_INSTRUMENT,
+        nowIso,
+        buildOhlcvCoverage(range, requestedStartDate, []),
+      ),
       cacheState: OHLCV_CACHE_STATE.BYPASS,
     };
   }
@@ -191,26 +272,71 @@ export const fetchUniversalOhlcv = async (
   // The loader runs the real provider fetch + normalization. It runs at most once per concurrent
   // burst for this key; concurrent callers coalesce onto the same work.
   const loader = async (): Promise<UniversalOhlcvResponse> => {
-    let providerResult: Awaited<ReturnType<typeof getKisDomesticDailyOhlcSeries>>;
-    if (instrument.country === 'KR') {
-      providerResult = await getKisDomesticDailyOhlcSeries(
-        { symbol: instrument.symbol, query: buildDomesticQuery(instrument.symbol, range) },
-        {
-          allowProductionChartAiLiveData: input.allowProductionChartAiLiveData === true,
-          allowProductionMarketDashboardLiveData: input.allowProductionMarketDashboardLiveData === true,
-        },
-      );
-    } else {
-      providerResult = await getKisOverseasDailyOhlcSeries(
-        { symbol: instrument.providerSymbol, exchangeCode: instrument.exchangeCode ?? '' },
-        {
-          allowProductionChartAiLiveData: input.allowProductionChartAiLiveData === true,
-          allowProductionMarketDashboardLiveData: input.allowProductionMarketDashboardLiveData === true,
-        },
-      );
+    const providerOptions = {
+      allowProductionChartAiLiveData: input.allowProductionChartAiLiveData === true,
+      allowProductionMarketDashboardLiveData: input.allowProductionMarketDashboardLiveData === true,
+    };
+
+    const rawRows: KisDailyOhlcPoint[] = [];
+    let firstPageFailed = false;
+    let firstPageErrorCode: string | undefined;
+    let endDate = new Date(now());
+    let bymdCursor = '';
+    let earliestSeenDate: Date | null = null;
+
+    for (let page = 0; page < CHART_RANGE_MAX_PAGES; page += 1) {
+      let result: Awaited<ReturnType<typeof getKisDomesticDailyOhlcSeries>>;
+      if (instrument.country === 'KR') {
+        const query =
+          page === 0
+            ? buildDomesticQuery(instrument.symbol, range, now())
+            : buildLongDomesticQuery(
+                instrument.symbol,
+                new Date(endDate.getTime() - CHART_PAGE_SPAN_DAYS * 24 * 60 * 60 * 1000),
+                endDate,
+              );
+        result = await fetchDomesticPage({ symbol: instrument.symbol, query }, providerOptions);
+      } else {
+        result = await fetchOverseasPage(
+          {
+            symbol: instrument.providerSymbol,
+            exchangeCode: instrument.exchangeCode ?? '',
+            bymd: page === 0 ? '' : bymdCursor,
+          },
+          providerOptions,
+        );
+      }
+
+      if (!result.ok) {
+        if (page === 0) {
+          firstPageFailed = true;
+          firstPageErrorCode = result.code;
+        }
+        break;
+      }
+
+      const points = result.data.points;
+      if (!Array.isArray(points) || points.length === 0) break;
+      rawRows.push(...points);
+
+      let earliest = points[0].dateTime;
+      for (const point of points) if (point.dateTime && point.dateTime < earliest) earliest = point.dateTime;
+      const earliestDate = parseYyyymmdd(earliest);
+      if (!earliestDate) break;
+
+      // Sufficiently covered (within calendar tolerance for weekends/holidays) -- stop paging.
+      const toleranceMs = CHART_COVERAGE_TOLERANCE_DAYS * 24 * 60 * 60 * 1000;
+      if (earliestDate.getTime() <= requestedStartDate.getTime() + toleranceMs) break;
+
+      // The oldest date must move strictly backward each page, or paging stops (no infinite loop).
+      if (earliestSeenDate !== null && earliestDate.getTime() >= earliestSeenDate.getTime()) break;
+      earliestSeenDate = earliestDate;
+      endDate = new Date(earliestDate.getTime() - 24 * 60 * 60 * 1000);
+      bymdCursor = yyyymmdd(endDate);
+      if (points.length < 10) break; // near the start of available history
     }
 
-    if (!providerResult.ok) {
+    if (firstPageFailed) {
       // Sanitized: the raw provider code/message is never surfaced, but rate-limit vs config/auth vs
       // generic unavailable stays distinguishable internally (Phase 3GJ-HF1 spec section 5).
       return buildResponse(
@@ -218,17 +344,26 @@ export const fetchUniversalOhlcv = async (
         range,
         [],
         'unavailable',
-        mapTransportErrorToSanitizedOhlcvCode(providerResult.code),
+        mapTransportErrorToSanitizedOhlcvCode(firstPageErrorCode),
         nowIso,
+        buildOhlcvCoverage(range, requestedStartDate, []),
       );
     }
 
-    const rawPoints: KisDailyOhlcPoint[] = providerResult.data.points;
-    const { candles } = normalizeOhlcvRows(rawPoints, range);
+    const { candles } = normalizeOhlcvRows(rawRows, range);
+    const coverage = buildOhlcvCoverage(range, requestedStartDate, candles as UniversalOhlcvCandle[]);
     if (candles.length === 0) {
-      return buildResponse(instrument, range, [], 'no-data', OHLCV_SANITIZED_ERROR_CODES.NO_DATA, nowIso);
+      return buildResponse(instrument, range, [], 'no-data', OHLCV_SANITIZED_ERROR_CODES.NO_DATA, nowIso, coverage);
     }
-    return buildResponse(instrument, range, candles as UniversalOhlcvCandle[], 'ok', OHLCV_SANITIZED_ERROR_CODES.NONE, nowIso);
+    return buildResponse(
+      instrument,
+      range,
+      candles as UniversalOhlcvCandle[],
+      'ok',
+      OHLCV_SANITIZED_ERROR_CODES.NONE,
+      nowIso,
+      coverage,
+    );
   };
 
   const classify = (value: UniversalOhlcvResponse) => {

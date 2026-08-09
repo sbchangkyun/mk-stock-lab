@@ -328,6 +328,18 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   `phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`. Manual QA execution has **not** started and
   no application code was touched by this planning step.
 
+- **Phase 4F-HF1 — functional HIGH defect fixes.**
+  `PHASE_4F_HF1_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`. Fixes exactly the two HIGH
+  functional defects surfaced by the Phase 4F Owner QA closeout execution: `CHART-05` (Chart AI
+  6m/1y ranges silently returned incomplete data — fixed with bounded backward-paging + an
+  additive coverage contract + a truthful client note) and `PORT-10` (Portfolio Production KR
+  live valuation was blocked by the generic KIS Production fail-closed gate — fixed with a narrow,
+  single-call-site `allowProductionPortfolioValuationLiveData` capability gated behind a new
+  `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION` env flag; every other caller stays Production
+  fail-closed). PR open, not merged; Owner must set the new env flag in Vercel Production before
+  the post-merge deployment that verifies `PORT-10`. See
+  `phase_4f_hf1_functional_high_defects_result_v0.1.md`.
+
 ### Next sequential product phases
 
 Phases 4B–4E repeat the same navigation-based production-readiness pattern established by Phase 4A —

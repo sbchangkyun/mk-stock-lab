@@ -179,8 +179,16 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     for (let i = 0; i < uniqueKrSymbols.length; i += QUOTE_CONCURRENCY) {
       const batch = uniqueKrSymbols.slice(i, i + QUOTE_CONCURRENCY);
+      // Phase 4F-HF1 (PORT-10): the authenticated Portfolio valuation route is the ONLY caller
+      // allowed to opt into the narrow Production KIS quote exception. This lifts ONLY the generic
+      // Vercel-Production hard block inside kisClient -- the dedicated
+      // KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION feature flag, the KIS account-number absence
+      // safety check, and every other readiness check there still apply unchanged. Outside Vercel
+      // Production this option is inert. No other route/endpoint sets this option.
       const results = await Promise.all(
-        batch.map((symbol) => getQuoteSnapshot({ market: 'KR', symbol })),
+        batch.map((symbol) =>
+          getQuoteSnapshot({ market: 'KR', symbol }, { allowProductionPortfolioValuationLiveData: true }),
+        ),
       );
       batch.forEach((symbol, index) => {
         const result = results[index];
