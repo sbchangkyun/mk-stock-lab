@@ -10,26 +10,26 @@ scale, evidence format, and pass rule this result doc will be filled in against.
 
 - Plan baseline: `main` @ `198c24c9f70010bd5cc077555c69c9035066dc7c`.
 - Plan branch: `docs/phase-4f-cross-page-owner-qa-plan`.
-- Plan commit: _to be filled in when this skeleton is committed alongside the plan doc._
+- Plan commit: `2d80cc68dca2ab808c6560f1ab47caab3242372f`.
 
 ## §2 Automated Support Gate results — PENDING
 
 _To be filled in once the §15 regression sweep is run, immediately before manual QA begins._
 
-## §3 Owner Manual QA Execution — PENDING (0 / 122 cases recorded)
+## §3 Owner Manual QA Execution — PENDING (0 / 120 cases recorded)
 
 Per-surface progress (target counts from plan §17):
 
 | Surface | Recorded | Target |
 |---|---|---|
-| A. Home / Common Shell | 0 | 15 |
+| A. Home / Common Shell | 0 | 14 |
 | B. Chart AI | 0 | 17 |
-| C. Market | 0 | 15 |
+| C. Market | 0 | 14 |
 | D. Lab | 0 | 15 |
 | E. Portfolio | 0 | 38 |
 | F. Cross-page / Session | 0 | 8 |
 | Accessibility spot check | 0 | 14 |
-| **Total** | **0** | **122** |
+| **Total** | **0** | **120** |
 
 Evidence records, one per test ID per plan §13's format, go here once QA execution begins.
 

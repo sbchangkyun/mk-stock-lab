@@ -99,7 +99,10 @@ exercised.
    description and includes them as explicit rows (MARKET-03, MARKET-04, MARKET-10, MARKET-11)
    rather than leaving them folded into an umbrella item that could be mistaken for "nothing
    specific to check."
-5. **Phase 4D's deployment-trigger anomaly and Phase 4E's recurrence test** are release/infra
+5. **Market's detailed all-symbol/all-period sweep is deliberately excluded from Phase 4F**
+   because the roadmap assigns it to the separate Phase 3 Closeout lane, not because it was
+   overlooked (see §2.3 and `MARKET-16`).
+6. **Phase 4D's deployment-trigger anomaly and Phase 4E's recurrence test** are release/infra
    concerns interleaved into the Production-verification sections of those docs, not Owner-QA
    items. Not included in the matrix below.
 
@@ -149,7 +152,9 @@ Classification legend used throughout §5–§11:
 | SHELL-14 | Std | Either | Inspect ad slot placement relative to nav/CTA/form controls | Ad areas do not cover or overlap critical controls | OWNER_MANUAL_REQUIRED |
 | SHELL-15 | — | — | (ad vendor's own behavior beyond layout interference) | — | OUT_OF_SCOPE |
 | SHELL-16 | M412/M390/M360/M320 | Either | Exercise mobile nav/shell at each width | Layout usable, tap targets reachable | OWNER_MANUAL_REQUIRED |
-| SHELL-17 | — | In | Owner reviews Vercel Production runtime-error/log dashboard for the shell/Home routes | No unexpected error cluster (ambiguity #1 — assistant cannot do this) | OWNER_MANUAL_REQUIRED |
+
+`SHELL-17` (Vercel Production runtime-error review for shell/Home routes) is retired from this
+Owner-manual matrix — it is now covered by the §15 connector-assisted automated gate.
 
 ## §6 QA Matrix — B. Chart AI (`4F-CHART`)
 
@@ -197,8 +202,10 @@ across this entire matrix.
 | MARKET-13 | M412/M390/M360/M320 | Either | Tap tabs, refresh, modal close on touch device | All tap targets usable | OWNER_MANUAL_REQUIRED |
 | MARKET-14 | — | Either | `/heatmap` | Redirects to `/market` | ALREADY_PRODUCTION_VERIFIED (4B result §9) |
 | MARKET-15 | Desktop | Either | Review displayed data | No fixture/example data presented as live | OWNER_MANUAL_REQUIRED |
-| MARKET-16 | — | — | Detailed all-symbol/all-period sweep | — | OUT_OF_SCOPE (belongs to separate Phase 3 Closeout lane) |
-| MARKET-17 | — | In | Owner reviews Vercel runtime-error log for `/market` and its APIs | No unexpected error cluster (ambiguity #1) | OWNER_MANUAL_REQUIRED |
+| MARKET-16 | — | — | Detailed all-symbol/all-period sweep | — | OUT_OF_SCOPE (belongs to separate Phase 3 Closeout lane, ambiguity #5) |
+
+`MARKET-17` (Vercel runtime-error review for `/market` and its APIs) is retired from this
+Owner-manual matrix — it is now covered by the §15 connector-assisted automated gate.
 
 ## §8 QA Matrix — D. Lab (`4F-LAB`)
 
@@ -225,6 +232,19 @@ across this entire matrix.
 
 The most important authenticated surface in this phase.
 
+**Execution-order note:** the `PORT-NN` IDs below are stable evidence identifiers, not a mandatory
+chronological execution order. In particular:
+
+- `PORT-03` (delete the temporary QA portfolio) is **final cleanup** — execute it only after
+  `PORT-38` and after every position/ETF/valuation test that depends on the QA portfolio still
+  existing.
+- `PORT-06` (delete the temporary ordinary QA position) executes only after every case that
+  depends on that position is complete.
+- The ETF position created in `PORT-07` does not need its own separate deletion step — it may be
+  cleaned up as part of the final Portfolio deletion (`PORT-03`).
+
+Do not delete the QA Portfolio before its dependent tests have run.
+
 | ID | Viewport | Auth | Steps | Expected | Class |
 |---|---|---|---|---|---|
 | PORT-01 | Desktop | In | Create a new portfolio | Portfolio created and visible | OWNER_MANUAL_REQUIRED |
@@ -240,7 +260,7 @@ The most important authenticated surface in this phase.
 | PORT-11 | Desktop | In | View a US/unsupported-currency position | Truthful unsupported-valuation disclosure shown | OWNER_MANUAL_REQUIRED |
 | PORT-12 | Desktop | In | Observe valuation if a partial/unavailable state naturally occurs | Behavior is truthful, not opportunistically forced | OWNER_MANUAL_REQUIRED |
 | PORT-13 | Desktop | In | Check KRW aggregate total | Matches sum of components, no silent FX conversion | OWNER_MANUAL_REQUIRED |
-| PORT-14 | Desktop | In | Inspect `baseCurrency` metadata/copy for a USD-denominated holding | Does not falsely imply live USD conversion | OWNER_MANUAL_REQUIRED |
+| PORT-14 | Desktop | In | Temporarily set the QA Portfolio's `baseCurrency` to USD and save it (restore afterward if needed for cleanup consistency) | USD metadata is preserved; aggregate valuation remains explicitly KRW-based; UI does not imply an actual USD conversion; truthful "USD 환산 미지원" disclosure remains present | OWNER_MANUAL_REQUIRED |
 | PORT-15 | Desktop | In | Inspect currency labels | "현지" label shown correctly | OWNER_MANUAL_REQUIRED |
 | PORT-16 | Desktop | In | Inspect KRW values | "₩" symbol shown correctly | OWNER_MANUAL_REQUIRED |
 | PORT-17 | Desktop | In | Click a portfolio tab | Selection works via mouse | OWNER_MANUAL_REQUIRED |
@@ -345,7 +365,7 @@ Read-only regression sweep using existing checks — no historical checker drift
 of this:
 
 ```
-npm run check:phase-4a-home-common-shell-production
+npm run check:phase-4a-home-common-shell
 npm run check:phase-4b-market-production-completion
 npm run check:phase-4c-chart-ai-production-completion
 npm run check:phase-4d-lab-production-completion
@@ -353,12 +373,25 @@ npm run smoke:phase-4e-portfolio-production-completion
 npm run check:phase-4e-portfolio-production-completion
 npm run check:mobile-baseline
 npm run check:project-lightweight-roadmap
-npm run smoke:phase-3gh-portfolio-valuation
-npm run check:phase-3gh-portfolio-valuation
+npm run smoke:phase-3gh-portfolio-live-valuation-mvp
+npm run check:phase-3gh-portfolio-live-valuation-mvp
 ```
 
-(Exact script names are confirmed against `package.json` at execution time — this list records
-intent per §15 of the task, not a guarantee every name is byte-identical.)
+### Connector-assisted Vercel Production runtime review (supersedes former `SHELL-17`/`MARKET-17` rows)
+
+The current Phase 4F execution environment has read-only Vercel connector access capable of
+querying Production runtime logs, so Production runtime-error review is no longer
+`OWNER_MANUAL_REQUIRED`. It runs here, as part of this automated gate, strictly read-only — no
+Redeploy, no mutation, no environment/config change — covering at minimum:
+
+- Home / common-shell relevant Production runtime errors (formerly `SHELL-17`)
+- `/market` and its relevant Market API routes' runtime errors (formerly `MARKET-17`)
+- `/chart-ai` and its relevant API routes' runtime errors (deferred at 4C, ambiguity noted in
+  §2.1, but never previously given a discrete Owner-manual row)
+
+The historical inconsistency about Vercel log access across 4A/4B/4C (ambiguity #1, §3) remains
+documented as-is; this gate simply uses the connector capability available to the current Phase 4F
+execution environment, regardless of that history.
 
 ## §16 Pass Rule
 
@@ -376,14 +409,17 @@ Phase 4F closes only when:
 
 | Surface | Owner-manual rows | Already-verified | Out-of-scope |
 |---|---|---|---|
-| A. Home / Common Shell | 15 | 1 | 1 |
+| A. Home / Common Shell | 14 | 1 | 1 |
 | B. Chart AI | 17 | 1 | 1 |
-| C. Market | 15 | 1 | 1 |
+| C. Market | 14 | 1 | 1 |
 | D. Lab | 15 | 1 | 0 |
 | E. Portfolio | 38 | 0 | 0 |
 | F. Cross-page / Session | 8 | 0 | 0 |
 | Accessibility spot check | 14 | 0 | 0 |
-| **Total** | **122** | **4** | **3** |
+| **Total** | **120** | **4** | **3** |
+
+`SHELL-17` and `MARKET-17` are excluded from these Owner-manual counts — they are now executed as
+part of the §15 connector-assisted automated gate (see §3 and §15).
 
 ## §18 Status
 
