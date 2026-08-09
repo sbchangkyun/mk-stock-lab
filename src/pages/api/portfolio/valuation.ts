@@ -11,6 +11,7 @@ import {
   toErrorResponse,
 } from '../../../lib/server/portfolio';
 import { getQuoteSnapshot } from '../../../lib/server/marketData/quotes';
+import { resolveUniversalInstrumentExact } from '../../../lib/server/chart-ai/universal-instrument-search.mjs';
 import type { PortfolioValuationRecordInput, QuoteSnapshot } from '../../../lib/server/providers/types';
 
 export const prerender = false;
@@ -36,21 +37,56 @@ type LoadedPosition = {
   currency: 'KRW' | 'USD';
 };
 
+// Phase 4F-HF2 (F-HIGH-03): legacy positions created under the pre-canonical free-text
+// identity system can have a noncanonical `symbol` column (e.g. a typed Korean company
+// name). This resolves such rows to a canonical KR symbol/name IN MEMORY ONLY, via exact
+// Universal Master matching, so they become eligible for a real KIS quote without any
+// uncontrolled bulk DB migration. Already-canonical rows (symbol matches KR_SYMBOL_PATTERN)
+// are returned unchanged, and ambiguous/unresolvable legacy symbols stay unsupported rather
+// than being fuzzy-repaired.
+// Exported (Phase 4F-HF2) so the deterministic legacy-compatibility tests can exercise this
+// resolution directly, without needing a Supabase client or a real KIS quote.
+export const resolveLegacyKrIdentity = (
+  position: LoadedPosition,
+): { symbol: string; name: string | null; identityResolved: boolean } => {
+  if (position.market !== 'KR' || KR_SYMBOL_PATTERN.test(position.symbol)) {
+    return { symbol: position.symbol, name: position.name, identityResolved: false };
+  }
+
+  const bySymbol = resolveUniversalInstrumentExact({ query: position.symbol, country: 'KR' });
+  if (bySymbol) {
+    return { symbol: bySymbol.symbol, name: bySymbol.displayName, identityResolved: true };
+  }
+
+  if (position.name) {
+    const byName = resolveUniversalInstrumentExact({ query: position.name, country: 'KR' });
+    if (byName) {
+      return { symbol: byName.symbol, name: byName.displayName, identityResolved: true };
+    }
+  }
+
+  return { symbol: position.symbol, name: position.name, identityResolved: false };
+};
+
 const toRecordInput = (
   position: LoadedPosition,
   sourcePortfolioName?: string,
-): PortfolioValuationRecordInput => ({
-  positionId: position.id,
-  portfolioId: position.portfolioId,
-  market: position.market,
-  symbol: position.symbol,
-  name: position.name,
-  assetType: position.assetType,
-  quantity: position.quantity,
-  buyPrice: position.buyPrice,
-  currency: position.currency,
-  sourcePortfolioName,
-});
+): PortfolioValuationRecordInput => {
+  const legacy = resolveLegacyKrIdentity(position);
+  return {
+    positionId: position.id,
+    portfolioId: position.portfolioId,
+    market: position.market,
+    symbol: legacy.symbol,
+    name: legacy.name,
+    assetType: position.assetType,
+    quantity: position.quantity,
+    buyPrice: position.buyPrice,
+    currency: position.currency,
+    sourcePortfolioName,
+    identityResolved: legacy.identityResolved,
+  };
+};
 
 type OwnedPortfolio = { id: string; name: string };
 type PositionLoadResult =

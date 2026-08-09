@@ -204,6 +204,10 @@ export type PortfolioValuationRecordInput = {
   buyPrice: number;
   currency: 'KRW' | 'USD';
   sourcePortfolioName?: string;
+  // Phase 4F-HF2 (F-HIGH-03): set true when `symbol`/`name` were overridden in-memory
+  // from a legacy noncanonical DB row via exact Universal Master resolution. The DB row
+  // itself is never mutated by this resolution.
+  identityResolved?: boolean;
 };
 
 export type KrPortfolioValuationRow = {
@@ -227,6 +231,7 @@ export type KrPortfolioValuationRow = {
   quoteAsOf: string | null;
   staleState: FallbackState | null;
   unsupportedReason: PortfolioValuationUnsupportedReason | null;
+  identityResolved: boolean;
 };
 
 export type KrPortfolioValuationState = 'full' | 'partial' | 'unavailable' | 'empty';

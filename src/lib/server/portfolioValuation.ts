@@ -63,6 +63,7 @@ export const buildKrPortfolioValuation = (input: {
       : 0;
     const unsupportedReason = classifyPositionSupport(position);
     const displayName = position.name || position.symbol;
+    const identityResolved = position.identityResolved === true;
 
     if (unsupportedReason) {
       return {
@@ -86,6 +87,7 @@ export const buildKrPortfolioValuation = (input: {
         quoteAsOf: null,
         staleState: null,
         unsupportedReason,
+        identityResolved,
       };
     }
 
@@ -112,6 +114,7 @@ export const buildKrPortfolioValuation = (input: {
         quoteAsOf: null,
         staleState: null,
         unsupportedReason: 'quote_unavailable',
+        identityResolved,
       };
     }
 
@@ -141,6 +144,7 @@ export const buildKrPortfolioValuation = (input: {
       quoteAsOf: quote.asOf,
       staleState: quote.staleState,
       unsupportedReason: null,
+      identityResolved,
     };
   });
 

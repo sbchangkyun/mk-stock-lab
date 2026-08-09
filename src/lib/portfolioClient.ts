@@ -34,7 +34,9 @@ export type PositionInput = {
   id?: string;
   portfolioId: string;
   symbol: string;
-  market: 'KR' | 'US';
+  // Phase 4F-HF2-A1: omitted for raw/modified exact entry — the server (resolveCanonicalOrFail)
+  // is authoritative and infers the canonical country rather than the client guessing one.
+  market?: 'KR' | 'US';
   assetType: 'stock' | 'etf';
   name?: string;
   buyPrice: number;
@@ -73,6 +75,10 @@ export type PortfolioValuationRow = {
   quoteAsOf: string | null;
   staleState: 'fresh' | 'stale-but-usable' | 'expired' | 'unavailable' | 'sample' | null;
   unsupportedReason: PortfolioValuationUnsupportedReason | null;
+  // Phase 4F-HF2 (F-HIGH-03): true when a legacy noncanonical symbol/name was resolved to a
+  // canonical Universal Master identity in memory for this valuation (see resolveLegacyKrIdentity
+  // in src/pages/api/portfolio/valuation.ts). The underlying DB row is never mutated by this.
+  identityResolved: boolean;
 };
 
 export type PortfolioValuationTotals = {
