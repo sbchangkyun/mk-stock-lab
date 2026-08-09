@@ -78,9 +78,11 @@ exercised.
    assistant session had no Vercel dashboard/API/CLI/connector access and could not independently
    confirm runtime-error-cluster claims. 4B's result doc (§9.7), however, records the assistant
    itself running `vercel logs --project mkstocklab --environment production --since 20m --json`
-   and getting real output. This plan does not resolve the inconsistency — it treats Vercel
-   runtime-error review as `OWNER_MANUAL_REQUIRED` everywhere (the Owner definitely has dashboard
-   access), and does not assume the assistant can repeat 4B's log pull in a future session.
+   and getting real output. Historical Phase 4A/4B/4C records remain inconsistent about Vercel log
+   access. For the current Phase 4F execution, that historical ambiguity is operationally resolved
+   by using the currently available read-only Vercel connector. Production runtime-error review is
+   therefore `AUTOMATABLE` under §15 and is not an Owner-manual QA row — strictly read-only, no
+   Redeploy, no mutation, no environment/config change (see §15's connector-assisted gate).
 2. **`@astrojs/netlify` dependency.** 4A deferred its removal as a tracked `DEFERRED` roadmap item;
    4C's result doc shows it was actually removed from `package.json` between those two phases, but
    this was never cross-referenced back to close the 4A item. The *dependency* is resolved; the
