@@ -214,8 +214,12 @@ check('36. HomeMobileAd.astro stays hidden by default (no reserved blank space) 
   /style="display:\s*none"/.test(homeMobileAd));
 check('37a. HomeRailAd.astro gates its carousel on 2+ active banners', /length\s*[<>=]=?\s*2|>=\s*2/.test(homeRailAd));
 check('37b. HomeRailAd.astro respects prefers-reduced-motion', /prefers-reduced-motion/.test(homeRailAd));
-check('38. index.astro still renders all six Home state components (no accidental removal)',
-  ['HomePortfolioPanel', 'HomeMobileAd', 'HomeLiveMarketSnapshot', 'HomeRetentionPanel', 'HomeMarketNews', 'HomeRailAd'].every((c) => homePage.includes(`<${c} />`)));
+check('38. index.astro still renders the five approved Home state components (no accidental removal)',
+  // Phase 4F-UX1-A intentionally removed HomeRetentionPanel's render from index.astro (an
+  // Owner-flagged unintended state-activated resume surface) while keeping the component file and
+  // its backend intact -- see scripts/check_phase_4f_ux1a_home_surface_contract.mjs for the
+  // dedicated regression guard on that removal.
+  ['HomePortfolioPanel', 'HomeMobileAd', 'HomeLiveMarketSnapshot', 'HomeMarketNews', 'HomeRailAd'].every((c) => homePage.includes(`<${c} />`)));
 check('39. index.astro home-shell/home-main-column/home-sidebar-column structure intact',
   homePage.includes('class="home-shell"') && homePage.includes('class="home-main-column"') && homePage.includes('class="home-sidebar-column"'));
 check('40. Footer.astro Coupang ad block id/tracking code are byte-for-byte unchanged (non-goal: never touch commercial config)',

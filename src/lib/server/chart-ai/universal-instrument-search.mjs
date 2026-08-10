@@ -208,3 +208,77 @@ export const findUniversalInstrument = (symbol, country) => {
   }
   return candidates[0];
 };
+
+/**
+ * Phase 4F-HF2 (PORT identity canonicalization) authoritative EXACT-only resolver. Unlike
+ * `searchUniversalInstruments`'s ranked results (which intentionally include prefix/contains
+ * matches for a live-typing UI), this is the sole function allowed to back a persistence decision
+ * (Portfolio position create/update, legacy-row valuation compatibility). Allowed matches, in
+ * order: exact canonical symbol, exact normalized displayName, exact normalized englishName, exact
+ * alias ONLY when unique. Any category with more than one exact match is treated as ambiguous and
+ * rejected outright (never silently falls through to a weaker category) — prefix/substring input
+ * (e.g. "삼성") must never resolve here.
+ */
+export const resolveUniversalInstrumentExact = ({ query, country } = {}) => {
+  const normalizedQuery = normalizeText(query ?? '');
+  if (!normalizedQuery) return null;
+  const wantedCountry = country === 'KR' || country === 'US' ? country : null;
+  const scoped = loadIndex().filter((entry) => !wantedCountry || entry.instrument.country === wantedCountry);
+
+  const bySymbol = scoped.filter((entry) => entry.symbolNorm === normalizedQuery);
+  if (bySymbol.length === 1) return { ...bySymbol[0].instrument };
+  if (bySymbol.length > 1) return null;
+
+  const byName = scoped.filter((entry) => entry.nameNorm === normalizedQuery);
+  if (byName.length === 1) return { ...byName[0].instrument };
+  if (byName.length > 1) return null;
+
+  const byEnglish = scoped.filter((entry) => entry.enNorm && entry.enNorm === normalizedQuery);
+  if (byEnglish.length === 1) return { ...byEnglish[0].instrument };
+  if (byEnglish.length > 1) return null;
+
+  const byAlias = scoped.filter((entry) => entry.aliasNorms.includes(normalizedQuery));
+  if (byAlias.length === 1) {
+    const matched = byAlias[0];
+    // A short alias (e.g. "삼성") can be a unique alias entry for one instrument while still
+    // being a generic group/family fragment shared by several distinct instruments' real names
+    // (삼성전자, 삼성물산, 삼성SDI, ...). Treat that as ambiguous rather than authoritative: if the
+    // query is also a proper prefix of a DIFFERENT instrument's full name, it is not a safe exact
+    // identity match.
+    const isGenericNamePrefix = scoped.some((entry) => {
+      if (entry === matched) return false;
+      return (
+        (entry.nameNorm && entry.nameNorm !== normalizedQuery && entry.nameNorm.startsWith(normalizedQuery)) ||
+        (entry.enNorm && entry.enNorm !== normalizedQuery && entry.enNorm.startsWith(normalizedQuery))
+      );
+    });
+    if (!isGenericNamePrefix) return { ...matched.instrument };
+  }
+  return null;
+};
+
+/**
+ * Server-authoritative canonicalization for Portfolio position create/update (Phase 4F-HF2,
+ * F-HIGH-03). Only the submitted `symbol` is ever used to look up an instrument; `market` is
+ * accepted solely as a disambiguation hint and is never adopted verbatim -- every identity field
+ * (symbol/displayName/country/exchange/assetType/currency) the caller persists must come from the
+ * resolved canonical instrument. A hint that contradicts the only resolvable instrument (e.g.
+ * symbol=005930, market=US) is rejected rather than silently corrected or silently ignored.
+ */
+export const resolveCanonicalPortfolioInstrument = ({ symbol, market } = {}) => {
+  const trimmedSymbol = String(symbol ?? '').trim();
+  if (!trimmedSymbol) return { ok: false, code: 'INSTRUMENT_SYMBOL_REQUIRED' };
+  const requestedMarket = market === 'KR' || market === 'US' ? market : null;
+
+  if (requestedMarket) {
+    const scoped = resolveUniversalInstrumentExact({ query: trimmedSymbol, country: requestedMarket });
+    if (scoped) return { ok: true, instrument: scoped };
+    const unscoped = resolveUniversalInstrumentExact({ query: trimmedSymbol });
+    if (unscoped) return { ok: false, code: 'INSTRUMENT_MARKET_MISMATCH' };
+    return { ok: false, code: 'INSTRUMENT_NOT_RESOLVED' };
+  }
+
+  const unscoped = resolveUniversalInstrumentExact({ query: trimmedSymbol });
+  if (unscoped) return { ok: true, instrument: unscoped };
+  return { ok: false, code: 'INSTRUMENT_NOT_RESOLVED' };
+};

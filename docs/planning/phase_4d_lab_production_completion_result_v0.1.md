@@ -1,9 +1,10 @@
 # Phase 4D — Lab Production Completion — Result v0.1
 
-**Current status**: `PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`
+**Current status**: `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`
 
 **Baseline**: `7da540dbadaa0a5acafb9a74aec7d9fb9cfc93f8`
-**Branch**: `feature/phase-4d-lab-production-completion`
+**Branch**: `feature/phase-4d-lab-production-completion` (merged into `main` — see §5)
+**Merge commit**: `14c0ee993dbf03639d73f12bfca39f67047e508a`
 **Plan**: [`phase_4d_lab_production_completion_plan_v0.1.md`](phase_4d_lab_production_completion_plan_v0.1.md)
 
 ## §1 Implementation
@@ -226,20 +227,181 @@ build for the exact final Head, not route-level content access.
 
 ## §5 Merge
 
-`PENDING` — not performed by this task. Per the governing task's mandatory instruction, this PR must not be
-merged by this assistant; merge requires explicit Owner approval.
+`COMPLETE — merged by the Owner`.
+
+[PR #17](https://github.com/sbchangkyun/mk-stock-lab/pull/17)
+(`feature/phase-4d-lab-production-completion` → `main`, "Phase 4D: Lab production completion") was merged by
+the **Owner**, not by this assistant. This assistant did not merge this PR at any point; the governing task
+forbade it, and the merge actor on record is the Owner's own account.
+
+Independently re-confirmed this closeout via `gh pr view 17 --json state,mergedAt,mergeCommit,mergedBy,baseRefName,headRefOid`:
+
+| Field | Value |
+| --- | --- |
+| `state` | `MERGED` |
+| `mergedBy.login` | `sbchangkyun` (Owner) |
+| `mergeCommit.oid` | `14c0ee993dbf03639d73f12bfca39f67047e508a` |
+| `mergedAt` | `2026-08-06T15:10:54Z` |
+| `headRefOid` | `98a6c88fc62414bd35536e948750ff7f16755572` |
+| `baseRefName` | `main` |
+
+The merge commit subject is `Merge pull request #17 from sbchangkyun/feature/phase-4d-lab-production-completion`
+/ `Phase 4D: Lab production completion`, authored by `sbchangkyun <sbchangkyun@gmail.com>`. `main`'s HEAD after
+`git fetch origin && git checkout main && git pull --ff-only origin main` is exactly
+`14c0ee993dbf03639d73f12bfca39f67047e508a` (a clean fast-forward `7da540d..14c0ee9`, 16 files / 1285
+insertions / 75 deletions — matching the full-PR scope accounted for in §2). No reset, rebase, or history
+rewrite was performed.
+
+Note `headRefOid` `98a6c88` is one commit beyond the `4f4ea13` Head referenced in §4: `98a6c88` is the
+docs-only PR-record correction commit (result-doc §2 diff accounting and §4 Preview metadata), applied before
+merge. It changed no application source.
 
 ## §6 Production verification
 
-`PENDING` — deferred until after Owner merge, per §14 of the plan.
+`VERIFIED — bounded, unauthenticated Production route + deployed-HTML checks pass; automatic deployment
+trigger did NOT fire and the release was recovered manually by the Owner`.
+
+### Deployment record
+
+| Field | Value | Source |
+| --- | --- | --- |
+| Deployment ID | `dpl_E4r84x9S5NLoDFLrgHqi9heJ2GvQ` | Owner-supplied; ID independently corroborated (below) |
+| State | `READY` | Owner-supplied; `success` independently corroborated |
+| Target | `production` | Owner-supplied; `environment: Production` independently corroborated |
+| Git ref | `main` | Owner-supplied (see the anomaly finding below — GitHub's record shows a raw SHA ref) |
+| Git SHA | `14c0ee993dbf03639d73f12bfca39f67047e508a` | Independently confirmed |
+| Commit verification | `verified` | Owner-supplied |
+
+**Independently confirmed this closeout** (this session has no Vercel API/CLI/dashboard/connector access — no
+`VERCEL_TOKEN`, and the Vercel MCP connector requires an interactive OAuth flow this non-interactive session
+cannot run — so Vercel-native facts are corroborated through GitHub's own APIs, per this project's standing
+verification-honesty convention):
+
+- `gh api repos/sbchangkyun/mk-stock-lab/commits/14c0ee99.../status` → `state: success`, `total_count: 1`,
+  sole context `Vercel: success`, `target_url`
+  `https://vercel.com/sbchangkyun-2946s-projects/mkstocklab/E4r84x9S5NLoDFLrgHqi9heJ2GvQ` — the deployment ID
+  embedded in the status URL matches the Owner-supplied `dpl_E4r84x9S5NLoDFLrgHqi9heJ2GvQ` exactly.
+- `gh api repos/sbchangkyun/mk-stock-lab/deployments?sha=14c0ee99...` → exactly one deployment record
+  `5804154318`, `environment: Production`, `original_environment: Production`, `sha` exactly the merge commit,
+  `creator: vercel[bot]`.
+- Its status: `state: success`, `environment: Production`, `description: "Deployment has completed"`,
+  per-deployment URL `https://mkstocklab-e67y9pdb9-sbchangkyun-2946s-projects.vercel.app`, at
+  `2026-08-08T00:57:48Z`.
+
+Not independently re-derived (Owner-supplied dashboard-only fields): `readyState`, the `main` git-ref label,
+and the `verified` commit-verification flag. These are consistent with, and not contradicted by, the
+corroborated facts above.
+
+### Automatic-trigger anomaly and manual recovery (recorded accurately — the automatic trigger did NOT succeed)
+
+The automatic Vercel Production deployment **did not appear** after the PR #17 merge. The release was
+recovered by the **Owner** using **Vercel Dashboard → Create Deployment** against `main`. This closeout does
+**not** claim the original automatic Git-integration trigger succeeded.
+
+Observations at the time of the anomaly (Owner-reported): GitHub Actions refresh checks were successful; the
+GitHub legacy combined commit status for the merge SHA returned `statuses: []` / `total_count: 0`; GitHub
+Deployments contained no deployment for the merge SHA; and a full Vercel project-configuration audit found
+nothing blocking — repository `sbchangkyun/mk-stock-lab`, Production Branch `main`, Framework Astro, Root
+Directory `/`, Ignored Build Step `Automatic`, "skip deployments when no root changes" **Disabled**, project
+not paused, no Deployment Checks configured.
+
+Two pieces of **independent** evidence gathered this closeout corroborate the manual-recovery narrative
+rather than an automatic push-triggered deploy:
+
+1. **~34-hour gap.** The merge landed `2026-08-06T15:10:54Z`, but both the sole `Vercel` commit status and the
+   only Production deployment record for that SHA were created `2026-08-08T00:57:47Z`. A push-triggered
+   deployment is created within seconds of the push, not a day and a half later.
+2. **`ref` is a raw SHA, not a branch.** Deployment `5804154318` carries
+   `ref: 14c0ee993dbf03639d73f12bfca39f67047e508a` rather than `ref: main`. A branch-push-triggered Vercel
+   deployment records the branch name; a Dashboard "Create Deployment" against a specific commit records the
+   commit SHA — which is exactly what is on record here.
+
+**No Vercel project setting was changed** to obtain this deployment, by the Owner or by this assistant. The
+recovery was a manual deployment creation only. This assistant performed no deployment.
+
+**Recurrence status: UNDETERMINED — one observation is not a pattern.** This is recorded as a *single*
+Git/Vercel integration trigger miss. The **next `main` merge is the recurrence test**: if that merge produces
+an automatic Production deployment, this was a one-off trigger miss; if the automatic deployment is absent
+again, it must be escalated as a **recurring Git/Vercel integration incident** and reported before any further
+manual workaround is applied, rather than silently worked around. This is a platform/integration matter, not
+an application-code defect — nothing in the Phase 4D diff can affect whether Vercel's Git integration fires.
+
+### Bounded, unauthenticated Production route sweep (independently run this closeout)
+
+Against `https://mkstocklab.vercel.app`, using a non-redirect-following request (`HttpWebRequest` with
+`AllowAutoRedirect = false`) so redirects are observed rather than followed. This is the route-level
+verification that was permanently blocked on Preview by Vercel Deployment Protection (§4) — Production is
+publicly reachable, so it can finally be confirmed directly:
+
+| Route | Result |
+| --- | --- |
+| `GET /lab` | `200` |
+| `GET /lab/asset-class-returns` | `200` |
+| `GET /lab/sp500-sectors` | `200` |
+| `GET /lab/congress-stocks` | `200` |
+| `GET /lab/nps-holdings` | `200` |
+| `GET /lab/nps-portfolio` | `301` → `Location: /lab/nps-holdings` |
+
+Exactly the 5×`200` + 1×`301` expectation from the plan, confirming the §1 item-6 redirect deviation behaves
+as documented in Production.
+
+### Deployed-HTML marker checks (independently run this closeout)
+
+Fetched with explicit UTF-8 decoding. Counts on `/lab/asset-class-returns` and `/lab/sp500-sectors` (identical
+on both, as expected — both render the shared `LabReturnMatrix.astro`):
+
+| Marker | Count | Confirms |
+| --- | --- | --- |
+| `<caption` | 2 | §1 item 1 — captions on both the ranking and summary tables |
+| `scope="col"` | 12 | §1 item 1 — column header scoping |
+| `scope="row"` | 24 | §1 item 1 — row header scoping |
+| `aria-pressed` | 13 | §1 item 2 — native legend buttons with pressed state |
+| `lab-matrix-scroll` | 2 | §1 item 3 — both scroll regions present |
+| `role="region"` | 2 | §1 item 3 |
+| `tabindex="0"` on both scroll regions | 2 | §1 item 3 — keyboard reachability |
+| `data-export-status` | 1 | §1 item 4 — export status region |
+| `role="status"` | 2 | §1 item 4 |
+| `aria-live="polite"` | 1 | §1 item 4 |
+
+Both scroll regions render as
+`<div class="lab-matrix-scroll" role="region" aria-label="…, 좌우로 스크롤 가능" tabindex="0">`.
+
+Truthfulness/disclosure copy (§1 items 11-12), confirmed present in the deployed HTML:
+
+| Page | `연동 예정` | `예시 데이터` | `투자 판단` | `리서치 모듈 준비` |
+| --- | --- | --- | --- | --- |
+| `/lab/asset-class-returns` | 2 | 3 | 2 | 0 |
+| `/lab/congress-stocks` | 2 | 0 | 1 | 3 |
+| `/lab/nps-holdings` | 2 | 0 | 1 | 3 |
+
+List semantics (§1 item 5) on `/lab/congress-stocks` and `/lab/nps-holdings`: one
+`<ul class="lab-static-preview-grid">` and three `<li class="lab-static-preview-card">` per page.
+
+**One marker explicitly NOT confirmed present, and why.** The empty-cell fallback `aria-label="데이터 없음"`
+(part of §1 item 1) matches **0** times in the deployed HTML. This is expected and **not** a defect: the
+complete 12×7 example fixture leaves no empty ranking cells, so that fallback branch never renders. Its
+presence in Production HTML therefore cannot be — and is not — claimed as verified here. The source-level
+assertion for it remains covered by the Phase 4D checker (§3).
+
+### Scope limit of this Production verification
+
+The above is a bounded, unauthenticated HTTP + HTML-marker check. It does **not** cover rendered visual
+layout, pointer/touch interaction, real keyboard traversal, screen-reader announcement of the live region, or
+dark-mode contrast. Those remain deferred to Phase 4F (§7).
 
 ## §7 Deferred Owner QA
 
-`PENDING` — authenticated visual/touch/keyboard/screen-reader QA of the Lab page group (including the new
-legend-button keyboard controls, the new export status live region, and dark-mode contrast of the new focus
-states) remains deferred to the standing Phase 4F cross-page Owner QA closeout, consistent with Phases 4A-4C.
-This was never in scope for this assistant to perform directly.
+`PENDING` — unchanged by this closeout. Authenticated visual/touch/keyboard/screen-reader QA of the Lab page
+group (including the new legend-button keyboard controls, the new export status live region, and dark-mode
+contrast of the new focus states) remains deferred to the standing **Phase 4F** cross-page Owner QA closeout,
+consistent with Phases 4A-4C. This was never in scope for this assistant to perform directly, and the §6
+Production verification above — being HTTP/HTML-level only — does not discharge it.
 
 ## §8 Final classification
 
-`PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`
+`PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`
+
+Phase 4D is closed: implemented, locally validated (§3), merged by the Owner (§5), and Production-verified
+within the bounded scope stated in §6. Two items remain open and are tracked elsewhere, neither blocking this
+closeout: Phase 4F Owner QA (§7), and the Vercel automatic-deployment-trigger recurrence test on the next
+`main` merge (§6).

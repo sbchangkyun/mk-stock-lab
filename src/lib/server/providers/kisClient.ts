@@ -32,6 +32,12 @@ const previewGuardFlagEnvName = 'KIS_ENABLE_PREVIEW_LIVE_QUOTES';
 // the stable Chart AI Production exception below. Does not widen any other KIS scope (account/order
 // /balance stay untouched and KIS_ACCOUNT_NO must still be absent below).
 const productionMarketDashboardFlagEnvName = 'KIS_ENABLE_PRODUCTION_MARKET_DASHBOARD';
+// Phase 4F-HF1: a third independent Vercel Production exception, scoped ONLY to the authenticated
+// Portfolio valuation route's read-only KR current-price quote lookup (PORT-10). Structurally
+// parallel to the two exceptions above; does not widen account/order/balance scope and
+// KIS_ACCOUNT_NO must still be absent below. Only src/pages/api/portfolio/valuation.ts sets the
+// corresponding per-call option.
+const productionPortfolioValuationFlagEnvName = 'KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION';
 const quotePath = '/uapi/domestic-stock/v1/quotations/inquire-price';
 const dailyOhlcPath = '/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice';
 const tokenPath = '/oauth2/tokenP';
@@ -164,6 +170,7 @@ export const getKisQuoteConfigReadiness = (
   options: {
     allowProductionChartAiLiveData?: boolean;
     allowProductionMarketDashboardLiveData?: boolean;
+    allowProductionPortfolioValuationLiveData?: boolean;
   } = {},
 ): KisQuoteConfigReadiness => {
   assertServerRuntime(moduleName);
@@ -194,12 +201,23 @@ export const getKisQuoteConfigReadiness = (
     options.allowProductionMarketDashboardLiveData === true &&
     readEnvValue(productionMarketDashboardFlagEnvName) === 'true';
 
+  // Phase 4F-HF1: independent exception scoped to the authenticated Portfolio valuation route's
+  // read-only KR current-price quote lookup only (PORT-10). Requires both the per-call signal
+  // (set only by valuation.ts, after its own auth/ownership checks) AND the dedicated feature flag.
+  // Lifts ONLY the runtime hard block below; KIS_ACCOUNT_NO-absent, live-quotes flag, and required
+  // credentials checks below still run unchanged.
+  const productionPortfolioValuationExceptionAllowed =
+    runtimeClass === 'vercel-production' &&
+    options.allowProductionPortfolioValuationLiveData === true &&
+    readEnvValue(productionPortfolioValuationFlagEnvName) === 'true';
+
   // Hard block: Vercel Production (unless a scoped exception applies), non-Vercel
   // NODE_ENV=production, unknown VERCEL_ENV value
   if (
     (runtimeClass === 'vercel-production' &&
       !productionChartAiExceptionAllowed &&
-      !productionMarketDashboardExceptionAllowed) ||
+      !productionMarketDashboardExceptionAllowed &&
+      !productionPortfolioValuationExceptionAllowed) ||
     runtimeClass === 'node-production' ||
     runtimeClass === 'unknown'
   ) {
@@ -410,20 +428,27 @@ export const validateKisDomesticQuoteInput = (input: SecurityIdentity): Provider
 
 export const getKisDomesticQuoteSnapshot = async (
   input: SecurityIdentity,
-  options: { allowProductionChartAiLiveData?: boolean; allowProductionMarketDashboardLiveData?: boolean } = {},
+  options: {
+    allowProductionChartAiLiveData?: boolean;
+    allowProductionMarketDashboardLiveData?: boolean;
+    /** Phase 4F-HF1: narrow, route-scoped Production exception for Portfolio KR live valuation only. */
+    allowProductionPortfolioValuationLiveData?: boolean;
+  } = {},
 ): Promise<ProviderResult<QuoteSnapshot>> => {
   assertServerRuntime(moduleName);
 
   const inputError = validateKisDomesticQuoteInput(input);
   if (inputError) return inputError;
 
-  // The scoped current_price quote snapshot forwards either the production Chart AI beta exception
-  // or the independent production Market Dashboard/Home exception (Phase 3GL-HF1) -- both remain
-  // narrow, per-call, route-gated signals. The generic getKisQuoteSnapshot wrapper and the OHLC series
-  // path call getKisQuoteConfigReadiness() with no options, so they remain fully fail-closed on production.
+  // The scoped current_price quote snapshot forwards the production Chart AI beta exception, the
+  // independent production Market Dashboard/Home exception (Phase 3GL-HF1), or the independent
+  // production Portfolio valuation exception (Phase 4F-HF1) -- all remain narrow, per-call,
+  // route-gated signals. The generic getKisQuoteSnapshot wrapper and the OHLC series path call
+  // getKisQuoteConfigReadiness() with no options, so they remain fully fail-closed on production.
   const readiness = getKisQuoteConfigReadiness({
     allowProductionChartAiLiveData: options.allowProductionChartAiLiveData === true,
     allowProductionMarketDashboardLiveData: options.allowProductionMarketDashboardLiveData === true,
+    allowProductionPortfolioValuationLiveData: options.allowProductionPortfolioValuationLiveData === true,
   });
   if (!readiness.ready) return readinessToError(readiness);
 

@@ -1,5 +1,500 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F-UX1-A.1 — bind Home surface registry to the actual render tree - 2026-08-10
+
+- **Classification: `PHASE_4F_UX1A_A1_COMPLETE_PREMERGE_REVIEW_REQUIRED`.**
+- **Premerge-review finding on PR #24.** The UX1-A registry (`homeDynamicSurfaceGuard.ts`) was
+  documentation-only: the checker verified `HomeRetentionPanel` absence and Snapshot→News
+  adjacency, but never compared the registry against what `index.astro` actually renders. A
+  brand-new unregistered `Home*.astro` component (anywhere, including after `HomeMarketNews`)
+  would have passed undetected. `HomeMobileAd`/`HomeRailAd` (real top-level ad surfaces) were
+  also missing from the original 2-entry registry.
+- **Registry rewritten** around `HomeSurfaceVisibility = 'always' | 'stateful' | 'rejected'`,
+  covering all 5 top-level Home components (`HomePortfolioPanel`, `HomeMobileAd`,
+  `HomeLiveMarketSnapshot`, `HomeMarketNews`, `HomeRailAd`) plus 1 rejected
+  (`HomeRetentionPanel`); `header-auth-state`/`Header` moved to a separate
+  `GLOBAL_SHELL_SURFACES` array, out of the Home render-tree comparison. New pure
+  `compareHomeSurfaceInventory()` enforcement primitive.
+- **Checker now enforces render-tree equality**, not just documentation:
+  `check_phase_4f_ux1a_home_surface_contract.mjs` parses actual `<Home...` tags from
+  `index.astro` and the approved/rejected component lists from the registry source, asserting
+  `ACTUAL_RENDERED_HOME_COMPONENTS == APPROVED_RENDERED_HOME_COMPONENTS` (excluding rejected,
+  which must be zero), the full main-column order
+  (`HomePortfolioPanel < HomeMobileAd < HomeLiveMarketSnapshot < HomeMarketNews`, `HomeRailAd`
+  excluded as sidebar-only), and the Snapshot→News adjacency as a separate assertion. Manually
+  verified against two injected failures (an unregistered trailing component, a reinserted
+  `HomeRetentionPanel`) before trusting it — both correctly failed, then reverted.
+- **Tests.** `smoke:phase-4f-ux1a-home-surface` grew 8/8 → **25/25** (adds the 6 required A–F
+  enforcement cases). `check:phase-4f-ux1a-home-surface` grew 28/28 → **46/46**.
+- **VISIBILITY-STATE DIFF clarified (§5.5 of the result doc), not superseded.** The new
+  automation covers top-level component identity/order only; a new internal state inside an
+  already-approved component, or a state-exposing backend change with no new component tag,
+  still requires manual PR review per the original process rule.
+- **No scope creep.** `HomeRetentionPanel.astro` internals, retention backend, Portfolio, KIS,
+  Chart AI, Market, Lab untouched; resume panel not restored.
+- Committed to the **existing** `fix/phase-4f-ux1a-home-surface-guard` branch (PR #24) — no new
+  PR, **not merged**. See `phase_4f_ux1a_home_surface_guard_result_v0.1.md` §12.
+
+## Phase 4F-UX1-A — remove unintended Home resume surface + stateful UI guard - 2026-08-10
+
+- **Classification: `PHASE_4F_UX1A_HOME_SURFACE_GUARD_IMPLEMENTED_PREMERGE_REVIEW_REQUIRED`.**
+- **Baseline.** `main` @ `d2fd5601eddfea26d8937cdccc92da6475d7ad7d` (Phase 4F-HF2/A1 merged).
+  Branch `fix/phase-4f-ux1a-home-surface-guard`.
+- **Finding (UX-08, MEDIUM).** Owner observed a duplicate-label "포트폴리오 · 포트폴리오" resume
+  card rendering between MARKET SNAPSHOT and MARKET NEWS on Home. Root cause: Phase 3GI's
+  `HomeRetentionPanel` — never removed from `index.astro`, normally hidden — becomes visible once
+  a session's persisted retention state (`lastSurface`/`lastPortfolioId`) contains a resumable
+  target; no code change caused this, only accumulated state.
+- **Fix scope: Home-only.** Removed `HomeRetentionPanel`'s import and render from
+  `src/pages/index.astro` (Home order is now `HomeLiveMarketSnapshot` → `HomeMarketNews`).
+  `HomeRetentionPanel.astro` and the entire Phase 3GI retention backend (migrations, API routes,
+  client module, Portfolio/Chart AI/Lab resume-state persistence) are left fully intact and
+  dormant, not deleted.
+- **New stateful UI regression guard (§6).** `src/lib/home/homeDynamicSurfaceGuard.ts` — a small
+  documented allowlist (`home-portfolio-panel`, `header-auth-state` approved;
+  `home-retention-panel` explicitly rejected) validated by a new static checker.
+- **New process rule (§7): VISIBILITY-STATE DIFF.** PR review must inspect both the CODE DIFF and
+  a VISIBILITY-STATE DIFF — an accounting of which state-dependent surfaces exist and whether any
+  newly-reachable state could flip one visible without a corresponding code change. Recorded in
+  `phase_4f_ux1a_home_surface_guard_result_v0.1.md`.
+- **Sibling checker reconciliation.** `check_phase_4a_home_common_shell_contract.mjs` (check #38)
+  and `check_phase_3gi_user_retention_persistence_contract.mjs` (Group 7) both previously asserted
+  `index.astro` renders `HomeRetentionPanel`; both narrowly inverted with an explanatory comment.
+  Re-run: 75/75 and 149/149.
+- **Tests.** New `smoke:phase-4f-ux1a-home-surface` (8/8) and
+  `check:phase-4f-ux1a-home-surface` (28/28, 6 groups: removal, section order, guard registry,
+  backend preservation, no-scope-creep, package.json wiring).
+- **Full regression gate green**, including the 10-command Phase 4F gate, HF1/HF2 smoke+check,
+  `check:mobile-baseline`, `check:project-lightweight-roadmap`, `git diff --check`,
+  `npm ls --depth=0`, and `npm run build` (known benign Windows post-build exit-code artifact).
+- **Status.** `F-HIGH-01`/`CHART-05` stays CLOSED. `F-HIGH-02`/`PORT-10` and `F-HIGH-03` remain
+  IMPLEMENTED / PRODUCTION OWNER VERIFICATION STILL REQUIRED — unchanged by this Home-only phase.
+  Owner QA formal count remains 0/120.
+- PR opened (`fix/phase-4f-ux1a-home-surface-guard` → `main`), **not merged**. See
+  `phase_4f_ux1a_home_surface_guard_result_v0.1.md`.
+
+## Phase 4F-HF2 — Portfolio canonical instrument identity - 2026-08-09
+
+- **Classification: `PHASE_4F_HF2_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
+- **Baseline.** `main` @ `af2d74b2e3cdae87515bf02b3e286b242ce0f6a8` (Phase 4F-HF1 / PR #22 merged).
+  Branch `fix/phase-4f-hf2-portfolio-instrument-identity`.
+- **Scope: F-HIGH-03 completely**, replacing Portfolio's free-text/heuristic identity system with a
+  canonical identity contract, then using it to prove whether `F-HIGH-02`/`PORT-10` (HF1) works
+  with a real KR symbol. Explicit instruction: do not preserve free-text identity semantics —
+  replace the contract.
+- **Canonical source reused, not duplicated.** `src/data/chart-ai/universalInstrumentMaster.json`
+  remains the sole identity source, via the existing `universal-instrument-search.mjs` module and
+  `GET /api/chart-ai/instruments/search.json` route. `securityLogos.json` is not used for identity.
+- **New exact resolver.** `resolveUniversalInstrumentExact({ query, country? })` — exact canonical
+  symbol / normalized displayName / normalized englishName / unique-alias-only matches; rejects
+  prefix/substring/multi-alias ambiguity; distinct from ranked search so persistence never relies on
+  a ranked first result.
+- **Accessible Portfolio combobox.** Replaces the free-text `종목명 또는 티커` field with a
+  `role="combobox"` + `role="listbox"/"option"` UI (full keyboard + click/touch support), backed by
+  dedicated canonical selection state (`symbol`/`displayName`/`country`/`exchange`/`market`/
+  `assetType`/`currency`). Editing visible text after a selection immediately clears the canonical
+  state; an exact symbol/name typed and submitted without clicking still resolves via the same
+  server-side resolver, but ambiguous input is rejected with `'검색 결과에서 종목을 선택해
+  주세요.'` rather than silently guessing.
+- **Server-authoritative create/update.** `resolveCanonicalOrFail` in `portfolio.ts` is called by
+  both `createPosition` and `updatePosition` before any DB write; the client-supplied
+  symbol/market/assetType/currency tuple is never trusted, and a contradictory pair (e.g.
+  `symbol=005930, market=US`) is rejected with `'선택한 시장과 종목 정보가 일치하지 않습니다.'`.
+  Arbitrary Korean text can no longer be persisted into the `symbol` column.
+- **Legacy compatibility, no bulk migration.** `resolveLegacyKrIdentity` in `valuation.ts` resolves
+  existing free-text KR rows (e.g. legacy "삼성전자"/"네이버") to their canonical symbol
+  **in memory only**, exactly once per valuation read, never mutating the DB and never fuzzy-
+  repairing an ambiguous row. Already-canonical rows and non-KR rows pass through unchanged.
+- **Tests.** 60 smoke assertions (resolver: 23, legacy-compatibility: 15, create/edit contract: 22)
+  against the real Universal Master, plus a new 52-assertion static contract checker
+  (`check:phase-4f-hf2-portfolio-identity`) covering reuse, resolver distinctness, accessibility,
+  input invalidation, server-authoritative canonicalization, legacy compatibility, and the
+  unchanged KIS Production security boundary.
+- **Sibling checker reconciliation.** Two pre-HF2 assertions in
+  `check_phase_4e_portfolio_production_completion_contract.mjs` (A1: ETF-option select-tag regex;
+  K9: no-new-`/api/`-route allowlist) were narrowly updated — not weakened — to tolerate this
+  phase's spec-mandated `disabled aria-readonly` select attributes and the legitimate reuse of the
+  existing chart-ai instrument-search route. Re-run: 65/65.
+- **Full §21 regression gate green**, including the 10-command Phase 4F gate, `check:mobile-
+  baseline`, `check:project-lightweight-roadmap`, `git diff --check`, `npm ls --depth=0`, and
+  `npm run build` (dist output confirmed on disk; known benign Windows post-build exit-code
+  artifact).
+- **Status.** `F-HIGH-01`/`CHART-05` stays CLOSED (untouched). `F-HIGH-02`/`PORT-10` remains
+  IMPLEMENTED / BLOCKED-UNTIL-HF2-MERGE. `F-HIGH-03` is IMPLEMENTED / PRODUCTION-VERIFICATION-
+  REQUIRED — neither may be declared CLOSED before an Owner completes the Production proving path
+  (legacy row → resolved to canonical symbol → real KIS quote → numeric valuation). Owner QA formal
+  count remains 0/120.
+- PR opened (`fix/phase-4f-hf2-portfolio-instrument-identity` → `main`), **not merged**. See
+  `phase_4f_hf2_portfolio_instrument_identity_result_v0.1.md`.
+
+## Phase 4F-HF1 — functional HIGH defect fixes - 2026-08-09
+
+- **Classification: `PHASE_4F_HF1_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
+- **Baseline.** `main` @ `af52c624a724c728f8d71295c9891dfe58496d85`. Branch
+  `fix/phase-4f-hf1-high-functional-defects`. The Owner QA evidence branch
+  `docs/phase-4f-owner-qa-execution` was not touched, merged, or cherry-picked from.
+- **Scope: exactly two HIGH functional defects** surfaced by the Phase 4F Owner QA closeout
+  execution — no other defect, redesign, or refactor was implemented.
+- **F-HIGH-01 (`CHART-05`) — Chart AI timeframe coverage/paging.** `fetchUniversalOhlcv()` fetched
+  exactly one provider page per chart request regardless of the requested range, so 6m/1y ranges
+  silently returned incomplete data. Added bounded backward-paging (KR: date-boundary walk; US:
+  existing BYMD backward cursor; both dedupe/sort/validate, bounded max 4 pages) to
+  `universalOhlcvProvider.ts`, without rewriting or merging the separate long-history engine. Added
+  an additive `coverage` contract (`requestedRange`/`requestedStartDate`/`actualStartDate`/
+  `actualEndDate`/`candleCount`/`complete`, calendar-tolerant of weekends/holidays and newly-listed
+  securities) to `UniversalOhlcvResponse`, and a concise truthful client note in `chart-ai.astro`
+  when a chart loads successfully but its coverage is incomplete.
+- **F-HIGH-02 (`PORT-10`) — Portfolio Production KR live valuation.** The generic KIS quote path
+  fails closed in Vercel Production by design, which blocked the authenticated
+  `/api/portfolio/valuation` route from ever getting real KR quotes there. Added a narrow
+  `allowProductionPortfolioValuationLiveData` capability to `kisClient.ts` that lifts only the
+  generic Production hard block, gated on ALL of: Production runtime, the caller passing the
+  option, the new `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION` env flag, `KIS_ENABLE_LIVE_QUOTES`
+  enabled, valid KIS credentials, and `KIS_ACCOUNT_NO` absent. `quotes.ts` forwards the option;
+  `src/pages/api/portfolio/valuation.ts` is the **only** call site in the repo that sets it. The
+  generic `getKisQuoteSnapshot(...)` wrapper stays Production fail-closed for every other caller.
+  KR-only in this phase — no US Portfolio valuation, FX, account linkage, or trading added.
+- **Env contract.** No `.env.example`/`.env.template` exists anywhere in the repo, so the
+  instruction to add the new flag there is not applicable this phase. **Owner action required
+  before Production merge:** set Vercel Production `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION=true`
+  before the post-merge deployment expected to verify `PORT-10`.
+- **New tests/checker.** `smoke:phase-4f-hf1-functional-high` (39 chart-timeframe + 20
+  portfolio-valuation-security assertions, 59/59) and `check:phase-4f-hf1-functional-high` (58
+  static-contract assertions), both green.
+- **Regression found and fixed during validation.** This phase's own explanatory comment in
+  `valuation.ts` contained the literal substring `KIS_ACCOUNT_NO` as prose, which tripped the
+  pre-existing Phase 3GH checker assertion `route never references KIS_ACCOUNT_NO`
+  (85/86). Per the explicit "do not weaken Phase 4C/4E/3GH checkers" instruction, the checker was
+  left untouched and the comment was reworded to remove the literal env-var name while keeping the
+  same meaning; `check:phase-3gh-portfolio-live-valuation-mvp` re-ran 86/86 and
+  `check:phase-4f-hf1-functional-high` stayed 58/58.
+- **Full regression gate green**, no Phase 4C/4E/3GH checker weakened: `check:phase-4c-chart-ai-production-completion`
+  (35/35), `smoke:phase-4e-portfolio-production-completion` (21/21),
+  `check:phase-4e-portfolio-production-completion` (65/65),
+  `smoke:phase-3gh-portfolio-live-valuation-mvp` (55/55),
+  `check:phase-3gh-portfolio-live-valuation-mvp` (86/86), `check:mobile-baseline` (74/74),
+  `check:phase-4a-home-common-shell` (75/75), `check:phase-4b-market-production-completion`
+  (79/79), `check:phase-4d-lab-production-completion` (62/62),
+  `check:project-lightweight-roadmap` (27/27), `git diff --check` clean, `npm ls --depth=0` clean,
+  `npm run build` real build succeeded (dist/ and .vercel/output confirmed freshly written on disk;
+  the known Windows-only post-build teardown exit code `-1073740791` was classified separately, not
+  a compile error, per this phase's own pre-flagged caveat).
+- **Changed files:** `package.json`, `universalOhlcvProvider.ts`, `chart-ai.astro`, `kisClient.ts`,
+  `quotes.ts`, `valuation.ts`, plus 4 new HF1 test/checker/smoke scripts. No UX1/Lab file changed.
+  No Owner-local untracked file touched; `git add .`/`-A` never used.
+- **New result doc** (`phase_4f_hf1_functional_high_defects_result_v0.1.md`).
+- **PR** "Phase 4F HF1: fix Chart AI timeframe and Portfolio valuation", base `main`, head
+  `fix/phase-4f-hf1-high-functional-defects`. **Not merged** — pre-merge review required.
+
+## Phase 4F-A — cross-page Owner QA closeout plan - 2026-08-09
+
+- **Classification: `PHASE_4F_CROSS_PAGE_OWNER_QA_PLAN_READY_QA_NOT_STARTED`.** Plan-only; no
+  `src/`, `scripts/`, config, migration, or dependency file touched, no `git add .`/`-A`, no
+  Owner-local untracked file touched, no manual QA executed.
+- **Baseline.** `main` @ `198c24c9f70010bd5cc077555c69c9035066dc7c` (Phase 4A–4E all merged and
+  Production-verified). Branch `docs/phase-4f-cross-page-owner-qa-plan`.
+- **Audit.** Read all 10 Phase 4A–4E plan/result docs and extracted every QA item each phase
+  deferred to Phase 4F, without inventing new product requirements. Found and recorded 6
+  ambiguities in that deferral record: a Vercel log/dashboard-access inconsistency between Phase
+  4B and Phases 4A/4C; the `@astrojs/netlify` dependency's removal never being cross-referenced
+  back to the Phase 4A item that deferred it (the still-open item is the external Netlify Git
+  integration, not the dependency); Lab's empty-cell `aria-label="데이터 없음"` fallback admittedly
+  unconfirmed in Production HTML; inconsistent deferral granularity across phases (Market only
+  ever used an umbrella phrase, so its tab-keyboard-nav and modal-focus-trap behaviors are
+  included here by inference from the implementation record, not by a literal citation); Market's
+  "detailed all-symbol/all-period sweep" belonging to the separate Phase 3 Closeout lane; and
+  Phase 4D/4E's deployment-trigger/recurrence-test items being release/infra concerns, not QA
+  deferrals.
+- **New QA plan doc** (`phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`): a 120-case
+  Owner-manual QA matrix (Home/Common Shell 14, Chart AI 17, Market 14, Lab 15, Portfolio 38,
+  Cross-page/Session 8, Accessibility spot check 14; corrected from an initial 122-case draft by
+  Phase 4F-A.1 — see below), plus 4 items already `PRODUCTION_VERIFIED`
+  by earlier phases and 3 items explicitly `OUT_OF_SCOPE`; a viewport-testing convention (desktop
+  full pass, representative 768/390/320 full pass, targeted 1024/412/360 breakpoint checks); a
+  quota-conservation plan limiting Chart AI's Similarity/MK-Analysis calls to exactly one each; the
+  defect-severity scale (BLOCKER/HIGH/MEDIUM/LOW); the per-test evidence format; and the
+  pre-QA automated regression gate (Phase 4A–4E checkers/smokes, mobile baseline, project
+  lightweight roadmap, Phase 3GH portfolio valuation smoke/checker).
+- **New result-doc skeleton** (`phase_4f_cross_page_owner_qa_closeout_result_v0.1.md`) — QA not
+  yet executed.
+- **Not done this phase, by explicit instruction.** No manual QA was executed, no defect was
+  fixed, and no application code was modified.
+
+## Phase 4F-A.1 — Owner QA plan correction - 2026-08-09
+
+- **Classification: docs-only correction of the Phase 4F-A plan.** No `src/`, `scripts/`, config,
+  migration, or dependency file touched, no `git add .`/`-A`, no Owner-local untracked file
+  touched, no manual QA executed.
+- **Baseline.** `docs/phase-4f-cross-page-owner-qa-plan` @ `2d80cc68dca2ab808c6560f1ab47caab3242372f`
+  (Phase 4F-A's own commit, still unmerged as PR #21).
+- **§15 automated-gate command list corrected.** The plan's original command list named several
+  scripts that do not exist byte-for-byte in `package.json` (e.g. a
+  `check:phase-4a-home-common-shell-production` variant and a `smoke:phase-3gh-portfolio-valuation`
+  /`check:phase-3gh-portfolio-valuation` pair missing the `-live-valuation-mvp` suffix). Replaced
+  with the 10 exact, independently verified `package.json` script names and removed the disclaimer
+  that names might not be byte-identical, so the plan is directly executable as written.
+- **§3 ambiguity record corrected from 5 to 6 numbered items.** The plan doc's own numbered list
+  only had 5 ambiguities even though this changelog's Phase 4F-A entry (above) already described 6.
+  Inserted the missing ambiguity (Market's detailed all-symbol/all-period sweep is deliberately
+  excluded from Phase 4F because the roadmap assigns it to the separate Phase 3 Closeout lane) as
+  the new #5, and renumbered the former #5 (Phase 4D/4E deployment-trigger/recurrence item) to #6.
+- **`SHELL-17`/`MARKET-17` retired from the Owner-manual matrix.** The current Phase 4F execution
+  environment has read-only Vercel connector access capable of querying Production runtime logs, so
+  Production runtime-error review for Home/shell and Market is no longer `OWNER_MANUAL_REQUIRED`.
+  Both rows are removed from their matrices and folded into a new connector-assisted, strictly
+  read-only automated gate described in plan §15 (no Redeploy, no mutation, no environment/config
+  change), which now also explicitly covers `/chart-ai` Production runtime-error review (previously
+  had no discrete Owner-manual row at all). Owner-manual total corrected **122 → 120** (Home/Common
+  Shell 15 → 14, Market 15 → 14; all other per-surface counts and the already-verified/out-of-scope
+  totals unchanged). Propagated to the plan doc, the result-doc skeleton, and
+  `mk_stock_lab_master_roadmap_v2.1.md`.
+- **Portfolio execution-order note added.** No `PORT-NN` IDs renumbered — they remain stable
+  evidence identifiers, not chronological order. Added a note before the Portfolio matrix stating
+  `PORT-03` (delete the temporary QA portfolio) is final cleanup after `PORT-38` and all dependent
+  tests, and `PORT-06` (delete the temporary ordinary QA position) executes only after its dependent
+  cases complete, so the plan no longer instructs deleting the QA Portfolio before dependent tests
+  run against it.
+- **`PORT-14` corrected.** Replaced a holding-level `baseCurrency` test with a portfolio-level
+  metadata test: temporarily set the QA Portfolio's own `baseCurrency` to USD and save, expecting
+  the USD metadata to persist while the aggregate valuation stays explicitly KRW-based, the UI does
+  not imply an actual USD conversion, and the truthful "USD 환산 미지원" disclosure remains present.
+- **Result-doc skeleton corrected.** Filled in the previously-placeholder plan commit
+  (`2d80cc68dca2ab808c6560f1ab47caab3242372f`) and updated its progress table from 0/122 to 0/120
+  with the corrected per-surface targets.
+- **Not done this phase, by explicit instruction.** No manual QA was executed, no defect was fixed,
+  and no application code was modified.
+
+## Phase 4E closeout — merged and Production-verified - 2026-08-09
+
+- **Classification: `PHASE_4E_PORTFOLIO_MERGED_PRODUCTION_VERIFIED`.** Docs-only closeout record;
+  no `src/`, `scripts/`, config, migration, or dependency file touched, no `git add .`/`-A`, no
+  Owner-local untracked file touched.
+- **Merge.** PR #19 (`feature/phase-4e-portfolio-production-completion` → `main`) merged by the
+  Owner. Merge commit `6cca38aba04c875abf985cb979625a26cf2a340c`.
+- **Automatic Production deployment.** Vercel deployment `dpl_AxKXATutrX9ALjkzHruUcRFjEr6L` —
+  state `READY`, target `production`, source `git`, `githubCommitRef=main`, `githubCommitSha`
+  matching the merge commit, commit verification `verified`, automatic trigger succeeded normally,
+  no manual recovery.
+- **Bounded unauthenticated Production verification — PASS.** `https://mkstocklab.vercel.app/portfolio`
+  → HTTP 200. Confirmed present in the served HTML: the ETF selector; the truthful "현지" label (not
+  a fabricated "$/달러 기준"); the truthful baseCurrency disclosure sentence; `aria-describedby` on
+  `portfolio-base-currency`; `portfolio-readiness`/`valuation-status-copy` status/live-region
+  semantics; `role="tabpanel"` on the detail panel; `positions-list-wrap`
+  `role="region"`/`aria-label`/`tabindex="0"`; the absent dividend sort affordance; the absent
+  invalid holdings-row/columnheader roles.
+- **Deferred, not claimed.** Authenticated CRUD, dialog focus-trap lifecycle, mobile-breakpoint, and
+  touch-behavior interactive re-verification in Production were **not** performed this phase — all
+  remain deferred to Phase 4F (Owner authenticated, live-browser QA closeout).
+
+## Phase 4E-B — Portfolio production completion implementation - 2026-08-08
+
+- **Classification: implementation, all 10 approved requirements.** Implements the plan approved
+  through Phase 4E-A.1 (`99c58e4aed993bc757fd1db25c95506f9c2cbdb0`) on
+  `feature/phase-4e-portfolio-production-completion`. No Hard Rule boundary crossed: no
+  trading/brokerage surface, no new US-quote/FX/dividend provider, no new KIS account API, no LLM,
+  no new Supabase migration/schema, no new secrets/dependencies, no full-table redesign of the
+  holdings cards, no `git add .`/`-A`, no Owner-local untracked file touched.
+- **(A–C) Truthful ETF/currency copy.** Exposed ETF in the asset-type select; fixed the mislabeled
+  currency-toggle button; added explicit KRW-only aggregate / USD-unsupported-conversion copy
+  (`#portfolio-base-currency-hint`, `.kpi-note`).
+- **(D) Dividend surface honesty.** Removed the dividend sort affordance entirely (no
+  `data-sort-column`, no arrow buttons, no `dividend-yield-*`/`annual-dividend-*` sort keys in the
+  `positionSort` type) and confirmed the honest `데이터 대기` placeholder renders for both dividend
+  cells, since no dividend provider exists. This is the one change that required narrowly
+  reconciling `check_portfolio_holdings_category_header_static_contract.mjs`'s dividend-sort-
+  specific assertions (Groups 4/5/6/7): each stale "assert dividend sort/label exists" check was
+  replaced with an explicit "assert it is intentionally absent" check, documented inline with the
+  Phase 4E item D rationale. No other group, and none of the `데이터 대기` text assertions, were
+  touched. Result: 81/84 (3 pre-existing, out-of-scope failures — `카테고리` eyebrow label,
+  `연동 예정` placeholder text, `.position-card` `repeat(10,)` column count — confirmed via
+  `git show 99c58e4:...` to already be absent/failing at this phase's own baseline, i.e. Phase-3BR
+  checker drift predating any Phase 4E-B edit, not a regression).
+- **(E–I) Accessibility completion.** `aria-live` on the two dynamic status paragraphs; a real
+  dialog focus-trap/restoration lifecycle (new pure module
+  `src/lib/portfolio/portfolioKeyboardNav.ts`, `computeDialogFocusWrap`) mirroring
+  `LiveMarketDashboard.astro`; a complete tablist pattern (`role="tabpanel"`, roving `tabIndex`,
+  `computeTabRovingNavigation` for Arrow/Home/End, synced `aria-labelledby`); removal of the
+  invalid `role="row"`/`role="columnheader"` markup from the holdings header (the surface stays a
+  non-table card grid, per the Hard Rule); and `role="region"`/`aria-label`/`tabindex="0"` plus
+  matching `:focus-visible` CSS on the horizontal-scroll holdings wrapper.
+- **(J) Responsive completion.** Static audit fixed one dead-CSS defect (an unreachable
+  `.portfolio-mvp` rule inside the `max-width: 980px` media query). Live-browser breakpoint QA at
+  320–1024px is deferred to Owner QA / Phase 4F, since `/portfolio` requires an authenticated
+  Supabase session infeasible under assistant policy — pre-approved in the plan's own §19 boundary.
+- **Testing.** `smoke:phase-4e-portfolio-production-completion` (21/21) and
+  `check:phase-4e-portfolio-production-completion` (61/61) both pass at 100% on first run, following
+  the established esbuild-bundled-smoke / static-contract-checker convention. Full regression gate
+  (`npm ci`, both new tests, all sibling Portfolio/4A–4D checkers, `git diff --check`, `npm run
+  build`, `npm ls --depth=0`) is green apart from the documented pre-existing `check:portfolio-
+  holdings-header` drift and the known benign Windows local-build teardown crash (`dist/` output
+  confirmed fully generated; Vercel's Linux Preview/Production build remains the authoritative
+  build gate, per the Phase 4D precedent).
+- Also fixes a typo in the plan doc's §7 (`docs/planning/phase_4e_portfolio_production_completion_
+  plan_v0.1.md`): "all 9 numbered items above" → "all 10 numbered items above".
+- See `phase_4e_portfolio_production_completion_result_v0.1.md` for the full itemized report. PR
+  opened for Owner review against `main`; **not merged**, Phase 4F not started.
+
+## Phase 4E-A.1 — Plan review correction (no application code) - 2026-08-08
+
+- **Classification: plan-review correction only.** Owner review of the Phase 4E-A plan
+  (`8a5945f192b0ba698cd0152e3749abcbdb3cd214`) required six corrections before implementation may
+  begin. No application code, CSS, script, package.json, migration, or environment file was
+  touched; only `phase_4e_portfolio_production_completion_plan_v0.1.md`,
+  `mk_stock_lab_master_roadmap_v2.1.md`, and this changelog changed.
+- **(A) Vercel recurrence test: PASS / CLOSED.** PR #18 (merge SHA
+  `b3254aa35db76fe264cbb8167f20c47291b87838`) was the "next `main` merge" the Phase 4D closeout
+  defined as the recurrence test for the PR #17 automatic-deploy miss. It produced automatic Vercel
+  Production deployment `dpl_D8TEboHCAD5S1uky3Yf6mXoJjUK3` (`target: production`, `state: READY`,
+  `githubCommitRef: main`, matching `githubCommitSha`) within seconds of the push, with no manual
+  Create Deployment/Redeploy. The PR #17 miss is reclassified as a **one-off incident**; the
+  recurrence question is answered and closed. Phase 4E's own post-merge deployment is still verified
+  normally (routine release verification), but it is not itself a recurrence test.
+- **(B) Build/environment risk documented.** Plan §15 now records the Phase 4D-observed Windows
+  local build crash (exit `-1073740791` / `STATUS_STACK_BUFFER_OVERRUN`), confirmed reproducible on
+  the untouched baseline (pre-existing, not phase-caused), and the fallback procedure if it recurs:
+  narrow tracked-file-only baseline isolation (never touching Owner-local untracked files), and
+  treating the exact-Head Vercel Linux Preview build as the authoritative release gate if the local
+  Windows build remains inconclusive.
+- **(C) Preview/SSO handling corrected.** Plan §16 now requires the Preview deployment at the exact
+  final PR Head to reach `READY`, forbids creating an SSO bypass/share URL, and requires recording
+  `SSO_BLOCKED` honestly (not a fabricated pass) if Deployment Protection blocks route-level access —
+  never claiming signed-out UI verification when SSO prevented the request from reaching application
+  routing. Authenticated route-level interaction remains Phase 4F Owner QA either way.
+- **(D) Audit classification consistency.** The Phase 4E-A plan's §4 findings table is corrected so
+  finding F (dialog focus lifecycle) reads `PARTIAL_GAP` — matching the evidence already described
+  there and in this changelog's original Phase 4E-A entry (existing `role="dialog"`/`aria-modal`/
+  labelled-dialog/Escape/reduced-motion behavior is already correct; only the focus-trap lifecycle
+  is missing) — resolving an inconsistency where the table had briefly carried `CONFIRMED_GAP`.
+- **(E) Testing contract locked.** Plan §7/§13 now firmly commit to shipping both
+  `smoke:phase-4e-portfolio-production-completion` and
+  `check:phase-4e-portfolio-production-completion`. The smoke target is a new pure module
+  `src/lib/portfolio/portfolioKeyboardNav.ts` (dialog Tab-trap wrap-around index logic + tablist
+  Home/End/Arrow roving-tabindex index logic) — logic the F/G implementation already needs
+  regardless of testing, following the existing `exportStatusMessage`/`classifyPositionSupport`
+  extraction precedent, not architecture invented solely for the test.
+- **(F) Implementation decisions locked in plan §6/§7:** `baseCurrency` preserves existing KRW/USD
+  metadata and USD records (no silent normalization, no FX, truthful KRW-only aggregate copy); the
+  ETF selector initializes from `position.assetType` on edit and preserves `'etf'` when unchanged;
+  the tablist uses `tabindex="0"`/`"-1"` roving-tabindex with `ArrowLeft`/`ArrowRight`/`Home`/`End`,
+  automatic activation, stable per-tab `id`+`aria-controls`, a shared `role="tabpanel"` with
+  `aria-labelledby` tracking the selected tab, and arrow navigation limited to tab buttons (excluding
+  inline edit/delete/reorder controls); all new focus CSS stays Portfolio-scoped (no bare global
+  `.segmented-control button` rule).
+
+## Phase 4E-A — Portfolio production completion plan established - 2026-08-08
+
+- **Classification: `PHASE_4E_PORTFOLIO_PRODUCTION_COMPLETION_PLAN_READY_IMPLEMENTATION_NOT_STARTED`.**
+  Plan-only task, explicitly constrained to produce no application change: "DO NOT implement
+  application changes yet. DO NOT modify src/, API routes, server logic, CSS, package.json,
+  scripts, migrations, or environment variables in this task." Branch
+  `feature/phase-4e-portfolio-production-completion` from baseline
+  `b3254aa35db76fe264cbb8167f20c47291b87838` (the Phase 4D closeout merge commit). Exactly four
+  files changed, all under `docs/planning/`.
+- **Audit scope.** Full `/portfolio` production surface: `src/pages/portfolio.astro` (client state
+  machine + embedded script), `src/lib/portfolioClient.ts`, `src/lib/server/portfolio.ts`,
+  `src/lib/server/portfolioValuation.ts`, `src/pages/api/portfolio/{portfolios,positions,
+  valuation}.ts`, `supabase/migrations/20260615_rebuild_schema_v0_1.sql` RLS policies,
+  `src/styles/style.css` Portfolio-scoped selectors, `check:mobile-baseline` and every existing
+  Portfolio-related smoke/checker script, and the Phase 3GH/3GI/4A result docs and master roadmap.
+- **Twelve findings classified (A–L).** `CONFIRMED_GAP`: (A) ETF entry not exposed in the UI though
+  the DB/server/client/valuation-engine chain already fully supports `assetType: 'etf'`; (B) the
+  "local" currency-display toggle is mislabeled "달러 기준"/`$` even though it means "each holding's
+  own native currency," which for an all-KRW portfolio is actively false; (C) the per-portfolio
+  `baseCurrency` (KRW/USD) selector has zero observable effect — the only live-wired valuation path
+  is KR/KRW-only and the sole FX-conversion function in the codebase
+  (`buildPortfolioValuationFromQuotesWithFx`) is unreachable dead code, confirmed by two independent
+  code traces; (D) the 배당률/배당주기 sort headers are wired to a sort function that always returns
+  `null` — no dividend field exists anywhere in the schema/server/client; (H) the holdings header
+  uses `role="row"`/`role="columnheader"` with no matching `role="grid"`/`"table"` ancestor or
+  data-row roles, an invalid ARIA-table pattern; (I) `.positions-list-wrap`'s `overflow-x: auto`
+  region has no `role="region"`/`aria-label`/`tabindex="0"`, unlike the Phase 4D
+  `.lab-matrix-scroll` precedent it should reuse. `PARTIAL_GAP`: (E) two dynamic status paragraphs
+  (`#portfolio-readiness`, `#valuation-status-copy`) lack `aria-live`, while `#portfolio-lock-state`
+  and the toast already have it correctly; (F) both CRUD dialogs have correct `role="dialog"
+  aria-modal"` and reduced-motion handling but only a bare global `Escape` listener, no
+  focus-trap/keyboard-containment/focus-restoration lifecycle — `LiveMarketDashboard.astro:755-838`
+  (Phase 4B) is the designated reusable template, the only complete implementation in the codebase;
+  (G) the portfolio tab selector already has correct `role="tab"`/`aria-selected` per button, but no
+  `role="tabpanel"`/`aria-controls`/arrow-key roving-tabindex navigation; (J) checker-protected
+  breakpoint categories exist and are structurally sound, but literal narrow-phone (320–412px)
+  rendering has not been checked. `ALREADY_CORRECT`: the Bearer-auth + `ensurePortfolioOwned`
+  ownership boundary; the KR/KRW-only live-valuation scope with its protected
+  `MAX_POSITIONS=50`/`MAX_UNIQUE_KR_SYMBOLS=30`/`QUOTE_CONCURRENCY=3` constants and fail-closed
+  aggregate; the 11-state `PortfolioState` machine's honest per-state Korean copy; existing
+  reduced-motion and partial-`:focus-visible` CSS coverage. **No security or provider defect was
+  found**; no migration is planned or needed.
+- **Explicit non-goals carried into the plan.** No trading/order/brokerage surface, no new KIS
+  account API, no LLM integration, no new US-quote/FX/dividend provider (the FX dead code stays
+  dead), no new Supabase schema/table/column, no new secrets or environment variables, no new
+  dependency, no full desktop-table redesign of the holdings cards, no weakening of the Phase 3GH
+  checker or its protected constants.
+- **Deliverables.** `phase_4e_portfolio_production_completion_plan_v0.1.md` (20 numbered sections:
+  baseline, branch, architecture, confirmed/already-correct findings, implementation requirements,
+  file scope, non-goals, accessibility/responsive/truthfulness requirements, protected boundaries,
+  test strategy, checker/build/environment risk, Preview/Production validation plan, Vercel
+  auto-deploy recurrence-test note, Phase 4F deferral boundary, rollback criteria);
+  `phase_4e_portfolio_production_completion_result_v0.1.md` (minimal skeleton, all sections
+  `NOT_STARTED`); this roadmap's "In progress" section and sequencing list updated; this changelog
+  entry.
+- **Sequencing note.** This plan's eventual implementation-PR merge, once authorized, will also
+  serve as the recurrence test for the Phase 4D release-trigger anomaly (automatic Vercel
+  Production deployment did not fire after PR #17's merge) — see the roadmap's Phase 4D entry and
+  the plan's §18.
+- **Explicitly not done in this task**: no application code, CSS, script, package.json, migration,
+  or environment change of any kind; no implementation PR opened; **implementation will not begin
+  until this plan has been reviewed.**
+
+## Phase 4D closeout — merged and Production-verified - 2026-08-08
+
+- **Final classification: `PHASE_4D_LAB_MERGED_PRODUCTION_VERIFIED`** (was
+  `PHASE_4D_LAB_IMPLEMENTED_PR_READY_OWNER_MERGE_APPROVAL_REQUIRED`). Docs-only closeout on branch
+  `docs/phase-4d-lab-production-closeout`; no application source, script, checker, package, config,
+  dependency, migration, or environment change.
+- **Merge.** [PR #17](https://github.com/sbchangkyun/mk-stock-lab/pull/17) ("Phase 4D: Lab production
+  completion", `feature/phase-4d-lab-production-completion` → `main`) was merged by the **Owner**
+  (`mergedBy.login: sbchangkyun`), not by this assistant. Merge commit
+  `14c0ee993dbf03639d73f12bfca39f67047e508a`, `mergedAt 2026-08-06T15:10:54Z`, head
+  `98a6c88fc62414bd35536e948750ff7f16755572`. `main` fast-forwarded `7da540d..14c0ee9` with no history rewrite.
+- **Production deployment.** `dpl_E4r84x9S5NLoDFLrgHqi9heJ2GvQ`, `READY`, target `production`, at exactly the
+  merge SHA `14c0ee993dbf03639d73f12bfca39f67047e508a`. Independently corroborated via GitHub: the sole
+  `Vercel` commit status for that SHA is `success` with the same deployment ID in its `target_url`, and
+  Deployments record `5804154318` (`environment: Production`, exact `sha`, `creator: vercel[bot]`) has status
+  `success` / "Deployment has completed". Owner-supplied dashboard-only fields (`readyState`, the `main` git-ref
+  label, `verified` commit verification) are recorded as user-supplied and were not independently re-derived —
+  this session has no Vercel API/CLI/dashboard/connector access.
+- **Release-trigger anomaly, recorded accurately: the automatic Production deployment did NOT fire.** After the
+  PR #17 merge no automatic Vercel Production deployment appeared (GitHub combined status was `statuses: []` /
+  `total_count: 0`; GitHub Deployments had no record for the merge SHA; a full Vercel project-configuration
+  audit — repository, Production Branch `main`, Framework Astro, Root Directory `/`, Ignored Build Step
+  `Automatic`, "skip deployments when no root changes" Disabled, not paused, no Deployment Checks — found
+  nothing blocking). The **Owner** recovered the release via **Vercel Dashboard → Create Deployment** against
+  `main`. **No Vercel project setting was changed**, and this assistant performed no deployment. Two
+  independent corroborations of the manual path: both the `Vercel` status and the deployment record were
+  created `2026-08-08T00:57:47Z`, ~34 hours after the `2026-08-06T15:10:54Z` merge; and the deployment's `ref`
+  is the raw commit SHA rather than `main`, the signature of a Dashboard deployment rather than a branch-push
+  trigger.
+- **Recurrence status: UNDETERMINED.** One observation is not a pattern. The **next `main` merge is the
+  recurrence test** — if automatic deployment is absent again it must be escalated and reported as a recurring
+  Git/Vercel integration incident before any further manual workaround, not silently worked around. This is a
+  platform/integration matter; no part of the Phase 4D diff can affect whether Vercel's Git integration fires.
+- **Bounded, unauthenticated Production verification (run this closeout).** Route sweep against
+  `https://mkstocklab.vercel.app` with redirects observed rather than followed: `/lab`,
+  `/lab/asset-class-returns`, `/lab/sp500-sectors`, `/lab/congress-stocks`, `/lab/nps-holdings` all `200`;
+  `/lab/nps-portfolio` `301` → `/lab/nps-holdings` — exactly the plan's 5×`200` + 1×`301` expectation. Deployed
+  HTML on both matrix pages confirms `<caption>` ×2, `scope="col"` ×12, `scope="row"` ×24, `aria-pressed` ×13,
+  two `lab-matrix-scroll` regions each rendering `role="region"` + `tabindex="0"`, `data-export-status` ×1,
+  `role="status"` ×2, `aria-live="polite"` ×1; Congress/NPS pages each render one
+  `<ul class="lab-static-preview-grid">` with three `<li class="lab-static-preview-card">`; truthfulness copy
+  present (`연동 예정`, `예시 데이터`, `투자 판단`, `리서치 모듈 준비`). **Not** confirmed present, honestly
+  recorded: the empty-cell `aria-label="데이터 없음"` fallback matches 0 times, because the complete 12×7 example
+  fixture leaves no empty ranking cells and that branch never renders — its source-level assertion stays
+  covered by the Phase 4D checker.
+- **Still deferred.** Authenticated visual/touch/keyboard/screen-reader QA of the Lab page group remains
+  `OWNER_QA_PENDING` under the standing **Phase 4F** cross-page Owner QA closeout, consistent with Phases
+  4A-4C; the HTTP/HTML-level Production verification above does not discharge it.
+- **Next sequential product phase: Phase 4E — Portfolio Production Completion.** Not started (no branch, no
+  plan doc, no implementation) at the time of this closeout.
+
 ## Phase 4D — Lab Production Completion, implemented (PR open, Owner merge approval required) - 2026-08-06
 
 - Baseline `7da540dbadaa0a5acafb9a74aec7d9fb9cfc93f8`, branch `feature/phase-4d-lab-production-completion`.

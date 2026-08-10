@@ -1,4 +1,4 @@
-import { getKisQuoteSnapshot } from '../providers/kisClient';
+import { getKisDomesticQuoteSnapshot, getKisQuoteSnapshot } from '../providers/kisClient';
 import { createProviderError } from '../providers/providerErrors';
 import { assertServerRuntime } from '../providers/serverOnly';
 import type { ProviderResult, QuoteSnapshot, SecurityIdentity } from '../providers/types';
@@ -17,6 +17,14 @@ type QuoteProvider = (identity: SecurityIdentity) => Promise<ProviderResult<Quot
 type QuoteSnapshotOptions = {
   nowMs?: number;
   provider?: QuoteProvider;
+  /**
+   * Phase 4F-HF1: narrow, route-scoped Production exception (PORT-10) for the authenticated
+   * Portfolio valuation route's KR current-price quote lookup only. Defaults to false/unset, which
+   * preserves the existing generic getKisQuoteSnapshot behavior byte-for-byte -- only
+   * src/pages/api/portfolio/valuation.ts ever sets this true. kisClient re-verifies the runtime and
+   * the dedicated feature flag before lifting its Production hard block, so this stays fail-closed.
+   */
+  allowProductionPortfolioValuationLiveData?: boolean;
 };
 
 const validateQuoteIdentity = (identity: SecurityIdentity): ProviderResult<never> | null => {
@@ -58,7 +66,12 @@ export const getQuoteSnapshot = async (
     };
   }
 
-  const provider = options.provider ?? getKisQuoteSnapshot;
+  const provider =
+    options.provider ??
+    (options.allowProductionPortfolioValuationLiveData === true
+      ? (identityInput: SecurityIdentity) =>
+          getKisDomesticQuoteSnapshot(identityInput, { allowProductionPortfolioValuationLiveData: true })
+      : getKisQuoteSnapshot);
   const providerResult = await provider(identity);
 
   if (providerResult.ok) {
