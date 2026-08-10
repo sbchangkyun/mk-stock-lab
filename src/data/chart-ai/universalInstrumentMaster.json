@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16102",
+  "masterVersion": "hf3b-hf2-kis-16105",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-08",
+  "sourceAsOf": "2026-08-10",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -164128,14 +164128,15 @@
     },
     {
       "symbol": "IBN",
-      "displayName": "ICICI BANK LTD SPON ADR EACH REPR 2 ORD SHS",
-      "englishName": "ICICI BANK LTD SPON ADR EACH REPR 2 ORD SHS",
+      "displayName": "ICICI BK LTD ACTING THRU ITS IFSC SPON ADR EACH REPR 2 ORD S",
+      "englishName": "ICICI BK LTD ACTING THRU ITS IFSC SPON ADR EACH REPR 2 ORD S",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "ibn"
+        "ibn",
+        "icici bank ltd spon adr each repr 2 ord shs"
       ],
       "active": true
     },
@@ -181238,13 +181239,14 @@
     },
     {
       "symbol": "OCLTU",
-      "displayName": "OCEANLIGHT ACQUISITION CORPORATION UNITS (1 ORD SHS & 1",
-      "englishName": "OCEANLIGHT ACQUISITION CORPORATION UNITS (1 ORD SHS & 1",
+      "displayName": "OCEANLIGHT ACQUISITION CORPORATION UNITS CONS 1 SHS & 1",
+      "englishName": "OCEANLIGHT ACQUISITION CORPORATION UNITS CONS 1 SHS & 1",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "oceanlight acquisition corporation units (1 ord shs & 1",
         "ocltu"
       ],
       "active": true
@@ -185228,6 +185230,19 @@
       "active": true
     },
     {
+      "symbol": "PHOS",
+      "displayName": "FIRST PHOSPHATE CORP SPON ADS EACH REP 10 ORD SHS",
+      "englishName": "FIRST PHOSPHATE CORP SPON ADS EACH REP 10 ORD SHS",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "phos"
+      ],
+      "active": true
+    },
+    {
       "symbol": "PHR",
       "displayName": "PHREESIA INC",
       "englishName": "PHREESIA INC",
@@ -188461,6 +188476,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "qvc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "QVCG",
+      "displayName": "QVC GROUP INC",
+      "englishName": "QVC GROUP INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "qvcg"
       ],
       "active": true
     },
@@ -193042,14 +193070,15 @@
     },
     {
       "symbol": "SEGG",
-      "displayName": "SPORTS ENTERTAINMENT GAMING GLOBAL CORPORATION",
-      "englishName": "SPORTS ENTERTAINMENT GAMING GLOBAL CORPORATION",
+      "displayName": "SPORTS ENTMT GAMING GBL CORP",
+      "englishName": "SPORTS ENTMT GAMING GBL CORP",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "segg"
+        "segg",
+        "sports entertainment gaming global corporation"
       ],
       "active": true
     },
@@ -206508,6 +206537,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "wksp"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "WLCO",
+      "displayName": "WILCO 63 CORPORATION",
+      "englishName": "WILCO 63 CORPORATION",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "wlco"
       ],
       "active": true
     },
