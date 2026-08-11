@@ -429,3 +429,119 @@ Manual QA has **not** started. No application code has been touched by this plan
 4F remains `PHASE_4F_CROSS_PAGE_OWNER_QA_PLAN_READY_QA_NOT_STARTED` until the Owner executes the
 matrix above and records evidence in
 `docs/planning/phase_4f_cross_page_owner_qa_closeout_result_v0.1.md`.
+
+## §19 Focused Owner QA Runbook — F-HIGH-02 & F-HIGH-03 (expedited closeout, added 2026-08-11)
+
+**Why this section exists.** `F-HIGH-02` (`PORT-10`) and `F-HIGH-03` are the only two findings
+currently classified HIGH severity and unresolved (per §12/§16, Phase 4F cannot close while any
+HIGH finding is unresolved). Both are already implemented and merged into `main` (HF1: PR #22,
+merged; HF2 + A1: PR #23, merged) — nothing about this section's own preparation work changed any
+application code. This is a short, standalone runbook so the Owner can close out just these two
+findings without waiting for the full 120-case matrix in §5–§11. It does not replace or shrink that
+matrix; `PORT-10` (§9) remains the formal evidence row for `F-HIGH-02`.
+
+**Environment: Production only, not Preview.** The capability that unblocks `F-HIGH-02`
+(`allowProductionPortfolioValuationLiveData`, gated by the `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION`
+Vercel env flag) only lifts the KIS quote fail-closed block when the app is running as Vercel
+**Production**. It stays fail-closed on Preview by design. This QA must be run against the live
+Production URL while logged in with a real Owner account — a Preview deployment cannot demonstrate
+a real KIS-derived valuation regardless of which code is deployed there.
+
+**Combined shortcut.** Both findings can be verified in a single walkthrough: edit or create a KR
+position by picking a real 6-digit stock from the search list (F-HIGH-03 steps below), save it,
+then look at that same position's valuation (F-HIGH-02 steps below).
+
+### F-HIGH-02
+
+#### Purpose
+Confirm that a Korean (KR) stock position in Portfolio shows a real, KIS-derived current price and
+valuation on the live site — not a blocked message and not a placeholder.
+
+#### Preconditions
+- URL: the Production Portfolio page (`https://mkstocklab.vercel.app/portfolio` — use your normal
+  Production domain), not a Preview link.
+- Logged in with your normal Owner account.
+- At least one portfolio containing one KR position with a real 6-digit symbol (e.g. `005930` /
+  삼성전자). If you don't have one yet, create it using the F-HIGH-03 steps below first.
+- Desktop browser. Viewport does not matter for this check.
+- Before starting, confirm in the Vercel dashboard (Project → Settings → Environment Variables →
+  Production) that `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION` is set to `true`. If it is not set,
+  this test will correctly show a blocked/unavailable state — that is expected in that case, not a
+  defect, and the flag must be set before re-testing.
+
+#### Steps
+1. Go to the Production `/portfolio` page and log in.
+2. Open the portfolio tab that contains your KR stock position.
+3. Look at that position's row in the holdings table.
+
+#### PASS
+- The row shows a real current price (현재가), evaluated value (평가금액), and return
+  (수익률/수익금) as actual numbers consistent with today's market — not `—`, not "데이터 없음",
+  not an error banner.
+
+#### FAIL
+- The row shows a blocked, unavailable, or error state, or the price is obviously stale, frozen, or
+  clearly not a real market price.
+
+#### Evidence to capture
+- One screenshot of that position's row (crop out any other holdings you'd rather not share).
+- The exact time you checked it.
+
+#### Owner response format
+```
+F-HIGH-02: PASS
+```
+or
+```
+F-HIGH-02: FAIL — <short reason>
+```
+
+### F-HIGH-03
+
+#### Purpose
+Confirm that creating or editing a Portfolio position requires picking a real, specific stock from
+a search list (not free-typed text), and that the chosen stock's name/symbol/type/currency are
+saved and displayed correctly afterward.
+
+#### Preconditions
+- Same Production URL and login as F-HIGH-02.
+- Desktop browser.
+
+#### Steps
+1. Click "포지션 추가" (or open an existing position to edit it).
+2. In the stock search field, type a Korean company name (e.g. "삼성전자") or a 6-digit symbol
+   (e.g. "005930").
+3. Confirm a dropdown list of real, specific matching stocks appears — not just whatever you typed
+   — and click the correct one from that list.
+4. Save the position.
+5. Reload the page (F5) and open that same position again.
+
+#### PASS
+- After saving and reloading, the position clearly shows the correct company name and symbol
+  together (e.g. "삼성전자 / 005930"), and its type (Stock/ETF) and currency are correct. You were
+  required to select from the real list — you could not save arbitrary typed text as if it were a
+  valid stock.
+
+#### FAIL
+- The saved position shows the wrong stock, a missing/blank symbol, a mismatched name, or you were
+  able to save arbitrary typed text without picking a real match from the search results.
+
+#### Evidence to capture
+- Screenshot of the search dropdown before selecting.
+- Screenshot of the saved position after the reload.
+
+#### Owner response format
+```
+F-HIGH-03: PASS
+```
+or
+```
+F-HIGH-03: FAIL — <short reason>
+```
+
+### Status
+
+`F-HIGH-02: Owner-verification-pending.` `F-HIGH-03: Owner-verification-pending.` Neither may be
+marked PASS, CLOSED, or VERIFIED until the Owner personally performs the steps above and reports a
+result in the format shown. This section adds no new implementation and changes no prior technical
+evidence.

@@ -326,7 +326,10 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   that now also covers Home/Market/Chart AI Production runtime-error review via read-only Vercel
   connector access (previously `SHELL-17`/`MARKET-17`, now consolidated there). See
   `phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`. Manual QA execution has **not** started and
-  no application code was touched by this planning step.
+  no application code was touched by this planning step. **2026-08-11:** added §19, a short
+  Production-only Owner QA runbook scoped to just the two remaining HIGH findings
+  (`F-HIGH-02`/`PORT-10`, `F-HIGH-03`), so they can be closed out ahead of the full 120-case
+  matrix; both remain Owner-verification-pending.
 
 - **Phase 4F-HF1 — functional HIGH defect fixes.**
   `PHASE_4F_HF1_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`. Fixes exactly the two HIGH
