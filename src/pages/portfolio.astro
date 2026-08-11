@@ -261,11 +261,17 @@ import Layout from '../layouts/Layout.astro';
       type PortfolioPosition,
       type PortfolioValuationRow,
       type PortfolioValuationTotals,
+      type PortfolioValuationResult,
     } from '../lib/portfolioClient';
     import { getBrowserSupabaseClient, isSupabaseConfigured } from '../lib/supabase';
     import { userRetentionApi, hasRetentionSession } from '../lib/userRetentionClient';
     import { computeDialogFocusWrap, computeTabRovingNavigation } from '../lib/portfolio/portfolioKeyboardNav';
     import { resolvePositionSubmitIdentity } from '../lib/portfolio/portfolioPositionIdentity';
+    import {
+      decideBootstrapAction,
+      decidePositionsFetch,
+      decideValuationFetch,
+    } from '../lib/portfolio/portfolioLoadLifecycle';
     import { fetchChartAiJson } from '../lib/chart-ai/chart-ai-authenticated-fetch';
 
     type PortfolioState =
@@ -302,6 +308,10 @@ import Layout from '../layouts/Layout.astro';
       valuationTotals: PortfolioValuationTotals | null;
       valuationGeneratedAt: string | null;
       valuationStaleState: ValuationStaleState | null;
+      // Phase 4F (F-MED-01): true only while a valuation refetch runs IN THE BACKGROUND (a prior
+      // usable result is already on screen) -- drives a subtle status line instead of the full
+      // "평가하는 중" loading takeover. See loadValuation.
+      valuationRefreshing: boolean;
     };
 
     const state: AppState = {
@@ -319,6 +329,7 @@ import Layout from '../layouts/Layout.astro';
       valuationTotals: null,
       valuationGeneratedAt: null,
       valuationStaleState: null,
+      valuationRefreshing: false,
     };
 
     const stateContent: Record<PortfolioState, { title: string; copy: string; login: string; profile: string; api: string; showLogin: boolean; showApp: boolean }> = {
@@ -580,50 +591,113 @@ import Layout from '../layouts/Layout.astro';
           return '평가 불가';
       }
     };
+    // Phase 4F (F-MED-01): a 20s freshness window (within the 15-30s range this fix targets) so
+    // returning to an already-displayed portfolio within a few seconds reuses the last real quote
+    // instead of firing a duplicate valuation request. Explicit refresh and any mutation that
+    // actually changed positions always pass `force: true` and bypass this entirely.
+    const VALUATION_FRESHNESS_TTL_MS = 20_000;
+    let valuationCache: Record<string, { result: PortfolioValuationResult; fetchedAt: number }> = {};
+    const valuationInFlight: Record<string, Promise<void>> = {};
     let valuationRequestSeq = 0;
-    const loadValuation = async (portfolioId: string, positions: DisplayPortfolioPosition[]) => {
-      const requestSeq = ++valuationRequestSeq;
+
+    const applyValuationResult = (result: PortfolioValuationResult) => {
+      const newValuations: Record<string, PortfolioValuationRow> = {};
+      for (const row of result.rows) {
+        newValuations[row.positionId] = row;
+      }
+      state.positionValuations = newValuations;
+      state.valuationTotals = result.totals;
+      state.valuationGeneratedAt = result.generatedAt;
+      state.valuationStaleState = result.staleState;
+      state.valuationState = result.state;
+      state.valuationMessage =
+        result.state === 'partial'
+          ? '지원 종목 기준 · 일부 종목은 평가할 수 없습니다.'
+          : result.state === 'unavailable'
+          ? '현재 평가할 수 있는 종목이 없습니다.'
+          : null;
+    };
+
+    const loadValuation = async (
+      portfolioId: string,
+      positions: DisplayPortfolioPosition[],
+      options: { force?: boolean } = {},
+    ) => {
+      const force = options.force ?? false;
 
       if (positions.length === 0) {
+        delete valuationCache[portfolioId];
         state.positionValuations = {};
         state.valuationState = 'empty';
         state.valuationMessage = null;
         state.valuationTotals = null;
         state.valuationGeneratedAt = null;
         state.valuationStaleState = null;
+        state.valuationRefreshing = false;
         renderPositions();
         return;
       }
 
-      state.valuationState = 'loading';
-      state.valuationMessage = null;
-      renderPositions();
+      const cached = valuationCache[portfolioId];
+      const decision = decideValuationFetch({
+        force,
+        hasCachedResult: !!cached,
+        cacheAgeMs: cached ? Date.now() - cached.fetchedAt : null,
+        ttlMs: VALUATION_FRESHNESS_TTL_MS,
+        inFlight: !!valuationInFlight[portfolioId],
+      });
 
-      try {
-        const result = await portfolioApi.getValuation(portfolioId);
-        if (requestSeq !== valuationRequestSeq) return;
+      if (decision === 'use-cache' && cached) {
+        applyValuationResult(cached.result);
+        state.valuationRefreshing = false;
+        renderPositions();
+        return;
+      }
 
-        const newValuations: Record<string, PortfolioValuationRow> = {};
-        for (const row of result.rows) {
-          newValuations[row.positionId] = row;
-        }
-        state.positionValuations = newValuations;
-        state.valuationTotals = result.totals;
-        state.valuationGeneratedAt = result.generatedAt;
-        state.valuationStaleState = result.staleState;
-        state.valuationState = result.state;
-        state.valuationMessage =
-          result.state === 'partial'
-            ? '지원 종목 기준 · 일부 종목은 평가할 수 없습니다.'
-            : result.state === 'unavailable'
-            ? '현재 평가할 수 있는 종목이 없습니다.'
-            : null;
-      } catch (error) {
-        if (requestSeq !== valuationRequestSeq) return;
-        state.valuationState = 'error';
-        state.valuationMessage = '평가값을 불러오지 못했습니다.';
+      if (decision === 'join-inflight' && valuationInFlight[portfolioId]) {
+        await valuationInFlight[portfolioId];
+        const settled = valuationCache[portfolioId];
+        if (settled) applyValuationResult(settled.result);
+        renderPositions();
+        return;
+      }
+
+      const requestSeq = ++valuationRequestSeq;
+      const isBackgroundRefresh = decision === 'fetch-background' && !!cached;
+      if (isBackgroundRefresh && cached) {
+        applyValuationResult(cached.result);
+        state.valuationRefreshing = true;
+      } else {
+        state.valuationState = 'loading';
+        state.valuationMessage = null;
+        state.valuationRefreshing = false;
       }
       renderPositions();
+
+      const run = (async () => {
+        try {
+          const result = await portfolioApi.getValuation(portfolioId);
+          if (requestSeq !== valuationRequestSeq) return;
+          valuationCache[portfolioId] = { result, fetchedAt: Date.now() };
+          applyValuationResult(result);
+        } catch (error) {
+          if (requestSeq !== valuationRequestSeq) return;
+          if (!isBackgroundRefresh) {
+            state.valuationState = 'error';
+            state.valuationMessage = '평가값을 불러오지 못했습니다.';
+          }
+          // Background refresh failure: keep the prior usable numbers on screen rather than
+          // clobbering them with an error -- the user already has a usable, if slightly stale, view.
+        } finally {
+          if (requestSeq === valuationRequestSeq) state.valuationRefreshing = false;
+          renderPositions();
+        }
+      })();
+
+      valuationInFlight[portfolioId] = run.finally(() => {
+        delete valuationInFlight[portfolioId];
+      });
+      await valuationInFlight[portfolioId];
     };
     type PositionSortKind = 'weight' | 'valuation' | 'return' | 'profit';
     const getPositionSortValue = (position: DisplayPortfolioPosition, kind: PositionSortKind): number | null => {
@@ -782,6 +856,8 @@ import Layout from '../layouts/Layout.astro';
       state.valuationTotals = null;
       state.valuationGeneratedAt = null;
       state.valuationStaleState = null;
+      state.valuationRefreshing = false;
+      valuationCache = {};
       resetPortfolioForm();
       closePositionSheet();
       renderAll();
@@ -1075,6 +1151,9 @@ import Layout from '../layouts/Layout.astro';
         if (state.valuationState === 'loading') {
           statusCopyEl.hidden = false;
           statusCopyEl.textContent = '실시간 시세로 평가하는 중입니다.';
+        } else if (state.valuationRefreshing) {
+          statusCopyEl.hidden = false;
+          statusCopyEl.textContent = '시세를 새로고침하는 중입니다.';
         } else if (state.valuationMessage) {
           statusCopyEl.hidden = false;
           statusCopyEl.textContent = state.valuationMessage;
@@ -1088,7 +1167,7 @@ import Layout from '../layouts/Layout.astro';
       }
 
       const refreshButton = getElement<HTMLButtonElement>('portfolio-refresh');
-      if (refreshButton) refreshButton.disabled = state.valuationState === 'loading';
+      if (refreshButton) refreshButton.disabled = state.valuationState === 'loading' || state.valuationRefreshing;
 
       const sortedPositions = getSortedPositions();
       const totalCostBasis = sortedPositions.reduce((sum, p) => {
@@ -1231,10 +1310,27 @@ import Layout from '../layouts/Layout.astro';
       renderPositions();
     };
 
+    // Phase 4F (F-MED-01): dedup concurrent positions fetches for the SAME portfolio id -- a
+    // single-portfolio tab click and an aggregate "all portfolios" load racing for the same
+    // portfolio's positions now share one network request instead of firing two.
+    const positionsInFlight: Record<string, Promise<DisplayPortfolioPosition[]>> = {};
+    const fetchPositionsDeduped = (portfolioId: string) => {
+      if (positionsInFlight[portfolioId]) return positionsInFlight[portfolioId];
+      const request = portfolioApi.listPositions(portfolioId).finally(() => {
+        delete positionsInFlight[portfolioId];
+      });
+      positionsInFlight[portfolioId] = request;
+      return request;
+    };
+
     const loadAllPortfolioPositions = async (force = false) => {
       await Promise.all(getOrderedPortfolios().map(async (portfolio) => {
-        if (!force && state.positionsByPortfolioId[portfolio.id]) return;
-        state.positionsByPortfolioId[portfolio.id] = await portfolioApi.listPositions(portfolio.id);
+        const decision = decidePositionsFetch({
+          force,
+          hasCachedEntry: !!state.positionsByPortfolioId[portfolio.id],
+        });
+        if (decision === 'use-cache') return;
+        state.positionsByPortfolioId[portfolio.id] = await fetchPositionsDeduped(portfolio.id);
       }));
     };
 
@@ -1243,15 +1339,26 @@ import Layout from '../layouts/Layout.astro';
         await loadAllPortfolioPositions(force);
         state.positions = getAggregatePositions();
         renderPositions();
-        await loadValuation(portfolioId, state.positions);
+        await loadValuation(portfolioId, state.positions, { force });
         return;
       }
 
-      const positions = await portfolioApi.listPositions(portfolioId);
+      const decision = decidePositionsFetch({
+        force,
+        hasCachedEntry: !!state.positionsByPortfolioId[portfolioId],
+      });
+      if (decision === 'use-cache') {
+        state.positions = state.positionsByPortfolioId[portfolioId];
+        renderPositions();
+        await loadValuation(portfolioId, state.positions, { force: false });
+        return;
+      }
+
+      const positions = await fetchPositionsDeduped(portfolioId);
       state.positionsByPortfolioId[portfolioId] = positions;
       state.positions = positions;
       renderPositions();
-      await loadValuation(portfolioId, state.positions);
+      await loadValuation(portfolioId, state.positions, { force });
     };
 
     // Phase 3GI: best-effort cross-device resume-state persistence. Only ever persists a real,
@@ -1285,7 +1392,10 @@ import Layout from '../layouts/Layout.astro';
       }
     };
 
-    const loadPortfolios = async () => {
+    // Phase 4F (F-MED-01): `forcePositions` defaults to false because a portfolio-metadata
+    // mutation (rename/create/delete) never changes any existing portfolio's positions -- only an
+    // explicit refresh (§3D) needs to bypass the positions/valuation cache here.
+    const loadPortfolios = async ({ forcePositions = false }: { forcePositions?: boolean } = {}) => {
       state.portfolios = await portfolioApi.listPortfolios();
       const knownIds = new Set(state.portfolios.map((portfolio) => portfolio.id));
       state.positionsByPortfolioId = Object.fromEntries(
@@ -1315,7 +1425,7 @@ import Layout from '../layouts/Layout.astro';
       }
       renderAll();
       if (state.selectedPortfolioId) {
-        await loadPositions(state.selectedPortfolioId, true);
+        await loadPositions(state.selectedPortfolioId, forcePositions);
         persistPortfolioResumeState(state.selectedPortfolioId);
       }
     };
@@ -1327,6 +1437,7 @@ import Layout from '../layouts/Layout.astro';
         setPortfolioState('api_pending');
         await loadPortfolios();
         setPortfolioState('ready');
+        portfolioReadyForSession = true;
       } catch (error) {
         setPortfolioState(error instanceof PortfolioApiError && error.status === 503 ? 'portfolio_config_missing' : 'profile_failed');
         showToast(normalizeError(error));
@@ -1341,6 +1452,29 @@ import Layout from '../layouts/Layout.astro';
       const ready = result.status === 'ready';
       setPortfolioState(ready ? 'profile_ready' : mapProfileStatus(result.status));
       if (ready) await loadPortfolioMvp();
+    };
+
+    // Phase 4F (F-MED-01): three independent triggers (this page's own init, Header.astro's
+    // direct post-login sync, and Header's `mk:auth-state` broadcast) can each ask for a
+    // profile+portfolio bootstrap for the SAME signed-in session. `portfolioReadyForSession`
+    // makes a bootstrap that already finished a true no-op; `bootstrapInFlight` makes a bootstrap
+    // that is still running something later triggers join instead of duplicating. Only a real
+    // sign-out (which resets both) allows a fresh bootstrap to start again.
+    let portfolioReadyForSession = false;
+    let bootstrapInFlight: Promise<void> | null = null;
+
+    const ensureProfileAndPortfolioReady = (): Promise<void> => {
+      const action = decideBootstrapAction({
+        readyForSession: portfolioReadyForSession,
+        inFlight: !!bootstrapInFlight,
+      });
+      if (action === 'skip') return Promise.resolve();
+      if (action === 'join' && bootstrapInFlight) return bootstrapInFlight;
+
+      bootstrapInFlight = runProfileAndPortfolioLoad().finally(() => {
+        bootstrapInFlight = null;
+      });
+      return bootstrapInFlight;
     };
 
     const initPortfolioReadiness = async () => {
@@ -1365,16 +1499,28 @@ import Layout from '../layouts/Layout.astro';
 
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
+        portfolioReadyForSession = false;
         clearPortfolioData();
         setPortfolioState('signed_out');
         return;
       }
 
-      await runProfileAndPortfolioLoad();
+      await ensureProfileAndPortfolioReady();
     };
 
+    // Phase 4F (F-MED-01): explicit refresh must force-reload current data WITHOUT going through
+    // loadPortfolioMvp's setPortfolioState('api_pending') -- that hid the whole app and re-showed
+    // the readiness screen on every refresh click (§4/§10). A simple busy flag stops rapid
+    // double-clicks from firing a second overlapping refresh.
+    let explicitRefreshInFlight = false;
     getElement<HTMLButtonElement>('portfolio-refresh')?.addEventListener('click', () => {
-      void loadPortfolioMvp();
+      if (explicitRefreshInFlight) return;
+      explicitRefreshInFlight = true;
+      void loadPortfolios({ forcePositions: true })
+        .catch((error) => showToast(normalizeError(error)))
+        .finally(() => {
+          explicitRefreshInFlight = false;
+        });
     });
 
     getElement<HTMLButtonElement>('portfolio-cancel-edit')?.addEventListener('click', closePortfolioSheet);
@@ -1834,7 +1980,9 @@ import Layout from '../layouts/Layout.astro';
           showToast('종목이 추가되었습니다.');
         }
         closePositionSheet();
-        await loadPositions(state.selectedPortfolioId);
+        // force: true -- this position's data just changed, the positions cache for this
+        // portfolio must not be reused (see decidePositionsFetch / F-MED-01).
+        await loadPositions(state.selectedPortfolioId, true);
       } catch (error) {
         showToast(normalizeError(error));
       }
@@ -1874,33 +2022,43 @@ import Layout from '../layouts/Layout.astro';
         try {
           await portfolioApi.deletePosition(id);
           showToast('종목이 삭제되었습니다.');
-          await loadPositions(state.selectedPortfolioId);
+          // force: true -- see the create/update handler above.
+          await loadPositions(state.selectedPortfolioId, true);
         } catch (error) {
           showToast(normalizeError(error));
         }
       }
     });
 
+    // Phase 4F (F-MED-01): Header.astro independently dispatches both of these events for the
+    // same login (see module header comment on ensureProfileAndPortfolioReady). Once this page has
+    // already reached `ready` for the current session, a duplicate 'ready'/'signed_in' signal must
+    // not re-run setPortfolioState('profile_ready'/'signed_in') -- doing so re-hid the already-
+    // visible app behind the readiness screen on every ordinary duplicate event (§4).
     window.addEventListener('mk:profile-bootstrap', (event) => {
       const detail = (event as CustomEvent).detail;
       if (!detail?.status) return;
       if (detail.status === 'signed_out') {
+        portfolioReadyForSession = false;
         clearPortfolioData();
         setPortfolioState('signed_out');
         return;
       }
+      if (portfolioReadyForSession) return;
       setPortfolioState(detail.status === 'ready' ? 'profile_ready' : mapProfileStatus(detail.status));
-      if (detail.status === 'ready') void loadPortfolioMvp();
+      if (detail.status === 'ready') void ensureProfileAndPortfolioReady();
     });
 
     window.addEventListener('mk:auth-state', (event) => {
       const detail = (event as CustomEvent).detail;
       if (detail?.status === 'signed_out') {
+        portfolioReadyForSession = false;
         clearPortfolioData();
         setPortfolioState('signed_out');
       }
       if (detail?.status === 'signed_in') {
-        void runProfileAndPortfolioLoad();
+        if (portfolioReadyForSession) return;
+        void ensureProfileAndPortfolioReady();
       }
     });
 

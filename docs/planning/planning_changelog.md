@@ -1,5 +1,60 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F — Portfolio fetch/loading UX dedup (F-MED-01) - 2026-08-11
+
+- **Classification: `PHASE_4F_MED01_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`.**
+- **Baseline.** `main` @ `7a40ef8a4154c322362b2192084db6c5004b9d54` (PR #24 / Phase 4F-UX1-A1
+  merged; matches confirmed Production deployment `dpl_FWwp96hnzqHAAQTpcDzoDy9USdm7`). Branch
+  `fix/phase-4f-portfolio-fetch-loading-ux`.
+- **Finding (`F-MED-01`, MEDIUM — first MEDIUM-severity finding recorded).** Owner observed
+  redundant Portfolio API traffic and intrusive loading-state churn in Production: 23x
+  `/api/portfolio/positions`, 14x `/api/portfolio/valuation`, 10x `/api/portfolio/portfolios`
+  requests in one session, including 4 simultaneous `positions` calls.
+- **Four root causes fixed, all inside `src/pages/portfolio.astro`'s client script plus one new
+  pure module.** (1) Three independent bootstrap triggers (page-load init,
+  `mk:profile-bootstrap` ready, `mk:auth-state` signed_in) each called the loader directly with no
+  shared state — replaced with a single coalescing entry point `ensureProfileAndPortfolioReady()`
+  gated by `portfolioReadyForSession`/`bootstrapInFlight`. (2) Tab switching to an already-visited
+  portfolio always refetched positions — `loadPositions` now checks
+  `decidePositionsFetch({ force, hasCachedEntry })` before fetching, plus a
+  `fetchPositionsDeduped` in-flight dedup map. (3) `loadPortfolios()` hardcoded a forced positions
+  reload on every call (including read-only navigation and every mutation) — `forcePositions` is
+  now an opt-in parameter defaulting to `false`; only the explicit refresh button still passes
+  `true`. (4) No valuation freshness policy — a 20s TTL (`decideValuationFetch`) with in-flight
+  dedup and a background-refresh state (`state.valuationRefreshing`) that keeps prior numbers
+  visible during a background refetch instead of blanking the UI.
+- **New pure decision module** `src/lib/portfolio/portfolioLoadLifecycle.ts` — exports
+  `decideBootstrapAction`/`decidePositionsFetch`/`decideValuationFetch`/`isValuationFresh`/
+  `decideMutationForcesPositionsRefetch`, all pure/DOM-free/network-free.
+- **"티커 미확인" investigated, no code change.** Root-caused to a transient loading-state display
+  artifact in `getPositionSecondaryLabel` that this phase's fix narrows indirectly (fewer/shorter
+  refetch windows); not a distinct defect, not promoted to its own finding ID.
+- **Tests.** New `smoke:phase-4f-portfolio-load-lifecycle` (**21/21**, 17 numbered scenarios per
+  the pure lifecycle module rather than DOM matching) and
+  `check:phase-4f-portfolio-load-lifecycle` (**41/41**, 7 groups: file existence, pure-module
+  export contract, page wiring, and one group per root cause).
+- **Request-budget model (§9 of the result doc): 4 portfolios × 4 scenarios, analytical, not
+  live-measured.** Before/after totals: bootstrap (9→3), first-time tab visits (6→6, unchanged by
+  design — legitimate first loads), revisit cycle within TTL (12→0), refresh+mutation+aggregate
+  (13→6). Grand total 40→15 (≈62.5% fewer requests), concentrated entirely in genuinely redundant
+  re-fetches.
+- **Regression gate.** Build PASS; new suites 21/21 + 41/41; HF1 suites unchanged 59/59 smoke +
+  58/58 checker (confirms `F-HIGH-02`/`PORT-10`'s sole live-valuation call site untouched); HF2
+  suites unchanged 34/34 smoke + 63/63 checker (confirms `F-HIGH-03`'s
+  `resolvePositionSubmitIdentity` contract untouched); five broader portfolio checkers
+  (`owner-review-prep`, `ticker-display-name`, `holdings-header`, `layout`,
+  `mobile-snapshot-portfolio`) verified via `git stash`-isolated baseline comparison — three had
+  zero delta from `origin/main` from the start, two (`owner-review-prep`, `holdings-header`)
+  initially showed a +1 delta each, both traced to the same cause (this phase's new background-
+  refresh status copy colliding with a stale pre-live-valuation-era literal-string assertion);
+  resolved by rewording the new copy (`'시세를 새로고침하는 중입니다.'`) rather than touching
+  either checker, restoring exact baseline parity (7/50, 18/73, 3/84, 1/73, 6/49) — a verified
+  zero-regression result, not an accepted one. `git diff --check` clean.
+- **Status.** `F-HIGH-01`/`CHART-05` stays CLOSED. `F-HIGH-02`/`PORT-10` remains PASS (unchanged,
+  not re-verified here). `F-HIGH-03` remains IMPLEMENTED / OWNER-VERIFICATION-PENDING — **not**
+  closed by this phase. Owner QA formal count for `F-MED-01` itself is pending.
+- Not merged. See `phase_4f_portfolio_fetch_loading_ux_result_v0.1.md`.
+
 ## Phase 4F-UX1-A.1 — bind Home surface registry to the actual render tree - 2026-08-10
 
 - **Classification: `PHASE_4F_UX1A_A1_COMPLETE_PREMERGE_REVIEW_REQUIRED`.**
