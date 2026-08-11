@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16099",
+  "masterVersion": "hf3b-hf2-kis-16114",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-11",
   "instruments": [
@@ -64018,6 +64018,19 @@
       "active": true
     },
     {
+      "symbol": "CSRA",
+      "displayName": "COHEN AND STEERS REAL ASSETS ACTIVE ETF",
+      "englishName": "COHEN AND STEERS REAL ASSETS ACTIVE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "csra"
+      ],
+      "active": true
+    },
+    {
       "symbol": "CSRE",
       "displayName": "COHEN & STEERS REAL ESTATE ACTIVE ETF",
       "englishName": "COHEN & STEERS REAL ESTATE ACTIVE ETF",
@@ -77642,6 +77655,19 @@
       "active": true
     },
     {
+      "symbol": "GAIQ",
+      "displayName": "GUINNESS ATKINSON GLOBAL INNOVATORS FUND ETF CLASS SHARES",
+      "englishName": "GUINNESS ATKINSON GLOBAL INNOVATORS FUND ETF CLASS SHARES",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "gaiq"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GAL",
       "displayName": "STATE STREET GLOBAL ALLOCATION ETF",
       "englishName": "STATE STREET GLOBAL ALLOCATION ETF",
@@ -82569,6 +82595,19 @@
       "active": true
     },
     {
+      "symbol": "HYGD",
+      "displayName": "MICROSECTORS -3X SHORT HIGH YIELD CORPORATE BOND (HYG) ETNS",
+      "englishName": "MICROSECTORS -3X SHORT HIGH YIELD CORPORATE BOND (HYG) ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hygd"
+      ],
+      "active": true
+    },
+    {
       "symbol": "HYGH",
       "displayName": "ISHARES US ETF TRUST INT RATE HDGD HIGH YIELD BD",
       "englishName": "ISHARES US ETF TRUST INT RATE HDGD HIGH YIELD BD",
@@ -82591,6 +82630,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "hygm"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HYGU",
+      "displayName": "MICROSECTORS 3X LONG HIGH YIELD CORPORATE BOND (HYG) ETNS",
+      "englishName": "MICROSECTORS 3X LONG HIGH YIELD CORPORATE BOND (HYG) ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hygu"
       ],
       "active": true
     },
@@ -91903,6 +91955,19 @@
       "active": true
     },
     {
+      "symbol": "LITG",
+      "displayName": "LEVERAGE SHARES 2X LONG LITE DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X LONG LITE DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "litg"
+      ],
+      "active": true
+    },
+    {
       "symbol": "LITL",
       "displayName": "SIMPLIFY PIPER SANDLER US SMALL-CAP PLUS INCOME ETF",
       "englishName": "SIMPLIFY PIPER SANDLER US SMALL-CAP PLUS INCOME ETF",
@@ -92332,6 +92397,19 @@
       "active": true
     },
     {
+      "symbol": "LQDD",
+      "displayName": "MICROSECTORS -3X SHORT INVESTMENT GRADE CORPORATE BOND (LQD)",
+      "englishName": "MICROSECTORS -3X SHORT INVESTMENT GRADE CORPORATE BOND (LQD)",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "lqdd"
+      ],
+      "active": true
+    },
+    {
       "symbol": "LQDH",
       "displayName": "ISHARES US ETF TRUST INT RATE HDGD CORPORATE BD",
       "englishName": "ISHARES US ETF TRUST INT RATE HDGD CORPORATE BD",
@@ -92367,6 +92445,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "lqdm"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "LQDU",
+      "displayName": "MICROSECTORS 3X LONG INVESTMENT GRADE CORPORATE BOND (LQD) E",
+      "englishName": "MICROSECTORS 3X LONG INVESTMENT GRADE CORPORATE BOND (LQD) E",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "lqdu"
       ],
       "active": true
     },
@@ -95088,6 +95179,19 @@
       "active": true
     },
     {
+      "symbol": "MPDY",
+      "displayName": "M+ DUALYIELD AUTOCALL ETF",
+      "englishName": "M+ DUALYIELD AUTOCALL ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mpdy"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MPG",
       "displayName": "LEVERAGE SHARES 2X LONG MP DAILY ETF",
       "englishName": "LEVERAGE SHARES 2X LONG MP DAILY ETF",
@@ -95097,6 +95201,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "mpg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MPIM",
+      "displayName": "M+ INCOME MOMENTUM AUTOCALL ETF",
+      "englishName": "M+ INCOME MOMENTUM AUTOCALL ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mpim"
       ],
       "active": true
     },
@@ -95227,6 +95344,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "mral"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MRAX",
+      "displayName": "TRADR 2X LONG MRAM DAILY ETF",
+      "englishName": "TRADR 2X LONG MRAM DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mrax"
       ],
       "active": true
     },
@@ -96280,6 +96410,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "mxi"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MXLL",
+      "displayName": "LEVERAGE SHARES 2X LONG MXL DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X LONG MXL DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mxll"
       ],
       "active": true
     },
@@ -111692,6 +111835,19 @@
       "active": true
     },
     {
+      "symbol": "SITX",
+      "displayName": "TRADR 2X LONG SITM DAILY ETF",
+      "englishName": "TRADR 2X LONG SITM DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "sitx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SIVR",
       "displayName": "ABRDN SILVER ETF TR ABRDN PHYSICAL SILVER SHARES ETF",
       "englishName": "ABRDN SILVER ETF TR ABRDN PHYSICAL SILVER SHARES ETF",
@@ -114928,6 +115084,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "stk"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "STLL",
+      "displayName": "LEVERAGE SHARES 2X LONG STRL DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X LONG STRL DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "stll"
       ],
       "active": true
     },
@@ -120219,6 +120388,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "umay"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "UMCU",
+      "displayName": "TRADR 2X LONG UMC DAILY ETF",
+      "englishName": "TRADR 2X LONG UMC DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "umcu"
       ],
       "active": true
     },
@@ -145511,9 +145693,9 @@
       "displayName": "COLLECTIVE MINING LTD",
       "englishName": "COLLECTIVE MINING LTD",
       "country": "US",
-      "exchange": "AMEX",
+      "exchange": "NASDAQ",
       "assetType": "stock",
-      "exchangeCode": "AMS",
+      "exchangeCode": "NAS",
       "aliases": [
         "cnl"
       ],
@@ -170399,6 +170581,19 @@
       "active": true
     },
     {
+      "symbol": "LEDRU",
+      "displayName": "LEADERS ADVANTAGE ACQUISITION CORP UNIT 1 CL A & 1/2 WAR",
+      "englishName": "LEADERS ADVANTAGE ACQUISITION CORP UNIT 1 CL A & 1/2 WAR",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ledru"
+      ],
+      "active": true
+    },
+    {
       "symbol": "LEDS",
       "displayName": "SEMILEDS CORPORATION",
       "englishName": "SEMILEDS CORPORATION",
@@ -192496,14 +192691,15 @@
     },
     {
       "symbol": "SCHW",
-      "displayName": "SCHWAB(CHARLES)CORP",
-      "englishName": "SCHWAB(CHARLES)CORP",
+      "displayName": "CHARLES SCHWAB CORPORATION",
+      "englishName": "CHARLES SCHWAB CORPORATION",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "schw"
+        "schw",
+        "schwab(charles)corp"
       ],
       "active": true
     },
@@ -207319,13 +207515,14 @@
     },
     {
       "symbol": "WVE",
-      "displayName": "WAVE LIFE SCIENCES LTD",
-      "englishName": "WAVE LIFE SCIENCES LTD",
+      "displayName": "WAVE LIFE SCIENCES INC",
+      "englishName": "WAVE LIFE SCIENCES INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "wave life sciences ltd",
         "wve"
       ],
       "active": true
