@@ -1,5 +1,80 @@
 # MK Stock Lab Planning Changelog
 
+## Phase 4F — Owner QA closeout preparation (F-HIGH-02 / F-HIGH-03) - 2026-08-11
+
+- **Docs-only preparation, no application code touched.** Re-verified repository/PR state: PR #25
+  (`fix/phase-4f-ux1b-home-news-emphasis`) head unchanged at `270c5e8`, `mergeStateStatus: CLEAN`,
+  `mergeable: MERGEABLE`, no drift since its prior exact-HEAD Preview verification
+  (`dpl_4uhBuioystR8QGFVS9REHdXcKRWh`), no unresolved human review threads (the sole PR comment is
+  `vercel[bot]`'s automated deploy-info comment), no branch protection on `main`.
+- **Confirmed `F-HIGH-02`/`F-HIGH-03` are unblocked at the code level.** HF1 (PR #22) and HF2+A1
+  (PR #23) are both already merged into `main`; the current Production deployment
+  (`main` @ `7a40ef8`) shows a successful `Vercel` deployment status, so the fix code for both
+  findings is already live in Production, independent of PR #25. Re-ran
+  `smoke:phase-4f-hf1-functional-high` (59/59: 39 + 20), `check:phase-4f-hf1-functional-high` (58/58),
+  `smoke:phase-4f-hf2-portfolio-identity` (98/98: 23 + 15 + 26 + 34 across its four test sources),
+  and `check:phase-4f-hf2-portfolio-identity` (63/63) — all green, confirming no implementation defect
+  and no drift; no code was changed as a result.
+- **Added §19 to `phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`** — a short, plain-language
+  Owner QA runbook scoped to only these two HIGH findings (Purpose/Preconditions/Steps/PASS/FAIL/
+  Evidence/Owner-response-format for each), so the Owner can close them out without needing to run
+  the full 120-case matrix first. Notes that this QA must run against Production (not Preview),
+  since the `KIS_ENABLE_PRODUCTION_PORTFOLIO_VALUATION`-gated capability stays fail-closed on
+  Preview by design. The existing `PORT-10` matrix row (§9) remains the formal evidence entry for
+  `F-HIGH-02` and is unchanged.
+- **Status unchanged, explicitly preserved.** `F-HIGH-02`/`PORT-10` and `F-HIGH-03` remain
+  **Owner-verification-pending** (IMPLEMENTED / PRODUCTION OWNER VERIFICATION STILL REQUIRED) —
+  this phase does not mark either PASS, CLOSED, or VERIFIED, and does not claim Phase 4F is closed.
+  Owner QA formal count remains 0/120. PR #25 was not merged and Production was not deployed or
+  otherwise mutated by this phase.
+
+## Phase 4F-UX1-B — Home MARKET NEWS breaking/exclusive emphasis - 2026-08-10
+
+- **Classification: `PHASE_4F_UX1B_HOME_NEWS_EMPHASIS_IMPLEMENTED_PREMERGE_REVIEW_REQUIRED`.**
+- **Owner request.** Home MARKET NEWS cards whose source TITLE begins with exactly `[급보]`/
+  `[긴급]`/`[속보]` (breaking) or `[단독]` (exclusive) should be visually flagged — accent border,
+  static glow, explicit text badge — alongside the existing category badge, in light and dark
+  mode, with no blinking/flashing animation and no color-only signaling. UX1-A's own result doc
+  had explicitly deferred this exact treatment rather than treating it as in-scope.
+- **New pure module `src/lib/home/homeNewsEmphasis.ts`.** `parseHomeNewsEmphasis(title)` does
+  `trimStart()` + exact `startsWith()` matching against a fixed 4-entry whitelist — no regex, no
+  generic bracket scan. Near-misses (`[속보성]`, `[긴급속보]`, `"오늘 [속보]..."`, `[종합]`)
+  correctly yield `null` by construction, with no special-case code required.
+  `deriveHomeNewsDisplayTitle` strips only a matched prefix from the visible headline (falling
+  back to the original title if that would leave it blank); `HomeMarketNews.astro`'s
+  `aria-label` continues to use the full, untouched original title.
+- **Wiring.** `HomeMarketNews.astro`'s `renderArticles` adds an emphasis badge
+  (`home-news-emphasis-badge--breaking`/`--exclusive`, text `속보`/`단독`) and a card modifier
+  class (`home-news-card--breaking`/`--exclusive`) ahead of the existing category badge, which is
+  unchanged and always still rendered.
+- **CSS.** Six new semantic variables (`--news-breaking-accent/-glow/-badge-bg`,
+  `--news-exclusive-accent/-glow/-badge-bg`) with explicit distinct values in both the `:root` and
+  `body.dark-mode` blocks (this project themes via a class toggle, not
+  `prefers-color-scheme`/`[data-theme]`, so both blocks needed real values). Accent uses an inset
+  `box-shadow` ring (no layout shift) plus a static outer glow `box-shadow` — zero
+  `animation`/`@keyframes`/`infinite`.
+- **Sibling-checker reconciliation.** `check_phase_4f_ux1a_home_surface_contract.mjs` Group 6's
+  scope-creep guard, which originally hard-banned the four urgency tokens anywhere in
+  `HomeMarketNews.astro`, is narrowed to allow them only when routed through the reviewed
+  `homeNewsEmphasis` module — preserving the anti-scope-creep intent while authorizing this
+  phase's separately-reviewed introduction. `smoke:phase-4f-ux1a-home-surface` stays **25/25**;
+  `check:phase-4f-ux1a-home-surface` stays **46/46**.
+- **Tests.** New `smoke:phase-4f-ux1b-home-news-emphasis` — **23/23** (all required parser
+  cases + rendered class/badge decision + display-title derivation). New
+  `check:phase-4f-ux1b-home-news-emphasis` — **42/42** (prefix whitelist, rendering wiring,
+  static-only treatment, light+dark variables, existing news contract untouched, UX1-A surface
+  guard + order unchanged, no unrelated page changes, `package.json` wiring).
+- **Regression.** Full Phase 4F §11 gate green end to end (UX1-A, 4A–4E, HF1, HF2,
+  `mobile-baseline`, `project-lightweight-roadmap`, the 10-command Phase 4F gate); `git diff
+  --check` clean; `npm ls --depth=0` clean; `npm run build` completed all real stages (known
+  benign Windows post-build teardown exit code, documented in prior phases).
+- **Scope.** 4 files modified (`package.json`, `check_phase_4f_ux1a_home_surface_contract.mjs`,
+  `HomeMarketNews.astro`, `style.css`), 4 files new (`homeNewsEmphasis.ts`, UX1-B testsrc/smoke/
+  checker scripts). No `index.astro` change, no new top-level `Home*.astro` component, no
+  reordering. Does not alter `F-HIGH-02`/`PORT-10` or `F-HIGH-03`, both still IMPLEMENTED /
+  PRODUCTION OWNER VERIFICATION STILL REQUIRED; Owner QA remains 0/120. PR open, not merged. See
+  `phase_4f_ux1b_home_news_emphasis_result_v0.1.md`.
+
 ## Phase 4F-UX1-A.1 — bind Home surface registry to the actual render tree - 2026-08-10
 
 - **Classification: `PHASE_4F_UX1A_A1_COMPLETE_PREMERGE_REVIEW_REQUIRED`.**

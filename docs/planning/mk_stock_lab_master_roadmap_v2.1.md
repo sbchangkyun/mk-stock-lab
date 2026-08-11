@@ -326,7 +326,10 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   that now also covers Home/Market/Chart AI Production runtime-error review via read-only Vercel
   connector access (previously `SHELL-17`/`MARKET-17`, now consolidated there). See
   `phase_4f_cross_page_owner_qa_closeout_plan_v0.1.md`. Manual QA execution has **not** started and
-  no application code was touched by this planning step.
+  no application code was touched by this planning step. **2026-08-11:** added §19, a short
+  Production-only Owner QA runbook scoped to just the two remaining HIGH findings
+  (`F-HIGH-02`/`PORT-10`, `F-HIGH-03`), so they can be closed out ahead of the full 120-case
+  matrix; both remain Owner-verification-pending.
 
 - **Phase 4F-HF1 — functional HIGH defect fixes.**
   `PHASE_4F_HF1_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`. Fixes exactly the two HIGH
@@ -384,6 +387,29 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   see. Home-only; does not alter `F-HIGH-02`/`PORT-10` or `F-HIGH-03`, both of which remain
   IMPLEMENTED / PRODUCTION OWNER VERIFICATION STILL REQUIRED. PR #24 open, not merged. See
   `phase_4f_ux1a_home_surface_guard_result_v0.1.md` §12.
+
+- **Phase 4F-UX1-B — Home MARKET NEWS breaking/exclusive emphasis.**
+  `PHASE_4F_UX1B_HOME_NEWS_EMPHASIS_IMPLEMENTED_PREMERGE_REVIEW_REQUIRED`. Owner request: articles
+  whose source TITLE begins with exactly `[급보]`/`[긴급]`/`[속보]` (breaking) or `[단독]`
+  (exclusive) — a treatment UX1-A explicitly deferred rather than in-scoped — now get a static
+  accent border + glow + explicit text badge (`속보`/`단독`) in `HomeMarketNews.astro`, alongside
+  the existing category badge, in both light and dark mode. New pure module
+  `src/lib/home/homeNewsEmphasis.ts` does exact-prefix `trimStart()`/`startsWith()` matching
+  against a fixed 4-entry whitelist only — no generic bracket regex — so near-misses (`[속보성]`,
+  `[긴급속보]`, mid-string `[속보]`, `[종합]`) correctly yield no emphasis. The full original
+  article title is always preserved in the card's `aria-label`; only the visible headline may have
+  a recognized prefix stripped (falls back to the original title if that would leave it blank). No
+  animation/blink/pulse — state is carried by badge text, not color alone. Presentation-only: the
+  `/api/news/home.json` contract, refresh interval, and fallback/no-news states are untouched. One
+  narrow sibling-checker reconciliation: `check_phase_4f_ux1a_home_surface_contract.mjs`'s Group 6
+  scope-creep guard now allows the four urgency tokens in `HomeMarketNews.astro` only when routed
+  through the reviewed `homeNewsEmphasis` module, closing the gap UX1-A's own result doc had
+  already flagged as deferred (not scope creep). No `index.astro` change, no new top-level
+  `Home*.astro` component, no reordering — UX1-A/A1's surface guard stays green (25/25 smoke,
+  46/46 checker). New focused suite `smoke:phase-4f-ux1b-home-news-emphasis` (23/23) +
+  `check:phase-4f-ux1b-home-news-emphasis` (42/42). Full Phase 4F regression gate green; does not
+  alter `F-HIGH-02`/`PORT-10` or `F-HIGH-03`. PR open, not merged. See
+  `phase_4f_ux1b_home_news_emphasis_result_v0.1.md`.
 
 ### Next sequential product phases
 
