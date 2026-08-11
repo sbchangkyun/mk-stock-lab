@@ -385,6 +385,27 @@ Owner-pending — folded into `DETAILED_QA_DEFERRED_UNTIL_PHASE_3_CLOSEOUT` (see
   IMPLEMENTED / PRODUCTION OWNER VERIFICATION STILL REQUIRED. PR #24 open, not merged. See
   `phase_4f_ux1a_home_surface_guard_result_v0.1.md` §12.
 
+- **Phase 4F — Portfolio fetch/loading UX dedup (`F-MED-01`).**
+  `PHASE_4F_MED01_IMPLEMENTED_PR_READY_PREMERGE_REVIEW_REQUIRED`. New MEDIUM-severity finding —
+  Owner observed redundant Portfolio API traffic (23x `positions`, 14x `valuation`, 10x
+  `portfolios` requests in one session, including 4 simultaneous `positions` calls) and intrusive
+  loading-state churn. Four root causes fixed in `src/pages/portfolio.astro`'s client script: (1)
+  triple independent bootstrap triggers coalesced into one `ensureProfileAndPortfolioReady()` entry
+  point; (2) tab switching to an already-visited portfolio now checks a positions cache
+  (`decidePositionsFetch`) instead of always refetching; (3) `loadPortfolios()`'s previously
+  hardcoded forced-positions-reload is now an opt-in `forcePositions` parameter defaulting to
+  `false`; (4) a 20s valuation freshness TTL with background-refresh semantics
+  (`decideValuationFetch`) keeps prior numbers visible during a background refetch instead of
+  blanking the UI. New pure module `src/lib/portfolio/portfolioLoadLifecycle.ts`; 62 new
+  deterministic assertions (21 smoke + 41 checker). An analytical 4-portfolio × 4-scenario
+  request-budget model shows totals dropping from 40 to 15 requests (≈62.5%), with zero reduction
+  in genuinely first-time loads (by design). Two pre-existing portfolio checkers briefly showed a
+  +1 delta from a stale literal-string collision, resolved by rewording this phase's own new status
+  copy rather than touching either checker — verified zero-regression via `git stash`-isolated
+  baseline comparison. Does not alter `F-HIGH-02`/`PORT-10` (remains PASS) or `F-HIGH-03` (remains
+  IMPLEMENTED / OWNER-VERIFICATION-PENDING, not closed by this phase). PR open, not merged. See
+  `phase_4f_portfolio_fetch_loading_ux_result_v0.1.md`.
+
 ### Next sequential product phases
 
 Phases 4B–4E repeat the same navigation-based production-readiness pattern established by Phase 4A —

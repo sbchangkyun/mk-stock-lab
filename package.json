@@ -16,6 +16,8 @@
     "check:phase-4f-hf1-functional-high": "node scripts/check_phase_4f_hf1_functional_high_contract.mjs",
     "smoke:phase-4f-hf2-portfolio-identity": "node scripts/smoke_phase_4f_hf2_portfolio_identity.mjs",
     "check:phase-4f-hf2-portfolio-identity": "node scripts/check_phase_4f_hf2_portfolio_identity_contract.mjs",
+    "smoke:phase-4f-portfolio-load-lifecycle": "node scripts/smoke_phase_4f_portfolio_load_lifecycle.mjs",
+    "check:phase-4f-portfolio-load-lifecycle": "node scripts/check_phase_4f_portfolio_load_lifecycle_contract.mjs",
     "smoke:phase-4f-ux1a-home-surface": "node scripts/smoke_phase_4f_ux1a_home_surface.mjs",
     "check:phase-4f-ux1a-home-surface": "node scripts/check_phase_4f_ux1a_home_surface_contract.mjs",
     "smoke:phase-4a-home-common-shell": "node scripts/smoke_phase_4a_home_common_shell.mjs",
