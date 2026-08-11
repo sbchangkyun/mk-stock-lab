@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16105",
+  "masterVersion": "hf3b-hf2-kis-16099",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-10",
+  "sourceAsOf": "2026-08-11",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -3814,6 +3814,19 @@
       "active": true
     },
     {
+      "symbol": "0226D0",
+      "displayName": "FOCUS 금융반도체지주채권혼합50액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70226D0007",
+      "aliases": [
+        "0226d0"
+      ],
+      "active": true
+    },
+    {
       "symbol": "0226G0",
       "displayName": "WON 피지컬AI TOP2플러스액티브",
       "country": "KR",
@@ -3823,6 +3836,32 @@
       "standardCode": "KR70226G0004",
       "aliases": [
         "0226g0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0227K0",
+      "displayName": "RISE 미국우주위성통신",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70227K0007",
+      "aliases": [
+        "0227k0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0228G0",
+      "displayName": "ACE 반도체Plus전략산업",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70228G0002",
+      "aliases": [
+        "0228g0"
       ],
       "active": true
     },
@@ -49324,19 +49363,6 @@
       "standardCode": "KR7469750004",
       "aliases": [
         "469750"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "469880",
-      "displayName": "하나30호스팩",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7469880009",
-      "aliases": [
-        "469880"
       ],
       "active": true
     },
@@ -108494,19 +108520,6 @@
       "active": true
     },
     {
-      "symbol": "RNWZ",
-      "displayName": "TRUESHARES EAGLE GLOBAL RENEWABLE ENERGY INCOME ETF",
-      "englishName": "TRUESHARES EAGLE GLOBAL RENEWABLE ENERGY INCOME ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "rnwz"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ROAM",
       "displayName": "LATTICE STRATEGIES TR HARTFORD MULTIFACTOR EMERGING MARKTS E",
       "englishName": "LATTICE STRATEGIES TR HARTFORD MULTIFACTOR EMERGING MARKTS E",
@@ -113586,19 +113599,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "spcu"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SPCZ",
-      "displayName": "RIVERNORTH ENHANCED PRE-MERGER SPAC ETF",
-      "englishName": "RIVERNORTH ENHANCED PRE-MERGER SPAC ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "spcz"
       ],
       "active": true
     },
@@ -136767,32 +136767,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "bax"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "BAYA",
-      "displayName": "BAYVIEW ACQUISITION CORPORATION",
-      "englishName": "BAYVIEW ACQUISITION CORPORATION",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "baya"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "BAYAU",
-      "displayName": "BAYVIEW ACQUISITION CORPORATION UNIT (1 COM & 1 RT) 17/1",
-      "englishName": "BAYVIEW ACQUISITION CORPORATION UNIT (1 COM & 1 RT) 17/1",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "bayau"
       ],
       "active": true
     },
@@ -164135,8 +164109,7 @@
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "ibn",
-        "icici bank ltd spon adr each repr 2 ord shs"
+        "ibn"
       ],
       "active": true
     },
@@ -176529,19 +176502,6 @@
       "active": true
     },
     {
-      "symbol": "MSW",
-      "displayName": "MING SHING GROUP HOLDINGS LIMITED",
-      "englishName": "MING SHING GROUP HOLDINGS LIMITED",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "msw"
-      ],
-      "active": true
-    },
-    {
       "symbol": "MT",
       "displayName": "ARCELORMITTAL NY REGISTRY SHS NEW(POST REV SPLIT)",
       "englishName": "ARCELORMITTAL NY REGISTRY SHS NEW(POST REV SPLIT)",
@@ -181246,7 +181206,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "oceanlight acquisition corporation units (1 ord shs & 1",
         "ocltu"
       ],
       "active": true
@@ -181898,19 +181857,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "olp"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "OLPX",
-      "displayName": "OLAPLEX HLDGS INC",
-      "englishName": "OLAPLEX HLDGS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "olpx"
       ],
       "active": true
     },
@@ -189351,19 +189297,6 @@
       "active": true
     },
     {
-      "symbol": "REE",
-      "displayName": "REE AUTOMOTIVE LTD",
-      "englishName": "REE AUTOMOTIVE LTD",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ree"
-      ],
-      "active": true
-    },
-    {
       "symbol": "REED",
       "displayName": "REEDS INC",
       "englishName": "REEDS INC",
@@ -193077,8 +193010,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "segg",
-        "sports entertainment gaming global corporation"
+        "segg"
       ],
       "active": true
     },
@@ -198669,19 +198601,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "tbph"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "TBRG",
-      "displayName": "TRUBRIDGE INC",
-      "englishName": "TRUBRIDGE INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "tbrg"
       ],
       "active": true
     },

@@ -1430,6 +1430,167 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16081"
+    },
+    {
+      "canonicalIdentity": "KR|469880|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "469880",
+      "priorNames": [
+        "하나30호스팩"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7469880009",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|RNWZ|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "RNWZ",
+      "priorNames": [
+        "TRUESHARES EAGLE GLOBAL RENEWABLE ENERGY INCOME ETF",
+        "TRUESHARES EAGLE GLOBAL RENEWABLE ENERGY INCOME ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|SPCZ|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "SPCZ",
+      "priorNames": [
+        "RIVERNORTH ENHANCED PRE-MERGER SPAC ETF",
+        "RIVERNORTH ENHANCED PRE-MERGER SPAC ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|BAYA|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "BAYA",
+      "priorNames": [
+        "BAYVIEW ACQUISITION CORPORATION",
+        "BAYVIEW ACQUISITION CORPORATION"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|BAYAU|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "BAYAU",
+      "priorNames": [
+        "BAYVIEW ACQUISITION CORPORATION UNIT (1 COM & 1 RT) 17/1",
+        "BAYVIEW ACQUISITION CORPORATION UNIT (1 COM & 1 RT) 17/1"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|MSW|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "MSW",
+      "priorNames": [
+        "MING SHING GROUP HOLDINGS LIMITED",
+        "MING SHING GROUP HOLDINGS LIMITED"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|OLPX|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "OLPX",
+      "priorNames": [
+        "OLAPLEX HLDGS INC",
+        "OLAPLEX HLDGS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|REE|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "REE",
+      "priorNames": [
+        "REE AUTOMOTIVE LTD",
+        "REE AUTOMOTIVE LTD"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
+    },
+    {
+      "canonicalIdentity": "US|TBRG|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "TBRG",
+      "priorNames": [
+        "TRUBRIDGE INC",
+        "TRUBRIDGE INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-11",
+      "inactiveAt": "2026-08-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16099"
     }
   ]
 }

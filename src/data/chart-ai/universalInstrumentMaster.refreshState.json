@@ -1,55 +1,9 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 refresh state. Tracks per-symbol consecutive source-absence counts for the two-consecutive-valid-snapshot missing policy and the last-known-good master version. Updated by scripts/automation/refresh_kis_instrument_master.mjs only after all Safety Gates pass.",
   "schemaVersion": 1,
-  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16105",
-  "lastRefreshAt": "2026-08-10",
-  "pendingInactive": {
-    "KR|469880": {
-      "symbol": "469880",
-      "country": "KR",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|RNWZ": {
-      "symbol": "RNWZ",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|SPCZ": {
-      "symbol": "SPCZ",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|BAYA": {
-      "symbol": "BAYA",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|BAYAU": {
-      "symbol": "BAYAU",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|MSW": {
-      "symbol": "MSW",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|OLPX": {
-      "symbol": "OLPX",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|REE": {
-      "symbol": "REE",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    },
-    "US|TBRG": {
-      "symbol": "TBRG",
-      "country": "US",
-      "sinceAsOf": "2026-08-10"
-    }
-  },
+  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16099",
+  "lastRefreshAt": "2026-08-11",
+  "pendingInactive": {},
   "missingCounts": {
     "KR|0021C0": 2,
     "KR|0021D0": 2,
@@ -131,14 +85,14 @@
     "US|VIASP": 2,
     "US|WTO": 2,
     "KR|467930": 2,
-    "KR|469880": 1,
-    "US|RNWZ": 1,
-    "US|SPCZ": 1,
-    "US|BAYA": 1,
-    "US|BAYAU": 1,
-    "US|MSW": 1,
-    "US|OLPX": 1,
-    "US|REE": 1,
-    "US|TBRG": 1
+    "KR|469880": 2,
+    "US|RNWZ": 2,
+    "US|SPCZ": 2,
+    "US|BAYA": 2,
+    "US|BAYAU": 2,
+    "US|MSW": 2,
+    "US|OLPX": 2,
+    "US|REE": 2,
+    "US|TBRG": 2
   }
 }
