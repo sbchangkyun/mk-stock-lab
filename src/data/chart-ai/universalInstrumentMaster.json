@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16115",
+  "masterVersion": "hf3b-hf2-kis-16125",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-12",
   "instruments": [
@@ -43599,8 +43599,7 @@
       "exchangeCode": null,
       "standardCode": "KR7291650000",
       "aliases": [
-        "291650",
-        "압타머사이언스"
+        "291650"
       ],
       "active": true
     },
@@ -64033,13 +64032,14 @@
     },
     {
       "symbol": "CSRA",
-      "displayName": "COHEN AND STEERS REAL ASSETS ACTIVE ETF",
-      "englishName": "COHEN AND STEERS REAL ASSETS ACTIVE ETF",
+      "displayName": "COHEN & STEERS REAL ASSETS ACTIVE ETF",
+      "englishName": "COHEN & STEERS REAL ASSETS ACTIVE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "cohen and steers real assets active etf",
         "csra"
       ],
       "active": true
@@ -64561,6 +64561,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "dabs"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "DACL",
+      "displayName": "REX DEFENSIVE AUTOCALLABLE INCOME ETF",
+      "englishName": "REX DEFENSIVE AUTOCALLABLE INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "dacl"
       ],
       "active": true
     },
@@ -72335,6 +72348,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "exi"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "EXPN",
+      "displayName": "HORIZON EXPANSION LEADERS ETF",
+      "englishName": "HORIZON EXPANSION LEADERS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "expn"
       ],
       "active": true
     },
@@ -95193,6 +95219,19 @@
       "active": true
     },
     {
+      "symbol": "MPDB",
+      "displayName": "M+ DYNABUFFER ETF",
+      "englishName": "M+ DYNABUFFER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mpdb"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MPDY",
       "displayName": "M+ DUALYIELD AUTOCALL ETF",
       "englishName": "M+ DUALYIELD AUTOCALL ETF",
@@ -95215,6 +95254,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "mpg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MPIA",
+      "displayName": "M NASDAQ-100 ACCELERATOR AUTOCALL ETF",
+      "englishName": "M NASDAQ-100 ACCELERATOR AUTOCALL ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "mpia"
       ],
       "active": true
     },
@@ -127835,6 +127887,19 @@
       "active": true
     },
     {
+      "symbol": "YLDY",
+      "displayName": "HORIZON HIGH INCOME ETF",
+      "englishName": "HORIZON HIGH INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "yldy"
+      ],
+      "active": true
+    },
+    {
       "symbol": "YMAG",
       "displayName": "TIDAL TRUST II YIELDMAX MAGNIFICENT 7 FUND OF OPTION",
       "englishName": "TIDAL TRUST II YIELDMAX MAGNIFICENT 7 FUND OF OPTION",
@@ -156727,6 +156792,19 @@
       "active": true
     },
     {
+      "symbol": "FOIL",
+      "displayName": "LONDIAN WASON NEW ENERGY TECH INC SPON EACH ADS EACH REPR 5",
+      "englishName": "LONDIAN WASON NEW ENERGY TECH INC SPON EACH ADS EACH REPR 5",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "foil"
+      ],
+      "active": true
+    },
+    {
       "symbol": "FOR",
       "displayName": "FORESTAR GROUP INC",
       "englishName": "FORESTAR GROUP INC",
@@ -164298,14 +164376,15 @@
     },
     {
       "symbol": "IBN",
-      "displayName": "ICICI BK LTD ACTING THRU ITS IFSC SPON ADR EACH REPR 2 ORD S",
-      "englishName": "ICICI BK LTD ACTING THRU ITS IFSC SPON ADR EACH REPR 2 ORD S",
+      "displayName": "ICICI BANK LTD SPON ADR EACH REPR 2 ORD SHS",
+      "englishName": "ICICI BANK LTD SPON ADR EACH REPR 2 ORD SHS",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "ibn"
+        "ibn",
+        "icici bk ltd acting thru its ifsc spon adr each repr 2 ord s"
       ],
       "active": true
     },
@@ -185736,6 +185815,19 @@
       "active": true
     },
     {
+      "symbol": "PLCI",
+      "displayName": "PELICAN ACQUISITION II CORPORATION",
+      "englishName": "PELICAN ACQUISITION II CORPORATION",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "plci"
+      ],
+      "active": true
+    },
+    {
       "symbol": "PLCIU",
       "displayName": "PELICAN ACQUISITION II CORPORATION UNIT CONSI 1 SHS & 1",
       "englishName": "PELICAN ACQUISITION II CORPORATION UNIT CONSI 1 SHS & 1",
@@ -192626,6 +192718,19 @@
       "active": true
     },
     {
+      "symbol": "SCATU",
+      "displayName": "SOUTHERN CROSS ACQUISITION II CORP UNITS CONS 1 SHS 1 WT &3",
+      "englishName": "SOUTHERN CROSS ACQUISITION II CORP UNITS CONS 1 SHS 1 WT &3",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "scatu"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SCCD",
       "displayName": "SACHEM CAPITAL CORP 6% NOTES 30/12/2026 USD25",
       "englishName": "SACHEM CAPITAL CORP 6% NOTES 30/12/2026 USD25",
@@ -195534,6 +195639,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "snps"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SNSC",
+      "displayName": "SUNSCOUT HOLDING LTD",
+      "englishName": "SUNSCOUT HOLDING LTD",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "snsc"
       ],
       "active": true
     },
@@ -204949,6 +205067,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "vod"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "VOGX",
+      "displayName": "VOGENX INC",
+      "englishName": "VOGENX INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "vogx"
       ],
       "active": true
     },
