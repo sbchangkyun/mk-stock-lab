@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16126",
+  "masterVersion": "hf3b-hf2-kis-16138",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-13",
   "instruments": [
@@ -52955,6 +52955,19 @@
       "active": true
     },
     {
+      "symbol": "ANTW",
+      "displayName": "ANTHROPIC AI LAB ECOSYSTEM ETF",
+      "englishName": "ANTHROPIC AI LAB ECOSYSTEM ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "antw"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ANV",
       "displayName": "GRANITESHARES AUTOCALLABLE NVDA ETF",
       "englishName": "GRANITESHARES AUTOCALLABLE NVDA ETF",
@@ -61626,6 +61639,19 @@
       "active": true
     },
     {
+      "symbol": "CGPT",
+      "displayName": "VEGASHARES AI INFERENCE ETF",
+      "englishName": "VEGASHARES AI INFERENCE ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "cgpt"
+      ],
+      "active": true
+    },
+    {
       "symbol": "CGRO",
       "displayName": "TIDAL TRUST II COREVALUES ALPHA GREATER CHINA GROWTH ET",
       "englishName": "TIDAL TRUST II COREVALUES ALPHA GREATER CHINA GROWTH ET",
@@ -62805,6 +62831,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "cony"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "COOL",
+      "displayName": "VEGASHARES AI THERMAL COOLING & POWER MANAGEMENT ETF",
+      "englishName": "VEGASHARES AI THERMAL COOLING & POWER MANAGEMENT ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "cool"
       ],
       "active": true
     },
@@ -65613,6 +65652,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "demz"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "DEPW",
+      "displayName": "GOOGLE DEEPMIND AI LAB ECOSYSTEM ETF",
+      "englishName": "GOOGLE DEEPMIND AI LAB ECOSYSTEM ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "depw"
       ],
       "active": true
     },
@@ -81035,6 +81087,19 @@
       "active": true
     },
     {
+      "symbol": "HAWG",
+      "displayName": "HCM HEDGED EQUITY ETF",
+      "englishName": "HCM HEDGED EQUITY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hawg"
+      ],
+      "active": true
+    },
+    {
       "symbol": "HAWX",
       "displayName": "ISHARES TRUST CURRENCY HEDGED MSCI ACWI E",
       "englishName": "ISHARES TRUST CURRENCY HEDGED MSCI ACWI E",
@@ -81057,6 +81122,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "hbdc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HBIL",
+      "displayName": "HARBOR SHORT TERM TREASURY ETF",
+      "englishName": "HARBOR SHORT TERM TREASURY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hbil"
       ],
       "active": true
     },
@@ -95959,6 +96037,19 @@
       "active": true
     },
     {
+      "symbol": "MTAW",
+      "displayName": "META AI LAB ECOSYSTEM ETF",
+      "englishName": "META AI LAB ECOSYSTEM ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mtaw"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MTBA",
       "displayName": "SIMPLIFY EXCHANGE TRADED FUNDS SIMPLIFY MBS ETF",
       "englishName": "SIMPLIFY EXCHANGE TRADED FUNDS SIMPLIFY MBS ETF",
@@ -99543,6 +99634,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "oaim"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "OAIW",
+      "displayName": "OPENAI LAB ECOSYSTEM ETF",
+      "englishName": "OPENAI LAB ECOSYSTEM ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "oaiw"
       ],
       "active": true
     },
@@ -125347,6 +125451,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "xagi"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XAIW",
+      "displayName": "SPACEXAI LAB ECOSYSTEM ETF",
+      "englishName": "SPACEXAI LAB ECOSYSTEM ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xaiw"
       ],
       "active": true
     },
@@ -159183,6 +159300,19 @@
       "active": true
     },
     {
+      "symbol": "GHXI",
+      "displayName": "GORES HOLDINGS XI INC",
+      "englishName": "GORES HOLDINGS XI INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ghxi"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GHXIU",
       "displayName": "GORES HOLDINGS XI INC UNIT EACH 1 CL A ORD & 0.25 WT(24/",
       "englishName": "GORES HOLDINGS XI INC UNIT EACH 1 CL A ORD & 0.25 WT(24/",
@@ -191585,6 +191715,19 @@
       "active": true
     },
     {
+      "symbol": "RVII",
+      "displayName": "ROBINHOOD VENTURES FUND II",
+      "englishName": "ROBINHOOD VENTURES FUND II",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "rvii"
+      ],
+      "active": true
+    },
+    {
       "symbol": "RVLV",
       "displayName": "REVOLVE GROUP INC",
       "englishName": "REVOLVE GROUP INC",
@@ -198887,6 +199030,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "tbch"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TBCVU",
+      "displayName": "THUNDER BRIDGE CAPITAL PARTNERS V L UNITS CONSIST OF 1 CL A",
+      "englishName": "THUNDER BRIDGE CAPITAL PARTNERS V L UNITS CONSIST OF 1 CL A",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "tbcvu"
       ],
       "active": true
     },
