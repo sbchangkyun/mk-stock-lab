@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16125",
+  "masterVersion": "hf3b-hf2-kis-16126",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-12",
+  "sourceAsOf": "2026-08-13",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -50173,6 +50173,19 @@
       "active": true
     },
     {
+      "symbol": "487400",
+      "displayName": "케이앤에스아이앤씨",
+      "country": "KR",
+      "exchange": "KOSDAQ",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "standardCode": "KR7487400004",
+      "aliases": [
+        "487400"
+      ],
+      "active": true
+    },
+    {
       "symbol": "487570",
       "displayName": "HS효성",
       "country": "KR",
@@ -64039,7 +64052,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cohen and steers real assets active etf",
         "csra"
       ],
       "active": true
@@ -164383,8 +164395,7 @@
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "ibn",
-        "icici bk ltd acting thru its ifsc spon adr each repr 2 ord s"
+        "ibn"
       ],
       "active": true
     },
