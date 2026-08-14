@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16138",
+  "masterVersion": "hf3b-hf2-kis-16145",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-14",
   "instruments": [
@@ -43586,8 +43586,7 @@
       "exchangeCode": null,
       "standardCode": "KR7291230001",
       "aliases": [
-        "291230",
-        "엔피"
+        "291230"
       ],
       "active": true
     },
@@ -51162,6 +51161,32 @@
       "active": true
     },
     {
+      "symbol": "ACQQ",
+      "displayName": "PROSHARES NASDAQ-100 AUTOCALLABLE INCOME ETF",
+      "englishName": "PROSHARES NASDAQ-100 AUTOCALLABLE INCOME ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "acqq"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ACRT",
+      "displayName": "PROSHARES RUSSELL 2000 AUTOCALLABLE INCOME ETF",
+      "englishName": "PROSHARES RUSSELL 2000 AUTOCALLABLE INCOME ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "acrt"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ACSG",
       "displayName": "AMERICAN CENTURY SMALL CAP GROWTH INSIGHTS ETF",
       "englishName": "AMERICAN CENTURY SMALL CAP GROWTH INSIGHTS ETF",
@@ -51184,6 +51209,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "acsi"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ACSP",
+      "displayName": "PROSHARES S&P 500 AUTOCALLABLE INCOME ETF",
+      "englishName": "PROSHARES S&P 500 AUTOCALLABLE INCOME ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "acsp"
       ],
       "active": true
     },
@@ -56397,6 +56435,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "bemb"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BEMD",
+      "displayName": "BNY MELLON EMERGING MARKETS DEBT ETF",
+      "englishName": "BNY MELLON EMERGING MARKETS DEBT ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "bemd"
       ],
       "active": true
     },
@@ -140659,6 +140710,19 @@
       "active": true
     },
     {
+      "symbol": "BRNX",
+      "displayName": "BRENX LTD",
+      "englishName": "BRENX LTD",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "brnx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BRO",
       "displayName": "BROWN & BROWN INC",
       "englishName": "BROWN & BROWN INC",
@@ -154500,6 +154564,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "ew"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "EWAV",
+      "displayName": "EAST WEST AVE ACQUISITION CORP",
+      "englishName": "EAST WEST AVE ACQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ewav"
       ],
       "active": true
     },
@@ -199036,14 +199113,15 @@
     },
     {
       "symbol": "TBCVU",
-      "displayName": "THUNDER BRIDGE CAPITAL PARTNERS V L UNITS CONSIST OF 1 CL A",
-      "englishName": "THUNDER BRIDGE CAPITAL PARTNERS V L UNITS CONSIST OF 1 CL A",
+      "displayName": "THUNDER BRIDGE CAPITAL PARTNERS V L UNITS CONS 1 CL A ORD &",
+      "englishName": "THUNDER BRIDGE CAPITAL PARTNERS V L UNITS CONS 1 CL A ORD &",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "tbcvu"
+        "tbcvu",
+        "thunder bridge capital partners v l units consist of 1 cl a"
       ],
       "active": true
     },
@@ -199954,6 +200032,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "thch"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "THEO",
+      "displayName": "BOA ACQUISITION CORP II",
+      "englishName": "BOA ACQUISITION CORP II",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "theo"
       ],
       "active": true
     },
