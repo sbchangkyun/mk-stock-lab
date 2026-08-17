@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16145",
+  "masterVersion": "hf3b-hf2-kis-16154",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-15",
+  "sourceAsOf": "2026-08-17",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -58117,14 +58117,15 @@
     },
     {
       "symbol": "BNDC",
-      "displayName": "FLEXSHARES TRUST CORE SELECT BOND FUND",
-      "englishName": "FLEXSHARES TRUST CORE SELECT BOND FUND",
+      "displayName": "NORTHERN TRUST CORE BOND ETF",
+      "englishName": "NORTHERN TRUST CORE BOND ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "bndc"
+        "bndc",
+        "flexshares trust core select bond fund"
       ],
       "active": true
     },
@@ -61263,14 +61264,15 @@
     },
     {
       "symbol": "CEFS",
-      "displayName": "EXCHANGE LISTED FUNDS TRUST SABA INT RATE HEDGED CEF ETF",
-      "englishName": "EXCHANGE LISTED FUNDS TRUST SABA INT RATE HEDGED CEF ETF",
+      "displayName": "SABA OPPORTUNISTIC HEDGED CLOSED-END FUNDS ETF",
+      "englishName": "SABA OPPORTUNISTIC HEDGED CLOSED-END FUNDS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cefs"
+        "cefs",
+        "exchange listed funds trust saba int rate hedged cef etf"
       ],
       "active": true
     },
@@ -71156,14 +71158,15 @@
     },
     {
       "symbol": "ESG",
-      "displayName": "FLEXSHARES TRUST STOXX US ESG SELECT INDEX FUND",
-      "englishName": "FLEXSHARES TRUST STOXX US ESG SELECT INDEX FUND",
+      "displayName": "NORTHERN TRUST STOXX US ESG SELECT ETF",
+      "englishName": "NORTHERN TRUST STOXX US ESG SELECT ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "esg"
+        "esg",
+        "flexshares trust stoxx us esg select index fund"
       ],
       "active": true
     },
@@ -71195,14 +71198,15 @@
     },
     {
       "symbol": "ESGG",
-      "displayName": "FLEXSHARES TRUST STOXX GLOBAL ESG SELECT INDEX FUND",
-      "englishName": "FLEXSHARES TRUST STOXX GLOBAL ESG SELECT INDEX FUND",
+      "displayName": "NORTHERN TRUST STOXX GLOBAL ESG SELECT ETF",
+      "englishName": "NORTHERN TRUST STOXX GLOBAL ESG SELECT ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "esgg"
+        "esgg",
+        "flexshares trust stoxx global esg select index fund"
       ],
       "active": true
     },
@@ -73730,14 +73734,15 @@
     },
     {
       "symbol": "FEDM",
-      "displayName": "FLEXSHARES TRUST ESG & CLIMATE DEV MKTS EX-US CORE IDX E",
-      "englishName": "FLEXSHARES TRUST ESG & CLIMATE DEV MKTS EX-US CORE IDX E",
+      "displayName": "NORTHERN TRUST ESG & CLIMATE DEVELOPED MARKETS EX-US COR",
+      "englishName": "NORTHERN TRUST ESG & CLIMATE DEVELOPED MARKETS EX-US COR",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "fedm"
+        "fedm",
+        "flexshares trust esg & climate dev mkts ex-us core idx e"
       ],
       "active": true
     },
@@ -73756,14 +73761,15 @@
     },
     {
       "symbol": "FEIG",
-      "displayName": "FLEXSHARES TRUST ESG & CLIMATE INVT GRADE CORP CORE IDX",
-      "englishName": "FLEXSHARES TRUST ESG & CLIMATE INVT GRADE CORP CORE IDX",
+      "displayName": "NORTHERN TRUST ESG & CLIMATE INVESTMENT GRADE CORPORATE",
+      "englishName": "NORTHERN TRUST ESG & CLIMATE INVESTMENT GRADE CORPORATE",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "feig"
+        "feig",
+        "flexshares trust esg & climate invt grade corp core idx"
       ],
       "active": true
     },
@@ -74003,14 +74009,15 @@
     },
     {
       "symbol": "FEUS",
-      "displayName": "FLEXSHARES TRUST ESG & CLIMATE US LARGE CAP CORE IDX ETF",
-      "englishName": "FLEXSHARES TRUST ESG & CLIMATE US LARGE CAP CORE IDX ETF",
+      "displayName": "NORTHERN TRUST ESG & CLIMATE US LARGE CAP CORE ETF",
+      "englishName": "NORTHERN TRUST ESG & CLIMATE US LARGE CAP CORE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "feus"
+        "feus",
+        "flexshares trust esg & climate us large cap core idx etf"
       ],
       "active": true
     },
@@ -80022,13 +80029,14 @@
     },
     {
       "symbol": "GQRE",
-      "displayName": "FLEXSHARES TRUST GLOBAL QUALITY REAL ESTATE INDEX",
-      "englishName": "FLEXSHARES TRUST GLOBAL QUALITY REAL ESTATE INDEX",
+      "displayName": "NORTHERN TRUST GLOBAL QUALITY REAL ESTATE ETF",
+      "englishName": "NORTHERN TRUST GLOBAL QUALITY REAL ESTATE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust global quality real estate index",
         "gqre"
       ],
       "active": true
@@ -80672,13 +80680,14 @@
     },
     {
       "symbol": "GUNR",
-      "displayName": "FLEXSHARES TRUST MORNINGSTAR GLOBAL UPSTREAM NAT RES IDX",
-      "englishName": "FLEXSHARES TRUST MORNINGSTAR GLOBAL UPSTREAM NAT RES IDX",
+      "displayName": "NORTHERN TRUST MORNINGSTAR GLOBAL UPSTREAM NATURAL RESOURCES",
+      "englishName": "NORTHERN TRUST MORNINGSTAR GLOBAL UPSTREAM NATURAL RESOURCES",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust morningstar global upstream nat res idx",
         "gunr"
       ],
       "active": true
@@ -82830,13 +82839,14 @@
     },
     {
       "symbol": "HYGV",
-      "displayName": "FLEXSHARES TRUST HIGH YIELD VALUE SCORED BOND INDEX FUND",
-      "englishName": "FLEXSHARES TRUST HIGH YIELD VALUE SCORED BOND INDEX FUND",
+      "displayName": "NORTHERN TRUST HIGH YIELD VALUE-SCORED BOND ETF",
+      "englishName": "NORTHERN TRUST HIGH YIELD VALUE-SCORED BOND ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust high yield value scored bond index fund",
         "hygv"
       ],
       "active": true
@@ -86340,13 +86350,14 @@
     },
     {
       "symbol": "IQDF",
-      "displayName": "FLEXSHARES TRUST INTERNATIONAL QUALITY DIV IDX",
-      "englishName": "FLEXSHARES TRUST INTERNATIONAL QUALITY DIV IDX",
+      "displayName": "NORTHERN TRUST INTERNATIONAL QUALITY DIVIDEND ETF",
+      "englishName": "NORTHERN TRUST INTERNATIONAL QUALITY DIVIDEND ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust international quality div idx",
         "iqdf"
       ],
       "active": true
@@ -86366,13 +86377,14 @@
     },
     {
       "symbol": "IQDY",
-      "displayName": "FLEXSHARES TRUST INTERNATIONAL QUALITY DIV DYNAMIC IDX",
-      "englishName": "FLEXSHARES TRUST INTERNATIONAL QUALITY DIV DYNAMIC IDX",
+      "displayName": "NORTHERN TRUST INTERNATIONAL QUALITY DIVIDEND DYNAMIC ETF",
+      "englishName": "NORTHERN TRUST INTERNATIONAL QUALITY DIVIDEND DYNAMIC ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust international quality div dynamic idx",
         "iqdy"
       ],
       "active": true
@@ -92242,13 +92254,14 @@
     },
     {
       "symbol": "LKOR",
-      "displayName": "FLEXSHARES TRUST CREDIT SCORED US LONG CORP BD INDEX FD",
-      "englishName": "FLEXSHARES TRUST CREDIT SCORED US LONG CORP BD INDEX FD",
+      "displayName": "NORTHERN TRUST CREDIT-SCORED US LONG CORPORATE BOND ETF",
+      "englishName": "NORTHERN TRUST CREDIT-SCORED US LONG CORPORATE BOND ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust credit scored us long corp bd index fd",
         "lkor"
       ],
       "active": true
@@ -93607,13 +93620,14 @@
     },
     {
       "symbol": "MBSD",
-      "displayName": "FLEXSHARES TRUST DISCIPLINED DURATION MBS INDEX",
-      "englishName": "FLEXSHARES TRUST DISCIPLINED DURATION MBS INDEX",
+      "displayName": "NORTHERN TRUST DISCIPLINED DURATION MBS ETF",
+      "englishName": "NORTHERN TRUST DISCIPLINED DURATION MBS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust disciplined duration mbs index",
         "mbsd"
       ],
       "active": true
@@ -97819,13 +97833,14 @@
     },
     {
       "symbol": "NFRA",
-      "displayName": "FLEXSHARES TRUST STOXX GLOBAL BROAD INFRASTRUCTURE IDX",
-      "englishName": "FLEXSHARES TRUST STOXX GLOBAL BROAD INFRASTRUCTURE IDX",
+      "displayName": "NORTHERN TRUST STOXX GLOBAL BROAD INFRASTRUCTURE ETF",
+      "englishName": "NORTHERN TRUST STOXX GLOBAL BROAD INFRASTRUCTURE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust stoxx global broad infrastructure idx",
         "nfra"
       ],
       "active": true
@@ -105697,26 +105712,28 @@
     },
     {
       "symbol": "QDEF",
-      "displayName": "FLEXSHARES TRUST QUALITY DIVID DEFENSIVE INDEX FD",
-      "englishName": "FLEXSHARES TRUST QUALITY DIVID DEFENSIVE INDEX FD",
+      "displayName": "NORTHERN TRUST QUALITY DIVIDEND DEFENSIVE ETF",
+      "englishName": "NORTHERN TRUST QUALITY DIVIDEND DEFENSIVE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust quality divid defensive index fd",
         "qdef"
       ],
       "active": true
     },
     {
       "symbol": "QDF",
-      "displayName": "FLEXSHARES TRUST QUALITY DIVID INDEX FD",
-      "englishName": "FLEXSHARES TRUST QUALITY DIVID INDEX FD",
+      "displayName": "NORTHERN TRUST QUALITY DIVIDEND ETF",
+      "englishName": "NORTHERN TRUST QUALITY DIVIDEND ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust quality divid index fd",
         "qdf"
       ],
       "active": true
@@ -106061,13 +106078,14 @@
     },
     {
       "symbol": "QLC",
-      "displayName": "FLEXSHARES TRUST US QUALITY LARGE CAP INDEX FUND",
-      "englishName": "FLEXSHARES TRUST US QUALITY LARGE CAP INDEX FUND",
+      "displayName": "NORTHERN TRUST US QUALITY LARGE CAP ETF",
+      "englishName": "NORTHERN TRUST US QUALITY LARGE CAP ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust us quality large cap index fund",
         "qlc"
       ],
       "active": true
@@ -106139,39 +106157,42 @@
     },
     {
       "symbol": "QLV",
-      "displayName": "FLEXSHARES TRUST US QUALITY LOW VOLATILITY INDEX FUND",
-      "englishName": "FLEXSHARES TRUST US QUALITY LOW VOLATILITY INDEX FUND",
+      "displayName": "NORTHERN TRUST US QUALITY LOW VOLATILITY ETF",
+      "englishName": "NORTHERN TRUST US QUALITY LOW VOLATILITY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust us quality low volatility index fund",
         "qlv"
       ],
       "active": true
     },
     {
       "symbol": "QLVD",
-      "displayName": "FLEXSHARES TRUST DEVELOPED MKTS EX-US QUALITY LOW VOL IDX",
-      "englishName": "FLEXSHARES TRUST DEVELOPED MKTS EX-US QUALITY LOW VOL IDX",
+      "displayName": "NORTHERN TRUST DEVELOPED MARKETS EX-US QUALITY LOW VOLATILIT",
+      "englishName": "NORTHERN TRUST DEVELOPED MARKETS EX-US QUALITY LOW VOLATILIT",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust developed mkts ex-us quality low vol idx",
         "qlvd"
       ],
       "active": true
     },
     {
       "symbol": "QLVE",
-      "displayName": "FLEXSHARES TRUST EMERGING MKTS QUALITY LOW VOLATILITY IDX",
-      "englishName": "FLEXSHARES TRUST EMERGING MKTS QUALITY LOW VOLATILITY IDX",
+      "displayName": "NORTHERN TRUST EMERGING MARKETS QUALITY LOW VOLATILITY ETF",
+      "englishName": "NORTHERN TRUST EMERGING MARKETS QUALITY LOW VOLATILITY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust emerging mkts quality low volatility idx",
         "qlve"
       ],
       "active": true
@@ -107403,13 +107424,14 @@
     },
     {
       "symbol": "RAVI",
-      "displayName": "FLEXSHARES TRUST ULTRA SHORT INCOME FUND",
-      "englishName": "FLEXSHARES TRUST ULTRA SHORT INCOME FUND",
+      "displayName": "NORTHERN TRUST ULTRA-SHORT FIXED INCOME ETF",
+      "englishName": "NORTHERN TRUST ULTRA-SHORT FIXED INCOME ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust ultra short income fund",
         "ravi"
       ],
       "active": true
@@ -111952,6 +111974,19 @@
       "active": true
     },
     {
+      "symbol": "SIC",
+      "displayName": "TEMA POWER SEMICONDUCTOR ETF",
+      "englishName": "TEMA POWER SEMICONDUCTOR ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "sic"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SIFI",
       "displayName": "HARBOR ARES SYSTEMATIC MULTI-SECTOR INCOME ETF",
       "englishName": "HARBOR ARES SYSTEMATIC MULTI-SECTOR INCOME ETF",
@@ -112408,13 +112443,14 @@
     },
     {
       "symbol": "SKOR",
-      "displayName": "FLEXSHARES TRUST CREDIT SCORED US CORP BD INDEX FD",
-      "englishName": "FLEXSHARES TRUST CREDIT SCORED US CORP BD INDEX FD",
+      "displayName": "FLEXSHARES TRUST NORTHERN TRUST CREDIT-SCORED US CORPORATE B",
+      "englishName": "FLEXSHARES TRUST NORTHERN TRUST CREDIT-SCORED US CORPORATE B",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
+        "flexshares trust credit scored us corp bd index fd",
         "skor"
       ],
       "active": true
@@ -116623,26 +116659,28 @@
     },
     {
       "symbol": "TDTF",
-      "displayName": "FLEXSHARES TRUST IBOXX 5 YR TARGET DURATION TIPS INDEX FD",
-      "englishName": "FLEXSHARES TRUST IBOXX 5 YR TARGET DURATION TIPS INDEX FD",
+      "displayName": "NORTHERN TRUST IBOXX 5-YEAR TARGET DURATION TIPS ETF",
+      "englishName": "NORTHERN TRUST IBOXX 5-YEAR TARGET DURATION TIPS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust iboxx 5 yr target duration tips index fd",
         "tdtf"
       ],
       "active": true
     },
     {
       "symbol": "TDTT",
-      "displayName": "FLEXSHARES TRUST IBOXX 3 YR TARGET DURATION TIPS INDEX FD",
-      "englishName": "FLEXSHARES TRUST IBOXX 3 YR TARGET DURATION TIPS INDEX FD",
+      "displayName": "NORTHERN TRUST IBOXX 3-YEAR TARGET DURATION TIPS ETF",
+      "englishName": "NORTHERN TRUST IBOXX 3-YEAR TARGET DURATION TIPS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust iboxx 3 yr target duration tips index fd",
         "tdtt"
       ],
       "active": true
@@ -117520,13 +117558,14 @@
     },
     {
       "symbol": "TILT",
-      "displayName": "FLEXSHARES TRUST MORNINGSTAR US MKT FACTOR TILT INDEX FD",
-      "englishName": "FLEXSHARES TRUST MORNINGSTAR US MKT FACTOR TILT INDEX FD",
+      "displayName": "NORTHERN TRUST MORNINGSTAR US MARKET FACTOR TILT ETF",
+      "englishName": "NORTHERN TRUST MORNINGSTAR US MARKET FACTOR TILT ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust morningstar us mkt factor tilt index fd",
         "tilt"
       ],
       "active": true
@@ -117845,26 +117884,28 @@
     },
     {
       "symbol": "TLTD",
-      "displayName": "FLEXSHARES TRUST MORNINGSTAR DEV EX-US MKTS FACTOR TILT",
-      "englishName": "FLEXSHARES TRUST MORNINGSTAR DEV EX-US MKTS FACTOR TILT",
+      "displayName": "NORTHERN TRUST MORNINGSTAR DEVELOPED MARKETS EX-US FACTOR TI",
+      "englishName": "NORTHERN TRUST MORNINGSTAR DEVELOPED MARKETS EX-US FACTOR TI",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust morningstar dev ex-us mkts factor tilt",
         "tltd"
       ],
       "active": true
     },
     {
       "symbol": "TLTE",
-      "displayName": "FLEXSHARES TRUST MORNINGSTAR EMERG MKTS FACTOR TILT IDX",
-      "englishName": "FLEXSHARES TRUST MORNINGSTAR EMERG MKTS FACTOR TILT IDX",
+      "displayName": "NORTHERN TRUST MORNINGSTAR EMERGING MARKETS FACTOR TILT ETF",
+      "englishName": "NORTHERN TRUST MORNINGSTAR EMERGING MARKETS FACTOR TILT ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "flexshares trust morningstar emerg mkts factor tilt idx",
         "tlte"
       ],
       "active": true
@@ -128432,6 +128473,19 @@
       "active": true
     },
     {
+      "symbol": "ZDIS",
+      "displayName": "VIRTUS ZEVENBERGEN DISCOVERY GROWTH ETF",
+      "englishName": "VIRTUS ZEVENBERGEN DISCOVERY GROWTH ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "zdis"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ZECP",
       "displayName": "ZACKS TR EARNINGS CONSTANT PORT ETF USD",
       "englishName": "ZACKS TR EARNINGS CONSTANT PORT ETF USD",
@@ -128519,6 +128573,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "zinc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ZINN",
+      "displayName": "VIRTUS ZEVENBERGEN INNOVATIVE GROWTH ETF",
+      "englishName": "VIRTUS ZEVENBERGEN INNOVATIVE GROWTH ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "zinn"
       ],
       "active": true
     },
@@ -138124,14 +138191,15 @@
     },
     {
       "symbol": "BEN",
-      "displayName": "FRANKLIN RESOURCES INC",
-      "englishName": "FRANKLIN RESOURCES INC",
+      "displayName": "FRANKLIN TEMPLETON INC",
+      "englishName": "FRANKLIN TEMPLETON INC",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "ben"
+        "ben",
+        "franklin resources inc"
       ],
       "active": true
     },
@@ -144047,6 +144115,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "cgc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CGCF",
+      "displayName": "CARTESIAN GROWTH CORPORATION IV",
+      "englishName": "CARTESIAN GROWTH CORPORATION IV",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "cgcf"
       ],
       "active": true
     },
@@ -151392,6 +151473,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "dukr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "DUKU",
+      "displayName": "DUKE ENERGY CORP CORPORATE UNIT 13/08/2026",
+      "englishName": "DUKE ENERGY CORP CORPORATE UNIT 13/08/2026",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "duku"
       ],
       "active": true
     },
@@ -176499,6 +176593,19 @@
       "active": true
     },
     {
+      "symbol": "MRCO",
+      "displayName": "MERCATOR ACQUISITION CORP",
+      "englishName": "MERCATOR ACQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "mrco"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MRCOU",
       "displayName": "MERCATOR ACQUISITION CORPORATION UNIT 1 CL A ORD & 1/3 W",
       "englishName": "MERCATOR ACQUISITION CORPORATION UNIT 1 CL A ORD & 1/3 W",
@@ -179102,6 +179209,19 @@
       "active": true
     },
     {
+      "symbol": "NHX",
+      "displayName": "NEIGHBORHOOD INTELLIGENCE INC",
+      "englishName": "NEIGHBORHOOD INTELLIGENCE INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "nhx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "NI",
       "displayName": "NISOURCE INC",
       "englishName": "NISOURCE INC",
@@ -180645,6 +180765,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "nue"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "NUR",
+      "displayName": "NURAN WIRELESS INC",
+      "englishName": "NURAN WIRELESS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "nur"
       ],
       "active": true
     },
@@ -200036,13 +200169,14 @@
     },
     {
       "symbol": "THEO",
-      "displayName": "BOA ACQUISITION CORP II",
-      "englishName": "BOA ACQUISITION CORP II",
+      "displayName": "BOA ACQUISITION CORPORATION II",
+      "englishName": "BOA ACQUISITION CORPORATION II",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "boa acquisition corp ii",
         "theo"
       ],
       "active": true
@@ -206209,6 +206343,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "wat"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "WATR",
+      "displayName": "AIR WATER VENTURES LIMITED",
+      "englishName": "AIR WATER VENTURES LIMITED",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "watr"
       ],
       "active": true
     },
