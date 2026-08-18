@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16154",
+  "masterVersion": "hf3b-hf2-kis-16124",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-17",
+  "sourceAsOf": "2026-08-18",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -51538,19 +51538,6 @@
       "active": true
     },
     {
-      "symbol": "AEMS",
-      "displayName": "ANFIELD ENHANCED MARKET ETF",
-      "englishName": "ANFIELD ENHANCED MARKET ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "aems"
-      ],
-      "active": true
-    },
-    {
       "symbol": "AESR",
       "displayName": "HORIZON FDS ANFIELD U S EQUITY SECTOR ROTATION ETF",
       "englishName": "HORIZON FDS ANFIELD U S EQUITY SECTOR ROTATION ETF",
@@ -57271,19 +57258,6 @@
       "active": true
     },
     {
-      "symbol": "BITK",
-      "displayName": "TUTTLE CAPITAL BITCOIN 0DTE COVERED CALL ETF",
-      "englishName": "TUTTLE CAPITAL BITCOIN 0DTE COVERED CALL ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "bitk"
-      ],
-      "active": true
-    },
-    {
       "symbol": "BITO",
       "displayName": "PROSHARES BITCOIN ETF",
       "englishName": "PROSHARES BITCOIN ETF",
@@ -57713,19 +57687,6 @@
       "active": true
     },
     {
-      "symbol": "BLCN",
-      "displayName": "SIREN NEXGEN ECONOMY ETF",
-      "englishName": "SIREN NEXGEN ECONOMY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "blcn"
-      ],
-      "active": true
-    },
-    {
       "symbol": "BLCR",
       "displayName": "BLACKROCK ETF TRUST ISHARES LARGE CAP CORE ACTIVE ETF",
       "englishName": "BLACKROCK ETF TRUST ISHARES LARGE CAP CORE ACTIVE ETF",
@@ -58124,8 +58085,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "bndc",
-        "flexshares trust core select bond fund"
+        "bndc"
       ],
       "active": true
     },
@@ -61271,8 +61231,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cefs",
-        "exchange listed funds trust saba int rate hedged cef etf"
+        "cefs"
       ],
       "active": true
     },
@@ -64341,19 +64300,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "cure"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CUSD",
-      "displayName": "CROSSINGBRIDGE ULTRA-SHORT DURATION ETF",
-      "englishName": "CROSSINGBRIDGE ULTRA-SHORT DURATION ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "cusd"
       ],
       "active": true
     },
@@ -71165,8 +71111,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "esg",
-        "flexshares trust stoxx us esg select index fund"
+        "esg"
       ],
       "active": true
     },
@@ -71205,8 +71150,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "esgg",
-        "flexshares trust stoxx global esg select index fund"
+        "esgg"
       ],
       "active": true
     },
@@ -73741,8 +73685,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "fedm",
-        "flexshares trust esg & climate dev mkts ex-us core idx e"
+        "fedm"
       ],
       "active": true
     },
@@ -73768,8 +73711,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "feig",
-        "flexshares trust esg & climate invt grade corp core idx"
+        "feig"
       ],
       "active": true
     },
@@ -74016,8 +73958,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "feus",
-        "flexshares trust esg & climate us large cap core idx etf"
+        "feus"
       ],
       "active": true
     },
@@ -80036,7 +79977,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust global quality real estate index",
         "gqre"
       ],
       "active": true
@@ -80687,7 +80627,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust morningstar global upstream nat res idx",
         "gunr"
       ],
       "active": true
@@ -82846,7 +82785,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust high yield value scored bond index fund",
         "hygv"
       ],
       "active": true
@@ -85179,19 +85117,6 @@
       "active": true
     },
     {
-      "symbol": "IGTR",
-      "displayName": "INNOVATOR ETFS TRUST GRADIENT TACTICAL ROTATION STATEGY ETF",
-      "englishName": "INNOVATOR ETFS TRUST GRADIENT TACTICAL ROTATION STATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "igtr"
-      ],
-      "active": true
-    },
-    {
       "symbol": "IGV",
       "displayName": "ISHARES TRUST EXPANDED TECH-SOFTWARE SECTOR ETF",
       "englishName": "ISHARES TRUST EXPANDED TECH-SOFTWARE SECTOR ETF",
@@ -86357,7 +86282,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust international quality div idx",
         "iqdf"
       ],
       "active": true
@@ -86384,7 +86308,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust international quality div dynamic idx",
         "iqdy"
       ],
       "active": true
@@ -91447,19 +91370,6 @@
       "active": true
     },
     {
-      "symbol": "LCDL",
-      "displayName": "GRANITESHARES 2X LONG LCID DAILY ETF",
-      "englishName": "GRANITESHARES 2X LONG LCID DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lcdl"
-      ],
-      "active": true
-    },
-    {
       "symbol": "LCDS",
       "displayName": "JPMORGAN FUNDAMENTAL DATA SCIENCE LARGE CORE ETF",
       "englishName": "JPMORGAN FUNDAMENTAL DATA SCIENCE LARGE CORE ETF",
@@ -91703,19 +91613,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "ldur"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "LEAD",
-      "displayName": "SIREN ETF TR DIVCON LEADERS DIVID ETF",
-      "englishName": "SIREN ETF TR DIVCON LEADERS DIVID ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "lead"
       ],
       "active": true
     },
@@ -92261,7 +92158,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust credit scored us long corp bd index fd",
         "lkor"
       ],
       "active": true
@@ -93177,19 +93073,6 @@
       "active": true
     },
     {
-      "symbol": "MAGO",
-      "displayName": "TUTTLE CAPITAL MAGNIFICENT 7 INCOME BLAST ETF",
-      "englishName": "TUTTLE CAPITAL MAGNIFICENT 7 INCOME BLAST ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "mago"
-      ],
-      "active": true
-    },
-    {
       "symbol": "MAGS",
       "displayName": "ROUNDHILL MAGNIFICENT SEVEN ETF",
       "englishName": "ROUNDHILL MAGNIFICENT SEVEN ETF",
@@ -93627,7 +93510,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust disciplined duration mbs index",
         "mbsd"
       ],
       "active": true
@@ -97840,7 +97722,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust stoxx global broad infrastructure idx",
         "nfra"
       ],
       "active": true
@@ -101031,19 +100912,6 @@
       "active": true
     },
     {
-      "symbol": "PAAU",
-      "displayName": "T-REX 2X LONG PAAS DAILY TARGET ETF",
-      "englishName": "T-REX 2X LONG PAAS DAILY TARGET ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "paau"
-      ],
-      "active": true
-    },
-    {
       "symbol": "PAB",
       "displayName": "PGIM ETF TRUST ACTIVE AGGREGATE BD ETF",
       "englishName": "PGIM ETF TRUST ACTIVE AGGREGATE BD ETF",
@@ -102925,19 +102793,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "pjan"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "PJBF",
-      "displayName": "PGIM ETF TRUST PGIM JENNISON BETTER FUTURE ETF",
-      "englishName": "PGIM ETF TRUST PGIM JENNISON BETTER FUTURE ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "pjbf"
       ],
       "active": true
     },
@@ -105719,7 +105574,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust quality divid defensive index fd",
         "qdef"
       ],
       "active": true
@@ -105733,7 +105587,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust quality divid index fd",
         "qdf"
       ],
       "active": true
@@ -105947,19 +105800,6 @@
       "active": true
     },
     {
-      "symbol": "QHDG",
-      "displayName": "INNOVATOR HEDGED NASDAQ-100 ETF",
-      "englishName": "INNOVATOR HEDGED NASDAQ-100 ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "qhdg"
-      ],
-      "active": true
-    },
-    {
       "symbol": "QHY",
       "displayName": "WISDOMTREE U.S. HIGH YIELD CORPORATE BOND FUND",
       "englishName": "WISDOMTREE U.S. HIGH YIELD CORPORATE BOND FUND",
@@ -106085,7 +105925,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust us quality large cap index fund",
         "qlc"
       ],
       "active": true
@@ -106164,7 +106003,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust us quality low volatility index fund",
         "qlv"
       ],
       "active": true
@@ -106178,7 +106016,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust developed mkts ex-us quality low vol idx",
         "qlvd"
       ],
       "active": true
@@ -106192,7 +106029,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust emerging mkts quality low volatility idx",
         "qlve"
       ],
       "active": true
@@ -107431,7 +107267,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust ultra short income fund",
         "ravi"
       ],
       "active": true
@@ -109136,19 +108971,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "rpg"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "RPHS",
-      "displayName": "TWO RDS SHARED TRUST REGENTS PARK HEDGED MARKET STRATEGY ETF",
-      "englishName": "TWO RDS SHARED TRUST REGENTS PARK HEDGED MARKET STRATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "rphs"
       ],
       "active": true
     },
@@ -112450,7 +112272,6 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "flexshares trust credit scored us corp bd index fd",
         "skor"
       ],
       "active": true
@@ -116666,7 +116487,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust iboxx 5 yr target duration tips index fd",
         "tdtf"
       ],
       "active": true
@@ -116680,7 +116500,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust iboxx 3 yr target duration tips index fd",
         "tdtt"
       ],
       "active": true
@@ -117565,7 +117384,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust morningstar us mkt factor tilt index fd",
         "tilt"
       ],
       "active": true
@@ -117891,7 +117709,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust morningstar dev ex-us mkts factor tilt",
         "tltd"
       ],
       "active": true
@@ -117905,7 +117722,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "flexshares trust morningstar emerg mkts factor tilt idx",
         "tlte"
       ],
       "active": true
@@ -122795,19 +122611,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "vfh"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "VFL",
-      "displayName": "ABRDN NATIONAL MUNICIPAL INCOME FD COM",
-      "englishName": "ABRDN NATIONAL MUNICIPAL INCOME FD COM",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "vfl"
       ],
       "active": true
     },
@@ -138198,8 +138001,7 @@
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "ben",
-        "franklin resources inc"
+        "ben"
       ],
       "active": true
     },
@@ -139916,19 +139718,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "bnai"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "BNBX",
-      "displayName": "BNB PLS CORP",
-      "englishName": "BNB PLS CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "bnbx"
       ],
       "active": true
     },
@@ -147044,19 +146833,6 @@
       "active": true
     },
     {
-      "symbol": "CPRX",
-      "displayName": "CATALYST PHARMACEUTICALS INC",
-      "englishName": "CATALYST PHARMACEUTICALS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "cprx"
-      ],
-      "active": true
-    },
-    {
       "symbol": "CPS",
       "displayName": "COOPER-STANDARD HOLDINGS INC",
       "englishName": "COOPER-STANDARD HOLDINGS INC",
@@ -152322,19 +152098,6 @@
       "active": true
     },
     {
-      "symbol": "EEX",
-      "displayName": "EMERALD HOLDING INC",
-      "englishName": "EMERALD HOLDING INC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "eex"
-      ],
-      "active": true
-    },
-    {
       "symbol": "EFC",
       "displayName": "ELLINGTON FINANCIAL INC",
       "englishName": "ELLINGTON FINANCIAL INC",
@@ -154116,19 +153879,6 @@
       "active": true
     },
     {
-      "symbol": "ESPR",
-      "displayName": "ESPERION THERAPEUTICS INC",
-      "englishName": "ESPERION THERAPEUTICS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "espr"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ESQ",
       "displayName": "ESQUIRE FINANCIAL HOLDINGS INC",
       "englishName": "ESQUIRE FINANCIAL HOLDINGS INC",
@@ -154519,19 +154269,6 @@
       "active": true
     },
     {
-      "symbol": "EVLVW",
-      "displayName": "EVOLV TECHNOLOGIES HLDGS INC C/WTS 16/07/2026 (TO PUR CO",
-      "englishName": "EVOLV TECHNOLOGIES HLDGS INC C/WTS 16/07/2026 (TO PUR CO",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "evlvw"
-      ],
-      "active": true
-    },
-    {
       "symbol": "EVMN",
       "displayName": "EVOMMUNE INC.",
       "englishName": "EVOMMUNE INC.",
@@ -154632,19 +154369,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "evtl"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "EVTV",
-      "displayName": "AZIO AI HOLDINGS INC",
-      "englishName": "AZIO AI HOLDINGS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "evtv"
       ],
       "active": true
     },
@@ -161565,19 +161289,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "gtlb"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "GTLS",
-      "displayName": "CHART INDUSTRIES INC",
-      "englishName": "CHART INDUSTRIES INC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "gtls"
       ],
       "active": true
     },
@@ -180834,19 +180545,6 @@
       "active": true
     },
     {
-      "symbol": "NUVL",
-      "displayName": "NUVALENT INC",
-      "englishName": "NUVALENT INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "nuvl"
-      ],
-      "active": true
-    },
-    {
       "symbol": "NUWE",
       "displayName": "NUWELLIS INC",
       "englishName": "NUWELLIS INC",
@@ -188117,19 +187815,6 @@
       "active": true
     },
     {
-      "symbol": "PTNM",
-      "displayName": "PITANIUM LIMITED",
-      "englishName": "PITANIUM LIMITED",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ptnm"
-      ],
-      "active": true
-    },
-    {
       "symbol": "PTON",
       "displayName": "PELOTON INTERACTIVE INC",
       "englishName": "PELOTON INTERACTIVE INC",
@@ -195072,19 +194757,6 @@
       "active": true
     },
     {
-      "symbol": "SLAI",
-      "displayName": "SOLAI LIMITED SPON ADS EACH REP 700 (R/S)",
-      "englishName": "SOLAI LIMITED SPON ADS EACH REP 700 (R/S)",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "slai"
-      ],
-      "active": true
-    },
-    {
       "symbol": "SLB",
       "displayName": "SLB LIMITED",
       "englishName": "SLB LIMITED",
@@ -198348,32 +198020,6 @@
       "active": true
     },
     {
-      "symbol": "SVAC",
-      "displayName": "SPRING VALLEY ACQUISITION CORP III",
-      "englishName": "SPRING VALLEY ACQUISITION CORP III",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "svac"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SVACU",
-      "displayName": "SPRING VALLEY ACQUISITION CORP III UNIT REP (1 SHS CL A &38",
-      "englishName": "SPRING VALLEY ACQUISITION CORP III UNIT REP (1 SHS CL A &38",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "svacu"
-      ],
-      "active": true
-    },
-    {
       "symbol": "SVAQ",
       "displayName": "SILICON VALLEY ACQUISITION CORP",
       "englishName": "SILICON VALLEY ACQUISITION CORP",
@@ -200176,7 +199822,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "boa acquisition corp ii",
         "theo"
       ],
       "active": true
@@ -206269,19 +205914,6 @@
       "active": true
     },
     {
-      "symbol": "WAI",
-      "displayName": "TOP KINGWIN LTD",
-      "englishName": "TOP KINGWIN LTD",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "wai"
-      ],
-      "active": true
-    },
-    {
       "symbol": "WAL",
       "displayName": "WESTERN ALLIANCE BANCORP",
       "englishName": "WESTERN ALLIANCE BANCORP",
@@ -207816,19 +207448,6 @@
       "active": true
     },
     {
-      "symbol": "WSR",
-      "displayName": "WHITESTONE REIT",
-      "englishName": "WHITESTONE REIT",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "wsr"
-      ],
-      "active": true
-    },
-    {
       "symbol": "WST",
       "displayName": "WEST PHARMACEUTICAL SERVICES INC",
       "englishName": "WEST PHARMACEUTICAL SERVICES INC",
@@ -208605,45 +208224,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "xom"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "XOMA",
-      "displayName": "XOMA ROYALTY CORPORATION EFFE",
-      "englishName": "XOMA ROYALTY CORPORATION EFFE",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "xoma"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "XOMAO",
-      "displayName": "XOMA ROYALTY CORPORATION EFFE DEPOSITARY SH REPR 1/1000TH B",
-      "englishName": "XOMA ROYALTY CORPORATION EFFE DEPOSITARY SH REPR 1/1000TH B",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "xomao"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "XOMAP",
-      "displayName": "XOMA ROYALTY CORPORATION EFFE 8.625% CUM PERP PFD SER A",
-      "englishName": "XOMA ROYALTY CORPORATION EFFE 8.625% CUM PERP PFD SER A",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "xomap"
       ],
       "active": true
     },

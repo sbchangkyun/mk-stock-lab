@@ -1,160 +1,9 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 refresh state. Tracks per-symbol consecutive source-absence counts for the two-consecutive-valid-snapshot missing policy and the last-known-good master version. Updated by scripts/automation/refresh_kis_instrument_master.mjs only after all Safety Gates pass.",
   "schemaVersion": 1,
-  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16154",
-  "lastRefreshAt": "2026-08-17",
-  "pendingInactive": {
-    "US|AEMS": {
-      "symbol": "AEMS",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|BITK": {
-      "symbol": "BITK",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|BLCN": {
-      "symbol": "BLCN",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|CUSD": {
-      "symbol": "CUSD",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|IGTR": {
-      "symbol": "IGTR",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|LCDL": {
-      "symbol": "LCDL",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|LEAD": {
-      "symbol": "LEAD",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|MAGO": {
-      "symbol": "MAGO",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|PAAU": {
-      "symbol": "PAAU",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|PJBF": {
-      "symbol": "PJBF",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|QHDG": {
-      "symbol": "QHDG",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|RPHS": {
-      "symbol": "RPHS",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|VFL": {
-      "symbol": "VFL",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|BNBX": {
-      "symbol": "BNBX",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|CPRX": {
-      "symbol": "CPRX",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|EEX": {
-      "symbol": "EEX",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|ESPR": {
-      "symbol": "ESPR",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|EVLVW": {
-      "symbol": "EVLVW",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|EVTV": {
-      "symbol": "EVTV",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|GTLS": {
-      "symbol": "GTLS",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|NUVL": {
-      "symbol": "NUVL",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|PTNM": {
-      "symbol": "PTNM",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|SLAI": {
-      "symbol": "SLAI",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|SVAC": {
-      "symbol": "SVAC",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|SVACU": {
-      "symbol": "SVACU",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|WAI": {
-      "symbol": "WAI",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|WSR": {
-      "symbol": "WSR",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|XOMA": {
-      "symbol": "XOMA",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|XOMAO": {
-      "symbol": "XOMAO",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    },
-    "US|XOMAP": {
-      "symbol": "XOMAP",
-      "country": "US",
-      "sinceAsOf": "2026-08-17"
-    }
-  },
+  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16124",
+  "lastRefreshAt": "2026-08-18",
+  "pendingInactive": {},
   "missingCounts": {
     "KR|0021C0": 2,
     "KR|0021D0": 2,
@@ -245,35 +94,35 @@
     "US|OLPX": 2,
     "US|REE": 2,
     "US|TBRG": 2,
-    "US|AEMS": 1,
-    "US|BITK": 1,
-    "US|BLCN": 1,
-    "US|CUSD": 1,
-    "US|IGTR": 1,
-    "US|LCDL": 1,
-    "US|LEAD": 1,
-    "US|MAGO": 1,
-    "US|PAAU": 1,
-    "US|PJBF": 1,
-    "US|QHDG": 1,
-    "US|RPHS": 1,
-    "US|VFL": 1,
-    "US|BNBX": 1,
-    "US|CPRX": 1,
-    "US|EEX": 1,
-    "US|ESPR": 1,
-    "US|EVLVW": 1,
-    "US|EVTV": 1,
-    "US|GTLS": 1,
-    "US|NUVL": 1,
-    "US|PTNM": 1,
-    "US|SLAI": 1,
-    "US|SVAC": 1,
-    "US|SVACU": 1,
-    "US|WAI": 1,
-    "US|WSR": 1,
-    "US|XOMA": 1,
-    "US|XOMAO": 1,
-    "US|XOMAP": 1
+    "US|AEMS": 2,
+    "US|BITK": 2,
+    "US|BLCN": 2,
+    "US|CUSD": 2,
+    "US|IGTR": 2,
+    "US|LCDL": 2,
+    "US|LEAD": 2,
+    "US|MAGO": 2,
+    "US|PAAU": 2,
+    "US|PJBF": 2,
+    "US|QHDG": 2,
+    "US|RPHS": 2,
+    "US|VFL": 2,
+    "US|BNBX": 2,
+    "US|CPRX": 2,
+    "US|EEX": 2,
+    "US|ESPR": 2,
+    "US|EVLVW": 2,
+    "US|EVTV": 2,
+    "US|GTLS": 2,
+    "US|NUVL": 2,
+    "US|PTNM": 2,
+    "US|SLAI": 2,
+    "US|SVAC": 2,
+    "US|SVACU": 2,
+    "US|WAI": 2,
+    "US|WSR": 2,
+    "US|XOMA": 2,
+    "US|XOMAO": 2,
+    "US|XOMAP": 2
   }
 }
