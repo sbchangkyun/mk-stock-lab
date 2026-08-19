@@ -2131,6 +2131,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16124"
+    },
+    {
+      "canonicalIdentity": "KR|043090|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "043090",
+      "priorNames": [
+        "더테크놀로지"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7043090000",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-19",
+      "inactiveAt": "2026-08-19",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16153"
     }
   ]
 }

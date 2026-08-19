@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16138",
+  "masterVersion": "hf3b-hf2-kis-16153",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-19",
   "instruments": [
@@ -2652,8 +2652,7 @@
       "exchangeCode": null,
       "standardCode": "KR70174J0003",
       "aliases": [
-        "0174j0",
-        "daishin343 오피스리츠플러스"
+        "0174j0"
       ],
       "active": true
     },
@@ -2965,8 +2964,7 @@
       "exchangeCode": null,
       "standardCode": "KR70189Z0006",
       "aliases": [
-        "0189z0",
-        "daishin343 금융&지주고배당"
+        "0189z0"
       ],
       "active": true
     },
@@ -10535,8 +10533,7 @@
       "exchangeCode": null,
       "standardCode": "KR7434960001",
       "aliases": [
-        "434960",
-        "daishin343 k200"
+        "434960"
       ],
       "active": true
     },
@@ -14020,8 +14017,7 @@
       "exchangeCode": null,
       "standardCode": "KR7486240005",
       "aliases": [
-        "486240",
-        "daishin343 ai반도체&인프라액티브"
+        "486240"
       ],
       "active": true
     },
@@ -27788,19 +27784,6 @@
       "standardCode": "KR7042940007",
       "aliases": [
         "042940"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "043090",
-      "displayName": "더테크놀로지",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7043090000",
-      "aliases": [
-        "043090"
       ],
       "active": true
     },
@@ -51945,6 +51928,19 @@
       "active": true
     },
     {
+      "symbol": "AHBM",
+      "displayName": "AMPLIFY TOP 10 ASIA MEMORY ETF",
+      "englishName": "AMPLIFY TOP 10 ASIA MEMORY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ahbm"
+      ],
+      "active": true
+    },
+    {
       "symbol": "AHD",
       "displayName": "GRANITESHARES AUTOCALLABLE HOOD ETF",
       "englishName": "GRANITESHARES AUTOCALLABLE HOOD ETF",
@@ -53722,6 +53718,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "arkx"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ARKY",
+      "displayName": "ARK ACTIVE AUTOCALLABLE INCOME ETF",
+      "englishName": "ARK ACTIVE AUTOCALLABLE INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "arky"
       ],
       "active": true
     },
@@ -61254,14 +61263,15 @@
     },
     {
       "symbol": "CEFS",
-      "displayName": "SABA CLOSED-END FUNDS ETF",
-      "englishName": "SABA CLOSED-END FUNDS ETF",
+      "displayName": "EXCHANGE LISTED FUNDS TRUST SABA CLOSED-END FDS ETF",
+      "englishName": "EXCHANGE LISTED FUNDS TRUST SABA CLOSED-END FDS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cefs"
+        "cefs",
+        "saba closed-end funds etf"
       ],
       "active": true
     },
@@ -74747,6 +74757,19 @@
       "active": true
     },
     {
+      "symbol": "FIXX",
+      "displayName": "LEVERAGE SHARES 2X LONG FIX DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X LONG FIX DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "fixx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "FIYY",
       "displayName": "GRANITESHARES YIELDBOOST 20Y TREASURIES ETF",
       "englishName": "GRANITESHARES YIELDBOOST 20Y TREASURIES ETF",
@@ -75081,6 +75104,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "flee"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "FLEL",
+      "displayName": "LEVERAGE SHARES 2X LONG FLEX DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X LONG FLEX DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "flel"
       ],
       "active": true
     },
@@ -89996,6 +90032,19 @@
       "active": true
     },
     {
+      "symbol": "KAIT",
+      "displayName": "KRANESHARES ASIA AI TECHNOLOGY ETF",
+      "englishName": "KRANESHARES ASIA AI TECHNOLOGY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "kait"
+      ],
+      "active": true
+    },
+    {
       "symbol": "KAMO",
       "displayName": "KENSINGTON CREDIT OPPORTUNITIES ETF",
       "englishName": "KENSINGTON CREDIT OPPORTUNITIES ETF",
@@ -91084,6 +91133,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "kslv"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "KSMH",
+      "displayName": "XETFS KOREA AI SEMICONDUCTOR",
+      "englishName": "XETFS KOREA AI SEMICONDUCTOR",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ksmh"
       ],
       "active": true
     },
@@ -96245,6 +96307,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "mud"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MUG",
+      "displayName": "LEVERAGE SHARES 2X LONG MU DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X LONG MU DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mug"
       ],
       "active": true
     },
@@ -101887,6 +101962,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "pcn"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PCOV",
+      "displayName": "PRINCIPAL EQUITY PREMIUM INCOME ETF",
+      "englishName": "PRINCIPAL EQUITY PREMIUM INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "pcov"
       ],
       "active": true
     },
@@ -108914,6 +109002,19 @@
       "active": true
     },
     {
+      "symbol": "ROBX",
+      "displayName": "AMPLIFY TOP 10 ROBOTICS ETF",
+      "englishName": "AMPLIFY TOP 10 ROBOTICS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "robx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ROCQ",
       "displayName": "JPMORGAN NASDAQ EQUITY PREMIUM YIELD ETF",
       "englishName": "JPMORGAN NASDAQ EQUITY PREMIUM YIELD ETF",
@@ -115322,6 +115423,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "stlu"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "STMX",
+      "displayName": "LEVERAGE SHARES 2X LONG STM DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X LONG STM DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "stmx"
       ],
       "active": true
     },
@@ -124836,13 +124950,14 @@
     },
     {
       "symbol": "WGMI",
-      "displayName": "COINSHARES BITCOIN MINING ETF",
-      "englishName": "COINSHARES BITCOIN MINING ETF",
+      "displayName": "COINSHARES BITCOIN MINING AND DIGITAL POWER ETF",
+      "englishName": "COINSHARES BITCOIN MINING AND DIGITAL POWER ETF",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
+        "coinshares bitcoin mining etf",
         "wgmi"
       ],
       "active": true
@@ -127071,6 +127186,19 @@
       "active": true
     },
     {
+      "symbol": "XQBT",
+      "displayName": "AMPLIFY TOP 10 QUANTUM ETF",
+      "englishName": "AMPLIFY TOP 10 QUANTUM ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xqbt"
+      ],
+      "active": true
+    },
+    {
       "symbol": "XQQI",
       "displayName": "NEOS BOOSTED NASDAQ-100 HIGH INCOME ETF",
       "englishName": "NEOS BOOSTED NASDAQ-100 HIGH INCOME ETF",
@@ -127617,6 +127745,32 @@
       "active": true
     },
     {
+      "symbol": "XVAP",
+      "displayName": "FT VEST AAPL & TARGET INCOME ETF",
+      "englishName": "FT VEST AAPL & TARGET INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xvap"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XVNV",
+      "displayName": "FT VEST NVDA & TARGET INCOME ETF",
+      "englishName": "FT VEST NVDA & TARGET INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xvnv"
+      ],
+      "active": true
+    },
+    {
       "symbol": "XVO",
       "displayName": "CORGI U.S. MID-CAP 2X DAILY ETF",
       "englishName": "CORGI U.S. MID-CAP 2X DAILY ETF",
@@ -127626,6 +127780,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "xvo"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XVTS",
+      "displayName": "FT VEST TSLA & TARGET INCOME ETF",
+      "englishName": "FT VEST TSLA & TARGET INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xvts"
       ],
       "active": true
     },
@@ -127665,6 +127832,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "xw"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XWNG",
+      "displayName": "AMPLIFY TOP 10 SPACE ETF",
+      "englishName": "AMPLIFY TOP 10 SPACE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xwng"
       ],
       "active": true
     },
@@ -164340,14 +164520,15 @@
     },
     {
       "symbol": "IA",
-      "displayName": "INNOVATIVE SOLUTIONS AND SUPPORT INC",
-      "englishName": "INNOVATIVE SOLUTIONS AND SUPPORT INC",
+      "displayName": "INNOVATIVE SOLUTIONS & SUPPORT",
+      "englishName": "INNOVATIVE SOLUTIONS & SUPPORT",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "ia"
+        "ia",
+        "innovative solutions and support inc"
       ],
       "active": true
     },
@@ -173129,6 +173310,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "lyg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "LYNX",
+      "displayName": "LYNTRIS INC",
+      "englishName": "LYNTRIS INC",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "lynx"
       ],
       "active": true
     },
