@@ -2,7 +2,7 @@
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
   "masterVersion": "hf3b-hf2-kis-16138",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-18",
+  "sourceAsOf": "2026-08-19",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -2645,14 +2645,15 @@
     },
     {
       "symbol": "0174J0",
-      "displayName": "DAISHIN343 오피스리츠플러스",
+      "displayName": "DAISHIN 오피스리츠플러스",
       "country": "KR",
       "exchange": "KOSPI",
       "assetType": "etf",
       "exchangeCode": null,
       "standardCode": "KR70174J0003",
       "aliases": [
-        "0174j0"
+        "0174j0",
+        "daishin343 오피스리츠플러스"
       ],
       "active": true
     },
@@ -2957,14 +2958,15 @@
     },
     {
       "symbol": "0189Z0",
-      "displayName": "DAISHIN343 금융&지주고배당",
+      "displayName": "DAISHIN 금융&지주고배당",
       "country": "KR",
       "exchange": "KOSPI",
       "assetType": "etf",
       "exchangeCode": null,
       "standardCode": "KR70189Z0006",
       "aliases": [
-        "0189z0"
+        "0189z0",
+        "daishin343 금융&지주고배당"
       ],
       "active": true
     },
@@ -10526,14 +10528,15 @@
     },
     {
       "symbol": "434960",
-      "displayName": "DAISHIN343 K200",
+      "displayName": "DAISHIN K200",
       "country": "KR",
       "exchange": "KOSPI",
       "assetType": "etf",
       "exchangeCode": null,
       "standardCode": "KR7434960001",
       "aliases": [
-        "434960"
+        "434960",
+        "daishin343 k200"
       ],
       "active": true
     },
@@ -14010,14 +14013,15 @@
     },
     {
       "symbol": "486240",
-      "displayName": "DAISHIN343 AI반도체&인프라액티브",
+      "displayName": "DAISHIN AI반도체&인프라액티브",
       "country": "KR",
       "exchange": "KOSPI",
       "assetType": "etf",
       "exchangeCode": null,
       "standardCode": "KR7486240005",
       "aliases": [
-        "486240"
+        "486240",
+        "daishin343 ai반도체&인프라액티브"
       ],
       "active": true
     },
@@ -58111,8 +58115,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "bndc",
-        "northern trust core bond etf"
+        "bndc"
       ],
       "active": true
     },
@@ -61258,8 +61261,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cefs",
-        "saba opportunistic hedged closed-end funds etf"
+        "cefs"
       ],
       "active": true
     },
@@ -80044,8 +80046,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "gqre",
-        "northern trust global quality real estate etf"
+        "gqre"
       ],
       "active": true
     },
@@ -80695,8 +80696,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "gunr",
-        "northern trust morningstar global upstream natural resources"
+        "gunr"
       ],
       "active": true
     },
@@ -82854,8 +82854,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "hygv",
-        "northern trust high yield value-scored bond etf"
+        "hygv"
       ],
       "active": true
     },
@@ -86365,8 +86364,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqdf",
-        "northern trust international quality dividend etf"
+        "iqdf"
       ],
       "active": true
     },
@@ -86392,8 +86390,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqdy",
-        "northern trust international quality dividend dynamic etf"
+        "iqdy"
       ],
       "active": true
     },
@@ -92243,8 +92240,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "lkor",
-        "northern trust credit-scored us long corporate bond etf"
+        "lkor"
       ],
       "active": true
     },
@@ -97834,8 +97830,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "nfra",
-        "northern trust stoxx global broad infrastructure etf"
+        "nfra"
       ],
       "active": true
     },
@@ -105687,7 +105682,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust quality dividend defensive etf",
         "qdef"
       ],
       "active": true
@@ -105701,7 +105695,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust quality dividend etf",
         "qdf"
       ],
       "active": true
@@ -106040,7 +106033,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust us quality large cap etf",
         "qlc"
       ],
       "active": true
@@ -106119,7 +106111,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust us quality low volatility etf",
         "qlv"
       ],
       "active": true
@@ -106133,7 +106124,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust developed markets ex-us quality low volatilit",
         "qlvd"
       ],
       "active": true
@@ -106147,7 +106137,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust emerging markets quality low volatility etf",
         "qlve"
       ],
       "active": true
@@ -107386,7 +107375,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust ultra-short fixed income etf",
         "ravi"
       ],
       "active": true
@@ -112392,7 +112380,6 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "flexshares trust northern trust credit-scored us corporate b",
         "skor"
       ],
       "active": true
@@ -116608,7 +116595,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust iboxx 5-year target duration tips etf",
         "tdtf"
       ],
       "active": true
@@ -116622,7 +116608,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust iboxx 3-year target duration tips etf",
         "tdtt"
       ],
       "active": true
@@ -117507,7 +117492,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust morningstar us market factor tilt etf",
         "tilt"
       ],
       "active": true
@@ -117833,7 +117817,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust morningstar developed markets ex-us factor ti",
         "tltd"
       ],
       "active": true
@@ -117847,7 +117830,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "northern trust morningstar emerging markets factor tilt etf",
         "tlte"
       ],
       "active": true
@@ -151400,7 +151382,6 @@
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "duke energy corp corporate unit 13/08/2026",
         "duku"
       ],
       "active": true
@@ -176465,7 +176446,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "mercator acquisition corp",
         "mrco"
       ],
       "active": true
@@ -206180,7 +206160,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "air water ventures limited",
         "watr"
       ],
       "active": true
@@ -209314,7 +209293,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "airwa inc",
         "yyai"
       ],
       "active": true
