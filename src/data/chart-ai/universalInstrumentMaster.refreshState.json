@@ -2,8 +2,14 @@
   "note": "Phase 3GG-T-HF3B-HF2 refresh state. Tracks per-symbol consecutive source-absence counts for the two-consecutive-valid-snapshot missing policy and the last-known-good master version. Updated by scripts/automation/refresh_kis_instrument_master.mjs only after all Safety Gates pass.",
   "schemaVersion": 1,
   "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16153",
-  "lastRefreshAt": "2026-08-19",
-  "pendingInactive": {},
+  "lastRefreshAt": "2026-08-20",
+  "pendingInactive": {
+    "KR|031440": {
+      "symbol": "031440",
+      "country": "KR",
+      "sinceAsOf": "2026-08-20"
+    }
+  },
   "missingCounts": {
     "KR|0021C0": 2,
     "KR|0021D0": 2,
@@ -124,6 +130,7 @@
     "US|XOMA": 2,
     "US|XOMAO": 2,
     "US|XOMAP": 2,
-    "KR|043090": 2
+    "KR|043090": 2,
+    "KR|031440": 1
   }
 }
