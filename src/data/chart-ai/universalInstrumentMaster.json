@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16153",
+  "masterVersion": "hf3b-hf2-kis-16166",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-20",
   "instruments": [
@@ -25335,19 +25335,6 @@
       "standardCode": "KR7031430002",
       "aliases": [
         "031430"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "031440",
-      "displayName": "신세계푸드",
-      "country": "KR",
-      "exchange": "KOSPI",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7031440001",
-      "aliases": [
-        "031440"
       ],
       "active": true
     },
@@ -55789,6 +55776,19 @@
       "active": true
     },
     {
+      "symbol": "BBLS",
+      "displayName": "MUNIFICENT SEVEN ETF",
+      "englishName": "MUNIFICENT SEVEN ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "bbls"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BBLU",
       "displayName": "EA SERIES TRUST BRIDGEWAY BLUE CHIP ETF",
       "englishName": "EA SERIES TRUST BRIDGEWAY BLUE CHIP ETF",
@@ -58831,6 +58831,32 @@
       "active": true
     },
     {
+      "symbol": "BRZD",
+      "displayName": "MICROSECTORS -3X SHORT BRAZIL ETNS",
+      "englishName": "MICROSECTORS -3X SHORT BRAZIL ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "brzd"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BRZL",
+      "displayName": "MICROSECTORS 3X LONG BRAZIL ETNS",
+      "englishName": "MICROSECTORS 3X LONG BRAZIL ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "brzl"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BRZU",
       "displayName": "DIREXION DAILY MSCI BRAZIL BULL 2X ETF",
       "englishName": "DIREXION DAILY MSCI BRAZIL BULL 2X ETF",
@@ -61263,14 +61289,15 @@
     },
     {
       "symbol": "CEFS",
-      "displayName": "EXCHANGE LISTED FUNDS TRUST SABA CLOSED-END FDS ETF",
-      "englishName": "EXCHANGE LISTED FUNDS TRUST SABA CLOSED-END FDS ETF",
+      "displayName": "SABA OPPORTUNISTICALLY HEDGED CLOSED-END FUNDS ETF",
+      "englishName": "SABA OPPORTUNISTICALLY HEDGED CLOSED-END FUNDS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cefs"
+        "cefs",
+        "exchange listed funds trust saba closed-end fds etf"
       ],
       "active": true
     },
@@ -78149,6 +78176,19 @@
       "active": true
     },
     {
+      "symbol": "GCLO",
+      "displayName": "GUGGENHEIM INVESTMENT GRADE CLO ETF",
+      "englishName": "GUGGENHEIM INVESTMENT GRADE CLO ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "gclo"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GCOR",
       "displayName": "GOLDMAN SACHS ETF TRUST ACCESS US AGGREGATE BD ETF",
       "englishName": "GOLDMAN SACHS ETF TRUST ACCESS US AGGREGATE BD ETF",
@@ -78444,6 +78484,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "gdxy"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "GEEQ",
+      "displayName": "GUGGENHEIM ENHANCED EQUITY INCOME ETF",
+      "englishName": "GUGGENHEIM ENHANCED EQUITY INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "geeq"
       ],
       "active": true
     },
@@ -89429,6 +89482,32 @@
       "exchangeCode": "AMS",
       "aliases": [
         "jpme"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "JPND",
+      "displayName": "MICROSECTORS -3X SHORT JAPAN ETNS",
+      "englishName": "MICROSECTORS -3X SHORT JAPAN ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "jpnd"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "JPNU",
+      "displayName": "MICROSECTORS 3X LONG JAPAN ETNS",
+      "englishName": "MICROSECTORS 3X LONG JAPAN ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "jpnu"
       ],
       "active": true
     },
@@ -116180,6 +116259,19 @@
       "active": true
     },
     {
+      "symbol": "TAWN",
+      "displayName": "MICROSECTORS 3X LONG TAIWAN ETNS",
+      "englishName": "MICROSECTORS 3X LONG TAIWAN ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tawn"
+      ],
+      "active": true
+    },
+    {
       "symbol": "TAX",
       "displayName": "CAMBRIA TAX AWARE ETF",
       "englishName": "CAMBRIA TAX AWARE ETF",
@@ -118568,6 +118660,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "tpay"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TPEI",
+      "displayName": "MICROSECTORS -3X SHORT TAIWAN ETNS",
+      "englishName": "MICROSECTORS -3X SHORT TAIWAN ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tpei"
       ],
       "active": true
     },
@@ -141347,6 +141452,19 @@
       "active": true
     },
     {
+      "symbol": "BTLN",
+      "displayName": "BRIGHTLINE INTERACTIVE INC",
+      "englishName": "BRIGHTLINE INTERACTIVE INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "btln"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BTMD",
       "displayName": "BIOTE CORP",
       "englishName": "BIOTE CORP",
@@ -144801,6 +144919,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "chtr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CHTRP",
+      "displayName": "CHARTER COMMUNICATIONS INC CUMULATIVE REDEEMABLE PFD SER A",
+      "englishName": "CHARTER COMMUNICATIONS INC CUMULATIVE REDEEMABLE PFD SER A",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "chtrp"
       ],
       "active": true
     },
@@ -155149,6 +155280,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "fatn"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "FBDT",
+      "displayName": "FIRST BREACH INC",
+      "englishName": "FIRST BREACH INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "fbdt"
       ],
       "active": true
     },
@@ -188751,6 +188895,19 @@
       "active": true
     },
     {
+      "symbol": "QNBC",
+      "displayName": "QNB CORP",
+      "englishName": "QNB CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "qnbc"
+      ],
+      "active": true
+    },
+    {
       "symbol": "QNC",
       "displayName": "QUANTUM EMOTION CORP",
       "englishName": "QUANTUM EMOTION CORP",
@@ -201513,6 +201670,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "tree"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TREO",
+      "displayName": "TACTICAL RESOURCES CORP",
+      "englishName": "TACTICAL RESOURCES CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "treo"
       ],
       "active": true
     },

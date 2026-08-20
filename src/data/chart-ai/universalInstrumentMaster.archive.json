@@ -2148,6 +2148,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16153"
+    },
+    {
+      "canonicalIdentity": "KR|031440|KOSPI|stock",
+      "country": "KR",
+      "priorSymbol": "031440",
+      "priorNames": [
+        "신세계푸드"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "stock",
+      "standardCode": "KR7031440001",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-20",
+      "inactiveAt": "2026-08-20",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16166"
     }
   ]
 }
