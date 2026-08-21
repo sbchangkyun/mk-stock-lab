@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16167",
+  "masterVersion": "hf3b-hf2-kis-16178",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-21",
   "instruments": [
@@ -61302,14 +61302,15 @@
     },
     {
       "symbol": "CEFS",
-      "displayName": "SABA OPPORTUNISTICALLY HEDGED CLOSED-END FUNDS ETF",
-      "englishName": "SABA OPPORTUNISTICALLY HEDGED CLOSED-END FUNDS ETF",
+      "displayName": "EXCHANGE LISTED FUNDS TRUST SABA OPPORTUNISTICALLY HEDGED CL",
+      "englishName": "EXCHANGE LISTED FUNDS TRUST SABA OPPORTUNISTICALLY HEDGED CL",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cefs"
+        "cefs",
+        "saba opportunistically hedged closed-end funds etf"
       ],
       "active": true
     },
@@ -81945,6 +81946,19 @@
       "active": true
     },
     {
+      "symbol": "HIAI",
+      "displayName": "AI FUNDS HIGH CONVICTION US EQUITY AI-MANAGED ETF",
+      "englishName": "AI FUNDS HIGH CONVICTION US EQUITY AI-MANAGED ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hiai"
+      ],
+      "active": true
+    },
+    {
       "symbol": "HIBL",
       "displayName": "DIREXION DAILY S&P 500 HIGH BETA BULL 3X ETF",
       "englishName": "DIREXION DAILY S&P 500 HIGH BETA BULL 3X ETF",
@@ -82747,6 +82761,45 @@
       "exchangeCode": "NAS",
       "aliases": [
         "hwsm"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HXA",
+      "displayName": "MAST HEDGEINDEX CORPORATE ARBITRAGE ETF",
+      "englishName": "MAST HEDGEINDEX CORPORATE ARBITRAGE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hxa"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HXC",
+      "displayName": "MAST HEDGEINDEX STRATEGIC COMMODITIES ETF",
+      "englishName": "MAST HEDGEINDEX STRATEGIC COMMODITIES ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hxc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HXE",
+      "displayName": "MAST HEDGEINDEX ADAPTIVE EQUITIES ETF",
+      "englishName": "MAST HEDGEINDEX ADAPTIVE EQUITIES ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hxe"
       ],
       "active": true
     },
@@ -94096,6 +94149,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "megi"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MEGX",
+      "displayName": "CORGI U.S. MEGA-CAP GROWTH 2X DAILY ETF",
+      "englishName": "CORGI U.S. MEGA-CAP GROWTH 2X DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "megx"
       ],
       "active": true
     },
@@ -111510,6 +111576,19 @@
       "active": true
     },
     {
+      "symbol": "SEPQ",
+      "displayName": "STF TACTICAL GROWTH & INCOME ETF",
+      "englishName": "STF TACTICAL GROWTH & INCOME ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "sepq"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SEPT",
       "displayName": "ALLIANZIM U.S. EQUITY BUFFER10 SEP ETF",
       "englishName": "ALLIANZIM U.S. EQUITY BUFFER10 SEP ETF",
@@ -121523,6 +121602,19 @@
       "active": true
     },
     {
+      "symbol": "USGX",
+      "displayName": "CORGI U.S. GROWTH 2X DAILY ETF",
+      "englishName": "CORGI U.S. GROWTH 2X DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "usgx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "USHY",
       "displayName": "ISHARES TRUST BROAD USD HIGH YIELD CORPORATE BD ETF",
       "englishName": "ISHARES TRUST BROAD USD HIGH YIELD CORPORATE BD ETF",
@@ -121601,6 +121693,19 @@
       "active": true
     },
     {
+      "symbol": "USLX",
+      "displayName": "CORGI U.S. LARGE-CAP 2X DAILY ETF",
+      "englishName": "CORGI U.S. LARGE-CAP 2X DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "uslx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "USMC",
       "displayName": "PRINCIPAL EXCHANGE-TRADED FDS U.S. MEGA-CAP ETF",
       "englishName": "PRINCIPAL EXCHANGE-TRADED FDS U.S. MEGA-CAP ETF",
@@ -121662,6 +121767,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "usmv"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "USMX",
+      "displayName": "CORGI U.S. MID-CAP 2X DAILY ETF",
+      "englishName": "CORGI U.S. MID-CAP 2X DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "usmx"
       ],
       "active": true
     },
@@ -121805,6 +121923,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ussh"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "USSX",
+      "displayName": "CORGI U.S. SMALL-CAP 2X DAILY ETF",
+      "englishName": "CORGI U.S. SMALL-CAP 2X DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ussx"
       ],
       "active": true
     },
@@ -133847,13 +133978,14 @@
     },
     {
       "symbol": "ANL",
-      "displayName": "ADLAI NORTYE LTD",
-      "englishName": "ADLAI NORTYE LTD",
+      "displayName": "ADLAI NORTYE GROUP LTD SPON ADS EACH REP 3 CL A COM",
+      "englishName": "ADLAI NORTYE GROUP LTD SPON ADS EACH REP 3 CL A COM",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "adlai nortye ltd",
         "anl"
       ],
       "active": true
@@ -183668,6 +183800,19 @@
       "active": true
     },
     {
+      "symbol": "OSPR",
+      "displayName": "OSPREY ACQUISITION CORP III",
+      "englishName": "OSPREY ACQUISITION CORP III",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ospr"
+      ],
+      "active": true
+    },
+    {
       "symbol": "OSPRU",
       "displayName": "OSPREY ACQUISITION CORPORATION III UNITS EACH CONST OF 1 CL",
       "englishName": "OSPREY ACQUISITION CORPORATION III UNITS EACH CONST OF 1 CL",
@@ -193497,13 +193642,14 @@
     },
     {
       "symbol": "SCNI",
-      "displayName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 4000 ORD SHS",
-      "englishName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 4000 ORD SHS",
+      "displayName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 40000 ORD SH",
+      "englishName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 40000 ORD SH",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "scinai immunotherapeutics ltd spon ads each rep 4000 ord shs",
         "scni"
       ],
       "active": true
@@ -201687,13 +201833,14 @@
     },
     {
       "symbol": "TREO",
-      "displayName": "TACTICAL RESOURCES CORP",
-      "englishName": "TACTICAL RESOURCES CORP",
+      "displayName": "TACTICAL RES CORP",
+      "englishName": "TACTICAL RES CORP",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "tactical resources corp",
         "treo"
       ],
       "active": true
@@ -208476,14 +208623,15 @@
     },
     {
       "symbol": "XCH",
-      "displayName": "XCHG LIMITED SPONSORED EACH ADS REPRESNTNG 40 CLASS A",
-      "englishName": "XCHG LIMITED SPONSORED EACH ADS REPRESNTNG 40 CLASS A",
+      "displayName": "XCHG LIMITED SPONSORED EACH ADS REPRESNTNG 800 CLASS A",
+      "englishName": "XCHG LIMITED SPONSORED EACH ADS REPRESNTNG 800 CLASS A",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "xch"
+        "xch",
+        "xchg limited sponsored each ads represntng 40 class a"
       ],
       "active": true
     },
