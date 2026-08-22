@@ -10,16 +10,16 @@
     {
       "family": "kis-kospi",
       "file": "kospi_code.mst",
-      "zipBytes": 118791,
+      "zipBytes": 118940,
       "bytes": 740707,
-      "sha256": "b5553a70e897cb46707e9a53d9e734a30eda022b5dc79d48495facc2b0a04a5b"
+      "sha256": "2c0c96176afca0dd59f09b0619be9adbc7b6d580fd1cf2e2a7c1ce16bb1e8dd4"
     },
     {
       "family": "kis-kosdaq",
       "file": "kosdaq_code.mst",
-      "zipBytes": 102914,
+      "zipBytes": 103083,
       "bytes": 515909,
-      "sha256": "a8654fcbf8334757d8fe636e367cce6512d92bd58ca97084cab46c48b4f4aec0"
+      "sha256": "753b420441b39767f33cf2b45507665b0badbbfa093fdb82d9011383c8354241"
     },
     {
       "family": "kis-overseas-nasdaq",
@@ -70,8 +70,8 @@
   },
   "krSymbolRule": "^[0-9A-Z]{6}$ (six-character KRX code; numeric or alphanumeric; ASCII-uppercased).",
   "usSymbolRule": "^[A-Z][A-Z0-9.]{0,9}$ (KIS overseas ticker).",
-  "sourceAsOf": "2026-08-21",
-  "refreshedAt": "2026-08-21",
+  "sourceAsOf": "2026-08-22",
+  "refreshedAt": "2026-08-22",
   "activeCount": 16178,
   "inactiveArchiveCount": 121,
   "pendingInactiveCount": 0
