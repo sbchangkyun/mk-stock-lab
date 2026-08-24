@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16178",
+  "masterVersion": "hf3b-hf2-kis-16182",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-22",
+  "sourceAsOf": "2026-08-24",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -36738,14 +36738,15 @@
     },
     {
       "symbol": "123010",
-      "displayName": "알엔티엑스",
+      "displayName": "MSDI",
       "country": "KR",
       "exchange": "KOSDAQ",
       "assetType": "stock",
       "exchangeCode": null,
       "standardCode": "KR7123010001",
       "aliases": [
-        "123010"
+        "123010",
+        "알엔티엑스"
       ],
       "active": true
     },
@@ -47699,6 +47700,19 @@
       "standardCode": "KR7417010006",
       "aliases": [
         "417010"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "417030",
+      "displayName": "니어스랩",
+      "country": "KR",
+      "exchange": "KOSDAQ",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "standardCode": "KR7417030004",
+      "aliases": [
+        "417030"
       ],
       "active": true
     },
@@ -69869,13 +69883,14 @@
     },
     {
       "symbol": "EIC",
-      "displayName": "EAGLE POINT INCOME COMPANY INC",
-      "englishName": "EAGLE POINT INCOME COMPANY INC",
+      "displayName": "EAGLE POINT INCOME COMPANY",
+      "englishName": "EAGLE POINT INCOME COMPANY",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
+        "eagle point income company inc",
         "eic"
       ],
       "active": true
@@ -115114,6 +115129,19 @@
       "active": true
     },
     {
+      "symbol": "SQBA",
+      "displayName": "FT VEST U.S. EQUITY QUARTERLY 15 BUFFER ETF",
+      "englishName": "FT VEST U.S. EQUITY QUARTERLY 15 BUFFER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "sqba"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SQLT",
       "displayName": "ISHARES MSCI USA SMALL-CAP QUALITY FACTOR ETF",
       "englishName": "ISHARES MSCI USA SMALL-CAP QUALITY FACTOR ETF",
@@ -152631,6 +152659,19 @@
       "active": true
     },
     {
+      "symbol": "EDVA",
+      "displayName": "ENDOVIA HEALTH SCIENCES INC",
+      "englishName": "ENDOVIA HEALTH SCIENCES INC",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "edva"
+      ],
+      "active": true
+    },
+    {
       "symbol": "EE",
       "displayName": "EXCELERATE ENERGY INC",
       "englishName": "EXCELERATE ENERGY INC",
@@ -152983,13 +153024,14 @@
     },
     {
       "symbol": "EICA",
-      "displayName": "EAGLE POINT INCOME COMPANY INC 5% SER A TERM PREFERRED STK D",
-      "englishName": "EAGLE POINT INCOME COMPANY INC 5% SER A TERM PREFERRED STK D",
+      "displayName": "EAGLE POINT INCOME CO 5.00% SR A TERM PF SHS 2026",
+      "englishName": "EAGLE POINT INCOME CO 5.00% SR A TERM PF SHS 2026",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
+        "eagle point income company inc 5% ser a term preferred stk d",
         "eica"
       ],
       "active": true
@@ -175680,6 +175722,19 @@
       "active": true
     },
     {
+      "symbol": "MIAC",
+      "displayName": "MERIDIAN3 INDUSTRIALS AQUISITION CORP",
+      "englishName": "MERIDIAN3 INDUSTRIALS AQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "miac"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MIACU",
       "displayName": "MERIDIAN3 INDUSTRIALS ACQUIS CORP UNIT EACH REP 1 ORD SHS &",
       "englishName": "MERIDIAN3 INDUSTRIALS ACQUIS CORP UNIT EACH REP 1 ORD SHS &",
@@ -183799,14 +183854,15 @@
     },
     {
       "symbol": "OSPR",
-      "displayName": "OSPREY ACQUISITION CORP III",
-      "englishName": "OSPREY ACQUISITION CORP III",
+      "displayName": "OSPREY ACQUISITION CORPORATION III",
+      "englishName": "OSPREY ACQUISITION CORPORATION III",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "ospr"
+        "ospr",
+        "osprey acquisition corp iii"
       ],
       "active": true
     },
@@ -193640,13 +193696,14 @@
     },
     {
       "symbol": "SCNI",
-      "displayName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 40000 ORD SH",
-      "englishName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 40000 ORD SH",
+      "displayName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 40000 SHS(R/",
+      "englishName": "SCINAI IMMUNOTHERAPEUTICS LTD SPON ADS EACH REP 40000 SHS(R/",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "scinai immunotherapeutics ltd spon ads each rep 40000 ord sh",
         "scni"
       ],
       "active": true
@@ -208619,14 +208676,15 @@
     },
     {
       "symbol": "XCH",
-      "displayName": "XCHG LIMITED SPONSORED EACH ADS REPRESNTNG 800 CLASS A",
-      "englishName": "XCHG LIMITED SPONSORED EACH ADS REPRESNTNG 800 CLASS A",
+      "displayName": "XCHG LIMITED SPONSORED EACH ADS REPR 800 CL A",
+      "englishName": "XCHG LIMITED SPONSORED EACH ADS REPR 800 CL A",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "xch"
+        "xch",
+        "xchg limited sponsored each ads represntng 800 class a"
       ],
       "active": true
     },
