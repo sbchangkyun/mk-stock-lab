@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16160",
+  "masterVersion": "hf3b-hf2-kis-16166",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-25",
   "instruments": [
@@ -59559,6 +59559,19 @@
       "active": true
     },
     {
+      "symbol": "BTA",
+      "displayName": "BEACON TACTICAL ALTERNATIVES RISK ETF",
+      "englishName": "BEACON TACTICAL ALTERNATIVES RISK ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "bta"
+      ],
+      "active": true
+    },
+    {
       "symbol": "BTAL",
       "displayName": "AGF INVESTMENTS TRUST AGF U.S. MARKET NEUTRAL ANTI-BETA FUND",
       "englishName": "AGF INVESTMENTS TRUST AGF U.S. MARKET NEUTRAL ANTI-BETA FUND",
@@ -69947,13 +69960,14 @@
     },
     {
       "symbol": "EIC",
-      "displayName": "EAGLE POINT INCOME COMPANY",
-      "englishName": "EAGLE POINT INCOME COMPANY",
+      "displayName": "EAGLE POINT INCOME CO",
+      "englishName": "EAGLE POINT INCOME CO",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
+        "eagle point income company",
         "eic"
       ],
       "active": true
@@ -90070,6 +90084,19 @@
       "active": true
     },
     {
+      "symbol": "JULV",
+      "displayName": "VANECK U.S. EQUITY BUFFER ETF - JULY",
+      "englishName": "VANECK U.S. EQUITY BUFFER ETF - JULY",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "julv"
+      ],
+      "active": true
+    },
+    {
       "symbol": "JULW",
       "displayName": "ALLIANZIM U.S. EQUITY BUFFER20 JUL ETF",
       "englishName": "ALLIANZIM U.S. EQUITY BUFFER20 JUL ETF",
@@ -91691,6 +91718,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "lbo"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "LBOX",
+      "displayName": "GRANITESHARES SHORT TERM BOX ETF",
+      "englishName": "GRANITESHARES SHORT TERM BOX ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "lbox"
       ],
       "active": true
     },
@@ -128601,6 +128641,19 @@
       "active": true
     },
     {
+      "symbol": "YRAM",
+      "displayName": "YIELDMAX MEMORY AND STORAGE PORTFOLIO OPTION INCOME ETF",
+      "englishName": "YIELDMAX MEMORY AND STORAGE PORTFOLIO OPTION INCOME ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "yram"
+      ],
+      "active": true
+    },
+    {
       "symbol": "YSAG",
       "displayName": "Y ALL STREET PHYSICAL SILVER ETF",
       "englishName": "Y ALL STREET PHYSICAL SILVER ETF",
@@ -128844,6 +128897,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "zcbg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ZCSH",
+      "displayName": "THE ZCASH ETF",
+      "englishName": "THE ZCASH ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "zcsh"
       ],
       "active": true
     },
@@ -130576,6 +130642,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "adbe"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ADBT",
+      "displayName": "ADVASA HOLDINGS INC",
+      "englishName": "ADVASA HOLDINGS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "adbt"
       ],
       "active": true
     },
@@ -140529,13 +140608,14 @@
     },
     {
       "symbol": "BOH",
-      "displayName": "BANK OF HAWAII CORPORATION",
-      "englishName": "BANK OF HAWAII CORPORATION",
+      "displayName": "BANK OF HAWAII CORP",
+      "englishName": "BANK OF HAWAII CORP",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
+        "bank of hawaii corporation",
         "boh"
       ],
       "active": true
@@ -175564,13 +175644,14 @@
     },
     {
       "symbol": "MIAC",
-      "displayName": "MERIDIAN3 INDUSTRIALS AQUISITION CORP",
-      "englishName": "MERIDIAN3 INDUSTRIALS AQUISITION CORP",
+      "displayName": "MERIDIAN3 INDUSTRIALS ACQUISITION C",
+      "englishName": "MERIDIAN3 INDUSTRIALS ACQUISITION C",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "meridian3 industrials aquisition corp",
         "miac"
       ],
       "active": true
@@ -190091,14 +190172,15 @@
     },
     {
       "symbol": "REAX",
-      "displayName": "THE REAL BROKERAGE INC",
-      "englishName": "THE REAL BROKERAGE INC",
+      "displayName": "REAL REMAX GROUP INC",
+      "englishName": "REAL REMAX GROUP INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "reax"
+        "reax",
+        "the real brokerage inc"
       ],
       "active": true
     },
