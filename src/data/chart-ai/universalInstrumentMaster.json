@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16182",
+  "masterVersion": "hf3b-hf2-kis-16160",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-24",
+  "sourceAsOf": "2026-08-25",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -3862,6 +3862,45 @@
       "standardCode": "KR70228G0002",
       "aliases": [
         "0228g0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0231Z0",
+      "displayName": "KODEX 코리아TDF2065액티브 적격",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70231Z0004",
+      "aliases": [
+        "0231z0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0233A0",
+      "displayName": "ACE 삼성전자SK하이닉스플러스채권혼합50",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70233A0001",
+      "aliases": [
+        "0233a0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0233J0",
+      "displayName": "TIGER 삼성전자SK하이닉스미국채혼합50",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70233J0002",
+      "aliases": [
+        "0233j0"
       ],
       "active": true
     },
@@ -22960,6 +22999,19 @@
       "active": true
     },
     {
+      "symbol": "0155E0",
+      "displayName": "해치텍",
+      "country": "KR",
+      "exchange": "KOSDAQ",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "standardCode": "KR70155E0001",
+      "aliases": [
+        "0155e0"
+      ],
+      "active": true
+    },
+    {
       "symbol": "0156T0",
       "displayName": "에이치엘지노믹스",
       "country": "KR",
@@ -24100,6 +24152,32 @@
       "standardCode": "KR70218L0007",
       "aliases": [
         "0218l0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0220W0",
+      "displayName": "한화머시너리앤서비스홀딩스",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "standardCode": "KR70220W0000",
+      "aliases": [
+        "0220w0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0220WK",
+      "displayName": "한화머시너리앤서비스홀딩스3우B",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "standardCode": "KR70220WK021",
+      "aliases": [
+        "0220wk"
       ],
       "active": true
     },
@@ -36745,8 +36823,7 @@
       "exchangeCode": null,
       "standardCode": "KR7123010001",
       "aliases": [
-        "123010",
-        "알엔티엑스"
+        "123010"
       ],
       "active": true
     },
@@ -51418,19 +51495,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "adds"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "ADFI",
-      "displayName": "TWO RDS SHARED TRUST ANFIELD TACTICAL FIXED INCOME ETF",
-      "englishName": "TWO RDS SHARED TRUST ANFIELD TACTICAL FIXED INCOME ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "adfi"
       ],
       "active": true
     },
@@ -69890,7 +69954,6 @@
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
-        "eagle point income company inc",
         "eic"
       ],
       "active": true
@@ -70581,19 +70644,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "emsf"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "EMTL",
-      "displayName": "STATE STREET DOUBLELINE EMERGING MARKETS FIXED INCOME ETF",
-      "englishName": "STATE STREET DOUBLELINE EMERGING MARKETS FIXED INCOME ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "emtl"
       ],
       "active": true
     },
@@ -91203,19 +91253,6 @@
       "active": true
     },
     {
-      "symbol": "KRMA",
-      "displayName": "GLOBAL X FDS GLOBAL X CONSCIOUS COS ETF",
-      "englishName": "GLOBAL X FDS GLOBAL X CONSCIOUS COS ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "krma"
-      ],
-      "active": true
-    },
-    {
       "symbol": "KROP",
       "displayName": "GLOBAL X FDS GLOBAL X AGTECH & FOOD INNOVATION ETF",
       "englishName": "GLOBAL X FDS GLOBAL X AGTECH & FOOD INNOVATION ETF",
@@ -106975,19 +107012,6 @@
       "active": true
     },
     {
-      "symbol": "QRFT",
-      "displayName": "EXCHANGE LISTED FUNDS TRUST QRAFT AI ENHANCED US LARGE CAP E",
-      "englishName": "EXCHANGE LISTED FUNDS TRUST QRAFT AI ENHANCED US LARGE CAP E",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "qrft"
-      ],
-      "active": true
-    },
-    {
       "symbol": "QRMI",
       "displayName": "GLOBAL X FDS NASDAQ 100 RISK MANAGED INCOME ETF",
       "englishName": "GLOBAL X FDS NASDAQ 100 RISK MANAGED INCOME ETF",
@@ -110208,19 +110232,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "saba"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SAEF",
-      "displayName": "SCHWAB ARIEL OPPORTUNITIES ETF",
-      "englishName": "SCHWAB ARIEL OPPORTUNITIES ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "saef"
       ],
       "active": true
     },
@@ -132441,19 +132452,6 @@
       "active": true
     },
     {
-      "symbol": "ALBT",
-      "displayName": "AVALON GLOBOCARE CORP",
-      "englishName": "AVALON GLOBOCARE CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "albt"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ALC",
       "displayName": "ALCON AG",
       "englishName": "ALCON AG",
@@ -134442,19 +134440,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "aplm"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "APM",
-      "displayName": "APTORUM GROUP LIMITED",
-      "englishName": "APTORUM GROUP LIMITED",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "apm"
       ],
       "active": true
     },
@@ -141817,19 +141802,6 @@
       "active": true
     },
     {
-      "symbol": "BURU",
-      "displayName": "NUBURU INC",
-      "englishName": "NUBURU INC",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "stock",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "buru"
-      ],
-      "active": true
-    },
-    {
       "symbol": "BUSE",
       "displayName": "FIRST BUSEY CORP",
       "englishName": "FIRST BUSEY CORP",
@@ -143698,19 +143670,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ccoi"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CCRN",
-      "displayName": "CROSS COUNTRY HEALTHCARE INC",
-      "englishName": "CROSS COUNTRY HEALTHCARE INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ccrn"
       ],
       "active": true
     },
@@ -147741,19 +147700,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "cre"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CREG",
-      "displayName": "SMART POWERR CORP",
-      "englishName": "SMART POWERR CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "creg"
       ],
       "active": true
     },
@@ -153031,7 +152977,6 @@
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "eagle point income company inc 5% ser a term preferred stk d",
         "eica"
       ],
       "active": true
@@ -156365,32 +156310,6 @@
       "active": true
     },
     {
-      "symbol": "FGMC",
-      "displayName": "FG MERGER II CORP",
-      "englishName": "FG MERGER II CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "fgmc"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "FGMCU",
-      "displayName": "FG MERGER II CORP UNIT 1 COM & 1 RT (11/02/2030)",
-      "englishName": "FG MERGER II CORP UNIT 1 COM & 1 RT (11/02/2030)",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "fgmcu"
-      ],
-      "active": true
-    },
-    {
       "symbol": "FGN",
       "displayName": "F&G ANNUITIES & LIFE INC 7.95% SNR NTS 15/12/2053 US",
       "englishName": "F&G ANNUITIES & LIFE INC 7.95% SNR NTS 15/12/2053 US",
@@ -158831,19 +158750,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "galt"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "GAMB",
-      "displayName": "GAMBLING.COM GROUP LIMITED",
-      "englishName": "GAMBLING.COM GROUP LIMITED",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "gamb"
       ],
       "active": true
     },
@@ -161305,19 +161211,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "grdx"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "GREE",
-      "displayName": "VULCAN INFRASTRUCTURE AND POWER INC",
-      "englishName": "VULCAN INFRASTRUCTURE AND POWER INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "gree"
       ],
       "active": true
     },
@@ -169947,19 +169840,6 @@
       "active": true
     },
     {
-      "symbol": "KORE",
-      "displayName": "KORE GROUP HLDGS INC",
-      "englishName": "KORE GROUP HLDGS INC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "kore"
-      ],
-      "active": true
-    },
-    {
       "symbol": "KOS",
       "displayName": "KOSMOS ENERGY LTD (NA)",
       "englishName": "KOSMOS ENERGY LTD (NA)",
@@ -172300,19 +172180,6 @@
       "active": true
     },
     {
-      "symbol": "LMFA",
-      "displayName": "LM FUNDING AMERICA INC",
-      "englishName": "LM FUNDING AMERICA INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lmfa"
-      ],
-      "active": true
-    },
-    {
       "symbol": "LMND",
       "displayName": "LEMONADE INC",
       "englishName": "LEMONADE INC",
@@ -174194,32 +174061,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "mbai"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "MBAV",
-      "displayName": "M3-BRIGADE ACQUISITION V CORP",
-      "englishName": "M3-BRIGADE ACQUISITION V CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "mbav"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "MBAVU",
-      "displayName": "M3-BRIGADE ACQUISITION V CORP UNIT 1 COM & 1/2 WT EXP",
-      "englishName": "M3-BRIGADE ACQUISITION V CORP UNIT 1 COM & 1/2 WT EXP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "mbavu"
       ],
       "active": true
     },
@@ -179287,19 +179128,6 @@
       "active": true
     },
     {
-      "symbol": "NFBK",
-      "displayName": "NORTHFIELD BANCORP INC",
-      "englishName": "NORTHFIELD BANCORP INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "nfbk"
-      ],
-      "active": true
-    },
-    {
       "symbol": "NFE",
       "displayName": "NEW FORTRESS ENERGY INC",
       "englishName": "NEW FORTRESS ENERGY INC",
@@ -180652,19 +180480,6 @@
       "active": true
     },
     {
-      "symbol": "NSA",
-      "displayName": "NATIONAL STORAGE AFFILIATES TRUST",
-      "englishName": "NATIONAL STORAGE AFFILIATES TRUST",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "nsa"
-      ],
-      "active": true
-    },
-    {
       "symbol": "NSAIU",
       "displayName": "NORTHSTRIVE ACQUISITION CORP I UNITS CONS CL A & 1 WT",
       "englishName": "NORTHSTRIVE ACQUISITION CORP I UNITS CONS CL A & 1 WT",
@@ -181457,19 +181272,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "nvts"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "NVVE",
-      "displayName": "NUVVE HLDG CORP",
-      "englishName": "NUVVE HLDG CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "nvve"
       ],
       "active": true
     },
@@ -182354,19 +182156,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "odtx"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "ODV",
-      "displayName": "OSISKO DEVELOPMENT CORP",
-      "englishName": "OSISKO DEVELOPMENT CORP",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "odv"
       ],
       "active": true
     },
@@ -183861,8 +183650,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "ospr",
-        "osprey acquisition corp iii"
+        "ospr"
       ],
       "active": true
     },
@@ -185280,19 +185068,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "pcsa"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "PCSC",
-      "displayName": "PERCEPTIVE CAP SOLUTIONS CORP",
-      "englishName": "PERCEPTIVE CAP SOLUTIONS CORP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "pcsc"
       ],
       "active": true
     },
@@ -193703,7 +193478,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "scinai immunotherapeutics ltd spon ads each rep 40000 ord sh",
         "scni"
       ],
       "active": true
@@ -194563,19 +194337,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "sgp"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SGRP",
-      "displayName": "SPAR GROUP INC",
-      "englishName": "SPAR GROUP INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "sgrp"
       ],
       "active": true
     },
@@ -201158,19 +200919,6 @@
       "active": true
     },
     {
-      "symbol": "TMHC",
-      "displayName": "TAYLOR MORRISON HOME CORP",
-      "englishName": "TAYLOR MORRISON HOME CORP",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "tmhc"
-      ],
-      "active": true
-    },
-    {
       "symbol": "TMO",
       "displayName": "THERMO FISHER SCIENTIFIC INC",
       "englishName": "THERMO FISHER SCIENTIFIC INC",
@@ -203367,19 +203115,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ubsi"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "UBXG",
-      "displayName": "U BX TECHNOLOGY LTD",
-      "englishName": "U BX TECHNOLOGY LTD",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ubxg"
       ],
       "active": true
     },
@@ -207258,19 +206993,6 @@
       "active": true
     },
     {
-      "symbol": "WGRX",
-      "displayName": "WELLGISTICS HEALTH INC",
-      "englishName": "WELLGISTICS HEALTH INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "wgrx"
-      ],
-      "active": true
-    },
-    {
       "symbol": "WGS",
       "displayName": "GENEDX HOLDINGS CORP",
       "englishName": "GENEDX HOLDINGS CORP",
@@ -208683,8 +208405,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "xch",
-        "xchg limited sponsored each ads represntng 800 class a"
+        "xch"
       ],
       "active": true
     },
@@ -209660,19 +209381,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ymt"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "YOOV",
-      "displayName": "CONCORDE INTERNATIONAL GROUP LTD",
-      "englishName": "CONCORDE INTERNATIONAL GROUP LTD",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "yoov"
       ],
       "active": true
     },

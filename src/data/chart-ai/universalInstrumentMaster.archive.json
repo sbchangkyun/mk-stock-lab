@@ -2165,6 +2165,510 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16166"
+    },
+    {
+      "canonicalIdentity": "US|ADFI|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "ADFI",
+      "priorNames": [
+        "TWO RDS SHARED TRUST ANFIELD TACTICAL FIXED INCOME ETF",
+        "TWO RDS SHARED TRUST ANFIELD TACTICAL FIXED INCOME ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|EMTL|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "EMTL",
+      "priorNames": [
+        "STATE STREET DOUBLELINE EMERGING MARKETS FIXED INCOME ETF",
+        "STATE STREET DOUBLELINE EMERGING MARKETS FIXED INCOME ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|KRMA|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "KRMA",
+      "priorNames": [
+        "GLOBAL X FDS GLOBAL X CONSCIOUS COS ETF",
+        "GLOBAL X FDS GLOBAL X CONSCIOUS COS ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|QRFT|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "QRFT",
+      "priorNames": [
+        "EXCHANGE LISTED FUNDS TRUST QRAFT AI ENHANCED US LARGE CAP E",
+        "EXCHANGE LISTED FUNDS TRUST QRAFT AI ENHANCED US LARGE CAP E"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|SAEF|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "SAEF",
+      "priorNames": [
+        "SCHWAB ARIEL OPPORTUNITIES ETF",
+        "SCHWAB ARIEL OPPORTUNITIES ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|ALBT|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "ALBT",
+      "priorNames": [
+        "AVALON GLOBOCARE CORP",
+        "AVALON GLOBOCARE CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|APM|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "APM",
+      "priorNames": [
+        "APTORUM GROUP LIMITED",
+        "APTORUM GROUP LIMITED"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|BURU|AMEX|stock",
+      "country": "US",
+      "priorSymbol": "BURU",
+      "priorNames": [
+        "NUBURU INC",
+        "NUBURU INC"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|CCRN|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "CCRN",
+      "priorNames": [
+        "CROSS COUNTRY HEALTHCARE INC",
+        "CROSS COUNTRY HEALTHCARE INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|CREG|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "CREG",
+      "priorNames": [
+        "SMART POWERR CORP",
+        "SMART POWERR CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|FGMC|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "FGMC",
+      "priorNames": [
+        "FG MERGER II CORP",
+        "FG MERGER II CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|FGMCU|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "FGMCU",
+      "priorNames": [
+        "FG MERGER II CORP UNIT 1 COM & 1 RT (11/02/2030)",
+        "FG MERGER II CORP UNIT 1 COM & 1 RT (11/02/2030)"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|GAMB|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "GAMB",
+      "priorNames": [
+        "GAMBLING.COM GROUP LIMITED",
+        "GAMBLING.COM GROUP LIMITED"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|GREE|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "GREE",
+      "priorNames": [
+        "VULCAN INFRASTRUCTURE AND POWER INC",
+        "VULCAN INFRASTRUCTURE AND POWER INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|KORE|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "KORE",
+      "priorNames": [
+        "KORE GROUP HLDGS INC",
+        "KORE GROUP HLDGS INC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|LMFA|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "LMFA",
+      "priorNames": [
+        "LM FUNDING AMERICA INC",
+        "LM FUNDING AMERICA INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|MBAV|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "MBAV",
+      "priorNames": [
+        "M3-BRIGADE ACQUISITION V CORP",
+        "M3-BRIGADE ACQUISITION V CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|MBAVU|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "MBAVU",
+      "priorNames": [
+        "M3-BRIGADE ACQUISITION V CORP UNIT 1 COM & 1/2 WT EXP",
+        "M3-BRIGADE ACQUISITION V CORP UNIT 1 COM & 1/2 WT EXP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|NFBK|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "NFBK",
+      "priorNames": [
+        "NORTHFIELD BANCORP INC",
+        "NORTHFIELD BANCORP INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|NSA|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "NSA",
+      "priorNames": [
+        "NATIONAL STORAGE AFFILIATES TRUST",
+        "NATIONAL STORAGE AFFILIATES TRUST"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|NVVE|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "NVVE",
+      "priorNames": [
+        "NUVVE HLDG CORP",
+        "NUVVE HLDG CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|ODV|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "ODV",
+      "priorNames": [
+        "OSISKO DEVELOPMENT CORP",
+        "OSISKO DEVELOPMENT CORP"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|PCSC|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "PCSC",
+      "priorNames": [
+        "PERCEPTIVE CAP SOLUTIONS CORP",
+        "PERCEPTIVE CAP SOLUTIONS CORP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|SGRP|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SGRP",
+      "priorNames": [
+        "SPAR GROUP INC",
+        "SPAR GROUP INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|TMHC|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "TMHC",
+      "priorNames": [
+        "TAYLOR MORRISON HOME CORP",
+        "TAYLOR MORRISON HOME CORP"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|UBXG|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "UBXG",
+      "priorNames": [
+        "U BX TECHNOLOGY LTD",
+        "U BX TECHNOLOGY LTD"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|WGRX|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "WGRX",
+      "priorNames": [
+        "WELLGISTICS HEALTH INC",
+        "WELLGISTICS HEALTH INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "US|YOOV|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "YOOV",
+      "priorNames": [
+        "CONCORDE INTERNATIONAL GROUP LTD",
+        "CONCORDE INTERNATIONAL GROUP LTD"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-25",
+      "inactiveAt": "2026-08-25",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16160"
     }
   ]
 }
