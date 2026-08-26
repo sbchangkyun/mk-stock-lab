@@ -2,7 +2,7 @@
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
   "masterVersion": "hf3b-hf2-kis-16166",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-25",
+  "sourceAsOf": "2026-08-26",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -69967,7 +69967,6 @@
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
-        "eagle point income company",
         "eic"
       ],
       "active": true
@@ -140615,7 +140614,6 @@
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "bank of hawaii corporation",
         "boh"
       ],
       "active": true
@@ -175651,7 +175649,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "meridian3 industrials aquisition corp",
         "miac"
       ],
       "active": true
@@ -190179,8 +190176,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "reax",
-        "the real brokerage inc"
+        "reax"
       ],
       "active": true
     },
