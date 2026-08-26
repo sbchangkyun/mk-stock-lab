@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16166",
+  "masterVersion": "hf3b-hf2-kis-16179",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-26",
   "instruments": [
@@ -44020,19 +44020,6 @@
       "active": true
     },
     {
-      "symbol": "299900",
-      "displayName": "위지윅스튜디오",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7299900001",
-      "aliases": [
-        "299900"
-      ],
-      "active": true
-    },
-    {
       "symbol": "300080",
       "displayName": "플리토",
       "country": "KR",
@@ -60621,6 +60608,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "caos"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CAPA",
+      "displayName": "DEFIANCE AI CAPACITORS LEADERS ETF",
+      "englishName": "DEFIANCE AI CAPACITORS LEADERS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "capa"
       ],
       "active": true
     },
@@ -96674,6 +96674,45 @@
       "active": true
     },
     {
+      "symbol": "MUNF",
+      "displayName": "NORTHERN TRUST 2036 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2036 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "munf"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MUNG",
+      "displayName": "NORTHERN TRUST 2046 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2046 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mung"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MUNH",
+      "displayName": "NORTHERN TRUST 2056 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2056 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "munh"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MUNI",
       "displayName": "PIMCO ETF TRUST INTERMEDIATE MUNICIPAL BOND ETF",
       "englishName": "PIMCO ETF TRUST INTERMEDIATE MUNICIPAL BOND ETF",
@@ -96683,6 +96722,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "muni"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MUNJ",
+      "displayName": "NORTHERN TRUST 2031 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2031 TAX-EXEMPT DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "munj"
       ],
       "active": true
     },
@@ -101107,6 +101159,19 @@
       "active": true
     },
     {
+      "symbol": "OTAX",
+      "displayName": "OPTIMAL TAX MANAGED EQUITY ETF",
+      "englishName": "OPTIMAL TAX MANAGED EQUITY ETF",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "etf",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "otax"
+      ],
+      "active": true
+    },
+    {
       "symbol": "OTGL",
       "displayName": "OTG LATIN AMERICA ETF",
       "englishName": "OTG LATIN AMERICA ETF",
@@ -104873,6 +104938,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "psmr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PSOX",
+      "displayName": "TEMA MLCC & POWERSEMI ETF",
+      "englishName": "TEMA MLCC & POWERSEMI ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "psox"
       ],
       "active": true
     },
@@ -117558,6 +117636,19 @@
       "active": true
     },
     {
+      "symbol": "TGRZ",
+      "displayName": "CHINA AI TIGERS LLM ETF",
+      "englishName": "CHINA AI TIGERS LLM ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "tgrz"
+      ],
+      "active": true
+    },
+    {
       "symbol": "THD",
       "displayName": "ISHARES INC MSCI THAILAND ETF",
       "englishName": "ISHARES INC MSCI THAILAND ETF",
@@ -117983,6 +118074,58 @@
       "exchangeCode": "AMS",
       "aliases": [
         "tipd"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TIPE",
+      "displayName": "NORTHERN TRUST 2031 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2031 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tipe"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TIPF",
+      "displayName": "NORTHERN TRUST 2036 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2036 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tipf"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TIPG",
+      "displayName": "NORTHERN TRUST 2046 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2046 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tipg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TIPH",
+      "displayName": "NORTHERN TRUST 2056 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "englishName": "NORTHERN TRUST 2056 INFLATION-LINKED DISTRIBUTING LADDER ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tiph"
       ],
       "active": true
     },
@@ -128107,6 +128250,19 @@
       "active": true
     },
     {
+      "symbol": "XVSP",
+      "displayName": "FT VEST SPCX & TARGET INCOME ETF",
+      "englishName": "FT VEST SPCX & TARGET INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xvsp"
+      ],
+      "active": true
+    },
+    {
       "symbol": "XVTS",
       "displayName": "FT VEST TSLA & TARGET INCOME ETF",
       "englishName": "FT VEST TSLA & TARGET INCOME ETF",
@@ -128901,13 +129057,14 @@
     },
     {
       "symbol": "ZCSH",
-      "displayName": "THE ZCASH ETF",
-      "englishName": "THE ZCASH ETF",
+      "displayName": "ZCASH ETF (THE) COM NPV",
+      "englishName": "ZCASH ETF (THE) COM NPV",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "the zcash etf",
         "zcsh"
       ],
       "active": true
@@ -168715,6 +168872,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "jtai"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "JTTT",
+      "displayName": "JATT III ACQUISITION CORP",
+      "englishName": "JATT III ACQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "jttt"
       ],
       "active": true
     },
@@ -209451,13 +209621,14 @@
     },
     {
       "symbol": "YMT",
-      "displayName": "YIMUTIAN INC. SPON ADS EACH REP 375 ORD CL A (R/S)",
-      "englishName": "YIMUTIAN INC. SPON ADS EACH REP 375 ORD CL A (R/S)",
+      "displayName": "YIMUTIAN INC. SPON ADS EACH REP 375 ORD CL A",
+      "englishName": "YIMUTIAN INC. SPON ADS EACH REP 375 ORD CL A",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "yimutian inc. spon ads each rep 375 ord cl a (r/s)",
         "ymt"
       ],
       "active": true

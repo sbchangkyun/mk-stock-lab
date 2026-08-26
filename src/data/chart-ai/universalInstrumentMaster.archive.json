@@ -2669,6 +2669,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16160"
+    },
+    {
+      "canonicalIdentity": "KR|299900|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "299900",
+      "priorNames": [
+        "위지윅스튜디오"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7299900001",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-26",
+      "inactiveAt": "2026-08-26",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16179"
     }
   ]
 }
