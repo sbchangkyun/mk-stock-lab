@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16179",
+  "masterVersion": "hf3b-hf2-kis-16196",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-26",
+  "sourceAsOf": "2026-08-27",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -21284,14 +21284,15 @@
     },
     {
       "symbol": "009810",
-      "displayName": "플레이그램",
+      "displayName": "MDS스피어",
       "country": "KR",
       "exchange": "KOSPI",
       "assetType": "stock",
       "exchangeCode": null,
       "standardCode": "KR7009810003",
       "aliases": [
-        "009810"
+        "009810",
+        "플레이그램"
       ],
       "active": true
     },
@@ -51590,6 +51591,84 @@
       "active": true
     },
     {
+      "symbol": "AEMC",
+      "displayName": "HARBOR ALPHAEDGE MID CAP CORE ETF",
+      "englishName": "HARBOR ALPHAEDGE MID CAP CORE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aemc"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AEMG",
+      "displayName": "HARBOR ALPHAEDGE MID CAP GROWTH ETF",
+      "englishName": "HARBOR ALPHAEDGE MID CAP GROWTH ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aemg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AEMV",
+      "displayName": "HARBOR ALPHAEDGE MID CAP VALUE ETF",
+      "englishName": "HARBOR ALPHAEDGE MID CAP VALUE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aemv"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AESB",
+      "displayName": "HARBOR ALPHAEDGE SMALL CAP CORE ETF",
+      "englishName": "HARBOR ALPHAEDGE SMALL CAP CORE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aesb"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AESG",
+      "displayName": "HARBOR ALPHAEDGE SMALL CAP GROWTH ETF",
+      "englishName": "HARBOR ALPHAEDGE SMALL CAP GROWTH ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aesg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AESL",
+      "displayName": "HARBOR ALPHAEDGE SMALL CAP VALUE ETF",
+      "englishName": "HARBOR ALPHAEDGE SMALL CAP VALUE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aesl"
+      ],
+      "active": true
+    },
+    {
       "symbol": "AESR",
       "displayName": "HORIZON FDS ANFIELD U S EQUITY SECTOR ROTATION ETF",
       "englishName": "HORIZON FDS ANFIELD U S EQUITY SECTOR ROTATION ETF",
@@ -67957,6 +68036,19 @@
       "active": true
     },
     {
+      "symbol": "DSPC",
+      "displayName": "LEVERAGE SHARES 1X SHORT SPCX DAILY ETF",
+      "englishName": "LEVERAGE SHARES 1X SHORT SPCX DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "dspc"
+      ],
+      "active": true
+    },
+    {
       "symbol": "DSPY",
       "displayName": "TEMA S&P 500 HISTORICAL WEIGHT ETF STRATEGY",
       "englishName": "TEMA S&P 500 HISTORICAL WEIGHT ETF STRATEGY",
@@ -81386,6 +81478,19 @@
       "active": true
     },
     {
+      "symbol": "HBIT",
+      "displayName": "HEDGEYE HEDGED BITCOIN ETF",
+      "englishName": "HEDGEYE HEDGED BITCOIN ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hbit"
+      ],
+      "active": true
+    },
+    {
       "symbol": "HBMX",
       "displayName": "TUTTLE CAPITAL CONCENTRATED MEMORY STACK ETF",
       "englishName": "TUTTLE CAPITAL CONCENTRATED MEMORY STACK ETF",
@@ -82799,6 +82904,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "hway"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HWGV",
+      "displayName": "HOTCHKIS & WILEY GLOBAL VALUE FUND",
+      "englishName": "HOTCHKIS & WILEY GLOBAL VALUE FUND",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "hwgv"
       ],
       "active": true
     },
@@ -95491,6 +95609,19 @@
       "active": true
     },
     {
+      "symbol": "MNGU",
+      "displayName": "MICROSECTORS 3X LONG MANGOS+ EX PRIVATE COMPANIES ETNS",
+      "englishName": "MICROSECTORS 3X LONG MANGOS+ EX PRIVATE COMPANIES ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mngu"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MNRS",
       "displayName": "GRAYSCALE BITCOIN MINERS ETF",
       "englishName": "GRAYSCALE BITCOIN MINERS ETF",
@@ -104262,6 +104393,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "prae"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PRAM",
+      "displayName": "DEFIANCE MEMORY & PHOTONICS ETF",
+      "englishName": "DEFIANCE MEMORY & PHOTONICS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "pram"
       ],
       "active": true
     },
@@ -117000,13 +117144,14 @@
     },
     {
       "symbol": "TDOT",
-      "displayName": "21SHARES POLKADOT ETF",
-      "englishName": "21SHARES POLKADOT ETF",
+      "displayName": "21SHARES POLKADOT STAKING ETF",
+      "englishName": "21SHARES POLKADOT STAKING ETF",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
+        "21shares polkadot etf",
         "tdot"
       ],
       "active": true
@@ -117416,13 +117561,14 @@
     },
     {
       "symbol": "TETH",
-      "displayName": "21SHARES ETHEREUM ETF",
-      "englishName": "21SHARES ETHEREUM ETF",
+      "displayName": "21SHARES ETHEREUM STAKING ETF",
+      "englishName": "21SHARES ETHEREUM STAKING ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "21shares ethereum etf",
         "teth"
       ],
       "active": true
@@ -117871,13 +118017,14 @@
     },
     {
       "symbol": "THYP",
-      "displayName": "21SHARES HYPERLIQUID ETF",
-      "englishName": "21SHARES HYPERLIQUID ETF",
+      "displayName": "21SHARES HYPERLIQUID STAKING ETF",
+      "englishName": "21SHARES HYPERLIQUID STAKING ETF",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
+        "21shares hyperliquid etf",
         "thyp"
       ],
       "active": true
@@ -119873,13 +120020,14 @@
     },
     {
       "symbol": "TSOL",
-      "displayName": "21SHARES SOLANA ETF",
-      "englishName": "21SHARES SOLANA ETF",
+      "displayName": "21SHARES SOLANA STAKING ETF",
+      "englishName": "21SHARES SOLANA STAKING ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "21shares solana etf",
         "tsol"
       ],
       "active": true
@@ -119951,13 +120099,14 @@
     },
     {
       "symbol": "TSUI",
-      "displayName": "21SHARES SUI ETF",
-      "englishName": "21SHARES SUI ETF",
+      "displayName": "21SHARES SUI STAKING ETF",
+      "englishName": "21SHARES SUI STAKING ETF",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
+        "21shares sui etf",
         "tsui"
       ],
       "active": true
@@ -129057,14 +129206,14 @@
     },
     {
       "symbol": "ZCSH",
-      "displayName": "ZCASH ETF (THE) COM NPV",
-      "englishName": "ZCASH ETF (THE) COM NPV",
+      "displayName": "ZCASH ETF COM NPV",
+      "englishName": "ZCASH ETF COM NPV",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "the zcash etf",
+        "zcash etf (the) com npv",
         "zcsh"
       ],
       "active": true
@@ -129482,6 +129631,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "aa"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AAC",
+      "displayName": "ARES ACQUISITION CORPORATION III",
+      "englishName": "ARES ACQUISITION CORPORATION III",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "aac"
       ],
       "active": true
     },
@@ -167197,13 +167359,14 @@
     },
     {
       "symbol": "IPFX",
-      "displayName": "INFLECTION POINT ACQUIS CORP",
-      "englishName": "INFLECTION POINT ACQUIS CORP",
+      "displayName": "NFLECTION PT ACQUISITION CORP VI",
+      "englishName": "NFLECTION PT ACQUISITION CORP VI",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "inflection point acquis corp",
         "ipfx"
       ],
       "active": true
@@ -167361,6 +167524,32 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ipx"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "IPXG",
+      "displayName": "INFLECTION POINT ACQUISITION CORP VII",
+      "englishName": "INFLECTION POINT ACQUISITION CORP VII",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ipxg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "IPXGU",
+      "displayName": "INFLECTION POINT ACQUISITION CORP VII UNIT CONSIT 1 ORD A &",
+      "englishName": "INFLECTION POINT ACQUISITION CORP VII UNIT CONSIT 1 ORD A &",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ipxgu"
       ],
       "active": true
     },
@@ -168877,13 +169066,14 @@
     },
     {
       "symbol": "JTTT",
-      "displayName": "JATT III ACQUISITION CORP",
-      "englishName": "JATT III ACQUISITION CORP",
+      "displayName": "JATT III ACQUISITION CORPORATION",
+      "englishName": "JATT III ACQUISITION CORPORATION",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "jatt iii acquisition corp",
         "jttt"
       ],
       "active": true
@@ -181525,13 +181715,14 @@
     },
     {
       "symbol": "NVX",
-      "displayName": "NOVONIX LIMITED SPON ADS EACH REP 4 ORD SHS",
-      "englishName": "NOVONIX LIMITED SPON ADS EACH REP 4 ORD SHS",
+      "displayName": "NOVONIX LIMITED SPON ADS EACH REP 40 ORD SHS(R/S)",
+      "englishName": "NOVONIX LIMITED SPON ADS EACH REP 40 ORD SHS(R/S)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "novonix limited spon ads each rep 4 ord shs",
         "nvx"
       ],
       "active": true
@@ -191608,6 +191799,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "rnac"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "RNAQU",
+      "displayName": "RAINIER ACQUISITION CORP UNIT CONSIST OF 1 CL A & 1/4 WT",
+      "englishName": "RAINIER ACQUISITION CORP UNIT CONSIST OF 1 CL A & 1/4 WT",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "rnaqu"
       ],
       "active": true
     },
@@ -204641,6 +204845,19 @@
       "active": true
     },
     {
+      "symbol": "VAI",
+      "displayName": "VALOR ENERGY INCORPORATED",
+      "englishName": "VALOR ENERGY INCORPORATED",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "vai"
+      ],
+      "active": true
+    },
+    {
       "symbol": "VAL",
       "displayName": "VALARIS LTD",
       "englishName": "VALARIS LTD",
@@ -209178,6 +209395,19 @@
       "active": true
     },
     {
+      "symbol": "XTER",
+      "displayName": "KARMAN LINE ACQUISITION CORP",
+      "englishName": "KARMAN LINE ACQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "xter"
+      ],
+      "active": true
+    },
+    {
       "symbol": "XTERU",
       "displayName": "KARMAN LINE ACQUISITION CORPORATION UNIT CONSIST OF 1 CL AOR",
       "englishName": "KARMAN LINE ACQUISITION CORPORATION UNIT CONSIST OF 1 CL AOR",
@@ -209621,14 +209851,14 @@
     },
     {
       "symbol": "YMT",
-      "displayName": "YIMUTIAN INC. SPON ADS EACH REP 375 ORD CL A",
-      "englishName": "YIMUTIAN INC. SPON ADS EACH REP 375 ORD CL A",
+      "displayName": "YIMUTIAN INC. SPON ADS EACH REP 6000 ORD CL A(R/S)",
+      "englishName": "YIMUTIAN INC. SPON ADS EACH REP 6000 ORD CL A(R/S)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "yimutian inc. spon ads each rep 375 ord cl a (r/s)",
+        "yimutian inc. spon ads each rep 375 ord cl a",
         "ymt"
       ],
       "active": true
