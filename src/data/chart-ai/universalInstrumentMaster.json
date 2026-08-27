@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16196",
+  "masterVersion": "hf3b-hf2-kis-16195",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-08-27",
   "instruments": [
@@ -495,19 +495,6 @@
       "standardCode": "KR70035T0000",
       "aliases": [
         "0035t0"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "0036D0",
-      "displayName": "TIME 미국배당다우존스액티브",
-      "country": "KR",
-      "exchange": "KOSPI",
-      "assetType": "etf",
-      "exchangeCode": null,
-      "standardCode": "KR70036D0007",
-      "aliases": [
-        "0036d0"
       ],
       "active": true
     },
@@ -21291,8 +21278,7 @@
       "exchangeCode": null,
       "standardCode": "KR7009810003",
       "aliases": [
-        "009810",
-        "플레이그램"
+        "009810"
       ],
       "active": true
     },
@@ -117151,7 +117137,6 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "21shares polkadot etf",
         "tdot"
       ],
       "active": true
@@ -117568,7 +117553,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "21shares ethereum etf",
         "teth"
       ],
       "active": true
@@ -118024,7 +118008,6 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "21shares hyperliquid etf",
         "thyp"
       ],
       "active": true
@@ -120027,7 +120010,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "21shares solana etf",
         "tsol"
       ],
       "active": true
@@ -120106,7 +120088,6 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "21shares sui etf",
         "tsui"
       ],
       "active": true
@@ -129213,7 +129194,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "zcash etf (the) com npv",
         "zcsh"
       ],
       "active": true
@@ -167366,7 +167346,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "inflection point acquis corp",
         "ipfx"
       ],
       "active": true
@@ -169073,7 +169052,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "jatt iii acquisition corp",
         "jttt"
       ],
       "active": true
@@ -181722,7 +181700,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "novonix limited spon ads each rep 4 ord shs",
         "nvx"
       ],
       "active": true
@@ -209858,7 +209835,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "yimutian inc. spon ads each rep 375 ord cl a",
         "ymt"
       ],
       "active": true

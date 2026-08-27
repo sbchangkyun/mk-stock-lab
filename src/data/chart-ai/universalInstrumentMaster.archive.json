@@ -2686,6 +2686,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16179"
+    },
+    {
+      "canonicalIdentity": "KR|0036D0|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "0036D0",
+      "priorNames": [
+        "TIME 미국배당다우존스액티브"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR70036D0007",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-27",
+      "inactiveAt": "2026-08-27",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16194"
     }
   ]
 }
