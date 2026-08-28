@@ -2703,6 +2703,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16194"
+    },
+    {
+      "canonicalIdentity": "KR|397420|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "397420",
+      "priorNames": [
+        "RISE 국채선물5년추종"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR7397420001",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-08-28",
+      "inactiveAt": "2026-08-28",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16199"
     }
   ]
 }

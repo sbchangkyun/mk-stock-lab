@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16195",
+  "masterVersion": "hf3b-hf2-kis-16199",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-27",
+  "sourceAsOf": "2026-08-28",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -9572,19 +9572,6 @@
       "standardCode": "KR7396520009",
       "aliases": [
         "396520"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "397420",
-      "displayName": "RISE 국채선물5년추종",
-      "country": "KR",
-      "exchange": "KOSPI",
-      "assetType": "etf",
-      "exchangeCode": null,
-      "standardCode": "KR7397420001",
-      "aliases": [
-        "397420"
       ],
       "active": true
     },
@@ -62537,14 +62524,15 @@
     },
     {
       "symbol": "CLOO",
-      "displayName": "NYLI INVESTMENT GRADE CLO ETF",
-      "englishName": "NYLI INVESTMENT GRADE CLO ETF",
+      "displayName": "NYLIM INVESTMENT GRADE CLO ETF",
+      "englishName": "NYLIM INVESTMENT GRADE CLO ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cloo"
+        "cloo",
+        "nyli investment grade clo etf"
       ],
       "active": true
     },
@@ -63408,14 +63396,15 @@
     },
     {
       "symbol": "CPLB",
-      "displayName": "NYLI MACKAY CORE PLUS BOND ETF",
-      "englishName": "NYLI MACKAY CORE PLUS BOND ETF",
+      "displayName": "NYLIM MACKAY CORE PLUS BOND ETF",
+      "englishName": "NYLIM MACKAY CORE PLUS BOND ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cplb"
+        "cplb",
+        "nyli mackay core plus bond etf"
       ],
       "active": true
     },
@@ -82063,14 +82052,15 @@
     },
     {
       "symbol": "HFXI",
-      "displayName": "NYLI FTSE INTERNATIONAL EQUITY CURRENCY NEUTRAL ETF",
-      "englishName": "NYLI FTSE INTERNATIONAL EQUITY CURRENCY NEUTRAL ETF",
+      "displayName": "NYLIM FTSE INTERNATIONAL EQUITY CURRENCY NEUTRAL ETF",
+      "englishName": "NYLIM FTSE INTERNATIONAL EQUITY CURRENCY NEUTRAL ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "hfxi"
+        "hfxi",
+        "nyli ftse international equity currency neutral etf"
       ],
       "active": true
     },
@@ -84715,14 +84705,15 @@
     },
     {
       "symbol": "IDEF",
-      "displayName": "ISHARES DEFENSE INDUSTRIALS ACTIVE ETF",
-      "englishName": "ISHARES DEFENSE INDUSTRIALS ACTIVE ETF",
+      "displayName": "ISHARES DEFENSE INDUSTRIALS AND TECH ACTIVE ETF",
+      "englishName": "ISHARES DEFENSE INDUSTRIALS AND TECH ACTIVE ETF",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "idef"
+        "idef",
+        "ishares defense industrials active etf"
       ],
       "active": true
     },
@@ -86730,14 +86721,15 @@
     },
     {
       "symbol": "IQHI",
-      "displayName": "NYLI MACKAY HIGH INCOME ETF",
-      "englishName": "NYLI MACKAY HIGH INCOME ETF",
+      "displayName": "NYLIM MACKAY HIGH INCOME ETF",
+      "englishName": "NYLIM MACKAY HIGH INCOME ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqhi"
+        "iqhi",
+        "nyli mackay high income etf"
       ],
       "active": true
     },
@@ -86834,40 +86826,43 @@
     },
     {
       "symbol": "IQSI",
-      "displayName": "NYLI CANDRIAM INTERNATIONAL EQUITY ETF",
-      "englishName": "NYLI CANDRIAM INTERNATIONAL EQUITY ETF",
+      "displayName": "NYLIM CANDRIAM INTERNATIONAL EQUITY ETF",
+      "englishName": "NYLIM CANDRIAM INTERNATIONAL EQUITY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqsi"
+        "iqsi",
+        "nyli candriam international equity etf"
       ],
       "active": true
     },
     {
       "symbol": "IQSM",
-      "displayName": "NYLI CANDRIAM U.S. MID CAP EQUITY ETF",
-      "englishName": "NYLI CANDRIAM U.S. MID CAP EQUITY ETF",
+      "displayName": "NYLIM CANDRIAM U.S. MID CAP EQUITY ETF",
+      "englishName": "NYLIM CANDRIAM U.S. MID CAP EQUITY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqsm"
+        "iqsm",
+        "nyli candriam u.s. mid cap equity etf"
       ],
       "active": true
     },
     {
       "symbol": "IQSU",
-      "displayName": "NYLI CANDRIAM U.S. LARGE CAP EQUITY ETF",
-      "englishName": "NYLI CANDRIAM U.S. LARGE CAP EQUITY ETF",
+      "displayName": "NYLIM CANDRIAM U.S. LARGE CAP EQUITY ETF",
+      "englishName": "NYLIM CANDRIAM U.S. LARGE CAP EQUITY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqsu"
+        "iqsu",
+        "nyli candriam u.s. large cap equity etf"
       ],
       "active": true
     },
@@ -87796,14 +87791,15 @@
     },
     {
       "symbol": "IWFG",
-      "displayName": "NYLI WINSLOW FOCUSED LARGE CAP GROWTH ETF",
-      "englishName": "NYLI WINSLOW FOCUSED LARGE CAP GROWTH ETF",
+      "displayName": "NYLIM WINSLOW FOCUSED LARGE CAP GROWTH ETF",
+      "englishName": "NYLIM WINSLOW FOCUSED LARGE CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iwfg"
+        "iwfg",
+        "nyli winslow focused large cap growth etf"
       ],
       "active": true
     },
@@ -87835,14 +87831,15 @@
     },
     {
       "symbol": "IWLG",
-      "displayName": "NYLI WINSLOW LARGE CAP GROWTH ETF",
-      "englishName": "NYLI WINSLOW LARGE CAP GROWTH ETF",
+      "displayName": "NYLIM WINSLOW LARGE CAP GROWTH ETF",
+      "englishName": "NYLIM WINSLOW LARGE CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iwlg"
+        "iwlg",
+        "nyli winslow large cap growth etf"
       ],
       "active": true
     },
@@ -91331,6 +91328,19 @@
       "active": true
     },
     {
+      "symbol": "KPO",
+      "displayName": "KENSINGTON PREMIUM OPPORTUNITIES ETF",
+      "englishName": "KENSINGTON PREMIUM OPPORTUNITIES ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "kpo"
+      ],
+      "active": true
+    },
+    {
       "symbol": "KPRO",
       "displayName": "KRANESHARES 100% KWEB DEFINED OUTCOME JANUARY 2027 ETF",
       "englishName": "KRANESHARES 100% KWEB DEFINED OUTCOME JANUARY 2027 ETF",
@@ -91878,13 +91888,14 @@
     },
     {
       "symbol": "LCLG",
-      "displayName": "ADVISORS SERIES TRUST LOGAN CAPITAL BROAD INNOVATIVE GRWTH E",
-      "englishName": "ADVISORS SERIES TRUST LOGAN CAPITAL BROAD INNOVATIVE GRWTH E",
+      "displayName": "LOGAN CAPITAL LARGE CAP GROWTH ETF",
+      "englishName": "LOGAN CAPITAL LARGE CAP GROWTH ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "advisors series trust logan capital broad innovative grwth e",
         "lclg"
       ],
       "active": true
@@ -93152,14 +93163,15 @@
     },
     {
       "symbol": "LRND",
-      "displayName": "NEW YORK LIFE INVESTMENTS ETF TRUST NYLI U.S. LARGE CAP R&3",
-      "englishName": "NEW YORK LIFE INVESTMENTS ETF TRUST NYLI U.S. LARGE CAP R&3",
+      "displayName": "NYLIM U.S. LARGE CAP R&D LEADERS ETF",
+      "englishName": "NYLIM U.S. LARGE CAP R&D LEADERS ETF",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "lrnd"
+        "lrnd",
+        "new york life investments etf trust nyli u.s. large cap r&3"
       ],
       "active": true
     },
@@ -94335,14 +94347,15 @@
     },
     {
       "symbol": "MEGI",
-      "displayName": "NYLI CBRE GLOBAL INFRASTRUCTURE MEGATRENDS TERM FUND",
-      "englishName": "NYLI CBRE GLOBAL INFRASTRUCTURE MEGATRENDS TERM FUND",
+      "displayName": "NYLIM CBRE GLOBAL INFRASTRUCTURE MEGATRENDS TERM FUND",
+      "englishName": "NYLIM CBRE GLOBAL INFRASTRUCTURE MEGATRENDS TERM FUND",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
-        "megi"
+        "megi",
+        "nyli cbre global infrastructure megatrends term fund"
       ],
       "active": true
     },
@@ -95401,27 +95414,29 @@
     },
     {
       "symbol": "MMCA",
-      "displayName": "NYLI MACKAY CALIFORNIA MUNI INTERMEDIATE ETF",
-      "englishName": "NYLI MACKAY CALIFORNIA MUNI INTERMEDIATE ETF",
+      "displayName": "NYLIM MACKAY CALIFORNIA MUNI INTERMEDIATE ETF",
+      "englishName": "NYLIM MACKAY CALIFORNIA MUNI INTERMEDIATE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmca"
+        "mmca",
+        "nyli mackay california muni intermediate etf"
       ],
       "active": true
     },
     {
       "symbol": "MMD",
-      "displayName": "NYLI MACKAY DEFINEDTERM MUNI OPPORTUNITIES FUND",
-      "englishName": "NYLI MACKAY DEFINEDTERM MUNI OPPORTUNITIES FUND",
+      "displayName": "NYLIM MACKAY DEFINEDTERM MUNI OPPORTUNITIES FUND",
+      "englishName": "NYLIM MACKAY DEFINEDTERM MUNI OPPORTUNITIES FUND",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
-        "mmd"
+        "mmd",
+        "nyli mackay definedterm muni opportunities fund"
       ],
       "active": true
     },
@@ -95440,27 +95455,29 @@
     },
     {
       "symbol": "MMIN",
-      "displayName": "NYLI MACKAY MUNI INSURED ETF",
-      "englishName": "NYLI MACKAY MUNI INSURED ETF",
+      "displayName": "NYLIM MACKAY MUNI INSURED ETF",
+      "englishName": "NYLIM MACKAY MUNI INSURED ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmin"
+        "mmin",
+        "nyli mackay muni insured etf"
       ],
       "active": true
     },
     {
       "symbol": "MMIT",
-      "displayName": "NYLI MACKAY MUNI INTERMEDIATE ETF",
-      "englishName": "NYLI MACKAY MUNI INTERMEDIATE ETF",
+      "displayName": "NYLIM MACKAY MUNI INTERMEDIATE ETF",
+      "englishName": "NYLIM MACKAY MUNI INTERMEDIATE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmit"
+        "mmit",
+        "nyli mackay muni intermediate etf"
       ],
       "active": true
     },
@@ -95492,14 +95509,15 @@
     },
     {
       "symbol": "MMMA",
-      "displayName": "NYLI MACKAY MUNI ALLOCATION ETF",
-      "englishName": "NYLI MACKAY MUNI ALLOCATION ETF",
+      "displayName": "NYLIM MACKAY MUNI ALLOCATION ETF",
+      "englishName": "NYLIM MACKAY MUNI ALLOCATION ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmma"
+        "mmma",
+        "nyli mackay muni allocation etf"
       ],
       "active": true
     },
@@ -95518,14 +95536,15 @@
     },
     {
       "symbol": "MMSD",
-      "displayName": "NYLI MACKAY MUNI SHORT DURATION ETF",
-      "englishName": "NYLI MACKAY MUNI SHORT DURATION ETF",
+      "displayName": "NYLIM MACKAY MUNI SHORT DURATION ETF",
+      "englishName": "NYLIM MACKAY MUNI SHORT DURATION ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmsd"
+        "mmsd",
+        "nyli mackay muni short duration etf"
       ],
       "active": true
     },
@@ -95570,14 +95589,15 @@
     },
     {
       "symbol": "MNA",
-      "displayName": "NYLI MERGER ARBITRAGE ETF",
-      "englishName": "NYLI MERGER ARBITRAGE ETF",
+      "displayName": "NYLIM MERGER ARBITRAGE ETF",
+      "englishName": "NYLIM MERGER ARBITRAGE ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mna"
+        "mna",
+        "nyli merger arbitrage etf"
       ],
       "active": true
     },
@@ -98534,14 +98554,15 @@
     },
     {
       "symbol": "NISM",
-      "displayName": "NYLI INTERNATIONAL SMALL-MID CAP EQUITY ETF",
-      "englishName": "NYLI INTERNATIONAL SMALL-MID CAP EQUITY ETF",
+      "displayName": "NYLIM INTERNATIONAL SMALL-MID CAP EQUITY ETF",
+      "englishName": "NYLIM INTERNATIONAL SMALL-MID CAP EQUITY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "nism"
+        "nism",
+        "nyli international small-mid cap equity etf"
       ],
       "active": true
     },
@@ -105801,13 +105822,14 @@
     },
     {
       "symbol": "QAI",
-      "displayName": "NYLI HEDGE MULTI-STRATEGY TRACKER ETF",
-      "englishName": "NYLI HEDGE MULTI-STRATEGY TRACKER ETF",
+      "displayName": "NYLIM HEDGE MULTI-STRATEGY TRACKER ETF",
+      "englishName": "NYLIM HEDGE MULTI-STRATEGY TRACKER ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "nyli hedge multi-strategy tracker etf",
         "qai"
       ],
       "active": true
@@ -108347,6 +108369,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "reit"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "REIX",
+      "displayName": "NYLIM CBRE REAL ESTATE & INFRASTRUCTURE ETF",
+      "englishName": "NYLIM CBRE REAL ESTATE & INFRASTRUCTURE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "reix"
       ],
       "active": true
     },
@@ -111615,13 +111650,14 @@
     },
     {
       "symbol": "SECR",
-      "displayName": "NYLI MACKAY SECURITIZED INCOME ETF",
-      "englishName": "NYLI MACKAY SECURITIZED INCOME ETF",
+      "displayName": "NYLIM MACKAY SECURITIZED INCOME ETF",
+      "englishName": "NYLIM MACKAY SECURITIZED INCOME ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "nyli mackay securitized income etf",
         "secr"
       ],
       "active": true
@@ -125781,13 +125817,14 @@
     },
     {
       "symbol": "WRND",
-      "displayName": "NEW YORK LIFE INVESTMENTS ETF TRUST NYLI GLOBAL EQUITY R&38",
-      "englishName": "NEW YORK LIFE INVESTMENTS ETF TRUST NYLI GLOBAL EQUITY R&38",
+      "displayName": "NYLIM GLOBAL EQUITY R&D LEADERS ETF",
+      "englishName": "NYLIM GLOBAL EQUITY R&D LEADERS ETF",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
+        "new york life investments etf trust nyli global equity r&38",
         "wrnd"
       ],
       "active": true
@@ -167390,6 +167427,19 @@
       "active": true
     },
     {
+      "symbol": "IPHXU",
+      "displayName": "INFLECTION PT ACQUISITION CORP VIII UNIT CONSIST OF 1 CL A O",
+      "englishName": "INFLECTION PT ACQUISITION CORP VIII UNIT CONSIST OF 1 CL A O",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "iphxu"
+      ],
+      "active": true
+    },
+    {
       "symbol": "IPI",
       "displayName": "INTREPID POTASH INC",
       "englishName": "INTREPID POTASH INC",
@@ -167508,26 +167558,28 @@
     },
     {
       "symbol": "IPXG",
-      "displayName": "INFLECTION POINT ACQUISITION CORP VII",
-      "englishName": "INFLECTION POINT ACQUISITION CORP VII",
+      "displayName": "INFLECTION POINT ACQUISITION CORP",
+      "englishName": "INFLECTION POINT ACQUISITION CORP",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "inflection point acquisition corp vii",
         "ipxg"
       ],
       "active": true
     },
     {
       "symbol": "IPXGU",
-      "displayName": "INFLECTION POINT ACQUISITION CORP VII UNIT CONSIT 1 ORD A &",
-      "englishName": "INFLECTION POINT ACQUISITION CORP VII UNIT CONSIT 1 ORD A &",
+      "displayName": "INFLECTION POINT ACQUISITION CORP UNIT CONSIT 1 ORD A &",
+      "englishName": "INFLECTION POINT ACQUISITION CORP UNIT CONSIT 1 ORD A &",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "inflection point acquisition corp vii unit consit 1 ord a &",
         "ipxgu"
       ],
       "active": true
@@ -177738,14 +177790,15 @@
     },
     {
       "symbol": "MSTR",
-      "displayName": "STRATEGY INC",
-      "englishName": "STRATEGY INC",
+      "displayName": "Strategy Inc",
+      "englishName": "Strategy Inc",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "mstr"
+        "mstr",
+        "strategy inc"
       ],
       "active": true
     },
@@ -188543,6 +188596,19 @@
       "active": true
     },
     {
+      "symbol": "PSQL",
+      "displayName": "PASQAL HOLDING SA",
+      "englishName": "PASQAL HOLDING SA",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "psql"
+      ],
+      "active": true
+    },
+    {
       "symbol": "PSTL",
       "displayName": "POSTAL REALTY TRUST INC",
       "englishName": "POSTAL REALTY TRUST INC",
@@ -191781,13 +191847,14 @@
     },
     {
       "symbol": "RNAQU",
-      "displayName": "RAINIER ACQUISITION CORP UNIT CONSIST OF 1 CL A & 1/4 WT",
-      "englishName": "RAINIER ACQUISITION CORP UNIT CONSIST OF 1 CL A & 1/4 WT",
+      "displayName": "RAINIER ACQUISITION CORPORATION UNIT CONSIST OF 1 CL A &",
+      "englishName": "RAINIER ACQUISITION CORPORATION UNIT CONSIST OF 1 CL A &",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "rainier acquisition corp unit consist of 1 cl a & 1/4 wt",
         "rnaqu"
       ],
       "active": true
@@ -204823,14 +204890,15 @@
     },
     {
       "symbol": "VAI",
-      "displayName": "VALOR ENERGY INCORPORATED",
-      "englishName": "VALOR ENERGY INCORPORATED",
+      "displayName": "VALOR ENERGY INC",
+      "englishName": "VALOR ENERGY INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "vai"
+        "vai",
+        "valor energy incorporated"
       ],
       "active": true
     },
@@ -209047,6 +209115,19 @@
       "active": true
     },
     {
+      "symbol": "XLAB",
+      "displayName": "EXASCALE LABS HOLDINGS INC",
+      "englishName": "EXASCALE LABS HOLDINGS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "xlab"
+      ],
+      "active": true
+    },
+    {
       "symbol": "XLO",
       "displayName": "XILIO THERAPEUTICS INC",
       "englishName": "XILIO THERAPEUTICS INC",
@@ -209243,13 +209324,14 @@
     },
     {
       "symbol": "XPON",
-      "displayName": "EXPION360 INC",
-      "englishName": "EXPION360 INC",
+      "displayName": "EXPION ENERGY INC",
+      "englishName": "EXPION ENERGY INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "expion360 inc",
         "xpon"
       ],
       "active": true
@@ -209373,13 +209455,14 @@
     },
     {
       "symbol": "XTER",
-      "displayName": "KARMAN LINE ACQUISITION CORP",
-      "englishName": "KARMAN LINE ACQUISITION CORP",
+      "displayName": "KARMAN LINE ACQUISITION CORPORATION",
+      "englishName": "KARMAN LINE ACQUISITION CORPORATION",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "karman line acquisition corp",
         "xter"
       ],
       "active": true
