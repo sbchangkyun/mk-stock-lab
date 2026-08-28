@@ -10,16 +10,16 @@
     {
       "family": "kis-kospi",
       "file": "kospi_code.mst",
-      "zipBytes": 119696,
+      "zipBytes": 119622,
       "bytes": 741574,
-      "sha256": "abfec9c79eca665741b6189fc88214961088067782791f9c90aa0715c510b4a2"
+      "sha256": "5ccd79dea25929bf2e6b25077387441a4da33a1873428cbe7d5e4adcba611775"
     },
     {
       "family": "kis-kosdaq",
       "file": "kosdaq_code.mst",
-      "zipBytes": 103404,
+      "zipBytes": 103515,
       "bytes": 516192,
-      "sha256": "8ff9f23248c1cb1b2a0860fa2600733d2495bb3ae0da7bc6a0f51298288c78d4"
+      "sha256": "277e964f9c828558da7707cc5eb582a9c0dc30d5ba11518d2e34beefeec7760f"
     },
     {
       "family": "kis-overseas-nasdaq",

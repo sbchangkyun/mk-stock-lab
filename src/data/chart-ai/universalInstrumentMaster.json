@@ -62531,8 +62531,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cloo",
-        "nyli investment grade clo etf"
+        "cloo"
       ],
       "active": true
     },
@@ -63403,8 +63402,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cplb",
-        "nyli mackay core plus bond etf"
+        "cplb"
       ],
       "active": true
     },
@@ -82059,8 +82057,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "hfxi",
-        "nyli ftse international equity currency neutral etf"
+        "hfxi"
       ],
       "active": true
     },
@@ -84712,8 +84709,7 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "idef",
-        "ishares defense industrials active etf"
+        "idef"
       ],
       "active": true
     },
@@ -86728,8 +86724,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqhi",
-        "nyli mackay high income etf"
+        "iqhi"
       ],
       "active": true
     },
@@ -86833,8 +86828,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqsi",
-        "nyli candriam international equity etf"
+        "iqsi"
       ],
       "active": true
     },
@@ -86847,8 +86841,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqsm",
-        "nyli candriam u.s. mid cap equity etf"
+        "iqsm"
       ],
       "active": true
     },
@@ -86861,8 +86854,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iqsu",
-        "nyli candriam u.s. large cap equity etf"
+        "iqsu"
       ],
       "active": true
     },
@@ -87798,8 +87790,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iwfg",
-        "nyli winslow focused large cap growth etf"
+        "iwfg"
       ],
       "active": true
     },
@@ -87838,8 +87829,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "iwlg",
-        "nyli winslow large cap growth etf"
+        "iwlg"
       ],
       "active": true
     },
@@ -91895,7 +91885,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "advisors series trust logan capital broad innovative grwth e",
         "lclg"
       ],
       "active": true
@@ -93170,8 +93159,7 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "lrnd",
-        "new york life investments etf trust nyli u.s. large cap r&3"
+        "lrnd"
       ],
       "active": true
     },
@@ -94354,8 +94342,7 @@
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
-        "megi",
-        "nyli cbre global infrastructure megatrends term fund"
+        "megi"
       ],
       "active": true
     },
@@ -95421,8 +95408,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmca",
-        "nyli mackay california muni intermediate etf"
+        "mmca"
       ],
       "active": true
     },
@@ -95435,8 +95421,7 @@
       "assetType": "etf",
       "exchangeCode": "NYS",
       "aliases": [
-        "mmd",
-        "nyli mackay definedterm muni opportunities fund"
+        "mmd"
       ],
       "active": true
     },
@@ -95462,8 +95447,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmin",
-        "nyli mackay muni insured etf"
+        "mmin"
       ],
       "active": true
     },
@@ -95476,8 +95460,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmit",
-        "nyli mackay muni intermediate etf"
+        "mmit"
       ],
       "active": true
     },
@@ -95516,8 +95499,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmma",
-        "nyli mackay muni allocation etf"
+        "mmma"
       ],
       "active": true
     },
@@ -95543,8 +95525,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mmsd",
-        "nyli mackay muni short duration etf"
+        "mmsd"
       ],
       "active": true
     },
@@ -95596,8 +95577,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "mna",
-        "nyli merger arbitrage etf"
+        "mna"
       ],
       "active": true
     },
@@ -98561,8 +98541,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "nism",
-        "nyli international small-mid cap equity etf"
+        "nism"
       ],
       "active": true
     },
@@ -105829,7 +105808,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "nyli hedge multi-strategy tracker etf",
         "qai"
       ],
       "active": true
@@ -111657,7 +111635,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "nyli mackay securitized income etf",
         "secr"
       ],
       "active": true
@@ -125824,7 +125801,6 @@
       "assetType": "etf",
       "exchangeCode": "NAS",
       "aliases": [
-        "new york life investments etf trust nyli global equity r&38",
         "wrnd"
       ],
       "active": true
@@ -167565,7 +167541,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "inflection point acquisition corp vii",
         "ipxg"
       ],
       "active": true
@@ -167579,7 +167554,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "inflection point acquisition corp vii unit consit 1 ord a &",
         "ipxgu"
       ],
       "active": true
@@ -177797,8 +177771,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "mstr",
-        "strategy inc"
+        "mstr"
       ],
       "active": true
     },
@@ -191854,7 +191827,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "rainier acquisition corp unit consist of 1 cl a & 1/4 wt",
         "rnaqu"
       ],
       "active": true
@@ -204897,8 +204869,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "vai",
-        "valor energy incorporated"
+        "vai"
       ],
       "active": true
     },
@@ -209331,7 +209302,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "expion360 inc",
         "xpon"
       ],
       "active": true
@@ -209462,7 +209432,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "karman line acquisition corp",
         "xter"
       ],
       "active": true
