@@ -70,8 +70,8 @@
   },
   "krSymbolRule": "^[0-9A-Z]{6}$ (six-character KRX code; numeric or alphanumeric; ASCII-uppercased).",
   "usSymbolRule": "^[A-Z][A-Z0-9.]{0,9}$ (KIS overseas ticker).",
-  "sourceAsOf": "2026-08-28",
-  "refreshedAt": "2026-08-28",
+  "sourceAsOf": "2026-08-29",
+  "refreshedAt": "2026-08-29",
   "activeCount": 16199,
   "inactiveArchiveCount": 152,
   "pendingInactiveCount": 0
