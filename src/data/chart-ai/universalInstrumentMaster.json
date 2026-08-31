@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16199",
+  "masterVersion": "hf3b-hf2-kis-16207",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-29",
+  "sourceAsOf": "2026-08-31",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -51564,6 +51564,19 @@
       "active": true
     },
     {
+      "symbol": "AELV",
+      "displayName": "HARBOR ALPHAEDGE LARGE CAP VALUE ETF",
+      "englishName": "HARBOR ALPHAEDGE LARGE CAP VALUE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aelv"
+      ],
+      "active": true
+    },
+    {
       "symbol": "AEMC",
       "displayName": "HARBOR ALPHAEDGE MID CAP CORE ETF",
       "englishName": "HARBOR ALPHAEDGE MID CAP CORE ETF",
@@ -69128,14 +69141,15 @@
     },
     {
       "symbol": "EBIT",
-      "displayName": "HARBOR ALPHAEDGE SMALL CAP EARNERS ETF",
-      "englishName": "HARBOR ALPHAEDGE SMALL CAP EARNERS ETF",
+      "displayName": "HARBOR SMALL CAP EARNERS ETF",
+      "englishName": "HARBOR SMALL CAP EARNERS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "ebit"
+        "ebit",
+        "harbor alphaedge small cap earners etf"
       ],
       "active": true
     },
@@ -76702,6 +76716,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "frty"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "FRUT",
+      "displayName": "YORKVILLE AMERICA MANGOS PLUS INDEX ETF",
+      "englishName": "YORKVILLE AMERICA MANGOS PLUS INDEX ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "frut"
       ],
       "active": true
     },
@@ -93762,6 +93789,19 @@
       "active": true
     },
     {
+      "symbol": "MATR",
+      "displayName": "HARBOR MULTI-ASSET TOTAL RETURN ETF",
+      "englishName": "HARBOR MULTI-ASSET TOTAL RETURN ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "matr"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MAUG",
       "displayName": "PACER SWAN SOS MODERATE (AUGUST) ETF",
       "englishName": "PACER SWAN SOS MODERATE (AUGUST) ETF",
@@ -106269,14 +106309,15 @@
     },
     {
       "symbol": "QDTE",
-      "displayName": "ROUNDHILL INNOVATION-100 0DTE COVERED CALL STRATEGY ETF",
-      "englishName": "ROUNDHILL INNOVATION-100 0DTE COVERED CALL STRATEGY ETF",
+      "displayName": "ROUNDHILL NASDAQ-100 0DTE COVERED CALL ETF STRATEGY ETF",
+      "englishName": "ROUNDHILL NASDAQ-100 0DTE COVERED CALL ETF STRATEGY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "qdte"
+        "qdte",
+        "roundhill innovation-100 0dte covered call strategy etf"
       ],
       "active": true
     },
@@ -136520,6 +136561,32 @@
       "exchangeCode": "NAS",
       "aliases": [
         "atlo"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ATLQ",
+      "displayName": "JAB ACQUISITION CORPORATION I",
+      "englishName": "JAB ACQUISITION CORPORATION I",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "atlq"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ATLQU",
+      "displayName": "JAB ACQUISITION CORPORATION I UNIT 1 CL A & 1 WT & 1",
+      "englishName": "JAB ACQUISITION CORPORATION I UNIT 1 CL A & 1 WT & 1",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "atlqu"
       ],
       "active": true
     },
@@ -167404,13 +167471,14 @@
     },
     {
       "symbol": "IPHXU",
-      "displayName": "INFLECTION PT ACQUISITION CORP VIII UNIT CONSIST OF 1 CL A O",
-      "englishName": "INFLECTION PT ACQUISITION CORP VIII UNIT CONSIST OF 1 CL A O",
+      "displayName": "INFLECTION POINT ACQUISITION CORP VIII UNIT CONSIST OF 1 CL",
+      "englishName": "INFLECTION POINT ACQUISITION CORP VIII UNIT CONSIST OF 1 CL",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "inflection pt acquisition corp viii unit consist of 1 cl a o",
         "iphxu"
       ],
       "active": true
@@ -174495,13 +174563,14 @@
     },
     {
       "symbol": "MBAI",
-      "displayName": "CHECK-CAP LTD",
-      "englishName": "CHECK-CAP LTD",
+      "displayName": "MBODY AI LTD",
+      "englishName": "MBODY AI LTD",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "check-cap ltd",
         "mbai"
       ],
       "active": true
@@ -183529,9 +183598,9 @@
       "displayName": "OFFERPAD SOLUTIONS INC",
       "englishName": "OFFERPAD SOLUTIONS INC",
       "country": "US",
-      "exchange": "NYSE",
+      "exchange": "NASDAQ",
       "assetType": "stock",
-      "exchangeCode": "NYS",
+      "exchangeCode": "NAS",
       "aliases": [
         "opad"
       ],
@@ -184704,6 +184773,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "paacu"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PAAI",
+      "displayName": "PARADIUM AI INC",
+      "englishName": "PARADIUM AI INC",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "paai"
       ],
       "active": true
     },
@@ -193288,6 +193370,19 @@
       "active": true
     },
     {
+      "symbol": "SAMO",
+      "displayName": "SAMOS ENERGY ACQUISITION CORPORATION",
+      "englishName": "SAMOS ENERGY ACQUISITION CORPORATION",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "samo"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SAN",
       "displayName": "BANCO SANTANDER SA ADR EACH 1 REPR 1 ORD EUR0.50",
       "englishName": "BANCO SANTANDER SA ADR EACH 1 REPR 1 ORD EUR0.50",
@@ -199113,13 +199208,14 @@
     },
     {
       "symbol": "SVRN",
-      "displayName": "OCEANPAL INC",
-      "englishName": "OCEANPAL INC",
+      "displayName": "SVRN INC",
+      "englishName": "SVRN INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "oceanpal inc",
         "svrn"
       ],
       "active": true
@@ -202059,6 +202155,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "trax"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TRBG",
+      "displayName": "TURBOGEN LTD",
+      "englishName": "TURBOGEN LTD",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "trbg"
       ],
       "active": true
     },
