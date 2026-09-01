@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16207",
+  "masterVersion": "hf3b-hf2-kis-16182",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-08-31",
+  "sourceAsOf": "2026-09-01",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -3853,6 +3853,19 @@
       "active": true
     },
     {
+      "symbol": "0229F0",
+      "displayName": "마이티 신약포커스바이오액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70229F0002",
+      "aliases": [
+        "0229f0"
+      ],
+      "active": true
+    },
+    {
       "symbol": "0231Z0",
       "displayName": "KODEX 코리아TDF2065액티브 적격",
       "country": "KR",
@@ -3862,6 +3875,19 @@
       "standardCode": "KR70231Z0004",
       "aliases": [
         "0231z0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0232A0",
+      "displayName": "MIDAS 머니마켓액티브",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70232A0002",
+      "aliases": [
+        "0232a0"
       ],
       "active": true
     },
@@ -3888,6 +3914,32 @@
       "standardCode": "KR70233J0002",
       "aliases": [
         "0233j0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0233N0",
+      "displayName": "RISE 글로벌AI낸드메모리반도체",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70233N0006",
+      "aliases": [
+        "0233n0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0234N0",
+      "displayName": "KIWOOM 삼성SK그룹TOP4+",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70234N0005",
+      "aliases": [
+        "0234n0"
       ],
       "active": true
     },
@@ -17202,14 +17254,15 @@
     },
     {
       "symbol": "002420",
-      "displayName": "세기상사",
+      "displayName": "우양피앤엘",
       "country": "KR",
       "exchange": "KOSPI",
       "assetType": "stock",
       "exchangeCode": null,
       "standardCode": "KR7002420008",
       "aliases": [
-        "002420"
+        "002420",
+        "세기상사"
       ],
       "active": true
     },
@@ -50953,19 +51006,6 @@
       "active": true
     },
     {
-      "symbol": "ABNG",
-      "displayName": "LEVERAGE SHARES 2X LONG ABNB DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG ABNB DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "abng"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ABOT",
       "displayName": "ABACUS FCF INNOVATION LEADERS ETF",
       "englishName": "ABACUS FCF INNOVATION LEADERS ETF",
@@ -55148,19 +55188,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "awp"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "AXPG",
-      "displayName": "LEVERAGE SHARES 2X LONG AXP DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG AXP DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "axpg"
       ],
       "active": true
     },
@@ -62744,19 +62771,6 @@
       "active": true
     },
     {
-      "symbol": "CMGG",
-      "displayName": "LEVERAGE SHARES 2X LONG CMG DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG CMG DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "cmgg"
-      ],
-      "active": true
-    },
-    {
       "symbol": "CNAV",
       "displayName": "MOHR COMPANY NAV ETF",
       "englishName": "MOHR COMPANY NAV ETF",
@@ -62779,19 +62793,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "cnbs"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CNCG",
-      "displayName": "LEVERAGE SHARES 2X LONG CNC DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG CNC DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "cncg"
       ],
       "active": true
     },
@@ -63927,19 +63928,6 @@
       "active": true
     },
     {
-      "symbol": "CRED",
-      "displayName": "COLUMBIA ETF TR I RESEARCH ENHANCED REAL ESTATE ETF",
-      "englishName": "COLUMBIA ETF TR I RESEARCH ENHANCED REAL ESTATE ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "cred"
-      ],
-      "active": true
-    },
-    {
       "symbol": "CRF",
       "displayName": "CORNERSTONE TOTAL RETURN FUND INC COM",
       "englishName": "CORNERSTONE TOTAL RETURN FUND INC COM",
@@ -64846,19 +64834,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "cza"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CZAR",
-      "displayName": "THEMES ETF TRUST NATURAL MONOPOLY ETF",
-      "englishName": "THEMES ETF TRUST NATURAL MONOPOLY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "czar"
       ],
       "active": true
     },
@@ -67515,19 +67490,6 @@
       "active": true
     },
     {
-      "symbol": "DNNG",
-      "displayName": "LEVERAGE SHARES 2X LONG DNN DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG DNN DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "dnng"
-      ],
-      "active": true
-    },
-    {
       "symbol": "DNOV",
       "displayName": "FIRST TR EXCHANGE TRADED FD VIII VEST US EQTY DEEP BUFFER ET",
       "englishName": "FIRST TR EXCHANGE TRADED FD VIII VEST US EQTY DEEP BUFFER ET",
@@ -69148,8 +69110,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "ebit",
-        "harbor alphaedge small cap earners etf"
+        "ebit"
       ],
       "active": true
     },
@@ -82895,19 +82856,6 @@
       "active": true
     },
     {
-      "symbol": "HWAY",
-      "displayName": "THEMES US INFRASTRUCTURE ETF",
-      "englishName": "THEMES US INFRASTRUCTURE ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "hway"
-      ],
-      "active": true
-    },
-    {
       "symbol": "HWGV",
       "displayName": "HOTCHKIS & WILEY GLOBAL VALUE FUND",
       "englishName": "HOTCHKIS & WILEY GLOBAL VALUE FUND",
@@ -91731,19 +91679,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "labx"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "LACG",
-      "displayName": "LEVERAGE SHARES 2X LONG LAC DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG LAC DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lacg"
       ],
       "active": true
     },
@@ -101212,19 +101147,6 @@
       "active": true
     },
     {
-      "symbol": "ORLG",
-      "displayName": "LEVERAGE SHARES 2X LONG ORLY DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG ORLY DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "orlg"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ORO",
       "displayName": "ARROW VALTORO ETF",
       "englishName": "ARROW VALTORO ETF",
@@ -101247,19 +101169,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "orr"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "OSCG",
-      "displayName": "LEVERAGE SHARES 2X LONG OSCR DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG OSCR DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "oscg"
       ],
       "active": true
     },
@@ -106316,8 +106225,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "qdte",
-        "roundhill innovation-100 0dte covered call strategy etf"
+        "qdte"
       ],
       "active": true
     },
@@ -107950,19 +107858,6 @@
       "active": true
     },
     {
-      "symbol": "RAYJ",
-      "displayName": "ADVISORS INNER CIRCLE FD III RAYLIANT SMDAM JAPAN EQUITY ETF",
-      "englishName": "ADVISORS INNER CIRCLE FD III RAYLIANT SMDAM JAPAN EQUITY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "rayj"
-      ],
-      "active": true
-    },
-    {
       "symbol": "RB",
       "displayName": "PROSHARES RUSSELL 2000 DYNAMIC BUFFER ETF",
       "englishName": "PROSHARES RUSSELL 2000 DYNAMIC BUFFER ETF",
@@ -109246,19 +109141,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "rmi"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "RMIF",
-      "displayName": "ETF SERIES SOLUTIONS LHA RISK MANAGED INCOME ETF",
-      "englishName": "ETF SERIES SOLUTIONS LHA RISK MANAGED INCOME ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "rmif"
       ],
       "active": true
     },
@@ -110767,19 +110649,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "sbtu"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "SBU",
-      "displayName": "LEVERAGE SHARES 2X LONG SBUX DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG SBUX DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "sbu"
       ],
       "active": true
     },
@@ -121603,19 +121472,6 @@
       "active": true
     },
     {
-      "symbol": "UPSG",
-      "displayName": "LEVERAGE SHARES 2X LONG UPS DAILY ETF",
-      "englishName": "LEVERAGE SHARES 2X LONG UPS DAILY ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "upsg"
-      ],
-      "active": true
-    },
-    {
       "symbol": "UPSX",
       "displayName": "TRADR 2X LONG UPST DAILY ETF",
       "englishName": "TRADR 2X LONG UPST DAILY ETF",
@@ -122262,19 +122118,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "uspx"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "USRD",
-      "displayName": "THEMES ETF TRUST US R&D CHAMPIONS ETF",
-      "englishName": "THEMES ETF TRUST US R&D CHAMPIONS ETF",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "etf",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "usrd"
       ],
       "active": true
     },
@@ -137189,19 +137032,6 @@
       "active": true
     },
     {
-      "symbol": "AVNS",
-      "displayName": "AVANOS MEDICAL INC",
-      "englishName": "AVANOS MEDICAL INC",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "avns"
-      ],
-      "active": true
-    },
-    {
       "symbol": "AVNT",
       "displayName": "AVIENT CORPORATION",
       "englishName": "AVIENT CORPORATION",
@@ -143984,32 +143814,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "cciiu"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CCIX",
-      "displayName": "CHURCHILL CAP CORP IX",
-      "englishName": "CHURCHILL CAP CORP IX",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ccix"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "CCIXU",
-      "displayName": "CHURCHILL CAP CORP IX UNIT 1 CL A SHS & 1/4 WT EXP",
-      "englishName": "CHURCHILL CAP CORP IX UNIT 1 CL A SHS & 1/4 WT EXP",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ccixu"
       ],
       "active": true
     },
@@ -153985,19 +153789,6 @@
       "active": true
     },
     {
-      "symbol": "EMPG",
-      "displayName": "EMPRO GROUP INC",
-      "englishName": "EMPRO GROUP INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "empg"
-      ],
-      "active": true
-    },
-    {
       "symbol": "EMR",
       "displayName": "EMERSON ELECTRIC CO",
       "englishName": "EMERSON ELECTRIC CO",
@@ -161568,19 +161359,6 @@
       "active": true
     },
     {
-      "symbol": "GRAF",
-      "displayName": "GRAF GLOBAL CORP",
-      "englishName": "GRAF GLOBAL CORP",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "stock",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "graf"
-      ],
-      "active": true
-    },
-    {
       "symbol": "GRAL",
       "displayName": "GRAIL INC",
       "englishName": "GRAIL INC",
@@ -162370,19 +162148,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "guts"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "GV",
-      "displayName": "VISIONARY HOLDINGS INC",
-      "englishName": "VISIONARY HOLDINGS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "gv"
       ],
       "active": true
     },
@@ -167478,7 +167243,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "inflection pt acquisition corp viii unit consist of 1 cl a o",
         "iphxu"
       ],
       "active": true
@@ -173223,19 +172987,6 @@
       "active": true
     },
     {
-      "symbol": "LPRO",
-      "displayName": "OPEN LENDING CORPORATION",
-      "englishName": "OPEN LENDING CORPORATION",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lpro"
-      ],
-      "active": true
-    },
-    {
       "symbol": "LPSN",
       "displayName": "LIVEPERSON INC",
       "englishName": "LIVEPERSON INC",
@@ -174570,7 +174321,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "check-cap ltd",
         "mbai"
       ],
       "active": true
@@ -178309,19 +178059,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "mvis"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "MVO",
-      "displayName": "MV OIL TRUST",
-      "englishName": "MV OIL TRUST",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "mvo"
       ],
       "active": true
     },
@@ -184006,19 +183743,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "orkt"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "ORLA",
-      "displayName": "ORLA MINING LTD NEW",
-      "englishName": "ORLA MINING LTD NEW",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "stock",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "orla"
       ],
       "active": true
     },
@@ -199215,7 +198939,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "oceanpal inc",
         "svrn"
       ],
       "active": true
@@ -202311,32 +202034,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "trin"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "TRINI",
-      "displayName": "TRINITY CAPITAL INC 7.875% NTS 30/09/2029",
-      "englishName": "TRINITY CAPITAL INC 7.875% NTS 30/09/2029",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "trini"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "TRINZ",
-      "displayName": "TRINITY CAPITAL INC 7.875% NOTES DUE 2029",
-      "englishName": "TRINITY CAPITAL INC 7.875% NOTES DUE 2029",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "trinz"
       ],
       "active": true
     },
@@ -206582,19 +206279,6 @@
       "active": true
     },
     {
-      "symbol": "VSTD",
-      "displayName": "VESTAND INC.",
-      "englishName": "VESTAND INC.",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "vstd"
-      ],
-      "active": true
-    },
-    {
       "symbol": "VSTM",
       "displayName": "VERASTEM INC",
       "englishName": "VERASTEM INC",
@@ -206851,19 +206535,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "vygr"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "VYNE",
-      "displayName": "VYNE THERAPEUTICS INC",
-      "englishName": "VYNE THERAPEUTICS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "vyne"
       ],
       "active": true
     },

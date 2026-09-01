@@ -2720,6 +2720,528 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16199"
+    },
+    {
+      "canonicalIdentity": "US|ABNG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "ABNG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG ABNB DAILY ETF",
+        "LEVERAGE SHARES 2X LONG ABNB DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|AXPG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "AXPG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG AXP DAILY ETF",
+        "LEVERAGE SHARES 2X LONG AXP DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|CMGG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "CMGG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG CMG DAILY ETF",
+        "LEVERAGE SHARES 2X LONG CMG DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|CNCG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "CNCG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG CNC DAILY ETF",
+        "LEVERAGE SHARES 2X LONG CNC DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|CRED|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "CRED",
+      "priorNames": [
+        "COLUMBIA ETF TR I RESEARCH ENHANCED REAL ESTATE ETF",
+        "COLUMBIA ETF TR I RESEARCH ENHANCED REAL ESTATE ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|CZAR|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "CZAR",
+      "priorNames": [
+        "THEMES ETF TRUST NATURAL MONOPOLY ETF",
+        "THEMES ETF TRUST NATURAL MONOPOLY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|DNNG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "DNNG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG DNN DAILY ETF",
+        "LEVERAGE SHARES 2X LONG DNN DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|HWAY|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "HWAY",
+      "priorNames": [
+        "THEMES US INFRASTRUCTURE ETF",
+        "THEMES US INFRASTRUCTURE ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|LACG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "LACG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG LAC DAILY ETF",
+        "LEVERAGE SHARES 2X LONG LAC DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|ORLG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "ORLG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG ORLY DAILY ETF",
+        "LEVERAGE SHARES 2X LONG ORLY DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|OSCG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "OSCG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG OSCR DAILY ETF",
+        "LEVERAGE SHARES 2X LONG OSCR DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|RAYJ|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "RAYJ",
+      "priorNames": [
+        "ADVISORS INNER CIRCLE FD III RAYLIANT SMDAM JAPAN EQUITY ETF",
+        "ADVISORS INNER CIRCLE FD III RAYLIANT SMDAM JAPAN EQUITY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|RMIF|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "RMIF",
+      "priorNames": [
+        "ETF SERIES SOLUTIONS LHA RISK MANAGED INCOME ETF",
+        "ETF SERIES SOLUTIONS LHA RISK MANAGED INCOME ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|SBU|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "SBU",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG SBUX DAILY ETF",
+        "LEVERAGE SHARES 2X LONG SBUX DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|UPSG|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "UPSG",
+      "priorNames": [
+        "LEVERAGE SHARES 2X LONG UPS DAILY ETF",
+        "LEVERAGE SHARES 2X LONG UPS DAILY ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|USRD|NASDAQ|etf",
+      "country": "US",
+      "priorSymbol": "USRD",
+      "priorNames": [
+        "THEMES ETF TRUST US R&D CHAMPIONS ETF",
+        "THEMES ETF TRUST US R&D CHAMPIONS ETF"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|AVNS|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "AVNS",
+      "priorNames": [
+        "AVANOS MEDICAL INC",
+        "AVANOS MEDICAL INC"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|CCIX|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "CCIX",
+      "priorNames": [
+        "CHURCHILL CAP CORP IX",
+        "CHURCHILL CAP CORP IX"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|CCIXU|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "CCIXU",
+      "priorNames": [
+        "CHURCHILL CAP CORP IX UNIT 1 CL A SHS & 1/4 WT EXP",
+        "CHURCHILL CAP CORP IX UNIT 1 CL A SHS & 1/4 WT EXP"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|EMPG|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "EMPG",
+      "priorNames": [
+        "EMPRO GROUP INC",
+        "EMPRO GROUP INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|GRAF|AMEX|stock",
+      "country": "US",
+      "priorSymbol": "GRAF",
+      "priorNames": [
+        "GRAF GLOBAL CORP",
+        "GRAF GLOBAL CORP"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|GV|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "GV",
+      "priorNames": [
+        "VISIONARY HOLDINGS INC",
+        "VISIONARY HOLDINGS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|LPRO|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "LPRO",
+      "priorNames": [
+        "OPEN LENDING CORPORATION",
+        "OPEN LENDING CORPORATION"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|MVO|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "MVO",
+      "priorNames": [
+        "MV OIL TRUST",
+        "MV OIL TRUST"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|ORLA|AMEX|stock",
+      "country": "US",
+      "priorSymbol": "ORLA",
+      "priorNames": [
+        "ORLA MINING LTD NEW",
+        "ORLA MINING LTD NEW"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|TRINI|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "TRINI",
+      "priorNames": [
+        "TRINITY CAPITAL INC 7.875% NTS 30/09/2029",
+        "TRINITY CAPITAL INC 7.875% NTS 30/09/2029"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|TRINZ|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "TRINZ",
+      "priorNames": [
+        "TRINITY CAPITAL INC 7.875% NOTES DUE 2029",
+        "TRINITY CAPITAL INC 7.875% NOTES DUE 2029"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|VSTD|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "VSTD",
+      "priorNames": [
+        "VESTAND INC.",
+        "VESTAND INC."
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "US|VYNE|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "VYNE",
+      "priorNames": [
+        "VYNE THERAPEUTICS INC",
+        "VYNE THERAPEUTICS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-01",
+      "inactiveAt": "2026-09-01",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16182"
     }
   ]
 }
