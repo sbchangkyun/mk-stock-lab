@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16182",
+  "masterVersion": "hf3b-hf2-kis-16194",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-09-02",
   "instruments": [
@@ -42824,19 +42824,6 @@
       "active": true
     },
     {
-      "symbol": "269620",
-      "displayName": "시스웍",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7269620001",
-      "aliases": [
-        "269620"
-      ],
-      "active": true
-    },
-    {
       "symbol": "270520",
       "displayName": "앱튼",
       "country": "KR",
@@ -51924,6 +51911,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "aggh"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AGGM",
+      "displayName": "ISHARES TRUST 1-10 YEAR U.S. AGGREGATE BD",
+      "englishName": "ISHARES TRUST 1-10 YEAR U.S. AGGREGATE BD",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "aggm"
       ],
       "active": true
     },
@@ -67017,6 +67017,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "divg"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "DIVH",
+      "displayName": "INTEGRITY DIVIDEND HARVEST ETF",
+      "englishName": "INTEGRITY DIVIDEND HARVEST ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "divh"
       ],
       "active": true
     },
@@ -82946,6 +82959,19 @@
       "active": true
     },
     {
+      "symbol": "HXF",
+      "displayName": "MAST HEDGEINDEX MANAGED FUTURES STRATEGY ETF",
+      "englishName": "MAST HEDGEINDEX MANAGED FUTURES STRATEGY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hxf"
+      ],
+      "active": true
+    },
+    {
       "symbol": "HYBB",
       "displayName": "ISHARES TRUST BB RTD CORP BD ETF",
       "englishName": "ISHARES TRUST BB RTD CORP BD ETF",
@@ -87115,6 +87141,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "isra"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ISRL",
+      "displayName": "DEFIANCE KSM ISRAEL 120 ETF",
+      "englishName": "DEFIANCE KSM ISRAEL 120 ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "isrl"
       ],
       "active": true
     },
@@ -97000,13 +97039,14 @@
     },
     {
       "symbol": "MVPA",
-      "displayName": "ADVISOR MANAGED PORTFOLIOS MILLER VALUE PARTNERS APPRECIATIO",
-      "englishName": "ADVISOR MANAGED PORTFOLIOS MILLER VALUE PARTNERS APPRECIATIO",
+      "displayName": "MILLER VALUE PARTNERS APPRECIATION ETF",
+      "englishName": "MILLER VALUE PARTNERS APPRECIATION ETF",
       "country": "US",
-      "exchange": "AMEX",
+      "exchange": "NYSE",
       "assetType": "etf",
-      "exchangeCode": "AMS",
+      "exchangeCode": "NYS",
       "aliases": [
+        "advisor managed portfolios miller value partners appreciatio",
         "mvpa"
       ],
       "active": true
@@ -112797,6 +112837,19 @@
       "active": true
     },
     {
+      "symbol": "SKHQ",
+      "displayName": "LEVERAGE SHARES 2X SHORT SK HYNIX DAILY ETF",
+      "englishName": "LEVERAGE SHARES 2X SHORT SK HYNIX DAILY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "skhq"
+      ],
+      "active": true
+    },
+    {
       "symbol": "SKHU",
       "displayName": "PROSHARES ULTRA SK HYNIX",
       "englishName": "PROSHARES ULTRA SK HYNIX",
@@ -120678,6 +120731,19 @@
       "active": true
     },
     {
+      "symbol": "UCBG",
+      "displayName": "STATE STREET SPDR UC INVESTMENTS 90/10 ENDOWMENT STRATEGY IN",
+      "englishName": "STATE STREET SPDR UC INVESTMENTS 90/10 ENDOWMENT STRATEGY IN",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "ucbg"
+      ],
+      "active": true
+    },
+    {
       "symbol": "UCC",
       "displayName": "PROSHARES TRUST ULTRA CONSUMER DISCRETIONARY",
       "englishName": "PROSHARES TRUST ULTRA CONSUMER DISCRETIONARY",
@@ -124083,6 +124149,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "voox"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "VOOY",
+      "displayName": "XFUNDS LARGE CAP INCOME ETF",
+      "englishName": "XFUNDS LARGE CAP INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "vooy"
       ],
       "active": true
     },
@@ -160197,6 +160276,19 @@
       "active": true
     },
     {
+      "symbol": "GIXI",
+      "displayName": "GIX INTERNET LTD",
+      "englishName": "GIX INTERNET LTD",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "gixi"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GIXXU",
       "displayName": "GIGCAPITAL9 CORPORATION UNIT CL A & RT PUR 1/5TH CL A",
       "englishName": "GIGCAPITAL9 CORPORATION UNIT CL A & RT PUR 1/5TH CL A",
@@ -163837,6 +163929,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "hope"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HOS",
+      "displayName": "HORNBECK OFFSHORE SERVICES INC",
+      "englishName": "HORNBECK OFFSHORE SERVICES INC",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "hos"
       ],
       "active": true
     },
@@ -180727,6 +180832,19 @@
       "active": true
     },
     {
+      "symbol": "NSAI",
+      "displayName": "NORTHSTRIVE ACQUISITION CORP I",
+      "englishName": "NORTHSTRIVE ACQUISITION CORP I",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "nsai"
+      ],
+      "active": true
+    },
+    {
       "symbol": "NSAIU",
       "displayName": "NORTHSTRIVE ACQUISITION CORP I UNITS CONS CL A & 1 WT",
       "englishName": "NORTHSTRIVE ACQUISITION CORP I UNITS CONS CL A & 1 WT",
@@ -184501,14 +184619,15 @@
     },
     {
       "symbol": "PAAI",
-      "displayName": "PARADIUM AI INC",
-      "englishName": "PARADIUM AI INC",
+      "displayName": "PARADIUM.AI INC",
+      "englishName": "PARADIUM.AI INC",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "stock",
       "exchangeCode": "AMS",
       "aliases": [
-        "paai"
+        "paai",
+        "paradium ai inc"
       ],
       "active": true
     },
@@ -193094,14 +193213,15 @@
     },
     {
       "symbol": "SAMO",
-      "displayName": "SAMOS ENERGY ACQUISITION CORPORATION",
-      "englishName": "SAMOS ENERGY ACQUISITION CORPORATION",
+      "displayName": "SAMOS ENERGY ACQUISITION CORP",
+      "englishName": "SAMOS ENERGY ACQUISITION CORP",
       "country": "US",
       "exchange": "NYSE",
       "assetType": "stock",
       "exchangeCode": "NYS",
       "aliases": [
-        "samo"
+        "samo",
+        "samos energy acquisition corporation"
       ],
       "active": true
     },
@@ -194571,6 +194691,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "sgi"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SGLD",
+      "displayName": "SCORPIO GOLD CORPORATION SPON ADS EACH REP 20 COM SHS",
+      "englishName": "SCORPIO GOLD CORPORATION SPON ADS EACH REP 20 COM SHS",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "sgld"
       ],
       "active": true
     },
@@ -200928,6 +201061,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "tkr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TLACU",
+      "displayName": "THREE LIONS ACQUISITION CORPORATION UNIT CONSIST OF 1 ORD SH",
+      "englishName": "THREE LIONS ACQUISITION CORPORATION UNIT CONSIST OF 1 ORD SH",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "tlacu"
       ],
       "active": true
     },
@@ -209515,6 +209661,19 @@
       "active": true
     },
     {
+      "symbol": "YFOR",
+      "displayName": "YYFORCE INC",
+      "englishName": "YYFORCE INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "yfor"
+      ],
+      "active": true
+    },
+    {
       "symbol": "YHC",
       "displayName": "LQR HOUSE INC",
       "englishName": "LQR HOUSE INC",
@@ -210270,13 +210429,14 @@
     },
     {
       "symbol": "ZONE",
-      "displayName": "CLEANCORE SOLUTIONS INC",
-      "englishName": "CLEANCORE SOLUTIONS INC",
+      "displayName": "ZONE FRONTIER INC",
+      "englishName": "ZONE FRONTIER INC",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "stock",
       "exchangeCode": "AMS",
       "aliases": [
+        "cleancore solutions inc",
         "zone"
       ],
       "active": true

@@ -3242,6 +3242,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16182"
+    },
+    {
+      "canonicalIdentity": "KR|269620|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "269620",
+      "priorNames": [
+        "시스웍"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7269620001",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-02",
+      "inactiveAt": "2026-09-02",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16194"
     }
   ]
 }
