@@ -10,16 +10,16 @@
     {
       "family": "kis-kospi",
       "file": "kospi_code.mst",
-      "zipBytes": 119598,
+      "zipBytes": 119475,
       "bytes": 743019,
-      "sha256": "62c1f82e81ba2dc45312e56270e2ebeee3b79eac86ba045afc250602886bcd81"
+      "sha256": "b2c074251298f2b3acc0b9085a98411e90ca59eba33167ad223fca40e6a22b39"
     },
     {
       "family": "kis-kosdaq",
       "file": "kosdaq_code.mst",
-      "zipBytes": 103644,
-      "bytes": 516192,
-      "sha256": "5c9721425902f5401a57c6f7d701e33135d073723d8ffff8bb26a25b074b3f13"
+      "zipBytes": 103621,
+      "bytes": 515909,
+      "sha256": "bcdb699042b5f919ea6304ca3a7841ccb99d50630cb710c5d466afb07355e38d"
     },
     {
       "family": "kis-overseas-nasdaq",
@@ -44,8 +44,8 @@
     }
   ],
   "counts": {
-    "total": 16182,
-    "krStock": 2717,
+    "total": 16181,
+    "krStock": 2716,
     "krEtf": 1168,
     "krEtfNumeric": 865,
     "krEtfAlphanumeric": 303,
@@ -53,7 +53,7 @@
     "usEtf": 6069,
     "byExchange": {
       "KOSPI": 2081,
-      "KOSDAQ": 1804,
+      "KOSDAQ": 1803,
       "AMEX": 4658,
       "NASDAQ": 5228,
       "NYSE": 2411
@@ -70,9 +70,9 @@
   },
   "krSymbolRule": "^[0-9A-Z]{6}$ (six-character KRX code; numeric or alphanumeric; ASCII-uppercased).",
   "usSymbolRule": "^[A-Z][A-Z0-9.]{0,9}$ (KIS overseas ticker).",
-  "sourceAsOf": "2026-09-01",
-  "refreshedAt": "2026-09-01",
+  "sourceAsOf": "2026-09-02",
+  "refreshedAt": "2026-09-02",
   "activeCount": 16182,
   "inactiveArchiveCount": 181,
-  "pendingInactiveCount": 0
+  "pendingInactiveCount": 1
 }
