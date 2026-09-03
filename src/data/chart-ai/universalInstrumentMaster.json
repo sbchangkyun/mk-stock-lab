@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16194",
+  "masterVersion": "hf3b-hf2-kis-16197",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-09-03",
   "instruments": [
@@ -103473,6 +103473,19 @@
       "active": true
     },
     {
+      "symbol": "PJSM",
+      "displayName": "PGIM JENNISON SMALL-MID CAP CORE EQUITY ETF",
+      "englishName": "PGIM JENNISON SMALL-MID CAP CORE EQUITY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "pjsm"
+      ],
+      "active": true
+    },
+    {
       "symbol": "PJUL",
       "displayName": "INNOVATOR ETFS TRUST INNOVATOR US EQUTY POWER BUFFER ETF JUL",
       "englishName": "INNOVATOR ETFS TRUST INNOVATOR US EQUTY POWER BUFFER ETF JUL",
@@ -119582,6 +119595,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "tscv"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "TSCZ",
+      "displayName": "T. ROWE PRICE SECURITIZED INCOME ETF",
+      "englishName": "T. ROWE PRICE SECURITIZED INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "tscz"
       ],
       "active": true
     },
@@ -167469,26 +167495,28 @@
     },
     {
       "symbol": "IPXG",
-      "displayName": "INFLECTION POINT ACQUISITION CORP",
-      "englishName": "INFLECTION POINT ACQUISITION CORP",
+      "displayName": "INFLECTION POINT ACQUIS CORP VII",
+      "englishName": "INFLECTION POINT ACQUIS CORP VII",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "inflection point acquisition corp",
         "ipxg"
       ],
       "active": true
     },
     {
       "symbol": "IPXGU",
-      "displayName": "INFLECTION POINT ACQUISITION CORP UNIT CONSIT 1 ORD A &",
-      "englishName": "INFLECTION POINT ACQUISITION CORP UNIT CONSIT 1 ORD A &",
+      "displayName": "INFLECTION POINT ACQUIS CORP VII UNIT CONSIT 1 ORD A & 1",
+      "englishName": "INFLECTION POINT ACQUIS CORP VII UNIT CONSIT 1 ORD A & 1",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "inflection point acquisition corp unit consit 1 ord a &",
         "ipxgu"
       ],
       "active": true
@@ -168868,6 +168896,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "joe"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "JONE",
+      "displayName": "JONES VENTURES INTL ACQUISITION1 CORP",
+      "englishName": "JONES VENTURES INTL ACQUISITION1 CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "jone"
       ],
       "active": true
     },
