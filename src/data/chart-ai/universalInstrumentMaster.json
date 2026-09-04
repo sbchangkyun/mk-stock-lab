@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16197",
+  "masterVersion": "hf3b-hf2-kis-16198",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-09-03",
+  "sourceAsOf": "2026-09-04",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -47079,6 +47079,19 @@
       "active": true
     },
     {
+      "symbol": "386380",
+      "displayName": "스카이랩스",
+      "country": "KR",
+      "exchange": "KOSDAQ",
+      "assetType": "stock",
+      "exchangeCode": null,
+      "standardCode": "KR7386380000",
+      "aliases": [
+        "386380"
+      ],
+      "active": true
+    },
+    {
       "symbol": "387570",
       "displayName": "파인메딕스",
       "country": "KR",
@@ -47392,14 +47405,15 @@
     },
     {
       "symbol": "396300",
-      "displayName": "세아메카닉스",
+      "displayName": "HT로보틱스",
       "country": "KR",
       "exchange": "KOSDAQ",
       "assetType": "stock",
       "exchangeCode": null,
       "standardCode": "KR7396300006",
       "aliases": [
-        "396300"
+        "396300",
+        "세아메카닉스"
       ],
       "active": true
     },
@@ -167502,7 +167516,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "inflection point acquisition corp",
         "ipxg"
       ],
       "active": true
@@ -167516,7 +167529,6 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "inflection point acquisition corp unit consit 1 ord a &",
         "ipxgu"
       ],
       "active": true
