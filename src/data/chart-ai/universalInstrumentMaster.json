@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16198",
+  "masterVersion": "hf3b-hf2-kis-16201",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-09-04",
   "instruments": [
@@ -14356,19 +14356,6 @@
       "standardCode": "KR7489000000",
       "aliases": [
         "489000"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "489010",
-      "displayName": "PLUS 글로벌AI인프라",
-      "country": "KR",
-      "exchange": "KOSPI",
-      "assetType": "etf",
-      "exchangeCode": null,
-      "standardCode": "KR7489010009",
-      "aliases": [
-        "489010"
       ],
       "active": true
     },
@@ -47412,8 +47399,7 @@
       "exchangeCode": null,
       "standardCode": "KR7396300006",
       "aliases": [
-        "396300",
-        "세아메카닉스"
+        "396300"
       ],
       "active": true
     },
@@ -62356,14 +62342,15 @@
     },
     {
       "symbol": "CIK",
-      "displayName": "CREDIT SUISSE ASSET MGMT INC FD INC COM STK",
-      "englishName": "CREDIT SUISSE ASSET MGMT INC FD INC COM STK",
+      "displayName": "UBS ASSET MANAGEMENT INCOME FUND INC",
+      "englishName": "UBS ASSET MANAGEMENT INCOME FUND INC",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cik"
+        "cik",
+        "credit suisse asset mgmt inc fd inc com stk"
       ],
       "active": true
     },
@@ -66789,13 +66776,14 @@
     },
     {
       "symbol": "DHY",
-      "displayName": "CREDIT SUISSE HIGH YIELD CREDI COM",
-      "englishName": "CREDIT SUISSE HIGH YIELD CREDI COM",
+      "displayName": "UBS ASSET MANAGEMENT HIGH YIELD CREDIT FUND",
+      "englishName": "UBS ASSET MANAGEMENT HIGH YIELD CREDIT FUND",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "credit suisse high yield credi com",
         "dhy"
       ],
       "active": true
@@ -82631,6 +82619,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "hps"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "HQDG",
+      "displayName": "RAUB BROCK DIVIDEND GROWTH ETF",
+      "englishName": "RAUB BROCK DIVIDEND GROWTH ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "hqdg"
       ],
       "active": true
     },
@@ -103457,6 +103458,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "pjfv"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "PJIN",
+      "displayName": "PGIM JENNISON INTERNATIONAL CORE EQUITY ETF",
+      "englishName": "PGIM JENNISON INTERNATIONAL CORE EQUITY ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "pjin"
       ],
       "active": true
     },
@@ -132662,14 +132676,15 @@
     },
     {
       "symbol": "AIXI",
-      "displayName": "XIAO-I CORPORATION SPON ADS EACH REP 60 COM (POST REV SPLT)",
-      "englishName": "XIAO-I CORPORATION SPON ADS EACH REP 60 COM (POST REV SPLT)",
+      "displayName": "XIAO-I CORPORATION SPON ADS EACH REP 60 COM",
+      "englishName": "XIAO-I CORPORATION SPON ADS EACH REP 60 COM",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "aixi"
+        "aixi",
+        "xiao-i corporation spon ads each rep 60 com (post rev splt)"
       ],
       "active": true
     },
@@ -168913,14 +168928,15 @@
     },
     {
       "symbol": "JONE",
-      "displayName": "JONES VENTURES INTL ACQUISITION1 CORP",
-      "englishName": "JONES VENTURES INTL ACQUISITION1 CORP",
+      "displayName": "JONES VENTURES INTL ACQUISITION1",
+      "englishName": "JONES VENTURES INTL ACQUISITION1",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "jone"
+        "jone",
+        "jones ventures intl acquisition1 corp"
       ],
       "active": true
     },
@@ -185503,14 +185519,15 @@
     },
     {
       "symbol": "PCTTU",
-      "displayName": "PURECYCLE TECHNOLOGIES INC UNIT 1 COM & 3/4 WT EXP(17/06",
-      "englishName": "PURECYCLE TECHNOLOGIES INC UNIT 1 COM & 3/4 WT EXP(17/06",
+      "displayName": "PURECYCLE TECHNOLOGIES INC UNIT 1 COM & 3/4 WT EXP",
+      "englishName": "PURECYCLE TECHNOLOGIES INC UNIT 1 COM & 3/4 WT EXP",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "pcttu"
+        "pcttu",
+        "purecycle technologies inc unit 1 com & 3/4 wt exp(17/06"
       ],
       "active": true
     },
@@ -194806,6 +194823,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "sgp"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SGRX",
+      "displayName": "SANGRIX INC",
+      "englishName": "SANGRIX INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "sgrx"
       ],
       "active": true
     },
@@ -209447,6 +209477,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "xtlb"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XTND",
+      "displayName": "XTEND AI ROBOTICS INC",
+      "englishName": "XTEND AI ROBOTICS INC",
+      "country": "US",
+      "exchange": "NYSE",
+      "assetType": "stock",
+      "exchangeCode": "NYS",
+      "aliases": [
+        "xtnd"
       ],
       "active": true
     },

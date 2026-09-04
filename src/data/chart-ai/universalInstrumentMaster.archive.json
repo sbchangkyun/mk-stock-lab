@@ -3259,6 +3259,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16194"
+    },
+    {
+      "canonicalIdentity": "KR|489010|KOSPI|etf",
+      "country": "KR",
+      "priorSymbol": "489010",
+      "priorNames": [
+        "PLUS 글로벌AI인프라"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "etf",
+      "standardCode": "KR7489010009",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-04",
+      "inactiveAt": "2026-09-04",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16201"
     }
   ]
 }
