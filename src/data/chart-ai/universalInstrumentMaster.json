@@ -2,7 +2,7 @@
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
   "masterVersion": "hf3b-hf2-kis-16201",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-09-04",
+  "sourceAsOf": "2026-09-05",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -62349,8 +62349,7 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cik",
-        "credit suisse asset mgmt inc fd inc com stk"
+        "cik"
       ],
       "active": true
     },
@@ -66783,7 +66782,6 @@
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "credit suisse high yield credi com",
         "dhy"
       ],
       "active": true
@@ -132683,8 +132681,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "aixi",
-        "xiao-i corporation spon ads each rep 60 com (post rev splt)"
+        "aixi"
       ],
       "active": true
     },
@@ -168935,8 +168932,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "jone",
-        "jones ventures intl acquisition1 corp"
+        "jone"
       ],
       "active": true
     },
@@ -185526,8 +185522,7 @@
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "pcttu",
-        "purecycle technologies inc unit 1 com & 3/4 wt exp(17/06"
+        "pcttu"
       ],
       "active": true
     },
