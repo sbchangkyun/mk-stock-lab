@@ -3654,6 +3654,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "KR|082640|KOSPI|stock",
+      "country": "KR",
+      "priorSymbol": "082640",
+      "priorNames": [
+        "동양생명"
+      ],
+      "priorExchange": "KOSPI",
+      "instrumentType": "stock",
+      "standardCode": "KR7082640004",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16184"
     }
   ]
 }

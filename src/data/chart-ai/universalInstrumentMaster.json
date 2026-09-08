@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16181",
+  "masterVersion": "hf3b-hf2-kis-16184",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-09-08",
   "instruments": [
@@ -32954,19 +32954,6 @@
       "active": true
     },
     {
-      "symbol": "082640",
-      "displayName": "동양생명",
-      "country": "KR",
-      "exchange": "KOSPI",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7082640004",
-      "aliases": [
-        "082640"
-      ],
-      "active": true
-    },
-    {
       "symbol": "082660",
       "displayName": "코스나인",
       "country": "KR",
@@ -62355,14 +62342,15 @@
     },
     {
       "symbol": "CIK",
-      "displayName": "UBS ASSET MANAGEMENT INCOME FUND INC",
-      "englishName": "UBS ASSET MANAGEMENT INCOME FUND INC",
+      "displayName": "UBS ASSET MGMT INC FD INC COM STK",
+      "englishName": "UBS ASSET MGMT INC FD INC COM STK",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "cik"
+        "cik",
+        "ubs asset management income fund inc"
       ],
       "active": true
     },
@@ -66788,14 +66776,15 @@
     },
     {
       "symbol": "DHY",
-      "displayName": "UBS ASSET MANAGEMENT HIGH YIELD CREDIT FUND",
-      "englishName": "UBS ASSET MANAGEMENT HIGH YIELD CREDIT FUND",
+      "displayName": "UBS ASSET MGMT HIGH YLD CRED FD COM",
+      "englishName": "UBS ASSET MGMT HIGH YLD CRED FD COM",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "dhy"
+        "dhy",
+        "ubs asset management high yield credit fund"
       ],
       "active": true
     },
@@ -132570,14 +132559,15 @@
     },
     {
       "symbol": "AIXI",
-      "displayName": "XIAO-I CORPORATION SPON ADS EACH REP 60 COM",
-      "englishName": "XIAO-I CORPORATION SPON ADS EACH REP 60 COM",
+      "displayName": "XIAO-I CORPORATION SPON ADS EACH REP 420 COM(R/S)",
+      "englishName": "XIAO-I CORPORATION SPON ADS EACH REP 420 COM(R/S)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "aixi"
+        "aixi",
+        "xiao-i corporation spon ads each rep 60 com"
       ],
       "active": true
     },
@@ -133475,6 +133465,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "am"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AMAC",
+      "displayName": "AMR RESOURCES ACQUISITION CORP",
+      "englishName": "AMR RESOURCES ACQUISITION CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "amac"
       ],
       "active": true
     },
@@ -136875,6 +136878,19 @@
       "active": true
     },
     {
+      "symbol": "AUXX",
+      "displayName": "GOLD X2 MINING INC",
+      "englishName": "GOLD X2 MINING INC",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "auxx"
+      ],
+      "active": true
+    },
+    {
       "symbol": "AVA",
       "displayName": "AVISTA CORP",
       "englishName": "AVISTA CORP",
@@ -139060,14 +139076,15 @@
     },
     {
       "symbol": "BFRGW",
-      "displayName": "BULLFROG AI HOLDINGS INC C/WTS EXP (TO PUR COM)",
-      "englishName": "BULLFROG AI HOLDINGS INC C/WTS EXP (TO PUR COM)",
+      "displayName": "BULLFROG AI HOLDINGS INC C/WTS 01/18/28 (TO PUR COM)",
+      "englishName": "BULLFROG AI HOLDINGS INC C/WTS 01/18/28 (TO PUR COM)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "bfrgw"
+        "bfrgw",
+        "bullfrog ai holdings inc c/wts exp (to pur com)"
       ],
       "active": true
     },
@@ -144840,6 +144857,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "cha"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CHAD",
+      "displayName": "DEFI DEVELOPMENT CORP VARIABLE RATE SERIES C CUM PREFERRED S",
+      "englishName": "DEFI DEVELOPMENT CORP VARIABLE RATE SERIES C CUM PREFERRED S",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "chad"
       ],
       "active": true
     },
@@ -177556,14 +177586,15 @@
     },
     {
       "symbol": "MSTR",
-      "displayName": "Strategy Inc",
-      "englishName": "Strategy Inc",
+      "displayName": "STRATEGY INC",
+      "englishName": "STRATEGY INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "mstr"
+        "mstr",
+        "strategy inc"
       ],
       "active": true
     },
@@ -188999,14 +189030,15 @@
     },
     {
       "symbol": "QETAU",
-      "displayName": "QUETTA ACQUISITION CORPORATION UNIT 1 COM & 1/10 RT 30/",
-      "englishName": "QUETTA ACQUISITION CORPORATION UNIT 1 COM & 1/10 RT 30/",
+      "displayName": "QUETTA ACQUISITION CORPORATION UNIT 1 COM & 1/10 RT",
+      "englishName": "QUETTA ACQUISITION CORPORATION UNIT 1 COM & 1/10 RT",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "qetau"
+        "qetau",
+        "quetta acquisition corporation unit 1 com & 1/10 rt 30/"
       ],
       "active": true
     },
@@ -191516,6 +191548,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "rmix"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "RML",
+      "displayName": "RESOLUTION MINERALS LTD SPON ADS EACH REP 200 ORD",
+      "englishName": "RESOLUTION MINERALS LTD SPON ADS EACH REP 200 ORD",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "rml"
       ],
       "active": true
     },
@@ -198190,13 +198235,14 @@
     },
     {
       "symbol": "STLNW",
-      "displayName": "STARLING ONCOLOGY INC C/WTS (TO PUR COM)",
-      "englishName": "STARLING ONCOLOGY INC C/WTS (TO PUR COM)",
+      "displayName": "STARLING ONCOLOGY INC C/WTS 15/11/2026(TO PUR COM)",
+      "englishName": "STARLING ONCOLOGY INC C/WTS 15/11/2026(TO PUR COM)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "starling oncology inc c/wts (to pur com)",
         "stlnw"
       ],
       "active": true
