@@ -3276,6 +3276,384 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16201"
+    },
+    {
+      "canonicalIdentity": "US|GEOA|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "GEOA",
+      "priorNames": [
+        "WISDOMTREE GEOALPHA OPPORTUNITIES FUND",
+        "WISDOMTREE GEOALPHA OPPORTUNITIES FUND"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|ICOI|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "ICOI",
+      "priorNames": [
+        "BITWISE COIN OPTION INCOME STRATEGY ETF",
+        "BITWISE COIN OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|ICRC|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "ICRC",
+      "priorNames": [
+        "BITWISE CRCL OPTION INCOME STRATEGY ETF",
+        "BITWISE CRCL OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|IETH|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "IETH",
+      "priorNames": [
+        "BITWISE ETHEREUM OPTION INCOME STRATEGY ETF",
+        "BITWISE ETHEREUM OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|IGME|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "IGME",
+      "priorNames": [
+        "BITWISE GME OPTION INCOME STRATEGY ETF",
+        "BITWISE GME OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|IMRA|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "IMRA",
+      "priorNames": [
+        "BITWISE MARA OPTION INCOME STRATEGY ETF",
+        "BITWISE MARA OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|IMST|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "IMST",
+      "priorNames": [
+        "BITWISE MSTR OPTION INCOME STRATEGY ETF",
+        "BITWISE MSTR OPTION INCOME STRATEGY ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|JRE|AMEX|etf",
+      "country": "US",
+      "priorSymbol": "JRE",
+      "priorNames": [
+        "JANUS DETROIT STREET TRUST US REAL ESTATE ETF",
+        "JANUS DETROIT STREET TRUST US REAL ESTATE ETF"
+      ],
+      "priorExchange": "AMEX",
+      "instrumentType": "etf",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|AFBI|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "AFBI",
+      "priorNames": [
+        "AFFINITY BANCSHARE",
+        "AFFINITY BANCSHARE"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|AXIA|NYSE|stock",
+      "country": "US",
+      "priorSymbol": "AXIA",
+      "priorNames": [
+        "AXIA ENERGIA SA ADR-EACH REPR 1 COM SHS NPV",
+        "AXIA ENERGIA SA ADR-EACH REPR 1 COM SHS NPV"
+      ],
+      "priorExchange": "NYSE",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|BNZI|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "BNZI",
+      "priorNames": [
+        "BANZAI INTERNATIONAL INC",
+        "BANZAI INTERNATIONAL INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|EA|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "EA",
+      "priorNames": [
+        "ELECTRONIC ARTS INC",
+        "ELECTRONIC ARTS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|ELSE|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "ELSE",
+      "priorNames": [
+        "ELECTRO-SENSORS INC",
+        "ELECTRO-SENSORS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|KVAC|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "KVAC",
+      "priorNames": [
+        "KEEN VISION ACQUISITION CORPORATION",
+        "KEEN VISION ACQUISITION CORPORATION"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|KVACU|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "KVACU",
+      "priorNames": [
+        "KEEN VISION ACQUISITION CORPORATION UNIT 1 ORD & 1 WT EX",
+        "KEEN VISION ACQUISITION CORPORATION UNIT 1 ORD & 1 WT EX"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|LSH|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "LSH",
+      "priorNames": [
+        "LAKESIDE HOLDING LTD",
+        "LAKESIDE HOLDING LTD"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|PSTV|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "PSTV",
+      "priorNames": [
+        "PLUS THERAPEUTICS INC",
+        "PLUS THERAPEUTICS INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|SKYT|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "SKYT",
+      "priorNames": [
+        "SKYWATER TECHNOLOGY INC",
+        "SKYWATER TECHNOLOGY INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|TOI|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "TOI",
+      "priorNames": [
+        "THE ONCOLOGY INSTITUTE INC",
+        "THE ONCOLOGY INSTITUTE INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|TOIIW|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "TOIIW",
+      "priorNames": [
+        "THE ONCOLOGY INSTITUTE INC C/WTS (TO PUR COM)",
+        "THE ONCOLOGY INSTITUTE INC C/WTS (TO PUR COM)"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
+    },
+    {
+      "canonicalIdentity": "US|VSEE|NASDAQ|stock",
+      "country": "US",
+      "priorSymbol": "VSEE",
+      "priorNames": [
+        "VSEE HEALTH INC",
+        "VSEE HEALTH INC"
+      ],
+      "priorExchange": "NASDAQ",
+      "instrumentType": "stock",
+      "standardCode": null,
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-08",
+      "inactiveAt": "2026-09-08",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16180"
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16201",
+  "masterVersion": "hf3b-hf2-kis-16181",
   "scope": "kis-supported-only",
-  "sourceAsOf": "2026-09-07",
+  "sourceAsOf": "2026-09-08",
   "instruments": [
     {
       "symbol": "0000D0",
@@ -3940,6 +3940,19 @@
       "standardCode": "KR70234N0005",
       "aliases": [
         "0234n0"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "0238P0",
+      "displayName": "TIGER 미국S&P500미국채혼합50",
+      "country": "KR",
+      "exchange": "KOSPI",
+      "assetType": "etf",
+      "exchangeCode": null,
+      "standardCode": "KR70238P0009",
+      "aliases": [
+        "0238p0"
       ],
       "active": true
     },
@@ -78773,19 +78786,6 @@
       "active": true
     },
     {
-      "symbol": "GEOA",
-      "displayName": "WISDOMTREE GEOALPHA OPPORTUNITIES FUND",
-      "englishName": "WISDOMTREE GEOALPHA OPPORTUNITIES FUND",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "geoa"
-      ],
-      "active": true
-    },
-    {
       "symbol": "GEQ",
       "displayName": "CAMBRIA GLOBAL EW 2 ETF",
       "englishName": "CAMBRIA GLOBAL EW 2 ETF",
@@ -84571,19 +84571,6 @@
       "active": true
     },
     {
-      "symbol": "ICOI",
-      "displayName": "BITWISE COIN OPTION INCOME STRATEGY ETF",
-      "englishName": "BITWISE COIN OPTION INCOME STRATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "icoi"
-      ],
-      "active": true
-    },
-    {
       "symbol": "ICOP",
       "displayName": "ISHARES TRUST COPPER & METALS MNG ETF USD",
       "englishName": "ISHARES TRUST COPPER & METALS MNG ETF USD",
@@ -84632,19 +84619,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "icpy"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "ICRC",
-      "displayName": "BITWISE CRCL OPTION INCOME STRATEGY ETF",
-      "englishName": "BITWISE CRCL OPTION INCOME STRATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "icrc"
       ],
       "active": true
     },
@@ -85078,19 +85052,6 @@
       "active": true
     },
     {
-      "symbol": "IETH",
-      "displayName": "BITWISE ETHEREUM OPTION INCOME STRATEGY ETF",
-      "englishName": "BITWISE ETHEREUM OPTION INCOME STRATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "ieth"
-      ],
-      "active": true
-    },
-    {
       "symbol": "IEUR",
       "displayName": "ISHARES TRUST CORE MSCI EUROPE",
       "englishName": "ISHARES TRUST CORE MSCI EUROPE",
@@ -85451,19 +85412,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "igm"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "IGME",
-      "displayName": "BITWISE GME OPTION INCOME STRATEGY ETF",
-      "englishName": "BITWISE GME OPTION INCOME STRATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "igme"
       ],
       "active": true
     },
@@ -86023,32 +85971,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "imom"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "IMRA",
-      "displayName": "BITWISE MARA OPTION INCOME STRATEGY ETF",
-      "englishName": "BITWISE MARA OPTION INCOME STRATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "imra"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "IMST",
-      "displayName": "BITWISE MSTR OPTION INCOME STRATEGY ETF",
-      "englishName": "BITWISE MSTR OPTION INCOME STRATEGY ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "imst"
       ],
       "active": true
     },
@@ -89910,19 +89832,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "jqua"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "JRE",
-      "displayName": "JANUS DETROIT STREET TRUST US REAL ESTATE ETF",
-      "englishName": "JANUS DETROIT STREET TRUST US REAL ESTATE ETF",
-      "country": "US",
-      "exchange": "AMEX",
-      "assetType": "etf",
-      "exchangeCode": "AMS",
-      "aliases": [
-        "jre"
       ],
       "active": true
     },
@@ -131620,19 +131529,6 @@
       "active": true
     },
     {
-      "symbol": "AFBI",
-      "displayName": "AFFINITY BANCSHARE",
-      "englishName": "AFFINITY BANCSHARE",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "afbi"
-      ],
-      "active": true
-    },
-    {
       "symbol": "AFCG",
       "displayName": "ADVANCED FLOWER CAPITAL INC",
       "englishName": "ADVANCED FLOWER CAPITAL INC",
@@ -137408,19 +137304,6 @@
       "active": true
     },
     {
-      "symbol": "AXIA",
-      "displayName": "AXIA ENERGIA SA ADR-EACH REPR 1 COM SHS NPV",
-      "englishName": "AXIA ENERGIA SA ADR-EACH REPR 1 COM SHS NPV",
-      "country": "US",
-      "exchange": "NYSE",
-      "assetType": "stock",
-      "exchangeCode": "NYS",
-      "aliases": [
-        "axia"
-      ],
-      "active": true
-    },
-    {
       "symbol": "AXIL",
       "displayName": "AXIL BRANDS INC",
       "englishName": "AXIL BRANDS INC",
@@ -140875,19 +140758,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "bny"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "BNZI",
-      "displayName": "BANZAI INTERNATIONAL INC",
-      "englishName": "BANZAI INTERNATIONAL INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "bnzi"
       ],
       "active": true
     },
@@ -152540,19 +152410,6 @@
       "active": true
     },
     {
-      "symbol": "EA",
-      "displayName": "ELECTRONIC ARTS INC",
-      "englishName": "ELECTRONIC ARTS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "ea"
-      ],
-      "active": true
-    },
-    {
       "symbol": "EAF",
       "displayName": "GRAFTECH INTERNATIONAL LTD",
       "englishName": "GRAFTECH INTERNATIONAL LTD",
@@ -153667,19 +153524,6 @@
       "exchangeCode": "NYS",
       "aliases": [
         "els"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "ELSE",
-      "displayName": "ELECTRO-SENSORS INC",
-      "englishName": "ELECTRO-SENSORS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "else"
       ],
       "active": true
     },
@@ -170828,32 +170672,6 @@
       "active": true
     },
     {
-      "symbol": "KVAC",
-      "displayName": "KEEN VISION ACQUISITION CORPORATION",
-      "englishName": "KEEN VISION ACQUISITION CORPORATION",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "kvac"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "KVACU",
-      "displayName": "KEEN VISION ACQUISITION CORPORATION UNIT 1 ORD & 1 WT EX",
-      "englishName": "KEEN VISION ACQUISITION CORPORATION UNIT 1 ORD & 1 WT EX",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "kvacu"
-      ],
-      "active": true
-    },
-    {
       "symbol": "KVHI",
       "displayName": "KVH INDUSTRIES",
       "englishName": "KVH INDUSTRIES",
@@ -173346,19 +173164,6 @@
       "exchangeCode": "AMS",
       "aliases": [
         "lsf"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "LSH",
-      "displayName": "LAKESIDE HOLDING LTD",
-      "englishName": "LAKESIDE HOLDING LTD",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "lsh"
       ],
       "active": true
     },
@@ -188582,19 +188387,6 @@
       "active": true
     },
     {
-      "symbol": "PSTV",
-      "displayName": "PLUS THERAPEUTICS INC",
-      "englishName": "PLUS THERAPEUTICS INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "pstv"
-      ],
-      "active": true
-    },
-    {
       "symbol": "PSX",
       "displayName": "PHILLIPS 66",
       "englishName": "PHILLIPS 66",
@@ -195680,19 +195472,6 @@
       "active": true
     },
     {
-      "symbol": "SKYT",
-      "displayName": "SKYWATER TECHNOLOGY INC",
-      "englishName": "SKYWATER TECHNOLOGY INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "skyt"
-      ],
-      "active": true
-    },
-    {
       "symbol": "SKYW",
       "displayName": "SKYWEST INC",
       "englishName": "SKYWEST INC",
@@ -201686,32 +201465,6 @@
       "active": true
     },
     {
-      "symbol": "TOI",
-      "displayName": "THE ONCOLOGY INSTITUTE INC",
-      "englishName": "THE ONCOLOGY INSTITUTE INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "toi"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "TOIIW",
-      "displayName": "THE ONCOLOGY INSTITUTE INC C/WTS (TO PUR COM)",
-      "englishName": "THE ONCOLOGY INSTITUTE INC C/WTS (TO PUR COM)",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "toiiw"
-      ],
-      "active": true
-    },
-    {
       "symbol": "TOL",
       "displayName": "TOLL BROS INC",
       "englishName": "TOLL BROS INC",
@@ -206430,19 +206183,6 @@
       "exchangeCode": "NAS",
       "aliases": [
         "vsecu"
-      ],
-      "active": true
-    },
-    {
-      "symbol": "VSEE",
-      "displayName": "VSEE HEALTH INC",
-      "englishName": "VSEE HEALTH INC",
-      "country": "US",
-      "exchange": "NASDAQ",
-      "assetType": "stock",
-      "exchangeCode": "NAS",
-      "aliases": [
-        "vsee"
       ],
       "active": true
     },

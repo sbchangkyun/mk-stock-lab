@@ -1,113 +1,13 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 refresh state. Tracks per-symbol consecutive source-absence counts for the two-consecutive-valid-snapshot missing policy and the last-known-good master version. Updated by scripts/automation/refresh_kis_instrument_master.mjs only after all Safety Gates pass.",
   "schemaVersion": 1,
-  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16201",
-  "lastRefreshAt": "2026-09-07",
+  "lastKnownGoodMasterVersion": "hf3b-hf2-kis-16181",
+  "lastRefreshAt": "2026-09-08",
   "pendingInactive": {
-    "US|GEOA": {
-      "symbol": "GEOA",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|ICOI": {
-      "symbol": "ICOI",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|ICRC": {
-      "symbol": "ICRC",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|IETH": {
-      "symbol": "IETH",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|IGME": {
-      "symbol": "IGME",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|IMRA": {
-      "symbol": "IMRA",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|IMST": {
-      "symbol": "IMST",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|JRE": {
-      "symbol": "JRE",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|AFBI": {
-      "symbol": "AFBI",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|AXIA": {
-      "symbol": "AXIA",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|BNZI": {
-      "symbol": "BNZI",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|EA": {
-      "symbol": "EA",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|ELSE": {
-      "symbol": "ELSE",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|KVAC": {
-      "symbol": "KVAC",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|KVACU": {
-      "symbol": "KVACU",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|LSH": {
-      "symbol": "LSH",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|PSTV": {
-      "symbol": "PSTV",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|SKYT": {
-      "symbol": "SKYT",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|TOI": {
-      "symbol": "TOI",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|TOIIW": {
-      "symbol": "TOIIW",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
-    },
-    "US|VSEE": {
-      "symbol": "VSEE",
-      "country": "US",
-      "sinceAsOf": "2026-09-07"
+    "KR|082640": {
+      "symbol": "082640",
+      "country": "KR",
+      "sinceAsOf": "2026-09-08"
     }
   },
   "missingCounts": {
@@ -294,26 +194,27 @@
     "US|VYNE": 2,
     "KR|269620": 2,
     "KR|489010": 2,
-    "US|GEOA": 1,
-    "US|ICOI": 1,
-    "US|ICRC": 1,
-    "US|IETH": 1,
-    "US|IGME": 1,
-    "US|IMRA": 1,
-    "US|IMST": 1,
-    "US|JRE": 1,
-    "US|AFBI": 1,
-    "US|AXIA": 1,
-    "US|BNZI": 1,
-    "US|EA": 1,
-    "US|ELSE": 1,
-    "US|KVAC": 1,
-    "US|KVACU": 1,
-    "US|LSH": 1,
-    "US|PSTV": 1,
-    "US|SKYT": 1,
-    "US|TOI": 1,
-    "US|TOIIW": 1,
-    "US|VSEE": 1
+    "US|GEOA": 2,
+    "US|ICOI": 2,
+    "US|ICRC": 2,
+    "US|IETH": 2,
+    "US|IGME": 2,
+    "US|IMRA": 2,
+    "US|IMST": 2,
+    "US|JRE": 2,
+    "US|AFBI": 2,
+    "US|AXIA": 2,
+    "US|BNZI": 2,
+    "US|EA": 2,
+    "US|ELSE": 2,
+    "US|KVAC": 2,
+    "US|KVACU": 2,
+    "US|LSH": 2,
+    "US|PSTV": 2,
+    "US|SKYT": 2,
+    "US|TOI": 2,
+    "US|TOIIW": 2,
+    "US|VSEE": 2,
+    "KR|082640": 1
   }
 }
