@@ -3671,6 +3671,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16184"
+    },
+    {
+      "canonicalIdentity": "KR|471050|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "471050",
+      "priorNames": [
+        "대신밸런스제17호스팩"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7471050005",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-09",
+      "inactiveAt": "2026-09-09",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16189"
     }
   ]
 }

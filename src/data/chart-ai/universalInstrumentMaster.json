@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16184",
+  "masterVersion": "hf3b-hf2-kis-16189",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-09-09",
   "instruments": [
@@ -41766,8 +41766,7 @@
       "exchangeCode": null,
       "standardCode": "KR7242040004",
       "aliases": [
-        "242040",
-        "나무에이엑스"
+        "242040"
       ],
       "active": true
     },
@@ -49459,19 +49458,6 @@
       "active": true
     },
     {
-      "symbol": "471050",
-      "displayName": "대신밸런스제17호스팩",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7471050005",
-      "aliases": [
-        "471050"
-      ],
-      "active": true
-    },
-    {
       "symbol": "471820",
       "displayName": "셀로맥스사이언스",
       "country": "KR",
@@ -53867,13 +53853,14 @@
     },
     {
       "symbol": "ARKW",
-      "displayName": "ARK NEXT GENERATION INTERNET ETF",
-      "englishName": "ARK NEXT GENERATION INTERNET ETF",
+      "displayName": "ARK NEXT GENERATION TECHNOLOGY ETF",
+      "englishName": "ARK NEXT GENERATION TECHNOLOGY ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
+        "ark next generation internet etf",
         "arkw"
       ],
       "active": true
@@ -61237,6 +61224,19 @@
       "active": true
     },
     {
+      "symbol": "CCML",
+      "displayName": "ROUNDHILL MLCC & ELECTRONIC COMPONENTS ETF",
+      "englishName": "ROUNDHILL MLCC & ELECTRONIC COMPONENTS ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "ccml"
+      ],
+      "active": true
+    },
+    {
       "symbol": "CCNR",
       "displayName": "ALPS/CORECOMMODITY NATURAL RESOURCES ETF",
       "englishName": "ALPS/CORECOMMODITY NATURAL RESOURCES ETF",
@@ -66810,6 +66810,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "dial"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "DICE",
+      "displayName": "TEMA TRADING & PREDICTION MARKETS ETF",
+      "englishName": "TEMA TRADING & PREDICTION MARKETS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "dice"
       ],
       "active": true
     },
@@ -90340,6 +90353,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "kat"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "KATT",
+      "displayName": "T-REX 2X LONG PURR DAILY TARGET ETF",
+      "englishName": "T-REX 2X LONG PURR DAILY TARGET ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "katt"
       ],
       "active": true
     },
@@ -119496,6 +119522,19 @@
       "active": true
     },
     {
+      "symbol": "TRXS",
+      "displayName": "CANARY STAKED TRX ETF",
+      "englishName": "CANARY STAKED TRX ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "trxs"
+      ],
+      "active": true
+    },
+    {
       "symbol": "TSCM",
       "displayName": "TIMESSQUARE QUALITY MID CAP GROWTH ETF",
       "englishName": "TIMESSQUARE QUALITY MID CAP GROWTH ETF",
@@ -135785,14 +135824,15 @@
     },
     {
       "symbol": "ASBP",
-      "displayName": "ASPIRE BIOPHARMA HOLDINGS INC",
-      "englishName": "ASPIRE BIOPHARMA HOLDINGS INC",
+      "displayName": "ASPIRE-LAKEWOOD HOLDINGS INC",
+      "englishName": "ASPIRE-LAKEWOOD HOLDINGS INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "asbp"
+        "asbp",
+        "aspire biopharma holdings inc"
       ],
       "active": true
     },
@@ -170452,6 +170492,19 @@
       "active": true
     },
     {
+      "symbol": "KRSA",
+      "displayName": "KORSANA BIOSCIENCES INC",
+      "englishName": "KORSANA BIOSCIENCES INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "krsa"
+      ],
+      "active": true
+    },
+    {
       "symbol": "KRSP",
       "displayName": "RICE ACQUISITION CORPORATION 3",
       "englishName": "RICE ACQUISITION CORPORATION 3",
@@ -171857,14 +171910,15 @@
     },
     {
       "symbol": "LGHL",
-      "displayName": "LION GROUP HOLDING LTD SPON ADS EACH RP 292500 ORD(R/S)",
-      "englishName": "LION GROUP HOLDING LTD SPON ADS EACH RP 292500 ORD(R/S)",
+      "displayName": "LION GROUP HOLDING LTD SPON ADS EACH RP 292500 ORD",
+      "englishName": "LION GROUP HOLDING LTD SPON ADS EACH RP 292500 ORD",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "lghl"
+        "lghl",
+        "lion group holding ltd spon ads each rp 292500 ord(r/s)"
       ],
       "active": true
     },
@@ -181715,6 +181769,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "nx"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "NXAT",
+      "displayName": "NEXUS ADVANCED TECHNOLOGIES INC",
+      "englishName": "NEXUS ADVANCED TECHNOLOGIES INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "nxat"
       ],
       "active": true
     },
