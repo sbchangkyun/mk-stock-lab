@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16190",
+  "masterVersion": "hf3b-hf2-kis-16208",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-09-10",
   "instruments": [
@@ -51031,6 +51031,32 @@
       "active": true
     },
     {
+      "symbol": "ACBE",
+      "displayName": "PACER METAURUS ENHANCED CORE INCOME AUTOCALLABLE ETF",
+      "englishName": "PACER METAURUS ENHANCED CORE INCOME AUTOCALLABLE ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "acbe"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "ACBH",
+      "displayName": "PACER METAURUS HIGH INCOME AUTOCALLABLE ETF",
+      "englishName": "PACER METAURUS HIGH INCOME AUTOCALLABLE ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "acbh"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ACEI",
       "displayName": "INNOVATOR EQUITY AUTOCALLABLE INCOME STRATEGY ETF",
       "englishName": "INNOVATOR EQUITY AUTOCALLABLE INCOME STRATEGY ETF",
@@ -52214,6 +52240,19 @@
       "active": true
     },
     {
+      "symbol": "AIFR",
+      "displayName": "DEFIANCE GLOBAL FOUNDRIES ETF",
+      "englishName": "DEFIANCE GLOBAL FOUNDRIES ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "aifr"
+      ],
+      "active": true
+    },
+    {
       "symbol": "AIHY",
       "displayName": "DEFIANCE AI HYPERSCALE LEADERS ETF",
       "englishName": "DEFIANCE AI HYPERSCALE LEADERS ETF",
@@ -52223,6 +52262,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "aihy"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "AIMG",
+      "displayName": "DEFIANCE AI MAGNIFICENT 10 ETF",
+      "englishName": "DEFIANCE AI MAGNIFICENT 10 ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "aimg"
       ],
       "active": true
     },
@@ -54308,14 +54360,15 @@
     },
     {
       "symbol": "ASTN",
-      "displayName": "TIDAL TRUST II DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
-      "englishName": "TIDAL TRUST II DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
+      "displayName": "DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
+      "englishName": "DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "astn"
+        "astn",
+        "tidal trust ii defiance daily target 2x short asts etf"
       ],
       "active": true
     },
@@ -63806,6 +63859,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "crak"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "CRAM",
+      "displayName": "DEFIANCE CHINA MEMORY ETF",
+      "englishName": "DEFIANCE CHINA MEMORY ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "cram"
       ],
       "active": true
     },
@@ -94633,6 +94699,19 @@
       "active": true
     },
     {
+      "symbol": "MFSD",
+      "displayName": "MFS ACTIVE SHORT DURATION INCOME ETF",
+      "englishName": "MFS ACTIVE SHORT DURATION INCOME ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mfsd"
+      ],
+      "active": true
+    },
+    {
       "symbol": "MFSG",
       "displayName": "MFS ACTIVE GROWTH ETF",
       "englishName": "MFS ACTIVE GROWTH ETF",
@@ -94681,6 +94760,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "mfsv"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MFSX",
+      "displayName": "MFS ACTIVE SHORT MUNI BOND ETF",
+      "englishName": "MFS ACTIVE SHORT MUNI BOND ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mfsx"
       ],
       "active": true
     },
@@ -98997,6 +99089,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "nqlt"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "NRAM",
+      "displayName": "YORKVILLE AMERICA NEXT GENERATION MEMORY INDEX ETF",
+      "englishName": "YORKVILLE AMERICA NEXT GENERATION MEMORY INDEX ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "nram"
       ],
       "active": true
     },
@@ -123239,6 +123344,19 @@
       "active": true
     },
     {
+      "symbol": "VEEM",
+      "displayName": "VANECK MSCI EM ANALYST SENTIMENT ETF",
+      "englishName": "VANECK MSCI EM ANALYST SENTIMENT ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "veem"
+      ],
+      "active": true
+    },
+    {
       "symbol": "VEFA",
       "displayName": "VANECK ETF TR MSCI EAFE ANALYST SENTIMENT ETF",
       "englishName": "VANECK ETF TR MSCI EAFE ANALYST SENTIMENT ETF",
@@ -123287,6 +123405,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "vegn"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "VEGX",
+      "displayName": "INTERNATIONAL VEGAN CLIMATE ETF",
+      "englishName": "INTERNATIONAL VEGAN CLIMATE ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "vegx"
       ],
       "active": true
     },
@@ -127015,6 +127146,19 @@
       "active": true
     },
     {
+      "symbol": "XLCD",
+      "displayName": "MICROSECTORS -3X SHORT COMMUNICATION SERVICES (XLC) ETNS",
+      "englishName": "MICROSECTORS -3X SHORT COMMUNICATION SERVICES (XLC) ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xlcd"
+      ],
+      "active": true
+    },
+    {
       "symbol": "XLCI",
       "displayName": "STATE STREET COMMUNICATION SERVICES SELECT SECTOR SPDR PREMI",
       "englishName": "STATE STREET COMMUNICATION SERVICES SELECT SECTOR SPDR PREMI",
@@ -127024,6 +127168,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "xlci"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XLCU",
+      "displayName": "MICROSECTORS 3X LONG COMMUNICATION SERVICES (XLC) ETNS",
+      "englishName": "MICROSECTORS 3X LONG COMMUNICATION SERVICES (XLC) ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xlcu"
       ],
       "active": true
     },
@@ -127206,6 +127363,32 @@
       "exchangeCode": "AMS",
       "aliases": [
         "xlp"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XLPD",
+      "displayName": "MICROSECTORS -3X SHORT CONSUMER STAPLES (XLP) ETNS",
+      "englishName": "MICROSECTORS -3X SHORT CONSUMER STAPLES (XLP) ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xlpd"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "XLPU",
+      "displayName": "MICROSECTORS 3X LONG CONSUMER STAPLES (XLP) ETNS",
+      "englishName": "MICROSECTORS 3X LONG CONSUMER STAPLES (XLP) ETNS",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "xlpu"
       ],
       "active": true
     },
@@ -136693,6 +136876,19 @@
       "active": true
     },
     {
+      "symbol": "ATTT",
+      "displayName": "ATLAS TRINITY TECH LIMITED",
+      "englishName": "ATLAS TRINITY TECH LIMITED",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "attt"
+      ],
+      "active": true
+    },
+    {
       "symbol": "ATXG",
       "displayName": "ADDENTAX GROUP CORP",
       "englishName": "ADDENTAX GROUP CORP",
@@ -141564,6 +141760,19 @@
       "exchangeCode": "NYS",
       "aliases": [
         "brt"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "BRTM",
+      "displayName": "B&R TECHNOLOGY MERGER CORP",
+      "englishName": "B&R TECHNOLOGY MERGER CORP",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "brtm"
       ],
       "active": true
     },
@@ -154135,6 +154344,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "envx"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "EOCN",
+      "displayName": "EOCENE LTD",
+      "englishName": "EOCENE LTD",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "eocn"
       ],
       "active": true
     },
@@ -171921,14 +172143,15 @@
     },
     {
       "symbol": "LGHL",
-      "displayName": "LION GROUP HOLDING LTD SPON ADS EACH RP 292500 ORD",
-      "englishName": "LION GROUP HOLDING LTD SPON ADS EACH RP 292500 ORD",
+      "displayName": "LION GROUP HOLDING LTD SPON ADS EACH RP 5850000 ORD(R/S)",
+      "englishName": "LION GROUP HOLDING LTD SPON ADS EACH RP 5850000 ORD(R/S)",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
-        "lghl"
+        "lghl",
+        "lion group holding ltd spon ads each rp 292500 ord"
       ],
       "active": true
     },
@@ -187036,13 +187259,14 @@
     },
     {
       "symbol": "PMA",
-      "displayName": "MING SHING GROUP HOLDINGS LIMITED",
-      "englishName": "MING SHING GROUP HOLDINGS LIMITED",
+      "displayName": "PMA GRAPHENE TECHNOLOGY GROUP INC",
+      "englishName": "PMA GRAPHENE TECHNOLOGY GROUP INC",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "ming shing group holdings limited",
         "pma"
       ],
       "active": true
@@ -199160,6 +199384,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "swmr"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "SWRD",
+      "displayName": "STEWARDS INC",
+      "englishName": "STEWARDS INC",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "swrd"
       ],
       "active": true
     },
