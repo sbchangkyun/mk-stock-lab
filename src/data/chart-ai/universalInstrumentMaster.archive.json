@@ -3688,6 +3688,23 @@
       "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
       "successorIdentity": null,
       "sourceVersion": "kis-16189"
+    },
+    {
+      "canonicalIdentity": "KR|096610|KOSDAQ|stock",
+      "country": "KR",
+      "priorSymbol": "096610",
+      "priorNames": [
+        "알에프세미"
+      ],
+      "priorExchange": "KOSDAQ",
+      "instrumentType": "stock",
+      "standardCode": "KR7096610001",
+      "firstSeenAt": null,
+      "lastActiveAt": "2026-09-11",
+      "inactiveAt": "2026-09-11",
+      "inactiveReason": "SOURCE_ABSENT_TWO_CONSECUTIVE_VALID_SNAPSHOTS",
+      "successorIdentity": null,
+      "sourceVersion": "kis-16211"
     }
   ]
 }

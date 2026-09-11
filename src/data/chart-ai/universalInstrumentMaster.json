@@ -1,6 +1,6 @@
 {
   "note": "Phase 3GG-T-HF3B-HF2 KIS-only universal instrument master. KIS-SUPPORTED KR (KOSPI/KOSDAQ, six-character codes incl. alphanumeric) and US (NASDAQ/NYSE/AMEX, KIS overseas EXCD NAS/NYS/AMS) stocks & ETFs from official public KIS master files + curated anchors. KIS-supported subset only, NOT a complete exchange-listed universe. Security type is KIS field-based only (no name guessing). Server-only reference metadata: no credentials, no account data, no raw provider payloads. Regenerate with scripts/generate_chart_ai_instrument_master.mjs. masterVersion=hf3b-hf2-kis-16018.",
-  "masterVersion": "hf3b-hf2-kis-16208",
+  "masterVersion": "hf3b-hf2-kis-16211",
   "scope": "kis-supported-only",
   "sourceAsOf": "2026-09-11",
   "instruments": [
@@ -34852,19 +34852,6 @@
       "active": true
     },
     {
-      "symbol": "096610",
-      "displayName": "알에프세미",
-      "country": "KR",
-      "exchange": "KOSDAQ",
-      "assetType": "stock",
-      "exchangeCode": null,
-      "standardCode": "KR7096610001",
-      "aliases": [
-        "096610"
-      ],
-      "active": true
-    },
-    {
       "symbol": "096630",
       "displayName": "에스코넥",
       "country": "KR",
@@ -54360,14 +54347,15 @@
     },
     {
       "symbol": "ASTN",
-      "displayName": "DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
-      "englishName": "DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
+      "displayName": "TIDAL TRUST II DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
+      "englishName": "TIDAL TRUST II DEFIANCE DAILY TARGET 2X SHORT ASTS ETF",
       "country": "US",
       "exchange": "AMEX",
       "assetType": "etf",
       "exchangeCode": "AMS",
       "aliases": [
-        "astn"
+        "astn",
+        "defiance daily target 2x short asts etf"
       ],
       "active": true
     },
@@ -78799,6 +78787,19 @@
       "active": true
     },
     {
+      "symbol": "GEMQ",
+      "displayName": "GOLDMAN SACHS DATA ENHANCED EMERGING MARKETS EQUITY ETF",
+      "englishName": "GOLDMAN SACHS DATA ENHANCED EMERGING MARKETS EQUITY ETF",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "etf",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "gemq"
+      ],
+      "active": true
+    },
+    {
       "symbol": "GEND",
       "displayName": "GENTER CAPITAL DIVIDEND INCOME ETF",
       "englishName": "GENTER CAPITAL DIVIDEND INCOME ETF",
@@ -95305,6 +95306,19 @@
       "exchangeCode": "AMS",
       "aliases": [
         "mktn"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "MLCC",
+      "displayName": "GLOBAL X MLCC & ELECTRONIC COMPONENTS ETF",
+      "englishName": "GLOBAL X MLCC & ELECTRONIC COMPONENTS ETF",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "etf",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "mlcc"
       ],
       "active": true
     },
@@ -136876,13 +136890,14 @@
     },
     {
       "symbol": "ATTT",
-      "displayName": "ATLAS TRINITY TECH LIMITED",
-      "englishName": "ATLAS TRINITY TECH LIMITED",
+      "displayName": "ATLAS TRINITY TECH LTD",
+      "englishName": "ATLAS TRINITY TECH LTD",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "atlas trinity tech limited",
         "attt"
       ],
       "active": true
@@ -141764,13 +141779,14 @@
     },
     {
       "symbol": "BRTM",
-      "displayName": "B&R TECHNOLOGY MERGER CORP",
-      "englishName": "B&R TECHNOLOGY MERGER CORP",
+      "displayName": "B&R TECHNOLOGY MERGER CORPORATION",
+      "englishName": "B&R TECHNOLOGY MERGER CORPORATION",
       "country": "US",
       "exchange": "NASDAQ",
       "assetType": "stock",
       "exchangeCode": "NAS",
       "aliases": [
+        "b&r technology merger corp",
         "brtm"
       ],
       "active": true
@@ -163815,6 +163831,19 @@
       "active": true
     },
     {
+      "symbol": "HLSQ",
+      "displayName": "TESSERA DEFENSE AND HOMELAND SECURITY INC",
+      "englishName": "TESSERA DEFENSE AND HOMELAND SECURITY INC",
+      "country": "US",
+      "exchange": "AMEX",
+      "assetType": "stock",
+      "exchangeCode": "AMS",
+      "aliases": [
+        "hlsq"
+      ],
+      "active": true
+    },
+    {
       "symbol": "HLT",
       "displayName": "HILTON WORLDWIDE HOLDINGS INC",
       "englishName": "HILTON WORLDWIDE HOLDINGS INC",
@@ -182585,6 +182614,19 @@
       "exchangeCode": "NAS",
       "aliases": [
         "ocgn"
+      ],
+      "active": true
+    },
+    {
+      "symbol": "OCLT",
+      "displayName": "OCEANLIGHT ACQUISITION CORPORATION",
+      "englishName": "OCEANLIGHT ACQUISITION CORPORATION",
+      "country": "US",
+      "exchange": "NASDAQ",
+      "assetType": "stock",
+      "exchangeCode": "NAS",
+      "aliases": [
+        "oclt"
       ],
       "active": true
     },
